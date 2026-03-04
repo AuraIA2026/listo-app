@@ -1,0 +1,251 @@
+.auth-page {
+  min-height: calc(100vh - 68px);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+/* Left decorative panel */
+.auth-left {
+  background: var(--black);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.auth-deco {
+  position: relative;
+  padding: 48px;
+  width: 100%;
+}
+
+.deco-blob {
+  position: absolute;
+  width: 500px;
+  height: 500px;
+  background: var(--mamey);
+  border-radius: 50%;
+  filter: blur(100px);
+  opacity: 0.18;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.auth-quote {
+  position: relative;
+  max-width: 340px;
+  margin: 0 auto;
+}
+
+.quote-icon {
+  display: block;
+  font-size: 28px;
+  color: var(--mamey);
+  margin-bottom: 20px;
+}
+
+.auth-quote p {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 600;
+  color: white;
+  line-height: 1.4;
+}
+
+/* Right form panel */
+.auth-right {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  background: var(--off-white);
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 420px;
+  background: #fc9842;
+  border-radius: 24px;
+  padding: 40px;
+  border: 1.5px solid rgba(0,0,0,0.06);
+  box-shadow: var(--shadow-dark);
+}
+
+.auth-header {
+  margin-bottom: 28px;
+}
+
+.auth-title {
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 800;
+  color: white;
+  margin-bottom: 6px;
+}
+
+.auth-sub {
+  font-size: 14px;
+  color: white;
+}
+
+/* User type toggle */
+.user-type-toggle {
+  display: flex;
+  background: var(--off-white);
+  border-radius: var(--radius-sm);
+  padding: 4px;
+  margin-bottom: 24px;
+}
+
+.user-type-toggle button {
+  flex: 1;
+  padding: 9px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gray);
+  background: transparent;
+  transition: all 0.2s ease;
+}
+
+.user-type-toggle button.active {
+  background: white;
+  color: var(--mamey-dark);
+  box-shadow: 0 1px 6px rgba(0,0,0,0.1);
+}
+
+/* Form */
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field label {
+  font-size: 13px;
+  font-weight: 600;
+  color: white;
+}
+
+.field-label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.forgot-link {
+  font-size: 12px;
+  color: white;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.forgot-link:hover {
+  color: var(--off-white);
+}
+
+.field input, .field select {
+  padding: 11px 14px;
+  border: 1.5px solid rgba(0,0,0,0.1);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  color: var(--black);
+  background: white;
+  transition: border-color 0.2s;
+}
+
+.field input:focus, .field select:focus {
+  border-color: var(--mamey);
+}
+
+.field input::placeholder {
+  color: var(--gray-light);
+}
+
+.auth-btn {
+  background: var(--mamey);
+  color: white;
+  padding: 13px;
+  border-radius: var(--radius-sm);
+  font-size: 15px;
+  font-weight: 600;
+  font-family: var(--font-display);
+  transition: all 0.2s ease;
+  margin-top: 4px;
+  box-shadow: 0 3px 14px rgba(232, 105, 74, 0.35);
+  border: none;
+}
+
+.auth-btn:hover {
+  background: var(--mamey-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 5px 20px rgba(232, 105, 74, 0.4);
+}
+
+.auth-switch {
+  text-align: center;
+  font-size: 13px;
+  color: white;
+  margin-top: 20px;
+}
+
+.auth-switch span {
+  color: white;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.auth-switch span:hover {
+  color: var(--off-white);
+}
+
+@media (max-width: 768px) {
+  .auth-page {
+    grid-template-columns: 1fr;
+  }
+  .auth-left {
+    display: none;
+  }
+  .auth-right {
+    padding: 32px 16px;
+  }
+  .auth-card {
+    padding: 28px 24px;
+  }
+}
+
+/* ── Error styles ── */
+.input-error {
+  border-color: #e74c3c !important;
+}
+
+.error-msg {
+  color: white;
+  font-size: 0.78rem;
+  margin-top: 4px;
+  display: block;
+}
+
+.error-banner {
+  background: rgba(255,255,255,0.2);
+  color: white;
+  border: 1px solid rgba(255,255,255,0.4);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+.auth-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}

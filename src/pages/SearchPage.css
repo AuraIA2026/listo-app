@@ -1,0 +1,119 @@
+.search-page {
+  background: #FFF3EC;
+  min-height: 100vh;
+}
+
+.search-topbar {
+  background: white;
+  padding: 20px 16px 0;
+  position: sticky;
+  top: 0;
+  z-index: 90;
+  border-bottom: 1px solid rgba(0,0,0,0.06);
+}
+
+.search-title {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--black);
+  margin-bottom: 12px;
+}
+
+.search-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--off-white);
+  border: 1.5px solid rgba(0,0,0,0.08);
+  border-radius: 14px;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+  transition: border-color 0.2s;
+}
+
+.search-input-wrap:focus-within { border-color: var(--mamey); }
+.si-icon { font-size: 18px; }
+
+.search-input-wrap input {
+  flex: 1;
+  background: none;
+  border: none;
+  font-size: 15px;
+  color: var(--black);
+}
+
+.search-input-wrap input::placeholder { color: var(--gray-light); }
+
+.si-clear {
+  background: var(--gray-light);
+  border: none;
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  font-size: 10px; color: white;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.filter-tags {
+  display: flex; gap: 8px;
+  overflow-x: auto; padding-bottom: 14px; scrollbar-width: none;
+}
+.filter-tags::-webkit-scrollbar { display: none; }
+
+.filter-tag {
+  flex-shrink: 0; padding: 7px 14px; border-radius: 100px;
+  font-size: 13px; font-weight: 500;
+  background: var(--off-white); border: 1.5px solid transparent;
+  color: var(--gray); cursor: pointer; transition: all 0.2s;
+}
+.filter-tag:hover  { border-color: var(--mamey-light); color: var(--mamey); }
+.filter-tag.active { background: var(--mamey); color: white; border-color: var(--mamey); }
+
+.search-results { padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+.results-label  { font-size: 13px; color: var(--gray); font-weight: 500; margin-bottom: 4px; }
+
+.no-results { text-align: center; padding: 60px 20px; color: var(--gray); }
+.no-results span { font-size: 40px; display: block; margin-bottom: 10px; }
+
+.search-card {
+  background: white; border-radius: 16px; padding: 14px;
+  display: flex; align-items: center; gap: 12px;
+  border: 1.5px solid rgba(0,0,0,0.05);
+  animation: fadeUp 0.4s ease both; transition: all 0.2s;
+}
+.search-card:hover { border-color: var(--mamey-light); box-shadow: 0 4px 16px rgba(242,96,0,0.1); }
+
+.sc-avatar {
+  width: 50px; height: 50px; border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-display); font-weight: 700; font-size: 15px;
+  color: white; flex-shrink: 0;
+}
+.sc-info { flex: 1; min-width: 0; }
+.sc-top  { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 3px; }
+.sc-name { font-family: var(--font-display); font-weight: 700; font-size: 14px; color: var(--black); }
+.sc-status { font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 100px; flex-shrink: 0; }
+.sc-status.avail { background: rgba(61,186,116,0.12); color: #2A9B5A; }
+.sc-status.busy  { background: rgba(0,0,0,0.06); color: var(--gray); }
+.sc-cat  { font-size: 12px; color: var(--gray); margin-bottom: 5px; }
+.sc-meta { display: flex; align-items: center; gap: 6px; }
+.sc-rating  { font-size: 12px; font-weight: 700; color: var(--black); }
+.sc-reviews { font-size: 11px; color: var(--gray); }
+.sc-price   { font-family: var(--font-display); font-size: 12px; font-weight: 700; color: var(--mamey-dark); margin-left: auto; }
+
+.sc-btn {
+  background: var(--mamey); color: white; border: none;
+  border-radius: 10px; padding: 9px 14px;
+  font-size: 12px; font-weight: 700; cursor: pointer; flex-shrink: 0; transition: all 0.2s;
+}
+.sc-btn:hover { background: var(--mamey-dark); }
+
+.sc-profile-btn {
+  margin-top: 6px; background: none;
+  border: 1.5px solid rgba(242,96,0,0.25); border-radius: 8px;
+  padding: 4px 10px; font-size: 11px; font-weight: 600;
+  color: var(--mamey); cursor: pointer; transition: all 0.2s;
+  display: inline-flex; align-items: center; gap: 4px;
+}
+.sc-profile-btn:hover { background: var(--mamey-pale); border-color: var(--mamey); }
