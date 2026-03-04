@@ -24,16 +24,26 @@ const PAGES_WITH_BOTTOM_NAV = ['home', 'services', 'search', 'orders', 'profile'
 const PAGES_WITH_TOP_NAV = ['login', 'register']
 
 export default function App() {
-  const [showSplash, setShowSplash] = useState(true)
-  const [currentPage, setCurrentPage] = useState('login')
-  const [lang, setLang] = useState('es')
-  const [selectedPro, setSelectedPro] = useState(null)
-  const [userRole, setUserRole] = useState('client')
-  const [showTour, setShowTour] = useState(false)
+  const [showSplash,       setShowSplash]       = useState(true)
+  const [currentPage,      setCurrentPage]      = useState('login')
+  const [lang,             setLang]             = useState('es')
+  const [selectedPro,      setSelectedPro]      = useState(null)
+  const [userRole,         setUserRole]         = useState('user')
+  const [profileComplete,  setProfileComplete]  = useState(false) // ← NUEVO
+  const [showTour,         setShowTour]         = useState(false)
 
   const navigate = (page, data) => {
     if (data?.professional) setSelectedPro(data.professional)
-    if (data?.user?.type) setUserRole(data.user.type)
+
+    if (data?.user?.type) {
+      setUserRole(data.user.type === 'pro' ? 'pro' : 'user')
+    }
+
+    // ── Recibir si el perfil del cliente está completo ──
+    if (data?.user?.profileComplete !== undefined) {
+      setProfileComplete(data.user.profileComplete)
+    }
+
     if (data && !data.user && !data.professional) setSelectedPro(data)
 
     if (page === 'home' && !localStorage.getItem(TOUR_KEY)) {
@@ -42,6 +52,9 @@ export default function App() {
 
     setCurrentPage(page)
   }
+
+  // Llamar esto cuando el usuario complete su perfil en RegistroClientePage
+  const onProfileCompleted = () => setProfileComplete(true)
 
   if (showSplash) {
     return (
@@ -66,7 +79,16 @@ export default function App() {
       {currentPage === 'services'   && <ServicesPage            lang={lang} navigate={navigate} />}
       {currentPage === 'search'     && <SearchPage              lang={lang} navigate={navigate} />}
       {currentPage === 'orders'     && <OrdersPage              lang={lang} navigate={navigate} />}
-      {currentPage === 'profile'    && <ProfilePage             lang={lang} setLang={setLang} navigate={navigate} userRole={userRole} />}
+      {currentPage === 'profile'    && (
+        <ProfilePage
+          lang={lang}
+          setLang={setLang}
+          navigate={navigate}
+          userRole={userRole}
+          profileComplete={profileComplete}         // ← NUEVO
+          onProfileCompleted={onProfileCompleted}   // ← NUEVO
+        />
+      )}
       {currentPage === 'login'      && <LoginPage               lang={lang} navigate={navigate} />}
       {currentPage === 'register'   && <RegisterPage            lang={lang} navigate={navigate} />}
       {currentPage === 'booking'    && <BookingPage             lang={lang} navigate={navigate} professional={selectedPro} />}

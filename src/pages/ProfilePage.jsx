@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import './ProfilePage.css'
+import VerificacionPage from './VerificacionPage'
+import RegistroClientePage from './RegistroClientePage'
 
 /* ─── TRADUCCIONES ──────────────────────────────────────────── */
 const txt = {
@@ -140,14 +142,15 @@ const txt = {
 }
 
 const menuItems = [
-  { icon: '📋', labelEs: 'Mis pedidos',           labelEn: 'My orders',          action: 'orders' },
-  { icon: '❤️', labelEs: 'Favoritos',              labelEn: 'Favorites',          action: 'favorites' },
-  { icon: '🔔', labelEs: 'Notificaciones',         labelEn: 'Notifications',      action: 'notifications' },
-  { icon: '🌐', labelEs: 'Idioma',                 labelEn: 'Language',           action: 'language' },
-  { icon: '🔒', labelEs: 'Privacidad',             labelEn: 'Privacy',            action: 'privacy' },
-  { icon: '❓', labelEs: 'Ayuda y soporte',        labelEn: 'Help & support',     action: 'help' },
-  { icon: '⭐', labelEs: 'Calificar la app',       labelEn: 'Rate the app',       action: 'rate' },
-  { icon: '📄', labelEs: 'Términos y Condiciones', labelEn: 'Terms & Conditions', action: 'terms' },
+  { icon: '🛡️', labelEs: 'Verificación Profesional',  labelEn: 'Professional Verification', action: 'verification' },
+  { icon: '📋', labelEs: 'Mis pedidos',                labelEn: 'My orders',                 action: 'orders' },
+  { icon: '❤️', labelEs: 'Favoritos',                  labelEn: 'Favorites',                 action: 'favorites' },
+  { icon: '🔔', labelEs: 'Notificaciones',             labelEn: 'Notifications',             action: 'notifications' },
+  { icon: '🌐', labelEs: 'Idioma',                     labelEn: 'Language',                  action: 'language' },
+  { icon: '🔒', labelEs: 'Privacidad',                 labelEn: 'Privacy',                   action: 'privacy' },
+  { icon: '❓', labelEs: 'Ayuda y soporte',            labelEn: 'Help & support',            action: 'help' },
+  { icon: '⭐', labelEs: 'Calificar la app',           labelEn: 'Rate the app',              action: 'rate' },
+  { icon: '📄', labelEs: 'Términos y Condiciones',     labelEn: 'Terms & Conditions',        action: 'terms' },
 ]
 
 const LISTO_SYSTEM_PROMPT = `Eres el asistente virtual de Listo Patrón, una app dominicana que conecta usuarios con profesionales de servicios a domicilio (plomeros, electricistas, limpieza, etc.).
@@ -167,10 +170,7 @@ Responde siempre en español, de forma amable, breve y clara. Si no sabes algo, 
 function FaqBotScreen({ lang, onBack }) {
   const T = txt[lang]
   const [messages, setMessages] = useState([
-    {
-      role: 'assistant',
-      text: '¡Hola! 👋 Soy el asistente de Listo. ¿En qué puedo ayudarte hoy?'
-    }
+    { role: 'assistant', text: '¡Hola! 👋 Soy el asistente de Listo. ¿En qué puedo ayudarte hoy?' }
   ])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
@@ -192,27 +192,15 @@ function FaqBotScreen({ lang, onBack }) {
     if (!userText) return
     setInput('')
     setLoading(true)
-
     const newMessages = [...messages, { role: 'user', text: userText }]
     setMessages(newMessages)
-
     try {
-      const apiMessages = newMessages.map(m => ({
-        role: m.role,
-        content: m.text
-      }))
-
+      const apiMessages = newMessages.map(m => ({ role: m.role, content: m.text }))
       const response = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 1000,
-          system: LISTO_SYSTEM_PROMPT,
-          messages: apiMessages
-        })
+        body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 1000, system: LISTO_SYSTEM_PROMPT, messages: apiMessages })
       })
-
       const data = await response.json()
       const reply = data.content?.[0]?.text || 'Lo siento, no pude responder. Intenta de nuevo.'
       setMessages(prev => [...prev, { role: 'assistant', text: reply }])
@@ -226,146 +214,44 @@ function FaqBotScreen({ lang, onBack }) {
   return (
     <div className="sub-screen" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       <ScreenHeader title={T.helpFaq} onBack={onBack} />
-
-      {/* Chat messages */}
-      <div style={{
-        flex: 1,
-        overflowY: 'auto',
-        padding: '12px 16px',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 10,
-      }}>
+      <div style={{ flex: 1, overflowY: 'auto', padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
         {messages.map((msg, i) => (
-          <div key={i} style={{
-            display: 'flex',
-            justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start',
-          }}>
+          <div key={i} style={{ display: 'flex', justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start' }}>
             {msg.role === 'assistant' && (
-              <div style={{
-                width: 28, height: 28, borderRadius: '50%',
-                background: 'linear-gradient(135deg, #FF6B35, #FF8C42)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: 14, marginRight: 8, flexShrink: 0, marginTop: 2
-              }}>🤖</div>
+              <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'linear-gradient(135deg, #FF6B35, #FF8C42)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, marginRight: 8, flexShrink: 0, marginTop: 2 }}>🤖</div>
             )}
-            <div style={{
-              maxWidth: '75%',
-              padding: '10px 14px',
-              borderRadius: msg.role === 'user' ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
-              background: msg.role === 'user'
-                ? 'linear-gradient(135deg, #FF6B35, #FF8C42)'
-                : '#fff',
-              color: msg.role === 'user' ? '#fff' : '#1a1a1a',
-              fontSize: 14,
-              lineHeight: 1.5,
-              boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
-              whiteSpace: 'pre-wrap',
-            }}>
+            <div style={{ maxWidth: '75%', padding: '10px 14px', borderRadius: msg.role === 'user' ? '18px 18px 4px 18px' : '18px 18px 18px 4px', background: msg.role === 'user' ? 'linear-gradient(135deg, #FF6B35, #FF8C42)' : '#fff', color: msg.role === 'user' ? '#fff' : '#1a1a1a', fontSize: 14, lineHeight: 1.5, boxShadow: '0 1px 4px rgba(0,0,0,0.08)', whiteSpace: 'pre-wrap' }}>
               {msg.text}
             </div>
           </div>
         ))}
-
         {loading && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <div style={{
-              width: 28, height: 28, borderRadius: '50%',
-              background: 'linear-gradient(135deg, #FF6B35, #FF8C42)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14
-            }}>🤖</div>
-            <div style={{
-              background: '#fff', borderRadius: '18px 18px 18px 4px',
-              padding: '10px 16px', boxShadow: '0 1px 4px rgba(0,0,0,0.08)'
-            }}>
+            <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'linear-gradient(135deg, #FF6B35, #FF8C42)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>🤖</div>
+            <div style={{ background: '#fff', borderRadius: '18px 18px 18px 4px', padding: '10px 16px', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
               <span style={{ display: 'flex', gap: 4 }}>
-                {[0,1,2].map(n => (
-                  <span key={n} style={{
-                    width: 7, height: 7, borderRadius: '50%',
-                    background: '#FF6B35',
-                    animation: `bounce 1.2s infinite ${n * 0.2}s`,
-                    display: 'inline-block'
-                  }} />
-                ))}
+                {[0,1,2].map(n => (<span key={n} style={{ width: 7, height: 7, borderRadius: '50%', background: '#FF6B35', animation: `bounce 1.2s infinite ${n * 0.2}s`, display: 'inline-block' }} />))}
               </span>
             </div>
           </div>
         )}
-
-        {/* Sugerencias solo al inicio */}
         {messages.length === 1 && (
           <div style={{ marginTop: 8 }}>
             <p style={{ fontSize: 12, color: '#999', marginBottom: 8 }}>Preguntas frecuentes:</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
               {suggested.map((s, i) => (
-                <button key={i} onClick={() => sendMessage(s)} style={{
-                  background: '#fff',
-                  border: '1px solid #FF6B3540',
-                  borderRadius: 12,
-                  padding: '8px 14px',
-                  textAlign: 'left',
-                  fontSize: 13,
-                  color: '#FF6B35',
-                  cursor: 'pointer',
-                }}>
-                  {s}
-                </button>
+                <button key={i} onClick={() => sendMessage(s)} style={{ background: '#fff', border: '1px solid #FF6B3540', borderRadius: 12, padding: '8px 14px', textAlign: 'left', fontSize: 13, color: '#FF6B35', cursor: 'pointer' }}>{s}</button>
               ))}
             </div>
           </div>
         )}
-
         <div ref={bottomRef} />
       </div>
-
-      {/* Input */}
-      <div style={{
-        padding: '12px 16px',
-        borderTop: '1px solid #f0f0f0',
-        background: '#fff',
-        display: 'flex',
-        gap: 8,
-        alignItems: 'center',
-      }}>
-        <input
-          value={input}
-          onChange={e => setInput(e.target.value)}
-          onKeyDown={e => e.key === 'Enter' && !loading && sendMessage()}
-          placeholder="Escribe tu pregunta..."
-          disabled={loading}
-          style={{
-            flex: 1,
-            border: '1.5px solid #eee',
-            borderRadius: 24,
-            padding: '10px 16px',
-            fontSize: 14,
-            outline: 'none',
-            background: '#fafafa',
-          }}
-        />
-        <button
-          onClick={() => sendMessage()}
-          disabled={loading || !input.trim()}
-          style={{
-            width: 40, height: 40,
-            borderRadius: '50%',
-            background: input.trim() && !loading ? 'linear-gradient(135deg, #FF6B35, #FF8C42)' : '#eee',
-            border: 'none',
-            cursor: input.trim() && !loading ? 'pointer' : 'default',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 18, transition: 'background 0.2s',
-          }}
-        >
-          ➤
-        </button>
+      <div style={{ padding: '12px 16px', borderTop: '1px solid #f0f0f0', background: '#fff', display: 'flex', gap: 8, alignItems: 'center' }}>
+        <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && !loading && sendMessage()} placeholder="Escribe tu pregunta..." disabled={loading} style={{ flex: 1, border: '1.5px solid #eee', borderRadius: 24, padding: '10px 16px', fontSize: 14, outline: 'none', background: '#fafafa' }} />
+        <button onClick={() => sendMessage()} disabled={loading || !input.trim()} style={{ width: 40, height: 40, borderRadius: '50%', background: input.trim() && !loading ? 'linear-gradient(135deg, #FF6B35, #FF8C42)' : '#eee', border: 'none', cursor: input.trim() && !loading ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, transition: 'background 0.2s' }}>➤</button>
       </div>
-
-      <style>{`
-        @keyframes bounce {
-          0%, 80%, 100% { transform: translateY(0); }
-          40% { transform: translateY(-6px); }
-        }
-      `}</style>
+      <style>{`@keyframes bounce { 0%, 80%, 100% { transform: translateY(0); } 40% { transform: translateY(-6px); } }`}</style>
     </div>
   )
 }
@@ -533,25 +419,11 @@ function CalificarScreen({ lang, onBack }) {
         <p className="rate-sub">{T.rateSub}</p>
         <div className="rate-stars">
           {[1,2,3,4,5].map(n => (
-            <button
-              key={n}
-              className={`rate-star${n <= (hovered || stars) ? ' lit' : ''}`}
-              onMouseEnter={() => setHovered(n)}
-              onMouseLeave={() => setHovered(0)}
-              onClick={() => setStars(n)}
-            >★</button>
+            <button key={n} className={`rate-star${n <= (hovered || stars) ? ' lit' : ''}`} onMouseEnter={() => setHovered(n)} onMouseLeave={() => setHovered(0)} onClick={() => setStars(n)}>★</button>
           ))}
         </div>
-        <textarea
-          className="rate-comment"
-          placeholder={T.rateComment}
-          value={comment}
-          onChange={e => setComment(e.target.value)}
-          rows={3}
-        />
-        <button className="rate-submit" disabled={stars === 0} onClick={() => setSent(true)}>
-          {T.rateSubmit}
-        </button>
+        <textarea className="rate-comment" placeholder={T.rateComment} value={comment} onChange={e => setComment(e.target.value)} rows={3} />
+        <button className="rate-submit" disabled={stars === 0} onClick={() => setSent(true)}>{T.rateSubmit}</button>
       </div>
     </div>
   )
@@ -561,7 +433,6 @@ function TermsScreen({ lang, onBack, userRole }) {
   const T = txt[lang]
   const [expanded, setExpanded] = useState(null)
   const termsList = userRole === 'pro' ? T.terms : T.termsUser
-
   return (
     <div className="sub-screen">
       <ScreenHeader title={T.termsTitle} onBack={onBack} />
@@ -610,7 +481,7 @@ function LogoutModal({ lang, onConfirm, onCancel }) {
 }
 
 /* ─── COMPONENTE PRINCIPAL ──────────────────────────────────── */
-export default function ProfilePage({ lang, setLang, navigate, userRole }) {
+export default function ProfilePage({ lang, setLang, navigate, userRole, profileComplete, onProfileCompleted }) {
   const [screen, setScreen]         = useState(null)
   const [showLogout, setShowLogout] = useState(false)
   const [tapCount, setTapCount]     = useState(0)
@@ -635,15 +506,22 @@ export default function ProfilePage({ lang, setLang, navigate, userRole }) {
   const renderScreen = () => {
     const back = () => setScreen(null)
     switch (screen) {
-      case 'favorites':     return <FavoritosScreen lang={lang} onBack={back} />
-      case 'notifications': return <NotificacionesScreen lang={lang} onBack={back} />
-      case 'language':      return <IdiomaScreen lang={lang} setLang={setLang} onBack={back} />
-      case 'privacy':       return <PrivacidadScreen lang={lang} onBack={back} />
-      case 'help':          return <AyudaScreen lang={lang} onBack={back} onFaq={() => setScreen('faq')} />
-      case 'faq':           return <FaqBotScreen lang={lang} onBack={() => setScreen('help')} />
-      case 'rate':          return <CalificarScreen lang={lang} onBack={back} />
-      case 'terms':         return <TermsScreen lang={lang} onBack={back} userRole={userRole} />
-      default:              return null
+      case 'favorites':        return <FavoritosScreen lang={lang} onBack={back} />
+      case 'notifications':    return <NotificacionesScreen lang={lang} onBack={back} />
+      case 'language':         return <IdiomaScreen lang={lang} setLang={setLang} onBack={back} />
+      case 'privacy':          return <PrivacidadScreen lang={lang} onBack={back} />
+      case 'help':             return <AyudaScreen lang={lang} onBack={back} onFaq={() => setScreen('faq')} />
+      case 'faq':              return <FaqBotScreen lang={lang} onBack={() => setScreen('help')} />
+      case 'rate':             return <CalificarScreen lang={lang} onBack={back} />
+      case 'terms':            return <TermsScreen lang={lang} onBack={back} userRole={userRole} />
+      case 'verification':     return <VerificacionPage lang={lang} onBack={back} />
+      case 'completar-perfil': return (
+        <RegistroClientePage
+          onBack={back}
+          onSuccess={() => { onProfileCompleted?.(); back() }}
+        />
+      )
+      default: return null
     }
   }
 
@@ -677,13 +555,44 @@ export default function ProfilePage({ lang, setLang, navigate, userRole }) {
       </div>
 
       <div className="profile-menu">
-        {menuItems.map((item, i) => (
-          <button key={i} className="profile-menu-item" onClick={() => handleMenu(item.action)}>
-            <span className="pmi-icon">{item.icon}</span>
-            <span className="pmi-label">{lang === 'es' ? item.labelEs : item.labelEn}</span>
-            <span className="pmi-arrow">›</span>
+
+        {/* ── SOLO usuarios (clientes) ven este botón ── */}
+        {userRole === 'user' && (
+          <button
+            className={`profile-menu-item ${profileComplete ? 'perfil-completo-item' : 'completar-perfil-item'}`}
+            onClick={() => !profileComplete && handleMenu('completar-perfil')}
+          >
+            <span className="pmi-icon">{profileComplete ? '✅' : '👤'}</span>
+            <span className="pmi-label">
+              {profileComplete
+                ? (lang === 'es' ? 'Perfil completo' : 'Profile complete')
+                : (lang === 'es' ? 'Completar mi perfil' : 'Complete my profile')
+              }
+            </span>
+            <span className={profileComplete ? 'completo-badge' : 'completar-badge'}>
+              {profileComplete ? '✓ Listo' : '¡Complétalo!'}
+            </span>
           </button>
-        ))}
+        )}
+
+        {/* ── SOLO profesionales ven el botón de Verificación ── */}
+        {menuItems
+          .filter(item => item.action !== 'verification' || userRole === 'pro')
+          .map((item, i) => (
+            <button
+              key={i}
+              className={`profile-menu-item ${item.action === 'verification' ? 'verification-item' : ''}`}
+              onClick={() => handleMenu(item.action)}
+            >
+              <span className="pmi-icon">{item.icon}</span>
+              <span className="pmi-label">{lang === 'es' ? item.labelEs : item.labelEn}</span>
+              {item.action === 'verification'
+                ? <span className="verif-badge">¡Veríficate!</span>
+                : <span className="pmi-arrow">›</span>
+              }
+            </button>
+          ))
+        }
       </div>
 
       <div className="profile-logout-wrap">
