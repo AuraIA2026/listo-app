@@ -29,6 +29,8 @@ const txt = {
     cashDesc: 'Paga en mano al profesional o transfiere directamente al finalizar el servicio.',
     transfer: 'Transferencia bancaria / App',
     transferDesc: 'Envía el dinero y adjunta el comprobante aquí para el profesional.',
+    card: 'Tarjeta de Crédito o Débito',
+    cardDesc: 'Paga de forma segura usando tu tarjeta vía la pasarela AZUL.',
     selectBank: 'Selecciona tu banco o billetera',
     accountName: 'A nombre de',
     accountNum: 'Cuenta/Número',
@@ -95,8 +97,13 @@ export default function PaymentPage({ lang = 'es', navigate, professional }) {
   const [copied, setCopied]               = useState(false)
   const [receiptUploaded, setReceiptUploaded] = useState(false)
   const [loading, setLoading]             = useState(false)
-  const [userAccount, setUserAccount]     = useState('')
+  
+  // -- ESTADO TRANSFERENCIA MANUAL --
   const [transferAmount, setTransferAmount] = useState('')
+  const [depositorName, setDepositorName]   = useState('')
+  const receiptInputRef                   = useRef(null)
+
+  // -- ESTADO TARJETA AZUL --
   const [cardName, setCardName]           = useState('')
   const [cardNumber, setCardNumber]       = useState('')
   const [cardExp, setCardExp]             = useState('')
@@ -111,6 +118,20 @@ export default function PaymentPage({ lang = 'es', navigate, professional }) {
     setTimeout(() => setCopied(false), 2000)
   }
 
+  const handleBankPay = async () => {
+    setWebviewLoading(true)
+    await new Promise(res => setTimeout(res, 1500))
+    setWebviewLoading(false)
+    setShowWebview(false)
+    setReceiptUploaded(true) // Simula aprobación AZUL
+  }
+
+  const handleReceiptUpload = (e) => {
+    if (e.target.files && e.target.files.length > 0) {
+      setReceiptUploaded(true)
+    }
+  }
+
   const handleConfirm = async () => {
     setLoading(true)
     // Simula procesamiento
@@ -119,8 +140,12 @@ export default function PaymentPage({ lang = 'es', navigate, professional }) {
     navigate('workdone', pro)
   }
 
-  // Si es efectivo, puede confirmar sin importar el precio. Si es tarjeta, exige precio, banco y recibo (simulado).
-  const canConfirm = method === 'cash' || (method === 'transfer' && customPrice > 0 && selectedBank && receiptUploaded)
+  // Validaciones
+  const canConfirmCash = method === 'cash'
+  const canConfirmTransfer = method === 'transfer' && selectedBank && transferAmount > 0 && depositorName.trim() !== '' && receiptUploaded
+  const canConfirmCard = method === 'card' && receiptUploaded 
+
+  const canConfirm = canConfirmCash || canConfirmTransfer || canConfirmCard
 
   return (
     <div className="payment-page">
@@ -166,7 +191,7 @@ export default function PaymentPage({ lang = 'es', navigate, professional }) {
             </button>
             <button
               className={`pay-method-card ${method === 'transfer' ? 'selected' : ''}`}
-              onClick={() => setMethod('transfer')}
+              onClick={() => { setMethod('transfer'); setReceiptUploaded(false) }}
             >
               <div className="pay-method-icon transfer-icon">🏦</div>
               <div className="pay-method-info">
@@ -174,6 +199,17 @@ export default function PaymentPage({ lang = 'es', navigate, professional }) {
                 <p className="pay-method-desc">{T.transferDesc}</p>
               </div>
               <div className={`pay-method-radio ${method === 'transfer' ? 'checked' : ''}`} />
+            </button>
+            <button
+               className={`pay-method-card ${method === 'card' ? 'selected' : ''}`}
+               onClick={() => { setMethod('card'); setReceiptUploaded(false) }}
+            >
+              <div className="pay-method-icon card-icon" style={{background:'#E3F2FD', color:'#1976D2'}}>💳</div>
+              <div className="pay-method-info">
+                <p className="pay-method-name">{T.card}</p>
+                <p className="pay-method-desc">{T.cardDesc}</p>
+              </div>
+              <div className={`pay-method-radio ${method === 'card' ? 'checked' : ''}`} />
             </button>
           </div>
         </div>
@@ -184,77 +220,92 @@ export default function PaymentPage({ lang = 'es', navigate, professional }) {
           </div>
         )}
 
-        <div ref={transferRef} />
-
         {method === 'transfer' && (
           <div className="pay-section fade-up">
-            <h3 className="pay-section-title">{T.selectBank}</h3>
-            <div className="banks-grid">
-              {banks.map(bank => (
-                <button
-                  key={bank.id}
-                  className={`bank-card ${selectedBank?.id === bank.id ? 'selected' : ''}`}
-                  onClick={() => setSelectedBank(bank)}
-                  style={{ '--bank-color': bank.color }}
-                >
-                  <img src={bank.logo} alt={bank.short} className="bank-logo-img" />
-                  <span className="bank-name">{bank.short}</span>
-                  {selectedBank?.id === bank.id && <span className="bank-check">✓</span>}
-                </button>
-              ))}
-            </div>
+            <h3 className="pay-section-title">Detalles de la Transferencia</h3>
+            <div className="transfer-manual-box" style={{ background: 'white', borderRadius: '18px', padding: '20px', border: '1.5px solid rgba(0,0,0,0.06)', boxShadow: '0 4px 16px rgba(0,0,0,0.04)', textAlign: 'left' }}>
+              <label style={{ display: 'block', fontFamily: 'var(--font-display)', fontSize: '13.5px', fontWeight: 700, color: 'var(--black)', marginBottom: '8px' }}>Banco Destino</label>
+              <select 
+                style={{ width: '100%', padding: '14px 16px', borderRadius: '12px', border: '1.5px solid #eee', background: '#FAFAFA', fontFamily: 'var(--font-body)', fontSize: '15px', color: 'var(--black)', boxSizing: 'border-box', marginBottom: '16px', outline: 'none' }}
+                value={selectedBank?.id || ''}
+                onChange={e => setSelectedBank(banks.find(b => b.id === e.target.value))}
+              >
+                <option value="" disabled>Selecciona la cuenta del profesional...</option>
+                {banks.map(b => (
+                  <option key={b.id} value={b.id}>{b.name}</option>
+                ))}
+              </select>
 
-            {selectedBank && (
-              <div className="account-details fade-up">
-                <div className="account-header">
-                  <img src={selectedBank.logo} alt={selectedBank.short} className="account-bank-logo-img" />
-                  <div>
-                    <p className="account-bank-name">{selectedBank.name}</p>
-                    <p className="account-bank-type">{selectedBank.type}</p>
-                  </div>
-                </div>
-                <div className="account-row">
-                  <span className="account-label">{T.accountName}</span>
-                  <span className="account-value">{pro.name}</span>
-                </div>
-                <div className="account-row">
-                  <span className="account-label">{T.accountNum}</span>
-                  <div className="account-num-row">
-                    <span className="account-value account-num">{selectedBank.account}</span>
-                    <button className={`copy-btn ${copied ? 'copied' : ''}`} onClick={() => handleCopy(selectedBank.account)}>
-                      {copied ? T.copied : T.copyAccount}
-                    </button>
-                  </div>
-                </div>
-                <div className="transfer-amount-box" style={{ marginBottom: 0 }}>
-                  <span className="transfer-amount-label">Monto a transferir</span>
-                  <span className="transfer-amount-value">RD${total.toLocaleString()}</span>
-                </div>
+              <label style={{ display: 'block', fontFamily: 'var(--font-display)', fontSize: '13.5px', fontWeight: 700, color: 'var(--black)', marginBottom: '8px' }}>Monto Depositado (RD$)</label>
+              <input 
+                type="number" 
+                style={{ width: '100%', padding: '14px 16px', borderRadius: '12px', border: '1.5px solid #eee', background: '#FAFAFA', fontFamily: 'var(--font-body)', fontSize: '15px', color: 'var(--black)', boxSizing: 'border-box', marginBottom: '16px', outline: 'none' }}
+                placeholder="Ej. 1500"
+                value={transferAmount}
+                onChange={e => setTransferAmount(e.target.value)}
+              />
 
-                {!receiptUploaded ? (
-                  <button
-                    className="upload-receipt-btn"
-                    onClick={() => setShowWebview(true)}
-                    style={{ background: '#002E6D', color: 'white', border: 'none', marginTop: '16px' }}
-                  >
-                    💳 Introducir Tarjeta (Vía AZUL)
-                  </button>
+              <label style={{ display: 'block', fontFamily: 'var(--font-display)', fontSize: '13.5px', fontWeight: 700, color: 'var(--black)', marginBottom: '8px' }}>Nombre de quien deposita</label>
+              <input 
+                type="text" 
+                style={{ width: '100%', padding: '14px 16px', borderRadius: '12px', border: '1.5px solid #eee', background: '#FAFAFA', fontFamily: 'var(--font-body)', fontSize: '15px', color: 'var(--black)', boxSizing: 'border-box', marginBottom: '16px', outline: 'none' }}
+                placeholder="Ej. Juan Pérez"
+                value={depositorName}
+                onChange={e => setDepositorName(e.target.value)}
+              />
+
+              <label style={{ display: 'block', fontFamily: 'var(--font-display)', fontSize: '13.5px', fontWeight: 700, color: 'var(--black)', marginBottom: '8px' }}>Foto del Recibo de Transferencia</label>
+              <div 
+                style={{ width: '100%', minHeight: '100px', borderRadius: '12px', border: '2px dashed rgba(242,96,0,0.4)', background: 'var(--mamey-pale)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', padding: '16px', textAlign: 'center' }}
+                onClick={() => receiptInputRef.current?.click()}
+              >
+                {receiptUploaded ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', fontFamily: 'var(--font-display)', fontSize: '14px', fontWeight: 700, color: '#2E7D32' }}>
+                    <span>✅ Recibo Cargado con Éxito</span>
+                    <span style={{fontSize:'12px', color:'#666', marginTop:'4px'}}>Toca para cambiar</span>
+                  </div>
                 ) : (
-                  <button className="upload-receipt-btn uploaded" style={{ marginTop: '16px' }} disabled>
-                    ✅ Comprobante electrónico adjunto
-                  </button>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontSize: '28px' }}>📸</span>
+                    <span style={{ fontFamily: 'var(--font-display)', fontSize: '13px', fontWeight: 700, color: 'var(--mamey-dark)' }}>Toca para cargar foto del recibo</span>
+                  </div>
                 )}
-
-                <div className="pay-note transfer-note">
-                  <p>{T.transferNote}</p>
-                </div>
               </div>
+              <input 
+                type="file" 
+                accept="image/*" 
+                ref={receiptInputRef} 
+                style={{ display: 'none' }} 
+                onChange={handleReceiptUpload}
+              />
+            </div>
+          </div>
+        )}
+
+        {method === 'card' && (
+          <div className="pay-section fade-up">
+            <div className="pay-note transfer-note">
+              <p>El cargo se procesará de forma segura a través de AZUL.</p>
+            </div>
+            
+            {!receiptUploaded ? (
+              <button
+                className="upload-receipt-btn"
+                onClick={() => setShowWebview(true)}
+                style={{ background: '#002E6D', color: 'white', border: 'none', marginTop: '16px', boxShadow: '0 4px 12px rgba(0,46,109,0.3)' }}
+              >
+                💳 Introducir Tarjeta (Vía AZUL)
+              </button>
+            ) : (
+              <button className="upload-receipt-btn uploaded" style={{ marginTop: '16px' }} disabled>
+                ✅ Pago Aprobado por AZUL
+              </button>
             )}
           </div>
         )}
 
         {/* WEBVIEW MODAL DE BANCO SIMULADO (ESTILO AZUL) */}
-        {showWebview && selectedBank && (
+        {showWebview && method === 'card' && (
           <div className="payment-webview-overlay">
             <div className="payment-webview-modal">
               <div className="webview-header">
