@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useRef } from 'react'
 import './PaymentPage.css'
 
 import banreservas    from '../assets/banks/banreservas.png'
@@ -25,58 +25,52 @@ const txt = {
   es: {
     title: 'Pago del servicio',
     method: 'Método de pago',
-    cash: 'Efectivo',
-    cashDesc: 'Paga en mano al profesional al finalizar el servicio',
-    transfer: 'Transferencia bancaria',
-    transferDesc: 'Transfiere antes del servicio y envía el comprobante',
-    selectBank: 'Selecciona tu banco',
-    accountName: 'Nombre de la cuenta',
-    accountNum: 'Número de cuenta',
-    accountType: 'Tipo de cuenta',
-    copyAccount: 'Copiar número',
+    cash: 'Efectivo / Trato Directo',
+    cashDesc: 'Paga en mano al profesional o transfiere directamente al finalizar el servicio.',
+    transfer: 'Transferencia bancaria / App',
+    transferDesc: 'Envía el dinero y adjunta el comprobante aquí para el profesional.',
+    selectBank: 'Selecciona tu banco o billetera',
+    accountName: 'A nombre de',
+    accountNum: 'Cuenta/Número',
+    accountType: 'Tipo',
+    copyAccount: 'Copiar',
     copied: '¡Copiado!',
     uploadReceipt: 'Subir comprobante',
     receiptUploaded: '¡Comprobante subido!',
     summary: 'Resumen del pago',
-    service: 'Servicio',
-    professional: 'Profesional',
-    subtotal: 'Subtotal',
-    fee: 'Comisión Listo (10%)',
-    total: 'Total',
-    confirm: 'Confirmar pago',
-    cashNote: '💡 Ten el efectivo listo al finalizar el servicio. El profesional tiene 24 horas para reportar el pago.',
-    transferNote: '💡 Una vez confirmada la transferencia, el profesional será notificado.',
-    success: '¡Pago confirmado!',
-    successSub: 'Tu reserva está confirmada',
-    backOrders: 'Ver mis pedidos',
+    service: 'Costo del Servicio',
+    total: 'Total a Pagar',
+    confirm: 'Trabajo Listo',
+    cashNote: '💡 Listo no cobra comisión. El pago se hace 100% al profesional.',
+    transferNote: '💡 Al subir el recibo se enviará directamente al celular de tu profesional.',
+    success: '¡Excelente!',
+    successSub: 'Acabas de asegurar el pago con el profesional.',
+    backOrders: 'Ir a Pedidos',
   },
   en: {
     title: 'Service payment',
     method: 'Payment method',
-    cash: 'Cash',
-    cashDesc: 'Pay the professional in hand at the end of the service',
-    transfer: 'Bank transfer',
-    transferDesc: 'Transfer before the service and send the receipt',
-    selectBank: 'Select your bank',
-    accountName: 'Account name',
-    accountNum: 'Account number',
-    accountType: 'Account type',
-    copyAccount: 'Copy number',
+    cash: 'Cash / Direct Deal',
+    cashDesc: 'Pay the professional in hand or transfer directly at the end of the service.',
+    transfer: 'Bank Transfer / App',
+    transferDesc: 'Send the money and attach the receipt here for the professional.',
+    selectBank: 'Select an option',
+    accountName: 'Name',
+    accountNum: 'Account',
+    accountType: 'Type',
+    copyAccount: 'Copy',
     copied: 'Copied!',
     uploadReceipt: 'Upload receipt',
     receiptUploaded: 'Receipt uploaded!',
     summary: 'Payment summary',
-    service: 'Service',
-    professional: 'Professional',
-    subtotal: 'Subtotal',
-    fee: 'Listo fee (10%)',
-    total: 'Total',
-    confirm: 'Confirm payment',
-    cashNote: '💡 Have the cash ready at the end of the service. The professional has 24 hours to report the payment.',
-    transferNote: '💡 Once the transfer is confirmed, the professional will be notified.',
-    success: 'Payment confirmed!',
-    successSub: 'Your booking is confirmed',
-    backOrders: 'View my orders',
+    service: 'Service Cost',
+    total: 'Total to Pay',
+    confirm: 'Work Done',
+    cashNote: '💡 Listo does not charge a fee. Payment goes 100% to the pro.',
+    transferNote: '💡 Uploading the receipt sends it directly to your professional.',
+    success: 'Excellent!',
+    successSub: 'You have arranged the payment with the professional.',
+    backOrders: 'Go to Orders',
   }
 }
 
@@ -92,23 +86,24 @@ export default function PaymentPage({ lang = 'es', navigate, professional }) {
     id: 'test_profesional_001'
   }
 
-  const servicePrice = 800
-  const comision = Math.round(servicePrice * 0.10)
-  const total = servicePrice + comision
+  // Se elimina el precio quemado. El usuario decide el precio final
+  const [customPrice, setCustomPrice] = useState('')
+  const total = Number(customPrice) || 0
 
-  const [method, setMethod]               = useState(null)
+  const [method, setMethod]               = useState('cash')
   const [selectedBank, setSelectedBank]   = useState(null)
   const [copied, setCopied]               = useState(false)
   const [receiptUploaded, setReceiptUploaded] = useState(false)
-  const [confirmed, setConfirmed]         = useState(false)
   const [loading, setLoading]             = useState(false)
+  const [userAccount, setUserAccount]     = useState('')
+  const [transferAmount, setTransferAmount] = useState('')
+  const [cardName, setCardName]           = useState('')
+  const [cardNumber, setCardNumber]       = useState('')
+  const [cardExp, setCardExp]             = useState('')
+  const [cardCvv, setCardCvv]             = useState('')
+  const [showWebview, setShowWebview]     = useState(false)
+  const [webviewLoading, setWebviewLoading] = useState(false)
   const transferRef                       = useRef(null)
-
-  useEffect(() => {
-    if (method === 'transfer' && transferRef.current) {
-      setTimeout(() => transferRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100)
-    }
-  }, [method])
 
   const handleCopy = (text) => {
     navigator.clipboard.writeText(text)
@@ -118,61 +113,41 @@ export default function PaymentPage({ lang = 'es', navigate, professional }) {
 
   const handleConfirm = async () => {
     setLoading(true)
-    // Simulamos un pequeño delay como si procesara
-    await new Promise(res => setTimeout(res, 1200))
+    // Simula procesamiento
+    await new Promise(res => setTimeout(res, 800))
     setLoading(false)
-    setConfirmed(true)
+    navigate('workdone', pro)
   }
 
-  const canConfirm = method === 'cash' || (method === 'transfer' && selectedBank && receiptUploaded)
-
-  if (confirmed) {
-    return (
-      <div className="payment-page">
-        <div className="payment-success fade-up">
-          <div className="success-circle">
-            <span className="success-check">✓</span>
-          </div>
-          <h2 className="success-title">{T.success}</h2>
-          <p className="success-sub">{T.successSub}</p>
-          <div className="success-card">
-            <div className="success-pro-row">
-              <div className="success-avatar" style={{ background: pro.color }}>{pro.avatar}</div>
-              <div>
-                <p className="success-pro-name">{pro.name}</p>
-                <p className="success-pro-cat">{pro.category}</p>
-              </div>
-              <div className="success-amount">RD${total.toLocaleString()}</div>
-            </div>
-            <div className="success-method-row">
-              <span>{method === 'cash' ? '💵 ' + T.cash : '🏦 ' + T.transfer}</span>
-              <span className="success-status">✓ Confirmado</span>
-            </div>
-          </div>
-          <button className="btn-success-action" onClick={() => navigate('orders')}>{T.backOrders}</button>
-          <button className="btn-success-home" onClick={() => navigate('home')}>Ir al inicio</button>
-        </div>
-      </div>
-    )
-  }
+  // Si es efectivo, puede confirmar sin importar el precio. Si es tarjeta, exige precio, banco y recibo (simulado).
+  const canConfirm = method === 'cash' || (method === 'transfer' && customPrice > 0 && selectedBank && receiptUploaded)
 
   return (
     <div className="payment-page">
       <div className="payment-header">
-        <button className="pay-back-btn" onClick={() => navigate('booking')}>←</button>
+        <button className="pay-back-btn" onClick={() => navigate('tracking', pro)}>←</button>
         <h1 className="payment-title">{T.title}</h1>
-        <div className="pay-secure-badge">🔒 Seguro</div>
       </div>
 
       <div className="payment-body">
-
         <div className="pay-pro-card fade-up">
           <div className="pay-pro-avatar" style={{ background: pro.color }}>{pro.avatar}</div>
           <div className="pay-pro-info">
             <p className="pay-pro-name">{pro.name}</p>
             <p className="pay-pro-cat">{pro.category}</p>
           </div>
-          <div className="pay-pro-price">RD${servicePrice.toLocaleString()}<span>/hr</span></div>
+          {method === 'transfer' && (
+            <div className="pay-pro-custom-price">
+              <span className="price-currency">RD$</span>
+              <input 
+                type="number" 
+                className="price-input" 
+                placeholder="0.00" 
+                value={customPrice}
+                onChange={e => setCustomPrice(e.target.value)}
+              />
+            </div>
+          )}
         </div>
 
         <div className="pay-section fade-up" style={{ animationDelay: '0.1s' }}>
@@ -189,7 +164,6 @@ export default function PaymentPage({ lang = 'es', navigate, professional }) {
               </div>
               <div className={`pay-method-radio ${method === 'cash' ? 'checked' : ''}`} />
             </button>
-
             <button
               className={`pay-method-card ${method === 'transfer' ? 'selected' : ''}`}
               onClick={() => setMethod('transfer')}
@@ -241,7 +215,7 @@ export default function PaymentPage({ lang = 'es', navigate, professional }) {
                 </div>
                 <div className="account-row">
                   <span className="account-label">{T.accountName}</span>
-                  <span className="account-value">Listo RD, SRL</span>
+                  <span className="account-value">{pro.name}</span>
                 </div>
                 <div className="account-row">
                   <span className="account-label">{T.accountNum}</span>
@@ -252,22 +226,25 @@ export default function PaymentPage({ lang = 'es', navigate, professional }) {
                     </button>
                   </div>
                 </div>
-                <div className="account-row">
-                  <span className="account-label">{T.accountType}</span>
-                  <span className="account-value">{selectedBank.type}</span>
-                </div>
-                <div className="transfer-amount-box">
+                <div className="transfer-amount-box" style={{ marginBottom: 0 }}>
                   <span className="transfer-amount-label">Monto a transferir</span>
                   <span className="transfer-amount-value">RD${total.toLocaleString()}</span>
                 </div>
-                <button
-                  className={`upload-receipt-btn ${receiptUploaded ? 'uploaded' : ''}`}
-                  onClick={() => setReceiptUploaded(true)}
-                >
-                  {receiptUploaded
-                    ? <><span>✅</span> {T.receiptUploaded}</>
-                    : <><span>📎</span> {T.uploadReceipt}</>}
-                </button>
+
+                {!receiptUploaded ? (
+                  <button
+                    className="upload-receipt-btn"
+                    onClick={() => setShowWebview(true)}
+                    style={{ background: '#002E6D', color: 'white', border: 'none', marginTop: '16px' }}
+                  >
+                    💳 Introducir Tarjeta (Vía AZUL)
+                  </button>
+                ) : (
+                  <button className="upload-receipt-btn uploaded" style={{ marginTop: '16px' }} disabled>
+                    ✅ Comprobante electrónico adjunto
+                  </button>
+                )}
+
                 <div className="pay-note transfer-note">
                   <p>{T.transferNote}</p>
                 </div>
@@ -276,17 +253,95 @@ export default function PaymentPage({ lang = 'es', navigate, professional }) {
           </div>
         )}
 
-        {method && (
+        {/* WEBVIEW MODAL DE BANCO SIMULADO (ESTILO AZUL) */}
+        {showWebview && selectedBank && (
+          <div className="payment-webview-overlay">
+            <div className="payment-webview-modal">
+              <div className="webview-header">
+                <span className="webview-lock">🔒</span>
+                <div className="webview-url-bar">
+                  https://pagos.azul.com.do/payment/checkout
+                </div>
+                <button className="webview-close" onClick={() => setShowWebview(false)}>×</button>
+              </div>
+              
+              <div className="webview-content azul-content">
+                <div className="azul-header-brand">
+                  <h1 className="azul-logo-text">AZUL</h1>
+                </div>
+                
+                <h3 style={{ marginBottom: '6px', fontFamily: 'var(--font-display)', color: '#002E6D' }}>Pago Seguro</h3>
+                <p style={{ marginBottom: '20px', fontSize: '14px', color: '#666' }}>Monto a debitar: <strong>RD${total.toLocaleString()}</strong></p>
+                
+                <div className="webview-form azul-form">
+                  <div className="webview-input-group">
+                    <label>Titular de la tarjeta</label>
+                    <input 
+                      type="text" 
+                      placeholder="Nombre como aparece en la tarjeta" 
+                      value={cardName}
+                      onChange={e => setCardName(e.target.value)}
+                    />
+                  </div>
+
+                  <div className="webview-input-group">
+                    <label>Número de Tarjeta</label>
+                    <input 
+                      type="text" 
+                      placeholder="0000 0000 0000 0000" 
+                      maxLength={19}
+                      value={cardNumber}
+                      onChange={e => setCardNumber(e.target.value)}
+                    />
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '12px' }}>
+                    <div className="webview-input-group" style={{ flex: 1 }}>
+                      <label>Expiración (MM/AA)</label>
+                      <input 
+                        type="text" 
+                        placeholder="MM/AA" 
+                        maxLength={5}
+                        value={cardExp}
+                        onChange={e => setCardExp(e.target.value)}
+                      />
+                    </div>
+                    <div className="webview-input-group" style={{ width: '100px' }}>
+                      <label>CVV</label>
+                      <input 
+                        type="text" 
+                        placeholder="123" 
+                        maxLength={4}
+                        value={cardCvv}
+                        onChange={e => setCardCvv(e.target.value)}
+                      />
+                    </div>
+                  </div>
+
+                  <button 
+                    className="webview-pay-btn azul-pay-btn" 
+                    disabled={webviewLoading || !cardName || !cardNumber || !cardExp || !cardCvv}
+                    onClick={handleBankPay}
+                  >
+                    {webviewLoading ? <span className="webview-spinner" /> : 'Procesar Pago'}
+                  </button>
+                </div>
+                
+                <p style={{ marginTop: '24px', fontSize: '11px', color: '#888', textAlign: 'center', maxWidth: '300px' }}>
+                  Este es un entorno seguro provisto por Servicios Digitales Popular para el procesamiento de pagos de Listo App.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {method === 'transfer' && (
           <div className="pay-section pay-summary fade-up">
             <h3 className="pay-section-title">{T.summary}</h3>
             <div className="summary-rows">
               <div className="summary-row">
                 <span>{T.service}</span>
-                <span>RD${servicePrice.toLocaleString()}</span>
-              </div>
-              <div className="summary-row">
-                <span>{T.fee}</span>
-                <span>RD${comision.toLocaleString()}</span>
+                <span>RD${total.toLocaleString()}</span>
               </div>
               <div className="summary-divider" />
               <div className="summary-row total-row">
@@ -297,15 +352,13 @@ export default function PaymentPage({ lang = 'es', navigate, professional }) {
           </div>
         )}
 
-        {method && (
-          <button
-            className={`pay-confirm-btn ${canConfirm ? 'active' : ''} ${loading ? 'loading' : ''}`}
-            disabled={!canConfirm || loading}
-            onClick={handleConfirm}
-          >
-            {loading ? <span className="pay-spinner" /> : `🔒 ${T.confirm} · RD$${total.toLocaleString()}`}
-          </button>
-        )}
+        <button
+          className={`pay-confirm-btn ${canConfirm ? 'active' : ''} ${loading ? 'loading' : ''}`}
+          disabled={!canConfirm || loading}
+          onClick={handleConfirm}
+        >
+          {loading ? <span className="pay-spinner" /> : `✅ ${T.confirm}`}
+        </button>
 
         <div style={{ height: 40 }} />
       </div>

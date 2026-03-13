@@ -1,47 +1,5 @@
 import { useState } from 'react'
-
-/* ─── DATOS MOCK ─── */
-const mockUser = {
-  name: 'María González',
-  city: 'Santo Domingo',
-  rating: 4.8,
-  totalServices: 12,
-  photo: null,
-  pendingServices: 2,
-  completedServices: 8,
-  cancelledServices: 2,
-  addresses: ['🏠 Casa — Calle Duarte #45', '💼 Trabajo — Av. Winston Churchill'],
-  favorites: [
-    { icon: '⚡', name: 'Carlos Eléctrico', spec: 'Electricista', rating: 4.9 },
-    { icon: '🔩', name: 'José Plomero',     spec: 'Plomero',      rating: 4.8 },
-    { icon: '🔧', name: 'Pedro Mecánico',   spec: 'Mecánico',     rating: 5.0 },
-  ],
-  notifications: [
-    { icon: '✅', text: 'Carlos aceptó tu solicitud',     time: 'Hace 5 min' },
-    { icon: '🚗', text: 'El profesional va en camino',    time: 'Hace 20 min' },
-    { icon: '🎉', text: 'Servicio completado con éxito',  time: 'Ayer' },
-    { icon: '🎟', text: 'Nueva promoción disponible',     time: 'Hace 2 días' },
-  ],
-}
-
-/* ─── TOGGLE SWITCH ─── */
-function Toggle({ checked, onChange }) {
-  return (
-    <label style={{ position: 'relative', width: '46px', height: '26px', flexShrink: 0, cursor: 'pointer' }}>
-      <input type="checkbox" checked={checked} onChange={onChange} style={{ opacity: 0, width: 0, height: 0 }} />
-      <span style={{
-        position: 'absolute', inset: 0, borderRadius: '26px', transition: 'background .3s',
-        background: checked ? '#F26000' : '#ccc',
-      }}>
-        <span style={{
-          position: 'absolute', width: '20px', height: '20px', background: '#fff',
-          borderRadius: '50%', top: '3px', left: checked ? '23px' : '3px',
-          transition: 'left .3s', boxShadow: '0 1px 4px rgba(0,0,0,0.2)',
-        }} />
-      </span>
-    </label>
-  )
-}
+import { useUserData } from '../useUserData'
 
 /* ─── ACCORDION ─── */
 function Accordion({ title, open, onToggle, children }) {
@@ -60,31 +18,32 @@ function Accordion({ title, open, onToggle, children }) {
   )
 }
 
-/* ─── BOTÓN ACCIÓN ─── */
-function ActionBtn({ onClick, children, danger }) {
-  return (
-    <button onClick={onClick} style={{
-      width: '100%', padding: '12px 14px', border: danger ? 'none' : '1.5px solid #EAECF0',
-      borderRadius: '10px', background: danger ? '#FFEBEE' : '#F8F9FB',
-      color: danger ? '#C62828' : '#333', fontSize: '14px', fontWeight: '600',
-      cursor: 'pointer', textAlign: 'left', marginBottom: '8px', display: 'block',
-    }}>{children}</button>
-  )
-}
 
 /* ─── COMPONENTE PRINCIPAL ─── */
-export default function BtnHamburguesaUsuario({ onClose, user = mockUser }) {
-  const [open, setOpen]           = useState('solicitudes')
-  const [notifOn, setNotifOn]     = useState(true)
-  const [promoOn, setPromoOn]     = useState(true)
-  const [coupon, setCoupon]       = useState('')
-  const [couponOk, setCouponOk]   = useState(false)
+export default function BtnHamburguesaUsuario({ onClose, navigate, lang = 'es' }) {
+  const { userData, loading, user, getInitials } = useUserData()
+
+  const [open, setOpen]       = useState('solicitudes')
+  const [coupon, setCoupon]   = useState('')
+  const [couponOk, setCouponOk] = useState(false)
 
   const toggle = s => setOpen(prev => prev === s ? null : s)
 
   const applyCoupon = () => {
     if (coupon.trim()) setCouponOk(true)
   }
+
+  // Datos reales del usuario o fallbacks
+  const displayName    = userData?.name     || user?.displayName || 'Usuario'
+  const displayCity    = userData?.city     || 'Santo Domingo'
+  const displayRating  = userData?.rating   || '—'
+  const displayPhoto   = userData?.photoURL || user?.photoURL || null
+  const displayTotal   = userData?.totalServices        || 0
+  const displayPending = userData?.pendingServices      || 0
+  const displayDone    = userData?.completedServices    || 0
+  const displayCancel  = userData?.cancelledServices    || 0
+  const displayAddrs   = userData?.addresses            || []
+  const displayFavs    = userData?.favorites            || []
 
   return (
     <>
@@ -116,40 +75,30 @@ export default function BtnHamburguesaUsuario({ onClose, user = mockUser }) {
           {/* SCROLL */}
           <div className="uu-scroll" style={{ flex: 1, overflowY: 'auto', padding: '8px 16px 30px', scrollbarWidth: 'none' }}>
 
-            {/* ══ 1. PERFIL ══ */}
+            {/* ── ENCABEZADO DE BIENVENIDA MÁS LIGERO ── */}
             <div style={{
-              background: '#fff', borderRadius: '20px', padding: '16px',
-              marginBottom: '14px', boxShadow: '0 2px 10px rgba(0,0,0,0.07)',
-              display: 'flex', alignItems: 'flex-start', gap: '14px',
+              background: '#fff', borderRadius: '16px', padding: '16px 20px',
+              marginBottom: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+              display: 'flex', alignItems: 'center', gap: '12px',
             }}>
-              <div style={{
-                width: '68px', height: '68px', borderRadius: '16px', flexShrink: 0,
-                background: 'linear-gradient(135deg,#F26000,#FF8C42)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color: '#fff', fontSize: '28px', fontWeight: '800',
-                border: '3px solid #FFD580',
-              }}>
-                {user.photo ? <img src={user.photo} alt={user.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : user.name.charAt(0)}
+              <span style={{ fontSize: '24px' }}>👋</span>
+              <div>
+                <p style={{ fontSize: '16px', fontWeight: '800', color: '#1A1A2E', margin: '0 0 2px' }}>
+                  {lang === 'es' ? '¡Hola' : 'Hello'}, {loading ? '...' : displayName.split(' ')[0]}!
+                </p>
+                <p style={{ fontSize: '11px', color: '#777', margin: 0 }}>
+                  {lang === 'es' ? '¿Qué necesitas hacer hoy?' : 'What do you need today?'}
+                </p>
               </div>
-              <div style={{ flex: 1 }}>
-                <p style={{ fontSize: '16px', fontWeight: '800', color: '#1A1A2E', margin: '0 0 2px' }}>{user.name}</p>
-                <p style={{ fontSize: '12px', color: '#F26000', fontWeight: '600', margin: '0 0 3px' }}>📍 {user.city}</p>
-                <p style={{ fontSize: '11px', color: '#777', margin: '0 0 6px' }}>⭐ {user.rating} · {user.totalServices} servicios solicitados</p>
-                <span style={{ background: '#FFF3EC', color: '#F26000', fontSize: '11px', fontWeight: '700', padding: '3px 10px', borderRadius: '20px' }}>👤 Usuario</span>
-              </div>
-              <button style={{
-                background: '#FFF3E0', border: '1.5px solid #F26000', color: '#F26000',
-                borderRadius: '8px', padding: '6px 10px', fontSize: '11px', fontWeight: '700', cursor: 'pointer',
-              }}>✏️ Editar</button>
             </div>
 
             {/* ══ 2. MIS SOLICITUDES ══ */}
             <Accordion title="🏠 Mis Solicitudes" open={open === 'solicitudes'} onToggle={() => toggle('solicitudes')}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', marginBottom: '12px' }}>
                 {[
-                  { icon: '🕒', label: 'En proceso', val: user.pendingServices,   color: '#F57F17' },
-                  { icon: '✅', label: 'Completados', val: user.completedServices, color: '#2E7D32' },
-                  { icon: '❌', label: 'Cancelados',  val: user.cancelledServices, color: '#C62828' },
+                  { icon: '🕒', label: 'En proceso', val: displayPending, color: '#F57F17' },
+                  { icon: '✅', label: 'Completados', val: displayDone,    color: '#2E7D32' },
+                  { icon: '❌', label: 'Cancelados',  val: displayCancel,  color: '#C62828' },
                 ].map((s, i) => (
                   <div key={i} style={{
                     background: '#FFF8F3', borderRadius: '12px', padding: '10px 6px',
@@ -164,21 +113,24 @@ export default function BtnHamburguesaUsuario({ onClose, user = mockUser }) {
               <button style={{
                 width: '100%', background: '#F26000', color: '#fff', border: 'none',
                 borderRadius: '10px', padding: '11px', fontSize: '13px', fontWeight: '800', cursor: 'pointer',
-              }}>📅 Ver historial detallado</button>
+              }} onClick={() => { if(navigate) navigate('orders'); onClose(); }}>📅 Ver historial detallado</button>
             </Accordion>
 
             {/* ══ 3. MIS DIRECCIONES ══ */}
             <Accordion title="📌 Mis Direcciones" open={open === 'direcciones'} onToggle={() => toggle('direcciones')}>
-              {user.addresses.map((a, i) => (
-                <div key={i} style={{
-                  background: '#FFF8F3', borderRadius: '10px', padding: '12px',
-                  marginBottom: '8px', fontSize: '13px', color: '#333', fontWeight: '600',
-                  display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                }}>
-                  <span>{a}</span>
-                  <button style={{ background: 'none', border: 'none', color: '#F26000', fontSize: '12px', cursor: 'pointer', fontWeight: '700' }}>✏️</button>
-                </div>
-              ))}
+              {displayAddrs.length > 0
+                ? displayAddrs.map((a, i) => (
+                  <div key={i} style={{
+                    background: '#FFF8F3', borderRadius: '10px', padding: '12px',
+                    marginBottom: '8px', fontSize: '13px', color: '#333', fontWeight: '600',
+                    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                  }}>
+                    <span>{a}</span>
+                    <button style={{ background: 'none', border: 'none', color: '#F26000', fontSize: '12px', cursor: 'pointer', fontWeight: '700' }}>✏️</button>
+                  </div>
+                ))
+                : <p style={{ fontSize: 13, color: '#999', margin: '0 0 12px' }}>No tienes direcciones guardadas</p>
+              }
               <button style={{
                 width: '100%', background: '#F26000', color: '#fff', border: 'none',
                 borderRadius: '10px', padding: '11px', fontSize: '13px', fontWeight: '800', cursor: 'pointer', marginTop: '4px',
@@ -206,22 +158,25 @@ export default function BtnHamburguesaUsuario({ onClose, user = mockUser }) {
 
             {/* ══ 5. MIS FAVORITOS ══ */}
             <Accordion title="⭐ Mis Favoritos" open={open === 'favoritos'} onToggle={() => toggle('favoritos')}>
-              {user.favorites.map((f, i) => (
-                <div key={i} style={{
-                  display: 'flex', alignItems: 'center', gap: '12px',
-                  background: '#FFF8F3', borderRadius: '10px', padding: '12px', marginBottom: '8px',
-                }}>
-                  <span style={{ fontSize: '24px' }}>{f.icon}</span>
-                  <div style={{ flex: 1 }}>
-                    <p style={{ margin: 0, fontSize: '13px', fontWeight: '800', color: '#1A1A2E' }}>{f.name}</p>
-                    <p style={{ margin: 0, fontSize: '11px', color: '#777' }}>{f.spec} · ⭐ {f.rating}</p>
+              {displayFavs.length > 0
+                ? displayFavs.map((f, i) => (
+                  <div key={i} style={{
+                    display: 'flex', alignItems: 'center', gap: '12px',
+                    background: '#FFF8F3', borderRadius: '10px', padding: '12px', marginBottom: '8px',
+                  }}>
+                    <span style={{ fontSize: '24px' }}>{f.icon}</span>
+                    <div style={{ flex: 1 }}>
+                      <p style={{ margin: 0, fontSize: '13px', fontWeight: '800', color: '#1A1A2E' }}>{f.name}</p>
+                      <p style={{ margin: 0, fontSize: '11px', color: '#777' }}>{f.spec} · ⭐ {f.rating}</p>
+                    </div>
+                    <button style={{
+                      background: '#F26000', color: '#fff', border: 'none',
+                      borderRadius: '8px', padding: '6px 10px', fontSize: '11px', fontWeight: '700', cursor: 'pointer',
+                    }}>Ver perfil</button>
                   </div>
-                  <button style={{
-                    background: '#F26000', color: '#fff', border: 'none',
-                    borderRadius: '8px', padding: '6px 10px', fontSize: '11px', fontWeight: '700', cursor: 'pointer',
-                  }}>Ver perfil</button>
-                </div>
-              ))}
+                ))
+                : <p style={{ fontSize: 13, color: '#999' }}>No tienes favoritos aún</p>
+              }
             </Accordion>
 
             {/* ══ 6. PROMOCIONES ══ */}
@@ -251,56 +206,7 @@ export default function BtnHamburguesaUsuario({ onClose, user = mockUser }) {
               </div>
             </Accordion>
 
-            {/* ══ 7. SOPORTE ══ */}
-            <Accordion title="📢 Soporte" open={open === 'soporte'} onToggle={() => toggle('soporte')}>
-              <ActionBtn>🐛 Reportar un problema</ActionBtn>
-              <ActionBtn>⭐ Calificar un servicio</ActionBtn>
-              <ActionBtn>❓ Centro de ayuda</ActionBtn>
-              <a href="https://wa.me/18099090455" target="_blank" rel="noreferrer" style={{ display: 'block', textDecoration: 'none' }}>
-                <ActionBtn>📲 WhatsApp: 809-909-0455</ActionBtn>
-              </a>
-              <a href="mailto:listopatron.app@gmail.com" style={{ display: 'block', textDecoration: 'none' }}>
-                <ActionBtn>📧 listopatron.app@gmail.com</ActionBtn>
-              </a>
-            </Accordion>
-
-            {/* ══ 8. NOTIFICACIONES ══ */}
-            <Accordion title="🔔 Notificaciones" open={open === 'notifs'} onToggle={() => toggle('notifs')}>
-              {user.notifications.map((n, i) => (
-                <div key={i} style={{
-                  display: 'flex', alignItems: 'center', gap: '10px',
-                  padding: '10px 0', borderBottom: i < user.notifications.length - 1 ? '1px solid #F1F3F6' : 'none',
-                }}>
-                  <span style={{ fontSize: '20px' }}>{n.icon}</span>
-                  <div style={{ flex: 1 }}>
-                    <p style={{ margin: 0, fontSize: '13px', fontWeight: '600', color: '#333' }}>{n.text}</p>
-                    <p style={{ margin: 0, fontSize: '11px', color: '#999' }}>{n.time}</p>
-                  </div>
-                </div>
-              ))}
-            </Accordion>
-
-            {/* ══ 9. CONFIGURACIÓN ══ */}
-            <Accordion title="⚙️ Configuración" open={open === 'config'} onToggle={() => toggle('config')}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 0', borderBottom: '1px solid #F1F3F6', marginBottom: '8px' }}>
-                <span style={{ fontSize: '14px', fontWeight: '600', color: '#333' }}>🔔 Notificaciones</span>
-                <Toggle checked={notifOn} onChange={() => setNotifOn(!notifOn)} />
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 0', borderBottom: '1px solid #F1F3F6', marginBottom: '8px' }}>
-                <span style={{ fontSize: '14px', fontWeight: '600', color: '#333' }}>🎁 Promociones</span>
-                <Toggle checked={promoOn} onChange={() => setPromoOn(!promoOn)} />
-              </div>
-              <ActionBtn>🔑 Cambiar contraseña</ActionBtn>
-              <ActionBtn>🌐 Idioma</ActionBtn>
-              <ActionBtn danger>🗑 Eliminar cuenta</ActionBtn>
-              <button style={{
-                width: '100%', background: '#FFEBEE', border: 'none', borderRadius: '10px',
-                padding: '12px 14px', fontSize: '14px', fontWeight: '700', color: '#C62828',
-                cursor: 'pointer', textAlign: 'left',
-              }}>🚪 Cerrar sesión</button>
-            </Accordion>
-
-            {/* ══ 10. POSTULARSE COMO PROFESIONAL ══ */}
+            {/* ══ 7. POSTULARSE COMO PROFESIONAL ══ */}
             <div style={{
               background: 'linear-gradient(135deg,#1C1C1C 0%,#3A1500 55%,#F26000 100%)',
               borderRadius: '16px', padding: '16px', marginBottom: '10px',

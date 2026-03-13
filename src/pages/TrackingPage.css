@@ -293,41 +293,27 @@ img.leaflet-marker-shadow { display: none !important; }
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
-  padding: 16px 0;
+  justify-content: center;
+  padding: 24px 0;
   background: var(--mamey);
   border-radius: 16px;
   margin: 4px 0;
   border: none;
   animation: fadeUp 0.3s ease;
 }
-.working-scene { position: relative; width: 100px; height: 90px; }
-.worker { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); }
-.worker-helmet { width: 22px; height: 10px; background: #fff; border-radius: 10px 10px 0 0; margin: 0 auto; position: relative; left: 1px; }
-.worker-head { width: 18px; height: 18px; background: #FFE0CC; border-radius: 50%; margin: 0 auto; }
-.worker-body { width: 20px; height: 22px; background: white; border-radius: 4px; margin: 1px auto 0; }
-.worker-arm { width: 8px; height: 16px; background: white; border-radius: 4px; position: absolute; top: 28px; }
-.worker-arm.left-arm  { left: 2px;  transform-origin: top center; animation: armSwingLeft  0.6s ease-in-out infinite alternate; }
-.worker-arm.right-arm { right: 2px; transform-origin: top center; animation: armSwingRight 0.6s ease-in-out infinite alternate; }
-.worker-leg { width: 8px; height: 18px; background: #C24D00; border-radius: 4px; position: absolute; top: 50px; }
-.worker-leg.left-leg  { left: 6px; }
-.worker-leg.right-leg { right: 6px; }
-.worker-tool-wrap { position: absolute; top: 20px; right: -8px; animation: toolBang 0.4s ease-in-out infinite alternate; }
-.worker-tool { width: 6px; height: 20px; background: #FFE0CC; border-radius: 3px; transform: rotate(45deg); }
-.sparks { position: absolute; top: 10px; right: 10px; }
-.spark { position: absolute; font-size: 12px; color: white; animation: sparkFly 0.8s ease-out infinite; }
+.working-scene { position: relative; width: 120px; height: 120px; display: flex; justify-content: center; align-items: center; }
+.professional-worker-img {
+  width: 90px;
+  height: 90px;
+  object-fit: contain;
+  filter: drop-shadow(0 6px 12px rgba(0,0,0,0.15));
+  animation: workerFloat 2s ease-in-out infinite alternate;
+}
+.sparks { position: absolute; top: 5px; right: 5px; }
+.spark { position: absolute; font-size: 16px; color: white; animation: sparkFly 0.8s ease-out infinite; }
 .spark.s1 { animation-delay: 0s;   top: 0;    right: 0;   }
 .spark.s2 { animation-delay: 0.2s; top: -8px; right: 8px; }
 .spark.s3 { animation-delay: 0.4s; top: 4px;  right: 12px; }
-.spark.s4 { animation-delay: 0.1s; top: -4px; right: 4px;  font-size: 8px; }
-.spark.s5 { animation-delay: 0.3s; top: 8px;  right: -4px; font-size: 8px; }
-.ground-line { position: absolute; bottom: 0; left: 0; right: 0; height: 3px; background: rgba(255,255,255,0.3); border-radius: 2px; }
-.working-label {
-  font-size: 14px;
-  font-weight: 800;
-  color: white;
-  font-family: var(--font-display);
-}
 
 /* ── VAN RETIRÁNDOSE ── */
 .van-retreat-wrap {
@@ -386,3 +372,4 @@ img.leaflet-marker-shadow { display: none !important; }
 @keyframes bounceIn      { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 @keyframes fadeUp        { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes pulse         { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+@keyframes workerFloat   { from { transform: translateY(0px) scale(1); } to { transform: translateY(-6px) scale(1.02); } }

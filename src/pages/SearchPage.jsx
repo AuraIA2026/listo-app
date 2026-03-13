@@ -1,17 +1,7 @@
 import { useState, useEffect } from 'react'
+import { collection, query, where, getDocs } from 'firebase/firestore'
+import { db } from '../firebase'
 import './ServicesPage.css'
-
-// ── Fotos de profesionales ────────────────────────────────────────────────────
-import imgMecanico    from '../assets/pros/Mecanico.jpg'
-import imgMecanico1   from '../assets/pros/Mecanico1.jpg'
-import imgElectricista  from '../assets/pros/Electricista.jpg'
-import imgElectricista1 from '../assets/pros/Electricista1.jpg'
-import imgJardinero   from '../assets/pros/Jardinero.jpg'
-import imgNinera      from '../assets/pros/Niñera.jpg'
-import imgNinera1     from '../assets/pros/Niñera1.jpg'
-import imgPintor      from '../assets/pros/Pintor.jpg'
-import imgCerrajero   from '../assets/pros/Cerrajero.jpg'
-import imgCerrajero1  from '../assets/pros/Cerrajero1.jpg'
 
 // ── Categorías ────────────────────────────────────────────────────────────────
 const categories = {
@@ -40,24 +30,6 @@ const categories = {
     { id: 'locksmith',    label: 'Locksmith',    icon: '🔑' },
   ]
 }
-
-// ── Profesionales ─────────────────────────────────────────────────────────────
-const professionals = [
-  { id: 1,  name: 'Carlos Méndez',    category: 'mechanic',    rating: 4.9, reviews: 128, price: 'RD$800/hr',  location: 'Santo Domingo', experience: '8 años',  avatar: 'CM', available: true,  photo: imgMecanico    },
-  { id: 2,  name: 'Ana Rodríguez',    category: 'electrician', rating: 4.8, reviews: 94,  price: 'RD$950/hr',  location: 'Santiago',      experience: '6 años',  avatar: 'AR', available: true,  photo: imgElectricista },
-  { id: 3,  name: 'Pedro Sánchez',    category: 'plumber',     rating: 4.7, reviews: 211, price: 'RD$750/hr',  location: 'Santo Domingo', experience: '12 años', avatar: 'PS', available: false, photo: null           },
-  { id: 4,  name: 'María López',      category: 'nanny',       rating: 5.0, reviews: 67,  price: 'RD$400/hr',  location: 'La Romana',     experience: '5 años',  avatar: 'ML', available: true,  photo: imgNinera      },
-  { id: 5,  name: 'Luis García',      category: 'painter',     rating: 4.6, reviews: 45,  price: 'RD$600/hr',  location: 'Santiago',      experience: '9 años',  avatar: 'LG', available: true,  photo: imgPintor      },
-  { id: 6,  name: 'Carmen Díaz',      category: 'cleaner',     rating: 4.9, reviews: 302, price: 'RD$350/hr',  location: 'Santo Domingo', experience: '7 años',  avatar: 'CD', available: true,  photo: null           },
-  { id: 7,  name: 'Roberto Torres',   category: 'carpenter',   rating: 4.8, reviews: 88,  price: 'RD$700/hr',  location: 'Puerto Plata',  experience: '15 años', avatar: 'RT', available: false, photo: null           },
-  { id: 8,  name: 'Sofía Martínez',   category: 'gardener',    rating: 4.7, reviews: 53,  price: 'RD$500/hr',  location: 'Santo Domingo', experience: '4 años',  avatar: 'SM', available: true,  photo: imgJardinero   },
-  { id: 9,  name: 'Juan Herrera',     category: 'electrician', rating: 4.5, reviews: 139, price: 'RD$900/hr',  location: 'Santo Domingo', experience: '10 años', avatar: 'JH', available: true,  photo: imgElectricista1 },
-  { id: 10, name: 'Elena Castillo',   category: 'nanny',       rating: 4.9, reviews: 41,  price: 'RD$450/hr',  location: 'Santiago',      experience: '3 años',  avatar: 'EC', available: true,  photo: imgNinera1     },
-  { id: 11, name: 'Miguel Ángel Ruiz',category: 'mechanic',    rating: 4.6, reviews: 77,  price: 'RD$850/hr',  location: 'La Vega',       experience: '11 años', avatar: 'MR', available: true,  photo: imgMecanico1   },
-  { id: 12, name: 'Patricia Núñez',   category: 'cleaner',     rating: 4.8, reviews: 189, price: 'RD$380/hr',  location: 'Santo Domingo', experience: '6 años',  avatar: 'PN', available: false, photo: null           },
-  { id: 13, name: 'José Reyes',       category: 'locksmith',   rating: 4.7, reviews: 63,  price: 'RD$650/hr',  location: 'Santo Domingo', experience: '8 años',  avatar: 'JR', available: true,  photo: imgCerrajero   },
-  { id: 14, name: 'Diana Peña',       category: 'locksmith',   rating: 4.8, reviews: 34,  price: 'RD$600/hr',  location: 'Santiago',      experience: '5 años',  avatar: 'DP', available: true,  photo: imgCerrajero1  },
-]
 
 // ── Textos ────────────────────────────────────────────────────────────────────
 const txt = {
@@ -101,9 +73,44 @@ export default function ServicesPage({ lang = 'es', navigate }) {
   const [search,         setSearch]         = useState('')
   const [onlyAvailable,  setOnlyAvailable]  = useState(false)
   const [sortBy,         setSortBy]         = useState('all') // all | topRated | nearest
+  
+  const [professionals, setProfessionals] = useState([])
+  const [loading, setLoading] = useState(true)
 
   const cats = categories[lang]
   const T    = txt[lang]
+
+  useEffect(() => {
+    const fetchProfessionals = async () => {
+      setLoading(true)
+      try {
+        const q = query(collection(db, 'users'), where('type', '==', 'pro'))
+        const querySnapshot = await getDocs(q)
+        const prosList = []
+        querySnapshot.forEach((doc) => {
+          const data = doc.data()
+          prosList.push({
+            id: doc.id,
+            name: data.name || 'Sin nombre',
+            category: data.category || 'unknown',
+            rating: data.rating || 5.0,
+            reviews: data.reviews || 0,
+            location: data.location || 'República Dominicana',
+            experience: data.experience || '1 año',
+            avatar: (data.name || 'P').substring(0, 2).toUpperCase(),
+            available: data.available !== false, // Default a true
+            photoURL: data.photoURL || null
+          })
+        })
+        setProfessionals(prosList)
+      } catch (err) {
+        console.error("Error fetching pro users: ", err)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchProfessionals()
+  }, [])
 
   const filtered = professionals
     .filter(p => {
@@ -177,7 +184,11 @@ export default function ServicesPage({ lang = 'es', navigate }) {
 
       {/* ── Contador ── */}
       <div className="results-bar">
-        <span className="results-count">{filtered.length} {T.results}</span>
+        {loading ? (
+             <span className="results-count">Cargando...</span>
+        ) : (
+            <span className="results-count">{filtered.length} {T.results}</span>
+        )}
       </div>
 
       {/* ── Grid de profesionales ── */}
@@ -190,12 +201,12 @@ export default function ServicesPage({ lang = 'es', navigate }) {
           >
             {/* Foto o avatar */}
             <div className="card-photo">
-              {pro.photo ? (
-                <img src={pro.photo} alt={pro.name} className="pro-photo" />
+              {pro.photoURL ? (
+                <img src={pro.photoURL} alt={pro.name} className="pro-photo" />
               ) : (
                 <div
                   className="pro-avatar-big"
-                  style={{ background: avatarColors[pro.id % avatarColors.length] }}
+                  style={{ background: avatarColors[(Array.from(pro.id).reduce((acc, char) => acc + char.charCodeAt(0), 0)) % avatarColors.length] }}
                 >
                   {pro.avatar}
                 </div>
@@ -215,14 +226,16 @@ export default function ServicesPage({ lang = 'es', navigate }) {
               <p className="pro-location">📍 {pro.location}</p>
 
               <div className="pro-meta">
-                <span className="pro-rating">★ {pro.rating} <em>({pro.reviews} {T.reviews})</em></span>
+                <span className="pro-rating">★ {pro.rating.toFixed(1)} <em>({pro.reviews} {T.reviews})</em></span>
                 <span className="pro-exp">⏱ {pro.experience}</span>
               </div>
             </div>
 
             {/* Footer */}
             <div className="card-footer">
-              <span className="pro-price">{pro.price}</span>
+              <span className="pro-exp-badge" style={{color:'#666', fontSize:'13px', fontWeight:'600', padding:'4px 8px', background:'#eee', borderRadius:'6px'}}>
+                🤝 Precio a convenir
+              </span>
               <div className="card-actions">
                 <button className="btn-profile" onClick={() => navigate('profile', pro)}>
                   👤 {T.profile}
@@ -236,7 +249,7 @@ export default function ServicesPage({ lang = 'es', navigate }) {
         ))}
       </div>
 
-      {filtered.length === 0 && (
+      {!loading && filtered.length === 0 && (
         <div className="empty-state">
           <span>🔍</span>
           <p>{T.empty}</p>

@@ -1,20 +1,9 @@
 import { useState, useEffect, useRef } from 'react'
+import { getAuth, updateProfile } from 'firebase/auth'
+import { doc, updateDoc } from 'firebase/firestore'
+import { db } from '../firebase'
+import { useUserData } from '../useUserData'
 import './BtnHamburguesa.css'
-
-/* ─── DATOS DE EJEMPLO ──────────────────────────────────────── */
-const mockPro = {
-  name: 'Carlos Méndez',
-  specialty: 'Mecánico Automotriz',
-  rating: 4.9,
-  city: 'Santo Domingo',
-  planStatus: 'active',
-  contracts: 13,
-  completedJobs: 47,
-  requests: 62,
-  pendingJobs: 3,
-  photo: null,
-  approved: true,
-}
 
 /* ─── PLANES ─── */
 const planes = [
@@ -268,21 +257,81 @@ function StatusBadge({ status }) {
   return <span className={`status-badge ${s.cls}`}>{s.label}</span>
 }
 
+/* ─── MODAL EDITAR PERFIL ─── */
+function EditModal({ userData, onSave, onCancel }) {
+  const [form, setForm] = useState({
+    name: userData?.name || '',
+    phone: userData?.phone || '',
+  })
+  const [saving, setSaving] = useState(false)
+
+  const handleSave = async () => {
+    if (!form.name.trim()) return
+    setSaving(true)
+    await onSave(form)
+    setSaving(false)
+  }
+
+  return (
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.65)', zIndex: 3000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }} onClick={onCancel}>
+      <div style={{ background: '#fff', borderRadius: 24, padding: '32px 24px', width: '100%', maxWidth: 360, textAlign: 'center' }} onClick={e => e.stopPropagation()}>
+        <span style={{ fontSize: 40 }}>✏️</span>
+        <h3 style={{ fontSize: 18, fontWeight: 800, color: '#1A1A2E', margin: '10px 0 4px' }}>Editar perfil</h3>
+        <p style={{ fontSize: 13, color: '#999', margin: '0 0 20px' }}>Actualiza tu información</p>
+
+        <div style={{ textAlign: 'left', marginBottom: 12 }}>
+          <label style={{ fontSize: 13, color: '#666', display: 'block', marginBottom: 4, fontWeight: 600 }}>Nombre completo</label>
+          <input
+            value={form.name}
+            onChange={e => setForm(p => ({ ...p, name: e.target.value }))}
+            style={{ width: '100%', padding: '11px 14px', borderRadius: 12, border: '1.5px solid #eee', fontSize: 15, boxSizing: 'border-box', outline: 'none', fontFamily: 'inherit' }}
+            onFocus={e => e.target.style.borderColor = '#F26000'}
+            onBlur={e => e.target.style.borderColor = '#eee'}
+          />
+        </div>
+
+        <div style={{ textAlign: 'left', marginBottom: 20 }}>
+          <label style={{ fontSize: 13, color: '#666', display: 'block', marginBottom: 4, fontWeight: 600 }}>Teléfono</label>
+          <input
+            type="tel"
+            value={form.phone}
+            onChange={e => setForm(p => ({ ...p, phone: e.target.value }))}
+            placeholder="809-000-0000"
+            style={{ width: '100%', padding: '11px 14px', borderRadius: 12, border: '1.5px solid #eee', fontSize: 15, boxSizing: 'border-box', outline: 'none', fontFamily: 'inherit' }}
+            onFocus={e => e.target.style.borderColor = '#F26000'}
+            onBlur={e => e.target.style.borderColor = '#eee'}
+          />
+        </div>
+
+        <button
+          onClick={handleSave}
+          disabled={saving}
+          style={{ width: '100%', padding: 14, background: saving ? '#ccc' : 'linear-gradient(135deg,#FF6B35,#FF8C42)', color: '#fff', border: 'none', borderRadius: 12, fontSize: 15, fontWeight: 800, cursor: saving ? 'not-allowed' : 'pointer', marginBottom: 10 }}
+        >
+          {saving ? 'Guardando...' : 'Guardar cambios'}
+        </button>
+        <button onClick={onCancel} style={{ width: '100%', padding: 12, background: '#f5f5f5', color: '#666', border: 'none', borderRadius: 12, fontSize: 14, fontWeight: 700, cursor: 'pointer' }}>
+          Cancelar
+        </button>
+      </div>
+    </div>
+  )
+}
+
 /* ─── COMPONENTE PRINCIPAL ─── */
-// ↓ Se añadió initialOpenSection='plans' como prop nuevo
-export default function BtnHamburguesa({ onClose, pro = mockPro, initialOpenSection = 'plans' }) {
+export default function BtnHamburguesa({ onClose, navigate, initialOpenSection = 'plans' }) {
+  const { userData, loading, user, getInitials } = useUserData()
+
   const [section, setSection]         = useState('main')
   const [planDetalle, setPlanDetalle] = useState(null)
   const [confirmed, setConfirmed]     = useState(null)
   const [available, setAvailable]     = useState(true)
-
-  // ↓ CAMBIO CLAVE: usa initialOpenSection en lugar de 'plans' fijo
   const [openSection, setOpenSection] = useState(initialOpenSection)
+  const [showEditModal, setShowEditModal] = useState(false)
 
   const scrollRef = useRef(null)
   const planesRef = useRef(null)
 
-  // Si se abre desde el VIPBanner, hace scroll automático a la sección de planes
   useEffect(() => {
     if (initialOpenSection === 'plans') {
       setTimeout(() => {
@@ -294,6 +343,28 @@ export default function BtnHamburguesa({ onClose, pro = mockPro, initialOpenSect
   }, [])
 
   const toggle = (s) => setOpenSection(prev => prev === s ? null : s)
+
+  // ── Guardar cambios del perfil ──
+  const handleSaveProfile = async (form) => {
+    try {
+      await updateProfile(user, { displayName: form.name })
+      await updateDoc(doc(db, 'users', user.uid), {
+        name: form.name,
+        phone: form.phone,
+      })
+      setShowEditModal(false)
+    } catch (e) {
+      console.error('Error guardando:', e)
+    }
+  }
+
+  // Datos a mostrar: Firebase o fallback
+  const displayName    = userData?.name     || user?.displayName || 'Profesional'
+  const displayCity    = userData?.city     || 'Santo Domingo'
+  const displayRating  = userData?.rating   || '—'
+  const displayPhoto   = userData?.photoURL || user?.photoURL || null
+  const displayStatus  = userData?.planStatus || 'inactive'
+  const displaySpec    = userData?.category  || userData?.specialty || 'Profesional'
 
   const ApplyForm = () => (
     <div className="pp-apply">
@@ -313,11 +384,11 @@ export default function BtnHamburguesa({ onClose, pro = mockPro, initialOpenSect
       <h3 className="pp-sec-title">📊 Mi Rendimiento</h3>
       <div className="pp-stats-grid">
         {[
-          { icon: '📦', label: 'Contratos disponibles', val: pro.contracts },
-          { icon: '📈', label: 'Trabajos completados',  val: pro.completedJobs },
-          { icon: '⭐', label: 'Calificación promedio',  val: pro.rating },
-          { icon: '📩', label: 'Solicitudes recibidas', val: pro.requests },
-          { icon: '📌', label: 'Trabajos pendientes',   val: pro.pendingJobs },
+          { icon: '📦', label: 'Contratos disponibles', val: userData?.contracts     || 0 },
+          { icon: '📈', label: 'Trabajos completados',  val: userData?.completedJobs || 0 },
+          { icon: '⭐', label: 'Calificación promedio',  val: userData?.rating        || '—' },
+          { icon: '📩', label: 'Solicitudes recibidas', val: userData?.requests      || 0 },
+          { icon: '📌', label: 'Trabajos pendientes',   val: userData?.pendingJobs   || 0 },
         ].map((s, i) => (
           <div key={i} className="pp-stat-card">
             <span className="pp-stat-icon">{s.icon}</span>
@@ -361,21 +432,25 @@ export default function BtnHamburguesa({ onClose, pro = mockPro, initialOpenSect
 
             ) : (
               <>
-                {/* ══ 1. PERFIL — se oculta si viene del banner ══ */}
-                {initialOpenSection !== 'plans' && (
-                  <div className="pp-profile">
-                    <div className="pp-avatar">
-                      {pro.photo ? <img src={pro.photo} alt={pro.name} /> : <span>{pro.name.charAt(0)}</span>}
-                    </div>
-                    <div className="pp-profile-info">
-                      <p className="pp-name">{pro.name}</p>
-                      <p className="pp-spec">{pro.specialty}</p>
-                      <p className="pp-meta">⭐ {pro.rating} &nbsp;|&nbsp; 📍 {pro.city}</p>
-                      <StatusBadge status={pro.planStatus} />
-                    </div>
-                    <button className="pp-edit-btn">✏️ Editar</button>
+                {/* ══ 1. PERFIL — DATOS REALES ══ */}
+                <div className="pp-profile">
+                  <div className="pp-avatar">
+                    {loading
+                      ? <span style={{ fontSize: 14 }}>...</span>
+                      : displayPhoto
+                        ? <img src={displayPhoto} alt={displayName} />
+                        : <span>{getInitials(displayName)}</span>
+                    }
                   </div>
-                )}
+                  <div className="pp-profile-info">
+                    <p className="pp-name">{loading ? '...' : displayName}</p>
+                    <p className="pp-spec">{displaySpec}</p>
+                    <p className="pp-meta">⭐ {displayRating} &nbsp;|&nbsp; 📍 {displayCity}</p>
+                    <StatusBadge status={displayStatus} />
+                  </div>
+                  {/* ── Botón ✏️ FUNCIONAL ── */}
+                  <button className="pp-edit-btn" onClick={() => setShowEditModal(true)}>✏️ Editar</button>
+                </div>
 
                 {/* ══ 2. PLANES 3D ══ */}
                 <div className="pp-accordion" ref={planesRef}>
@@ -428,11 +503,11 @@ export default function BtnHamburguesa({ onClose, pro = mockPro, initialOpenSect
                     <div className="pp-acc-body">
                       <div className="pp-stats-mini">
                         {[
-                          { icon: '📦', label: 'Contratos',    val: pro.contracts },
-                          { icon: '📈', label: 'Completados',  val: pro.completedJobs },
-                          { icon: '⭐', label: 'Calificación', val: pro.rating },
-                          { icon: '📩', label: 'Solicitudes',  val: pro.requests },
-                          { icon: '📌', label: 'Pendientes',   val: pro.pendingJobs },
+                          { icon: '📦', label: 'Contratos',    val: userData?.contracts     || 0 },
+                          { icon: '📈', label: 'Completados',  val: userData?.completedJobs || 0 },
+                          { icon: '⭐', label: 'Calificación', val: userData?.rating        || '—' },
+                          { icon: '📩', label: 'Solicitudes',  val: userData?.requests      || 0 },
+                          { icon: '📌', label: 'Pendientes',   val: userData?.pendingJobs   || 0 },
                         ].map((s, i) => (
                           <div key={i} className="pp-stat-mini">
                             <span className="pp-stat-icon">{s.icon}</span>
@@ -441,13 +516,13 @@ export default function BtnHamburguesa({ onClose, pro = mockPro, initialOpenSect
                           </div>
                         ))}
                       </div>
-                      <button className="pp-stats-btn" onClick={() => setSection('stats')}>👉 Ver estadísticas completas</button>
+                      <button className="pp-stats-btn" onClick={() => { if(navigate) navigate('orders'); onClose(); }}>👉 Ver estadísticas completas</button>
                     </div>
                   )}
                 </div>
 
-                {/* ══ 5. POSTULARSE (solo si no aprobado) ══ */}
-                {!pro.approved && (
+                {/* ══ 5. POSTULARSE ══ */}
+                {!userData?.approved && (
                   <div className="pp-accordion">
                     <button className="pp-acc-header" onClick={() => toggle('apply')}>
                       <span>📝 Postularse como Profesional</span>
@@ -510,6 +585,15 @@ export default function BtnHamburguesa({ onClose, pro = mockPro, initialOpenSect
             setSection('main')
             setOpenSection('plans')
           }}
+        />
+      )}
+
+      {/* ── MODAL EDITAR PERFIL ── */}
+      {showEditModal && (
+        <EditModal
+          userData={userData}
+          onSave={handleSaveProfile}
+          onCancel={() => setShowEditModal(false)}
         />
       )}
     </>

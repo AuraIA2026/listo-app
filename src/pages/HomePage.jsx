@@ -1,4 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
+import { collection, query, where, getDocs, limit } from 'firebase/firestore'
+import { db } from '../firebase'
 import './HomePage.css'
 import Publicidad from './Publicidad'
 import TutorialTour, { useTour } from '../components/TutorialTour'
@@ -67,29 +69,7 @@ const allCategories = [
   { icon:'🔨', labelEs:'Reparación',          labelEn:'Repair' },
 ]
 
-const featuredPros = [
-  { img:mecanico1,  nameEs:'Carlos Méndez',  specEs:'Mecánico Automotriz', specEn:'Auto Mechanic',  rating:4.9, reviews:128, price:'RD$800',   badge:'Top' },
-  { img:electrica1, nameEs:'Ana Rodríguez',  specEs:'Electricista',        specEn:'Electrician',    rating:4.8, reviews:95,  price:'RD$950',   badge:'Popular' },
-  { img:plomero,    nameEs:'José Martínez',  specEs:'Plomero',             specEn:'Plumber',        rating:4.9, reviews:210, price:'RD$700',   badge:'Top' },
-  { img:pintor1,    nameEs:'María Torres',   specEs:'Pintora',             specEn:'Painter',        rating:4.7, reviews:67,  price:'RD$2,500', badge:null },
-  { img:cerrajero1, nameEs:'Pedro García',   specEs:'Cerrajero',           specEn:'Locksmith',      rating:5.0, reviews:44,  price:'RD$500',   badge:'Nuevo' },
-  { img:jardinero,  nameEs:'Luis Fernández', specEs:'Jardinero',           specEn:'Gardener',       rating:4.8, reviews:83,  price:'RD$600',   badge:null },
-]
-
-const allPros = [
-  { img:mecanico,   nameEs:'Roberto Sánchez',  specEs:'Mecánico',      rating:4.6, price:'RD$650',    avail:true },
-  { img:electrica,  nameEs:'Sandra López',     specEs:'Electricista',  rating:4.7, price:'RD$750',    avail:true },
-  { img:cerrajero,  nameEs:'Miguel Díaz',      specEs:'Cerrajero',     rating:4.5, price:'RD$500',    avail:false },
-  { img:pintor,     nameEs:'Carmen Vega',      specEs:'Pintor',        rating:4.8, price:'RD$2,200',  avail:true },
-  { img:ninera,     nameEs:'Patricia Ruiz',    specEs:'Niñera',        rating:4.9, price:'RD$400/hr', avail:true },
-  { img:ninera1,    nameEs:'Daniela Mora',     specEs:'Niñera',        rating:4.7, price:'RD$450/hr', avail:true },
-  { img:refrig,     nameEs:'Héctor Cruz',      specEs:'A/C & Refrig.', rating:4.8, price:'RD$1,200',  avail:false },
-  { img:jardinero,  nameEs:'Antonio Reyes',    specEs:'Jardinero',     rating:4.6, price:'RD$550',    avail:true },
-  { img:mecanico1,  nameEs:'Ramón Castillo',   specEs:'Mecánico',      rating:4.5, price:'RD$700',    avail:true },
-  { img:plomero,    nameEs:'Francisco Núñez',  specEs:'Plomero',       rating:4.7, price:'RD$680',    avail:true },
-  { img:electrica1, nameEs:'Gabriela Suárez',  specEs:'Electricista',  rating:4.9, price:'RD$900',    avail:false },
-  { img:cerrajero1, nameEs:'Jorge Herrera',    specEs:'Cerrajero',     rating:4.4, price:'RD$480',    avail:true },
-]
+const featuredStatic = [] // Removido por sincronización real
 
 const sections = [
   { id:'mecanico',     titleEs:'🔧 Mecánico',     titleEn:'🔧 Mechanic',    services:[
@@ -233,10 +213,49 @@ export default function HomePage({ lang, navigate, userRole }) {
   const [allProsRef,  allProsVisible]  = useScrollReveal(0.05)
   const [catListRef,  catListVisible]  = useScrollReveal(0.05)
 
+  const [allProsReal, setAllProsReal] = useState([])
+  const [featuredReal, setFeaturedReal] = useState([])
+
   const isPro = userRole === 'pro'
 
-  const specs = ['todos', ...new Set(allPros.map(p => p.specEs))]
-  const filteredPros = proFilter === 'todos' ? allPros : allPros.filter(p => p.specEs === proFilter)
+  useEffect(() => {
+    const fetchPros = async () => {
+      try {
+        const q = query(collection(db, 'users'), where('type', '==', 'pro'))
+        const querySnapshot = await getDocs(q)
+        const prosList = []
+        querySnapshot.forEach((doc) => {
+          const data = doc.data()
+          prosList.push({
+            id: doc.id,
+            nameEs: data.name || 'Sin nombre',
+            nameEn: data.name || 'No name',
+            specEs: categories.find(c => c.id === data.category)?.labelEs || 'Servicio General',
+            specEn: categories.find(c => c.id === data.category)?.labelEn || 'General service',
+            category: data.category || 'unknown',
+            rating: data.rating || 5.0,
+            reviews: data.reviews || 0,
+            location: data.location || 'RD',
+            experience: data.experience || '1 año',
+            avatar: (data.name || 'P').substring(0, 2).toUpperCase(),
+            avail: data.available !== false, // Default a true
+            img: data.photoURL || null
+          })
+        })
+        setAllProsReal(prosList)
+        setFeaturedReal(prosList.slice(0, 6)) // Los primeros 6 como destacados por ahora
+      } catch (err) {
+        console.error("Error fetching pros in Home: ", err)
+      }
+    }
+    fetchPros()
+  }, [])
+
+  const allProsToUse = allProsReal
+  const featuredProsToUse = featuredReal
+
+  const specs = ['todos', ...new Set(allProsToUse.filter(p=>p.specEs).map(p => p.specEs))]
+  const filteredPros = proFilter === 'todos' ? allProsToUse : allProsToUse.filter(p => p.specEs === proFilter)
 
   return (
     <div className="home-page">
@@ -280,19 +299,31 @@ export default function HomePage({ lang, navigate, userRole }) {
           <button className="hp-see-all" onClick={() => navigate('search')}>{lang === 'es' ? 'Ver todos' : 'See all'}</button>
         </div>
         <div className="featured-scroll">
-          {featuredPros.map((pro, i) => (
-            <div key={i} className="featured-card" style={{ animationDelay: `${i * 0.08}s` }} onClick={() => navigate('booking', { specialty: pro.specEs.toLowerCase() })}>
-              {pro.badge && <span className={`featured-badge badge-${pro.badge.toLowerCase()}`}>{pro.badge}</span>}
-              <img src={pro.img} alt={pro.nameEs} className="featured-img" />
-              <div className="featured-info">
-                <p className="featured-name">{pro.nameEs}</p>
-                <p className="featured-spec">{lang === 'es' ? pro.specEs : pro.specEn}</p>
-                <StarRating rating={pro.rating} />
-                <p className="featured-reviews">{pro.reviews} {lang === 'es' ? 'reseñas' : 'reviews'}</p>
-                <p className="featured-price">{lang === 'es' ? 'Desde' : 'From'} <strong>{pro.price}</strong></p>
+          {featuredProsToUse.length > 0 ? (
+            featuredProsToUse.map((pro, i) => (
+              <div key={i} className="featured-card" style={{ animationDelay: `${i * 0.08}s` }} onClick={() => navigate('booking', { professional: pro })}>
+                {pro.badge && <span className={`featured-badge badge-${pro.badge.toLowerCase()}`}>{pro.badge}</span>}
+                {pro.img ? (
+                   <img src={pro.img} alt={pro.nameEs} className="featured-img" />
+                ) : (
+                   <div className="featured-img" style={{background:'#FF8533',display:'flex',justifyContent:'center',alignItems:'center',color:'white',fontSize:24,fontWeight:'bold'}}>{pro.avatar}</div>
+                )}
+                <div className="featured-info">
+                  <p className="featured-name">{pro.nameEs}</p>
+                  <p className="featured-spec">{lang === 'es' ? pro.specEs : pro.specEn}</p>
+                  <StarRating rating={pro.rating} />
+                  <p className="featured-reviews">{pro.reviews} {lang === 'es' ? 'reseñas' : 'reviews'}</p>
+                  <p className="featured-price" style={{ color: '#008F39', fontSize: '13px', fontWeight: 'bold' }}>
+                    🤝 {lang === 'es' ? 'A convenir' : 'To agree'}
+                  </p>
+                </div>
               </div>
+            ))
+          ) : (
+            <div style={{ padding: '20px', color: 'var(--gray)', fontSize: '14px', textAlign: 'center', width: '100%' }}>
+              {lang === 'es' ? 'Aún no hay profesionales destacados.' : 'No featured professionals yet.'}
             </div>
-          ))}
+          )}
         </div>
       </section>
 
@@ -332,21 +363,33 @@ export default function HomePage({ lang, navigate, userRole }) {
           ))}
         </div>
         <div className="all-pros-grid">
-          {filteredPros.map((pro, i) => (
-            <div key={i} className="pro-list-card" style={{ animationDelay: `${i * 0.05}s` }} onClick={() => navigate('booking', { specialty: pro.specEs.toLowerCase() })}>
-              <div className="pro-list-img-wrap">
-                <img src={pro.img} alt={pro.nameEs} className="pro-list-img" />
-                <span className={`pro-avail-dot${pro.avail ? ' online' : ''}`} />
+          {filteredPros.length > 0 ? (
+            filteredPros.map((pro, i) => (
+              <div key={i} className="pro-list-card" style={{ animationDelay: `${i * 0.05}s` }} onClick={() => navigate('booking', { professional: pro })}>
+                <div className="pro-list-img-wrap">
+                  {pro.img ? (
+                     <img src={pro.img} alt={pro.nameEs} className="pro-list-img" />
+                  ) : (
+                     <div style={{width: 80, height: 80, borderRadius: 12, background: '#FF8533', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28, fontWeight: 'bold'}}>{pro.avatar}</div>
+                  )}
+                  <span className={`pro-avail-dot${pro.avail ? ' online' : ''}`} />
+                </div>
+                <div className="pro-list-info">
+                  <p className="pro-list-name">{pro.nameEs}</p>
+                  <p className="pro-list-spec">{pro.specEs}</p>
+                  <StarRating rating={pro.rating} />
+                  <p className="pro-list-price" style={{ color: '#008F39', fontSize: '13px', fontWeight: 'bold', marginTop: '4px' }}>
+                    🤝 {lang === 'es' ? 'A convenir' : 'To agree'}
+                  </p>
+                </div>
+                <button className="pro-list-book">{lang === 'es' ? 'Reservar' : 'Book'}</button>
               </div>
-              <div className="pro-list-info">
-                <p className="pro-list-name">{pro.nameEs}</p>
-                <p className="pro-list-spec">{pro.specEs}</p>
-                <StarRating rating={pro.rating} />
-                <p className="pro-list-price">{lang === 'es' ? 'Desde' : 'From'} <strong>{pro.price}</strong></p>
-              </div>
-              <button className="pro-list-book">{lang === 'es' ? 'Reservar' : 'Book'}</button>
+            ))
+          ) : (
+            <div style={{ padding: '40px 20px', color: 'var(--gray)', fontSize: '15px', textAlign: 'center', gridColumn: '1 / -1' }}>
+              {lang === 'es' ? '🔍 No se encontraron profesionales en esta categoría.' : '🔍 No professionals found in this category.'}
             </div>
-          ))}
+          )}
         </div>
       </section>
 
@@ -372,8 +415,8 @@ export default function HomePage({ lang, navigate, userRole }) {
       {/* ── MENÚ HAMBURGUESA — profesional o usuario según rol ── */}
       {showHamburguesa && (
         isPro
-          ? <BtnHamburguesa        onClose={() => setShowHamburguesa(false)} />
-          : <BtnHamburguesaUsuario onClose={() => setShowHamburguesa(false)} />
+          ? <BtnHamburguesa        onClose={() => setShowHamburguesa(false)} navigate={navigate} />
+          : <BtnHamburguesaUsuario onClose={() => setShowHamburguesa(false)} navigate={navigate} />
       )}
 
     </div>

@@ -109,17 +109,49 @@
   margin-top: 2px;
 }
 
-.pay-pro-price {
+.pay-pro-custom-price {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  background: var(--mamey-pale);
+  padding: 8px 12px;
+  border-radius: 12px;
+  border: 1.5px solid rgba(242,96,0,0.2);
+}
+
+.price-currency {
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--mamey-dark);
+}
+
+.price-input {
   font-family: var(--font-display);
   font-size: 20px;
   font-weight: 800;
   color: var(--mamey-dark);
+  background: transparent;
+  border: none;
+  outline: none;
+  width: 80px;
+  text-align: right;
+  padding: 0;
 }
 
-.pay-pro-price span {
-  font-size: 13px;
-  font-weight: 400;
-  color: var(--gray);
+.price-input::placeholder {
+  color: rgba(242,96,0,0.4);
+}
+
+/* Quitar flechitas de input number */
+.price-input::-webkit-outer-spin-button,
+.price-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.price-input[type=number] {
+  appearance: textfield;
+  -moz-appearance: textfield;
 }
 
 /* Sections */
@@ -456,7 +488,6 @@
 }
 
 /* Summary */
-.pay-summary { }
 
 .summary-rows {
   display: flex;
@@ -692,4 +723,361 @@
 .btn-success-home:hover {
   background: var(--mamey-pale);
   color: var(--mamey-dark);
+}
+
+/* WEBVIEW MODAL - SIMULADOR DE BANCO */
+.payment-webview-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.6);
+  z-index: 1000;
+  display: flex;
+  align-items: flex-end;
+  animation: fadeIn 0.3s ease;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.payment-webview-modal {
+  width: 100%;
+  height: 85vh;
+  background: #f4f4f4;
+  border-radius: 20px 20px 0 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: slideUpModal 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 -10px 40px rgba(0,0,0,0.2);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUpModal {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.webview-header {
+  background: white;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #ddd;
+}
+
+.webview-url-bar {
+  flex: 1;
+  background: #f1f3f4;
+  border-radius: 10px;
+  padding: 8px 12px;
+  margin: 0 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #5f6368;
+}
+
+.webview-close {
+  background: transparent;
+  border: none;
+  font-size: 24px;
+  color: #555;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.webview-content {
+  flex: 1;
+  background: white;
+  overflow-y: auto;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.webview-bank-logo {
+  height: 60px;
+  object-fit: contain;
+  margin-bottom: 24px;
+}
+
+.webview-form {
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.webview-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.webview-input-group label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #333;
+}
+
+.webview-input-group input {
+  padding: 14px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 15px;
+  font-family: inherit;
+}
+
+.webview-pay-btn {
+  margin-top: 10px;
+  padding: 16px;
+  background: var(--bank-color, #005BAC);
+  color: white;
+  font-weight: bold;
+  font-size: 16px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.webview-pay-btn:active {
+  opacity: 0.8;
+}
+
+.webview-spinner {
+  width: 20px; height: 20px;
+  border: 3px solid rgba(255,255,255,0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  display: inline-block;
+}
+
+/* AZUL OVERRIDES */
+.azul-content {
+  background: #f8f9fa;
+}
+
+.azul-header-brand {
+  width: 100%;
+  padding: 16px 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.azul-logo-text {
+  font-family: var(--font-display);
+  font-size: 36px;
+  font-weight: 900;
+  color: #002E6D;
+  letter-spacing: -1px;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.azul-logo-text::before {
+  content: '';
+  display: block;
+  width: 28px;
+  height: 28px;
+  background: linear-gradient(135deg, #00B4F1 0%, #002E6D 100%);
+  border-radius: 4px;
+}
+
+.azul-pay-btn {
+  background: #F29100; /* Naranja corporativo AZUL */
+  color: white;
+  margin-top: 24px;
+}
+
+.azul-pay-btn:disabled {
+  background: #fbd6a3;
+  cursor: not-allowed;
+  opacity: 1;
+}
+
+/* ──RATE JOB SCREEN (Efectivo Confirmado)── */
+.rate-pro-card {
+  background: white;
+  border-radius: 18px;
+  padding: 16px;
+  text-align: center;
+  border: 1.5px solid rgba(0,0,0,0.06);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+  margin-bottom: 16px;
+}
+.rate-pro-name {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--black);
+}
+.rate-pro-cat {
+  font-size: 13px;
+  color: var(--gray);
+  margin-top: 2px;
+}
+
+.rate-box {
+  background: white;
+  border-radius: 18px;
+  padding: 20px;
+  border: 1.5px solid rgba(0,0,0,0.06);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.04);
+  margin-bottom: 16px;
+  text-align: center;
+}
+.rate-box-title {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--black);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+}
+.rate-box-title::first-letter { font-size: 18px; }
+.rate-box-sub {
+  font-size: 13px;
+  color: var(--gray);
+  text-align: left;
+  margin-bottom: 16px;
+  margin-top: -8px;
+}
+
+.rate-stars-row {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.rate-star-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  width: 44px;
+  height: 44px;
+  transition: transform 0.2s;
+}
+.rate-star-btn:hover {
+  transform: scale(1.15);
+}
+.rate-star-icon {
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+}
+.rate-hint {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--mamey);
+  font-family: var(--font-display);
+}
+
+.rate-photos-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+}
+.rate-photo-thumb {
+  width: 90px;
+  height: 90px;
+  border-radius: 14px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+.rate-photo-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.rate-photo-del {
+  position: absolute;
+  top: 4px; right: 4px;
+  width: 24px; height: 24px;
+  background: rgba(0,0,0,0.6);
+  color: white;
+  border-radius: 50%;
+  border: none;
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+}
+.rate-photo-add {
+  width: 90px;
+  height: 90px;
+  border-radius: 14px;
+  border: 2px dashed rgba(242,96,0,0.5);
+  background: var(--mamey-pale);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  gap: 4px;
+  transition: all 0.2s;
+}
+.rate-photo-add:hover {
+  background: #FFE0CC;
+  border-color: var(--mamey);
+}
+.rate-photo-add-icon {
+  font-size: 24px;
+  color: var(--mamey);
+  line-height: 1;
+}
+.rate-photo-add-text {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--mamey-dark);
+  font-family: var(--font-display);
+}
+
+.rate-submit-btn {
+  width: 100%;
+  padding: 16px;
+  border-radius: 16px;
+  border: none;
+  background: var(--mamey);
+  color: white;
+  font-size: 16px;
+  font-weight: 700;
+  font-family: var(--font-display);
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 4px 16px rgba(242,96,0,0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.rate-submit-btn:disabled {
+  background: var(--gray-light);
+  color: white;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+.rate-submit-btn:not(:disabled):hover {
+  background: var(--mamey-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(242,96,0,0.4);
 }

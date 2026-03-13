@@ -1,39 +1,159 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore'
+import { auth, db } from '../firebase'
 import './BookingPage.css'
 
 import { bookingTxt }                         from './bookingTexts'
 import { avatarColors, timeSlots, busySlots } from './bookingData'
 import { getDays }                            from './bookingUtils'
 
+import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-leaflet'
+import 'leaflet/dist/leaflet.css'
+import L from 'leaflet'
 
+// Icono Leaflet
+const customIcon = new L.Icon({
+  iconUrl: 'https://cdn-icons-png.flaticon.com/512/3203/3203071.png',
+  iconSize: [38, 38],
+  iconAnchor: [19, 38],
+})
 
-// ─────────────────────────────────────────────────────────────────────────────
+// Selector de mapa
+function MapSelector({ onLocationSelect }) {
+  useMapEvents({
+    click(e) {
+      onLocationSelect(e.latlng)
+    },
+  })
+  return null
+}
+
+function MapCenterUpdater({ center }) {
+  const map = useMap()
+  useEffect(() => {
+    if (center) {
+      map.setView(center, map.getZoom())
+    }
+  }, [center, map])
+  return null
+}
 export default function BookingPage({ lang = 'es', navigate, professional }) {
   const T    = bookingTxt[lang]
   const days = getDays(lang)
 
   // Datos del profesional (fallback de ejemplo si no viene como prop)
   const pro = professional || {
+    id:       'unknown',
     name:     'Carlos Méndez',
     category: 'mechanic',
     avatar:   'CM',
     rating:   4.9,
-    price:    'RD$800/hr',
     location: 'Santo Domingo',
   }
 
-  // ── Estado ────────────────────────────────────────────────────────────────
   const [step,         setStep]         = useState(1)
   const [selectedDay,  setSelectedDay]  = useState(null)
   const [selectedTime, setSelectedTime] = useState(null)
   const [address,      setAddress]      = useState('')
+  const [addressCoords,setAddressCoords]= useState(null)
+  const [showMap,      setShowMap]      = useState(false)
+  const [mapCenter,    setMapCenter]    = useState(null)
+  const [mapLoading,   setMapLoading]   = useState(false)
+
+  useEffect(() => {
+    if (showMap && !addressCoords && navigator.geolocation) {
+      setMapLoading(true)
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          const { latitude, longitude } = position.coords
+          setAddressCoords({ lat: latitude, lng: longitude })
+          setMapCenter([latitude, longitude])
+          setMapLoading(false)
+          
+          // Reverse geocoding
+          try {
+            const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`)
+            const data = await res.json()
+            if (data && data.display_name) {
+              setAddress(data.display_name)
+            }
+          } catch (err) {
+            console.error("Error reverse geocoding", err)
+          }
+        },
+        (error) => {
+          console.error("Error obteniendo ubicación", error)
+          // Fallback a coordenadas de Dominicana neutrales si falla Gps
+          setMapCenter([18.7357, -70.1627])
+          setMapLoading(false)
+        },
+        { enableHighAccuracy: true }
+      )
+    } else if (showMap && !mapCenter) {
+      // Por si acaso no hay geolocalización soportada
+       setMapCenter([18.7357, -70.1627])
+    }
+  }, [showMap])
+
+  const handleMapSelect = async (latlng) => {
+    setAddressCoords(latlng)
+    setMapCenter([latlng.lat, latlng.lng])
+    try {
+      const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latlng.lat}&lon=${latlng.lng}`)
+      const data = await res.json()
+      if (data && data.display_name) {
+        setAddress(data.display_name)
+      }
+    } catch (err) {
+      console.error("Error manual map reverse geocoding", err)
+    }
+  }
   const [notes,        setNotes]        = useState('')
   const [urgency,      setUrgency]      = useState(0)
   const [confirmed,    setConfirmed]    = useState(false)
-
+  const [loading,      setLoading]      = useState(false)
+  const [errorMsg,     setErrorMsg]     = useState('')
 
   const canNext1 = selectedDay !== null && selectedTime !== null
-  const canNext2 = address.trim().length > 0
+  const canNext2 = address.trim().length > 0 || addressCoords !== null
+
+  const handleConfirmOrder = async () => {
+    if (!auth.currentUser) {
+      setErrorMsg('Debes iniciar sesión para hacer una reserva.')
+      return
+    }
+    setLoading(true)
+    setErrorMsg('')
+    try {
+      const orderData = {
+        clientId: auth.currentUser.uid,
+        clientEmail: auth.currentUser.email,
+        proId: pro.id || 'desconocido',
+        proName: pro.name || pro.nameEs || '',
+        proSpecialty: pro.category || pro.specEs || '',
+        proAvatar: pro.avatar || '',
+        proPhotoURL: pro.photoURL || pro.img || null,
+        dateToken: `${days[selectedDay]?.dayName} ${days[selectedDay]?.dayNum}`,
+        timeToken: selectedTime,
+        address,
+        coords: addressCoords ? { lat: addressCoords.lat, lng: addressCoords.lng } : null,
+        notes,
+        urgencyToken: urgency,
+        price: pro.price || '',
+        status: 'pending', // pending, accepted, onway, arrived, trato, working, done, cancelled
+        rated: false,
+        createdAt: serverTimestamp(),
+      }
+      
+      await addDoc(collection(db, 'orders'), orderData)
+      setConfirmed(true)
+    } catch (error) {
+      console.error('Error creando orden: ', error)
+      setErrorMsg('Error al guardar la orden. Intente de nuevo.')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   // ── Pantalla de éxito ─────────────────────────────────────────────────────
   if (confirmed) {
@@ -93,7 +213,6 @@ export default function BookingPage({ lang = 'es', navigate, professional }) {
           <div className="booking-pro-pill">
             <div className="bp-avatar" style={{ background: avatarColors[0] }}>{pro.avatar}</div>
             <span className="bp-name">{pro.name}</span>
-            <span className="bp-price">{pro.price}</span>
           </div>
         </div>
 
@@ -165,12 +284,47 @@ export default function BookingPage({ lang = 'es', navigate, professional }) {
             {/* Dirección */}
             <div className="detail-field">
               <label>📍 {T.address}</label>
-              <input
-                type="text"
-                placeholder={T.addressPlaceholder}
-                value={address}
-                onChange={e => setAddress(e.target.value)}
-              />
+              <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
+                <input
+                  type="text"
+                  placeholder={T.addressPlaceholder}
+                  value={address}
+                  onChange={e => setAddress(e.target.value)}
+                  style={{ flex: 1 }}
+                />
+                <button
+                  className="btn-map-toggle"
+                  onClick={() => setShowMap(!showMap)}
+                  title="Marcar ubicación en el mapa"
+                >
+                  🗺️ Mapa
+                </button>
+              </div>
+
+              {showMap && (
+                <div className="map-picker-container fade-up">
+                  {mapLoading ? (
+                    <div style={{ padding: '40px 0', textAlign: 'center', color: '#F26000', fontWeight: 'bold' }}>
+                      📍 Extrayendo tu ubicación actual...
+                    </div>
+                  ) : mapCenter ? (
+                    <>
+                      <p className="map-picker-hint">📌 Puntero en tu ubicación. Toca el mapa para moverlo si es incorrecta.</p>
+                      <MapContainer center={mapCenter} zoom={15} style={{ height: '200px', width: '100%', borderRadius: '12px', zIndex: 0 }}>
+                        <TileLayer url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png" />
+                        <MapCenterUpdater center={mapCenter} />
+                        <MapSelector onLocationSelect={handleMapSelect} />
+                        {addressCoords && (
+                          <Marker position={addressCoords} icon={customIcon} />
+                        )}
+                      </MapContainer>
+                      {addressCoords && (
+                        <p className="map-picker-selected">✅ Ubicación registrada ({addressCoords.lat.toFixed(4)}, {addressCoords.lng.toFixed(4)})</p>
+                      )}
+                    </>
+                  ) : null}
+                </div>
+              )}
             </div>
 
             {/* Urgencia */}
@@ -241,16 +395,19 @@ export default function BookingPage({ lang = 'es', navigate, professional }) {
 
               <div className="summary-divider" />
               <div className="summary-price-row">
-                <span className="summary-price-label">{T.price}</span>
-                <span className="summary-price">{pro.price}</span>
+                <span className="summary-price-label">Precio del Servicio</span>
+                <span className="summary-price" style={{ fontSize: '15px', color: '#008F39' }}>A acordar</span>
               </div>
-              <p className="price-note">{T.priceNote}</p>
+              <p className="price-note" style={{ fontSize: '12px', color: '#666', marginTop: '6px' }}>
+                💡 En Listo no cobramos tarifas fijas. Discute y acuerda el precio directamente con tu profesional a través del chat o al ser visitado.
+              </p>
             </div>
 
             <div className="step-nav">
-              <button className="btn-back" onClick={() => setStep(2)}>{T.back}</button>
-              <button className="btn-confirm" onClick={() => setConfirmed(true)}>
-                ✓ {T.confirm}
+              {errorMsg && <p style={{color:'red', marginBottom: 10}}>{errorMsg}</p>}
+              <button className="btn-back" disabled={loading} onClick={() => setStep(2)}>{T.back}</button>
+              <button className="btn-confirm" disabled={loading} onClick={handleConfirmOrder}>
+                {loading ? 'Procesando...' : `✓ ${T.confirm}`}
               </button>
             </div>
           </div>

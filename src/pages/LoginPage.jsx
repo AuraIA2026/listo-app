@@ -47,15 +47,15 @@ const txt = {
 }
 
 export default function LoginPage({ lang, navigate }) {
-  const T = txt[lang]
+  const T    = txt[lang]
   const auth = getAuth()
   const db   = getFirestore()
 
   const [userType, setUserType] = useState('client')
-  const [email, setEmail]       = useState('')
+  const [email,    setEmail]    = useState('')
   const [password, setPassword] = useState('')
-  const [errors, setErrors]     = useState({})
-  const [loading, setLoading]   = useState(false)
+  const [errors,   setErrors]   = useState({})
+  const [loading,  setLoading]  = useState(false)
   const [showFaceModal, setShowFaceModal] = useState(false)
 
   const { videoRef, status, message, verifyFace, stopCamera } = useFaceAuth()
@@ -73,27 +73,44 @@ export default function LoginPage({ lang, navigate }) {
     setLoading(true)
     setErrors({})
     try {
-      const result = await signInWithEmailAndPassword(auth, email, password)
-      const uid    = result.user.uid
+      const result   = await signInWithEmailAndPassword(auth, email, password)
+      const uid      = result.user.uid
 
-      // ── Verificar rol en Firestore ──
-      const userDoc = await getDoc(doc(db, 'users', uid))
-      const role    = userDoc.exists() ? userDoc.data().role : null
+      // ── Leer datos completos del usuario en Firestore ──
+      const userDoc  = await getDoc(doc(db, 'users', uid))
+      const userData = userDoc.exists() ? userDoc.data() : {}
 
-      // Si el rol guardado no coincide con lo que seleccionó → error
-      if (role && role !== userType) {
+      // ✅ FIX: usar "type" en lugar de "role"
+      const type = userData.type || userType  // "pro" o "client"
+
+      // Validar que el tipo coincida con lo seleccionado
+      // "client" en Firestore puede venir como "client" o "user"
+      const selectedIsPro    = userType === 'pro'
+      const firestoreIsPro   = type === 'pro'
+
+      if (userDoc.exists() && selectedIsPro !== firestoreIsPro) {
         await auth.signOut()
         setErrors({ general: T.errWrongType })
         setLoading(false)
         return
       }
 
-      // Todo OK → navegar con el rol correcto
+      // Todo OK → navegar con todos los datos del usuario
       navigate('home', {
-        user: { email: result.user.email, uid, type: role || userType }
+        user: {
+          uid,
+          email:           result.user.email,
+          name:            userData.name            || '',
+          phone:           userData.phone           || '',
+          type:            type,
+          category:        userData.category        || '',
+          profileComplete: userData.profileComplete || false,
+          createdAt:       userData.createdAt       || null,
+        }
       })
 
     } catch (err) {
+      console.error('Login error:', err)
       setErrors({ general: T.errInvalid })
     }
     setLoading(false)

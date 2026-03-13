@@ -262,4 +262,68 @@
   padding: 4px 10px;
   border-radius: 99px;
   white-space: nowrap;
+}/* ── Pegar al final de ProfilePage.css ── */
+
+.completar-perfil-item {
+  background: linear-gradient(135deg, #2563EB, #3B82F6) !important;
+  border-radius: 16px !important;
+  margin: 12px 16px 4px !important;
+  width: calc(100% - 32px) !important;
+  box-shadow: 0 4px 16px rgba(59,130,246,0.35) !important;
+  border-bottom: none !important;
+}
+
+.completar-perfil-item .pmi-icon {
+  font-size: 22px !important;
+}
+
+.completar-perfil-item .pmi-label {
+  color: white !important;
+  font-weight: 800 !important;
+  font-size: 15px !important;
+}
+
+.completar-badge {
+  background: white;
+  color: #2563EB;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 99px;
+  white-space: nowrap;
+  animation: pulse-blue 2s infinite;
+}
+
+@keyframes pulse-blue {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255,255,255,0.5); }
+  50%       { box-shadow: 0 0 0 5px rgba(255,255,255,0); }
+}
+
+/* ── VERIFICACIÓN PROFESIONAL — Botón azul antes de completarse ── */
+.verification-item-blue {
+  background: linear-gradient(135deg, #2563EB, #3B82F6) !important;
+  border-bottom: none !important;
+  border-radius: 16px !important;
+  margin: 12px 16px 4px !important;
+  width: calc(100% - 32px) !important;
+  box-shadow: 0 4px 16px rgba(59,130,246,0.35) !important;
+}
+.verification-item-blue:hover {
+  background: linear-gradient(135deg, #1D4ED8, #2563EB) !important;
+}
+.verification-item-blue .pmi-icon  { font-size: 22px !important; }
+.verification-item-blue .pmi-label {
+  color: white !important;
+  font-weight: 800 !important;
+  font-size: 15px !important;
+}
+.verif-badge-blue {
+  background: white;
+  color: #2563EB;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 99px;
+  white-space: nowrap;
+  animation: pulse-blue 2s infinite;
 }

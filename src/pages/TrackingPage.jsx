@@ -33,6 +33,16 @@ const createVanIcon = (imgSrc) => L.divIcon({
   popupAnchor: [0, -32],
 })
 
+const createWorkerIcon = () => L.divIcon({
+  className: 'leaflet-worker-icon',
+  html: `<div style="background: white; border-radius: 50%; padding: 4px; border: 2px solid #F26000; box-shadow: 0 4px 12px rgba(242,96,0,0.4); display: flex; align-items: center; justify-content: center; overflow: hidden; width: 50px; height: 50px;">
+           <span style="font-size: 28px; line-height: 1; animation: workerFloat 2s ease-in-out infinite alternate;">👨‍🔧</span>
+         </div>`,
+  iconSize: [60, 60],
+  iconAnchor: [30, 30],
+  popupAnchor: [0, -30],
+})
+
 const CLIENT_POS    = [18.4745, -69.9310]
 const PRO_START     = [18.4920, -69.9050]
 const PRO_WAYPOINTS = [
@@ -98,29 +108,20 @@ function SmoothMarker({ targetPos, icon, children, visible = true }) {
 function WorkingAnimation({ lang }) {
   return (
     <div className="working-anim-wrap">
-      <div className="working-scene">
-        <div className="worker">
-          <div className="worker-helmet" />
-          <div className="worker-head" />
-          <div className="worker-body" />
-          <div className="worker-arm left-arm" />
-          <div className="worker-arm right-arm" />
-          <div className="worker-leg left-leg" />
-          <div className="worker-leg right-leg" />
-          <div className="worker-tool-wrap">
-            <div className="worker-tool" />
-          </div>
+      <div className="working-scene professional-scene" style={{width: 'auto', height: '140px'}}>
+        <div 
+          className="professional-worker-emoji"
+          style={{fontSize: '90px', animation: 'workerFloat 2.5s ease-in-out infinite alternate'}}
+        >
+          👨‍🔧
         </div>
         <div className="sparks">
           <span className="spark s1">✦</span>
           <span className="spark s2">★</span>
           <span className="spark s3">✦</span>
-          <span className="spark s4">·</span>
-          <span className="spark s5">★</span>
         </div>
-        <div className="ground-line" />
       </div>
-      <p className="working-label">{lang === 'es' ? '🔧 Trabajando en tu servicio...' : '🔧 Working on your service...'}</p>
+      {/* Eliminado el texto redundante que repetía Trabajando abajo del muñequito */}
     </div>
   )
 }
@@ -185,7 +186,11 @@ export default function TrackingPage({ lang = 'es', navigate, professional }) {
   const [vanVisible,    setVanVisible]    = useState(true)
   const [retreatIdx,    setRetreatIdx]    = useState(0)
   const intervalRef                       = useRef(null)
-  const vanIcon                           = useRef(createVanIcon(vanImg)).current
+  const vanIcon                           = useRef(null)
+  if (!vanIcon.current) vanIcon.current = createVanIcon(vanImg)
+  
+  const workerIcon                        = useRef(null)
+  if (!workerIcon.current) workerIcon.current = createWorkerIcon()
 
   // Animación de llegada — la línea mamey va desapareciendo según avanza
   useEffect(() => {
@@ -283,7 +288,7 @@ export default function TrackingPage({ lang = 'es', navigate, professional }) {
   }
 
   const getStatusDesc = () => {
-    if (workStatus === 'working')       return lang === 'es' ? `${pro.name} está trabajando en tu servicio`    : `${pro.name} is working`
+    if (workStatus === 'working')       return lang === 'es' ? 'Realizando la labor acordada en tu ubicación'    : 'Performing the agreed service'
     if (workStatus === 'awaiting_deal') return lang === 'es' ? `${pro.name} ha llegado, confirma el trato`     : `${pro.name} arrived, confirm the deal`
     if (workStatus === 'retreating')    return lang === 'es' ? 'El profesional está saliendo de tu ubicación'  : 'Professional is leaving your location'
     if (workStatus === 'declined_done') return lang === 'es' ? 'El trato fue declinado. La van se retiró.'     : 'Deal was declined. The van left.'
@@ -360,22 +365,22 @@ export default function TrackingPage({ lang = 'es', navigate, professional }) {
             <Popup>{lang === 'es' ? 'Tu ubicación' : 'Your location'}</Popup>
           </Marker>
 
-          {/* Van — cuando llega queda encima del destino */}
+          {/* Van u Obrero — cuando llega queda encima del destino */}
           {vanVisible && (
-            <SmoothMarker targetPos={proPos} icon={vanIcon} visible={vanVisible}>
+            <SmoothMarker targetPos={proPos} icon={workStatus === 'working' ? workerIcon.current : vanIcon.current} visible={vanVisible}>
               <Popup>{pro.name}</Popup>
             </SmoothMarker>
           )}
         </MapContainer>
 
-        <div className="map-eta-pill" style={{ background: getStatusColor() + '22', borderColor: getStatusColor() + '44' }}>
-          <span className="eta-icon">{getStatusIcon()}</span>
-          <span className="eta-text" style={{ color: getStatusColor() }}>
-            {workStatus !== 'tracking'
-              ? getStatusLabel()
-              : status === 'arrived' ? getStatusLabel() : `${eta} min`}
-          </span>
-        </div>
+        {workStatus === 'tracking' && (
+          <div className="map-eta-pill" style={{ background: getStatusColor() + '22', borderColor: getStatusColor() + '44' }}>
+            <span className="eta-icon">{getStatusIcon()}</span>
+            <span className="eta-text" style={{ color: getStatusColor() }}>
+              {status === 'arrived' ? getStatusLabel() : `${eta} min`}
+            </span>
+          </div>
+        )}
       </div>
 
       <div className="tracking-card">
@@ -450,9 +455,6 @@ export default function TrackingPage({ lang = 'es', navigate, professional }) {
               <div className="tracking-done-actions">
                 <button className="tracking-flow-btn pay-btn" onClick={() => navigate('payment', pro)}>
                   💳 {lang === 'es' ? 'Pagar ahora' : 'Pay now'}
-                </button>
-                <button className="tracking-flow-btn review-btn" onClick={() => navigate('orders')}>
-                  ⭐ {lang === 'es' ? 'Calificar profesional' : 'Rate professional'}
                 </button>
               </div>
             )}
