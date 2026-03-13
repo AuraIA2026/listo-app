@@ -1081,3 +1081,93 @@
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(242,96,0,0.4);
 }
+
+/* ── TRANSFER MANUAL UI ── */
+.transfer-manual-box {
+  background: white;
+  border-radius: 18px;
+  padding: 20px;
+  border: 1.5px solid rgba(0,0,0,0.06);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.04);
+  text-align: left;
+}
+
+.transfer-manual-label {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--black);
+  margin-bottom: 8px;
+}
+
+.transfer-manual-select,
+.transfer-manual-input {
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1.5px solid #eee;
+  background: #FAFAFA;
+  font-family: var(--font-body);
+  font-size: 15px;
+  color: var(--black);
+  box-sizing: border-box;
+  transition: all 0.2s;
+  appearance: none;
+}
+.transfer-manual-select:focus,
+.transfer-manual-input:focus {
+  border-color: var(--mamey);
+  background: white;
+  outline: none;
+}
+
+.transfer-manual-upload {
+  width: 100%;
+  min-height: 100px;
+  border-radius: 12px;
+  border: 2px dashed rgba(242,96,0,0.4);
+  background: var(--mamey-pale);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  padding: 16px;
+  text-align: center;
+}
+.transfer-manual-upload:hover {
+  background: #FFE0CC;
+  border-color: var(--mamey);
+}
+
+.hidden-input {
+  display: none;
+}
+
+.receipt-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.receipt-icon {
+  font-size: 28px;
+}
+.receipt-text {
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--mamey-dark);
+}
+
+.receipt-success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 700;
+  color: #2E7D32; /* Verde éxito */
+}
