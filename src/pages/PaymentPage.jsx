@@ -100,6 +100,7 @@ export default function PaymentPage({ lang = 'es', navigate, professional }) {
   
   // -- ESTADO TRANSFERENCIA MANUAL --
   const [transferAmount, setTransferAmount] = useState('')
+  const [depositorName, setDepositorName]   = useState('')
   const receiptInputRef                   = useRef(null)
 
   // -- ESTADO TARJETA MOCK (AZUL) --
@@ -140,7 +141,7 @@ export default function PaymentPage({ lang = 'es', navigate, professional }) {
 
   // Validaciones
   const canConfirmCash = method === 'cash'
-  const canConfirmTransfer = method === 'transfer' && selectedBank && transferAmount > 0 && receiptUploaded
+  const canConfirmTransfer = method === 'transfer' && selectedBank && transferAmount > 0 && depositorName.trim() !== '' && receiptUploaded
   const canConfirmCard = method === 'card' && receiptUploaded // receiptUploaded funge de flag de pago aprobado
 
   const canConfirm = canConfirmCash || canConfirmTransfer || canConfirmCard
@@ -249,6 +250,15 @@ export default function PaymentPage({ lang = 'es', navigate, professional }) {
                   setTransferAmount(e.target.value)
                   setCustomPrice(e.target.value)
                 }}
+              />
+
+              <label className="transfer-manual-label" style={{marginTop:'16px'}}>Nombre de quien deposita</label>
+              <input 
+                type="text" 
+                className="transfer-manual-input"
+                placeholder="Ej. Juan Pérez"
+                value={depositorName}
+                onChange={e => setDepositorName(e.target.value)}
               />
 
               <label className="transfer-manual-label" style={{marginTop:'16px'}}>Foto del Recibo</label>
