@@ -28,7 +28,7 @@ const txt = {
     cash: 'Efectivo / Trato Directo',
     cashDesc: 'Paga en mano al profesional o transfiere directamente al finalizar el servicio.',
     transfer: 'Transferencia bancaria / App',
-    transferDesc: 'Envía el dinero y adjunta el comprobante aquí para el profesional.',
+    transferDesc: 'Envía el dinero y adjunta el comprobante para el profesional.',
     card: 'Tarjeta de Crédito o Débito',
     cardDesc: 'Paga de forma segura usando tu tarjeta vía la pasarela AZUL.',
     selectBank: 'Selecciona tu banco o billetera',
@@ -94,7 +94,6 @@ export default function PaymentPage({ lang = 'es', navigate, professional }) {
 
   const [method, setMethod]               = useState('cash')
   const [selectedBank, setSelectedBank]   = useState(null)
-  const [copied, setCopied]               = useState(false)
   const [receiptUploaded, setReceiptUploaded] = useState(false)
   const [loading, setLoading]             = useState(false)
   
@@ -110,13 +109,6 @@ export default function PaymentPage({ lang = 'es', navigate, professional }) {
   const [cardCvv, setCardCvv]             = useState('')
   const [showWebview, setShowWebview]     = useState(false)
   const [webviewLoading, setWebviewLoading] = useState(false)
-  const transferRef                       = useRef(null)
-
-  const handleCopy = (text) => {
-    navigator.clipboard.writeText(text)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-  }
 
   const handleBankPay = async () => {
     setWebviewLoading(true)
@@ -143,8 +135,7 @@ export default function PaymentPage({ lang = 'es', navigate, professional }) {
   // Validaciones
   const canConfirmCash = method === 'cash'
   const canConfirmTransfer = method === 'transfer' && selectedBank && transferAmount > 0 && depositorName.trim() !== '' && receiptUploaded
-  const canConfirmCard = method === 'card' && receiptUploaded 
-
+  const canConfirmCard = method === 'card' && receiptUploaded
   const canConfirm = canConfirmCash || canConfirmTransfer || canConfirmCard
 
   return (
@@ -161,15 +152,18 @@ export default function PaymentPage({ lang = 'es', navigate, professional }) {
             <p className="pay-pro-name">{pro.name}</p>
             <p className="pay-pro-cat">{pro.category}</p>
           </div>
-          {method === 'transfer' && (
+          {method !== 'cash' && (
             <div className="pay-pro-custom-price">
               <span className="price-currency">RD$</span>
               <input 
                 type="number" 
                 className="price-input" 
-                placeholder="0.00" 
+                placeholder={method === 'transfer' ? "Monto depositado" : "Monto a pagar"} 
                 value={customPrice}
-                onChange={e => setCustomPrice(e.target.value)}
+                onChange={e => {
+                  setCustomPrice(e.target.value)
+                  if (method === 'transfer') setTransferAmount(e.target.value)
+                }}
               />
             </div>
           )}
@@ -189,6 +183,7 @@ export default function PaymentPage({ lang = 'es', navigate, professional }) {
               </div>
               <div className={`pay-method-radio ${method === 'cash' ? 'checked' : ''}`} />
             </button>
+            
             <button
               className={`pay-method-card ${method === 'transfer' ? 'selected' : ''}`}
               onClick={() => { setMethod('transfer'); setReceiptUploaded(false) }}
@@ -242,7 +237,10 @@ export default function PaymentPage({ lang = 'es', navigate, professional }) {
                 style={{ width: '100%', padding: '14px 16px', borderRadius: '12px', border: '1.5px solid #eee', background: '#FAFAFA', fontFamily: 'var(--font-body)', fontSize: '15px', color: 'var(--black)', boxSizing: 'border-box', marginBottom: '16px', outline: 'none' }}
                 placeholder="Ej. 1500"
                 value={transferAmount}
-                onChange={e => setTransferAmount(e.target.value)}
+                onChange={e => {
+                  setTransferAmount(e.target.value)
+                  setCustomPrice(e.target.value)
+                }}
               />
 
               <label style={{ display: 'block', fontFamily: 'var(--font-display)', fontSize: '13.5px', fontWeight: 700, color: 'var(--black)', marginBottom: '8px' }}>Nombre de quien deposita</label>
@@ -254,20 +252,17 @@ export default function PaymentPage({ lang = 'es', navigate, professional }) {
                 onChange={e => setDepositorName(e.target.value)}
               />
 
-              <label style={{ display: 'block', fontFamily: 'var(--font-display)', fontSize: '13.5px', fontWeight: 700, color: 'var(--black)', marginBottom: '8px' }}>Foto del Recibo de Transferencia</label>
-              <div 
-                style={{ width: '100%', minHeight: '100px', borderRadius: '12px', border: '2px dashed rgba(242,96,0,0.4)', background: 'var(--mamey-pale)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', padding: '16px', textAlign: 'center' }}
-                onClick={() => receiptInputRef.current?.click()}
-              >
+              <label className="transfer-manual-label" style={{marginTop:'16px'}}>Foto del Recibo</label>
+              <div className="transfer-manual-upload" onClick={() => receiptInputRef.current?.click()}>
                 {receiptUploaded ? (
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', fontFamily: 'var(--font-display)', fontSize: '14px', fontWeight: 700, color: '#2E7D32' }}>
+                  <div className="receipt-success">
                     <span>✅ Recibo Cargado con Éxito</span>
                     <span style={{fontSize:'12px', color:'#666', marginTop:'4px'}}>Toca para cambiar</span>
                   </div>
                 ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ fontSize: '28px' }}>📸</span>
-                    <span style={{ fontFamily: 'var(--font-display)', fontSize: '13px', fontWeight: 700, color: 'var(--mamey-dark)' }}>Toca para cargar foto del recibo</span>
+                  <div className="receipt-placeholder">
+                    <span className="receipt-icon">📸</span>
+                    <span className="receipt-text">Toca para cargar foto del recibo</span>
                   </div>
                 )}
               </div>
@@ -275,7 +270,7 @@ export default function PaymentPage({ lang = 'es', navigate, professional }) {
                 type="file" 
                 accept="image/*" 
                 ref={receiptInputRef} 
-                style={{ display: 'none' }} 
+                className="hidden-input"
                 onChange={handleReceiptUpload}
               />
             </div>
