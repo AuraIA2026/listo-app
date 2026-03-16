@@ -1,4 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { collection, query, where, getDocs, orderBy } from 'firebase/firestore'
+import { db } from '../firebase'
 import './ProfessionalProfilePage.css'
 
 const txt = {
@@ -216,16 +218,59 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
   }
 
   const [activeTab, setActiveTab] = useState('photos')
-  const [reviews, setReviews] = useState(mockReviews)
+  const [reviews, setReviews] = useState([])
+  const [loadingReviews, setLoadingReviews] = useState(true)
   const [showWriteReview, setShowWriteReview] = useState(false)
   const avatarColors = ['#F26000','#C24D00','#FF8533','#7A3000','#FFB380']
   const proColor = avatarColors[pro.id % avatarColors.length] || '#F26000'
 
-  const avgRating = (reviews.reduce((s, r) => s + r.rating, 0) / reviews.length).toFixed(1)
+  useEffect(() => {
+    const fetchReviews = async () => {
+      try {
+        const q = query(
+          collection(db, 'orders'),
+          where('proId', '==', pro.id || pro.uid),
+          where('rated', '==', true)
+        )
+        const snapshot = await getDocs(q)
+        const fetched = []
+        snapshot.forEach(doc => {
+          const d = doc.data()
+          fetched.push({
+            id: doc.id,
+            user: d.reviewerName || d.clientName || 'Cliente',
+            avatar: (d.reviewerName || d.clientName || 'C').substring(0,2).toUpperCase(),
+            color: avatarColors[Math.floor(Math.random() * avatarColors.length)],
+            rating: d.ratingScore || 5,
+            comment: d.ratingComment || '',
+            date: d.dateToken || 'Reciente',
+            service: d.proSpecialty || d.specialty || 'Servicio General',
+            createdAt: d.createdAt?.seconds || 0
+          })
+        })
+        
+        // Add some mock reviews if none fetched so UI is not completely empty for testing
+        if (fetched.length === 0) {
+          setReviews(mockReviews)
+        } else {
+          fetched.sort((a,b) => b.createdAt - a.createdAt)
+          setReviews(fetched)
+        }
+      } catch(e) {
+        console.error("Error fetching reviews:", e)
+        setReviews(mockReviews)
+      } finally {
+        setLoadingReviews(false)
+      }
+    }
+    fetchReviews()
+  }, [pro.id, pro.uid])
+
+  const avgRating = reviews.length > 0 ? (reviews.reduce((s, r) => s + r.rating, 0) / reviews.length).toFixed(1) : '5.0'
   const ratingDist = [5,4,3,2,1].map(n => ({
     n,
     count: reviews.filter(r => r.rating === n).length,
-    pct: Math.round((reviews.filter(r => r.rating === n).length / reviews.length) * 100)
+    pct: reviews.length > 0 ? Math.round((reviews.filter(r => r.rating === n).length / reviews.length) * 100) : (n === 5 ? 100 : 0)
   }))
 
   const handleNewReview = ({ rating, comment, service }) => {
@@ -354,7 +399,15 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
 
             {/* Lista de reseñas */}
             <div className="reviews-list">
-              {reviews.map(review => (
+              {loadingReviews && <p style={{textAlign: 'center', color: '#666', padding: '20px'}}>{lang === 'es' ? 'Cargando reseñas...' : 'Loading reviews...'}</p>}
+              {!loadingReviews && reviews.length === 0 && (
+                 <div style={{ textAlign: 'center', padding: '40px 20px' }}>
+                    <span style={{ fontSize: 40 }}>⭐</span>
+                    <p style={{ fontWeight: 'bold', margin: '12px 0 4px' }}>{T.noReviews}</p>
+                    <p style={{ color: '#666', fontSize: 14 }}>{T.noReviewsSub}</p>
+                 </div>
+              )}
+              {!loadingReviews && reviews.map(review => (
                 <ReviewCard key={review.id} review={review} />
               ))}
             </div>

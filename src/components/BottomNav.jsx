@@ -132,7 +132,6 @@ function SubirFotosModal({ onClose, lang }) {
 
 /* ── BOTTOM NAV ── */
 export default function BottomNav({ currentPage, navigate, lang = 'es', userRole = 'client' }) {
-  const [showModal, setShowModal] = useState(false)
 
   const activeTab =
     currentPage === 'home'     ? 'home'     :
@@ -142,11 +141,7 @@ export default function BottomNav({ currentPage, navigate, lang = 'es', userRole
     currentPage === 'profile'  ? 'profile'  : 'home'
 
   const handleTab = (id) => {
-    // Si es profesional y presiona "Trabajo Listo" → abre modal de fotos
-    if (id === 'workdone' && userRole === 'pro') {
-      setShowModal(true)
-      return
-    }
+    // Si presiona Trabajo Listo, que vaya natural a WorkDonePage sin depender del viejo modal.
     navigate(id)
   }
 
@@ -166,7 +161,12 @@ export default function BottomNav({ currentPage, navigate, lang = 'es', userRole
                 {isActive && <div className="nav-tab-pill" />}
                 <span className="nav-icon">
                   {tab.type === 'svg'
-                    ? <IconTrabajoListo active={isActive} />
+                    ? (
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                        <circle cx="12" cy="12" r="10" fill={isActive ? '#F26000' : 'none'} stroke={isActive ? '#F26000' : '#888'} strokeWidth="1.5"/>
+                        <path d="M7 12l3.5 3.5L18 8" stroke={isActive ? '#FFF' : '#888'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    )
                     : <img src={tab.icon} alt={tab.labelEs} className={`nav-icon-img ${isActive ? 'active' : ''}`} />
                   }
                 </span>
@@ -178,11 +178,6 @@ export default function BottomNav({ currentPage, navigate, lang = 'es', userRole
           })}
         </div>
       </nav>
-
-      {/* Modal fotos — solo profesional */}
-      {showModal && (
-        <SubirFotosModal onClose={() => setShowModal(false)} lang={lang} />
-      )}
     </>
   )
 }

@@ -69,7 +69,14 @@ const allCategories = [
   { icon:'🔨', labelEs:'Reparación',          labelEn:'Repair' },
 ]
 
-const featuredStatic = [] // Removido por sincronización real
+const featuredStatic = [
+  { id: '1', nameEs: 'Juan Pérez', nameEn: 'Juan Pérez', specEs: 'Plomero', specEn: 'Plumber', rating: 5.0, reviews: 124, price: 'A convenir', img: plomero, badge: 'Popular', avail: true },
+  { id: '2', nameEs: 'María González', nameEn: 'María González', specEs: 'Electricista', specEn: 'Electrician', rating: 4.8, reviews: 89, price: 'A convenir', img: electrica1, badge: 'Top', avail: true },
+  { id: '3', nameEs: 'Carlos Herrera', nameEn: 'Carlos Herrera', specEs: 'Jardinero', specEn: 'Gardener', rating: 4.9, reviews: 45, price: 'A convenir', img: jardinero, badge: '24/7', avail: true },
+  { id: '4', nameEs: 'Roberto Núñez', nameEn: 'Roberto Núñez', specEs: 'Cerrajero', specEn: 'Locksmith', rating: 5.0, reviews: 210, price: 'A convenir', img: cerrajero1, badge: 'Urgente', avail: true },
+  { id: '5', nameEs: 'Luisa Martínez', nameEn: 'Luisa Martínez', specEs: 'Mecánico', specEn: 'Mechanic', rating: 4.7, reviews: 156, price: 'A convenir', img: mecanico1, badge: null, avail: true },
+  { id: '6', nameEs: 'Carmen Díaz', nameEn: 'Carmen Díaz', specEs: 'Pintor', specEn: 'Painter', rating: 4.6, reviews: 78, price: 'A convenir', img: pintor1, badge: null, avail: true }
+]
 
 const sections = [
   { id:'mecanico',     titleEs:'🔧 Mecánico',     titleEn:'🔧 Mechanic',    services:[
@@ -129,11 +136,42 @@ function TestimonialsCarousel({ lang }) {
   const [allTestimonials, setAllTestimonials] = useState(testimonials)
 
   useEffect(() => {
-    try {
-      const dynamic = JSON.parse(localStorage.getItem('listo_resenas') || '[]')
-      const filtered = dynamic.filter(r => r.rating >= 4 && r.textEs && r.textEs.trim() !== '')
-      if (filtered.length > 0) setAllTestimonials([...filtered, ...testimonials])
-    } catch(e) {}
+    const fetchTopReviews = async () => {
+      try {
+        const q = query(
+          collection(db, 'orders'),
+          where('rated', '==', true)
+        )
+        const snapshot = await getDocs(q)
+        const docs = []
+        snapshot.forEach(doc => docs.push({ id: doc.id, ...doc.data() }))
+        
+        // Exigir una calificación de 4 o 5 y que tengan texto. (Solo mostraríamos moderados idealmente)
+        const topReviews = docs.filter(d => (d.ratingScore >= 4 || d.moderated) && d.ratingComment?.trim().length > 0)
+        
+        // Ordenamos los más recientes primero
+        topReviews.sort((a,b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0))
+        
+        const formatted = topReviews.slice(0, 10).map(d => ({
+          nameEs: d.reviewerName || d.clientName || 'Cliente',
+          photo: '', // Avatar vacío para que use la letra inicial
+          rating: d.ratingScore || 5,
+          dateEs: d.dateToken || 'Reciente',
+          dateEn: d.dateToken || 'Recent',
+          specEs: d.proSpecialty || d.specialty || 'Servicio',
+          specEn: d.proSpecialty || d.specialty || 'Service',
+          textEs: d.ratingComment,
+          textEn: d.ratingComment
+        }))
+
+        if (formatted.length > 0) {
+          setAllTestimonials([...formatted, ...testimonials])
+        }
+      } catch (e) {
+        console.error("Error fetching top reviews", e)
+      }
+    }
+    fetchTopReviews()
   }, [])
 
   const [idx, setIdx]  = useState(0)
@@ -251,8 +289,8 @@ export default function HomePage({ lang, navigate, userRole }) {
     fetchPros()
   }, [])
 
-  const allProsToUse = allProsReal
-  const featuredProsToUse = featuredReal
+  const allProsToUse = allProsReal.length > 0 ? allProsReal : featuredStatic
+  const featuredProsToUse = featuredReal.length > 0 ? featuredReal : featuredStatic
 
   const specs = ['todos', ...new Set(allProsToUse.filter(p=>p.specEs).map(p => p.specEs))]
   const filteredPros = proFilter === 'todos' ? allProsToUse : allProsToUse.filter(p => p.specEs === proFilter)
@@ -260,21 +298,27 @@ export default function HomePage({ lang, navigate, userRole }) {
   return (
     <div className="home-page">
 
-      {/* ── SEARCH BAR ── */}
-      <div className="hp-search-bar">
-        <button className="hp-notif" onClick={() => setShowHamburguesa(true)}>
+      {/* ── SEARCH BAR / HEADER ── */}
+      <div className="hp-search-bar" style={{ background: isPro ? '#1A1A2E' : '#FFF' }}>
+        <button className="hp-notif" onClick={() => setShowHamburguesa(true)} style={{ color: isPro ? '#FFF' : '#333' }}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
             <line x1="3" y1="6" x2="21" y2="6"/>
             <line x1="3" y1="12" x2="21" y2="12"/>
             <line x1="3" y1="18" x2="21" y2="18"/>
           </svg>
         </button>
-        <button className="hp-search-btn" onClick={() => navigate('search')}>
-          <span>🔍</span>
-          <span className="hp-search-placeholder">
-            {lang === 'es' ? '¿Cómo podemos ayudar?' : 'How can we help?'}
-          </span>
-        </button>
+        {!isPro ? (
+          <button className="hp-search-btn" onClick={() => navigate('search')}>
+            <span>🔍</span>
+            <span className="hp-search-placeholder">
+              {lang === 'es' ? '¿Cómo podemos ayudar?' : 'How can we help?'}
+            </span>
+          </button>
+        ) : (
+          <div style={{ flex: 1, color: '#FFF', fontWeight: 'bold', fontSize: '18px', textAlign: 'center', marginRight: '32px' }}>
+            {lang === 'es' ? 'Panel Profesional' : 'Pro Dashboard'}
+          </div>
+        )}
       </div>
 
       {/* ── VIP BANNER — solo para profesionales ── */}
@@ -282,14 +326,21 @@ export default function HomePage({ lang, navigate, userRole }) {
 
       <Publicidad lang={lang} />
 
-      <div className="hp-cats-scroll">
-        {categories.map((c, i) => (
-          <button key={i} className="hp-cat-btn" onClick={() => navigate('search')}>
-            <span className="hp-cat-icon">{c.icon}</span>
-            <span className="hp-cat-label">{lang === 'es' ? c.labelEs : c.labelEn}</span>
-          </button>
-        ))}
-      </div>
+      {isPro ? (
+        <div style={{ padding: '20px 24px', background: 'white', margin: '0 16px 20px', borderRadius: '16px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
+           <h2 style={{ fontSize: '20px', margin: '0 0 8px' }}>👋 ¡Hola, Socio!</h2>
+           <p style={{ color: '#666', fontSize: '14px', margin: 0 }}>Tienes la agenda abierta. Los clientes te pueden encontrar.</p>
+        </div>
+      ) : (
+        <div className="hp-cats-scroll">
+          {categories.map((c, i) => (
+            <button key={i} className="hp-cat-btn" onClick={() => navigate('search')}>
+              <span className="hp-cat-icon">{c.icon}</span>
+              <span className="hp-cat-label">{lang === 'es' ? c.labelEs : c.labelEn}</span>
+            </button>
+          ))}
+        </div>
+      )}
 
       <TestimonialsCarousel lang={lang} />
 
@@ -327,86 +378,91 @@ export default function HomePage({ lang, navigate, userRole }) {
         </div>
       </section>
 
-      {sections.map(sec => (
-        <section key={sec.id} className="hp-service-section">
-          <div className="hp-sec-header">
-            <h2 className="hp-sec-title">{lang === 'es' ? sec.titleEs : sec.titleEn}</h2>
-            <button className="hp-see-all" onClick={() => navigate('search')}>{lang === 'es' ? 'Ver todo' : 'See all'}</button>
-          </div>
-          <div className="hp-service-cards">
-            {sec.services.map((s, i) => (
-              <div key={i} className="hp-svc-card" onClick={() => navigate('booking', { specialty: sec.id })}>
-                <div className="hp-svc-img-wrap">
-                  {s.tag && <span className="hp-svc-tag">{s.tag}</span>}
-                  <img src={s.img} alt={s.nameEs} className="hp-svc-img" />
-                </div>
-                <div className="hp-svc-info">
-                  <p className="hp-svc-name">{lang === 'es' ? s.nameEs : s.nameEn}</p>
-                  <p className="hp-svc-price">{s.price}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-      ))}
+      {!isPro && (
+        <>
 
-      <section ref={allProsRef} className={`all-pros-section${allProsVisible ? ' reveal' : ''}`}>
-        <div className="hp-sec-header" style={{ marginBottom: 12 }}>
-          <h2 className="hp-sec-title">👥 {lang === 'es' ? 'Todos los Profesionales' : 'All Professionals'}</h2>
-          <span className="pros-count">{filteredPros.length} {lang === 'es' ? 'disponibles' : 'available'}</span>
-        </div>
-        <div className="pros-filter-scroll">
-          {specs.map((s, i) => (
-            <button key={i} className={`pros-filter-btn${proFilter === s ? ' active' : ''}`} onClick={() => setProFilter(s)}>
-              {s === 'todos' ? (lang === 'es' ? 'Todos' : 'All') : s}
-            </button>
-          ))}
-        </div>
-        <div className="all-pros-grid">
-          {filteredPros.length > 0 ? (
-            filteredPros.map((pro, i) => (
-              <div key={i} className="pro-list-card" style={{ animationDelay: `${i * 0.05}s` }} onClick={() => navigate('booking', { professional: pro })}>
-                <div className="pro-list-img-wrap">
-                  {pro.img ? (
-                     <img src={pro.img} alt={pro.nameEs} className="pro-list-img" />
-                  ) : (
-                     <div style={{width: 80, height: 80, borderRadius: 12, background: '#FF8533', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28, fontWeight: 'bold'}}>{pro.avatar}</div>
-                  )}
-                  <span className={`pro-avail-dot${pro.avail ? ' online' : ''}`} />
-                </div>
-                <div className="pro-list-info">
-                  <p className="pro-list-name">{pro.nameEs}</p>
-                  <p className="pro-list-spec">{pro.specEs}</p>
-                  <StarRating rating={pro.rating} />
-                  <p className="pro-list-price" style={{ color: '#008F39', fontSize: '13px', fontWeight: 'bold', marginTop: '4px' }}>
-                    🤝 {lang === 'es' ? 'A convenir' : 'To agree'}
-                  </p>
-                </div>
-                <button className="pro-list-book">{lang === 'es' ? 'Reservar' : 'Book'}</button>
+          {sections.map(sec => (
+            <section key={sec.id} className="hp-service-section">
+              <div className="hp-sec-header">
+                <h2 className="hp-sec-title">{lang === 'es' ? sec.titleEs : sec.titleEn}</h2>
+                <button className="hp-see-all" onClick={() => navigate('search')}>{lang === 'es' ? 'Ver todo' : 'See all'}</button>
               </div>
-            ))
-          ) : (
-            <div style={{ padding: '40px 20px', color: 'var(--gray)', fontSize: '15px', textAlign: 'center', gridColumn: '1 / -1' }}>
-              {lang === 'es' ? '🔍 No se encontraron profesionales en esta categoría.' : '🔍 No professionals found in this category.'}
+              <div className="hp-service-cards">
+                {sec.services.map((s, i) => (
+                  <div key={i} className="hp-svc-card" onClick={() => navigate('booking', { specialty: sec.id })}>
+                    <div className="hp-svc-img-wrap">
+                      {s.tag && <span className="hp-svc-tag">{s.tag}</span>}
+                      <img src={s.img} alt={s.nameEs} className="hp-svc-img" />
+                    </div>
+                    <div className="hp-svc-info">
+                      <p className="hp-svc-name">{lang === 'es' ? s.nameEs : s.nameEn}</p>
+                      <p className="hp-svc-price">{s.price}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          ))}
+
+          <section ref={allProsRef} className={`all-pros-section${allProsVisible ? ' reveal' : ''}`}>
+            <div className="hp-sec-header" style={{ marginBottom: 12 }}>
+              <h2 className="hp-sec-title">👥 {lang === 'es' ? 'Todos los Profesionales' : 'All Professionals'}</h2>
+              <span className="pros-count">{filteredPros.length} {lang === 'es' ? 'disponibles' : 'available'}</span>
             </div>
-          )}
-        </div>
-      </section>
+            <div className="pros-filter-scroll">
+              {specs.map((s, i) => (
+                <button key={i} className={`pros-filter-btn${proFilter === s ? ' active' : ''}`} onClick={() => setProFilter(s)}>
+                  {s === 'todos' ? (lang === 'es' ? 'Todos' : 'All') : s}
+                </button>
+              ))}
+            </div>
+            <div className="all-pros-grid">
+              {filteredPros.length > 0 ? (
+                filteredPros.map((pro, i) => (
+                  <div key={i} className="pro-list-card" style={{ animationDelay: `${i * 0.05}s` }} onClick={() => navigate('booking', { professional: pro })}>
+                    <div className="pro-list-img-wrap">
+                      {pro.img ? (
+                         <img src={pro.img} alt={pro.nameEs} className="pro-list-img" />
+                      ) : (
+                         <div style={{width: 80, height: 80, borderRadius: 12, background: '#FF8533', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28, fontWeight: 'bold'}}>{pro.avatar}</div>
+                      )}
+                      <span className={`pro-avail-dot${pro.avail ? ' online' : ''}`} />
+                    </div>
+                    <div className="pro-list-info">
+                      <p className="pro-list-name">{pro.nameEs}</p>
+                      <p className="pro-list-spec">{pro.specEs}</p>
+                      <StarRating rating={pro.rating} />
+                      <p className="pro-list-price" style={{ color: '#008F39', fontSize: '13px', fontWeight: 'bold', marginTop: '4px' }}>
+                        🤝 {lang === 'es' ? 'A convenir' : 'To agree'}
+                      </p>
+                    </div>
+                    <button className="pro-list-book">{lang === 'es' ? 'Reservar' : 'Book'}</button>
+                  </div>
+                ))
+              ) : (
+                <div style={{ padding: '40px 20px', color: 'var(--gray)', fontSize: '15px', textAlign: 'center', gridColumn: '1 / -1' }}>
+                  {lang === 'es' ? '🔍 No se encontraron profesionales en esta categoría.' : '🔍 No professionals found in this category.'}
+                </div>
+              )}
+            </div>
+          </section>
 
-      <section ref={catListRef} className={`cat-list-section${catListVisible ? ' reveal' : ''}`}>
-        <div className="hp-sec-header">
-          <h2 className="hp-sec-title">🗂️ {lang === 'es' ? 'Explorar servicios' : 'Explore services'}</h2>
-        </div>
-        <div className="cat-list">
-          {allCategories.map((c, i) => (
-            <button key={i} className="cat-list-item" style={{ animationDelay: `${i * 0.05}s` }} onClick={() => navigate('search')}>
-              <span className="cat-list-icon">{c.icon}</span>
-              <span className="cat-list-label">{lang === 'es' ? c.labelEs : c.labelEn}</span>
-              <span className="cat-list-arrow">›</span>
-            </button>
-          ))}
-        </div>
-      </section>
+          <section ref={catListRef} className={`cat-list-section${catListVisible ? ' reveal' : ''}`}>
+            <div className="hp-sec-header">
+              <h2 className="hp-sec-title">🗂️ {lang === 'es' ? 'Explorar servicios' : 'Explore services'}</h2>
+            </div>
+            <div className="cat-list">
+              {allCategories.map((c, i) => (
+                <button key={i} className="cat-list-item" style={{ animationDelay: `${i * 0.05}s` }} onClick={() => navigate('search')}>
+                  <span className="cat-list-icon">{c.icon}</span>
+                  <span className="cat-list-label">{lang === 'es' ? c.labelEs : c.labelEn}</span>
+                  <span className="cat-list-arrow">›</span>
+                </button>
+              ))}
+            </div>
+          </section>
+        </>
+      )}
 
       <div style={{ height: 90 }} />
 

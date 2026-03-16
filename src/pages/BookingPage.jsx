@@ -37,7 +37,7 @@ function MapCenterUpdater({ center }) {
   }, [center, map])
   return null
 }
-export default function BookingPage({ lang = 'es', navigate, professional }) {
+export default function BookingPage({ lang = 'es', navigate, professional, userData }) {
   const T    = bookingTxt[lang]
   const days = getDays(lang)
 
@@ -128,6 +128,8 @@ export default function BookingPage({ lang = 'es', navigate, professional }) {
       const orderData = {
         clientId: auth.currentUser.uid,
         clientEmail: auth.currentUser.email,
+        clientName: userData?.name || auth.currentUser.displayName || auth.currentUser.email.split('@')[0],
+        clientPhotoURL: userData?.photoURL || auth.currentUser.photoURL || null,
         proId: pro.id || 'desconocido',
         proName: pro.name || pro.nameEs || '',
         proSpecialty: pro.category || pro.specEs || '',
@@ -145,7 +147,22 @@ export default function BookingPage({ lang = 'es', navigate, professional }) {
         createdAt: serverTimestamp(),
       }
       
-      await addDoc(collection(db, 'orders'), orderData)
+      const newOrderInfo = await addDoc(collection(db, 'orders'), orderData)
+      
+      // Enviar notificación al profesional
+      await addDoc(collection(db, 'notificaciones'), {
+        userId: pro.id || 'desconocido',
+        orderId: newOrderInfo.id,
+        type: 'new_order',
+        title: lang === 'es' ? '¡Nuevo Pedido!' : 'New Request!',
+        text: lang === 'es' 
+          ? `${orderData.clientName} ha solicitado tus servicios para el ${orderData.dateToken} a las ${orderData.timeToken}.` 
+          : `${orderData.clientName} requested your service for ${orderData.dateToken} at ${orderData.timeToken}.`,
+        read: false,
+        icon: '💼',
+        createdAt: serverTimestamp()
+      })
+
       setConfirmed(true)
     } catch (error) {
       console.error('Error creando orden: ', error)
@@ -161,8 +178,8 @@ export default function BookingPage({ lang = 'es', navigate, professional }) {
       <div className="booking-page">
         <div className="booking-success fade-up">
           <div className="success-icon">✓</div>
-          <h2 className="success-title">{T.successTitle}</h2>
-          <p className="success-sub">{T.successSub}</p>
+          <h2 className="success-title">{lang === 'es' ? '¡Reserva enviada!' : 'Request sent!'}</h2>
+          <p className="success-sub">{lang === 'es' ? 'Tu solicitud fue enviada al profesional' : 'Your request was sent to the professional'}</p>
 
           <div className="success-card">
             <div className="success-pro">
@@ -174,16 +191,19 @@ export default function BookingPage({ lang = 'es', navigate, professional }) {
                 </div>
               </div>
             </div>
-            <div className="eta-box">
-              <span className="eta-label">{T.successEta}</span>
-              <span className="eta-time">~25 min</span>
-              <div className="eta-bar"><div className="eta-progress" /></div>
+            <div className="eta-box" style={{ background: '#FFF3EC', borderColor: '#FFD580', textAlign: 'center', padding: '16px' }}>
+              <span className="eta-label" style={{ color: '#F26000', fontSize: '13px', letterSpacing: '0.5px' }}>
+                {lang === 'es' ? '⏳ ESPERANDO RESPUESTA DEL PROFESIONAL...' : '⏳ WAITING FOR PROFESSIONAL...'}
+              </span>
+              <p style={{ margin: '6px 0 0', fontSize: '12px', color: '#666' }}>
+                {lang === 'es' ? 'Te enviaremos una notificación cuando acepte el pedido.' : 'We will notify you when the order is accepted.'}
+              </p>
             </div>
           </div>
 
           <div className="success-actions">
-            <button className="btn-track" onClick={() => navigate('tracking', pro)}>
-              📍 {T.track}
+            <button className="btn-track" style={{ background: '#1A1A2E' }} onClick={() => navigate('orders')}>
+              📋 {lang === 'es' ? 'Ver mis pedidos' : 'View my orders'}
             </button>
             <button className="btn-new" onClick={() => {
               setConfirmed(false)

@@ -1,7 +1,21 @@
 import { useState } from 'react'
 import listoLogo from '../assets/logo listo blanco.png'
 
-export default function WorkDonePage({ lang = 'es', navigate, professional }) {
+export default function WorkDonePage({ lang = 'es', navigate, professional, userRole, userData }) {
+  console.log('WorkDonePage montado. userRole:', userRole, 'userData:', userData)
+  const storedUserStr = localStorage.getItem('listoUserData') || '{}'
+  let storedUser = {}
+  try { storedUser = JSON.parse(storedUserStr) } catch (e) {}
+  
+  const finalUserData = userData || storedUser || {}
+  const typeStr = String(userRole || finalUserData?.type || finalUserData?.role || '').toLowerCase()
+  
+  // Parche supremo: permitir forzado manual
+  const forcePro = localStorage.getItem('forceListoPro') === 'true'
+  const isPro = forcePro || typeStr.includes('pro') || typeStr === 'profesional' || typeStr === 'profecional' || !!finalUserData?.category
+  
+  console.log('WorkDonePage montado -> typeStr:', typeStr, '| isPro final:', isPro, '| finalUserData:', finalUserData)
+  
   const proName = professional?.name || professional?.nombre || ''
 
   const [formData, setFormData] = useState({
@@ -74,6 +88,16 @@ export default function WorkDonePage({ lang = 'es', navigate, professional }) {
     setSubmitted(true)
   }
 
+  const handleSubmitProPhotos = (e) => {
+    e.preventDefault && e.preventDefault()
+    if (fotos.length === 0) {
+      alert('Sube al menos 1 foto como comprobante de tu trabajo.')
+      return
+    }
+    console.log('Evidencias subidas por el Profesional:', fotos)
+    setSubmitted(true)
+  }
+
   if (submitted) {
     return (
       <div style={s.page}>
@@ -89,6 +113,101 @@ export default function WorkDonePage({ lang = 'es', navigate, professional }) {
     )
   }
 
+  // Si el usuario es PROFESIONAL, cortamos aquí y devolvemos SU pantalla visual única.
+  if (isPro) {
+    return (
+      <div style={s.page}>
+        <div style={s.header}>
+          <div style={s.headerIcon}>
+             <img src={listoLogo} alt="Listo" style={{ width: '88px', height: '88px', objectFit: 'contain', marginLeft: '-12px', marginTop: '-10px' }} />
+          </div>
+          <div>
+            <h1 style={s.headerTitle}>Trabajo Listo</h1>
+            <p style={s.headerSub}>Sube evidencia y revisa tu calificación</p>
+          </div>
+        </div>
+
+        <div style={s.form}>
+          {/* Tarjeta Cliente Asignado */}
+          <div style={s.proCard}>
+            <div style={s.proAvatar}>
+              <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+                <circle cx="13" cy="10" r="5.5" fill="white" fillOpacity="0.9"/>
+                <path d="M3.5 24c0-5.247 4.253-9.5 9.5-9.5s9.5 4.253 9.5 9.5" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+              </svg>
+            </div>
+            <div style={{ flex: 1 }}>
+              <p style={s.proLabel}>Cliente atendido</p>
+              <p style={s.proName}>Servicio Exitoso</p>
+            </div>
+          </div>
+
+          <div style={s.card}>
+            <p style={s.sectionLabel}>⭐ Reseña del Cliente</p>
+            <div style={s.stars}>
+              {[1, 2, 3, 4, 5].map(star => (
+                 <span key={star} style={{ fontSize: '32px', color: '#E0D0C0', padding: '0 4px', stroke: '#C0B0A0', strokeWidth: 1 }}>★</span>
+              ))}
+            </div>
+            <p style={{ textAlign: 'center', fontSize: '14px', color: '#666', marginTop: '12px', fontStyle: 'italic' }}>
+              Aún no hay reseña del cliente para este trabajo. ¡Asegúrate de pedirle que te evalúe!
+            </p>
+          </div>
+
+          <div style={s.card}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+              <p style={{ ...s.sectionLabel, marginBottom: 0 }}>📷 Evidencia del trabajo finalizado</p>
+              <span style={{ fontSize: '12px', fontWeight: '600', color: '#666' }}>Máximo 3 fotos</span>
+            </div>
+            
+            <div style={s.photoRow}>
+              {fotos.map((foto, idx) => (
+                <div key={idx} style={s.photoThumb}>
+                  <img src={foto.url} alt={`foto-${idx}`} style={s.photoImg} />
+                  <button type="button" onClick={() => removePhoto(idx)} style={s.photoRemove}>✕</button>
+                </div>
+              ))}
+              
+              {fotos.length < 3 && (
+                <label style={s.photoAdd}>
+                  <input type="file" accept="image/*" multiple onChange={handleFotos} style={{ display: 'none' }} />
+                    <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+                      <path d="M14 6v16M6 14h16" stroke="#F26000" strokeWidth="2.5" strokeLinecap="round"/>
+                    </svg>
+                    <span style={{ fontSize: '12px', color: '#F26000', fontWeight: '600', marginTop: '4px' }}>
+                      {fotos.length === 0 ? 'Agregar foto' : 'Otra foto'}
+                    </span>
+                </label>
+              )}
+            </div>
+          </div>
+
+          <div style={s.card}>
+            <p style={s.sectionLabel}>📝 Detalles del servicio</p>
+            <textarea
+              name="experiencia"
+              value={formData.experiencia}
+              onChange={handleChange}
+              placeholder="Escribe brevemente los detalles técnicos del trabajo que realizaste..."
+              rows={4}
+              style={{ ...s.input, resize: 'vertical', minHeight: '80px', marginTop: '4px' }}
+            />
+          </div>
+
+          <button
+            onClick={handleSubmitProPhotos}
+            style={s.btnPrimary}
+            disabled={submitted}
+          >
+            {submitted ? 'Evidencias Guardadas ✓' : 'Subir Fotos y Terminar ✓'}
+          </button>
+          <div style={{ height: '100px' }} />
+        </div>
+      </div>
+    )
+  }
+
+  // ─── FLUJO CLIENTE (por defecto) ───
   return (
     <div style={s.page}>
       {/* Header */}
@@ -144,169 +263,141 @@ export default function WorkDonePage({ lang = 'es', navigate, professional }) {
           />
         </div>
 
-        {/* Preguntas rápidas */}
-        <div style={s.card}>
-          <p style={s.sectionLabel}>✅ Evaluación del servicio</p>
+        {/* Si NO ES PRO, mostramos el formulario del CLIENTE */}
+        {!isPro && (
+          <>
+            {/* Preguntas rápidas */}
+            <div style={s.card}>
+              <p style={s.sectionLabel}>✅ Evaluación del servicio</p>
+              
+              <div style={s.field}>
+                <label style={s.label}>¿El trabajo se completó según lo acordado?</label>
+                <div style={s.optRow}>
+                  {['Sí', 'Parcialmente', 'No'].map(opt => (
+                    <button key={opt} type="button"
+                      style={formData.completado === opt ? s.optActive : s.opt}
+                      onClick={() => setFormData({...formData, completado: opt})}>
+                      {opt}
+                    </button>
+                  ))}
+                </div>
+              </div>
 
-          <div style={s.field}>
-            <label style={s.label}>¿El trabajo se completó según lo acordado?</label>
-            <div style={s.optRow}>
-              {['Sí', 'Parcialmente', 'No'].map(opt => (
-                <button key={opt} type="button"
-                  style={formData.completado === opt ? s.optActive : s.opt}
-                  onClick={() => setFormData({...formData, completado: opt})}>
-                  {opt}
-                </button>
-              ))}
-            </div>
-          </div>
+              <div style={s.field}>
+                <label style={s.label}>¿Fue puntual?</label>
+                <div style={s.optRow}>
+                  {['Sí', 'No'].map(opt => (
+                    <button key={opt} type="button"
+                      style={formData.puntualidad === opt ? s.optActive : s.opt}
+                      onClick={() => setFormData({...formData, puntualidad: opt})}>
+                      {opt}
+                    </button>
+                  ))}
+                </div>
+              </div>
 
-          <div style={s.field}>
-            <label style={s.label}>¿Fue puntual?</label>
-            <div style={s.optRow}>
-              {['Sí', 'No'].map(opt => (
-                <button key={opt} type="button"
-                  style={formData.puntualidad === opt ? s.optActive : s.opt}
-                  onClick={() => setFormData({...formData, puntualidad: opt})}>
-                  {opt}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div style={s.field}>
-            <label style={s.label}>¿Recomendarías al profesional?</label>
-            <div style={s.optRow}>
-              {['Sí', 'No'].map(opt => (
-                <button key={opt} type="button"
-                  style={formData.recomendaria === opt ? s.optActive : s.opt}
-                  onClick={() => setFormData({...formData, recomendaria: opt})}>
-                  {opt}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Costos */}
-        <div style={s.card}>
-          <p style={s.sectionLabel}>💰 Información de pago</p>
-
-          <div style={s.row2}>
-            <div style={s.field}>
-              <label style={s.label}>Monto acordado</label>
-              <div style={s.inputWrapper}>
-                <span style={s.inputPrefix}>$</span>
-                <input type="number" name="montoAcordado" placeholder="0.00"
-                  value={formData.montoAcordado} onChange={handleChange}
-                  style={{...s.input, paddingLeft: '28px'}} />
+              <div style={s.field}>
+                <label style={s.label}>¿Recomendarías al profesional?</label>
+                <div style={s.optRow}>
+                  {['Sí', 'No'].map(opt => (
+                    <button key={opt} type="button"
+                      style={formData.recomendaria === opt ? s.optActive : s.opt}
+                      onClick={() => setFormData({...formData, recomendaria: opt})}>
+                      {opt}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
-            <div style={s.field}>
-              <label style={s.label}>Monto final pagado</label>
-              <div style={s.inputWrapper}>
-                <span style={s.inputPrefix}>$</span>
-                <input type="number" name="montoFinal" placeholder="0.00"
-                  value={formData.montoFinal} onChange={handleChange}
-                  style={{...s.input, paddingLeft: '28px'}} />
+
+            {/* Costos */}
+            <div style={s.card}>
+              <p style={s.sectionLabel}>💰 Información de pago</p>
+
+              <div style={s.row2}>
+                <div style={s.field}>
+                  <label style={s.label}>Monto acordado</label>
+                  <div style={s.inputWrapper}>
+                    <span style={s.inputPrefix}>$</span>
+                    <input type="number" name="montoAcordado" placeholder="0.00"
+                      value={formData.montoAcordado} onChange={handleChange}
+                      style={{...s.input, paddingLeft: '28px'}} />
+                  </div>
+                </div>
+                <div style={s.field}>
+                  <label style={s.label}>Monto final pagado</label>
+                  <div style={s.inputWrapper}>
+                    <span style={s.inputPrefix}>$</span>
+                    <input type="number" name="montoFinal" placeholder="0.00"
+                      value={formData.montoFinal} onChange={handleChange}
+                      style={{...s.input, paddingLeft: '28px'}} />
+                  </div>
+                </div>
+              </div>
+
+              <div style={s.field}>
+                <label style={s.label}>Forma de pago</label>
+                <div style={s.optRow}>
+                  {['Efectivo', 'Transferencia', 'Tarjeta'].map(opt => (
+                    <button key={opt} type="button"
+                      style={formData.formaPago === opt ? s.optActive : s.opt}
+                      onClick={() => setFormData({...formData, formaPago: opt})}>
+                      {opt === 'Efectivo' ? '💵' : opt === 'Transferencia' ? '🏦' : '💳'} {opt}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div style={s.field}>
+                <label style={s.label}>Gastos adicionales (opcional)</label>
+                <input type="text" name="gastosAdicionales" placeholder="Ej: materiales extra..."
+                  value={formData.gastosAdicionales} onChange={handleChange}
+                  style={s.input} />
               </div>
             </div>
-          </div>
 
-          <div style={s.field}>
-            <label style={s.label}>Forma de pago</label>
-            <div style={s.optRow}>
-              {['Efectivo', 'Transferencia', 'Tarjeta'].map(opt => (
-                <button key={opt} type="button"
-                  style={formData.formaPago === opt ? s.optActive : s.opt}
-                  onClick={() => setFormData({...formData, formaPago: opt})}>
-                  {opt === 'Efectivo' ? '💵' : opt === 'Transferencia' ? '🏦' : '💳'} {opt}
-                </button>
-              ))}
+            {/* Experiencia (Solo Cliente) */}
+            <div style={s.card}>
+              <p style={s.sectionLabel}>💬 Cuéntanos tu experiencia</p>
+              <textarea
+                name="experiencia"
+                rows="4"
+                placeholder="Describe cómo fue el servicio, qué se hizo, detalles importantes..."
+                value={formData.experiencia}
+                onChange={handleChange}
+                style={s.textarea}
+              />
             </div>
-          </div>
 
-          <div style={s.field}>
-            <label style={s.label}>Gastos adicionales (opcional)</label>
-            <input type="text" name="gastosAdicionales" placeholder="Ej: materiales extra..."
-              value={formData.gastosAdicionales} onChange={handleChange}
-              style={s.input} />
-          </div>
-        </div>
-
-        {/* Experiencia */}
-        <div style={s.card}>
-          <p style={s.sectionLabel}>💬 Cuéntanos tu experiencia</p>
-          <textarea
-            name="experiencia"
-            rows="4"
-            placeholder="Describe cómo fue el servicio, qué se hizo, detalles importantes..."
-            value={formData.experiencia}
-            onChange={handleChange}
-            style={s.textarea}
-          />
-        </div>
-
-        {/* Calificación estrellas */}
-        <div style={s.card}>
-          <p style={s.sectionLabel}>⭐ Calificación del profesional</p>
-          <div style={s.stars}>
-            {[1,2,3,4,5].map(n => (
-              <button key={n} type="button" onClick={() => handleStar(n)} style={s.starBtn}>
-                <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
-                  <path
-                    d="M18 4L21.8 13.6H32L23.8 19.6L26.9 29.6L18 23.6L9.1 29.6L12.2 19.6L4 13.6H14.2L18 4Z"
-                    fill={n <= formData.calificacion ? '#F26000' : '#E0D0C0'}
-                    stroke={n <= formData.calificacion ? '#F26000' : '#C0B0A0'}
-                    strokeWidth="1"
-                  />
-                </svg>
-              </button>
-            ))}
-          </div>
-          <p style={s.starLabel}>
-            {formData.calificacion === 0 ? 'Toca para calificar' :
-             formData.calificacion === 1 ? 'Muy malo' :
-             formData.calificacion === 2 ? 'Regular' :
-             formData.calificacion === 3 ? 'Bueno' :
-             formData.calificacion === 4 ? 'Muy bueno' : 'Excelente ✨'}
-          </p>
-        </div>
-
-        {/* Fotos del trabajo - max 3 */}
-        <div style={s.card}>
-          <p style={s.sectionLabel}>📷 Fotos del trabajo realizado</p>
-          <p style={s.label}>Máximo 3 fotos</p>
-
-          <div style={s.photoRow}>
-            {fotos.map((foto, idx) => (
-              <div key={idx} style={s.photoThumb}>
-                <img src={foto.url} alt={`foto-${idx}`} style={s.photoImg} />
-                <button type="button" onClick={() => removePhoto(idx)} style={s.photoRemove}>✕</button>
+            {/* Calificación estrellas */}
+            <div style={s.card}>
+              <p style={s.sectionLabel}>⭐ Calificación del profesional</p>
+              <div style={s.stars}>
+                {[1,2,3,4,5].map(n => (
+                  <button key={n} type="button" onClick={() => handleStar(n)} style={s.starBtn}>
+                    <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+                      <path
+                        d="M18 4L21.8 13.6H32L23.8 19.6L26.9 29.6L18 23.6L9.1 29.6L12.2 19.6L4 13.6H14.2L18 4Z"
+                        fill={n <= formData.calificacion ? '#F26000' : '#E0D0C0'}
+                        stroke={n <= formData.calificacion ? '#F26000' : '#C0B0A0'}
+                        strokeWidth="1"
+                      />
+                    </svg>
+                  </button>
+                ))}
               </div>
-            ))}
-            {fotos.length < 3 && (
-              <label style={s.photoAdd}>
-                <input
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  onChange={handleFotos}
-                  style={{ display: 'none' }}
-                />
-                <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-                  <path d="M14 6v16M6 14h16" stroke="#F26000" strokeWidth="2.5" strokeLinecap="round"/>
-                </svg>
-                <span style={{ fontSize: '12px', color: '#F26000', fontWeight: '600', marginTop: '4px' }}>
-                  {fotos.length === 0 ? 'Agregar foto' : 'Otra foto'}
-                </span>
-              </label>
-            )}
-          </div>
-        </div>
-
+              <p style={s.starLabel}>
+                {formData.calificacion === 0 ? 'Toca para calificar' :
+                 formData.calificacion === 1 ? 'Muy malo' :
+                 formData.calificacion === 2 ? 'Regular' :
+                 formData.calificacion === 3 ? 'Bueno' :
+                 formData.calificacion === 4 ? 'Muy bueno' : 'Excelente ✨'}
+              </p>
+            </div>
+          </>
+        )}
         <button type="submit" style={s.btnPrimary}>
-          Finalizar y Enviar ✓
+          {submitted ? 'Evaluación enviada ✓' : 'Finalizar y Enviar ✓'}
         </button>
 
         <div style={{ height: '100px' }} />

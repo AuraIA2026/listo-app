@@ -23,6 +23,7 @@ const txt = {
     listo:              '🎉 ¡Listo!',
     review:             '⭐ Calificar',
     rebook:             '↩ Repetir',
+    decline:            '✖ Rechazar',
     empty:              'No tienes pedidos aún',
     emptySub:           'Reserva tu primer servicio',
     reviewTitle:        'Califica a tu profesional',
@@ -50,13 +51,16 @@ const txt = {
     listo:              '🎉 Done!',
     review:             '⭐ Review',
     rebook:             '↩ Rebook',
+    decline:            '✖ Decline',
     empty:              'No orders yet',
     emptySub:           'Book your first service',
     reviewTitle:        'Rate your professional',
     reviewSub:          'How was the service?',
-    reviewSend:         'Send review',
     reviewPlaceholder:  'Write a comment (optional)...',
     rated:              'Reviewed',
+    newOrderAlert:      '¡Nuevo Pedido!',
+    newOrderDesc:       'Tienes una nueva solicitud de servicio',
+    viewDetails:        'Ver detalles',
   },
 }
 
@@ -225,11 +229,151 @@ function ReviewModal({ order, lang, onClose, onSubmit }) {
   )
 }
 
+function ReceiptModal({ order, lang, onClose, onApprove }) {
+  const T = txt[lang]
+  return (
+    <div className="review-overlay" onClick={onClose}>
+      <div className="review-modal" onClick={e => e.stopPropagation()}>
+        <button className="review-close" onClick={onClose}>✕</button>
+        <div style={{ textAlign: 'center', marginBottom: '16px' }}>
+          <span style={{ fontSize: '40px' }}>{order.paymentMethod === 'card' ? '💳' : '🏦'}</span>
+          <h3 style={{ margin: '8px 0', fontSize: '18px', fontWeight: '900', color: '#1A1A2E' }}>
+            {lang === 'es' ? 'Pago Recibido' : 'Payment Received'}
+          </h3>
+          <p style={{ margin: 0, fontSize: '14px', color: '#666' }}>
+            {order.price}
+          </p>
+        </div>
+
+        <div style={{ background: '#FAFAFA', borderRadius: '12px', padding: '16px', marginBottom: '20px', border: '1px solid #eee' }}>
+          {order.paymentMethod === 'transfer' ? (
+            <>
+               <p style={{ fontSize: '13px', color: '#555', margin: '0 0 8px' }}><strong>Depositante:</strong> {order.depositorName || 'No especificado'}</p>
+               <p style={{ fontSize: '13px', color: '#555', margin: '0 0 8px' }}><strong>Banco:</strong> {order.depositBank || 'No especificado'}</p>
+               <div style={{ width: '100%', height: '140px', background: '#eee', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#999', fontSize: '12px', marginTop: '12px' }}>
+                 [Foto de Comprobante Adjunta]
+               </div>
+            </>
+          ) : (
+            <>
+               <p style={{ fontSize: '13px', color: '#555', margin: '0 0 8px' }}><strong>Pasarela:</strong> AZUL Card Services</p>
+               <p style={{ fontSize: '13px', color: '#555', margin: '0 0 8px' }}><strong>Estado:</strong> Aprobado Digitalmente</p>
+               <div style={{ marginTop: '12px', padding: '8px', background: '#E3F2FD', borderRadius: '6px', color: '#1976D2', fontSize: '12px', fontWeight: 'bold', textAlign: 'center' }}>
+                 Transacción Segura Verificada
+               </div>
+            </>
+          )}
+        </div>
+
+        <button
+          style={{ width: '100%', padding: '14px', borderRadius: '12px', background: '#10B981', color: 'white', border: 'none', fontWeight: '700', fontSize: '15px', cursor: 'pointer' }}
+          onClick={() => onApprove(order.id)}
+        >
+          {lang === 'es' ? 'Validar y Completar Trabajo ✅' : 'Approve & Complete ✅'}
+        </button>
+      </div>
+    </div>
+  )
+}
+
+/* ── MODAL DETALLES DEL PEDIDO (NUEVO) ── */
+export function OrderDetailsModal({ order, lang, onClose, onAccept, onDecline }) {
+  const isEs = lang === 'es'
+  return (
+    <div className="review-overlay" onClick={onClose} style={{ zIndex: 3000 }}>
+      <div className="review-modal order-details-modal" onClick={e => e.stopPropagation()}>
+        <button className="review-close" onClick={onClose}>✕</button>
+        
+        <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+          {order.photoURL ? (
+            <img src={order.photoURL} alt="Client" style={{ width: 80, height: 80, borderRadius: '50%', objectFit: 'cover', margin: '0 auto 12px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
+          ) : (
+            <div style={{ width: 80, height: 80, borderRadius: '50%', background: 'linear-gradient(135deg, #F26000, #FF8533)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '32px', fontWeight: 'bold', margin: '0 auto 12px', boxShadow: '0 4px 12px rgba(242,96,0,0.3)' }}>
+              {order.avatar}
+            </div>
+          )}
+          <h3 style={{ fontSize: '22px', fontWeight: '900', color: '#1A1A2E', margin: '0 0 4px', fontFamily: 'var(--font-display)' }}>
+            {order.pro}
+          </h3>
+          <p style={{ fontSize: '14px', color: '#666', margin: 0 }}>
+            📍 {order.clientAddress || order.address || (isEs ? 'Dirección no especificada' : 'Address not specified')}
+          </p>
+        </div>
+
+        <div style={{ background: '#FAFAFA', borderRadius: '16px', padding: '16px', marginBottom: '24px', border: '1px solid #EEE' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px', paddingBottom: '12px', borderBottom: '1px dashed #DDD' }}>
+            <span style={{ fontSize: '13px', color: '#666', fontWeight: '600' }}>{isEs ? 'Especialidad' : 'Specialty'}</span>
+            <span style={{ fontSize: '14px', color: '#1A1A2E', fontWeight: '800' }}>{order.specialty}</span>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px', paddingBottom: '12px', borderBottom: '1px dashed #DDD' }}>
+            <span style={{ fontSize: '13px', color: '#666', fontWeight: '600' }}>{isEs ? 'Fecha/Hora' : 'Date/Time'}</span>
+            <span style={{ fontSize: '14px', color: '#1A1A2E', fontWeight: '800' }}>{order.date}</span>
+          </div>
+          {order.serviceDesc && (
+            <div style={{ marginTop: '12px' }}>
+              <span style={{ fontSize: '13px', color: '#666', fontWeight: '600', display: 'block', marginBottom: '4px' }}>{isEs ? 'Descripción' : 'Description'}</span>
+              <p style={{ fontSize: '13px', color: '#1A1A2E', margin: 0, lineHeight: '1.5', background: '#FFF3EC', padding: '10px', borderRadius: '8px', borderLeft: '3px solid #F26000' }}>
+                {order.serviceDesc}
+              </p>
+            </div>
+          )}
+        </div>
+
+        <div style={{ display: 'flex', gap: '12px' }}>
+          <button
+            onClick={() => onDecline(order.id)}
+            style={{ flex: 1, padding: '16px', borderRadius: '14px', background: '#FFF0F0', color: '#E31837', border: 'none', fontWeight: '800', fontSize: '15px', cursor: 'pointer', transition: 'all 0.2s', fontFamily: 'var(--font-display)' }}
+            onMouseEnter={e => e.currentTarget.style.background = '#FEE2E2'}
+            onMouseLeave={e => e.currentTarget.style.background = '#FFF0F0'}
+          >
+            {isEs ? '✖ Rechazar' : '✖ Decline'}
+          </button>
+          <button
+            onClick={() => onAccept(order.id)}
+            style={{ flex: 1, padding: '16px', borderRadius: '14px', background: 'var(--mamey)', color: 'white', border: 'none', fontWeight: '800', fontSize: '15px', cursor: 'pointer', transition: 'all 0.2s', boxShadow: '0 4px 16px rgba(242,96,0,0.3)', fontFamily: 'var(--font-display)' }}
+            onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
+            onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
+          >
+            {isEs ? '✅ Aceptar Pedido' : '✅ Accept Order'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/* ── PREVIEW NOTIFICACIÓN EXÓTICA (NUEVO) ── */
+export function ExoticOrderNotification({ order, lang, onClick, onClose }) {
+  const isEs = lang === 'es'
+  return (
+    <div className="exotic-notif-container" onClick={onClick}>
+      <div className="exotic-notif-glow"></div>
+      <div className="exotic-notif-content">
+        <button className="exotic-notif-close" onClick={(e) => { e.stopPropagation(); onClose(); }}>✕</button>
+        <div className="exotic-notif-icon-wrap">
+          <div className="exotic-notif-pulse"></div>
+          <span className="exotic-notif-icon">🔔</span>
+        </div>
+        <div className="exotic-notif-text">
+          <h4 className="exotic-title">{txt[lang].newOrderAlert}</h4>
+          <p className="exotic-desc">{txt[lang].newOrderDesc}</p>
+          <div className="exotic-user">
+            <span className="exotic-avatar" style={{ background: avatarColors[0] }}>{order.avatar}</span>
+            <span className="exotic-name">{order.pro}</span>
+            <span className="exotic-action">{txt[lang].viewDetails} →</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function OrdersPage({ lang = 'es', navigate, userData, userRole }) {
   const T = txt[lang]
   const [orders,      setOrders]      = useState([])
   const [history,     setHistory]     = useState([])
   const [reviewOrder, setReviewOrder] = useState(null)
+  const [verifyingOrder, setVerifyingOrder] = useState(null)
   const [loading,     setLoading]     = useState(true)
 
   // Estados Notificaciones
@@ -255,10 +399,10 @@ export default function OrdersPage({ lang = 'es', navigate, userData, userRole }
         // Formateemos a la estructura que espera la vista
         const orderData = {
           id: docSnap.id,
-          pro: userRole === 'pro' ? (d.clientEmail || 'Cliente') : (d.proName || 'Profesional'),
+          pro: userRole === 'pro' ? (d.clientName || d.clientEmail || 'Cliente') : (d.proName || 'Profesional'),
           specialty: d.proSpecialty || 'Servicio',
-          avatar: userRole === 'pro' ? '👤' : (d.proAvatar || 'P'),
-          photoURL: userRole === 'pro' ? null : d.proPhotoURL,
+          avatar: userRole === 'pro' ? (d.clientName? d.clientName.substring(0, 2).toUpperCase() : '👤') : (d.proAvatar || 'P'),
+          photoURL: userRole === 'pro' ? (d.clientPhotoURL || null) : d.proPhotoURL,
           date: `${d.dateToken} - ${d.timeToken}`,
           price: d.price || 'RD$0',
           status: d.status || 'pending',
@@ -280,6 +424,7 @@ export default function OrdersPage({ lang = 'es', navigate, userData, userRole }
       setOrders(active)
       setHistory(past)
       setLoading(false)
+
     }, (error) => {
       console.error("Error al escuchar orders", error)
       setLoading(false)
@@ -320,8 +465,8 @@ export default function OrdersPage({ lang = 'es', navigate, userData, userRole }
   const activeOrders  = orders // Las orders canceladas/hechas ya fueron movidas al arreglo history en el snapshot
   const pendingReview = [...activeOrders, ...history].filter(o => o.status === 'done' && !o.rated)
 
-  const advanceStatus = async (id, currentStatus) => {
-    const next = nextStatus[currentStatus]
+  const advanceStatus = async (id, currentStatus, overrideNext = null) => {
+    const next = overrideNext || nextStatus[currentStatus]
     if (!next) return
     try {
       await updateDoc(doc(db, 'orders', id), { status: next })
@@ -332,10 +477,25 @@ export default function OrdersPage({ lang = 'es', navigate, userData, userRole }
 
   const handleReviewSubmit = async (id, stars, comment) => {
     try {
-      await updateDoc(doc(db, 'orders', id), { rated: true, ratingScore: stars, ratingComment: comment })
+      await updateDoc(doc(db, 'orders', id), { 
+        rated: true, 
+        ratingScore: stars, 
+        ratingComment: comment,
+        reviewerName: userData?.name || 'Cliente',
+        moderated: false // For future home page usage
+      })
       setReviewOrder(null)
     } catch(e) {
        console.error("Error submitting review: ", e)
+    }
+  }
+
+  const handlePaymentApprove = async (id) => {
+    try {
+      await updateDoc(doc(db, 'orders', id), { paymentStatus: 'approved', status: 'done' })
+      setVerifyingOrder(null)
+    } catch(e) {
+      console.error("Error approving payment: ", e)
     }
   }
 
@@ -374,8 +534,20 @@ export default function OrdersPage({ lang = 'es', navigate, userData, userRole }
         
         {/* El cliente o Pro aceptan la orden nueva */}
         {o.status === 'pending' && userRole === 'pro' && (
-           <button className="oc-btn listo" onClick={() => advanceStatus(o.id, o.status)}>
-             Aceptar Servicio
+           <div style={{ display: 'flex', gap: '8px', width: '100%' }}>
+             <button className="oc-btn decline" onClick={() => advanceStatus(o.id, o.status, 'cancelled')} style={{ flex: 1, background: '#FFF0F0', color: '#E31837', border: '1px solid currentColor' }}>
+               {T.decline}
+             </button>
+             <button className="oc-btn listo" onClick={() => advanceStatus(o.id, o.status)} style={{ flex: 1 }}>
+               Aceptar Servicio
+             </button>
+           </div>
+        )}
+
+        {/* Verificación de Pagos */}
+        {o.paymentStatus === 'verifying' && userRole === 'pro' && (
+           <button className="oc-btn trato" onClick={() => setVerifyingOrder(o)} style={{ background: '#ECFDF5', color: '#10B981', borderColor: '#A7F3D0', fontWeight: 'bold' }}>
+             👁️ Ver Recibo (Pago)
            </button>
         )}
 
@@ -536,6 +708,15 @@ export default function OrdersPage({ lang = 'es', navigate, userData, userRole }
           onClose={() => setReviewOrder(null)}
           onSubmit={handleReviewSubmit}
         />
+      )}
+
+      {verifyingOrder && (
+         <ReceiptModal
+           order={verifyingOrder}
+           lang={lang}
+           onClose={() => setVerifyingOrder(null)}
+           onApprove={handlePaymentApprove}
+         />
       )}
 
       {/* Modal Notificaciones */}

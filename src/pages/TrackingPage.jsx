@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { MapContainer, TileLayer, Marker, Popup, Polyline } from 'react-leaflet'
+import { collection, addDoc, serverTimestamp, doc, updateDoc } from 'firebase/firestore'
+import { db } from '../firebase'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import './TrackingPage.css'
@@ -94,7 +96,7 @@ function SmoothMarker({ targetPos, icon, children, visible = true }) {
 
     animFrameRef.current = requestAnimationFrame(animate)
     return () => { if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current) }
-  }, [targetPos[0], targetPos[1]])
+  }, [targetPos[0], targetPos[1]]) // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!visible) return null
 
@@ -142,14 +144,15 @@ function VanRetreatAnimation({ lang }) {
 }
 
 function TratoScreen({ lang, proName, onAccept, onDecline }) {
+  const safeName = proName && proName !== 'undefined' ? proName : (lang === 'es' ? 'El profesional' : 'The professional')
   return (
     <div className="trato-screen fade-up">
       <div className="trato-icon">🤝</div>
       <h3 className="trato-title">{lang === 'es' ? '¿Cerramos el trato?' : 'Close the deal?'}</h3>
       <p className="trato-sub">
         {lang === 'es'
-          ? `${proName} está en tu ubicación y listo para trabajar`
-          : `${proName} is at your location and ready to work`}
+          ? `${safeName} está en tu ubicación y listo para trabajar`
+          : `${safeName} is at your location and ready to work`}
       </p>
       <div className="trato-buttons">
         <button className="trato-btn accept" onClick={onAccept}>
@@ -163,14 +166,21 @@ function TratoScreen({ lang, proName, onAccept, onDecline }) {
   )
 }
 
-export default function TrackingPage({ lang = 'es', navigate, professional }) {
-  const pro = professional || {
-    name: 'Carlos Méndez',
-    avatar: 'CM',
-    color: '#F26000',
-    category: '🔧 Mecánico',
-    rating: 4.9,
-    phone: '+1 (809) 555-0123',
+export default function TrackingPage({ lang = 'es', navigate, professional, userRole }) {
+  // We receive `professional` as a prop but it's really the Order object from `App.jsx`
+  // Depending on whether this is the Pro viewing the tracking of the Client,
+  // or the Client viewing the tracking of the Pro, the fields differ.
+  const targetName = professional?.clientName || professional?.pro || professional?.proName || professional?.name || 'Cliente/Profesional'
+  const targetAvT  = professional?.clientName?.substring(0,2).toUpperCase() || professional?.avatar || '👤'
+  const targetCat  = professional?.specialty || professional?.proSpecialty || professional?.category || 'Servicio'
+  
+  const pro = {
+    name: targetName,
+    avatar: targetAvT,
+    color: professional?.color || '#F26000',
+    category: targetCat,
+    rating: professional?.rating || 5.0,
+    phone: professional?.phone || professional?.clientPhone || professional?.proPhone || 'No phone',
   }
 
   const [proPos,        setProPos]        = useState(PRO_START)
@@ -192,8 +202,11 @@ export default function TrackingPage({ lang = 'es', navigate, professional }) {
   const workerIcon                        = useRef(null)
   if (!workerIcon.current) workerIcon.current = createWorkerIcon()
 
-  // Animación de llegada — la línea mamey va desapareciendo según avanza
+  // Animación de viaje configurable: Si es modo simulado, avanza.
+  // En una app real, aquí se escucharían los cambios de lat/lng del pro desde Firebase.
   useEffect(() => {
+    // Solo simulamos movimiento si el status de la orden NO indica que está estática.
+    // Por motivos de demo, lo dejamos avanzar si workStatus es 'tracking'
     if (workStatus !== 'tracking') return
     intervalRef.current = setInterval(() => {
       setWaypointIdx(prev => {
@@ -219,7 +232,7 @@ export default function TrackingPage({ lang = 'es', navigate, professional }) {
         if (next === PRO_WAYPOINTS.length - 2) setStatus('arriving')
         return next
       })
-    }, 3000)
+    }, 4500) // Animación más lenta (4.5s) para que se aprecie la acción
     return () => clearInterval(intervalRef.current)
   }, [workStatus])
 
@@ -288,21 +301,22 @@ export default function TrackingPage({ lang = 'es', navigate, professional }) {
   }
 
   const getStatusDesc = () => {
+    const safeName = pro.name && pro.name !== 'undefined' ? pro.name : (lang === 'es' ? 'El profesional' : 'The professional')
     if (workStatus === 'working')       return lang === 'es' ? 'Realizando la labor acordada en tu ubicación'    : 'Performing the agreed service'
-    if (workStatus === 'awaiting_deal') return lang === 'es' ? `${pro.name} ha llegado, confirma el trato`     : `${pro.name} arrived, confirm the deal`
+    if (workStatus === 'awaiting_deal') return lang === 'es' ? `${safeName} ha llegado, confirma el trato`     : `${safeName} arrived, confirm the deal`
     if (workStatus === 'retreating')    return lang === 'es' ? 'El profesional está saliendo de tu ubicación'  : 'Professional is leaving your location'
     if (workStatus === 'declined_done') return lang === 'es' ? 'El trato fue declinado. La van se retiró.'     : 'Deal was declined. The van left.'
     if (workStatus === 'done')          return lang === 'es' ? '¡El servicio fue completado exitosamente!'     : 'Service completed successfully!'
-    if (status === 'arrived')           return lang === 'es' ? `${pro.name} ha llegado a tu ubicación`         : `${pro.name} has arrived`
+    if (status === 'arrived')           return lang === 'es' ? `${safeName} ha llegado a tu ubicación`         : `${safeName} has arrived`
     if (status === 'arriving')          return lang === 'es' ? '¡Tu profesional está a la vuelta!'             : 'Just around the corner!'
-    return lang === 'es' ? `${pro.name} está en camino` : `${pro.name} is on the way`
+    return lang === 'es' ? `${safeName} está en camino` : `${safeName} is on the way`
   }
 
   const flowSteps = [
     { key: 'confirmed', labelEs: 'Confirmado', labelEn: 'Confirmed' },
     { key: 'onway',     labelEs: 'En camino',  labelEn: 'On the way' },
     { key: 'arrived',   labelEs: 'Llegó',      labelEn: 'Arrived' },
-    { key: 'trato',     labelEs: 'Trato',      labelEn: 'Deal' },
+    { key: 'trato',     labelEs: 'Acuerdo',    labelEn: 'Agreement' },
     { key: 'working',   labelEs: 'Trabajando', labelEn: 'Working' },
     { key: 'done',      labelEs: 'Listo',      labelEn: 'Done' },
   ]
@@ -445,17 +459,65 @@ export default function TrackingPage({ lang = 'es', navigate, professional }) {
               ))}
             </div>
 
-            {workStatus === 'working' && (
-              <button className="tracking-flow-btn done-btn" onClick={() => setWorkStatus('done')}>
+            {workStatus === 'working' && userRole === 'pro' && (
+              <button 
+                className="tracking-flow-btn done-btn" 
+                onClick={async () => {
+                  setWorkStatus('done')
+                  try {
+                    // Update order in database (needs professional.id to be the order ID)
+                    if (professional?.id) {
+                      await updateDoc(doc(db, 'orders', professional.id), { status: 'done' })
+                    }
+                    // Notify Client
+                    if (professional?.clientId) {
+                      await addDoc(collection(db, 'notificaciones'), {
+                        userId: professional.clientId,
+                        orderId: professional?.id || 'unknown',
+                        type: 'job_done',
+                        title: lang === 'es' ? '🎉 ¡Trabajo Terminado!' : '🎉 Work Done!',
+                        text: lang === 'es' 
+                          ? `${pro.name} ha marcado el servicio como completado. Procede con el pago.` 
+                          : `${pro.name} has marked the service as completed. Proceed with payment.`,
+                        read: false,
+                        icon: '✅',
+                        createdAt: serverTimestamp()
+                      })
+                    }
+                  } catch(e) {
+                    console.error('Error enviando notificacion al cliente', e)
+                  }
+                }}
+              >
                 🎉 {lang === 'es' ? '¡Listo! Trabajo terminado' : 'Done! Work finished'}
               </button>
             )}
 
-            {workStatus === 'done' && (
+            {workStatus === 'working' && userRole === 'user' && (
+               <div className="tracking-info-box" style={{ background: '#F8FAFC', padding: '16px', borderRadius: '12px', textAlign: 'center', border: '1px dashed #CBD5E1' }}>
+                 <p style={{ margin: 0, fontSize: '14px', color: '#475569' }}>
+                   {lang === 'es' ? 'El profesional está finalizando. Te notificaremos cuando puedas pagar.' : 'Professional is finishing. We will notify you when to pay.'}
+                 </p>
+               </div>
+            )}
+
+            {workStatus === 'done' && userRole === 'user' && (
               <div className="tracking-done-actions">
-                <button className="tracking-flow-btn pay-btn" onClick={() => navigate('payment', pro)}>
+                <button className="tracking-flow-btn pay-btn" onClick={() => navigate('payment', professional)}>
                   💳 {lang === 'es' ? 'Pagar ahora' : 'Pay now'}
                 </button>
+              </div>
+            )}
+            {workStatus === 'done' && userRole === 'pro' && (
+              <div className="tracking-done-actions">
+                <div className="tracking-info-box" style={{ background: '#ECFDF5', padding: '16px', borderRadius: '12px', textAlign: 'center', border: '1px dashed #34D399', color: '#065F46' }}>
+                 <p style={{ margin: 0, fontSize: '15px', fontWeight: 'bold' }}>
+                   {lang === 'es' ? '🎉 ¡Trabajo Completado!' : '🎉 Work Completed!'}
+                 </p>
+                 <p style={{ margin: '4px 0 0', fontSize: '13px' }}>
+                   {lang === 'es' ? 'Esperando que el cliente realice el pago si no lo ha hecho en efectivo.' : 'Waiting for client to process payment.'}
+                 </p>
+                </div>
               </div>
             )}
           </>

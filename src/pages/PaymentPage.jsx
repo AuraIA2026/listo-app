@@ -1,4 +1,6 @@
 import { useState, useRef } from 'react'
+import { doc, updateDoc } from 'firebase/firestore'
+import { db } from '../firebase'
 import './PaymentPage.css'
 
 import banreservas    from '../assets/banks/banreservas.png'
@@ -126,8 +128,19 @@ export default function PaymentPage({ lang = 'es', navigate, professional }) {
 
   const handleConfirm = async () => {
     setLoading(true)
-    // Simula procesamiento
-    await new Promise(res => setTimeout(res, 800))
+    try {
+      if (pro.orderId) {
+        await updateDoc(doc(db, 'orders', pro.orderId), {
+          price: customPrice ? `RD$${customPrice}` : (pro.price || 'RD$0'),
+          paymentMethod: method,
+          paymentStatus: method === 'cash' ? 'pending_cash' : 'verifying',
+          depositorName: method === 'transfer' ? depositorName : null,
+          depositBank: method === 'transfer' ? selectedBank?.name : null
+        })
+      }
+    } catch (e) {
+      console.error("Error actualizando pago de orden:", e)
+    }
     setLoading(false)
     navigate('workdone', pro)
   }

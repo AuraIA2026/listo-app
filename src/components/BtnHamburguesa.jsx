@@ -4,6 +4,7 @@ import { doc, updateDoc } from 'firebase/firestore'
 import { db } from '../firebase'
 import { useUserData } from '../useUserData'
 import './BtnHamburguesa.css'
+import '../pages/PaymentPage.css' // Importando estilos idénticos al pago de usuarios
 
 /* ─── PLANES ─── */
 const planes = [
@@ -203,45 +204,282 @@ function ConfirmModal({ plan, onClose }) {
   )
 }
 
-/* ─── SECCIÓN PAGO ─── */
+/* ─── SECCIÓN PAGO (IDÉNTICO A USUARIOS / PAYMENTPAGE) ─── */
 function PaymentSection({ plan, onBack, onConfirm }) {
   const pal = palettes[plan.colorKey]
-  const [copied, setCopied] = useState(null)
-  const [uploaded, setUploaded] = useState(false)
+  const [method, setMethod] = useState('transfer') // 'transfer' o 'card'
+
+  // States para Transferencia
+  const [selectedBank, setSelectedBank] = useState(null)
+  const [transferAmount, setTransferAmount] = useState('')
+  const [depositorName, setDepositorName] = useState('')
+  const [receiptUploaded, setReceiptUploaded] = useState(false)
+  const receiptInputRef = useRef(null)
+
+  // States para Modal Webview AZUL
+  const [showWebview, setShowWebview] = useState(false)
+  const [cardName, setCardName] = useState('')
+  const [cardNumber, setCardNumber] = useState('')
+  const [cardExp, setCardExp] = useState('')
+  const [cardCvv, setCardCvv] = useState('')
+  const [isProcessingAzul, setIsProcessingAzul] = useState(false)
+
   const banks = [
-    { name: 'Banreservas', account: '9607282472', holder: 'Julio de Jesús Francisco' },
-    { name: 'Banco Popular', account: '746424456', holder: 'Julio de Jesús Francisco' },
+    { id: 'reservas', name: 'Banco de Reservas' },
+    { id: 'bhd', name: 'BHD León' },
+    { id: 'popular', name: 'Banco Popular' },
+    { id: 'scotia', name: 'Scotiabank' },
+    { id: 'bancaribe', name: 'Bancaribe' },
+    { id: 'promerica', name: 'Banco Promerica' },
+    { id: 'asoc', name: 'Asoc. Popular' },
+    { id: 'vimenca', name: 'Vimenca' },
   ]
-  const copy = (text, idx) => { navigator.clipboard.writeText(text); setCopied(idx); setTimeout(() => setCopied(null), 2000) }
+
+  const handleReceiptUpload = (e) => {
+    if (e.target.files && e.target.files.length > 0) setReceiptUploaded(true)
+  }
+
+  const handleProcessAzul = () => {
+    if (!cardName || cardNumber.length < 15 || !cardExp || !cardCvv) {
+      alert("Por favor completa los datos de la tarjeta.")
+      return
+    }
+    setIsProcessingAzul(true)
+    setTimeout(() => {
+      setIsProcessingAzul(false)
+      setShowWebview(false)
+      setReceiptUploaded(true)
+    }, 2000)
+  }
+
+  const canConfirmTransfer = method === 'transfer' && selectedBank && transferAmount > 0 && depositorName.trim() !== '' && receiptUploaded
+  const canConfirmCard = method === 'card' && receiptUploaded
+  const canConfirm = canConfirmTransfer || canConfirmCard
+
   return (
-    <div className="pp-payment">
-      <button className="pp-back-btn" onClick={onBack}>← Volver a planes</button>
-      <h3 className="pp-pay-title">💳 Activar {plan.nombre}</h3>
-      <p className="pp-pay-price" style={{ color: pal.primary }}>{plan.precio}</p>
-      <p className="pp-pay-sub">📦 Total inicial: <strong>{plan.contratos} + 🎁 3 gratis</strong></p>
-      <p className="pp-pay-inst">🏦 Realiza el depósito a:</p>
-      {banks.map((b, i) => (
-        <div key={i} className="pp-bank-card">
-          <p className="pp-bank-name">🏦 {b.name}</p>
-          <p className="pp-bank-acc">Cuenta: <strong>{b.account}</strong></p>
-          <p className="pp-bank-holder">Titular: {b.holder}</p>
-          <button className="pp-copy-btn" style={{ background: pal.primary }} onClick={() => copy(b.account, i)}>
-            {copied === i ? '✅ Copiado' : '📋 Copiar número'}
-          </button>
+    <div className="payment-page" style={{ position: 'relative', height: '100%', minHeight: 'auto', background: 'transparent' }}>
+
+      <div className="payment-header" style={{ marginBottom: '20px', borderRadius: '16px', background: '#FFF3EC' }}>
+        <button className="pay-back-btn" onClick={onBack}>←</button>
+        <h3 className="payment-title" style={{ margin: 0, fontSize: '18px' }}>Activar {plan.nombre}</h3>
+      </div>
+
+      <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+        <p className="pp-pay-price" style={{ color: pal.primary, fontSize: '28px', fontWeight: '900', margin: '0' }}>{plan.precio}</p>
+        <p className="pp-pay-sub" style={{ color: '#666', fontSize: '14px', margin: '4px 0 0' }}>📦 Total inicial: <strong>{plan.contratos}</strong> + 🎁 3 gratis</p>
+      </div>
+
+      <div style={{ padding: '0 10px 120px', marginBottom: '40px' }}>
+        <div className="pay-section fade-up" style={{ animationDelay: '0.1s' }}>
+          <h3 className="pay-section-title">Método de pago</h3>
+          <div className="pay-methods">
+            <button
+              className={`pay-method-card ${method === 'transfer' ? 'selected' : ''}`}
+              onClick={() => { setMethod('transfer'); setReceiptUploaded(false) }}
+            >
+              <div className="pay-method-icon transfer-icon">🏦</div>
+              <div className="pay-method-info">
+                <p className="pay-method-name">Transferencia bancaria / App</p>
+                <p className="pay-method-desc">Envía el dinero y adjunta el comprobante para el profesional.</p>
+              </div>
+              <div className={`pay-method-radio ${method === 'transfer' ? 'checked' : ''}`} />
+            </button>
+            <button
+              className={`pay-method-card ${method === 'card' ? 'selected' : ''}`}
+              onClick={() => { setMethod('card'); setReceiptUploaded(false) }}
+            >
+              <div className="pay-method-icon card-icon" style={{ background: '#E3F2FD', color: '#1976D2' }}>💳</div>
+              <div className="pay-method-info">
+                <p className="pay-method-name">Tarjeta de Crédito o Débito</p>
+                <p className="pay-method-desc">Paga de forma segura usando tu tarjeta vía la pasarela AZUL.</p>
+              </div>
+              <div className={`pay-method-radio ${method === 'card' ? 'checked' : ''}`} />
+            </button>
+          </div>
         </div>
-      ))}
-      <p className="pp-pay-inst" style={{ marginTop: 20 }}>📤 Enviar comprobante:</p>
-      <div className="pp-send-options">
-        <label className="pp-send-opt">
-          <input type="file" accept="image/*" style={{ display: 'none' }} onChange={() => { setUploaded(true); setTimeout(() => onConfirm(), 800) }} />
-          <span>📎 {uploaded ? '✅ Foto subida' : 'Subir foto del depósito'}</span>
-        </label>
-        <a className="pp-send-opt" href="https://wa.me/18099090455" target="_blank" rel="noreferrer">📲 WhatsApp: 809-909-0455</a>
-        <a className="pp-send-opt" href="mailto:listopatron.app@gmail.com">📧 listopatron.app@gmail.com</a>
+
+        {method === 'transfer' && (
+          <div className="pay-section fade-up">
+            <h3 className="pay-section-title">Detalles de la Transferencia</h3>
+            <div className="transfer-manual-box" style={{ background: 'white', borderRadius: '18px', padding: '20px', border: '1.5px solid rgba(0,0,0,0.06)', boxShadow: '0 4px 16px rgba(0,0,0,0.04)', textAlign: 'left' }}>
+              <label style={{ display: 'block', fontFamily: 'var(--font-display)', fontSize: '13.5px', fontWeight: 700, color: 'var(--black)', marginBottom: '8px' }}>Banco Destino</label>
+              <select
+                style={{ width: '100%', padding: '14px 16px', borderRadius: '12px', border: '1.5px solid #eee', background: '#FAFAFA', fontFamily: 'var(--font-body)', fontSize: '15px', color: 'var(--black)', boxSizing: 'border-box', marginBottom: '16px', outline: 'none' }}
+                value={selectedBank?.id || ''}
+                onChange={e => setSelectedBank(banks.find(b => b.id === e.target.value))}
+              >
+                <option value="" disabled>Selecciona la cuenta del profesional...</option>
+                {banks.map(b => (
+                  <option key={b.id} value={b.id}>{b.name}</option>
+                ))}
+              </select>
+
+              <label style={{ display: 'block', fontFamily: 'var(--font-display)', fontSize: '13.5px', fontWeight: 700, color: 'var(--black)', marginBottom: '8px' }}>Monto Depositado (RD$)</label>
+              <input
+                type="number"
+                style={{ width: '100%', padding: '14px 16px', borderRadius: '12px', border: '1.5px solid #eee', background: '#FAFAFA', fontFamily: 'var(--font-body)', fontSize: '15px', color: 'var(--black)', boxSizing: 'border-box', marginBottom: '16px', outline: 'none' }}
+                placeholder="Ej. 1500"
+                value={transferAmount}
+                onChange={e => setTransferAmount(e.target.value)}
+              />
+
+              <label style={{ display: 'block', fontFamily: 'var(--font-display)', fontSize: '13.5px', fontWeight: 700, color: 'var(--black)', marginBottom: '8px' }}>Nombre de quien deposita</label>
+              <input
+                type="text"
+                style={{ width: '100%', padding: '14px 16px', borderRadius: '12px', border: '1.5px solid #eee', background: '#FAFAFA', fontFamily: 'var(--font-body)', fontSize: '15px', color: 'var(--black)', boxSizing: 'border-box', marginBottom: '16px', outline: 'none' }}
+                placeholder="Ej. Juan Pérez"
+                value={depositorName}
+                onChange={e => setDepositorName(e.target.value)}
+              />
+
+              <label className="transfer-manual-label" style={{ marginTop: '16px' }}>Foto del Recibo</label>
+              <div className="transfer-manual-upload" onClick={() => receiptInputRef.current?.click()}>
+                {receiptUploaded ? (
+                  <div className="receipt-success">
+                    <span>✅ Recibo Cargado con Éxito</span>
+                    <span style={{ fontSize: '12px', color: '#666', marginTop: '4px' }}>Toca para cambiar</span>
+                  </div>
+                ) : (
+                  <div className="receipt-placeholder">
+                    <span className="receipt-icon">📸</span>
+                    <span className="receipt-text">Toca para cargar foto del recibo</span>
+                  </div>
+                )}
+              </div>
+              <input
+                type="file"
+                accept="image/*"
+                ref={receiptInputRef}
+                className="hidden-input"
+                onChange={handleReceiptUpload}
+              />
+            </div>
+          </div>
+        )}
+
+        {method === 'card' && (
+          <div className="pay-section fade-up">
+            <div className="pay-note transfer-note">
+              <p>El cargo se procesará de forma segura a través de AZUL.</p>
+            </div>
+
+            {!receiptUploaded ? (
+              <button
+                className="upload-receipt-btn"
+                onClick={() => setShowWebview(true)}
+                style={{ background: '#002E6D', color: 'white', border: 'none', marginTop: '16px', boxShadow: '0 4px 12px rgba(0,46,109,0.3)' }}
+              >
+                💳 Introducir Tarjeta (Vía AZUL)
+              </button>
+            ) : (
+              <button className="upload-receipt-btn uploaded" style={{ marginTop: '16px' }} disabled>
+                ✅ Pago Aprobado por AZUL
+              </button>
+            )}
+          </div>
+        )}
       </div>
-      <div className="pp-pay-note">
-        🔁 Tu estado cambiará a <strong>🟡 Pago en revisión</strong> al enviar el comprobante, y a <strong>🟢 Plan activo</strong> cuando el admin apruebe.
+
+      {/* WEBVIEW MODAL DE BANCO SIMULADO (ESTILO AZUL) */}
+      {showWebview && method === 'card' && (
+        <div className="payment-webview-overlay" style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div className="payment-webview-modal" style={{ background: '#fff', width: '100%', height: '100%', display: 'flex', flexDirection: 'column', animation: 'slideUp 0.3s ease' }}>
+            <div className="webview-header" style={{ display: 'flex', alignItems: 'center', padding: '10px 16px', background: '#F8F9FA', borderBottom: '1px solid #ddd' }}>
+              <span style={{ color: '#4CAF50', marginRight: '8px' }}>🔒</span>
+              <div style={{ flex: 1, background: '#E9ECEF', borderRadius: '20px', padding: '6px 16px', fontSize: '12px', color: '#495057', textAlign: 'center' }}>
+                https://pagos.azul.com.do/payment/checkout
+              </div>
+              <button onClick={() => setShowWebview(false)} style={{ background: 'none', border: 'none', fontSize: '24px', marginLeft: '12px', padding: '4px', cursor: 'pointer' }}>×</button>
+            </div>
+
+            <div className="webview-content azul-content" style={{ flex: 1, padding: '24px', overflowY: 'auto' }}>
+              <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+                <h1 style={{ color: '#002E6D', fontSize: '36px', fontWeight: '900', fontStyle: 'italic', margin: 0, letterSpacing: '2px' }}>AZUL</h1>
+              </div>
+
+              <h3 style={{ marginBottom: '6px', fontFamily: 'var(--font-display)', color: '#002E6D' }}>Pago Seguro</h3>
+              <p style={{ marginBottom: '20px', fontSize: '14px', color: '#666' }}>Monto a debitar: <strong>{plan.precio}</strong></p>
+
+              <div className="webview-form azul-form">
+                <div style={{ marginBottom: '16px' }}>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', marginBottom: '8px', color: '#555' }}>Titular de la tarjeta</label>
+                  <input
+                    type="text"
+                    placeholder="Nombre como aparece en la tarjeta"
+                    value={cardName}
+                    onChange={e => setCardName(e.target.value)}
+                    style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ccc', boxSizing: 'border-box', outline: 'none' }}
+                  />
+                </div>
+
+                <div style={{ marginBottom: '16px' }}>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', marginBottom: '8px', color: '#555' }}>Número de Tarjeta</label>
+                  <input
+                    type="text"
+                    placeholder="0000 0000 0000 0000"
+                    value={cardNumber}
+                    onChange={e => setCardNumber(e.target.value)}
+                    style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ccc', boxSizing: 'border-box', outline: 'none' }}
+                  />
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '24px' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', marginBottom: '8px', color: '#555' }}>Vencimiento</label>
+                    <input
+                      type="text"
+                      placeholder="MM/AA"
+                      value={cardExp}
+                      onChange={e => setCardExp(e.target.value)}
+                      style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ccc', boxSizing: 'border-box', outline: 'none' }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', marginBottom: '8px', color: '#555' }}>CVC/CVV</label>
+                    <input
+                      type="password"
+                      placeholder="•••"
+                      maxLength={4}
+                      value={cardCvv}
+                      onChange={e => setCardCvv(e.target.value)}
+                      style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ccc', boxSizing: 'border-box', outline: 'none' }}
+                    />
+                  </div>
+                </div>
+
+                <button
+                  className={`azul-submit-btn ${isProcessingAzul ? 'processing' : ''}`}
+                  onClick={handleProcessAzul}
+                  disabled={isProcessingAzul}
+                  style={{ width: '100%', background: '#002E6D', color: 'white', border: 'none', padding: '16px', borderRadius: '8px', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer' }}
+                >
+                  {isProcessingAzul ? <span className="loader-azul"></span> : `Pagar ${plan.precio}`}
+                </button>
+
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginTop: '20px' }}>
+                  <span style={{ fontSize: '12px', color: '#999' }}>Procesado localmente por</span>
+                  <strong style={{ color: '#0055A5', fontSize: '12px' }}>Banco Popular</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* FIXED BOTTOM BAR */}
+      <div className="payment-fixed-bottom" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: 'white', padding: '20px', borderTop: '1px solid #eee', boxShadow: '0 -4px 16px rgba(0,0,0,0.05)', zIndex: 100 }}>
+        <button
+          className={`pay-confirm-btn fade-up ${canConfirm ? 'ready' : ''}`}
+          disabled={!canConfirm}
+          onClick={onConfirm}
+          style={{ width: '100%', padding: '16px', background: canConfirm ? pal.primary : '#E0E0E0', color: canConfirm ? 'white' : '#999', border: 'none', borderRadius: '16px', fontSize: '16px', fontWeight: '900', cursor: canConfirm ? 'pointer' : 'not-allowed', transition: 'all 0.3s' }}
+        >
+          {canConfirm
+            ? `Enviar Solicitud de ${plan.nombre}`
+            : 'Completa los pasos para continuar'}
+        </button>
       </div>
+
     </div>
   )
 }
@@ -249,9 +487,9 @@ function PaymentSection({ plan, onBack, onConfirm }) {
 /* ─── STATUS BADGE ─── */
 function StatusBadge({ status }) {
   const map = {
-    active:   { label: '🟢 Activo',           cls: 'status-active' },
-    review:   { label: '🟡 Pago en revisión', cls: 'status-review' },
-    inactive: { label: '🔴 Inactivo',          cls: 'status-inactive' },
+    active: { label: '🟢 Activo', cls: 'status-active' },
+    review: { label: '🟡 Pago en revisión', cls: 'status-review' },
+    inactive: { label: '🔴 Inactivo', cls: 'status-inactive' },
   }
   const s = map[status] || map.inactive
   return <span className={`status-badge ${s.cls}`}>{s.label}</span>
@@ -322,10 +560,10 @@ function EditModal({ userData, onSave, onCancel }) {
 export default function BtnHamburguesa({ onClose, navigate, initialOpenSection = 'plans' }) {
   const { userData, loading, user, getInitials } = useUserData()
 
-  const [section, setSection]         = useState('main')
+  const [section, setSection] = useState('main')
   const [planDetalle, setPlanDetalle] = useState(null)
-  const [confirmed, setConfirmed]     = useState(null)
-  const [available, setAvailable]     = useState(true)
+  const [confirmed, setConfirmed] = useState(null)
+  const [available, setAvailable] = useState(true)
   const [openSection, setOpenSection] = useState(initialOpenSection)
   const [showEditModal, setShowEditModal] = useState(false)
 
@@ -359,12 +597,12 @@ export default function BtnHamburguesa({ onClose, navigate, initialOpenSection =
   }
 
   // Datos a mostrar: Firebase o fallback
-  const displayName    = userData?.name     || user?.displayName || 'Profesional'
-  const displayCity    = userData?.city     || 'Santo Domingo'
-  const displayRating  = userData?.rating   || '—'
-  const displayPhoto   = userData?.photoURL || user?.photoURL || null
-  const displayStatus  = userData?.planStatus || 'inactive'
-  const displaySpec    = userData?.category  || userData?.specialty || 'Profesional'
+  const displayName = userData?.name || user?.displayName || 'Profesional'
+  const displayCity = userData?.city || 'Santo Domingo'
+  const displayRating = userData?.rating || '—'
+  const displayPhoto = userData?.photoURL || user?.photoURL || null
+  const displayStatus = userData?.planStatus || 'inactive'
+  const displaySpec = userData?.category || userData?.specialty || 'Profesional'
 
   const ApplyForm = () => (
     <div className="pp-apply">
@@ -384,11 +622,11 @@ export default function BtnHamburguesa({ onClose, navigate, initialOpenSection =
       <h3 className="pp-sec-title">📊 Mi Rendimiento</h3>
       <div className="pp-stats-grid">
         {[
-          { icon: '📦', label: 'Contratos disponibles', val: userData?.contracts     || 0 },
-          { icon: '📈', label: 'Trabajos completados',  val: userData?.completedJobs || 0 },
-          { icon: '⭐', label: 'Calificación promedio',  val: userData?.rating        || '—' },
-          { icon: '📩', label: 'Solicitudes recibidas', val: userData?.requests      || 0 },
-          { icon: '📌', label: 'Trabajos pendientes',   val: userData?.pendingJobs   || 0 },
+          { icon: '📦', label: 'Contratos disponibles', val: userData?.contracts || 0 },
+          { icon: '📈', label: 'Trabajos completados', val: userData?.completedJobs || 0 },
+          { icon: '⭐', label: 'Calificación promedio', val: userData?.rating || '—' },
+          { icon: '📩', label: 'Solicitudes recibidas', val: userData?.requests || 0 },
+          { icon: '📌', label: 'Trabajos pendientes', val: userData?.pendingJobs || 0 },
         ].map((s, i) => (
           <div key={i} className="pp-stat-card">
             <span className="pp-stat-icon">{s.icon}</span>
@@ -480,8 +718,8 @@ export default function BtnHamburguesa({ onClose, navigate, initialOpenSection =
                     <div className="pp-acc-body">
                       {[
                         { icon: '⭐', text: '5 estrellas en una reseña', val: '+1 contrato' },
-                        { icon: '📄', text: 'Perfil 100% completo',      val: '+2 contratos' },
-                        { icon: '👥', text: 'Referido confirmado',        val: '+3 contratos' },
+                        { icon: '📄', text: 'Perfil 100% completo', val: '+2 contratos' },
+                        { icon: '👥', text: 'Referido confirmado', val: '+3 contratos' },
                       ].map((b, i) => (
                         <div key={i} className="pp-bono-item">
                           <span className="pp-bono-icon">{b.icon}</span>
@@ -503,11 +741,11 @@ export default function BtnHamburguesa({ onClose, navigate, initialOpenSection =
                     <div className="pp-acc-body">
                       <div className="pp-stats-mini">
                         {[
-                          { icon: '📦', label: 'Contratos',    val: userData?.contracts     || 0 },
-                          { icon: '📈', label: 'Completados',  val: userData?.completedJobs || 0 },
-                          { icon: '⭐', label: 'Calificación', val: userData?.rating        || '—' },
-                          { icon: '📩', label: 'Solicitudes',  val: userData?.requests      || 0 },
-                          { icon: '📌', label: 'Pendientes',   val: userData?.pendingJobs   || 0 },
+                          { icon: '📦', label: 'Contratos', val: userData?.contracts || 0 },
+                          { icon: '📈', label: 'Completados', val: userData?.completedJobs || 0 },
+                          { icon: '⭐', label: 'Calificación', val: userData?.rating || '—' },
+                          { icon: '📩', label: 'Solicitudes', val: userData?.requests || 0 },
+                          { icon: '📌', label: 'Pendientes', val: userData?.pendingJobs || 0 },
                         ].map((s, i) => (
                           <div key={i} className="pp-stat-mini">
                             <span className="pp-stat-icon">{s.icon}</span>
@@ -516,7 +754,7 @@ export default function BtnHamburguesa({ onClose, navigate, initialOpenSection =
                           </div>
                         ))}
                       </div>
-                      <button className="pp-stats-btn" onClick={() => { if(navigate) navigate('orders'); onClose(); }}>👉 Ver estadísticas completas</button>
+                      <button className="pp-stats-btn" onClick={() => { if (navigate) navigate('orders'); onClose(); }}>👉 Ver estadísticas completas</button>
                     </div>
                   )}
                 </div>
