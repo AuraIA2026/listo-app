@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { onAuthStateChanged, signOut } from 'firebase/auth'
-import { doc, onSnapshot } from 'firebase/firestore'
+import { doc, onSnapshot, getDocs, collection, query, where, updateDoc } from 'firebase/firestore'
 import { auth, db } from './firebase'
 
 import HomePage               from './pages/HomePage'
@@ -23,12 +23,61 @@ import BottomNav              from './components/BottomNav'
 import SplashScreen           from './components/SplashScreen'
 import TutorialTour           from './components/TutorialTour'
 import { ExoticOrderNotification, OrderDetailsModal } from './pages/OrdersPage'
-import { collection, query, where } from 'firebase/firestore'
 import './App.css'
 
 const TOUR_KEY = 'listo_tour_done'
 const PAGES_WITH_BOTTOM_NAV = ['home','services','search','orders','profile','workdone']
 const PAGES_WITH_TOP_NAV    = ['login','register']
+
+/* ── Banner mensaje nuevo ────────────────────────────────────────────────── */
+function ChatMessageBanner({ sender, text, onClose, onClick }) {
+  useEffect(() => {
+    const t = setTimeout(onClose, 5000)
+    return () => clearTimeout(t)
+  }, []) // eslint-disable-line
+
+  return (
+    <>
+      <style>{`
+        @keyframes bannerSlideDown {
+          from { transform: translateX(-50%) translateY(-110%); opacity: 0; }
+          to   { transform: translateX(-50%) translateY(0);     opacity: 1; }
+        }
+      `}</style>
+      <div onClick={onClick} style={{
+        position: 'fixed', top: 16, left: '50%',
+        transform: 'translateX(-50%)',
+        width: 'calc(100% - 32px)', maxWidth: 440,
+        background: '#1A1A2E', color: '#fff',
+        borderRadius: 16, padding: '12px 16px',
+        display: 'flex', alignItems: 'center', gap: 12,
+        boxShadow: '0 8px 32px rgba(0,0,0,0.25)',
+        zIndex: 9999, cursor: 'pointer',
+        animation: 'bannerSlideDown .4s cubic-bezier(.32,1.2,.5,1)',
+      }}>
+        <div style={{
+          width: 42, height: 42, borderRadius: '50%', background: '#F26000',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: 20, flexShrink: 0,
+        }}>💬</div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: '#FFD4B0' }}>{sender}</p>
+          <p style={{ margin: 0, fontSize: 13, color: '#ddd', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            {text}
+          </p>
+          <p style={{ margin: '3px 0 0', fontSize: 11, color: '#F26000', fontWeight: 700 }}>
+            Toca para responder en Pedidos →
+          </p>
+        </div>
+        <button onClick={e => { e.stopPropagation(); onClose() }} style={{
+          background: 'rgba(255,255,255,0.1)', border: 'none', color: '#fff',
+          borderRadius: '50%', width: 28, height: 28, cursor: 'pointer', fontSize: 14,
+          display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+        }}>✕</button>
+      </div>
+    </>
+  )
+}
 
 export default function App() {
   const [showSplash,      setShowSplash]      = useState(true)
@@ -37,284 +86,400 @@ export default function App() {
   const [selectedPro,     setSelectedPro]     = useState(null)
   const [showTour,        setShowTour]        = useState(false)
   const [authReady,       setAuthReady]       = useState(false)
-
-  // ── Estado central del usuario ──────────────────────────
   const [userData,        setUserData]        = useState(null)
   const [userRole,        setUserRole]        = useState('user')
   const [profileComplete, setProfileComplete] = useState(false)
+  const [alertOrder,        setAlertOrder]        = useState(null)
+  const [detailsModalOrder, setDetailsModalOrder] = useState(null)
+  const [notifiedOrderIds,  setNotifiedOrderIds]  = useState(new Set())
+  const [jobDoneAlert,      setJobDoneAlert]      = useState(null)
+  const [chatBanner,        setChatBanner]        = useState(null)
 
-  // ── Estados Alerta Exótica Global (Para Profesionales) ──
-  const [alertOrder, setAlertOrder]                 = useState(null) 
-  const [detailsModalOrder, setDetailsModalOrder]   = useState(null) 
-  const [notifiedOrderIds, setNotifiedOrderIds]     = useState(new Set())
+  const alertAudioRef      = useRef(null)
+  const isPlayingRef       = useRef(false)
+  const alertActiveRef     = useRef(false)
+  const listenerReadyRef   = useRef(false)
+  const jobDoneNotifIdsRef = useRef(new Set())
+  const notifiedMsgIds     = useRef(new Set())  // IDs de mensajes ya procesados
+  // ↓ chatIds donde ya mostramos el banner — se limpia cuando el usuario abre orders
+  const banneredChatIds    = useRef(new Set())
+  const chatListenerReady  = useRef(false)
+  const currentPageRef     = useRef('login')    // ref para leer en listeners sin stale closure
 
-  // ── onAuthStateChanged + onSnapshot: fuente única de verdad ──
+  // Mantener currentPageRef sincronizado
+  useEffect(() => { currentPageRef.current = currentPage }, [currentPage])
+
+  // ─── AUDIO PEDIDO (pro) ───────────────────────────────────────────────────
+  const startAlertSound = () => {
+    if (isPlayingRef.current) return
+    try {
+      const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3')
+      audio.volume = 0.6; audio.loop = true
+      audio.play().catch(() => {})
+      alertAudioRef.current = audio; isPlayingRef.current = true
+    } catch (e) {}
+  }
+  const stopAlertSound = () => {
+    try {
+      if (alertAudioRef.current) {
+        alertAudioRef.current.pause(); alertAudioRef.current.currentTime = 0; alertAudioRef.current = null
+      }
+    } catch (e) {}
+    isPlayingRef.current = false; alertActiveRef.current = false
+  }
+
+  // ─── AUDIO TRABAJO TERMINADO ──────────────────────────────────────────────
+  const playJobDoneSound = () => {
+    try {
+      const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3')
+      audio.volume = 0.7; audio.loop = true; audio.play().catch(() => {})
+      setTimeout(() => { audio.pause(); audio.currentTime = 0 }, 30000)
+    } catch (e) {}
+  }
+
+  // ─── AUDIO MENSAJE NUEVO (tono corto, no loop) ────────────────────────────
+  const playMsgSound = () => {
+    try {
+      const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3')
+      audio.volume = 0.45; audio.loop = false
+      audio.play().catch(() => {})
+      // Cortar después de 1.2s para que suene solo una vez breve
+      setTimeout(() => { try { audio.pause(); audio.currentTime = 0 } catch(e){} }, 1200)
+    } catch (e) {}
+  }
+
+  // ─── AUTH ─────────────────────────────────────────────────────────────────
   useEffect(() => {
     let unsubSnap = null
-
     const unsubAuth = onAuthStateChanged(auth, (firebaseUser) => {
       if (unsubSnap) { unsubSnap(); unsubSnap = null }
-
       if (firebaseUser) {
-        unsubSnap = onSnapshot(
-          doc(db, 'users', firebaseUser.uid),
-          (snap) => {
-            if (snap.exists()) {
-              const data = snap.data()
-              const fullData = {
-                ...data,
-                uid:   firebaseUser.uid,
-                email: firebaseUser.email,
-              }
-              setUserData(fullData)
-              setUserRole(data.type === 'pro' ? 'pro' : 'user')
-              localStorage.setItem('listoUserData', JSON.stringify(fullData))
-              setProfileComplete(data.profileComplete || false)
-            }
-            setAuthReady(true)
-          },
-          (err) => {
-            console.error('App onSnapshot error:', err)
-            setAuthReady(true)
+        unsubSnap = onSnapshot(doc(db, 'users', firebaseUser.uid), (snap) => {
+          if (snap.exists()) {
+            const data = snap.data()
+            const fullData = { ...data, uid: firebaseUser.uid, email: firebaseUser.email }
+            setUserData(fullData)
+            setUserRole(data.type === 'pro' ? 'pro' : 'user')
+            localStorage.setItem('listoUserData', JSON.stringify(fullData))
+            setProfileComplete(data.profileComplete || false)
           }
-        )
+          setAuthReady(true)
+        }, () => setAuthReady(true))
       } else {
-        setUserData(null)
-        setUserRole('user')
-        setProfileComplete(false)
+        setUserData(null); setUserRole('user'); setProfileComplete(false)
         setAuthReady(true)
         if (!showSplash) setCurrentPage('login')
       }
     })
-
-    return () => {
-      unsubAuth()
-      if (unsubSnap) unsubSnap()
-    }
+    return () => { unsubAuth(); if (unsubSnap) unsubSnap() }
   }, []) // eslint-disable-line
 
-  // ── Notificaciones Globales de Pedidos (Para Profesionales y Usuarios) ──
+  // ─── LISTENER MENSAJES NUEVOS ─────────────────────────────────────────────
+  useEffect(() => {
+    if (!authReady || !userData) return
+
+    const q = query(
+      collection(db, 'chats'),
+      where('members', 'array-contains', userData.uid)
+    )
+
+    const msgUnsubscribers = []
+
+    const unsubChats = onSnapshot(q, (chatsSnap) => {
+      chatsSnap.forEach(chatDoc => {
+        const chatId = chatDoc.id
+
+        // Escuchar mensajes de OTROS usuarios en este chat
+        const msgQ = query(
+          collection(db, 'chats', chatId, 'messages'),
+          where('senderId', '!=', userData.uid)
+        )
+
+        const unsubMsg = onSnapshot(msgQ, async (msgsSnap) => {
+          if (!chatListenerReady.current) {
+            // Primera carga: marcar todos como vistos, NO notificar
+            msgsSnap.forEach(d => notifiedMsgIds.current.add(d.id))
+            chatListenerReady.current = true
+            return
+          }
+
+          let hasNew = false
+          let lastMsg = null
+
+          msgsSnap.forEach(msgDoc => {
+            if (notifiedMsgIds.current.has(msgDoc.id)) return
+            notifiedMsgIds.current.add(msgDoc.id)
+            hasNew = true
+            lastMsg = msgDoc.data()
+          })
+
+          if (!hasNew || !lastMsg) return
+
+          // Si ya está en orders o chat, NO mostrar banner pero SÍ sonar
+          const page = currentPageRef.current
+          if (page === 'orders' || page === 'chat') {
+            playMsgSound()   // solo sonido, sin banner
+            return
+          }
+
+          // ── Mostrar banner solo UNA VEZ por chatId hasta que vaya a orders ──
+          if (banneredChatIds.current.has(chatId)) {
+            playMsgSound()   // solo sonido, banner ya fue mostrado
+            return
+          }
+
+          // Obtener nombre del remitente
+          let senderName = 'Profesional'
+          try {
+            const uSnap = await getDocs(
+              query(collection(db, 'users'), where('__name__', '==', lastMsg.senderId))
+            )
+            if (!uSnap.empty) senderName = uSnap.docs[0].data().name || senderName
+          } catch(e) {}
+
+          banneredChatIds.current.add(chatId)   // marcar este chat como ya notificado
+          playMsgSound()
+          setChatBanner({ sender: senderName, text: lastMsg.text || '📎 Mensaje', chatId })
+        })
+
+        msgUnsubscribers.push(unsubMsg)
+      })
+    })
+
+    return () => {
+      unsubChats()
+      msgUnsubscribers.forEach(fn => fn())
+    }
+  }, [authReady, userData]) // eslint-disable-line
+
+  // Cuando el usuario navega a orders → limpiar banneredChatIds para que
+  // vuelvan a notificar si hay mensajes nuevos después de salir
+  useEffect(() => {
+    if (currentPage === 'orders') {
+      banneredChatIds.current.clear()
+    }
+  }, [currentPage])
+
+  // ─── LISTENER job_done ────────────────────────────────────────────────────
+  useEffect(() => {
+    if (!authReady || !userData || userRole !== 'user') return
+    const q = query(
+      collection(db, 'notificaciones'),
+      where('userId', '==', userData.uid),
+      where('type',   '==', 'job_done')
+    )
+    let initialized = false
+    const existingIds = new Set()
+    const unsub = onSnapshot(q, (snapshot) => {
+      if (!initialized) {
+        snapshot.forEach(d => existingIds.add(d.id))
+        jobDoneNotifIdsRef.current = existingIds
+        initialized = true
+        return
+      }
+      snapshot.forEach(docSnap => {
+        if (jobDoneNotifIdsRef.current.has(docSnap.id)) return
+        jobDoneNotifIdsRef.current.add(docSnap.id)
+        const d = docSnap.data()
+        updateDoc(doc(db, 'notificaciones', docSnap.id), { read: true }).catch(() => {})
+        playJobDoneSound()
+        setJobDoneAlert({ notifId: docSnap.id, orderId: d.orderId || null, title: d.title, text: d.text })
+      })
+    })
+    return () => unsub()
+  }, [authReady, userData, userRole])
+
+  // ─── LISTENER ÓRDENES ────────────────────────────────────────────────────
   useEffect(() => {
     if (!authReady || !userData) return
     let unsubscribeOrders = () => {}
 
-    if (userRole === 'pro') {
-      const q = query(collection(db, 'orders'), where('proId', '==', userData.uid), where('status', '==', 'pending'))
-      unsubscribeOrders = onSnapshot(q, (snapshot) => {
-         const newPendings = []
-         snapshot.forEach(docSnap => {
-           const d = docSnap.data()
-           newPendings.push({
-             id: docSnap.id,
-             pro: d.clientName || d.clientEmail || 'Cliente', 
-             specialty: d.proSpecialty || 'Servicio',
-             avatar: d.clientName ? d.clientName.substring(0, 2).toUpperCase() : '👤',
-             photoURL: d.clientPhotoURL || null,
-             date: `${d.dateToken} - ${d.timeToken}`,
-             price: d.price || 'RD$0',
-             status: d.status || 'pending',
-             icon: '🔧',
-             clientAddress: d.clientAddress || d.address || '',
-             ...d
-           })
-         })
+    const setupListener = async () => {
+      if (userRole === 'pro') {
+        const q = query(
+          collection(db, 'orders'),
+          where('proId',  '==', userData.uid),
+          where('status', '==', 'pending')
+        )
+        const existingSnap = await getDocs(q)
+        const existingIds  = new Set()
+        existingSnap.forEach(d => existingIds.add(d.id))
+        setNotifiedOrderIds(existingIds)
+        listenerReadyRef.current = true
 
-         if (newPendings.length > 0) {
-           newPendings.sort((a,b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0))
-           const newest = newPendings[0]
-           setNotifiedOrderIds(prev => {
-             if (!prev.has(newest.id)) {
-               setAlertOrder(newest)
-               const nextSet = new Set(prev)
-               nextSet.add(newest.id)
-               return nextSet
-             }
-             return prev
-           })
-         }
-      })
-    } else if (userRole === 'user') {
-      // Como usuario observamos si alguna orden pasó a 'accepted' o 'onway'
-      const q = query(collection(db, 'orders'), where('clientId', '==', userData.uid), where('status', 'in', ['accepted', 'onway']))
-      unsubscribeOrders = onSnapshot(q, (snapshot) => {
-         const activeOrders = []
-         snapshot.forEach(docSnap => {
-           const d = docSnap.data()
-           activeOrders.push({
-             id: docSnap.id,
-             pro: d.proName || 'Profesional',
-             specialty: d.proSpecialty || 'Servicio',
-             avatar: d.proAvatar || 'P',
-             photoURL: d.proPhotoURL || null,
-             date: `${d.dateToken} - ${d.timeToken}`,
-             price: d.price || 'RD$0',
-             status: d.status,
-             ...d
-           })
-         })
+        unsubscribeOrders = onSnapshot(q, (snapshot) => {
+          if (!listenerReadyRef.current) return
+          if (alertActiveRef.current) return
+          const newPendings = []
+          snapshot.forEach(docSnap => {
+            if (existingIds.has(docSnap.id)) return
+            const d = docSnap.data()
+            newPendings.push({
+              id: docSnap.id,
+              pro: d.clientName || d.clientEmail || 'Cliente',
+              specialty: d.proSpecialty || 'Servicio',
+              avatar: d.clientName ? d.clientName.substring(0,2).toUpperCase() : '👤',
+              photoURL: d.clientPhotoURL || null,
+              date: `${d.dateToken} - ${d.timeToken}`,
+              price: d.price || 'RD$0',
+              status: d.status || 'pending',
+              icon: '🔧',
+              clientAddress: d.clientAddress || d.address || '',
+              ...d
+            })
+          })
+          if (newPendings.length > 0) {
+            newPendings.sort((a,b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0))
+            const newest = newPendings[0]
+            setNotifiedOrderIds(prev => {
+              if (!prev.has(newest.id)) {
+                alertActiveRef.current = true
+                startAlertSound()
+                setAlertOrder(newest)
+                const nextSet = new Set(prev)
+                nextSet.add(newest.id)
+                return nextSet
+              }
+              return prev
+            })
+          }
+        })
 
-         // Si la orden fue aceptada por el pro, avisarle al usuario
-         if (activeOrders.length > 0) {
-           activeOrders.sort((a,b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0))
-           const newest = activeOrders[0]
-           setNotifiedOrderIds(prev => {
-             if (!prev.has(newest.id + '_accepted')) {
-               // Construimos una notificacion diferente para el usuario
-               setAlertOrder({
-                 ...newest,
-                 isUserAlert: true, // flag
-               })
-               const nextSet = new Set(prev)
-               nextSet.add(newest.id + '_accepted')
-               return nextSet
-             }
-             return prev
-           })
-         }
-      })
+      } else if (userRole === 'user') {
+        const q = query(
+          collection(db, 'orders'),
+          where('clientId', '==', userData.uid),
+          where('status', 'in', ['accepted', 'onway'])
+        )
+        const existingSnap = await getDocs(q)
+        const existingIds  = new Set()
+        existingSnap.forEach(d => existingIds.add(d.id + '_accepted'))
+        setNotifiedOrderIds(existingIds)
+        listenerReadyRef.current = true
+
+        unsubscribeOrders = onSnapshot(q, (snapshot) => {
+          if (!listenerReadyRef.current) return
+          const activeOrders = []
+          snapshot.forEach(docSnap => {
+            if (existingIds.has(docSnap.id + '_accepted')) return
+            const d = docSnap.data()
+            activeOrders.push({
+              id: docSnap.id,
+              pro: d.proName || 'Profesional',
+              specialty: d.proSpecialty || 'Servicio',
+              avatar: d.proAvatar || 'P',
+              photoURL: d.proPhotoURL || null,
+              date: `${d.dateToken} - ${d.timeToken}`,
+              price: d.price || 'RD$0',
+              status: d.status,
+              ...d
+            })
+          })
+          if (activeOrders.length > 0) {
+            activeOrders.sort((a,b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0))
+            const newest = activeOrders[0]
+            setNotifiedOrderIds(prev => {
+              if (!prev.has(newest.id + '_accepted')) {
+                setAlertOrder({ ...newest, isUserAlert: true })
+                const nextSet = new Set(prev)
+                nextSet.add(newest.id + '_accepted')
+                return nextSet
+              }
+              return prev
+            })
+          }
+        })
+      }
     }
 
-    return () => unsubscribeOrders()
+    listenerReadyRef.current = false
+    setupListener()
+    return () => { listenerReadyRef.current = false; unsubscribeOrders() }
   }, [authReady, userData, userRole])
 
   const navigate = (page, data) => {
     if (data?.professional) setSelectedPro(data.professional)
     if (data && !data.user && !data.professional) setSelectedPro(data)
-    if (page === 'home' && !localStorage.getItem(TOUR_KEY)) {
-      setTimeout(() => setShowTour(true), 800)
-    }
+    if (page === 'home' && !localStorage.getItem(TOUR_KEY)) setTimeout(() => setShowTour(true), 800)
     setCurrentPage(page)
   }
 
   const handleLogout = async () => {
     await signOut(auth)
-    setUserData(null)
-    setUserRole('user')
-    setProfileComplete(false)
+    stopAlertSound()
+    setUserData(null); setUserRole('user'); setProfileComplete(false)
     setCurrentPage('login')
   }
 
-  // ── Splash ───────────────────────────────────────────────
   if (showSplash) {
-    return (
-      <SplashScreen
-        onFinish={() => {
-          setShowSplash(false)
-          setCurrentPage(userData ? 'home' : 'login')
-        }}
-        lang={lang}
-      />
-    )
+    return <SplashScreen onFinish={() => { setShowSplash(false); setCurrentPage(userData ? 'home' : 'login') }} lang={lang} />
   }
 
   if (!authReady) return null
 
-  const showBottom = PAGES_WITH_BOTTOM_NAV.includes(currentPage)
-  const showTop    = PAGES_WITH_TOP_NAV.includes(currentPage)
-
-  // Props comunes que muchas páginas necesitan
+  const showBottom  = PAGES_WITH_BOTTOM_NAV.includes(currentPage)
+  const showTop     = PAGES_WITH_TOP_NAV.includes(currentPage)
   const commonProps = { lang, navigate }
   const userProps   = { ...commonProps, userData, userRole }
 
   return (
     <div className="app">
-      {showTop && (
-        <Navbar
-          navigate={navigate}
-          currentPage={currentPage}
-          lang={lang}
-          setLang={setLang}
-        />
-      )}
+      {showTop && <Navbar navigate={navigate} currentPage={currentPage} lang={lang} setLang={setLang} />}
 
-      {currentPage === 'home'          && <HomePage          {...userProps} />}
-      {currentPage === 'services'      && <ServicesPage      {...commonProps} />}
-      {currentPage === 'search'        && <SearchPage        {...commonProps} />}
-      {currentPage === 'orders'        && <OrdersPage        {...userProps} />}
-      {currentPage === 'login'         && <LoginPage         {...commonProps} />}
-      {currentPage === 'register'      && <RegisterPage      {...commonProps} />}
-      {currentPage === 'workdone'      && <WorkDonePage      {...commonProps} userRole={userRole} userData={userData} professional={selectedPro} />}
-      {currentPage === 'admin'         && <AdminPage         {...commonProps} />}
+      {currentPage === 'home'     && <HomePage     {...userProps} />}
+      {currentPage === 'services' && <ServicesPage {...commonProps} />}
+      {currentPage === 'search'   && <SearchPage   {...commonProps} />}
+      {currentPage === 'orders'   && <OrdersPage   {...userProps} />}
+      {currentPage === 'login'    && <LoginPage    {...commonProps} />}
+      {currentPage === 'register' && <RegisterPage {...commonProps} />}
+      {currentPage === 'workdone' && <WorkDonePage {...commonProps} userRole={userRole} userData={userData} professional={selectedPro} />}
+      {currentPage === 'admin'    && <AdminPage    {...commonProps} />}
 
-      {currentPage === 'booking'    && (
-        <BookingPage    {...userProps} professional={selectedPro} />
-      )}
-      {currentPage === 'chat'       && (
-        <ChatPage       {...commonProps} professional={selectedPro} />
-      )}
-      {currentPage === 'tracking'   && (
-        <TrackingPage   {...userProps} professional={selectedPro} />
-      )}
-      {currentPage === 'payment'    && (
-        <PaymentPage    {...commonProps} professional={selectedPro} />
-      )}
-      {currentPage === 'proProfile' && (
-        <ProfessionalProfilePage {...commonProps} professional={selectedPro} />
-      )}
-      {currentPage === 'clientProfile' && (
-        <ClientProfilePage
-          {...commonProps}
-          userData={userData}
-          onEditProfile={() => navigate('profile')}
-        />
-      )}
+      {currentPage === 'booking'       && <BookingPage              {...userProps}   professional={selectedPro} />}
+      {currentPage === 'chat'          && <ChatPage                 {...commonProps} professional={selectedPro} userData={userData} />}
+      {currentPage === 'tracking'      && <TrackingPage             {...userProps}   professional={selectedPro} />}
+      {currentPage === 'payment'       && <PaymentPage              {...commonProps} professional={selectedPro} />}
+      {currentPage === 'proProfile'    && <ProfessionalProfilePage  {...commonProps} professional={selectedPro} />}
+      {currentPage === 'clientProfile' && <ClientProfilePage        {...commonProps} userData={userData} onEditProfile={() => navigate('profile')} />}
 
       {currentPage === 'profile' && (
-        <ProfilePage
-          lang={lang}
-          setLang={setLang}
-          navigate={navigate}
-          userData={userData}
-          userRole={userRole}
-          profileComplete={profileComplete}
-          onProfileCompleted={() => setProfileComplete(true)}
-          onLogout={handleLogout}
-        />
+        <ProfilePage lang={lang} setLang={setLang} navigate={navigate} userData={userData} userRole={userRole}
+          profileComplete={profileComplete} onProfileCompleted={() => setProfileComplete(true)} onLogout={handleLogout} />
       )}
 
-      {showBottom && (
-        <BottomNav
-          currentPage={currentPage}
-          navigate={navigate}
-          lang={lang}
-          userData={userData}
-        />
-      )}
+      {showBottom && <BottomNav currentPage={currentPage} navigate={navigate} lang={lang} userData={userData} />}
 
       {showTour && (
-        <TutorialTour
-          lang={lang}
-          onFinish={() => {
-            setShowTour(false)
-            localStorage.setItem(TOUR_KEY, 'true')
-          }}
+        <TutorialTour lang={lang} onFinish={() => { setShowTour(false); localStorage.setItem(TOUR_KEY, 'true') }} />
+      )}
+
+      {/* ── Banner mensaje: UNA vez por chat, se limpia al ir a orders ── */}
+      {chatBanner && (
+        <ChatMessageBanner
+          sender={chatBanner.sender}
+          text={chatBanner.text}
+          onClose={() => setChatBanner(null)}
+          onClick={() => { setChatBanner(null); navigate('orders') }}
         />
       )}
 
-      {/* Alerta exótica de nuevo pedido flotante GLOBAL */}
+      {/* ── Alerta PRO: nuevo pedido ── */}
       {alertOrder && !alertOrder.isUserAlert && (
-        <ExoticOrderNotification 
-          order={alertOrder} 
-          lang={lang} 
-          onClick={() => {
-            setDetailsModalOrder(alertOrder)
-            setAlertOrder(null)
-          }}
-          onClose={() => setAlertOrder(null)}
+        <ExoticOrderNotification
+          order={alertOrder} lang={lang}
+          onClick={() => { stopAlertSound(); setDetailsModalOrder(alertOrder); setAlertOrder(null) }}
+          onClose={() => { stopAlertSound(); setAlertOrder(null) }}
         />
       )}
 
-      {/* Alerta de aceptación para el USUARIO GLOBAL */}
+      {/* ── Alerta USUARIO: pedido aceptado ── */}
       {alertOrder && alertOrder.isUserAlert && (
-        <div className="exotic-notif-container" onClick={() => {
-          navigate('tracking', alertOrder)
-          setAlertOrder(null)
-        }}>
-          <div className="exotic-notif-glow" style={{ background: 'linear-gradient(135deg, #10B981, #34D399, #059669)' }}></div>
+        <div className="exotic-notif-container" onClick={() => { navigate('tracking', alertOrder); setAlertOrder(null) }}>
+          <div className="exotic-notif-glow" style={{ background: 'linear-gradient(135deg, #10B981, #34D399, #059669)' }} />
           <div className="exotic-notif-content" style={{ border: '1px solid #34D399' }}>
-            <button className="exotic-notif-close" onClick={(e) => { e.stopPropagation(); setAlertOrder(null); }}>✕</button>
+            <button className="exotic-notif-close" onClick={e => { e.stopPropagation(); setAlertOrder(null) }}>✕</button>
             <div className="exotic-notif-icon-wrap" style={{ background: '#ECFDF5' }}>
-              <div className="exotic-notif-pulse" style={{ background: '#10B981' }}></div>
+              <div className="exotic-notif-pulse" style={{ background: '#10B981' }} />
               <span className="exotic-notif-icon">✅</span>
             </div>
             <div className="exotic-notif-text">
@@ -330,22 +495,45 @@ export default function App() {
         </div>
       )}
 
-      {/* Modal de detalles del pedido (Aceptar/Rechazar) GLOBAL */}
+      {/* ── Alerta USUARIO: trabajo terminado ── */}
+      {jobDoneAlert && (
+        <div className="exotic-notif-container" onClick={() => { setJobDoneAlert(null); navigate('orders') }}>
+          <div className="exotic-notif-glow" style={{ background: 'linear-gradient(135deg, #6366F1, #8B5CF6, #A78BFA)' }} />
+          <div className="exotic-notif-content" style={{ border: '1px solid #8B5CF6' }}>
+            <button className="exotic-notif-close" onClick={e => { e.stopPropagation(); setJobDoneAlert(null) }}>✕</button>
+            <div className="exotic-notif-icon-wrap" style={{ background: '#EDE9FE' }}>
+              <div className="exotic-notif-pulse" style={{ background: '#8B5CF6' }} />
+              <span className="exotic-notif-icon">🎉</span>
+            </div>
+            <div className="exotic-notif-text">
+              <h4 className="exotic-title" style={{ color: '#4C1D95' }}>{lang === 'es' ? '¡Trabajo Terminado!' : 'Work Done!'}</h4>
+              <p className="exotic-desc">{lang === 'es' ? 'El profesional completó el servicio. ¡Procede al pago!' : 'Service completed. Proceed to payment!'}</p>
+              <div className="exotic-user">
+                <span className="exotic-avatar" style={{ background: '#8B5CF6' }}>💳</span>
+                <span className="exotic-action" style={{ color: '#8B5CF6' }}>{lang === 'es' ? 'Ver mis pedidos →' : 'View orders →'}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Modal detalles ── */}
       {detailsModalOrder && (
         <OrderDetailsModal
-          order={detailsModalOrder}
-          lang={lang}
+          order={detailsModalOrder} lang={lang}
           onClose={() => setDetailsModalOrder(null)}
           onAccept={(id) => {
-            import('firebase/firestore').then(({ updateDoc, doc }) => {
-              updateDoc(doc(db, 'orders', id), { status: 'accepted' })
+            stopAlertSound()
+            import('firebase/firestore').then(({ updateDoc, doc: fd }) => {
+              updateDoc(fd(db, 'orders', id), { status: 'accepted' })
               setDetailsModalOrder(null)
-              navigate('tracking', { ...detailsModalOrder, status: 'accepted' }) // Redirigir al tracking
+              navigate('tracking', { ...detailsModalOrder, status: 'accepted' })
             })
           }}
           onDecline={(id) => {
-            import('firebase/firestore').then(({ updateDoc, doc }) => {
-              updateDoc(doc(db, 'orders', id), { status: 'cancelled' })
+            stopAlertSound()
+            import('firebase/firestore').then(({ updateDoc, doc: fd }) => {
+              updateDoc(fd(db, 'orders', id), { status: 'cancelled' })
               setDetailsModalOrder(null)
             })
           }}

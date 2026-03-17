@@ -11,37 +11,27 @@ import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-lea
 import 'leaflet/dist/leaflet.css'
 import L from 'leaflet'
 
-// Icono Leaflet
 const customIcon = new L.Icon({
   iconUrl: 'https://cdn-icons-png.flaticon.com/512/3203/3203071.png',
   iconSize: [38, 38],
   iconAnchor: [19, 38],
 })
 
-// Selector de mapa
 function MapSelector({ onLocationSelect }) {
-  useMapEvents({
-    click(e) {
-      onLocationSelect(e.latlng)
-    },
-  })
+  useMapEvents({ click(e) { onLocationSelect(e.latlng) } })
   return null
 }
 
 function MapCenterUpdater({ center }) {
   const map = useMap()
-  useEffect(() => {
-    if (center) {
-      map.setView(center, map.getZoom())
-    }
-  }, [center, map])
+  useEffect(() => { if (center) map.setView(center, map.getZoom()) }, [center, map])
   return null
 }
+
 export default function BookingPage({ lang = 'es', navigate, professional, userData }) {
   const T    = bookingTxt[lang]
   const days = getDays(lang)
 
-  // Datos del profesional (fallback de ejemplo si no viene como prop)
   const pro = professional || {
     id:       'unknown',
     name:     'Carlos Méndez',
@@ -51,14 +41,14 @@ export default function BookingPage({ lang = 'es', navigate, professional, userD
     location: 'Santo Domingo',
   }
 
-  const [step,         setStep]         = useState(1)
-  const [selectedDay,  setSelectedDay]  = useState(null)
-  const [selectedTime, setSelectedTime] = useState(null)
-  const [address,      setAddress]      = useState('')
-  const [addressCoords,setAddressCoords]= useState(null)
-  const [showMap,      setShowMap]      = useState(false)
-  const [mapCenter,    setMapCenter]    = useState(null)
-  const [mapLoading,   setMapLoading]   = useState(false)
+  const [step,          setStep]          = useState(1)
+  const [selectedDay,   setSelectedDay]   = useState(null)
+  const [selectedTime,  setSelectedTime]  = useState(null)
+  const [address,       setAddress]       = useState('')
+  const [addressCoords, setAddressCoords] = useState(null)
+  const [showMap,       setShowMap]       = useState(false)
+  const [mapCenter,     setMapCenter]     = useState(null)
+  const [mapLoading,    setMapLoading]    = useState(false)
 
   useEffect(() => {
     if (showMap && !addressCoords && navigator.geolocation) {
@@ -69,31 +59,19 @@ export default function BookingPage({ lang = 'es', navigate, professional, userD
           setAddressCoords({ lat: latitude, lng: longitude })
           setMapCenter([latitude, longitude])
           setMapLoading(false)
-          
-          // Reverse geocoding
           try {
             const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`)
             const data = await res.json()
-            if (data && data.display_name) {
-              setAddress(data.display_name)
-            }
-          } catch (err) {
-            console.error("Error reverse geocoding", err)
-          }
+            if (data?.display_name) setAddress(data.display_name)
+          } catch (err) { console.error('Error reverse geocoding', err) }
         },
-        (error) => {
-          console.error("Error obteniendo ubicación", error)
-          // Fallback a coordenadas de Dominicana neutrales si falla Gps
-          setMapCenter([18.7357, -70.1627])
-          setMapLoading(false)
-        },
+        () => { setMapCenter([18.7357, -70.1627]); setMapLoading(false) },
         { enableHighAccuracy: true }
       )
     } else if (showMap && !mapCenter) {
-      // Por si acaso no hay geolocalización soportada
-       setMapCenter([18.7357, -70.1627])
+      setMapCenter([18.7357, -70.1627])
     }
-  }, [showMap])
+  }, [showMap]) // eslint-disable-line
 
   const handleMapSelect = async (latlng) => {
     setAddressCoords(latlng)
@@ -101,66 +79,60 @@ export default function BookingPage({ lang = 'es', navigate, professional, userD
     try {
       const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latlng.lat}&lon=${latlng.lng}`)
       const data = await res.json()
-      if (data && data.display_name) {
-        setAddress(data.display_name)
-      }
-    } catch (err) {
-      console.error("Error manual map reverse geocoding", err)
-    }
+      if (data?.display_name) setAddress(data.display_name)
+    } catch (err) { console.error('Error manual map reverse geocoding', err) }
   }
-  const [notes,        setNotes]        = useState('')
-  const [urgency,      setUrgency]      = useState(0)
-  const [confirmed,    setConfirmed]    = useState(false)
-  const [loading,      setLoading]      = useState(false)
-  const [errorMsg,     setErrorMsg]     = useState('')
+
+  const [notes,     setNotes]     = useState('')
+  const [urgency,   setUrgency]   = useState(0)
+  const [confirmed, setConfirmed] = useState(false)
+  const [loading,   setLoading]   = useState(false)
+  const [errorMsg,  setErrorMsg]  = useState('')
 
   const canNext1 = selectedDay !== null && selectedTime !== null
   const canNext2 = address.trim().length > 0 || addressCoords !== null
 
   const handleConfirmOrder = async () => {
-    if (!auth.currentUser) {
-      setErrorMsg('Debes iniciar sesión para hacer una reserva.')
-      return
-    }
-    setLoading(true)
-    setErrorMsg('')
+    if (!auth.currentUser) { setErrorMsg('Debes iniciar sesión para hacer una reserva.'); return }
+    setLoading(true); setErrorMsg('')
     try {
       const orderData = {
-        clientId: auth.currentUser.uid,
-        clientEmail: auth.currentUser.email,
-        clientName: userData?.name || auth.currentUser.displayName || auth.currentUser.email.split('@')[0],
+        clientId:       auth.currentUser.uid,
+        clientEmail:    auth.currentUser.email,
+        clientName:     userData?.name || auth.currentUser.displayName || auth.currentUser.email.split('@')[0],
         clientPhotoURL: userData?.photoURL || auth.currentUser.photoURL || null,
-        proId: pro.id || 'desconocido',
-        proName: pro.name || pro.nameEs || '',
-        proSpecialty: pro.category || pro.specEs || '',
-        proAvatar: pro.avatar || '',
-        proPhotoURL: pro.photoURL || pro.img || null,
-        dateToken: `${days[selectedDay]?.dayName} ${days[selectedDay]?.dayNum}`,
-        timeToken: selectedTime,
+        clientPhone:    userData?.phone || '',          // ← teléfono del cliente
+        proId:          pro.id || 'desconocido',
+        proName:        pro.name || pro.nameEs || '',
+        proSpecialty:   pro.category || pro.specEs || '',
+        proAvatar:      pro.avatar || '',
+        proPhotoURL:    pro.photoURL || pro.img || null,
+        proPhone:       pro.phone || '',                // ← teléfono del profesional
+        dateToken:  `${days[selectedDay]?.dayName} ${days[selectedDay]?.dayNum}`,
+        timeToken:  selectedTime,
         address,
-        coords: addressCoords ? { lat: addressCoords.lat, lng: addressCoords.lng } : null,
+        coords:     addressCoords ? { lat: addressCoords.lat, lng: addressCoords.lng } : null,
         notes,
         urgencyToken: urgency,
-        price: pro.price || '',
-        status: 'pending', // pending, accepted, onway, arrived, trato, working, done, cancelled
-        rated: false,
-        createdAt: serverTimestamp(),
+        price:        pro.price || '',
+        status:       'pending',
+        rated:        false,
+        createdAt:    serverTimestamp(),
       }
-      
+
       const newOrderInfo = await addDoc(collection(db, 'orders'), orderData)
-      
-      // Enviar notificación al profesional
+
       await addDoc(collection(db, 'notificaciones'), {
-        userId: pro.id || 'desconocido',
+        userId:  pro.id || 'desconocido',
         orderId: newOrderInfo.id,
-        type: 'new_order',
-        title: lang === 'es' ? '¡Nuevo Pedido!' : 'New Request!',
-        text: lang === 'es' 
-          ? `${orderData.clientName} ha solicitado tus servicios para el ${orderData.dateToken} a las ${orderData.timeToken}.` 
+        type:    'new_order',
+        title:   lang === 'es' ? '¡Nuevo Pedido!' : 'New Request!',
+        text:    lang === 'es'
+          ? `${orderData.clientName} ha solicitado tus servicios para el ${orderData.dateToken} a las ${orderData.timeToken}.`
           : `${orderData.clientName} requested your service for ${orderData.dateToken} at ${orderData.timeToken}.`,
-        read: false,
-        icon: '💼',
-        createdAt: serverTimestamp()
+        read:      false,
+        icon:      '💼',
+        createdAt: serverTimestamp(),
       })
 
       setConfirmed(true)
@@ -186,9 +158,7 @@ export default function BookingPage({ lang = 'es', navigate, professional, userD
               <div className="success-avatar" style={{ background: avatarColors[0] }}>{pro.avatar}</div>
               <div>
                 <div className="success-name">{pro.name}</div>
-                <div className="success-date">
-                  {days[selectedDay]?.dayName} {days[selectedDay]?.dayNum} · {selectedTime}
-                </div>
+                <div className="success-date">{days[selectedDay]?.dayName} {days[selectedDay]?.dayNum} · {selectedTime}</div>
               </div>
             </div>
             <div className="eta-box" style={{ background: '#FFF3EC', borderColor: '#FFD580', textAlign: 'center', padding: '16px' }}>
@@ -206,16 +176,9 @@ export default function BookingPage({ lang = 'es', navigate, professional, userD
               📋 {lang === 'es' ? 'Ver mis pedidos' : 'View my orders'}
             </button>
             <button className="btn-new" onClick={() => {
-              setConfirmed(false)
-              setStep(1)
-              setSelectedDay(null)
-              setSelectedTime(null)
-              setAddress('')
-              setNotes('')
-              setUrgency(0)
-            }}>
-              {T.newBooking}
-            </button>
+              setConfirmed(false); setStep(1); setSelectedDay(null)
+              setSelectedTime(null); setAddress(''); setNotes(''); setUrgency(0)
+            }}>{T.newBooking}</button>
           </div>
         </div>
       </div>
@@ -227,7 +190,6 @@ export default function BookingPage({ lang = 'es', navigate, professional, userD
     <div className="booking-page">
       <div className="booking-container fade-up">
 
-        {/* Header */}
         <div className="booking-header">
           <button className="back-btn" onClick={() => navigate && navigate('services')}>←</button>
           <div className="booking-pro-pill">
@@ -236,13 +198,12 @@ export default function BookingPage({ lang = 'es', navigate, professional, userD
           </div>
         </div>
 
-        {/* Barra de pasos */}
         <div className="steps-bar">
           {T.steps.map((s, i) => (
-            <div key={i} className={`step-item ${step > i + 1 ? 'done' : ''} ${step === i + 1 ? 'active' : ''}`}>
-              <div className="step-circle">{step > i + 1 ? '✓' : i + 1}</div>
+            <div key={i} className={`step-item ${step > i+1 ? 'done' : ''} ${step === i+1 ? 'active' : ''}`}>
+              <div className="step-circle">{step > i+1 ? '✓' : i+1}</div>
               <span className="step-label">{s}</span>
-              {i < T.steps.length - 1 && <div className="step-line" />}
+              {i < T.steps.length-1 && <div className="step-line" />}
             </div>
           ))}
         </div>
@@ -251,14 +212,9 @@ export default function BookingPage({ lang = 'es', navigate, professional, userD
         {step === 1 && (
           <div className="step-content fade-up">
             <h2 className="step-title">{T.step1}</h2>
-
             <div className="date-scroll">
               {days.map((d, i) => (
-                <button
-                  key={i}
-                  className={`day-card ${selectedDay === i ? 'selected' : ''} ${d.isToday ? 'today' : ''}`}
-                  onClick={() => setSelectedDay(i)}
-                >
+                <button key={i} className={`day-card ${selectedDay===i?'selected':''} ${d.isToday?'today':''}`} onClick={() => setSelectedDay(i)}>
                   <span className="day-name">{d.dayName}</span>
                   <span className="day-num">{d.dayNum}</span>
                   <span className="day-month">{d.month}</span>
@@ -266,7 +222,6 @@ export default function BookingPage({ lang = 'es', navigate, professional, userD
                 </button>
               ))}
             </div>
-
             {selectedDay !== null && (
               <div className="time-grid fade-up">
                 <p className="time-label">{T.selectTime}</p>
@@ -274,111 +229,67 @@ export default function BookingPage({ lang = 'es', navigate, professional, userD
                   {timeSlots.map(t => {
                     const isBusy = busySlots.includes(t)
                     return (
-                      <button
-                        key={t}
-                        className={`time-slot ${selectedTime === t ? 'selected' : ''} ${isBusy ? 'busy' : ''}`}
-                        onClick={() => !isBusy && setSelectedTime(t)}
-                      >
+                      <button key={t} className={`time-slot ${selectedTime===t?'selected':''} ${isBusy?'busy':''}`} onClick={() => !isBusy && setSelectedTime(t)}>
                         {t}
-                        {isBusy && <span className="busy-tag">{lang === 'es' ? 'Ocupado' : 'Busy'}</span>}
+                        {isBusy && <span className="busy-tag">{lang==='es'?'Ocupado':'Busy'}</span>}
                       </button>
                     )
                   })}
                 </div>
               </div>
             )}
-
             <div className="step-nav">
-              <button className="btn-next" disabled={!canNext1} onClick={() => setStep(2)}>
-                {T.next} →
-              </button>
+              <button className="btn-next" disabled={!canNext1} onClick={() => setStep(2)}>{T.next} →</button>
             </div>
           </div>
         )}
 
-        {/* ── Paso 2: Detalles (sin pagos) ── */}
+        {/* ── Paso 2: Detalles ── */}
         {step === 2 && (
           <div className="step-content fade-up">
             <h2 className="step-title">{T.step2}</h2>
-
-            {/* Dirección */}
             <div className="detail-field">
               <label>📍 {T.address}</label>
-              <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
-                <input
-                  type="text"
-                  placeholder={T.addressPlaceholder}
-                  value={address}
-                  onChange={e => setAddress(e.target.value)}
-                  style={{ flex: 1 }}
-                />
-                <button
-                  className="btn-map-toggle"
-                  onClick={() => setShowMap(!showMap)}
-                  title="Marcar ubicación en el mapa"
-                >
-                  🗺️ Mapa
-                </button>
+              <div style={{ display:'flex', gap:'8px', marginBottom:'10px' }}>
+                <input type="text" placeholder={T.addressPlaceholder} value={address} onChange={e => setAddress(e.target.value)} style={{ flex:1 }} />
+                <button className="btn-map-toggle" onClick={() => setShowMap(!showMap)} title="Marcar ubicación en el mapa">🗺️ Mapa</button>
               </div>
-
               {showMap && (
                 <div className="map-picker-container fade-up">
                   {mapLoading ? (
-                    <div style={{ padding: '40px 0', textAlign: 'center', color: '#F26000', fontWeight: 'bold' }}>
-                      📍 Extrayendo tu ubicación actual...
-                    </div>
+                    <div style={{ padding:'40px 0', textAlign:'center', color:'#F26000', fontWeight:'bold' }}>📍 Extrayendo tu ubicación actual...</div>
                   ) : mapCenter ? (
                     <>
                       <p className="map-picker-hint">📌 Puntero en tu ubicación. Toca el mapa para moverlo si es incorrecta.</p>
-                      <MapContainer center={mapCenter} zoom={15} style={{ height: '200px', width: '100%', borderRadius: '12px', zIndex: 0 }}>
+                      <MapContainer center={mapCenter} zoom={15} style={{ height:'200px', width:'100%', borderRadius:'12px', zIndex:0 }}>
                         <TileLayer url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png" />
                         <MapCenterUpdater center={mapCenter} />
                         <MapSelector onLocationSelect={handleMapSelect} />
-                        {addressCoords && (
-                          <Marker position={addressCoords} icon={customIcon} />
-                        )}
+                        {addressCoords && <Marker position={addressCoords} icon={customIcon} />}
                       </MapContainer>
-                      {addressCoords && (
-                        <p className="map-picker-selected">✅ Ubicación registrada ({addressCoords.lat.toFixed(4)}, {addressCoords.lng.toFixed(4)})</p>
-                      )}
+                      {addressCoords && <p className="map-picker-selected">✅ Ubicación registrada ({addressCoords.lat.toFixed(4)}, {addressCoords.lng.toFixed(4)})</p>}
                     </>
                   ) : null}
                 </div>
               )}
             </div>
-
-            {/* Urgencia */}
             <div className="detail-field">
               <label>⚡ {T.urgency}</label>
               <div className="urgency-group">
                 {T.urgencyOpts.map((opt, i) => (
-                  <button
-                    key={i}
-                    className={`urgency-btn ${urgency === i ? 'selected' : ''}`}
-                    onClick={() => setUrgency(i)}
-                  >
-                    {[['🕐', '⚡', '🚨'][i]]} {opt}
+                  <button key={i} className={`urgency-btn ${urgency===i?'selected':''}`} onClick={() => setUrgency(i)}>
+                    {[['🕐','⚡','🚨'][i]]} {opt}
                   </button>
                 ))}
               </div>
             </div>
-
-            {/* Notas */}
             <div className="detail-field">
               <label>📝 {T.notes}</label>
-              <textarea
-                placeholder={T.notesPlaceholder}
-                value={notes}
-                onChange={e => setNotes(e.target.value)}
-                rows={3}
-              />
+              <textarea placeholder={T.notesPlaceholder} value={notes} onChange={e => setNotes(e.target.value)} rows={3} />
             </div>
-
             <div className="step-nav">
               <button className="btn-back" onClick={() => setStep(1)}>{T.back}</button>
-              <button className="btn-next" disabled={!canNext2} onClick={() => setStep(3)}>
-                {T.next} →
-              </button>
+              <button className="btn-next" disabled={!canNext2} onClick={() => setStep(3)}>{T.next} →</button>
             </div>
           </div>
         )}
@@ -389,42 +300,22 @@ export default function BookingPage({ lang = 'es', navigate, professional, userD
             <h2 className="step-title">{T.step3}</h2>
             <div className="summary-card">
               <h3 className="summary-title">{T.summary}</h3>
-
-              <div className="summary-row">
-                <span className="summary-label">{T.professional}</span>
-                <span className="summary-value">{pro.name}</span>
-              </div>
-              <div className="summary-row">
-                <span className="summary-label">{T.date}</span>
-                <span className="summary-value">{days[selectedDay]?.dayName} {days[selectedDay]?.dayNum}</span>
-              </div>
-              <div className="summary-row">
-                <span className="summary-label">{T.time}</span>
-                <span className="summary-value">{selectedTime}</span>
-              </div>
-              <div className="summary-row">
-                <span className="summary-label">📍</span>
-                <span className="summary-value">{address}</span>
-              </div>
-              {notes && (
-                <div className="summary-row">
-                  <span className="summary-label">📝</span>
-                  <span className="summary-value notes-val">{notes}</span>
-                </div>
-              )}
-
+              <div className="summary-row"><span className="summary-label">{T.professional}</span><span className="summary-value">{pro.name}</span></div>
+              <div className="summary-row"><span className="summary-label">{T.date}</span><span className="summary-value">{days[selectedDay]?.dayName} {days[selectedDay]?.dayNum}</span></div>
+              <div className="summary-row"><span className="summary-label">{T.time}</span><span className="summary-value">{selectedTime}</span></div>
+              <div className="summary-row"><span className="summary-label">📍</span><span className="summary-value">{address}</span></div>
+              {notes && <div className="summary-row"><span className="summary-label">📝</span><span className="summary-value notes-val">{notes}</span></div>}
               <div className="summary-divider" />
               <div className="summary-price-row">
                 <span className="summary-price-label">Precio del Servicio</span>
-                <span className="summary-price" style={{ fontSize: '15px', color: '#008F39' }}>A acordar</span>
+                <span className="summary-price" style={{ fontSize:'15px', color:'#008F39' }}>A acordar</span>
               </div>
-              <p className="price-note" style={{ fontSize: '12px', color: '#666', marginTop: '6px' }}>
+              <p className="price-note" style={{ fontSize:'12px', color:'#666', marginTop:'6px' }}>
                 💡 En Listo no cobramos tarifas fijas. Discute y acuerda el precio directamente con tu profesional a través del chat o al ser visitado.
               </p>
             </div>
-
             <div className="step-nav">
-              {errorMsg && <p style={{color:'red', marginBottom: 10}}>{errorMsg}</p>}
+              {errorMsg && <p style={{ color:'red', marginBottom:10 }}>{errorMsg}</p>}
               <button className="btn-back" disabled={loading} onClick={() => setStep(2)}>{T.back}</button>
               <button className="btn-confirm" disabled={loading} onClick={handleConfirmOrder}>
                 {loading ? 'Procesando...' : `✓ ${T.confirm}`}

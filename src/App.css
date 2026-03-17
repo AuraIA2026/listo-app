@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
 :root {
   --mamey: #F26000;
@@ -13,8 +13,8 @@
   --white: #FFFFFF;
   --off-white: #FAF7F5;
 
-  --font-display: 'Syne', sans-serif;
-  --font-body: 'Syne', sans-serif;  /* ← cambiado de DM Sans a Syne */
+  --font-display: 'Inter', sans-serif;
+  --font-body: 'Inter', sans-serif;
 
   --radius: 16px;
   --radius-sm: 8px;
