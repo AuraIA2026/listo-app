@@ -3,7 +3,6 @@ import { collection, query, where, getDocs } from 'firebase/firestore'
 import { db } from '../firebase'
 import './ServicesPage.css'
 
-// ── Categorías ────────────────────────────────────────────────────────────────
 const categories = {
   es: [
     { id: 'all',          label: 'Todos',        icon: '✦' },
@@ -31,51 +30,48 @@ const categories = {
   ]
 }
 
-// ── Textos ────────────────────────────────────────────────────────────────────
 const txt = {
   es: {
-    title:        'Buscar servicios',
-    search:       '¿Qué necesitas?',
-    available:    'Disponible',
-    busy:         'Ocupado',
-    book:         'Reservar',
-    profile:      'Ver perfil',
-    reviews:      'reseñas',
-    exp:          'experiencia',
-    filterAvail:  'Solo disponibles',
-    results:      'profesionales encontrados',
-    empty:        'No se encontraron profesionales',
-    topRated:     'Mejor valorados',
-    nearest:      'Cerca de ti',
+    title:       'Buscar servicios',
+    search:      '¿Qué necesitas?',
+    available:   'Disponible',
+    busy:        'Ocupado',
+    book:        'Reservar',
+    profile:     'Ver perfil',
+    reviews:     'reseñas',
+    exp:         'experiencia',
+    filterAvail: 'Solo disponibles',
+    results:     'profesionales encontrados',
+    empty:       'No se encontraron profesionales',
+    topRated:    'Mejor valorados',
+    nearest:     'Cerca de ti',
   },
   en: {
-    title:        'Search services',
-    search:       'What do you need?',
-    available:    'Available',
-    busy:         'Busy',
-    book:         'Book',
-    profile:      'View profile',
-    reviews:      'reviews',
-    exp:          'experience',
-    filterAvail:  'Available only',
-    results:      'professionals found',
-    empty:        'No professionals found',
-    topRated:     'Top rated',
-    nearest:      'Near you',
+    title:       'Search services',
+    search:      'What do you need?',
+    available:   'Available',
+    busy:        'Busy',
+    book:        'Book',
+    profile:     'View profile',
+    reviews:     'reviews',
+    exp:         'experience',
+    filterAvail: 'Available only',
+    results:     'professionals found',
+    empty:       'No professionals found',
+    topRated:    'Top rated',
+    nearest:     'Near you',
   }
 }
 
 const avatarColors = ['#F26000','#C24D00','#FF8533','#7A3000','#FFB380']
 
-// ── Componente principal ──────────────────────────────────────────────────────
 export default function ServicesPage({ lang = 'es', navigate }) {
   const [activeCategory, setActiveCategory] = useState('all')
   const [search,         setSearch]         = useState('')
   const [onlyAvailable,  setOnlyAvailable]  = useState(false)
-  const [sortBy,         setSortBy]         = useState('all') // all | topRated | nearest
-  
-  const [professionals, setProfessionals] = useState([])
-  const [loading, setLoading] = useState(true)
+  const [sortBy,         setSortBy]         = useState('all')
+  const [professionals,  setProfessionals]  = useState([])
+  const [loading,        setLoading]        = useState(true)
 
   const cats = categories[lang]
   const T    = txt[lang]
@@ -84,27 +80,33 @@ export default function ServicesPage({ lang = 'es', navigate }) {
     const fetchProfessionals = async () => {
       setLoading(true)
       try {
-        const q = query(collection(db, 'users'), where('type', '==', 'pro'))
+        // ← Solo profesionales con perfil completo (profileComplete === true)
+        const q = query(
+          collection(db, 'users'),
+          where('type',            '==', 'pro'),
+          where('profileComplete', '==', true)
+        )
         const querySnapshot = await getDocs(q)
         const prosList = []
         querySnapshot.forEach((doc) => {
           const data = doc.data()
           prosList.push({
-            id: doc.id,
-            name: data.name || 'Sin nombre',
-            category: data.category || 'unknown',
-            rating: data.rating || 5.0,
-            reviews: data.reviews || 0,
-            location: data.location || 'República Dominicana',
+            id:         doc.id,
+            name:       data.name       || 'Sin nombre',
+            category:   data.category   || 'unknown',
+            rating:     data.rating     || 5.0,
+            reviews:    data.reviews    || 0,
+            location:   data.location   || 'República Dominicana',
             experience: data.experience || '1 año',
-            avatar: (data.name || 'P').substring(0, 2).toUpperCase(),
-            available: data.available !== false, // Default a true
-            photoURL: data.photoURL || null
+            avatar:     (data.name || 'P').substring(0, 2).toUpperCase(),
+            available:  data.available !== false,
+            photoURL:   data.photoURL   || null,
+            phone:      data.phone      || null,
           })
         })
         setProfessionals(prosList)
       } catch (err) {
-        console.error("Error fetching pro users: ", err)
+        console.error('Error fetching pro users: ', err)
       } finally {
         setLoading(false)
       }
@@ -129,7 +131,7 @@ export default function ServicesPage({ lang = 'es', navigate }) {
   return (
     <div className="services-page">
 
-      {/* ── Header con buscador ── */}
+      {/* Header */}
       <div className="search-header">
         <h1 className="search-title">{T.title}</h1>
         <div className="search-bar">
@@ -146,7 +148,7 @@ export default function ServicesPage({ lang = 'es', navigate }) {
         </div>
       </div>
 
-      {/* ── Filtros rápidos ── */}
+      {/* Filtros rápidos */}
       <div className="quick-filters">
         {['all', 'topRated', 'nearest'].map(f => (
           <button
@@ -168,7 +170,7 @@ export default function ServicesPage({ lang = 'es', navigate }) {
         </label>
       </div>
 
-      {/* ── Categorías ── */}
+      {/* Categorías */}
       <div className="categories-scroll">
         {cats.map(cat => (
           <button
@@ -182,16 +184,15 @@ export default function ServicesPage({ lang = 'es', navigate }) {
         ))}
       </div>
 
-      {/* ── Contador ── */}
+      {/* Contador */}
       <div className="results-bar">
-        {loading ? (
-             <span className="results-count">Cargando...</span>
-        ) : (
-            <span className="results-count">{filtered.length} {T.results}</span>
-        )}
+        {loading
+          ? <span className="results-count">Cargando...</span>
+          : <span className="results-count">{filtered.length} {T.results}</span>
+        }
       </div>
 
-      {/* ── Grid de profesionales ── */}
+      {/* Grid */}
       <div className="professionals-grid">
         {filtered.map((pro, i) => (
           <div
@@ -199,7 +200,6 @@ export default function ServicesPage({ lang = 'es', navigate }) {
             className="pro-card"
             style={{ animationDelay: `${i * 0.06}s` }}
           >
-            {/* Foto o avatar */}
             <div className="card-photo">
               {pro.photoURL ? (
                 <img src={pro.photoURL} alt={pro.name} className="pro-photo" />
@@ -216,7 +216,6 @@ export default function ServicesPage({ lang = 'es', navigate }) {
               </span>
             </div>
 
-            {/* Info */}
             <div className="card-body">
               <h3 className="pro-name">{pro.name}</h3>
               <p className="pro-cat">
@@ -224,16 +223,14 @@ export default function ServicesPage({ lang = 'es', navigate }) {
                 {cats.find(c => c.id === pro.category)?.label}
               </p>
               <p className="pro-location">📍 {pro.location}</p>
-
               <div className="pro-meta">
                 <span className="pro-rating">★ {pro.rating.toFixed(1)} <em>({pro.reviews} {T.reviews})</em></span>
                 <span className="pro-exp">⏱ {pro.experience}</span>
               </div>
             </div>
 
-            {/* Footer */}
             <div className="card-footer">
-              <span className="pro-exp-badge" style={{color:'#666', fontSize:'13px', fontWeight:'600', padding:'4px 8px', background:'#eee', borderRadius:'6px'}}>
+              <span className="pro-exp-badge" style={{ color:'#666', fontSize:'13px', fontWeight:'600', padding:'4px 8px', background:'#eee', borderRadius:'6px' }}>
                 🤝 Precio a convenir
               </span>
               <div className="card-actions">

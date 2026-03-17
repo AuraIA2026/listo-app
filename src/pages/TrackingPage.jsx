@@ -44,12 +44,10 @@ const RETREAT_WAYPOINTS = [
 
 const getChatId = (uid1, uid2) => uid1 < uid2 ? `${uid1}_${uid2}` : `${uid2}_${uid1}`
 
-// ─── Sonido de mensaje — igual al que le gusta al usuario ─────────────────
 const playChatMsgSound = () => {
   try {
     const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3')
-    audio.volume = 0.5
-    audio.loop   = false
+    audio.volume = 0.5; audio.loop = false
     audio.play().catch(() => {})
     setTimeout(() => { try { audio.pause(); audio.currentTime = 0 } catch(e) {} }, 1500)
   } catch(e) {}
@@ -80,7 +78,7 @@ function SmoothMarker({ targetPos, icon, children, visible = true }) {
   return <Marker ref={markerRef} position={currentPos.current} icon={icon}>{children}</Marker>
 }
 
-/* ── Modal llamada ────────────────────────────────────────────────────────── */
+/* ── Modal llamada ─────────────────────────────────────────────────────────── */
 function CallModal({ name, phone, lang, onClose }) {
   const clean    = (phone || '').replace(/[\s\-()]/g, '')
   const waNumber = clean.startsWith('+') ? clean.replace('+', '') : `1${clean}`
@@ -126,12 +124,9 @@ function FloatingChat({ pro, lang, onClose }) {
 
   const messagesEndRef = useRef(null)
   const typingTimer    = useRef(null)
-  const seenMsgIds     = useRef(new Set())  // ← fix: persiste entre renders
-  const isFirstLoad    = useRef(true)       // ← fix: primera carga no suena
+  const seenMsgIds     = useRef(new Set())
+  const isFirstLoad    = useRef(true)
 
-
-
-  // Crear chat si no existe
   useEffect(() => {
     if (!chatId || !me || !otherId) return
     getDoc(doc(db, 'chats', chatId)).then(snap => {
@@ -145,29 +140,22 @@ function FloatingChat({ pro, lang, onClose }) {
     }).catch(() => {})
   }, [chatId]) // eslint-disable-line
 
-  // Escuchar mensajes con lógica de sonido corregida
   useEffect(() => {
     if (!chatId) return
     const q = query(collection(db, 'chats', chatId, 'messages'), orderBy('createdAt', 'asc'))
     const unsub = onSnapshot(q, snap => {
       const msgs = snap.docs.map(d => ({ id: d.id, ...d.data() }))
-
       if (isFirstLoad.current) {
-        // Primera entrega: marcar todos como vistos sin sonar
         msgs.forEach(m => seenMsgIds.current.add(m.id))
         isFirstLoad.current = false
       } else {
-        // Entregas siguientes: sonar en mensajes nuevos del OTRO usuario
         msgs.forEach(m => {
           if (!seenMsgIds.current.has(m.id)) {
             seenMsgIds.current.add(m.id)
-            if (m.senderId !== me?.uid) {
-              playChatMsgSound()  // ← suena en AMBOS lados correctamente
-            }
+            if (m.senderId !== me?.uid) playChatMsgSound()
           }
         })
       }
-
       setMessages(msgs)
       setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 60)
       updateDoc(doc(db, 'chats', chatId), { [`unreadCount.${me?.uid}`]: 0 }).catch(() => {})
@@ -175,7 +163,6 @@ function FloatingChat({ pro, lang, onClose }) {
     return () => unsub()
   }, [chatId]) // eslint-disable-line
 
-  // Typing del otro
   useEffect(() => {
     if (!chatId || !otherId) return
     const unsub = onSnapshot(doc(db, 'chats', chatId), snap => {
@@ -224,18 +211,15 @@ function FloatingChat({ pro, lang, onClose }) {
       <div onClick={onClose} style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.35)', zIndex:4000 }} />
       <div style={{ position:'fixed', bottom:0, left:'50%', transform:'translateX(-50%)', width:'100%', maxWidth:480, height:'70vh', background:'#fff', borderRadius:'24px 24px 0 0', boxShadow:'0 -8px 40px rgba(0,0,0,0.18)', zIndex:4001, display:'flex', flexDirection:'column', animation:'chatSlideUp .35s cubic-bezier(.32,1.2,.5,1)' }}>
         <div style={{ width:40, height:4, background:'#ddd', borderRadius:2, margin:'12px auto 0', flexShrink:0 }} />
-        {/* Header */}
         <div style={{ display:'flex', alignItems:'center', gap:12, padding:'12px 16px', borderBottom:'1px solid #f0f0f0', flexShrink:0 }}>
           <div style={{ width:40, height:40, borderRadius:'50%', background:pro?.color||'#F26000', display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontWeight:700, fontSize:15, flexShrink:0 }}>{initials}</div>
           <div style={{ flex:1 }}>
             <p style={{ margin:0, fontWeight:800, fontSize:15, color:'#1A1A2E' }}>{pro?.name||'Usuario'}</p>
             <p style={{ margin:0, fontSize:12, color:isTyping?'#F26000':'#22C55E', fontWeight:600 }}>{isTyping?'✍️ Escribiendo...':'● En línea'}</p>
           </div>
-          {/* Botón llamada abre modal con opciones */}
           <button onClick={() => setShowCall(true)} style={{ width:38, height:38, borderRadius:'50%', background:pro?.phone?'#FFF3EC':'#f5f5f5', border:pro?.phone?'1px solid #FFD4B0':'1px solid #eee', display:'flex', alignItems:'center', justifyContent:'center', fontSize:18, cursor:'pointer', opacity:pro?.phone?1:0.4 }}>📞</button>
           <button onClick={onClose} style={{ width:38, height:38, borderRadius:'50%', background:'#f5f5f5', border:'none', fontSize:18, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>✕</button>
         </div>
-        {/* Mensajes */}
         <div style={{ flex:1, overflowY:'auto', padding:'12px 16px', display:'flex', flexDirection:'column', gap:8 }}>
           {messages.length === 0 && (
             <div style={{ textAlign:'center', margin:'auto', color:'#999', fontSize:13 }}>
@@ -265,7 +249,6 @@ function FloatingChat({ pro, lang, onClose }) {
           )}
           <div ref={messagesEndRef} />
         </div>
-        {/* Input */}
         <div style={{ display:'flex', alignItems:'center', gap:10, padding:'10px 16px 20px', borderTop:'1px solid #f0f0f0', flexShrink:0 }}>
           <input type="text" value={inputText} onChange={handleInput} onKeyDown={handleKey}
             placeholder={lang==='es'?'Escribe un mensaje...':'Type a message...'}
@@ -297,17 +280,38 @@ function VanRetreatAnimation({ lang }) {
     </div>
   )
 }
-function TratoScreen({ lang, proName, onAccept, onDecline }) {
+
+/* ── TratoScreen — SOLO para el PRO ─────────────────────────────────────────
+   El cliente ya no ve botones aquí, solo el pro confirma el trato
+───────────────────────────────────────────────────────────────────────────── */
+function TratoScreenPro({ lang, proName, onAccept, onDecline }) {
   const safeName = proName && proName !== 'undefined' ? proName : (lang==='es'?'El profesional':'The professional')
   return (
     <div className="trato-screen fade-up">
       <div className="trato-icon">🤝</div>
       <h3 className="trato-title">{lang==='es'?'¿Cerramos el trato?':'Close the deal?'}</h3>
-      <p className="trato-sub">{lang==='es'?`${safeName} está en tu ubicación y listo para trabajar`:`${safeName} is at your location and ready to work`}</p>
+      <p className="trato-sub">{lang==='es'?`Confirma que acordaste el trabajo con el cliente`:`Confirm you agreed on the job with the client`}</p>
       <div className="trato-buttons">
         <button className="trato-btn accept" onClick={onAccept}>✅ {lang==='es'?'Trato hecho':'Deal made'}</button>
         <button className="trato-btn decline" onClick={onDecline}>❌ {lang==='es'?'Declinado':'Declined'}</button>
       </div>
+    </div>
+  )
+}
+
+function TratoScreenUser({ lang, proName }) {
+  const safeName = proName && proName !== 'undefined' ? proName : (lang==='es'?'El profesional':'The professional')
+  return (
+    <div className="trato-screen fade-up">
+      <div className="trato-icon">⏳</div>
+      <h3 className="trato-title" style={{ fontSize:18 }}>
+        {lang==='es'?'Esperando confirmación del profesional':'Waiting for professional confirmation'}
+      </h3>
+      <p className="trato-sub">
+        {lang==='es'
+          ? `${safeName} está acordando los detalles del trabajo contigo`
+          : `${safeName} is agreeing on the job details with you`}
+      </p>
     </div>
   )
 }
@@ -338,6 +342,7 @@ export default function TrackingPage({ lang = 'es', navigate, professional, user
   const [vanVisible,     setVanVisible]     = useState(true)
   const [showChat,       setShowChat]       = useState(false)
 
+  // Audio llegada
   const arrivingAudioRef    = useRef(null)
   const arrivingSoundPlayed = useRef(false)
   const arrivingTimerRef    = useRef(null)
@@ -394,8 +399,48 @@ export default function TrackingPage({ lang = 'es', navigate, professional, user
     return () => clearInterval(interval)
   }, [workStatus])
 
-  const handleAccept  = () => { stopArrivingSound(); setWorkStatus('working') }
-  const handleDecline = () => { stopArrivingSound(); setWorkStatus('retreating'); setProPos(RETREAT_WAYPOINTS[0]); setRemainingRoute(RETREAT_WAYPOINTS) }
+  // ── PRO confirma trato → notifica al cliente ──────────────────────────────
+  const [tratoConfirming, setTratoConfirming] = useState(false)
+
+  const handleAccept = async () => {
+    stopArrivingSound()
+    setTratoConfirming(true) // inicia animación
+    setWorkStatus('working')  // cambia estado — cliente ve WorkingAnimation
+
+    try {
+      if (professional?.id) {
+        await updateDoc(doc(db, 'orders', professional.id), {
+          status: 'working',
+          workingStartedAt: serverTimestamp(),
+        })
+      }
+      if (professional?.clientId) {
+        await addDoc(collection(db, 'notificaciones'), {
+          userId:    professional.clientId,
+          orderId:   professional?.id || 'unknown',
+          type:      'trato_confirmed',
+          title:     lang === 'es' ? '🤝 ¡Trato Confirmado!' : '🤝 Deal Confirmed!',
+          text:      lang === 'es'
+            ? `${pro.name} confirmó el trato y ya está trabajando en tu solicitud.`
+            : `${pro.name} confirmed the deal and is already working on your request.`,
+          read:      false,
+          icon:      '🔧',
+          createdAt: serverTimestamp(),
+        })
+      }
+    } catch(e) { console.error(e) }
+
+    // Esperar animación y navegar a pedidos
+    setTimeout(() => navigate('orders'), 1200)
+  }
+
+
+  const handleDecline = () => {
+    stopArrivingSound()
+    setWorkStatus('retreating')
+    setProPos(RETREAT_WAYPOINTS[0])
+    setRemainingRoute(RETREAT_WAYPOINTS)
+  }
 
   const statusInfo = {
     on_way:   { label: lang==='es'?'En camino':'On the way',   color:'#F26000', icon:'🚐' },
@@ -405,10 +450,29 @@ export default function TrackingPage({ lang = 'es', navigate, professional, user
   const current        = statusInfo[status] || statusInfo['on_way']
   const getStatusIcon  = () => ({ working:'🔧', awaiting_deal:'🤝', retreating:'🚐', declined_done:'❌', done:'🎉' }[workStatus] || current.icon)
   const getStatusColor = () => ({ working:'#0EA5E9', awaiting_deal:'#059669', retreating:'#EF4444', declined_done:'#EF4444', done:'#10B981' }[workStatus] || current.color)
-  const getStatusLabel = () => ({ working:lang==='es'?'🔧 Trabajando':'🔧 Working', awaiting_deal:lang==='es'?'🤝 ¿Cerramos el trato?':'🤝 Close the deal?', retreating:lang==='es'?'🚐 Retirándose...':'🚐 Leaving...', declined_done:lang==='es'?'❌ Trato declinado':'❌ Deal declined', done:lang==='es'?'🎉 ¡Trabajo completado!':'🎉 Work completed!' }[workStatus] || current.label)
-  const getStatusDesc  = () => {
+  const getStatusLabel = () => ({
+    working:       lang==='es'?'🔧 Trabajando':'🔧 Working',
+    awaiting_deal: lang==='es'?'🤝 Cerrando trato...':'🤝 Closing deal...',
+    retreating:    lang==='es'?'🚐 Retirándose...':'🚐 Leaving...',
+    declined_done: lang==='es'?'❌ Trato declinado':'❌ Deal declined',
+    done:          lang==='es'?'🎉 ¡Trabajo completado!':'🎉 Work completed!',
+  }[workStatus] || current.label)
+
+  const getStatusDesc = () => {
     const n = pro.name && pro.name !== 'undefined' ? pro.name : (lang==='es'?'El profesional':'The professional')
-    return ({ working:lang==='es'?'Realizando la labor acordada en tu ubicación':'Performing the agreed service', awaiting_deal:lang==='es'?`${n} ha llegado, confirma el trato`:`${n} arrived, confirm the deal`, retreating:lang==='es'?'El profesional está saliendo de tu ubicación':'Professional is leaving your location', declined_done:lang==='es'?'El trato fue declinado. La van se retiró.':'Deal was declined. The van left.', done:lang==='es'?'¡El servicio fue completado exitosamente!':'Service completed successfully!' }[workStatus] || (status==='arrived'?(lang==='es'?`${n} ha llegado a tu ubicación`:`${n} has arrived`):status==='arriving'?(lang==='es'?'¡Tu profesional está a la vuelta!':'Just around the corner!'):(lang==='es'?`${n} está en camino`:`${n} is on the way`)))
+    return ({
+      working:       lang==='es'?'Realizando la labor acordada en tu ubicación':'Performing the agreed service',
+      awaiting_deal: userRole==='pro'
+        ? (lang==='es'?'Confirma el trato para comenzar a trabajar':'Confirm the deal to start working')
+        : (lang==='es'?`${n} está acordando los detalles del trabajo`:`${n} is closing the deal`),
+      retreating:    lang==='es'?'El profesional está saliendo de tu ubicación':'Professional is leaving your location',
+      declined_done: lang==='es'?'El trato fue declinado. La van se retiró.':'Deal was declined. The van left.',
+      done:          lang==='es'?'¡El servicio fue completado exitosamente!':'Service completed successfully!',
+    }[workStatus] || (
+      status==='arrived'  ? (lang==='es'?`${n} ha llegado a tu ubicación`:`${n} has arrived`) :
+      status==='arriving' ? (lang==='es'?'¡Tu profesional está a la vuelta!':'Just around the corner!') :
+      (lang==='es'?`${n} está en camino`:`${n} is on the way`)
+    ))
   }
 
   const flowSteps = [
@@ -449,18 +513,28 @@ export default function TrackingPage({ lang = 'es', navigate, professional, user
       </div>
 
       <div className="tracking-card">
-        <div className={`tracking-status-bar ${workStatus==='working'?'status-bar-working':''}`} style={workStatus==='working'?{}:{ background:getStatusColor()+'15', borderColor:getStatusColor()+'30' }}>
+        <div className={`tracking-status-bar ${workStatus==='working'?'status-bar-working':''}`}
+          style={workStatus==='working'?{}:{ background:getStatusColor()+'15', borderColor:getStatusColor()+'30' }}>
           <span className="status-icon">{getStatusIcon()}</span>
           <div style={{ flex:1 }}>
             <p className="status-label" style={{ color:getStatusColor() }}>{getStatusLabel()}</p>
             <p className="status-desc">{getStatusDesc()}</p>
           </div>
-          {workStatus==='tracking' && status!=='arrived' && <div className="eta-countdown"><span className="eta-number">{eta}</span><span className="eta-unit">min</span></div>}
+          {workStatus==='tracking' && status!=='arrived' && (
+            <div className="eta-countdown"><span className="eta-number">{eta}</span><span className="eta-unit">min</span></div>
+          )}
         </div>
 
-        {workStatus==='awaiting_deal' && <TratoScreen lang={lang} proName={pro.name} onAccept={handleAccept} onDecline={handleDecline} />}
-        {workStatus==='working'       && <WorkingAnimation lang={lang} />}
-        {workStatus==='retreating'    && <VanRetreatAnimation lang={lang} />}
+        {/* ── Trato: PRO ve botones, CLIENTE solo mensaje ── */}
+        {(workStatus==='awaiting_deal' || tratoConfirming) && userRole==='pro' && (
+          <div style={{ transition:'all 1.1s cubic-bezier(.4,0,.2,1)', transform:tratoConfirming?'scale(0.05) translateY(200px)':'scale(1) translateY(0)', opacity:tratoConfirming?0:1, transformOrigin:'center bottom' }}><TratoScreenPro lang={lang} proName={pro.name} onAccept={handleAccept} onDecline={handleDecline} /></div>
+        )}
+        {workStatus==='awaiting_deal' && userRole!=='pro' && (
+          <TratoScreenUser lang={lang} proName={pro.name} />
+        )}
+
+        {workStatus==='working'    && <WorkingAnimation lang={lang} />}
+        {workStatus==='retreating' && <VanRetreatAnimation lang={lang} />}
 
         {workStatus==='declined_done' && (
           <div className="declined-screen fade-up">
@@ -483,7 +557,7 @@ export default function TrackingPage({ lang = 'es', navigate, professional, user
                 </div>
               </div>
               <div className="tracking-pro-actions">
-                <button className="track-action-btn call" onClick={() => setShowChat(true) /* abre chat que tiene el modal de llamada */} style={{ opacity: pro.phone ? 1 : 0.4 }}>📞</button>
+                <button className="track-action-btn call" onClick={() => setShowChat(true)} style={{ opacity: pro.phone ? 1 : 0.4 }}>📞</button>
                 <button className="track-action-btn chat" onClick={() => setShowChat(true)}>💬</button>
               </div>
             </div>
@@ -498,24 +572,15 @@ export default function TrackingPage({ lang = 'es', navigate, professional, user
               ))}
             </div>
 
-            {workStatus==='working' && userRole==='pro' && (
-              <button className="tracking-flow-btn done-btn" onClick={async () => {
-                setWorkStatus('done')
-                try {
-                  if (professional?.id) await updateDoc(doc(db,'orders',professional.id), { status:'done' })
-                  if (professional?.clientId) await addDoc(collection(db,'notificaciones'), {
-                    userId:professional.clientId, orderId:professional?.id||'unknown',
-                    type:'job_done', title:lang==='es'?'🎉 ¡Trabajo Terminado!':'🎉 Work Done!',
-                    text:lang==='es'?`${pro.name} ha marcado el servicio como completado. Procede con el pago.`:`${pro.name} has marked the service as completed. Proceed with payment.`,
-                    read:false, icon:'✅', createdAt:serverTimestamp(),
-                  })
-                } catch(e) { console.error(e) }
-              }}>🎉 {lang==='es'?'¡Listo! Trabajo terminado':'Done! Work finished'}</button>
-            )}
-
-            {workStatus==='working' && userRole==='user' && (
-              <div className="tracking-info-box" style={{ background:'#F8FAFC', padding:16, borderRadius:12, textAlign:'center', border:'1px dashed #CBD5E1' }}>
-                <p style={{ margin:0, fontSize:14, color:'#475569' }}>{lang==='es'?'El profesional está finalizando. Te notificaremos cuando puedas pagar.':'Professional is finishing. We will notify you when to pay.'}</p>
+            {/* ── Trabajando: pro ve info, usuario ve info ── */}
+            {workStatus==='working' && (
+              <div className="tracking-info-box" style={{ background:'#F0FDF4', padding:16, borderRadius:12, textAlign:'center', border:'1px dashed #34D399' }}>
+                <p style={{ margin:0, fontSize:14, color:'#065F46', fontWeight:700 }}>
+                  {userRole==='pro'
+                    ? (lang==='es'?'🔧 Cuando termines ve a Pedidos → Ver orden activa → ¡Listo Patrón!':'🔧 When done go to Orders → View active order → Done Boss!')
+                    : (lang==='es'?'🔧 El profesional está trabajando. Te notificaremos cuando termine.':'🔧 Professional is working. We will notify you when done.')
+                  }
+                </p>
               </div>
             )}
 
@@ -531,7 +596,7 @@ export default function TrackingPage({ lang = 'es', navigate, professional, user
               <div className="tracking-done-actions">
                 <div className="tracking-info-box" style={{ background:'#ECFDF5', padding:16, borderRadius:12, textAlign:'center', border:'1px dashed #34D399', color:'#065F46' }}>
                   <p style={{ margin:0, fontSize:15, fontWeight:'bold' }}>{lang==='es'?'🎉 ¡Trabajo Completado!':'🎉 Work Completed!'}</p>
-                  <p style={{ margin:'4px 0 0', fontSize:13 }}>{lang==='es'?'Esperando que el cliente realice el pago si no lo ha hecho en efectivo.':'Waiting for client to process payment.'}</p>
+                  <p style={{ margin:'4px 0 0', fontSize:13 }}>{lang==='es'?'Esperando que el cliente realice el pago.':'Waiting for client to process payment.'}</p>
                 </div>
               </div>
             )}
