@@ -415,3 +415,44 @@
   .step-line     { width: 24px; }
   .banks-grid    { grid-template-columns: repeat(2, 1fr); }
 }
+
+.emergency-clean-btn {
+  background-color: var(--mamey, #F26000);
+  color: white;
+  border: none;
+  border-radius: 16px;
+  padding: 18px 40px;
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  cursor: pointer;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(242, 96, 0, 0.4), 0 0 20px rgba(242, 96, 0, 0.6);
+  animation: emergencyGlow 1.5s infinite alternate;
+  transition: transform 0.2s;
+}
+
+@keyframes emergencyGlow {
+  0% { box-shadow: 0 4px 15px rgba(242, 96, 0, 0.4), 0 0 10px rgba(242, 96, 0, 0.4); transform: scale(1); }
+  100% { box-shadow: 0 4px 15px rgba(242, 96, 0, 0.4), 0 0 40px rgba(242, 96, 0, 0.9); transform: scale(1.02); }
+}
+
+.emergency-clean-btn::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%; width: 50%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+  animation: cleanLightSweep 2.5s infinite;
+}
+
+@keyframes cleanLightSweep {
+  0% { left: -100%; }
+  20% { left: 200%; }
+  100% { left: 200%; }
+}
+
+.emergency-clean-btn:active {
+  transform: scale(0.96) !important;
+}

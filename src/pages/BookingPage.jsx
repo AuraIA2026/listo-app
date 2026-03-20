@@ -46,6 +46,7 @@ export default function BookingPage({ lang = 'es', navigate, professional, userD
   const [selectedTime,  setSelectedTime]  = useState(null)
   const [address,       setAddress]       = useState('')
   const [addressCoords, setAddressCoords] = useState(null)
+  const [isEmergency,   setIsEmergency]   = useState(false)
   const [showMap,       setShowMap]       = useState(false)
   const [mapCenter,     setMapCenter]     = useState(null)
   const [mapLoading,    setMapLoading]    = useState(false)
@@ -89,7 +90,7 @@ export default function BookingPage({ lang = 'es', navigate, professional, userD
   const [loading,   setLoading]   = useState(false)
   const [errorMsg,  setErrorMsg]  = useState('')
 
-  const canNext1 = selectedDay !== null && selectedTime !== null
+  const canNext1 = (selectedDay !== null && selectedTime !== null) || isEmergency
   const canNext2 = address.trim().length > 0 || addressCoords !== null
 
   const handleConfirmOrder = async () => {
@@ -108,11 +109,13 @@ export default function BookingPage({ lang = 'es', navigate, professional, userD
         proAvatar:      pro.avatar || '',
         proPhotoURL:    pro.photoURL || pro.img || null,
         proPhone:       pro.phone || '',                // ← teléfono del profesional
-        dateToken:  `${days[selectedDay]?.dayName} ${days[selectedDay]?.dayNum}`,
-        timeToken:  selectedTime,
-        address,
+        dateToken:  isEmergency ? (lang==='es'?'Hoy mismo':'Today') : `${days[selectedDay]?.dayName} ${days[selectedDay]?.dayNum}`,
+        timeToken:  isEmergency ? (lang==='es'?'Lo antes posible (ASAP)':'ASAP') : selectedTime,
+        clientAddress:  address,
+        address:        address,
         coords:     addressCoords ? { lat: addressCoords.lat, lng: addressCoords.lng } : null,
-        notes,
+        serviceDesc:notes,
+        notes:      notes,
         urgencyToken: urgency,
         price:        pro.price || '',
         status:       'pending',
@@ -158,7 +161,9 @@ export default function BookingPage({ lang = 'es', navigate, professional, userD
               <div className="success-avatar" style={{ background: avatarColors[0] }}>{pro.avatar}</div>
               <div>
                 <div className="success-name">{pro.name}</div>
-                <div className="success-date">{days[selectedDay]?.dayName} {days[selectedDay]?.dayNum} · {selectedTime}</div>
+                <div className="success-date">
+                  {isEmergency ? (lang==='es'?'🚨 Lo antes posible':'🚨 ASAP') : `${days[selectedDay]?.dayName} ${days[selectedDay]?.dayNum} · ${selectedTime}`}
+                </div>
               </div>
             </div>
             <div className="eta-box" style={{ background: '#FFF3EC', borderColor: '#FFD580', textAlign: 'center', padding: '16px' }}>
@@ -212,9 +217,27 @@ export default function BookingPage({ lang = 'es', navigate, professional, userD
         {step === 1 && (
           <div className="step-content fade-up">
             <h2 className="step-title">{T.step1}</h2>
+
+            <div style={{ textAlign: 'center', marginBottom: '28px' }}>
+              <button className="emergency-clean-btn" onClick={() => {
+                setIsEmergency(true)
+                setUrgency(2)
+                setStep(2)
+              }}>
+                <span style={{ display: 'block', fontSize: '15px', fontWeight: '600', opacity: 0.9, marginBottom: '6px' }}>
+                  {lang==='es'?'Si es una Emergencia pulsa aquí 👇':'If it is an Emergency click here 👇'}
+                </span>
+                <span style={{ display: 'block', fontSize: '24px' }}>
+                  {lang==='es'?'EMERGENCIA':'EMERGENCY'}
+                </span>
+              </button>
+            </div>
+            
+            <div className="or-divider">{lang==='es'?'O selecciona tu horario':'Or schedule a time'}</div>
+
             <div className="date-scroll">
               {days.map((d, i) => (
-                <button key={i} className={`day-card ${selectedDay===i?'selected':''} ${d.isToday?'today':''}`} onClick={() => setSelectedDay(i)}>
+                <button key={i} className={`day-card ${selectedDay===i && !isEmergency ? 'selected':''} ${d.isToday?'today':''}`} onClick={() => { setSelectedDay(i); setIsEmergency(false) }}>
                   <span className="day-name">{d.dayName}</span>
                   <span className="day-num">{d.dayNum}</span>
                   <span className="day-month">{d.month}</span>
@@ -229,7 +252,7 @@ export default function BookingPage({ lang = 'es', navigate, professional, userD
                   {timeSlots.map(t => {
                     const isBusy = busySlots.includes(t)
                     return (
-                      <button key={t} className={`time-slot ${selectedTime===t?'selected':''} ${isBusy?'busy':''}`} onClick={() => !isBusy && setSelectedTime(t)}>
+                      <button key={t} className={`time-slot ${selectedTime===t && !isEmergency ? 'selected':''} ${isBusy?'busy':''}`} onClick={() => { if(!isBusy) { setSelectedTime(t); setIsEmergency(false) } }}>
                         {t}
                         {isBusy && <span className="busy-tag">{lang==='es'?'Ocupado':'Busy'}</span>}
                       </button>
@@ -301,8 +324,8 @@ export default function BookingPage({ lang = 'es', navigate, professional, userD
             <div className="summary-card">
               <h3 className="summary-title">{T.summary}</h3>
               <div className="summary-row"><span className="summary-label">{T.professional}</span><span className="summary-value">{pro.name}</span></div>
-              <div className="summary-row"><span className="summary-label">{T.date}</span><span className="summary-value">{days[selectedDay]?.dayName} {days[selectedDay]?.dayNum}</span></div>
-              <div className="summary-row"><span className="summary-label">{T.time}</span><span className="summary-value">{selectedTime}</span></div>
+              <div className="summary-row"><span className="summary-label">{T.date}</span><span className="summary-value">{isEmergency ? (lang==='es'?'Hoy mismo':'Today') : `${days[selectedDay]?.dayName} ${days[selectedDay]?.dayNum}`}</span></div>
+              <div className="summary-row"><span className="summary-label">{T.time}</span><span className="summary-value">{isEmergency ? (lang==='es'?'Lo antes posible':'ASAP') : selectedTime}</span></div>
               <div className="summary-row"><span className="summary-label">📍</span><span className="summary-value">{address}</span></div>
               {notes && <div className="summary-row"><span className="summary-label">📝</span><span className="summary-value notes-val">{notes}</span></div>}
               <div className="summary-divider" />

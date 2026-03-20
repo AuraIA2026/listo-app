@@ -319,7 +319,7 @@ function CallModal({ name, phone, lang, onClose }) {
   return (
     <>
       <style>{`@keyframes callModalIn{from{transform:translateX(-50%) translateY(30px);opacity:0}to{transform:translateX(-50%) translateY(0);opacity:1}}`}</style>
-      <div onClick={onClose} style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.5)', zIndex:5000 }} />
+      <div onClick={onClose} style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.1)', zIndex:5000 }} />
       <div style={{
         position:'fixed', bottom:40, left:'50%', transform:'translateX(-50%)',
         width:'calc(100% - 48px)', maxWidth:360, background:'#fff', borderRadius:24,
@@ -461,8 +461,8 @@ function FloatingChat({ otherUid, otherName, otherColor = '#F26000', otherPhone 
         @keyframes chatSlideUp { from{transform:translateY(100%);opacity:0} to{transform:translateY(0);opacity:1} }
         @keyframes typingDot { 0%,80%,100%{transform:translateY(0)} 40%{transform:translateY(-5px)} }
       `}</style>
-      <div onClick={onClose} style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.35)', zIndex:4000 }} />
-      <div style={{ position:'fixed', bottom:0, left:'50%', transform:'translateX(-50%)', width:'100%', maxWidth:480, height:'72vh', background:'#fff', borderRadius:'24px 24px 0 0', boxShadow:'0 -8px 40px rgba(0,0,0,0.18)', zIndex:4001, display:'flex', flexDirection:'column', animation:'chatSlideUp .35s cubic-bezier(.32,1.2,.5,1)' }}>
+      <div onClick={onClose} style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.1)', zIndex:4000 }} />
+      <div style={{ position:'fixed', bottom:0, left:'50%', transform:'translateX(-50%)', width:'100%', maxWidth:480, height:'50vh', background:'#fff', borderRadius:'24px 24px 0 0', boxShadow:'0 -8px 40px rgba(0,0,0,0.25)', zIndex:4001, display:'flex', flexDirection:'column', animation:'chatSlideUp .35s cubic-bezier(.32,1.2,.5,1)' }}>
         <div style={{ width:40, height:4, background:'#ddd', borderRadius:2, margin:'12px auto 0', flexShrink:0 }} />
         {/* Header */}
         <div style={{ display:'flex', alignItems:'center', gap:12, padding:'12px 16px', borderBottom:'1px solid #f0f0f0', flexShrink:0 }}>
@@ -623,7 +623,15 @@ export function OrderDetailsModal({ order, lang, onClose, onAccept, onDecline })
         <div style={{ background:'#FAFAFA', borderRadius:16, padding:16, marginBottom:24, border:'1px solid #EEE' }}>
           <div style={{ display:'flex', justifyContent:'space-between', marginBottom:12, paddingBottom:12, borderBottom:'1px dashed #DDD' }}><span style={{ fontSize:13, color:'#666', fontWeight:600 }}>{isEs?'Especialidad':'Specialty'}</span><span style={{ fontSize:14, color:'#1A1A2E', fontWeight:800 }}>{order.specialty}</span></div>
           <div style={{ display:'flex', justifyContent:'space-between', marginBottom:12, paddingBottom:12, borderBottom:'1px dashed #DDD' }}><span style={{ fontSize:13, color:'#666', fontWeight:600 }}>{isEs?'Fecha/Hora':'Date/Time'}</span><span style={{ fontSize:14, color:'#1A1A2E', fontWeight:800 }}>{order.date}</span></div>
-          {order.serviceDesc && <div style={{ marginTop:12 }}><span style={{ fontSize:13, color:'#666', fontWeight:600, display:'block', marginBottom:4 }}>{isEs?'Descripción':'Description'}</span><p style={{ fontSize:13, color:'#1A1A2E', margin:0, lineHeight:1.5, background:'#FFF3EC', padding:10, borderRadius:8, borderLeft:'3px solid #F26000' }}>{order.serviceDesc}</p></div>}
+          {order.urgencyToken !== undefined && (
+            <div style={{ display:'flex', justifyContent:'space-between', marginBottom:12, paddingBottom:12, borderBottom:'1px dashed #DDD' }}>
+              <span style={{ fontSize:13, color:'#666', fontWeight:600 }}>{isEs?'Urgencia':'Urgency'}</span>
+              <span style={{ fontSize:14, color:order.urgencyToken===2?'#E31837':order.urgencyToken===1?'#F59E0B':'#10B981', fontWeight:800 }}>
+                {order.urgencyToken===2 ? (isEs?'🚨 ¡Urgente!':'🚨 Urgent!') : order.urgencyToken===1 ? (isEs?'⚡ Rápido':'⚡ Fast') : (isEs?'🕐 Normal':'🕐 Normal')}
+              </span>
+            </div>
+          )}
+          {(order.serviceDesc || order.notes) && <div style={{ marginTop:12 }}><span style={{ fontSize:13, color:'#666', fontWeight:600, display:'block', marginBottom:4 }}>{isEs?'Descripción':'Description'}</span><p style={{ fontSize:13, color:'#1A1A2E', margin:0, lineHeight:1.5, background:'#FFF3EC', padding:10, borderRadius:8, borderLeft:'3px solid #F26000' }}>{order.serviceDesc || order.notes}</p></div>}
         </div>
         <div style={{ display:'flex', gap:12 }}>
           <button onClick={()=>onDecline(order.id)} style={{ flex:1, padding:16, borderRadius:14, background:'#FFF0F0', color:'#E31837', border:'none', fontWeight:800, fontSize:15, cursor:'pointer', fontFamily:'var(--font-display)' }} onMouseEnter={e=>e.currentTarget.style.background='#FEE2E2'} onMouseLeave={e=>e.currentTarget.style.background='#FFF0F0'}>{isEs?'✖ Rechazar':'✖ Decline'}</button>
@@ -725,7 +733,7 @@ export default function OrdersPage({ lang = 'es', navigate, userData, userRole }
       const snap = await getDoc(doc(db, 'orders', orderId))
       if (snap.exists()) {
         const d = snap.data()
-        setDetailsOrder({ id:snap.id, pro:d.clientName||d.clientEmail||'Cliente', specialty:d.proSpecialty||'Servicio', avatar:d.clientName?d.clientName.substring(0,2).toUpperCase():'👤', photoURL:d.clientPhotoURL||null, date:`${d.dateToken} - ${d.timeToken}`, clientAddress:d.clientAddress||d.address||'', serviceDesc:d.serviceDesc||'', ...d })
+        setDetailsOrder({ id:snap.id, pro:d.clientName||d.clientEmail||'Cliente', specialty:d.proSpecialty||'Servicio', avatar:d.clientName?d.clientName.substring(0,2).toUpperCase():'👤', photoURL:d.clientPhotoURL||null, date:`${d.dateToken} - ${d.timeToken}`, clientAddress:d.clientAddress||d.address||'', serviceDesc:d.serviceDesc||d.notes||'', ...d })
       }
     } catch(e) { console.error(e) }
   }

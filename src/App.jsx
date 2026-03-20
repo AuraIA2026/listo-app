@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from 'react'
 import { onAuthStateChanged, signOut } from 'firebase/auth'
 import { doc, onSnapshot, getDocs, collection, query, where, updateDoc } from 'firebase/firestore'
 import { auth, db } from './firebase'
+import { Capacitor } from '@capacitor/core'
+import { PushNotifications } from '@capacitor/push-notifications'
 
 import HomePage               from './pages/HomePage'
 import ServicesPage           from './pages/ServicesPage'
@@ -79,6 +81,44 @@ function ChatMessageBanner({ sender, text, onClose, onClick }) {
   )
 }
 
+function OfflineBanner({ lang }) {
+  return (
+    <div style={{
+      position: 'fixed', top: 0, left: 0, right: 0, background: '#EF4444', color: '#fff',
+      textAlign: 'center', padding: '10px', fontSize: '13px', fontWeight: 'bold', zIndex: 100000,
+      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+      boxShadow: '0 4px 12px rgba(239, 68, 68, 0.4)'
+    }}>
+      <span>⚠️</span>
+      {lang === 'es' ? 'Sin conexión a internet. Verificando red...' : 'No internet connection. Checking network...'}
+    </div>
+  )
+}
+
+function UpdateBlocker({ lang }) {
+  return (
+    <div style={{
+      position: 'fixed', inset: 0, background: '#fff', zIndex: 1000000,
+      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 30, textAlign: 'center'
+    }}>
+      <div style={{ fontSize: 60, marginBottom: 20 }}>🔄</div>
+      <h2 style={{ color: '#1A1A2E', marginBottom: 10, fontSize: 24, fontWeight: 900 }}>{lang === 'es' ? 'Actualización Requerida' : 'Update Required'}</h2>
+      <p style={{ color: '#666', marginBottom: 30, fontSize: 15, lineHeight: 1.5 }}>
+        {lang === 'es' 
+          ? 'Hemos lanzado una nueva versión obligatoria de la aplicación para mejorar tu experiencia y seguridad. Por favor, actualiza.' 
+          : 'We have released a new mandatory update. Please update from the store.'}
+      </p>
+      <button onClick={() => window.open('https://play.google.com/store/apps/details?id=com.listopatron.app', '_blank')} style={{
+        background: 'linear-gradient(135deg, #F26000, #FF8C42)', color: '#fff', border: 'none',
+        padding: '16px 32px', borderRadius: 16, fontSize: '16px', fontWeight: 'bold', cursor: 'pointer',
+        boxShadow: '0 8px 24px rgba(242, 96, 0, 0.3)'
+      }}>
+        {lang === 'es' ? 'Actualizar ahora' : 'Update now'}
+      </button>
+    </div>
+  )
+}
+
 export default function App() {
   const [showSplash,      setShowSplash]      = useState(true)
   const [currentPage,     setCurrentPage]     = useState('login')
@@ -94,6 +134,10 @@ export default function App() {
   const [notifiedOrderIds,  setNotifiedOrderIds]  = useState(new Set())
   const [jobDoneAlert,      setJobDoneAlert]      = useState(null)
   const [chatBanner,        setChatBanner]        = useState(null)
+  const [isOffline,         setIsOffline]         = useState(!navigator.onLine)
+  const [updateRequired,    setUpdateRequired]    = useState(false)
+
+  const CURRENT_APP_VERSION = '1.0.0'
 
   const alertAudioRef      = useRef(null)
   const isPlayingRef       = useRef(false)
@@ -108,6 +152,26 @@ export default function App() {
 
   // Mantener currentPageRef sincronizado
   useEffect(() => { currentPageRef.current = currentPage }, [currentPage])
+
+  // ─── OFFLINE & UPDATE CHECK ───────────────────────────────────────────────
+  useEffect(() => {
+    const handleOnline = () => setIsOffline(false)
+    const handleOffline = () => setIsOffline(true)
+    window.addEventListener('online', handleOnline)
+    window.addEventListener('offline', handleOffline)
+    return () => { window.removeEventListener('online', handleOnline); window.removeEventListener('offline', handleOffline) }
+  }, [])
+
+  useEffect(() => {
+    import('firebase/firestore').then(({ doc: fd, getDoc }) => {
+      getDoc(fd(db, 'settings', 'appConfig')).then(snap => {
+        if (snap.exists()) {
+          const minV = snap.data().minVersion
+          if (minV && minV > CURRENT_APP_VERSION) setUpdateRequired(true)
+        }
+      }).catch(() => {}) // Ignorar si no existe, no falla
+    })
+  }, [])
 
   // ─── AUDIO PEDIDO (pro) ───────────────────────────────────────────────────
   const startAlertSound = () => {
@@ -162,6 +226,23 @@ export default function App() {
             setUserRole(data.type === 'pro' ? 'pro' : 'user')
             localStorage.setItem('listoUserData', JSON.stringify(fullData))
             setProfileComplete(data.profileComplete || false)
+
+            // ─── PUSH NOTIFICATIONS REGISTRATION ───
+            if (Capacitor.isNativePlatform()) {
+              PushNotifications.requestPermissions().then(result => {
+                if (result.receive === 'granted') {
+                  PushNotifications.register()
+                }
+              })
+              PushNotifications.removeAllListeners().then(() => {
+                PushNotifications.addListener('registration', token => {
+                  updateDoc(doc(db, 'users', firebaseUser.uid), { fcmToken: token.value }).catch(()=>{})
+                })
+                PushNotifications.addListener('pushNotificationActionPerformed', () => {
+                  setCurrentPage('orders') // Ir a pedidos al tocar la push
+                })
+              })
+            }
           }
           setAuthReady(true)
         }, () => setAuthReady(true))
@@ -422,8 +503,12 @@ export default function App() {
   const commonProps = { lang, navigate }
   const userProps   = { ...commonProps, userData, userRole }
 
+  if (updateRequired) return <UpdateBlocker lang={lang} />
+
   return (
     <div className="app">
+      {isOffline && <OfflineBanner lang={lang} />}
+
       {showTop && <Navbar navigate={navigate} currentPage={currentPage} lang={lang} setLang={setLang} />}
 
       {currentPage === 'home'     && <HomePage     {...userProps} />}

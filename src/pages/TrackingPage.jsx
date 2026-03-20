@@ -85,7 +85,7 @@ function CallModal({ name, phone, lang, onClose }) {
   return (
     <>
       <style>{`@keyframes callModalIn{from{transform:translateX(-50%) translateY(30px);opacity:0}to{transform:translateX(-50%) translateY(0);opacity:1}}`}</style>
-      <div onClick={onClose} style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.5)', zIndex:5000 }} />
+      <div onClick={onClose} style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.1)', zIndex:5000 }} />
       <div style={{ position:'fixed', bottom:40, left:'50%', transform:'translateX(-50%)', width:'calc(100% - 48px)', maxWidth:360, background:'#fff', borderRadius:24, padding:'28px 24px 20px', zIndex:5001, boxShadow:'0 20px 60px rgba(0,0,0,0.2)', animation:'callModalIn .3s cubic-bezier(.32,1.2,.5,1)', textAlign:'center' }}>
         <div style={{ width:64, height:64, borderRadius:'50%', background:'#F26000', display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontWeight:800, fontSize:24, margin:'0 auto 12px', boxShadow:'0 4px 16px rgba(242,96,0,0.3)' }}>{(name||'?').substring(0,2).toUpperCase()}</div>
         <h3 style={{ margin:'0 0 4px', fontSize:18, fontWeight:900, color:'#1A1A2E' }}>{name}</h3>
@@ -208,8 +208,8 @@ function FloatingChat({ pro, lang, onClose }) {
         @keyframes chatSlideUp { from{transform:translateY(100%);opacity:0} to{transform:translateY(0);opacity:1} }
         @keyframes typingDot { 0%,80%,100%{transform:translateY(0)} 40%{transform:translateY(-5px)} }
       `}</style>
-      <div onClick={onClose} style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.35)', zIndex:4000 }} />
-      <div style={{ position:'fixed', bottom:0, left:'50%', transform:'translateX(-50%)', width:'100%', maxWidth:480, height:'70vh', background:'#fff', borderRadius:'24px 24px 0 0', boxShadow:'0 -8px 40px rgba(0,0,0,0.18)', zIndex:4001, display:'flex', flexDirection:'column', animation:'chatSlideUp .35s cubic-bezier(.32,1.2,.5,1)' }}>
+      <div onClick={onClose} style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.1)', zIndex:4000 }} />
+      <div style={{ position:'fixed', bottom:0, left:'50%', transform:'translateX(-50%)', width:'100%', maxWidth:480, height:'50vh', background:'#fff', borderRadius:'24px 24px 0 0', boxShadow:'0 -8px 40px rgba(0,0,0,0.25)', zIndex:4001, display:'flex', flexDirection:'column', animation:'chatSlideUp .35s cubic-bezier(.32,1.2,.5,1)' }}>
         <div style={{ width:40, height:4, background:'#ddd', borderRadius:2, margin:'12px auto 0', flexShrink:0 }} />
         <div style={{ display:'flex', alignItems:'center', gap:12, padding:'12px 16px', borderBottom:'1px solid #f0f0f0', flexShrink:0 }}>
           <div style={{ width:40, height:40, borderRadius:'50%', background:pro?.color||'#F26000', display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontWeight:700, fontSize:15, flexShrink:0 }}>{initials}</div>
@@ -443,7 +443,7 @@ export default function TrackingPage({ lang = 'es', navigate, professional, user
   }
 
   const statusInfo = {
-    on_way:   { label: lang==='es'?'En camino':'On the way',   color:'#F26000', icon:'🚐' },
+    on_way:   { label: userRole==='pro' ? (lang==='es'?'En ruta':'En route') : (lang==='es'?'En camino':'On the way'),   color:'#F26000', icon:'🚐' },
     arriving: { label: lang==='es'?'¡Llegando!':'Arriving!',   color:'#FF8533', icon:'⚡' },
     arrived:  { label: lang==='es'?'¡Llegó!':'Arrived!',       color:'#3DBA74', icon:'✅' },
   }
@@ -461,17 +461,17 @@ export default function TrackingPage({ lang = 'es', navigate, professional, user
   const getStatusDesc = () => {
     const n = pro.name && pro.name !== 'undefined' ? pro.name : (lang==='es'?'El profesional':'The professional')
     return ({
-      working:       lang==='es'?'Realizando la labor acordada en tu ubicación':'Performing the agreed service',
+      working:       userRole==='pro' ? (lang==='es'?'Trabajando en el área':'Working on site') : (lang==='es'?'Realizando la labor acordada en tu ubicación':'Performing the agreed service'),
       awaiting_deal: userRole==='pro'
         ? (lang==='es'?'Confirma el trato para comenzar a trabajar':'Confirm the deal to start working')
         : (lang==='es'?`${n} está acordando los detalles del trabajo`:`${n} is closing the deal`),
-      retreating:    lang==='es'?'El profesional está saliendo de tu ubicación':'Professional is leaving your location',
-      declined_done: lang==='es'?'El trato fue declinado. La van se retiró.':'Deal was declined. The van left.',
+      retreating:    userRole==='pro' ? (lang==='es'?'Te retiras del lugar':'Leaving the location') : (lang==='es'?'El profesional está saliendo de tu ubicación':'Professional is leaving your location'),
+      declined_done: userRole==='pro' ? (lang==='es'?'Trato declinado. Van retirándose.':'Deal declined. Van retreating.') : (lang==='es'?'El trato fue declinado. La van se retiró.':'Deal was declined. The van left.'),
       done:          lang==='es'?'¡El servicio fue completado exitosamente!':'Service completed successfully!',
     }[workStatus] || (
-      status==='arrived'  ? (lang==='es'?`${n} ha llegado a tu ubicación`:`${n} has arrived`) :
-      status==='arriving' ? (lang==='es'?'¡Tu profesional está a la vuelta!':'Just around the corner!') :
-      (lang==='es'?`${n} está en camino`:`${n} is on the way`)
+      status==='arrived'  ? (userRole==='pro' ? (lang==='es'?'Llegaste a la ubicación del cliente':'You arrived at the client location') : (lang==='es'?`${n} ha llegado a tu ubicación`:`${n} has arrived`)) :
+      status==='arriving' ? (userRole==='pro' ? (lang==='es'?'Tú estás llegando al destino':'You are arriving at the destination') : (lang==='es'?'¡Tu profesional está a la vuelta!':'Just around the corner!')) :
+      (userRole==='pro' ? (lang==='es'?`Te diriges hacia la ubicación de ${n}`:`Heading to ${n}'s location`) : (lang==='es'?`${n} está en camino`:`${n} is on the way`))
     ))
   }
 
@@ -552,8 +552,8 @@ export default function TrackingPage({ lang = 'es', navigate, professional, user
                 <div className="tracking-avatar" style={{ background:pro.color }}>{pro.avatar}</div>
                 <div>
                   <p className="tracking-pro-name">{pro.name}</p>
-                  <p className="tracking-pro-cat">{pro.category}</p>
-                  <div className="tracking-pro-rating">★ {pro.rating}<span className="tracking-verified">✓ {lang==='es'?'Verificado':'Verified'}</span></div>
+                  <p className="tracking-pro-cat">{userRole==='pro' ? (lang==='es'?'Cliente':'Client') : pro.category}</p>
+                  {userRole !== 'pro' && <div className="tracking-pro-rating">★ {pro.rating}<span className="tracking-verified">✓ {lang==='es'?'Verificado':'Verified'}</span></div>}
                 </div>
               </div>
               <div className="tracking-pro-actions">

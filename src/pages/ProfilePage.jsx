@@ -25,9 +25,11 @@ const txt = {
     rateThanks: '¡Gracias por tu calificación!', rateThanksub: 'Tu opinión es muy importante para nosotros 🙌',
     logoutTitle: 'Cerrar sesión', logoutConfirm: '¿Seguro que quieres cerrar sesión?',
     logoutYes: 'Sí, cerrar sesión', logoutNo: 'Cancelar', logout: 'Cerrar sesión',
+    deleteTitle: 'Eliminar cuenta', deleteConfirm: '¿Estás completamente seguro? Esta acción es irreversible y tu información será eliminada de nuestros servidores.', deleteYes: 'Sí, eliminar permanentemente', deleteNo: 'Mantener cuenta',
     photoTitle: 'Foto de perfil', photoGallery: '📷 Elegir de galería', photoCamera: '🤳 Tomar foto',
     photoCancel: 'Cancelar', photoSaved: '¡Foto actualizada!', photoError: 'Error al guardar. Intenta de nuevo.',
     termsTitle: 'Términos y Condiciones', termsLastUpdate: 'Última actualización: 1 de marzo de 2026',
+    privacyDocTitle: 'Política de Privacidad', privacyDocLastUpdate: 'Última actualización: 1 de marzo de 2026',
     terms: [
       { title: '1. Naturaleza Jurídica', body: 'Listo Patrón es una plataforma tecnológica de intermediación digital que conecta usuarios con profesionales independientes. No existe relación laboral entre la plataforma y el profesional. El profesional actúa como trabajador independiente y asume sus obligaciones fiscales y legales. Este acuerdo se rige por las leyes de la República Dominicana.' },
       { title: '2. Comisión', body: 'El profesional acepta pagar una comisión del 10% sobre el valor total de cada servicio realizado a través de la plataforma.' },
@@ -72,9 +74,11 @@ const txt = {
     rateThanks: 'Thanks for your rating!', rateThanksub: 'Your feedback means a lot to us 🙌',
     logoutTitle: 'Log out', logoutConfirm: 'Are you sure you want to log out?',
     logoutYes: 'Yes, log out', logoutNo: 'Cancel', logout: 'Log out',
+    deleteTitle: 'Delete account', deleteConfirm: 'Are you absolutely sure? This action is irreversible and your data will be wiped from our servers.', deleteYes: 'Yes, permanently delete', deleteNo: 'Keep account',
     photoTitle: 'Profile photo', photoGallery: '📷 Choose from gallery', photoCamera: '🤳 Take photo',
     photoCancel: 'Cancel', photoSaved: 'Photo updated!', photoError: 'Error saving. Please try again.',
     termsTitle: 'Terms & Conditions', termsLastUpdate: 'Last updated: March 1, 2026',
+    privacyDocTitle: 'Privacy Policy', privacyDocLastUpdate: 'Last updated: March 1, 2026',
     terms: [{ title: '1. Legal Nature', body: 'Listo Patrón is a digital intermediation platform.' }],
     termsUser: [{ title: '1. Welcome', body: 'Thank you for using Listo Patrón.' }],
   }
@@ -90,6 +94,7 @@ const menuItems = [
   { icon: '❓', labelEs: 'Ayuda y soporte',            labelEn: 'Help & support',            action: 'help' },
   { icon: '⭐', labelEs: 'Calificar la app',           labelEn: 'Rate the app',              action: 'rate' },
   { icon: '📄', labelEs: 'Términos y Condiciones',     labelEn: 'Terms & Conditions',        action: 'terms' },
+  { icon: '🛡️', labelEs: 'Política de Privacidad',     labelEn: 'Privacy Policy',            action: 'privacyDoc' },
 ]
 
 const LISTO_PROMPT = `Eres el asistente virtual de Listo Patrón, app dominicana de servicios a domicilio.
@@ -388,6 +393,33 @@ function TermsScreen({ lang, onBack, userRole }) {
   )
 }
 
+function PrivacyDocScreen({ lang, onBack }) {
+  const T = txt[lang]
+  return (
+    <div className="sub-screen">
+      <ScreenHeader title={T.privacyDocTitle} onBack={onBack} />
+      <div className="terms-container" style={{ padding: '0 20px' }}>
+        <div className="terms-badge">
+          <span>🛡️</span>
+          <div>
+            <p className="terms-badge-title">{T.privacyDocTitle}</p>
+            <p className="terms-badge-date">{T.privacyDocLastUpdate}</p>
+          </div>
+        </div>
+        <div style={{ fontSize: '14px', lineHeight: '1.6', color: '#444', marginTop: '20px' }}>
+          <p><strong>1. Recopilación de Datos</strong><br/>Recopilamos su nombre, teléfono, ubicación GPS e imágenes de su perfil y trabajos realizados únicamente para el correcto funcionamiento de la plataforma 'Listo Patrón'.</p>
+          <br/>
+          <p><strong>2. Uso de la Ubicación</strong><br/>La aplicación requiere acceso a su ubicación en primer y segundo plano para conectar clientes con los profesionales más cercanos y permitir el seguimiento en tiempo real del trayecto.</p>
+          <br/>
+          <p><strong>3. Compartir con Terceros</strong><br/>No vendemos sus datos personales a terceros. Su número y nombre solo se comparten con el profesional o cliente reservado para coordinar el trabajo.</p>
+          <br/>
+          <p><strong>4. Eliminación de Datos</strong><br/>Usted tiene el derecho de eliminar su cuenta y todos sus datos personales en cualquier momento desde esta misma aplicación (sección Perfil).</p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function LogoutModal({ lang, onConfirm, onCancel }) {
   const T = txt[lang]
   return (
@@ -403,12 +435,28 @@ function LogoutModal({ lang, onConfirm, onCancel }) {
   )
 }
 
+function DeleteAccountModal({ lang, onConfirm, onCancel }) {
+  const T = txt[lang]
+  return (
+    <div className="modal-overlay" onClick={onCancel}>
+      <div className="modal-card" onClick={e=>e.stopPropagation()}>
+        <span className="modal-icon" style={{ background: '#FEE2E2', color: '#EF4444' }}>⚠️</span>
+        <h3 className="modal-title">{T.deleteTitle}</h3>
+        <p className="modal-sub">{T.deleteConfirm}</p>
+        <button className="modal-btn danger" style={{ background: '#EF4444' }} onClick={onConfirm}>{T.deleteYes}</button>
+        <button className="modal-btn ghost" onClick={onCancel}>{T.deleteNo}</button>
+      </div>
+    </div>
+  )
+}
+
 export default function ProfilePage({ lang, setLang, navigate, onLogout }) {
   // ── Datos SIEMPRE desde Firestore en tiempo real via hook ──
   const { userData, userRole, profileComplete, getMemberSince } = useUserData()
 
   const [screen,      setScreen]      = useState(null)
   const [showLogout,  setShowLogout]  = useState(false)
+  const [showDelete,  setShowDelete]  = useState(false)
   const [showPhoto,   setShowPhoto]   = useState(false)
   const [photoStatus, setPhotoStatus] = useState(null)
   const [tapCount,    setTapCount]    = useState(0)
@@ -457,6 +505,15 @@ export default function ProfilePage({ lang, setLang, navigate, onLogout }) {
     else navigate('login')
   }
 
+  const handleDeleteAccount = async () => {
+    setShowDelete(false)
+    if (userData?.uid) {
+      await updateDoc(doc(db, 'users', userData.uid), { deleted: true, available: false })
+    }
+    if (onLogout) onLogout()
+    else navigate('login')
+  }
+
   const handleSecretTap = () => {
     const next = tapCount + 1
     setTapCount(next)
@@ -474,6 +531,7 @@ export default function ProfilePage({ lang, setLang, navigate, onLogout }) {
       case 'faq':              return <FaqBotScreen lang={lang} onBack={() => setScreen('help')} />
       case 'rate':             return <CalificarScreen lang={lang} onBack={back} />
       case 'terms':            return <TermsScreen lang={lang} onBack={back} userRole={userRole} />
+      case 'privacyDoc':       return <PrivacyDocScreen lang={lang} onBack={back} />
       case 'verification':     return <VerificacionPage lang={lang} onBack={back} />
       case 'completar-perfil': return (
         <RegistroClientePage onBack={back} onSuccess={() => back()} />
@@ -589,8 +647,11 @@ export default function ProfilePage({ lang, setLang, navigate, onLogout }) {
         }
       </div>
 
-      <div className="profile-logout-wrap">
+      <div className="profile-logout-wrap" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
         <button className="profile-logout" onClick={() => setShowLogout(true)}>🚪 {T.logout}</button>
+        <button className="profile-logout" style={{ background: '#FFF0F0', color: '#EF4444', borderColor: '#FECACA' }} onClick={() => setShowDelete(true)}>
+          🗑️ {T.deleteTitle}
+        </button>
       </div>
 
       <div className="profile-brand">
@@ -621,6 +682,7 @@ export default function ProfilePage({ lang, setLang, navigate, onLogout }) {
       )}
 
       {showLogout && <LogoutModal lang={lang} onConfirm={handleLogout} onCancel={() => setShowLogout(false)} />}
+      {showDelete && <DeleteAccountModal lang={lang} onConfirm={handleDeleteAccount} onCancel={() => setShowDelete(false)} />}
     </div>
   )
 }
