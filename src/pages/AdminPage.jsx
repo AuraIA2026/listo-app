@@ -466,9 +466,9 @@ export default function AdminPage({ navigate }) {
   const pendienteCount = pendingPayments.length;
   const bloqueadoCount = blockedUsers.length;
 
-  const totalRecaudado = completedPayments.reduce((a,p) => a + (p.planPriceVal || p.transferAmount || 0), 0);
-  const totalProfesionales = completedPayments.reduce((a,p) => a + (p.total ? p.total * 0.9 : 0), 0);
-  const comisionesPendientes = pendingPayments.reduce((a,p) => a + (p.planPriceVal || p.transferAmount || 0), 0);
+  const totalVentas = completedPayments.reduce((a,p) => a + (p.planPriceVal || p.transferAmount || 0), 0);
+  const planesVendidos = completedPayments.length;
+  const planesPorVerificar = pendingPayments.reduce((a,p) => a + (p.planPriceVal || p.transferAmount || 0), 0);
 
   return (
     <>
@@ -492,19 +492,19 @@ export default function AdminPage({ navigate }) {
         {/* MÉTRICAS */}
         <div className="metrics-grid">
           <div className="metric-card brand">
-            <div className="metric-label">Tu comisión</div>
-            <div className="metric-value">{fmtRD(Math.round(totalRecaudado))}</div>
-            <div className="metric-sub">10% recaudado</div>
+            <div className="metric-label">Ventas Totales</div>
+            <div className="metric-value">{fmtRD(Math.round(totalVentas))}</div>
+            <div className="metric-sub">Ingresos por planes</div>
           </div>
           <div className="metric-card green">
-            <div className="metric-label">A profesionales</div>
-            <div className="metric-value">{fmtRD(Math.round(totalProfesionales))}</div>
-            <div className="metric-sub">90% transferido</div>
+            <div className="metric-label">Planes Vendidos</div>
+            <div className="metric-value">{planesVendidos}</div>
+            <div className="metric-sub">contratos activados</div>
           </div>
           <div className="metric-card yellow">
-            <div className="metric-label">Comisiones pend.</div>
-            <div className="metric-value">{fmtRD(comisionesPendientes)}</div>
-            <div className="metric-sub">{pendienteCount} profesionales</div>
+            <div className="metric-label">Pagos por Validar</div>
+            <div className="metric-value">{fmtRD(planesPorVerificar)}</div>
+            <div className="metric-sub">{pendienteCount} transferencias</div>
           </div>
           <div className="metric-card red">
             <div className="metric-label">Bloqueados</div>
@@ -517,7 +517,7 @@ export default function AdminPage({ navigate }) {
         <div className="admin-tabs">
           {[
             { id:'pagos',      icon:'💳', label:'Historial',  count:completedPayments.length },
-            { id:'comisiones', icon:'⏳', label:'Pendientes', count:pendienteCount },
+            { id:'comisiones', icon:'⏳', label:'Validaciones', count:pendienteCount },
             { id:'bloqueados', icon:'👥', label:'Directorio', count:users.length },
           ].map(t => (
             <button key={t.id} className={`tab-btn${tab===t.id?' active':''}`} onClick={()=>setTab(t.id)}>
@@ -547,7 +547,7 @@ export default function AdminPage({ navigate }) {
                     <div className="pc-avatar" style={{background:'#F26000'}}>{avatarLetter}</div>
                     <div className="pc-info">
                       <div className="pc-name">{p.proName}</div>
-                      <div className="pc-detail">{p.planName || 'Comisión'} · {fmtDate(p.createdAt)}</div>
+                      <div className="pc-detail">{p.planName || 'Plan Personalizado'} · {fmtDate(p.createdAt)}</div>
                     </div>
                     <div className="pc-right">
                       <div className="pc-total">{fmtRD(amount)}</div>
@@ -569,7 +569,7 @@ export default function AdminPage({ navigate }) {
         {tab === 'comisiones' && (
           <div className="admin-section" style={{marginTop:16}}>
             <div className="section-header">
-              <span className="section-title">Efectivo — cobro y planes pendientes</span>
+              <span className="section-title">Transferencias por Validar</span>
             </div>
             {pendingPayments.length === 0 && (
               <div className="empty-admin">
@@ -587,7 +587,7 @@ export default function AdminPage({ navigate }) {
                     <div className="cc-avatar" style={{background:'#F59E0B'}}>{avatarLetter}</div>
                     <div className="cc-info">
                       <div className="cc-name">{c.proName}</div>
-                      <div className="cc-service">{c.planName || 'Pago de comisión'} · Banco {c.bank||'No disp'}</div>
+                      <div className="cc-service">{c.planName || 'Compra de Plan'} · Banco {c.bank||'No disp'}</div>
                       <div style={{fontSize:12, color:'var(--brand)', marginTop:2}}>Deposita: {c.depositorName}</div>
                     </div>
                     <div className="cc-amount">{fmtRD(amount)}</div>
@@ -685,7 +685,7 @@ export default function AdminPage({ navigate }) {
                  confirm.type==='unblock' ? '¿Activar perfil?' :
                  confirm.type==='add_contract' ? '¿Sumar contrato?' :
                  confirm.type==='sub_contract' ? '¿Restar contrato?' :
-                 '¿Aprobar confirmación?'}
+                 '¿Aprobar transferencia?'}
               </h3>
               <p className="cm-sub">
                 {confirm.type==='block'
@@ -696,7 +696,7 @@ export default function AdminPage({ navigate }) {
                   ? `Se agregará 1 contrato gratis a la cuenta de ${confirm.obj.name}.`
                   : confirm.type==='sub_contract'
                   ? `Se quitará 1 contrato de la cuenta de ${confirm.obj.name}.`
-                  : `Se marcará este pago como verificado y se agregará 1 al plan de ${confirm.obj.proName}.`}
+                  : `Se marcará el pago como verificado y se agregará el plan a la cuenta de ${confirm.obj.proName}.`}
               </p>
               <button
                 className={`cm-btn ${confirm.type==='block'||confirm.type==='sub_contract'?'danger':'success'}`}
