@@ -19,7 +19,7 @@ const txt = {
     helpTitle: 'Ayuda y soporte', helpFaq: 'Preguntas frecuentes', helpChat: 'Chatear con soporte',
     helpEmail: 'Enviar correo', helpPhone: 'Llamar al soporte',
     helpFaqSub: 'Respuestas a las dudas más comunes', helpChatSub: 'Tiempo de respuesta: ~5 minutos',
-    helpEmailSub: 'Listopatron.app@gmail.com', helpPhoneSub: '+1 (809) 909-0455',
+    helpEmailSub: 'listopatron.app@gmail.com', helpPhoneSub: '+1 (809) 909-0455',
     rateTitle: '¿Te gusta Listo?', rateSub: 'Tu opinión nos ayuda a mejorar',
     rateComment: 'Déjanos un comentario (opcional)', rateSubmit: 'Enviar calificación',
     rateThanks: '¡Gracias por tu calificación!', rateThanksub: 'Tu opinión es muy importante para nosotros 🙌',
@@ -69,7 +69,7 @@ const txt = {
     helpTitle: 'Help & support', helpFaq: 'FAQ', helpChat: 'Chat with support',
     helpEmail: 'Send email', helpPhone: 'Call support',
     helpFaqSub: 'Answers to common questions', helpChatSub: 'Response time: ~5 minutes',
-    helpEmailSub: 'Listopatron.app@gmail.com', helpPhoneSub: '+1 (809) 909-0455',
+    helpEmailSub: 'listopatron.app@gmail.com', helpPhoneSub: '+1 (809) 909-0455',
     rateTitle: 'Do you like Listo?', rateSub: 'Your feedback helps us improve',
     rateComment: 'Leave a comment (optional)', rateSubmit: 'Submit rating',
     rateThanks: 'Thanks for your rating!', rateThanksub: 'Your feedback means a lot to us 🙌',
@@ -99,7 +99,7 @@ const menuItems = [
 ]
 
 const LISTO_PROMPT = `Eres el asistente virtual de Listo Patrón, app dominicana de servicios a domicilio.
-Comisión 10%, pagos en efectivo en 24h, soporte: Listopatron.app@gmail.com / +1 (809) 909-0455.
+Comisión 10%, pagos en efectivo en 24h, soporte: listopatron.app@gmail.com / +1 (809) 909-0455.
 Responde en español, amable y breve.`
 
 const compressImage = (file) => new Promise((resolve, reject) => {
@@ -229,7 +229,7 @@ function AyudaScreen({ lang, onBack, onFaq }) {
   const items = [
     { icon: '❓', label: T.helpFaq,   sub: T.helpFaqSub,   color: '#3B82F6', action: onFaq },
     { icon: '💬', label: T.helpChat,  sub: T.helpChatSub,  color: '#10B981', action: () => window.open('https://wa.me/18099090455', '_blank') },
-    { icon: '📧', label: T.helpEmail, sub: T.helpEmailSub, color: '#F59E0B', action: () => { window.location.href = 'mailto:Listopatron.app@gmail.com' } },
+    { icon: '📧', label: T.helpEmail, sub: T.helpEmailSub, color: '#F59E0B', action: () => { window.location.href = 'mailto:listopatron.app@gmail.com' } },
     { icon: '📞', label: T.helpPhone, sub: T.helpPhoneSub, color: '#EF4444', action: () => { window.location.href = 'tel:+18099090455' } },
   ]
   return (
