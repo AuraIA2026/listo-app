@@ -913,8 +913,28 @@ export default function OrdersPage({ lang = 'es', navigate, userData, userRole }
               )}
               {o.status==='done' && !o.rated && userRole!=='pro' && (o.paymentStatus==='approved'||o.paymentStatus==='pending_cash') && <button className="oc-btn review" onClick={()=>setReviewOrder(o)}>{T.review}</button>}
               {o.status==='done' && o.rated && <span className="oc-rated">⭐ {T.rated}</span>}
-              {o.status!=='cancelled' && <button className="oc-btn rebook" onClick={()=>navigate('search')}>{T.rebook}</button>}
+              {o.status!=='cancelled' && userRole !== 'pro' && <button className="oc-btn rebook" onClick={()=>navigate('search')}>{T.rebook}</button>}
             </div>
+            
+            {/* ── VISUALIZAR RESEÑA ── */}
+            {o.rated && o.ratingScore && (
+              <div style={{ marginTop: 14, padding: 14, borderRadius: 14, background: '#FAFAFA', border: '1px solid #EFEFEF', display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: '#333' }}>
+                    {userRole === 'pro' ? `Calificación de ${o.clientName || 'Cliente'}` : 'Tu Calificación'}
+                  </span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <span style={{ fontSize: 14, letterSpacing: 2 }}>{'⭐'.repeat(o.ratingScore)}</span>
+                    <span style={{ fontSize: 13, fontWeight: 900, color: '#F26000' }}>{o.ratingScore}.0</span>
+                  </div>
+                </div>
+                {o.ratingComment && (
+                  <p style={{ margin: 0, marginTop: 4, fontSize: 13, color: '#666', fontStyle: 'italic', lineHeight: 1.4 }}>
+                    "{o.ratingComment}"
+                  </p>
+                )}
+              </div>
+            )}
           </div>
         ))}
       </section>
