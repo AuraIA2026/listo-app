@@ -363,23 +363,46 @@ body{background:var(--bg);color:var(--text);font-family:var(--body);}
 
 /* ── FORMULARIO REGALOS ── */
 .gift-form{
-  background:var(--surface);border:1px solid rgba(245,158,11,0.3);
-  border-radius:16px;padding:24px;
+  background:linear-gradient(180deg, rgba(20,24,36,0.8), rgba(11,15,25,0.9));
+  border:1px solid rgba(255,255,255,0.05);
+  box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
+  border-radius:24px;padding:32px;
 }
-.gift-label{display:block;font-family:var(--display);font-size:12px;font-weight:700;color:var(--muted);margin-bottom:8px;}
-.gift-select, .gift-input, .gift-textarea{
-  width:100%;background:rgba(255,255,255,0.03);border:1px solid var(--border);
-  color:var(--text);border-radius:12px;padding:12px;font-family:var(--body);font-size:14px;
-  margin-bottom:16px;outline:none;transition:border-color .2s;
+.gift-label{display:block;font-family:var(--display);font-size:13px;font-weight:700;color:#A1A1AA;margin-bottom:10px;text-transform:uppercase;letter-spacing:0.5px;}
+.gift-input, .gift-textarea{
+  width:100%;background:rgba(0,0,0,0.2);border:1px solid rgba(255,255,255,0.1);
+  color:var(--text);border-radius:16px;padding:16px;font-family:var(--body);font-size:15px;
+  margin-bottom:24px;outline:none;transition:all .3s ease;
 }
-.gift-select:focus, .gift-input:focus, .gift-textarea:focus{border-color:var(--yellow);}
-.gift-textarea{resize:vertical;min-height:80px;}
+.gift-input:focus, .gift-textarea:focus{border-color:var(--yellow);box-shadow:0 0 0 4px rgba(245,158,11,0.1);}
+.gift-textarea{resize:vertical;min-height:90px;}
 .gift-btn{
-  width:100%;background:var(--yellow);color:#000;border:none;border-radius:12px;
-  padding:14px;font-family:var(--display);font-size:14px;font-weight:800;cursor:pointer;
-  transition:all .2s;
+  width:100%;background:linear-gradient(135deg, #F59E0B, #F26000);color:#FFF;border:none;border-radius:16px;
+  padding:18px;font-family:var(--display);font-size:16px;font-weight:800;cursor:pointer;
+  transition:all .3s cubic-bezier(0.4, 0, 0.2, 1);
+  text-transform:uppercase; letter-spacing:1px;
 }
-.gift-btn:disabled{opacity:.5;cursor:not-allowed;}
+.gift-btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 10px 20px -10px rgba(245,158,11,0.5);}
+.gift-btn:active:not(:disabled){transform:translateY(0);}
+.gift-btn:disabled{opacity:.5;cursor:not-allowed;background:var(--surface2);color:var(--muted);}
+
+/* ── AUTOCOMPLETE CUSTOM ── */
+.ac-container { position:relative; margin-bottom:24px; }
+.ac-input-wrapper { position:relative; }
+.ac-input-wrapper input { margin-bottom: 0; }
+.ac-dropdown {
+  position:absolute; top:100%; left:0; right:0; background:#1A1D27; border:1px solid rgba(255,255,255,0.1);
+  border-radius:12px; margin-top:8px; max-height:200px; overflow-y:auto; z-index:10;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+}
+.ac-item {
+  padding:12px 16px; border-bottom:1px solid rgba(255,255,255,0.05); cursor:pointer;
+  display:flex; flex-direction:column; gap:4px;
+}
+.ac-item:last-child { border-bottom:none; }
+.ac-item:hover { background:rgba(255,255,255,0.05); }
+.ac-name { font-size:14px; font-weight:700; color:#fff; }
+.ac-detail { font-size:12px; color:var(--muted); }
 `;
 
 /* ─── HELPERS ────────────────────────────────────────────── */
@@ -403,7 +426,9 @@ export default function AdminPage({ navigate }) {
   const [confirm, setConfirm]   = useState(null); // { type, obj }
 
   // Formulario de Regalos
-  const [giftUser, setGiftUser] = useState('');
+  const [giftUser, setGiftUser] = useState(''); // UID del usuario seleccionado
+  const [giftSearch, setGiftSearch] = useState(''); // Texto escrito para buscar
+  const [showAc, setShowAc] = useState(false); // Mostrar dropdown de autocomplete
   const [giftAmount, setGiftAmount] = useState('5');
   const [giftMessage, setGiftMessage] = useState('¡Felicidades! Pronto serás tu propio Patrón. Te regalamos estos contratos para que sigas creciendo.');
 
@@ -719,16 +744,50 @@ export default function AdminPage({ navigate }) {
             <div className="section-header">
               <span className="section-title">🎁 Central de Regalos</span>
             </div>
+            
             <div className="gift-form">
-              <label className="gift-label">1. Selecciona al Profesional o Usuario</label>
-              <select className="gift-select" value={giftUser} onChange={e => setGiftUser(e.target.value)}>
-                <option value="">-- Buscar persona --</option>
-                {users.map(u => (
-                  <option key={u.id} value={u.id}>
-                    {u.name || 'Sin nombre'} - {u.service || 'Profesional'} (Tel: {u.phone})
-                  </option>
-                ))}
-              </select>
+              <label className="gift-label">1. Buscar Profesional o Usuario</label>
+              <div className="ac-container">
+                <div className="ac-input-wrapper">
+                  <input 
+                    type="text" 
+                    className="gift-input" 
+                    placeholder="Escribe el nombre o teléfono..." 
+                    value={giftSearch} 
+                    onChange={e => {
+                      setGiftSearch(e.target.value);
+                      setGiftUser(''); // Reset selection if typing
+                      setShowAc(true);
+                    }}
+                    onFocus={() => setShowAc(true)}
+                  />
+                  {giftUser && <div style={{position:'absolute', right:16, top:16, color:'#10B981'}}>✅ Seleccionado</div>}
+                </div>
+                
+                {showAc && giftSearch && !giftUser && (
+                  <div className="ac-dropdown">
+                    {users
+                      .filter(u => 
+                        (u.name||'').toLowerCase().includes(giftSearch.toLowerCase()) || 
+                        (u.phone||'').includes(giftSearch)
+                      )
+                      .slice(0, 5) // Mostrar máximo 5
+                      .map(u => (
+                        <div key={u.id} className="ac-item" onClick={() => {
+                          setGiftUser(u.id);
+                          setGiftSearch(u.name || u.phone);
+                          setShowAc(false);
+                        }}>
+                          <span className="ac-name">{u.name || 'Sin nombre'} {u.approved ? '✅' : ''}</span>
+                          <span className="ac-detail">{u.service || 'Usuario'} · Tel: {u.phone}</span>
+                        </div>
+                      ))}
+                    {users.filter(u => (u.name||'').toLowerCase().includes(giftSearch.toLowerCase()) || (u.phone||'').includes(giftSearch)).length === 0 && (
+                      <div className="ac-item"><span className="ac-detail">No se encontraron resultados</span></div>
+                    )}
+                  </div>
+                )}
+              </div>
 
               <label className="gift-label">2. Contratos a regalar</label>
               <input type="number" className="gift-input" value={giftAmount} onChange={e => setGiftAmount(e.target.value)} min="1" />
