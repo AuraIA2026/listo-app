@@ -339,38 +339,26 @@ export default function HomePage({ lang, navigate, userRole }) {
         <button className="hp-notif" onClick={() => setShowHamburguesa(true)} style={{ 
           position: 'relative', 
           color: isPro ? '#FFF' : '#333',
-          animation: userData && !profileComplete ? 'pulseBtn 1.5s infinite' : 'none'
+          animation: userData && ((isPro && userData.planStatus !== 'active') || (!isPro)) ? 'pulseBtn 2s infinite' : 'none'
         }}>
           
-          {/* TOOLTIP DINÁMICO DE TUTORIAL / COMPLETAR PERFIL */}
-          {userData && !profileComplete && (
+          {/* TOOLTIP COMPRAR PLAN / POSTULARSE (PARA PROS Y USUARIOS) */}
+          {userData && (
             <div style={{
               position: 'absolute', top: '130%', left: '0', background: '#F26000', color: '#FFF',
               padding: '6px 12px', borderRadius: '8px', fontSize: '11px', fontWeight: '800',
               whiteSpace: 'nowrap', boxShadow: '0 4px 12px rgba(242,96,0,0.4)',
-              animation: 'floatTip 2s ease-in-out infinite', zIndex: 100
+              animation: 'floatTip 2s ease-in-out infinite', zIndex: 100,
+              display: (isPro && userData.planStatus === 'active') ? 'none' : 'block' // Ocultar si ya es pro activo
             }}>
               <div style={{
                 position: 'absolute', top: '-4px', left: '12px', width: '10px', height: '10px',
                 background: '#F26000', transform: 'rotate(45deg)'
               }} />
-              ⚠️ {lang === 'es' ? 'Completa tu perfil aquí' : 'Complete your profile'}
-            </div>
-          )}
-
-          {/* TOOLTIP POSTULARSE (Solo usuarios que ya completaron su perfil básico) */}
-          {userData && !isPro && profileComplete && (
-            <div style={{
-              position: 'absolute', top: '130%', left: '0', background: '#F26000', color: '#FFF',
-              padding: '6px 12px', borderRadius: '8px', fontSize: '11px', fontWeight: '800',
-              whiteSpace: 'nowrap', boxShadow: '0 4px 12px rgba(242,96,0,0.4)',
-              animation: 'floatTip 2s ease-in-out infinite', zIndex: 100
-            }}>
-              <div style={{
-                position: 'absolute', top: '-4px', left: '12px', width: '10px', height: '10px',
-                background: '#F26000', transform: 'rotate(45deg)'
-              }} />
-              💼 {lang === 'es' ? 'Postúlate aquí' : 'Apply here'}
+              {isPro 
+                ? (userData.approved ? '🎁 Activa tu plan aquí' : '📝 Termina tu postulación') 
+                : '💼 Postúlate aquí'
+              }
             </div>
           )}
 

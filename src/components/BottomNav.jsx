@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import './BottomNav.css'
+import { useUserData } from '../useUserData'
 import icInicio  from '../assets/icons/inicio.png'
 import icBuscar  from '../assets/icons/buscar.png'
 import icPedidos from '../assets/icons/pedidos.png'
@@ -132,6 +133,7 @@ function SubirFotosModal({ onClose, lang }) {
 
 /* ── BOTTOM NAV ── */
 export default function BottomNav({ currentPage, navigate, lang = 'es', userRole = 'client' }) {
+  const { userData, profileComplete } = useUserData()
 
   const activeTab =
     currentPage === 'home'     ? 'home'     :
@@ -147,6 +149,10 @@ export default function BottomNav({ currentPage, navigate, lang = 'es', userRole
 
   return (
     <>
+      <style>{`
+        @keyframes floatTipBottom { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+        @keyframes pulseGuide { 0%, 100% { transform: scale(1); box-shadow: 0 0 0 rgba(242,96,0,0); } 50% { transform: scale(1.05); box-shadow: 0 0 12px rgba(242,96,0,0.6); } }
+      `}</style>
       <nav className="bottom-nav">
         <div className="bottom-nav-inner">
           {tabs.map(tab => {
@@ -157,7 +163,26 @@ export default function BottomNav({ currentPage, navigate, lang = 'es', userRole
                 key={tab.id}
                 className={`nav-tab ${isActive ? 'active' : ''}`}
                 onClick={() => handleTab(tab.id)}
+                style={{ 
+                  position: 'relative',
+                  animation: (tab.id === 'profile' && userData && !profileComplete) ? 'pulseGuide 1.5s infinite' : 'none' 
+                }}
               >
+                {/* TOOLTIP DINÁMICO PARA PERFIL */}
+                {tab.id === 'profile' && userData && !profileComplete && (
+                  <div style={{
+                    position: 'absolute', bottom: '115%', right: '-5px', background: '#F26000', color: '#FFF',
+                    padding: '6px 10px', borderRadius: '8px', fontSize: '10px', fontWeight: '800',
+                    whiteSpace: 'nowrap', boxShadow: '0 4px 12px rgba(242,96,0,0.4)',
+                    animation: 'floatTipBottom 2s ease-in-out infinite', zIndex: 100
+                  }}>
+                    <div style={{
+                      position: 'absolute', bottom: '-4px', right: '15px', width: '10px', height: '10px',
+                      background: '#F26000', transform: 'rotate(45deg)'
+                    }} />
+                    ⚠️ {lang === 'es' ? 'Completa tu perfil' : 'Complete profile'}
+                  </div>
+                )}
                 {isActive && <div className="nav-tab-pill" />}
                 <span className="nav-icon">
                   {tab.type === 'svg'
