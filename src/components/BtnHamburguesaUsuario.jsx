@@ -104,29 +104,6 @@ export default function BtnHamburguesaUsuario({ onClose, navigate, lang = 'es' }
               )}
             </div>
 
-            {/* ══ 2. MIS SOLICITUDES ══ */}
-            <Accordion title="🏠 Mis Solicitudes" open={open === 'solicitudes'} onToggle={() => toggle('solicitudes')}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', marginBottom: '12px' }}>
-                {[
-                  { icon: '🕒', label: 'En proceso', val: displayPending, color: '#F57F17' },
-                  { icon: '✅', label: 'Completados', val: displayDone,    color: '#2E7D32' },
-                  { icon: '❌', label: 'Cancelados',  val: displayCancel,  color: '#C62828' },
-                ].map((s, i) => (
-                  <div key={i} style={{
-                    background: '#FFF8F3', borderRadius: '12px', padding: '10px 6px',
-                    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px',
-                  }}>
-                    <span style={{ fontSize: '20px' }}>{s.icon}</span>
-                    <span style={{ fontSize: '20px', fontWeight: '900', color: s.color }}>{s.val}</span>
-                    <span style={{ fontSize: '10px', color: '#777', textAlign: 'center', fontWeight: '600' }}>{s.label}</span>
-                  </div>
-                ))}
-              </div>
-              <button style={{
-                width: '100%', background: '#F26000', color: '#fff', border: 'none',
-                borderRadius: '10px', padding: '11px', fontSize: '13px', fontWeight: '800', cursor: 'pointer',
-              }} onClick={() => { if(navigate) navigate('orders'); onClose(); }}>📅 Ver historial detallado</button>
-            </Accordion>
 
             {/* ══ 3. MIS DIRECCIONES ══ */}
             <Accordion title="📌 Mis Direcciones" open={open === 'direcciones'} onToggle={() => toggle('direcciones')}>
@@ -168,28 +145,6 @@ export default function BtnHamburguesaUsuario({ onClose, navigate, lang = 'es' }
               ))}
             </Accordion>
 
-            {/* ══ 5. MIS FAVORITOS ══ */}
-            <Accordion title="⭐ Mis Favoritos" open={open === 'favoritos'} onToggle={() => toggle('favoritos')}>
-              {displayFavs.length > 0
-                ? displayFavs.map((f, i) => (
-                  <div key={i} style={{
-                    display: 'flex', alignItems: 'center', gap: '12px',
-                    background: '#FFF8F3', borderRadius: '10px', padding: '12px', marginBottom: '8px',
-                  }}>
-                    <span style={{ fontSize: '24px' }}>{f.icon}</span>
-                    <div style={{ flex: 1 }}>
-                      <p style={{ margin: 0, fontSize: '13px', fontWeight: '800', color: '#1A1A2E' }}>{f.name}</p>
-                      <p style={{ margin: 0, fontSize: '11px', color: '#777' }}>{f.spec} · ⭐ {f.rating}</p>
-                    </div>
-                    <button style={{
-                      background: '#F26000', color: '#fff', border: 'none',
-                      borderRadius: '8px', padding: '6px 10px', fontSize: '11px', fontWeight: '700', cursor: 'pointer',
-                    }}>Ver perfil</button>
-                  </div>
-                ))
-                : <p style={{ fontSize: 13, color: '#999' }}>No tienes favoritos aún</p>
-              }
-            </Accordion>
 
             {/* ══ 6. PROMOCIONES ══ */}
             <Accordion title="🎁 Promociones y Cupones" open={open === 'promos'} onToggle={() => toggle('promos')}>

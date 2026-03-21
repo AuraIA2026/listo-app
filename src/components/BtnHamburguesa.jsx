@@ -797,7 +797,6 @@ export default function BtnHamburguesa({ onClose, navigate, initialOpenSection =
                       {['🔑 Cambiar contraseña', '✏️ Editar información personal'].map((item, i) => (
                         <button key={i} className="pp-config-btn">{item}</button>
                       ))}
-                      <button className="pp-logout-btn">🚪 Cerrar sesión</button>
                     </div>
                   )}
                 </div>
