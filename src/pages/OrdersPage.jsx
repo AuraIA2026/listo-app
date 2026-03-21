@@ -451,8 +451,13 @@ function FloatingChat({ otherUid, otherName, otherColor = '#F26000', otherPhone 
 
   const fmtTime = (ts) => {
     if (!ts) return ''
-    const d = ts.toDate ? ts.toDate() : new Date(ts)
-    return d.toLocaleTimeString('es-DO', { hour: '2-digit', minute: '2-digit' })
+    try {
+      const d = ts.toDate ? ts.toDate() : new Date(ts)
+      if (isNaN(d.getTime())) return ''
+      return d.toLocaleTimeString('es-DO', { hour: '2-digit', minute: '2-digit' })
+    } catch(e) {
+      return ''
+    }
   }
 
   return (

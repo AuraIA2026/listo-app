@@ -219,20 +219,26 @@ export default function ChatPage({ lang = 'es', navigate, professional, userData
 
   const formatTime = (ts) => {
     if (!ts) return ''
-    const d = ts.toDate ? ts.toDate() : new Date(ts)
-    return d.toLocaleTimeString('es-DO', { hour: '2-digit', minute: '2-digit' })
+    try {
+      const d = ts.toDate ? ts.toDate() : new Date(ts)
+      if (isNaN(d.getTime())) return ''
+      return d.toLocaleTimeString('es-DO', { hour: '2-digit', minute: '2-digit' })
+    } catch(e) { return '' }
   }
 
   const formatLastTime = (ts) => {
     if (!ts) return ''
-    const d = ts.toDate ? ts.toDate() : new Date(ts)
-    const now = new Date()
-    const diff = now - d
-    if (diff < 60000)       return 'Ahora'
-    if (diff < 3600000)     return `${Math.floor(diff/60000)}m`
-    if (diff < 86400000)    return d.toLocaleTimeString('es-DO', { hour: '2-digit', minute: '2-digit' })
-    if (diff < 604800000)   return ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'][d.getDay()]
-    return d.toLocaleDateString('es-DO', { day: '2-digit', month: '2-digit' })
+    try {
+      const d = ts.toDate ? ts.toDate() : new Date(ts)
+      if (isNaN(d.getTime())) return ''
+      const now = new Date()
+      const diff = now - d
+      if (diff < 60000)       return 'Ahora'
+      if (diff < 3600000)     return `${Math.floor(diff/60000)}m`
+      if (diff < 86400000)    return d.toLocaleTimeString('es-DO', { hour: '2-digit', minute: '2-digit' })
+      if (diff < 604800000)   return ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'][d.getDay()]
+      return d.toLocaleDateString('es-DO', { day: '2-digit', month: '2-digit' })
+    } catch(e) { return '' }
   }
 
   const totalUnread = chats.reduce((s, c) => s + (c.unread || 0), 0)
