@@ -1,4 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { collection, query, where, getDocs } from 'firebase/firestore'
+import { db } from '../firebase'
 import listoLogo from '../assets/logo listo blanco.png'
 
 export default function WorkDonePage({ lang = 'es', navigate, professional, userRole, userData }) {
@@ -33,6 +35,29 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
   })
   const [fotos, setFotos] = useState([]) // max 3 previews
   const [submitted, setSubmitted] = useState(false)
+  const [latestOrder, setLatestOrder] = useState(null)
+
+  useEffect(() => {
+    if (!isPro || !finalUserData?.uid) return
+    const fetchLatestOrder = async () => {
+      try {
+        const q = query(
+          collection(db, 'orders'),
+          where('proId', '==', finalUserData.uid)
+        )
+        const snap = await getDocs(q)
+        const docs = []
+        snap.forEach(d => docs.push({ id: d.id, ...d.data() }))
+        docs.sort((a,b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0))
+        if (docs.length > 0) {
+          setLatestOrder(docs[0])
+        }
+      } catch (err) {
+        console.error("Error fetching latest order:", err)
+      }
+    }
+    fetchLatestOrder()
+  }, [isPro, finalUserData])
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
@@ -138,7 +163,7 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
             </div>
             <div style={{ flex: 1 }}>
               <p style={s.proLabel}>Cliente atendido</p>
-              <p style={s.proName}>Servicio Exitoso</p>
+              <p style={s.proName}>{latestOrder?.clientName || 'Cliente Reciente'}</p>
             </div>
           </div>
 
@@ -146,11 +171,13 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
             <p style={s.sectionLabel}>⭐ Reseña del Cliente</p>
             <div style={s.stars}>
               {[1, 2, 3, 4, 5].map(star => (
-                 <span key={star} style={{ fontSize: '32px', color: '#E0D0C0', padding: '0 4px', stroke: '#C0B0A0', strokeWidth: 1 }}>★</span>
+                 <span key={star} style={{ fontSize: '32px', color: (latestOrder?.ratingScore >= star ? '#F26000' : '#E0D0C0'), padding: '0 4px', stroke: (latestOrder?.ratingScore >= star ? '#F26000' : '#C0B0A0'), strokeWidth: 1 }}>★</span>
               ))}
             </div>
-            <p style={{ textAlign: 'center', fontSize: '14px', color: '#666', marginTop: '12px', fontStyle: 'italic' }}>
-              Aún no hay reseña del cliente para este trabajo. ¡Asegúrate de pedirle que te evalúe!
+            <p style={{ textAlign: 'center', fontSize: '14px', color: '#666', marginTop: '12px', fontStyle: (latestOrder?.rated && latestOrder?.ratingComment) ? 'normal' : 'italic' }}>
+              {latestOrder?.rated && latestOrder?.ratingComment 
+                ? `"${latestOrder.ratingComment}"\n— ${latestOrder.clientName || 'Cliente'}` 
+                : 'Aún no hay reseña del cliente para este trabajo. ¡Asegúrate de pedirle que te evalúe!'}
             </p>
           </div>
 
