@@ -10,7 +10,7 @@ const onboardingSlides = [
     subEs: 'Mecánicos, electricistas, plomeros, niñeras y más — cuando los necesitas.',
     subEn: 'Mechanics, electricians, plumbers, nannies and more — when you need them.',
     bg: '#F26000',
-    video: '/videos/servicios.mp4',
+    videos: ['/videos/servicios1.mp4', '/videos/servicios3.mp4'],
   },
   {
     titleEs: 'Profesionales verificados',
@@ -18,7 +18,7 @@ const onboardingSlides = [
     subEs: 'Cada profesional pasa por un proceso de verificación de identidad y experiencia.',
     subEn: 'Every professional goes through an identity and experience verification process.',
     bg: '#C24D00',
-    video: '/videos/profesionales1.mp4',
+    videos: ['/videos/profesionales1.mp4', '/videos/profesionales3.mp4'],
   },
   {
     titleEs: 'Reserva en minutos',
@@ -26,19 +26,22 @@ const onboardingSlides = [
     subEs: 'Selecciona, agenda y listo. Tu profesional llega a donde estás.',
     subEn: 'Select, schedule and done. Your professional comes to you.',
     bg: '#7A3000',
-    video: '/videos/reserva3.mp4',
+    videos: ['/videos/reserva1.mp4', '/videos/reserva2.mp4'],
   },
 ]
 
 const SLIDE_DURATION = 8000
+const VIDEO_DURATION = 4000
 
 export default function SplashScreen({ onFinish, lang = 'es' }) {
   const [phase, setPhase] = useState('splash')
   const [slideIndex, setSlideIndex] = useState(0)
+  const [videoIndex, setVideoIndex] = useState(0)
   const [animating, setAnimating] = useState(false)
   const [musicStarted, setMusicStarted] = useState(false)
   const audioRef = useRef(null)
   const autoTimer = useRef(null)
+  const videoTimer = useRef(null)
 
   useEffect(() => {
     const t = setTimeout(() => setPhase('onboarding'), 2200)
@@ -58,6 +61,18 @@ export default function SplashScreen({ onFinish, lang = 'es' }) {
     return () => clearTimeout(autoTimer.current)
   }, [phase, slideIndex])
 
+  useEffect(() => {
+    if (phase !== 'onboarding') return
+    setVideoIndex(0)
+    videoTimer.current = setInterval(() => {
+      setVideoIndex(i => {
+        const total = onboardingSlides[slideIndex].videos.length
+        return (i + 1) % total
+      })
+    }, VIDEO_DURATION)
+    return () => clearInterval(videoTimer.current)
+  }, [phase, slideIndex])
+
   const startMusic = () => {
     if (!musicStarted && audioRef.current) {
       audioRef.current.volume = 0.35
@@ -74,9 +89,11 @@ export default function SplashScreen({ onFinish, lang = 'es' }) {
 
   const goTo = (index) => {
     clearTimeout(autoTimer.current)
+    clearInterval(videoTimer.current)
     setAnimating(true)
     setTimeout(() => {
       setSlideIndex(index)
+      setVideoIndex(0)
       setAnimating(false)
     }, 300)
   }
@@ -94,6 +111,7 @@ export default function SplashScreen({ onFinish, lang = 'es' }) {
   const skip = () => {
     stopMusic()
     clearTimeout(autoTimer.current)
+    clearInterval(videoTimer.current)
     onFinish()
   }
 
@@ -113,6 +131,7 @@ export default function SplashScreen({ onFinish, lang = 'es' }) {
 
   const slide = onboardingSlides[slideIndex]
   const isLast = slideIndex === onboardingSlides.length - 1
+  const currentVideo = slide.videos[videoIndex]
 
   return (
     <div className="onboarding-screen" onClick={startMusic}>
@@ -122,19 +141,19 @@ export default function SplashScreen({ onFinish, lang = 'es' }) {
       </audio>
 
       <video
-        key={slide.video}
+        key={currentVideo}
         autoPlay
         muted
         loop
         playsInline
         className="onboarding-video-bg"
       >
-        <source src={slide.video} type="video/mp4" />
+        <source src={currentVideo} type="video/mp4" />
       </video>
 
       <div
         className="onboarding-overlay"
-        style={{ background: slide.bg + 'CC' }}
+        style={{ background: slide.bg + '99' }}
       />
 
       <button className="skip-btn" onClick={(e) => { e.stopPropagation(); skip() }}>
