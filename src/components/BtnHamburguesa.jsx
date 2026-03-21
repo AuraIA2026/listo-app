@@ -558,7 +558,7 @@ function EditModal({ userData, onSave, onCancel }) {
 
 /* ─── COMPONENTE PRINCIPAL ─── */
 export default function BtnHamburguesa({ onClose, navigate, initialOpenSection = 'plans' }) {
-  const { userData, loading, user, getInitials } = useUserData()
+  const { userData, loading, user, getInitials, profileComplete } = useUserData()
 
   const [section, setSection] = useState('main')
   const [planDetalle, setPlanDetalle] = useState(null)
@@ -644,6 +644,7 @@ export default function BtnHamburguesa({ onClose, navigate, initialOpenSection =
         @keyframes twinkle  { 0%{opacity:.3;transform:scale(.7) rotate(-10deg)} 100%{opacity:1;transform:scale(1.2) rotate(10deg)} }
         @keyframes slideUp  { from{transform:translateY(60px);opacity:0} to{transform:translateY(0);opacity:1} }
         @keyframes bounceIn { 0%{transform:scale(.6);opacity:0} 100%{transform:scale(1);opacity:1} }
+        @keyframes pulseGuide { 0%, 100% { transform: scale(1); box-shadow: 0 0 0 rgba(242,96,0,0); } 50% { transform: scale(1.05); box-shadow: 0 0 12px rgba(242,96,0,0.6); } }
       `}</style>
 
       <div className="pp-overlay" onClick={onClose}>
@@ -687,7 +688,11 @@ export default function BtnHamburguesa({ onClose, navigate, initialOpenSection =
                     <StatusBadge status={displayStatus} />
                   </div>
                   {/* ── Botón ✏️ FUNCIONAL ── */}
-                  <button className="pp-edit-btn" onClick={() => setShowEditModal(true)}>✏️ Editar</button>
+                  <button 
+                    className="pp-edit-btn" 
+                    onClick={() => setShowEditModal(true)}
+                    style={{ animation: !profileComplete && userData?.approved ? 'pulseGuide 1.5s infinite' : 'none' }}
+                  >✏️ Editar</button>
                 </div>
 
                 {/* ══ 2. PLANES 3D ══ */}
@@ -761,7 +766,7 @@ export default function BtnHamburguesa({ onClose, navigate, initialOpenSection =
 
                 {/* ══ 5. POSTULARSE ══ */}
                 {!userData?.approved && (
-                  <div className="pp-accordion">
+                  <div className="pp-accordion" style={{ animation: 'pulseGuide 2s infinite', borderRadius: '16px', boxShadow: '0 0 10px rgba(242,96,0,0.3)' }}>
                     <button className="pp-acc-header" onClick={() => toggle('apply')}>
                       <span>📝 Postularse como Profesional</span>
                       <span className="pp-acc-arrow">{openSection === 'apply' ? '▲' : '▼'}</span>

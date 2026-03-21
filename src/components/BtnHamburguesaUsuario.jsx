@@ -21,7 +21,7 @@ function Accordion({ title, open, onToggle, children }) {
 
 /* ─── COMPONENTE PRINCIPAL ─── */
 export default function BtnHamburguesaUsuario({ onClose, navigate, lang = 'es' }) {
-  const { userData, loading, user, getInitials } = useUserData()
+  const { userData, loading, user, getInitials, profileComplete } = useUserData()
 
   const [open, setOpen]       = useState('solicitudes')
   const [coupon, setCoupon]   = useState('')
@@ -49,6 +49,7 @@ export default function BtnHamburguesaUsuario({ onClose, navigate, lang = 'es' }
     <>
       <style>{`
         @keyframes slideUp { from{transform:translateY(100%);opacity:0} to{transform:translateY(0);opacity:1} }
+        @keyframes pulseGuide { 0%, 100% { transform: scale(1); box-shadow: 0 0 0 rgba(242,96,0,0); } 50% { transform: scale(1.05); box-shadow: 0 0 12px rgba(242,96,0,0.6); } }
         .uu-scroll::-webkit-scrollbar { display: none; }
       `}</style>
 
@@ -82,7 +83,7 @@ export default function BtnHamburguesaUsuario({ onClose, navigate, lang = 'es' }
               display: 'flex', alignItems: 'center', gap: '12px',
             }}>
               <span style={{ fontSize: '24px' }}>👋</span>
-              <div>
+              <div style={{ flex: 1 }}>
                 <p style={{ fontSize: '16px', fontWeight: '800', color: '#1A1A2E', margin: '0 0 2px' }}>
                   {lang === 'es' ? '¡Hola' : 'Hello'}, {loading ? '...' : displayName.split(' ')[0]}!
                 </p>
@@ -90,6 +91,17 @@ export default function BtnHamburguesaUsuario({ onClose, navigate, lang = 'es' }
                   {lang === 'es' ? '¿Qué necesitas hacer hoy?' : 'What do you need today?'}
                 </p>
               </div>
+              {!profileComplete && (
+                <button 
+                  onClick={() => { if(navigate) navigate('profile'); onClose(); }} 
+                  style={{
+                    background: '#F26000', color: '#FFF', border: 'none', padding: '8px 10px',
+                    borderRadius: '8px', fontSize: '11px', fontWeight: '900', cursor: 'pointer',
+                    animation: 'pulseGuide 1.5s infinite', whiteSpace: 'nowrap'
+                  }}>
+                  ✏️ {lang === 'es' ? 'Completar perfil' : 'Complete profile'}
+                </button>
+              )}
             </div>
 
             {/* ══ 2. MIS SOLICITUDES ══ */}
@@ -211,6 +223,7 @@ export default function BtnHamburguesaUsuario({ onClose, navigate, lang = 'es' }
               background: 'linear-gradient(135deg,#1C1C1C 0%,#3A1500 55%,#F26000 100%)',
               borderRadius: '16px', padding: '16px', marginBottom: '10px',
               display: 'flex', alignItems: 'center', gap: '12px',
+              animation: profileComplete ? 'pulseGuide 2s infinite' : 'none'
             }}>
               <span style={{ fontSize: '28px' }}>💼</span>
               <div style={{ flex: 1 }}>

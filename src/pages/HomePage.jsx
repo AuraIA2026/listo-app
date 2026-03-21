@@ -334,8 +334,13 @@ export default function HomePage({ lang, navigate, userRole }) {
       <div className="hp-search-bar" style={{ background: isPro ? '#1A1A2E' : '#FFF' }}>
         <style>{`
           @keyframes floatTip { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(4px); } }
+          @keyframes pulseBtn { 0%, 100% { transform: scale(1); box-shadow: 0 0 0 rgba(242,96,0,0); } 50% { transform: scale(1.1); box-shadow: 0 0 15px rgba(242,96,0,0.6); borderRadius: 50%; background: rgba(242,96,0,0.1); } }
         `}</style>
-        <button className="hp-notif" onClick={() => setShowHamburguesa(true)} style={{ position: 'relative', color: isPro ? '#FFF' : '#333' }}>
+        <button className="hp-notif" onClick={() => setShowHamburguesa(true)} style={{ 
+          position: 'relative', 
+          color: isPro ? '#FFF' : '#333',
+          animation: userData && !profileComplete ? 'pulseBtn 1.5s infinite' : 'none'
+        }}>
           
           {/* TOOLTIP DINÁMICO DE TUTORIAL / COMPLETAR PERFIL */}
           {userData && !profileComplete && (
