@@ -511,8 +511,8 @@ export default function HomePage({ lang, navigate, userRole }) {
               <h2 className="hp-sec-title">🗂️ {lang === 'es' ? 'Explorar servicios' : 'Explore services'}</h2>
             </div>
             <div className="cat-list">
-              {allCategories.map((c, i) => (
-                <button key={i} className="cat-list-item" style={{ animationDelay: `${i * 0.05}s` }} onClick={() => navigate('search')}>
+              {categories.map((c, i) => (
+                <button key={i} className="cat-list-item" style={{ animationDelay: `${i * 0.05}s` }} onClick={() => navigate('search', { catToSelect: c.id || 'all' })}>
                   <span className="cat-list-icon">{c.icon}</span>
                   <span className="cat-list-label">{lang === 'es' ? c.labelEs : c.labelEn}</span>
                   <span className="cat-list-arrow">›</span>
