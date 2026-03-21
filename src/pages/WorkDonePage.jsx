@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
-import { collection, query, where, getDocs } from 'firebase/firestore'
-import { db } from '../firebase'
+import { collection, query, where, getDocs, updateDoc, doc, addDoc, serverTimestamp } from 'firebase/firestore'
+import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage'
+import { db, storage } from '../firebase'
 import listoLogo from '../assets/logo listo blanco.png'
 
 export default function WorkDonePage({ lang = 'es', navigate, professional, userRole, userData }) {
@@ -36,21 +37,32 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
   const [fotos, setFotos] = useState([]) // max 3 previews
   const [submitted, setSubmitted] = useState(false)
   const [latestOrder, setLatestOrder] = useState(null)
+  const [isUploading, setIsUploading] = useState(false)
 
   useEffect(() => {
-    if (!isPro || !finalUserData?.uid) return
+    if (!finalUserData?.uid) return
     const fetchLatestOrder = async () => {
       try {
-        const q = query(
-          collection(db, 'orders'),
-          where('proId', '==', finalUserData.uid)
-        )
+        let q;
+        if (isPro) {
+          q = query(collection(db, 'orders'), where('proId', '==', finalUserData.uid))
+        } else {
+          q = query(collection(db, 'orders'), where('clientId', '==', finalUserData.uid))
+        }
+        
         const snap = await getDocs(q)
         const docs = []
         snap.forEach(d => docs.push({ id: d.id, ...d.data() }))
         docs.sort((a,b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0))
+        
         if (docs.length > 0) {
           setLatestOrder(docs[0])
+          if (!isPro) {
+            setFormData(prev => ({
+              ...prev,
+              nombreProfesional: docs[0].proName || docs[0].pro || ''
+            }))
+          }
         }
       } catch (err) {
         console.error("Error fetching latest order:", err)
@@ -71,7 +83,8 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
     const files = Array.from(e.target.files)
     const remaining = 3 - fotos.length
     const newFiles = files.slice(0, remaining)
-    const previews = newFiles.map(f => ({ url: URL.createObjectURL(f), name: f.name }))
+    // Guardamos el obj file original para subir a Firebase Storage
+    const previews = newFiles.map(f => ({ file: f, url: URL.createObjectURL(f), name: f.name }))
     setFotos(prev => [...prev, ...previews])
   }
 
@@ -85,42 +98,86 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
     setFormData({ nombreProfesional: proName, fechaFinalizacion:'', calificacion:0, completado:'', puntualidad:'', recomendaria:'', montoAcordado:'', montoFinal:'', formaPago:'', gastosAdicionales:'', experiencia:'' })
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-
-    // Solo guardar si calificacion >= 4
-    if (formData.calificacion >= 4) {
-      const nuevaResena = {
-        id: Date.now(),
-        nameEs: 'Cliente verificado',
-        photo: fotos.length > 0 ? fotos[0].url : null,
-        rating: formData.calificacion,
-        dateEs: 'Reciente',
-        dateEn: 'Recent',
-        specEs: formData.nombreProfesional || 'Profesional',
-        specEn: formData.nombreProfesional || 'Professional',
-        textEs: formData.experiencia,
-        textEn: formData.experiencia,
-        montoFinal: formData.montoFinal,
-        formaPago: formData.formaPago,
-      }
-      const existing = JSON.parse(localStorage.getItem('listo_resenas') || '[]')
-      existing.unshift(nuevaResena) // agregar al inicio
-      localStorage.setItem('listo_resenas', JSON.stringify(existing.slice(0, 20))) // max 20
+    if (!latestOrder) {
+      alert("No tienes trabajos recientes para evaluar.")
+      return
     }
 
-    console.log('Datos enviados:', formData, 'Fotos:', fotos)
-    setSubmitted(true)
+    if (formData.calificacion >= 4 || formData.calificacion > 0) {
+      setIsUploading(true)
+      try {
+        // Actualizar Firestore orders
+        await updateDoc(doc(db, 'orders', latestOrder.id), {
+          rated: true,
+          ratingScore: formData.calificacion,
+          ratingComment: formData.experiencia,
+          reviewerName: finalUserData?.name || 'Cliente',
+          checkoutMontoAcordado: formData.montoAcordado,
+          checkoutMontoFinal: formData.montoFinal,
+          checkoutFormaPago: formData.formaPago
+        })
+
+        // Notificar al profesional con push nativo
+        if (latestOrder.proId) {
+          await addDoc(collection(db, 'notificaciones'), {
+            userId:    latestOrder.proId,
+            orderId:   latestOrder.id,
+            type:      'new_review',
+            title:     lang==='es' ? '⭐ ¡Nueva Reseña!' : '⭐ New Review!',
+            text:      lang==='es' ? `Recibiste ${formData.calificacion} estrellas por Trabajo Listo.` : `You received a ${formData.calificacion} star rating.`,
+            read:      false,
+            icon:      '⭐',
+            createdAt: serverTimestamp()
+          })
+        }
+        setSubmitted(true)
+      } catch (err) {
+        console.error("Error submitting review:", err)
+        alert("Error al enviar evaluación. Revisa tu conexión.")
+      } finally {
+        setIsUploading(false)
+      }
+    }
   }
 
-  const handleSubmitProPhotos = (e) => {
+  const handleSubmitProPhotos = async (e) => {
     e.preventDefault && e.preventDefault()
     if (fotos.length === 0) {
       alert('Sube al menos 1 foto como comprobante de tu trabajo.')
       return
     }
-    console.log('Evidencias subidas por el Profesional:', fotos)
-    setSubmitted(true)
+    if (!latestOrder) {
+      alert("No se encontró un pedido activo para subir evidencias.")
+      return
+    }
+    
+    setIsUploading(true)
+    try {
+      // Subir cada foto a Firebase Storage (evita corromper la DB con base64 gigante)
+      const uploadPromises = fotos.map(async (fotoObj) => {
+        if (!fotoObj.file) return fotoObj.url;
+        const storageRef = ref(storage, `work_evidences/${latestOrder.id}_${Date.now()}_${fotoObj.file.name}`)
+        const uploadTask = await uploadBytesResumable(storageRef, fotoObj.file)
+        return await getDownloadURL(uploadTask.ref)
+      })
+      
+      const downloadedURLs = await Promise.all(uploadPromises)
+      
+      // Guardar links en Firestore
+      await updateDoc(doc(db, 'orders', latestOrder.id), {
+        evidences: downloadedURLs,
+        evidenceText: formData.experiencia
+      })
+      
+      setSubmitted(true)
+    } catch (err) {
+      console.error("Upload error:", err)
+      alert("Error subiendo evidencias. Revisa tu conexión de red o Storage rules.")
+    } finally {
+      setIsUploading(false)
+    }
   }
 
   if (submitted) {
@@ -224,9 +281,9 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
           <button
             onClick={handleSubmitProPhotos}
             style={s.btnPrimary}
-            disabled={submitted}
+            disabled={submitted || isUploading}
           >
-            {submitted ? 'Evidencias Guardadas ✓' : 'Subir Fotos y Terminar ✓'}
+            {isUploading ? 'Subiendo fotos a la nube...' : (submitted ? 'Evidencias Guardadas ✓' : 'Subir Fotos y Terminar ✓')}
           </button>
           <div style={{ height: '100px' }} />
         </div>
@@ -423,8 +480,8 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
             </div>
           </>
         )}
-        <button type="submit" style={s.btnPrimary}>
-          {submitted ? 'Evaluación enviada ✓' : 'Finalizar y Enviar ✓'}
+        <button type="submit" style={s.btnPrimary} disabled={submitted || isUploading}>
+          {isUploading ? 'Enviando...' : (submitted ? 'Evaluación enviada ✓' : 'Finalizar y Enviar ✓')}
         </button>
 
         <div style={{ height: '100px' }} />
