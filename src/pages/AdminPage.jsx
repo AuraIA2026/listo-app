@@ -360,6 +360,26 @@ body{background:var(--bg);color:var(--text);font-family:var(--body);}
 .cm-btn.success{background:var(--green);color:#fff;}
 .cm-btn.success:hover{background:#059669;}
 .cm-btn.ghost{background:var(--surface2);color:var(--muted);border:1px solid var(--border);}
+
+/* ── FORMULARIO REGALOS ── */
+.gift-form{
+  background:var(--surface);border:1px solid rgba(245,158,11,0.3);
+  border-radius:16px;padding:24px;
+}
+.gift-label{display:block;font-family:var(--display);font-size:12px;font-weight:700;color:var(--muted);margin-bottom:8px;}
+.gift-select, .gift-input, .gift-textarea{
+  width:100%;background:rgba(255,255,255,0.03);border:1px solid var(--border);
+  color:var(--text);border-radius:12px;padding:12px;font-family:var(--body);font-size:14px;
+  margin-bottom:16px;outline:none;transition:border-color .2s;
+}
+.gift-select:focus, .gift-input:focus, .gift-textarea:focus{border-color:var(--yellow);}
+.gift-textarea{resize:vertical;min-height:80px;}
+.gift-btn{
+  width:100%;background:var(--yellow);color:#000;border:none;border-radius:12px;
+  padding:14px;font-family:var(--display);font-size:14px;font-weight:800;cursor:pointer;
+  transition:all .2s;
+}
+.gift-btn:disabled{opacity:.5;cursor:not-allowed;}
 `;
 
 /* ─── HELPERS ────────────────────────────────────────────── */
@@ -381,6 +401,11 @@ export default function AdminPage({ navigate }) {
   const [users, setUsers]       = useState([]);
   const [toast, setToast]       = useState('');
   const [confirm, setConfirm]   = useState(null); // { type, obj }
+
+  // Formulario de Regalos
+  const [giftUser, setGiftUser] = useState('');
+  const [giftAmount, setGiftAmount] = useState('5');
+  const [giftMessage, setGiftMessage] = useState('¡Felicidades! Pronto serás tu propio Patrón. Te regalamos estos contratos para que sigas creciendo.');
 
   useEffect(() => {
     // 1. Escuchar Pagos
@@ -425,7 +450,7 @@ export default function AdminPage({ navigate }) {
            });
            showToast(`💚 Plan habilitado para ${obj.proName}`);
         } else {
-           showToast(`💚 Pago de comisión de ${obj.proName} liquidado`);
+           showToast(`💚 Transferencia de ${obj.proName} validada`);
         }
       }
       
@@ -450,6 +475,23 @@ export default function AdminPage({ navigate }) {
          } else {
             showToast(`⚠️ ${obj.name} ya tiene 0 contratos`);
          }
+      }
+      if (type === 'send_gift') {
+         const u = users.find(x => x.id === giftUser);
+         if (!u) return;
+         const current = u.contracts || 0;
+         const toAdd = parseInt(giftAmount) || 0;
+         await updateDoc(doc(db, 'users', giftUser), {
+            contracts: current + toAdd,
+            bonusMessage: {
+              amount: toAdd,
+              message: giftMessage,
+              date: new Date().toISOString()
+            }
+         });
+         showToast(`🎁 ¡Regalo enviado a ${u.name}!`);
+         setGiftUser('');
+         setGiftAmount('5');
       }
     } catch(err) {
       console.error(err);
@@ -514,13 +556,14 @@ export default function AdminPage({ navigate }) {
         </div>
 
         {/* TABS */}
-        <div className="admin-tabs">
+        <div className="admin-tabs" style={{overflowX:'auto', paddingBottom:4}}>
           {[
             { id:'pagos',      icon:'💳', label:'Historial',  count:completedPayments.length },
-            { id:'comisiones', icon:'⏳', label:'Validaciones', count:pendienteCount },
+            { id:'comisiones', icon:'⏳', label:'Validar', count:pendienteCount },
             { id:'bloqueados', icon:'👥', label:'Directorio', count:users.length },
+            { id:'regalos',    icon:'🎁', label:'Regalos', count: '+' },
           ].map(t => (
-            <button key={t.id} className={`tab-btn${tab===t.id?' active':''}`} onClick={()=>setTab(t.id)}>
+            <button key={t.id} className={`tab-btn${tab===t.id?' active':''}`} onClick={()=>setTab(t.id)} style={{minWidth:70}}>
               <span className="tab-icon">{t.icon}</span>
               <span>{t.label}</span>
               <span className="tab-count">{t.count}</span>
@@ -670,6 +713,40 @@ export default function AdminPage({ navigate }) {
           </div>
         )}
 
+        {/* ── TAB: REGALOS (Bonos de contratos) ── */}
+        {tab === 'regalos' && (
+          <div className="admin-section" style={{marginTop:16}}>
+            <div className="section-header">
+              <span className="section-title">🎁 Central de Regalos</span>
+            </div>
+            <div className="gift-form">
+              <label className="gift-label">1. Selecciona al Profesional o Usuario</label>
+              <select className="gift-select" value={giftUser} onChange={e => setGiftUser(e.target.value)}>
+                <option value="">-- Buscar persona --</option>
+                {users.map(u => (
+                  <option key={u.id} value={u.id}>
+                    {u.name || 'Sin nombre'} - {u.service || 'Profesional'} (Tel: {u.phone})
+                  </option>
+                ))}
+              </select>
+
+              <label className="gift-label">2. Contratos a regalar</label>
+              <input type="number" className="gift-input" value={giftAmount} onChange={e => setGiftAmount(e.target.value)} min="1" />
+
+              <label className="gift-label">3. Mensaje de Felicitación</label>
+              <textarea className="gift-textarea" value={giftMessage} onChange={e => setGiftMessage(e.target.value)} />
+
+              <button 
+                className="gift-btn" 
+                disabled={!giftUser || !giftAmount}
+                onClick={() => setConfirm({type:'send_gift'})}
+              >
+                🎁 Enviar y Notificar
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* TOAST */}
         <div className={`toast${toast?' show':''}`}>{toast}</div>
 
@@ -685,6 +762,7 @@ export default function AdminPage({ navigate }) {
                  confirm.type==='unblock' ? '¿Activar perfil?' :
                  confirm.type==='add_contract' ? '¿Sumar contrato?' :
                  confirm.type==='sub_contract' ? '¿Restar contrato?' :
+                 confirm.type==='send_gift'    ? '¿Enviar regalo sorpresa?' :
                  '¿Aprobar transferencia?'}
               </h3>
               <p className="cm-sub">
@@ -696,6 +774,8 @@ export default function AdminPage({ navigate }) {
                   ? `Se agregará 1 contrato gratis a la cuenta de ${confirm.obj.name}.`
                   : confirm.type==='sub_contract'
                   ? `Se quitará 1 contrato de la cuenta de ${confirm.obj.name}.`
+                  : confirm.type==='send_gift'
+                  ? `Se enviarán ${giftAmount} contratos a este usuario y saltará el confeti en su app.`
                   : `Se marcará el pago como verificado y se agregará el plan a la cuenta de ${confirm.obj.proName}.`}
               </p>
               <button
@@ -703,8 +783,9 @@ export default function AdminPage({ navigate }) {
                 onClick={ejecutarConfirm}>
                 {confirm.type==='block'   ? '🔴 Sí, suspender'    :
                  confirm.type==='unblock' ? '✅ Sí, activar' :
-                 confirm.type==='add_contract' ? '➕ Sí, sumar contrato' :
-                 confirm.type==='sub_contract' ? '➖ Sí, restar contrato' :
+                 confirm.type==='add_contract' ? '➕ Sí, sumar' :
+                 confirm.type==='sub_contract' ? '➖ Sí, restar' :
+                 confirm.type==='send_gift' ? '🎁 Enviar ahora' :
                  '💚 Confirmar validación'}
               </button>
               <button className="cm-btn ghost" onClick={() => setConfirm(null)}>Cancelar</button>

@@ -99,7 +99,7 @@ const menuItems = [
 ]
 
 const LISTO_PROMPT = `Eres el asistente virtual de Listo Patrón, app dominicana de servicios a domicilio.
-Comisión 10%, pagos en efectivo en 24h, soporte: listopatron.app@gmail.com / +1 (809) 909-0455.
+Sin comisiones por trabajo, compra tus contratos y quédate con el 100% de tus ganancias. Soporte: listopatron.app@gmail.com / +1 (809) 909-0455.
 Responde en español, amable y breve.`
 
 const compressImage = (file) => new Promise((resolve, reject) => {
@@ -259,7 +259,7 @@ function FaqBotScreen({ lang, onBack }) {
   const [input, setInput]     = useState('')
   const [loading, setLoading] = useState(false)
   const bottomRef = useRef(null)
-  const suggested = ['¿Cómo cancelo un servicio?', '¿Cómo funciona la comisión?', '¿Cómo solicito un reembolso?', '¿Cómo contacto al soporte?']
+  const suggested = ['¿Cómo cancelo un servicio?', '¿Cómo funcionan los planes?', '¿Cómo solicito un reembolso?', '¿Cómo contacto al soporte?']
 
   const sendMessage = async (text) => {
     const userText = text || input.trim()

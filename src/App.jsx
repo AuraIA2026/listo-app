@@ -542,6 +542,11 @@ export default function App() {
         <TutorialTour lang={lang} onFinish={() => { setShowTour(false); localStorage.setItem(TOUR_KEY, 'true') }} />
       )}
 
+      {/* ── Regalo de Contratos de parte del Admin ── */}
+      {userData?.bonusMessage && (
+        <BonusMessageModal bonus={userData.bonusMessage} userId={userData.uid} onClose={() => {}} />
+      )}
+
       {/* ── Banner mensaje: UNA vez por chat, se limpia al ir a orders ── */}
       {chatBanner && (
         <ChatMessageBanner
