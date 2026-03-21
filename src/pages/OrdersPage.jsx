@@ -760,6 +760,21 @@ export default function OrdersPage({ lang = 'es', navigate, userData, userRole }
 
   const handleReviewSubmit = async (id, stars, comment) => {
     await updateDoc(doc(db, 'orders', id), { rated:true, ratingScore:stars, ratingComment:comment, reviewerName:userData?.name||'Cliente', moderated:false }).catch(()=>{})
+    const order = allOrders.find(o => o.id === id)
+    if (order && order.proId) {
+      import('firebase/firestore').then(({ addDoc, collection, serverTimestamp }) => {
+        addDoc(collection(db, 'notificaciones'), {
+          userId:    order.proId,
+          orderId:   id,
+          type:      'new_review',
+          title:     lang==='es' ? '⭐ ¡Nueva Reseña!' : '⭐ New Review!',
+          text:      lang==='es' ? `Te han calificado con ${stars} estrellas.` : `You received a ${stars} star rating.`,
+          read:      false,
+          icon:      '⭐',
+          createdAt: serverTimestamp()
+        }).catch(console.error);
+      });
+    }
     setReviewOrder(null)
   }
 

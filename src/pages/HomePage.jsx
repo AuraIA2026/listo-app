@@ -304,7 +304,7 @@ export default function HomePage({ lang, navigate, userRole }) {
             specEn: categories.find(c => c.id === data.category)?.labelEn || 'General service',
             category: data.category || 'unknown',
             rating: data.rating || 5.0,
-            reviews: data.reviews || 0,
+            reviews: data.reviewCount || data.reviews || 0,
             location: data.location || 'RD',
             experience: data.experience || '1 año',
             avatar: (data.name || 'P').substring(0, 2).toUpperCase(),
@@ -312,8 +312,15 @@ export default function HomePage({ lang, navigate, userRole }) {
             img: data.photoURL || null
           })
         })
+        
+        // Ordenar destacados por estrellas y cantidad de reseñas
+        const sortedFeatured = [...prosList].sort((a, b) => {
+          if (b.rating !== a.rating) return b.rating - a.rating;
+          return b.reviews - a.reviews;
+        });
+
         setAllProsReal(prosList)
-        setFeaturedReal(prosList.slice(0, 6)) // Los primeros 6 como destacados por ahora
+        setFeaturedReal(sortedFeatured.slice(0, 6)) // Top 6 mejores calificados
       } catch (err) {
         console.error("Error fetching pros in Home: ", err)
       }

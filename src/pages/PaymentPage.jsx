@@ -137,6 +137,22 @@ export default function PaymentPage({ lang = 'es', navigate, professional }) {
           depositorName: method === 'transfer' ? depositorName : null,
           depositBank: method === 'transfer' ? selectedBank?.name : null
         })
+
+        // Enviar notificación al profesional
+        import('firebase/firestore').then(({ addDoc, collection, serverTimestamp }) => {
+          addDoc(collection(db, 'notificaciones'), {
+            userId: pro.proId || pro.uid || pro.id,
+            orderId: pro.orderId,
+            type: 'payment_received',
+            title: lang === 'es' ? '💸 ¡Pago Declarado!' : '💸 Payment Initiated!',
+            text: method === 'cash' 
+              ? (lang === 'es' ? 'El cliente declaró haberte pagado en efectivo.' : 'Client declared cash payment.')
+              : (lang === 'es' ? 'El cliente procesó el pago.' : 'Client processed the payment.'),
+            read: false,
+            icon: '💸',
+            createdAt: serverTimestamp()
+          }).catch(console.error);
+        });
       }
     } catch (e) {
       console.error("Error actualizando pago de orden:", e)

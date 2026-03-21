@@ -375,3 +375,58 @@ exports.enviarNotificacionPushBackground = functions.firestore
       return null;
     }
   });
+
+/* ═══════════════════════════════════════════════════════════
+   FUNCIÓN 7: actualizarRatingProfesional
+   Se ejecuta cuando un usuario califica al profesional en un pedido.
+   Calcula el nuevo promedio de estrellas y lo guarda en el perfil
+   del profesional en la colección 'users'.
+═══════════════════════════════════════════════════════════ */
+exports.actualizarRatingProfesional = functions.firestore
+  .document("orders/{orderId}")
+  .onUpdate(async (change, context) => {
+    const before = change.before.data();
+    const after = change.after.data();
+
+    // Solo nos importa si acaba de ser calificado
+    if (!before.rated && after.rated && after.proId) {
+      const proId = after.proId;
+
+      try {
+        // Consultar todos los pedidos calificados de este profesional
+        const ordersSnap = await db.collection("orders")
+          .where("proId", "==", proId)
+          .where("rated", "==", true)
+          .get();
+
+        if (ordersSnap.empty) return null;
+
+        let sum = 0;
+        let count = 0;
+
+        ordersSnap.forEach(doc => {
+          const d = doc.data();
+          if (typeof d.ratingScore === 'number') {
+            sum += d.ratingScore;
+            count++;
+          }
+        });
+
+        if (count > 0) {
+          const prom = sum / count;
+          // Redondear a 1 decimal (ej: 4.8)
+          const newRating = Math.round(prom * 10) / 10;
+
+          await db.collection("users").doc(proId).update({
+            rating: newRating,
+            reviewCount: count
+          });
+
+          console.log(`⭐ Rating actualizado para ${proId}: ${newRating} (${count} reseñas)`);
+        }
+      } catch (err) {
+        console.error("❌ Error actualizando rating:", err);
+      }
+    }
+    return null;
+  });
