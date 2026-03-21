@@ -330,7 +330,27 @@ export default function HomePage({ lang, navigate, userRole }) {
 
       {/* ── SEARCH BAR / HEADER ── */}
       <div className="hp-search-bar" style={{ background: isPro ? '#1A1A2E' : '#FFF' }}>
-        <button className="hp-notif" onClick={() => setShowHamburguesa(true)} style={{ color: isPro ? '#FFF' : '#333' }}>
+        <style>{`
+          @keyframes floatTip { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(4px); } }
+        `}</style>
+        <button className="hp-notif" onClick={() => setShowHamburguesa(true)} style={{ position: 'relative', color: isPro ? '#FFF' : '#333' }}>
+          
+          {/* TOOLTIP POSTULARSE */}
+          {!isPro && (
+            <div style={{
+              position: 'absolute', top: '130%', left: '0', background: '#F26000', color: '#FFF',
+              padding: '6px 12px', borderRadius: '8px', fontSize: '11px', fontWeight: '800',
+              whiteSpace: 'nowrap', boxShadow: '0 4px 12px rgba(242,96,0,0.4)',
+              animation: 'floatTip 2s ease-in-out infinite', zIndex: 100
+            }}>
+              <div style={{
+                position: 'absolute', top: '-4px', left: '12px', width: '10px', height: '10px',
+                background: '#F26000', transform: 'rotate(45deg)'
+              }} />
+              💼 {lang === 'es' ? 'Postúlate aquí' : 'Apply here'}
+            </div>
+          )}
+
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
             <line x1="3" y1="6" x2="21" y2="6"/>
             <line x1="3" y1="12" x2="21" y2="12"/>
