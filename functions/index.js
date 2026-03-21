@@ -241,3 +241,137 @@ exports.pagarComision = functions.https.onCall(async (data, context) => {
   console.log(`✅ Comisión pagada: ${comisionId} | Profesional ${profesionalId} desbloqueado`);
   return { ok: true, desbloqueado: true };
 });
+
+/* ═══════════════════════════════════════════════════════════
+   FUNCIÓN 5: enviarAlertaNuevoPedido
+   Se dispara automáticamente cada vez que un usuario crea un nuevo
+   pedido/contrato. Encuentra el correo del profesional y le avisa.
+═══════════════════════════════════════════════════════════ */
+const nodemailer = require("nodemailer");
+
+// Configurar el transportador de correo (requiere App Password de Gmail)
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: "listopatron.app@gmail.com",
+    pass: "TU_APP_PASSWORD_AQUI" // El usuario deberá reemplazar esto o usar secrets
+  }
+});
+
+exports.enviarAlertaNuevoPedido = functions.firestore
+  .document("orders/{orderId}")
+  .onCreate(async (snap, context) => {
+    try {
+      const order = snap.data();
+      const proId = order.proId;
+      if (!proId) return null;
+
+      // 1. Buscar el email del profesional en la colección users
+      const proDoc = await db.collection("users").doc(proId).get();
+      if (!proDoc.exists) return null;
+      
+      const proData = proDoc.data();
+      const destinoEmail = proData.email;
+      if (!destinoEmail) return null;
+
+      // 2. Construir el correo
+      const mailOptions = {
+        from: '"Listo Patrón" <listopatron.app@gmail.com>',
+        to: destinoEmail,
+        subject: "🚨 ¡NUEVO CONTRATO DISPONIBLE! - Listo Patrón 🚨",
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-top: 5px solid #F26000; border-radius: 10px;">
+            <h2 style="color: #1A1A2E; text-align: center;">¡Felicidades, ${proData.name.split(' ')[0]}! 🎉</h2>
+            <p style="font-size: 16px; color: #333;">Tienes una nueva solicitud de servicio esperándote en la plataforma.</p>
+            
+            <div style="background: #FAFAFA; padding: 15px; border-radius: 8px; margin: 20px 0;">
+              <p style="margin: 5px 0;"><strong>👤 Cliente:</strong> ${order.clientName || 'Usuario'}</p>
+              <p style="margin: 5px 0;"><strong>🛠️ Servicio:</strong> ${order.proSpecialty || 'Solicitud general'}</p>
+              <p style="margin: 5px 0;"><strong>📍 Dirección:</strong> ${order.clientAddress || order.address || 'Ver en la app'}</p>
+              <p style="margin: 5px 0;"><strong>💰 Precio:</strong> ${order.price || 'A convenir'}</p>
+              <p style="margin: 5px 0;"><strong>🕒 Fecha:</strong> ${order.dateToken} - ${order.timeToken}</p>
+            </div>
+
+            <p style="font-size: 14px; color: #666; text-align: center;">Por favor, abre la aplicación <b>Listo Patrón</b> de inmediato para aceptar o rechazar este trabajo antes de que el cliente busque a otra persona.</p>
+            
+            <div style="text-align: center; margin-top: 25px;">
+              <a href="https://listo-app.vercel.app/orders" style="background: #F26000; color: white; text-decoration: none; padding: 12px 25px; border-radius: 5px; font-weight: bold; font-size: 16px;">Ir a mis pedidos</a>
+            </div>
+            
+            <hr style="border: none; border-top: 1px solid #eee; margin-top: 30px;">
+            <p style="font-size: 12px; color: #999; text-align: center;">Este es un mensaje automático de Listo Patrón. Por favor no respondas a este correo.</p>
+          </div>
+        `
+      };
+
+      // 3. Enviar el correo
+      await transporter.sendMail(mailOptions);
+      console.log(`✅ Alerta enviada exitosamente a ${destinoEmail} para la orden ${context.params.orderId}`);
+      
+      return { success: true };
+
+    } catch (error) {
+      console.error("❌ Error enviando la alerta Mágica:", error);
+      return null;
+    }
+  });
+
+/* ═══════════════════════════════════════════════════════════
+   FUNCIÓN 6: enviarNotificacionPush
+   Esta función captura cualquier documento creado en la 
+   colección "notificaciones" y envía una alerta física nativa
+   al celular a través de Firebase Cloud Messaging (FCM).
+   ¡Esto hace que suene aunque la app esté cerrada!
+═══════════════════════════════════════════════════════════ */
+exports.enviarNotificacionPushBackground = functions.firestore
+  .document("notificaciones/{notifId}")
+  .onCreate(async (snap, context) => {
+    try {
+      const notifData = snap.data();
+      const userId = notifData.userId;
+      if (!userId) return null;
+
+      // 1. Obtener el FCM Token del usuario
+      const userDoc = await db.collection("users").doc(userId).get();
+      if (!userDoc.exists) return null;
+
+      const fcmToken = userDoc.data().fcmToken;
+      
+      // Si el usuario no tiene token guardado (no ha dado permisos o está en web) no hacemos nada
+      if (!fcmToken) {
+        console.log(`Usuario ${userId} no tiene FCM Token guardado.`);
+        return null; 
+      }
+
+      // 2. Construir el paquete Push nativo
+      const payload = {
+        token: fcmToken,
+        notification: {
+          title: notifData.title || "🔔 Nueva Notificación",
+          body: notifData.text || "Tienes un mensaje nuevo en Listo Patrón.",
+        },
+        android: {
+          notification: {
+            sound: "default",
+            clickAction: "FLUTTER_NOTIFICATION_CLICK" // Comportamiento estándar Capacitor/Flutter
+          }
+        },
+        apns: {
+          payload: {
+            aps: {
+              sound: "default"
+            }
+          }
+        }
+      };
+
+      // 3. Disparar a los servidores de Google/Apple
+      const response = await admin.messaging().send(payload);
+      console.log(`📲 Push Notification enviada exitosamente: ${response}`);
+      return { success: true, response };
+
+    } catch (error) {
+      console.error("❌ Error enviando Push Notification:", error);
+      return null;
+    }
+  });
