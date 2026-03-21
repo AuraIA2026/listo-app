@@ -264,11 +264,13 @@ export default function App() {
       where('members', 'array-contains', userData.uid)
     )
 
-    const msgUnsubscribers = []
+    const unsubMap = new Map() // Para no duplicar listeners por cada mensaje
 
     const unsubChats = onSnapshot(q, (chatsSnap) => {
       chatsSnap.forEach(chatDoc => {
         const chatId = chatDoc.id
+
+        if (unsubMap.has(chatId)) return // Ya estamos escuchando este chat
 
         // Escuchar mensajes de OTROS usuarios en este chat
         const msgQ = query(
@@ -276,11 +278,14 @@ export default function App() {
           where('senderId', '!=', userData.uid)
         )
 
+        // Marcar este chat específico para evitar spamear al iniciar
+        let isFirstLoad = true
+
         const unsubMsg = onSnapshot(msgQ, async (msgsSnap) => {
-          if (!chatListenerReady.current) {
-            // Primera carga: marcar todos como vistos, NO notificar
+          if (isFirstLoad) {
+            // Primera carga: marcar todos como vistos en notificaciones
             msgsSnap.forEach(d => notifiedMsgIds.current.add(d.id))
-            chatListenerReady.current = true
+            isFirstLoad = false
             return
           }
 
@@ -299,17 +304,15 @@ export default function App() {
           // Si ya está en orders o chat, NO mostrar banner pero SÍ sonar
           const page = currentPageRef.current
           if (page === 'orders' || page === 'chat') {
-            playMsgSound()   // solo sonido, sin banner
+            playMsgSound()
             return
           }
 
-          // ── Mostrar banner solo UNA VEZ por chatId hasta que vaya a orders ──
           if (banneredChatIds.current.has(chatId)) {
-            playMsgSound()   // solo sonido, banner ya fue mostrado
+            playMsgSound()
             return
           }
 
-          // Obtener nombre del remitente
           let senderName = 'Profesional'
           try {
             const uSnap = await getDocs(
@@ -318,18 +321,19 @@ export default function App() {
             if (!uSnap.empty) senderName = uSnap.docs[0].data().name || senderName
           } catch(e) {}
 
-          banneredChatIds.current.add(chatId)   // marcar este chat como ya notificado
+          banneredChatIds.current.add(chatId)
           playMsgSound()
           setChatBanner({ sender: senderName, text: lastMsg.text || '📎 Mensaje', chatId })
         })
 
-        msgUnsubscribers.push(unsubMsg)
+        unsubMap.set(chatId, unsubMsg)
       })
     })
 
     return () => {
       unsubChats()
-      msgUnsubscribers.forEach(fn => fn())
+      unsubMap.forEach(unsubFn => unsubFn())
+      unsubMap.clear()
     }
   }, [authReady, userData]) // eslint-disable-line
 

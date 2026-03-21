@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { MapContainer, TileLayer, Marker, Popup, Polyline } from 'react-leaflet'
+import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet'
 import { collection, addDoc, serverTimestamp, doc, updateDoc, onSnapshot, orderBy, query, setDoc, getDoc } from 'firebase/firestore'
 import { db, auth } from '../firebase'
 import L from 'leaflet'
@@ -316,6 +316,16 @@ function TratoScreenUser({ lang, proName }) {
   )
 }
 
+/* ── Efecto de Resize para el Mapa al abrir Teclado/Chat ─────────────── */
+function MapResizer() {
+  const map = useMap()
+  useEffect(() => {
+    const interval = setInterval(() => { map.invalidateSize() }, 300)
+    return () => clearInterval(interval)
+  }, [map])
+  return null
+}
+
 /* ── Página principal ──────────────────────────────────────────────────────── */
 export default function TrackingPage({ lang = 'es', navigate, professional, userRole }) {
   const targetName = professional?.clientName || professional?.pro || professional?.proName || professional?.name || 'Cliente/Profesional'
@@ -367,6 +377,20 @@ export default function TrackingPage({ lang = 'es', navigate, professional, user
   const vanIcon    = useRef(null); if (!vanIcon.current)    vanIcon.current    = createVanIcon(vanImg)
   const workerIcon = useRef(null); if (!workerIcon.current) workerIcon.current = createWorkerIcon()
   const intervalRef = useRef(null)
+
+  // Sincronizar con el documento de la orden en Firestore
+  useEffect(() => {
+    if (!professional?.id) return
+    const unsub = onSnapshot(doc(db, 'orders', professional.id), (docSnap) => {
+      if (docSnap.exists()) {
+        const d = docSnap.data()
+        if (d.status === 'working') setWorkStatus('working')
+        if (d.status === 'done') setWorkStatus('done')
+        if (d.status === 'cancelled') setWorkStatus('declined_done')
+      }
+    })
+    return () => unsub()
+  }, [professional?.id])
 
   useEffect(() => {
     if (workStatus !== 'tracking') return
@@ -498,6 +522,7 @@ export default function TrackingPage({ lang = 'es', navigate, professional, user
 
       <div className="tracking-map-wrap">
         <MapContainer center={mapCenter} zoom={14} className="tracking-map" zoomControl={false} attributionControl={false}>
+          <MapResizer />
           <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
           {routeSoFar.length>1    && <Polyline positions={routeSoFar}     pathOptions={{ color:'#BBBBBB', weight:4, opacity:0.5, dashArray:'8 4' }} />}
           {remainingRoute.length>1 && <Polyline positions={remainingRoute} pathOptions={{ color:workStatus==='retreating'?'#EF4444':'#F26000', weight:5, opacity:0.85 }} />}
