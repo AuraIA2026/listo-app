@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { collection, query, where, onSnapshot, doc, updateDoc, orderBy } from 'firebase/firestore';
+import { db } from '../firebase';
 
 /* ─── ESTILOS ─────────────────────────────────────────────── */
 const css = `
@@ -360,69 +362,113 @@ body{background:var(--bg);color:var(--text);font-family:var(--body);}
 .cm-btn.ghost{background:var(--surface2);color:var(--muted);border:1px solid var(--border);}
 `;
 
-/* ─── DATOS MOCK ─────────────────────────────────────────── */
-const MOCK_PAGOS = [
-  { id:'p1', pro:'Carlos Méndez', avatar:'CM', color:'#F26000', service:'Mecánico', total:1800, metodo:'tarjeta', status:'paid',    fecha:'Hoy, 2:45 PM' },
-  { id:'p2', pro:'Carmen Díaz',   avatar:'CD', color:'#3B82F6', service:'Limpieza', total:1200, metodo:'efectivo', status:'pending', fecha:'Hoy, 1:30 PM' },
-  { id:'p3', pro:'Ana Rodríguez', avatar:'AR', color:'#8B5CF6', service:'Electricista', total:950, metodo:'tarjeta', status:'paid', fecha:'Ayer, 5:00 PM' },
-  { id:'p4', pro:'Pedro Sánchez', avatar:'PS', color:'#10B981', service:'Plomero', total:750, metodo:'efectivo', status:'pending', fecha:'Ayer, 3:15 PM' },
-];
-
-const MOCK_COMISIONES = [
-  { id:'c1', pro:'Carmen Díaz',   avatar:'CD', color:'#3B82F6', service:'Limpieza',    monto:120, horasRestantes:18, pedidoId:'#00892' },
-  { id:'c2', pro:'Pedro Sánchez', avatar:'PS', color:'#10B981', service:'Plomero',     monto:75,  horasRestantes:3,  pedidoId:'#00891' },
-  { id:'c3', pro:'Luis García',   avatar:'LG', color:'#F59E0B', service:'Pintor',      monto:250, horasRestantes:22, pedidoId:'#00887' },
-];
-
-const MOCK_BLOQUEADOS = [
-  { id:'b1', pro:'Roberto Vásquez', avatar:'RV', color:'#EF4444', service:'Carpintero',  deuda:180, fechaBloqueo:'28 Feb 2026' },
-];
-
 /* ─── HELPERS ────────────────────────────────────────────── */
-const fmtRD = (n) => `RD$${n.toLocaleString()}`;
+const fmtRD = (n) => `RD$${Number(n).toLocaleString()}`;
 const timerState = (h) => h <= 4 ? 'critical' : h <= 10 ? 'warning' : 'ok';
 const timerPct   = (h) => Math.round((h / 24) * 100);
+
+/* ─── FORMATTER HORA ─── */
+const fmtDate = (timestamp) => {
+  if (!timestamp) return 'Reciente';
+  const d = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+  return d.toLocaleDateString('es-DO', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+};
 
 /* ─── COMPONENTE PRINCIPAL ───────────────────────────────── */
 export default function AdminPage({ navigate }) {
   const [tab, setTab]           = useState('pagos');
-  const [pagos, setPagos]       = useState(MOCK_PAGOS);
-  const [comisiones, setComs]   = useState(MOCK_COMISIONES);
-  const [bloqueados, setBloc]   = useState(MOCK_BLOQUEADOS);
+  const [payments, setPayments] = useState([]);
+  const [users, setUsers]       = useState([]);
   const [toast, setToast]       = useState('');
-  const [confirm, setConfirm]   = useState(null); // { type, id, name }
+  const [confirm, setConfirm]   = useState(null); // { type, obj }
+
+  useEffect(() => {
+    // 1. Escuchar Pagos
+    const unsubPay = onSnapshot(query(collection(db, 'payments'), orderBy('createdAt', 'desc')), (snap) => {
+      const arr = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      setPayments(arr);
+    });
+
+    // 2. Escuchar Usuarios (role: 'professional')
+    const unsubUsers = onSnapshot(query(collection(db, 'users'), where('role', '==', 'professional')), (snap) => {
+      const arr = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      setUsers(arr);
+    });
+
+    return () => { unsubPay(); unsubUsers(); };
+  }, []);
 
   const showToast = (msg) => {
     setToast(msg);
     setTimeout(() => setToast(''), 2800);
   };
 
-  /* Confirmar bloqueo */
-  const ejecutarConfirm = () => {
-    const { type, id, name } = confirm;
-    if (type === 'block') {
-      const com = comisiones.find(c => c.id === id);
-      setComs(p => p.filter(c => c.id !== id));
-      setBloc(p => [{ id:'b'+Date.now(), pro:name, avatar:name.split(' ').map(w=>w[0]).join('').slice(0,2), color:'#EF4444', service:com?.service||'', deuda:com?.monto||0, fechaBloqueo:'Hoy' }, ...p]);
-      showToast(`🔴 ${name} bloqueado`);
-    }
-    if (type === 'unblock') {
-      setBloc(p => p.filter(b => b.id !== id));
-      showToast(`✅ ${name} desbloqueado`);
-    }
-    if (type === 'paid') {
-      setComs(p => p.filter(c => c.id !== id));
-      showToast(`💚 Comisión de ${name} marcada como pagada`);
-    }
+  /* Confirmar acciones reales con Firebase */
+  const ejecutarConfirm = async () => {
+    if (!confirm) return;
+    const { type, obj } = confirm;
     setConfirm(null);
+
+    try {
+      if (type === 'paid') {
+        // Aprobar un pago (Comisión/Plan transferido)
+        await updateDoc(doc(db, 'payments', obj.id), { status: 'paid' });
+        
+        // Cargar los contratos al profesional si aplica
+        if (obj.planContracts) {
+           const u = users.find(u => u.id === obj.proId);
+           const currentContracts = u?.contracts || 0;
+           await updateDoc(doc(db, 'users', obj.proId), {
+             contracts: currentContracts + obj.planContracts + (obj.planBonus || 0),
+             planStatus: 'active',
+             currentPlan: obj.planId || 'standard'
+           });
+           showToast(`💚 Plan habilitado para ${obj.proName}`);
+        } else {
+           showToast(`💚 Pago de comisión de ${obj.proName} liquidado`);
+        }
+      }
+      
+      if (type === 'block') {
+         await updateDoc(doc(db, 'users', obj.id), { planStatus: 'inactive', approved: false });
+         showToast(`🔴 ${obj.name} bloqueado`);
+      }
+      if (type === 'unblock') {
+         await updateDoc(doc(db, 'users', obj.id), { planStatus: 'active', approved: true });
+         showToast(`✅ ${obj.name} activado`);
+      }
+      if (type === 'add_contract') {
+         const current = obj.contracts || 0;
+         await updateDoc(doc(db, 'users', obj.id), { contracts: current + 1 });
+         showToast(`✅ Se sumó 1 contrato a ${obj.name}`);
+      }
+      if (type === 'sub_contract') {
+         const current = obj.contracts || 0;
+         if (current > 0) {
+            await updateDoc(doc(db, 'users', obj.id), { contracts: current - 1 });
+            showToast(`➖ Se restó 1 contrato a ${obj.name}`);
+         } else {
+            showToast(`⚠️ ${obj.name} ya tiene 0 contratos`);
+         }
+      }
+    } catch(err) {
+      console.error(err);
+      showToast('❌ Ocurrió un error en la base de datos');
+    }
   };
 
-  const pendienteCount = comisiones.length;
-  const bloqueadoCount = bloqueados.length;
+  // Separemos los pagos en completados y pendientes
+  const completedPayments = payments.filter(p => p.status === 'paid');
+  const pendingPayments   = payments.filter(p => p.status === 'pending');
+  // Usuarios bloqueados/pendientes de aprobar
+  const blockedUsers      = users.filter(u => !u.approved || u.planStatus === 'inactive');
 
-  const totalRecaudado = pagos.filter(p=>p.status==='paid').reduce((a,p)=>a+p.total*.1,0);
-  const totalProfesionales = pagos.filter(p=>p.status==='paid').reduce((a,p)=>a+p.total*.9,0);
-  const comisionesPendientes = comisiones.reduce((a,c)=>a+c.monto,0);
+  const pendienteCount = pendingPayments.length;
+  const bloqueadoCount = blockedUsers.length;
+
+  const totalRecaudado = completedPayments.reduce((a,p) => a + (p.planPriceVal || p.transferAmount || 0), 0);
+  const totalProfesionales = completedPayments.reduce((a,p) => a + (p.total ? p.total * 0.9 : 0), 0);
+  const comisionesPendientes = pendingPayments.reduce((a,p) => a + (p.planPriceVal || p.transferAmount || 0), 0);
 
   return (
     <>
@@ -470,9 +516,9 @@ export default function AdminPage({ navigate }) {
         {/* TABS */}
         <div className="admin-tabs">
           {[
-            { id:'pagos',      icon:'💳', label:'Pagos',      count:pagos.length },
+            { id:'pagos',      icon:'💳', label:'Historial',  count:completedPayments.length },
             { id:'comisiones', icon:'⏳', label:'Pendientes', count:pendienteCount },
-            { id:'bloqueados', icon:'🔴', label:'Bloqueados',  count:bloqueadoCount },
+            { id:'bloqueados', icon:'👥', label:'Directorio', count:users.length },
           ].map(t => (
             <button key={t.id} className={`tab-btn${tab===t.id?' active':''}`} onClick={()=>setTab(t.id)}>
               <span className="tab-icon">{t.icon}</span>
@@ -482,45 +528,36 @@ export default function AdminPage({ navigate }) {
           ))}
         </div>
 
-        {/* ── TAB: PAGOS ── */}
+        {/* ── TAB: PAGOS (Historial Completado) ── */}
         {tab === 'pagos' && (
           <div className="admin-section" style={{marginTop:16}}>
             <div className="section-header">
               <span className="section-title">Todos los pagos</span>
               <button className="section-action">Exportar →</button>
             </div>
-            {pagos.map((p, i) => {
-              const mine = Math.round(p.total * 0.1);
-              const pro  = Math.round(p.total * 0.9);
+            {completedPayments.length === 0 && (
+               <div className="empty-admin"><p>Aún no hay transacciones validadas.</p></div>
+            )}
+            {completedPayments.map((p, i) => {
+              const amount = p.planPriceVal || p.transferAmount || 0;
+              const avatarLetter = p.proName.charAt(0).toUpperCase();
               return (
                 <div className="payment-card" key={p.id} style={{animationDelay:`${i*.06}s`}}>
                   <div className="pc-top">
-                    <div className="pc-avatar" style={{background:p.color}}>{p.avatar}</div>
+                    <div className="pc-avatar" style={{background:'#F26000'}}>{avatarLetter}</div>
                     <div className="pc-info">
-                      <div className="pc-name">{p.pro}</div>
-                      <div className="pc-detail">{p.service} · {p.fecha}</div>
+                      <div className="pc-name">{p.proName}</div>
+                      <div className="pc-detail">{p.planName || 'Comisión'} · {fmtDate(p.createdAt)}</div>
                     </div>
                     <div className="pc-right">
-                      <div className="pc-total">{fmtRD(p.total)}</div>
-                      <span className={`method-pill ${p.metodo==='tarjeta'?'card':'cash'}`}>
-                        {p.metodo==='tarjeta'?'💳 Tarjeta':'💵 Efectivo'}
+                      <div className="pc-total">{fmtRD(amount)}</div>
+                      <span className={`method-pill ${p.method==='card'?'card':'cash'}`}>
+                        {p.method==='card'?'💳 Tarjeta':'💵 Efectivo'}
                       </span>
                     </div>
                   </div>
-                  <div className="pc-split">
-                    <div className="split-item mine">
-                      <div className="split-label">Tu parte</div>
-                      <div className="split-amount">{fmtRD(mine)}</div>
-                      <div className="split-pct">10%</div>
-                    </div>
-                    <div className="split-item pro">
-                      <div className="split-label">Profesional</div>
-                      <div className="split-amount">{fmtRD(pro)}</div>
-                      <div className="split-pct">90%</div>
-                    </div>
-                  </div>
                   <span className={`status-pill ${p.status}`}>
-                    {p.status==='paid' ? '✅ Pagado' : '⏳ Pendiente confirmación'}
+                    ✅ Confirmado
                   </span>
                 </div>
               );
@@ -528,55 +565,54 @@ export default function AdminPage({ navigate }) {
           </div>
         )}
 
-        {/* ── TAB: COMISIONES PENDIENTES ── */}
+        {/* ── TAB: COMISIONES PENDIENTES (Revisiones) ── */}
         {tab === 'comisiones' && (
           <div className="admin-section" style={{marginTop:16}}>
             <div className="section-header">
-              <span className="section-title">Efectivo — cobro pendiente</span>
+              <span className="section-title">Efectivo — cobro y planes pendientes</span>
             </div>
-            {comisiones.length === 0 && (
+            {pendingPayments.length === 0 && (
               <div className="empty-admin">
                 <span>🎉</span>
                 <p>Sin pendientes</p>
                 <small>Todos los profesionales están al día</small>
               </div>
             )}
-            {comisiones.map((c, i) => {
-              const state = timerState(c.horasRestantes);
-              const pct   = timerPct(c.horasRestantes);
+            {pendingPayments.map((c, i) => {
+              const amount = c.planPriceVal || c.transferAmount || 0;
+              const avatarLetter = c.proName.charAt(0).toUpperCase();
               return (
-                <div className={`comision-card${state==='critical'?' critical':''}`} key={c.id} style={{animationDelay:`${i*.06}s`}}>
+                <div className="comision-card warning" key={c.id} style={{animationDelay:`${i*.06}s`}}>
                   <div className="cc-top">
-                    <div className="cc-avatar" style={{background:c.color}}>{c.avatar}</div>
+                    <div className="cc-avatar" style={{background:'#F59E0B'}}>{avatarLetter}</div>
                     <div className="cc-info">
-                      <div className="cc-name">{c.pro}</div>
-                      <div className="cc-service">{c.service} · Pedido {c.pedidoId}</div>
+                      <div className="cc-name">{c.proName}</div>
+                      <div className="cc-service">{c.planName || 'Pago de comisión'} · Banco {c.bank||'No disp'}</div>
+                      <div style={{fontSize:12, color:'var(--brand)', marginTop:2}}>Deposita: {c.depositorName}</div>
                     </div>
-                    <div className="cc-amount">{fmtRD(c.monto)}</div>
+                    <div className="cc-amount">{fmtRD(amount)}</div>
                   </div>
-
-                  <div className="timer-bar-wrap">
-                    <div className="timer-label">
-                      <span>⏱ Tiempo restante</span>
-                      <span className={state}>{c.horasRestantes}h restantes</span>
+                  
+                  {c.receiptUrl && (
+                    <div style={{marginBottom:12}}>
+                      <a href={c.receiptUrl} target="_blank" rel="noreferrer" style={{color:'var(--blue)', fontSize:12, textDecoration:'none', background:'var(--blue-dim)', padding:'4px 8px', borderRadius:8}}>
+                         🖼️ Ver comprobante de pago
+                      </a>
                     </div>
-                    <div className="timer-track">
-                      <div className={`timer-fill ${state}`} style={{width:`${pct}%`}} />
-                    </div>
-                  </div>
+                  )}
 
                   <div className="cc-actions">
                     <button className="cc-btn remind"
-                      onClick={() => showToast(`📱 Recordatorio enviado a ${c.pro}`)}>
-                      📱 Recordar
+                      onClick={() => showToast(`📱 Recordatorio enviado a ${c.proName}`)}>
+                      📱 Mensaje
                     </button>
                     <button className="cc-btn paid"
-                      onClick={() => setConfirm({type:'paid', id:c.id, name:c.pro})}>
-                      ✅ Marcar pagado
+                      onClick={() => setConfirm({type:'paid', obj:c})}>
+                      ✅ Validar pago & activar
                     </button>
                     <button className="cc-btn block"
-                      onClick={() => setConfirm({type:'block', id:c.id, name:c.pro})}>
-                      🔴 Bloquear
+                      onClick={() => setConfirm({type:'block', obj:c})}>
+                      🔴 Rechazar
                     </button>
                   </div>
                 </div>
@@ -585,42 +621,49 @@ export default function AdminPage({ navigate }) {
           </div>
         )}
 
-        {/* ── TAB: BLOQUEADOS ── */}
+        {/* ── TAB: DIRECTORIO (Todos los usuarios) ── */}
         {tab === 'bloqueados' && (
           <div className="admin-section" style={{marginTop:16}}>
             <div className="section-header">
-              <span className="section-title">Perfiles suspendidos</span>
+              <span className="section-title">Todos los profesionales</span>
             </div>
-            {bloqueados.length === 0 && (
+            {users.length === 0 && (
               <div className="empty-admin">
-                <span>✅</span>
-                <p>Sin bloqueados</p>
-                <small>Ningún perfil está suspendido</small>
+                <span>🚫</span>
+                <p>No hay profesionales</p>
               </div>
             )}
-            {bloqueados.map((b, i) => (
-              <div className="blocked-card" key={b.id} style={{animationDelay:`${i*.06}s`}}>
+            {users.map((u, i) => (
+              <div className="blocked-card" key={u.id} style={{animationDelay:`${i*.06}s`, borderColor: u.planStatus==='inactive'?'rgba(239,68,68,0.25)':'rgba(255,255,255,0.1)'}}>
                 <div className="bc-top">
-                  <div className="cc-avatar" style={{background:b.color, width:40, height:40, borderRadius:12, display:'flex', alignItems:'center', justifyContent:'center', fontFamily:'Syne,sans-serif', fontWeight:800, fontSize:12, color:'#fff', flexShrink:0}}>{b.avatar}</div>
-                  <div className="bc-info">
-                    <div className="bc-name">{b.pro}</div>
-                    <div className="bc-reason">⛔ Comisión no pagada · {b.fechaBloqueo}</div>
+                  <div className="cc-avatar" style={{background: u.planStatus==='inactive'?'#EF4444':'#10B981', width:40, height:40, borderRadius:12, display:'flex', alignItems:'center', justifyContent:'center', fontFamily:'Syne,sans-serif', fontWeight:800, fontSize:12, color:'#fff', flexShrink:0}}>
+                     {u.name?u.name.charAt(0).toUpperCase():'P'}
                   </div>
-                  <div className="bc-debt">{fmtRD(b.deuda)}</div>
-                </div>
-                <div style={{display:'flex',gap:8,alignItems:'center',marginBottom:12}}>
-                  <span className="blocked-icon">BLOQUEADO</span>
-                  <span style={{fontSize:12,color:'var(--muted)'}}>No puede recibir pedidos</span>
+                  <div className="bc-info">
+                    <div className="bc-name">{u.name || 'Profesional'} {u.approved ? '✅' : '⏳'}</div>
+                    <div className="bc-reason" style={{color: 'var(--muted)'}}>Contratos: {u.contracts || 0} · Tel: {u.phone}</div>
+                  </div>
                 </div>
                 <div className="bc-actions">
-                  <button className="bc-btn contact"
-                    onClick={() => showToast(`📞 Contactando a ${b.pro}...`)}>
-                    📞 Contactar
+                  <button className="bc-btn unblock" onClick={() => setConfirm({type:'add_contract', obj:u})}>
+                    ➕ 1 Contrato
                   </button>
-                  <button className="bc-btn unblock"
-                    onClick={() => setConfirm({type:'unblock', id:b.id, name:b.pro})}>
-                    ✅ Desbloquear
+                  <button className="bc-btn contact" style={{color:'var(--yellow)', borderColor:'rgba(245,158,11,0.2)'}} onClick={() => setConfirm({type:'sub_contract', obj:u})}>
+                    ➖ 1 Contrato
                   </button>
+                </div>
+                <div className="bc-actions" style={{marginTop:8}}>
+                  {u.planStatus === 'inactive' || !u.approved ? (
+                    <button className="bc-btn unblock"
+                      onClick={() => setConfirm({type:'unblock', obj:u})}>
+                      ✅ Activar
+                    </button>
+                  ) : (
+                    <button className="bc-btn contact" style={{color:'#EF4444', borderColor:'rgba(239,68,68,0.2)'}}
+                      onClick={() => setConfirm({type:'block', obj:u})}>
+                      🔴 Suspender
+                    </button>
+                  )}
                 </div>
               </div>
             ))}
@@ -635,26 +678,34 @@ export default function AdminPage({ navigate }) {
           <div className="confirm-overlay" onClick={() => setConfirm(null)}>
             <div className="confirm-modal" onClick={e => e.stopPropagation()}>
               <span className="cm-icon">
-                {confirm.type==='block' ? '🔴' : confirm.type==='unblock' ? '✅' : '💚'}
+                {confirm.type==='block' ? '🔴' : confirm.type==='sub_contract' ? '➖' : confirm.type==='add_contract' ? '➕' : confirm.type==='unblock' ? '✅' : '💚'}
               </span>
               <h3 className="cm-title">
-                {confirm.type==='block'   ? '¿Bloquear perfil?' :
-                 confirm.type==='unblock' ? '¿Desbloquear perfil?' :
-                 '¿Marcar como pagado?'}
+                {confirm.type==='block'   ? '¿Suspender perfil?' :
+                 confirm.type==='unblock' ? '¿Activar perfil?' :
+                 confirm.type==='add_contract' ? '¿Sumar contrato?' :
+                 confirm.type==='sub_contract' ? '¿Restar contrato?' :
+                 '¿Aprobar confirmación?'}
               </h3>
               <p className="cm-sub">
                 {confirm.type==='block'
-                  ? `${confirm.name} no podrá recibir nuevos pedidos hasta que pague su comisión.`
+                  ? `${confirm.obj.name} quedará inactivo y no recibirá trabajos.`
                   : confirm.type==='unblock'
-                  ? `${confirm.name} podrá volver a recibir pedidos normalmente.`
-                  : `Confirmas que ${confirm.name} pagó su comisión en efectivo.`}
+                  ? `Se activará el perfil de ${confirm.obj.name} en el sistema.`
+                  : confirm.type==='add_contract'
+                  ? `Se agregará 1 contrato gratis a la cuenta de ${confirm.obj.name}.`
+                  : confirm.type==='sub_contract'
+                  ? `Se quitará 1 contrato de la cuenta de ${confirm.obj.name}.`
+                  : `Se marcará este pago como verificado y se agregará 1 al plan de ${confirm.obj.proName}.`}
               </p>
               <button
-                className={`cm-btn ${confirm.type==='block'?'danger':'success'}`}
+                className={`cm-btn ${confirm.type==='block'||confirm.type==='sub_contract'?'danger':'success'}`}
                 onClick={ejecutarConfirm}>
-                {confirm.type==='block'   ? '🔴 Sí, bloquear'    :
-                 confirm.type==='unblock' ? '✅ Sí, desbloquear' :
-                 '💚 Confirmar pago'}
+                {confirm.type==='block'   ? '🔴 Sí, suspender'    :
+                 confirm.type==='unblock' ? '✅ Sí, activar' :
+                 confirm.type==='add_contract' ? '➕ Sí, sumar contrato' :
+                 confirm.type==='sub_contract' ? '➖ Sí, restar contrato' :
+                 '💚 Confirmar validación'}
               </button>
               <button className="cm-btn ghost" onClick={() => setConfirm(null)}>Cancelar</button>
             </div>

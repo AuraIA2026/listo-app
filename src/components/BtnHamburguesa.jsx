@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
 import { getAuth, updateProfile } from 'firebase/auth'
-import { doc, updateDoc } from 'firebase/firestore'
-import { db } from '../firebase'
+import { doc, updateDoc, collection, addDoc, serverTimestamp } from 'firebase/firestore'
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
+import { db, storage } from '../firebase'
 import { useUserData } from '../useUserData'
 import './BtnHamburguesa.css'
 import '../pages/PaymentPage.css' // Importando estilos idénticos al pago de usuarios
@@ -214,6 +215,7 @@ function PaymentSection({ plan, onBack, onConfirm }) {
   const [transferAmount, setTransferAmount] = useState('')
   const [depositorName, setDepositorName] = useState('')
   const [receiptUploaded, setReceiptUploaded] = useState(false)
+  const [receiptFile, setReceiptFile] = useState(null)
   const receiptInputRef = useRef(null)
 
   // States para Modal Webview AZUL
@@ -236,7 +238,10 @@ function PaymentSection({ plan, onBack, onConfirm }) {
   ]
 
   const handleReceiptUpload = (e) => {
-    if (e.target.files && e.target.files.length > 0) setReceiptUploaded(true)
+    if (e.target.files && e.target.files.length > 0) {
+      setReceiptFile(e.target.files[0])
+      setReceiptUploaded(true)
+    }
   }
 
   const handleProcessAzul = () => {
@@ -255,6 +260,13 @@ function PaymentSection({ plan, onBack, onConfirm }) {
   const canConfirmTransfer = method === 'transfer' && selectedBank && transferAmount > 0 && depositorName.trim() !== '' && receiptUploaded
   const canConfirmCard = method === 'card' && receiptUploaded
   const canConfirm = canConfirmTransfer || canConfirmCard
+  const [isUploading, setIsUploading] = useState(false)
+
+  const handleConfirmPay = async () => {
+    setIsUploading(true)
+    await onConfirm({ method, selectedBank, transferAmount, depositorName, receiptFile })
+    setIsUploading(false)
+  }
 
   return (
     <div className="payment-page" style={{ position: 'relative', height: '100%', minHeight: 'auto', background: 'transparent' }}>
@@ -470,11 +482,11 @@ function PaymentSection({ plan, onBack, onConfirm }) {
       <div className="payment-fixed-bottom" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: 'white', padding: '20px', borderTop: '1px solid #eee', boxShadow: '0 -4px 16px rgba(0,0,0,0.05)', zIndex: 100 }}>
         <button
           className={`pay-confirm-btn fade-up ${canConfirm ? 'ready' : ''}`}
-          disabled={!canConfirm}
-          onClick={onConfirm}
+          disabled={!canConfirm || isUploading}
+          onClick={handleConfirmPay}
           style={{ width: '100%', padding: '16px', background: canConfirm ? pal.primary : '#E0E0E0', color: canConfirm ? 'white' : '#999', border: 'none', borderRadius: '16px', fontSize: '16px', fontWeight: '900', cursor: canConfirm ? 'pointer' : 'not-allowed', transition: 'all 0.3s' }}
         >
-          {canConfirm
+          {isUploading ? 'Procesando pago...' : canConfirm
             ? `Enviar Solicitud de ${plan.nombre}`
             : 'Completa los pasos para continuar'}
         </button>
@@ -596,6 +608,60 @@ export default function BtnHamburguesa({ onClose, navigate, initialOpenSection =
     }
   }
 
+  // ── Procesar Pago a Firebase ──
+  const createPaymentInDb = async (payData) => {
+    try {
+       let picUrl = ''
+       if (payData.method === 'transfer' && payData.receiptFile) {
+          const imgRef = ref(storage, `receipts/${user.uid}_${Date.now()}`)
+          await uploadBytes(imgRef, payData.receiptFile)
+          picUrl = await getDownloadURL(imgRef)
+       }
+
+       const priceNum = parseInt(planDetalle.precio.replace(/\D/g, '')) || 0
+       const contractsParsed = planDetalle.contratos.includes('∞') ? 999 : (parseInt(planDetalle.contratos.replace(/\D/g, '')) || 0)
+
+       const newPayment = {
+         proId: user.uid,
+         proName: userData?.name || 'Profesional',
+         proPhone: userData?.phone || '',
+         proCity: userData?.city || '',
+         proAvatar: userData?.photoURL || '',
+         planId: planDetalle.id,
+         planName: planDetalle.nombre,
+         planPriceText: planDetalle.precio,
+         planPriceVal: priceNum,
+         planContracts: contractsParsed,
+         planBonus: 3,
+         method: payData.method,
+         status: payData.method === 'card' ? 'paid' : 'pending',
+         bank: payData.selectedBank ? payData.selectedBank.name : '',
+         transferAmount: payData.transferAmount || '',
+         depositorName: payData.depositorName || '',
+         receiptUrl: picUrl,
+         createdAt: serverTimestamp()
+       }
+
+       await addDoc(collection(db, 'payments'), newPayment)
+
+       if (payData.method === 'card') {
+          const finalContracts = (userData?.contracts || 0) + contractsParsed + 3
+          await updateDoc(doc(db, 'users', user.uid), {
+             contracts: finalContracts,
+             planStatus: 'active',
+             currentPlan: planDetalle.id
+          })
+       } else {
+          await updateDoc(doc(db, 'users', user.uid), { planStatus: 'review' })
+       }
+
+       setConfirmed(planDetalle)
+    } catch(err) {
+       console.error("Error creating payment", err)
+       alert("Error procesando pago. Intenta de nuevo.")
+    }
+  }
+
   // Datos a mostrar: Firebase o fallback
   const displayName = userData?.name || user?.displayName || 'Profesional'
   const displayCity = userData?.city || 'Santo Domingo'
@@ -655,7 +721,7 @@ export default function BtnHamburguesa({ onClose, navigate, initialOpenSection =
           <div className="pp-scroll" ref={scrollRef}>
 
             {section === 'payment' && planDetalle ? (
-              <PaymentSection plan={planDetalle} onBack={() => { setSection('main'); setPlanDetalle(null) }} onConfirm={() => setConfirmed(planDetalle)} />
+              <PaymentSection plan={planDetalle} onBack={() => { setSection('main'); setPlanDetalle(null) }} onConfirm={createPaymentInDb} />
 
             ) : section === 'apply' ? (
               <>
