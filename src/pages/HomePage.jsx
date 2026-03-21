@@ -7,6 +7,7 @@ import TutorialTour, { useTour } from '../components/TutorialTour'
 import VIPBanner from '../components/VIPBanner'
 import BtnHamburguesa from '../components/BtnHamburguesa'
 import BtnHamburguesaUsuario from '../components/BtnHamburguesaUsuario'
+import { useUserData } from '../useUserData'
 
 import mecanico   from '../assets/pros/Mecanico.jpg'
 import mecanico1  from '../assets/pros/Mecanico1.jpg'
@@ -273,6 +274,7 @@ const SocialLinks = () => (
 )
 
 export default function HomePage({ lang, navigate, userRole }) {
+  const { userData, profileComplete } = useUserData()
   const [proFilter, setProFilter] = useState('todos')
   const [showTour, closeTour]     = useTour()
   const [showHamburguesa, setShowHamburguesa] = useState(false)
@@ -335,8 +337,24 @@ export default function HomePage({ lang, navigate, userRole }) {
         `}</style>
         <button className="hp-notif" onClick={() => setShowHamburguesa(true)} style={{ position: 'relative', color: isPro ? '#FFF' : '#333' }}>
           
-          {/* TOOLTIP POSTULARSE */}
-          {!isPro && (
+          {/* TOOLTIP DINÁMICO DE TUTORIAL / COMPLETAR PERFIL */}
+          {userData && !profileComplete && (
+            <div style={{
+              position: 'absolute', top: '130%', left: '0', background: '#F26000', color: '#FFF',
+              padding: '6px 12px', borderRadius: '8px', fontSize: '11px', fontWeight: '800',
+              whiteSpace: 'nowrap', boxShadow: '0 4px 12px rgba(242,96,0,0.4)',
+              animation: 'floatTip 2s ease-in-out infinite', zIndex: 100
+            }}>
+              <div style={{
+                position: 'absolute', top: '-4px', left: '12px', width: '10px', height: '10px',
+                background: '#F26000', transform: 'rotate(45deg)'
+              }} />
+              ⚠️ {lang === 'es' ? 'Completa tu perfil aquí' : 'Complete your profile'}
+            </div>
+          )}
+
+          {/* TOOLTIP POSTULARSE (Solo usuarios que ya completaron su perfil básico) */}
+          {userData && !isPro && profileComplete && (
             <div style={{
               position: 'absolute', top: '130%', left: '0', background: '#F26000', color: '#FFF',
               padding: '6px 12px', borderRadius: '8px', fontSize: '11px', fontWeight: '800',
