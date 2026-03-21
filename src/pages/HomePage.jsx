@@ -34,41 +34,25 @@ const testimonials = [
 ]
 
 const categories = [
-  { icon:'🔧', labelEs:'Mecánico',     labelEn:'Mechanic' },
-  { icon:'⚡', labelEs:'Electricista', labelEn:'Electrician' },
-  { icon:'🔩', labelEs:'Plomero',      labelEn:'Plumber' },
-  { icon:'🔑', labelEs:'Cerrajero',    labelEn:'Locksmith' },
-  { icon:'🎨', labelEs:'Pintor',       labelEn:'Painter' },
-  { icon:'🌿', labelEs:'Jardinero',    labelEn:'Gardener' },
-  { icon:'👶', labelEs:'Niñera',       labelEn:'Nanny' },
-  { icon:'🧹', labelEs:'Limpieza',     labelEn:'Cleaning' },
-]
-
-const allCategories = [
-  { icon:'🔑', labelEs:'Cerrajero',           labelEn:'Locksmith' },
-  { icon:'💆', labelEs:'Masajes',             labelEn:'Massages' },
-  { icon:'🔧', labelEs:'Mecánico',            labelEn:'Mechanic' },
-  { icon:'❄️', labelEs:'Refrigeración',       labelEn:'Refrigeration' },
-  { icon:'🛵', labelEs:'Mensajeros',          labelEn:'Messengers' },
-  { icon:'🏠', labelEs:'Limpieza del hogar',  labelEn:'Home cleaning' },
-  { icon:'🏢', labelEs:'Limpieza de oficina', labelEn:'Office cleaning' },
-  { icon:'💼', labelEs:'Secretaria',          labelEn:'Secretary' },
-  { icon:'🇺🇸', labelEs:'Profesor de inglés', labelEn:'English teacher' },
-  { icon:'🪚', labelEs:'Ebanista',            labelEn:'Cabinetmaker' },
-  { icon:'🧱', labelEs:'Albañil',             labelEn:'Mason' },
-  { icon:'📸', labelEs:'Fotógrafo',           labelEn:'Photographer' },
-  { icon:'⚡', labelEs:'Eficiencia energética', labelEn:'Energy efficiency' },
-  { icon:'🔧', labelEs:'Instalación',         labelEn:'Installation' },
-  { icon:'🌿', labelEs:'Jardinería',          labelEn:'Gardening' },
-  { icon:'👕', labelEs:'Lavandería',          labelEn:'Laundry' },
-  { icon:'🧹', labelEs:'Limpieza',            labelEn:'Cleaning' },
-  { icon:'🛠️', labelEs:'Mantenimiento',       labelEn:'Maintenance' },
-  { icon:'🔩', labelEs:'Montaje',             labelEn:'Assembly' },
-  { icon:'📦', labelEs:'Mudanzas',            labelEn:'Moving' },
-  { icon:'🎯', labelEs:'Personalizado',       labelEn:'Custom' },
-  { icon:'🐛', labelEs:'Plagas',              labelEn:'Pest control' },
-  { icon:'🏗️', labelEs:'Reformas',           labelEn:'Renovations' },
-  { icon:'🔨', labelEs:'Reparación',          labelEn:'Repair' },
+  { id: 'mechanic',    icon:'🔧', labelEs:'Mecánico',            labelEn:'Mechanic' },
+  { id: 'electrician', icon:'⚡', labelEs:'Electricista',        labelEn:'Electrician' },
+  { id: 'plumber',     icon:'🔩', labelEs:'Plomero',             labelEn:'Plumber' },
+  { id: 'locksmith',   icon:'🔑', labelEs:'Cerrajero',           labelEn:'Locksmith' },
+  { id: 'painter',     icon:'🎨', labelEs:'Pintor',              labelEn:'Painter' },
+  { id: 'gardener',    icon:'🌿', labelEs:'Jardinero',          labelEn:'Gardening' },
+  { id: 'nanny',       icon:'👶', labelEs:'Niñera',              labelEn:'Nanny' },
+  { id: 'cleaner',     icon:'🧹', labelEs:'Limpieza',            labelEn:'Cleaning' },
+  { id: 'all',         icon:'❄️', labelEs:'Refrigeración',       labelEn:'Refrigeration' },
+  { id: 'all',         icon:'🛵', labelEs:'Mensajeros',          labelEn:'Messengers' },
+  { id: 'all',         icon:'🔧', labelEs:'Instalación',         labelEn:'Installation' },
+  { id: 'all',         icon:'👕', labelEs:'Lavandería',          labelEn:'Laundry' },
+  { id: 'all',         icon:'🛠️', labelEs:'Mantenimiento',       labelEn:'Maintenance' },
+  { id: 'all',         icon:'🔩', labelEs:'Montaje',             labelEn:'Assembly' },
+  { id: 'all',         icon:'📦', labelEs:'Mudanzas',            labelEn:'Moving' },
+  { id: 'all',         icon:'🎯', labelEs:'Personalizado',       labelEn:'Custom' },
+  { id: 'all',         icon:'🐛', labelEs:'Plagas',              labelEn:'Pest control' },
+  { id: 'all',         icon:'🏗️', labelEs:'Reformas',           labelEn:'Renovations' },
+  { id: 'all',         icon:'🔨', labelEs:'Reparación',          labelEn:'Repair' },
 ]
 
 const featuredStatic = [
@@ -409,7 +393,7 @@ export default function HomePage({ lang, navigate, userRole }) {
       ) : (
         <div className="hp-cats-scroll">
           {categories.map((c, i) => (
-            <button key={i} className="hp-cat-btn" onClick={() => navigate('search')}>
+            <button key={i} className="hp-cat-btn" onClick={() => navigate('search', { catToSelect: c.id || 'all' })}>
               <span className="hp-cat-icon">{c.icon}</span>
               <span className="hp-cat-label">{lang === 'es' ? c.labelEs : c.labelEn}</span>
             </button>

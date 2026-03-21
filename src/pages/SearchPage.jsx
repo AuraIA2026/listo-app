@@ -65,8 +65,8 @@ const txt = {
 
 const avatarColors = ['#F26000','#C24D00','#FF8533','#7A3000','#FFB380']
 
-export default function ServicesPage({ lang = 'es', navigate }) {
-  const [activeCategory, setActiveCategory] = useState('all')
+export default function ServicesPage({ lang = 'es', navigate, initialCategory = 'all' }) {
+  const [activeCategory, setActiveCategory] = useState(initialCategory)
   const [search,         setSearch]         = useState('')
   const [onlyAvailable,  setOnlyAvailable]  = useState(false)
   const [sortBy,         setSortBy]         = useState('all')
@@ -80,11 +80,10 @@ export default function ServicesPage({ lang = 'es', navigate }) {
     const fetchProfessionals = async () => {
       setLoading(true)
       try {
-        // ← Solo profesionales con perfil completo (profileComplete === true)
+        // temporalmente permitimos pros incompletos para poblar en pruebas
         const q = query(
           collection(db, 'users'),
-          where('type',            '==', 'pro'),
-          where('profileComplete', '==', true)
+          where('type', '==', 'pro')
         )
         const querySnapshot = await getDocs(q)
         const prosList = []
