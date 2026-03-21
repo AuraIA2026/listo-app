@@ -392,15 +392,21 @@ body{background:var(--bg);color:var(--text);font-family:var(--body);}
 .ac-input-wrapper input { margin-bottom: 0; }
 .ac-dropdown {
   position:absolute; top:100%; left:0; right:0; background:#1A1D27; border:1px solid rgba(255,255,255,0.1);
-  border-radius:12px; margin-top:8px; max-height:200px; overflow-y:auto; z-index:10;
+  border-radius:12px; margin-top:8px; max-height:220px; overflow-y:auto; z-index:999;
   box-shadow: 0 10px 25px rgba(0,0,0,0.5);
 }
 .ac-item {
   padding:12px 16px; border-bottom:1px solid rgba(255,255,255,0.05); cursor:pointer;
-  display:flex; flex-direction:column; gap:4px;
+  display:flex; align-items:center; gap:12px; transition:background .2s;
 }
 .ac-item:last-child { border-bottom:none; }
 .ac-item:hover { background:rgba(255,255,255,0.05); }
+.ac-avatar {
+  width:36px; height:36px; border-radius:10px; background:var(--yellow); display:flex; align-items:center; justifyContent:center;
+  color:#000; font-family:var(--display); font-weight:800; overflow:hidden; flex-shrink:0;
+}
+.ac-avatar img { width:100%; height:100%; object-fit:cover; }
+.ac-text { display:flex; flex-direction:column; gap:4px; }
 .ac-name { font-size:14px; font-weight:700; color:#fff; }
 .ac-detail { font-size:12px; color:var(--muted); }
 `;
@@ -767,23 +773,38 @@ export default function AdminPage({ navigate }) {
                 {showAc && giftSearch && !giftUser && (
                   <div className="ac-dropdown">
                     {users
-                      .filter(u => 
-                        (u.name||'').toLowerCase().includes(giftSearch.toLowerCase()) || 
-                        (u.phone||'').includes(giftSearch)
-                      )
-                      .slice(0, 5) // Mostrar máximo 5
+                      .filter(u => {
+                        const term = giftSearch.toLowerCase().trim();
+                        const userName = (u.name || '').toLowerCase();
+                        const userPhone = (u.phone || '');
+                        const userService = (u.service || '').toLowerCase();
+                        return userName.includes(term) || userPhone.includes(term) || userService.includes(term);
+                      })
+                      .slice(0, 10) // Mostrar máximo 10
                       .map(u => (
                         <div key={u.id} className="ac-item" onClick={() => {
                           setGiftUser(u.id);
                           setGiftSearch(u.name || u.phone);
                           setShowAc(false);
                         }}>
-                          <span className="ac-name">{u.name || 'Sin nombre'} {u.approved ? '✅' : ''}</span>
-                          <span className="ac-detail">{u.service || 'Usuario'} · Tel: {u.phone}</span>
+                          <div className="ac-avatar">
+                            {u.profilePic || u.photoURL || u.avatarId ? (
+                               <img src={u.profilePic || u.photoURL || `https://i.pravatar.cc/100?u=${u.avatarId||u.id}`} alt="pro" />
+                            ) : (
+                               (u.name ? u.name.charAt(0).toUpperCase() : 'P')
+                            )}
+                          </div>
+                          <div className="ac-text">
+                            <span className="ac-name">{u.name || 'Sin nombre'} {u.approved ? '✅' : ''}</span>
+                            <span className="ac-detail">{u.service || 'Usuario'} · Tel: {u.phone}</span>
+                          </div>
                         </div>
                       ))}
-                    {users.filter(u => (u.name||'').toLowerCase().includes(giftSearch.toLowerCase()) || (u.phone||'').includes(giftSearch)).length === 0 && (
-                      <div className="ac-item"><span className="ac-detail">No se encontraron resultados</span></div>
+                    {users.filter(u => {
+                      const term = giftSearch.toLowerCase().trim();
+                      return (u.name||'').toLowerCase().includes(term) || (u.phone||'').includes(term) || (u.service||'').toLowerCase().includes(term);
+                    }).length === 0 && (
+                      <div className="ac-item"><div className="ac-text"><span className="ac-detail">No se encontraron resultados</span></div></div>
                     )}
                   </div>
                 )}
