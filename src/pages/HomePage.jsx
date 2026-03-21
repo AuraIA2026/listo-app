@@ -393,12 +393,12 @@ export default function HomePage({ lang, navigate, userRole }) {
       {/* ── VIP BANNER — solo para profesionales ── */}
       {isPro && <VIPBanner onOpenPlanes={() => setShowHamburguesa(true)} />}
 
-      <Publicidad lang={lang} />
-      
-      <div style={{ margin: '0 16px 20px', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}>
-        <img src={bannerPros} alt="Un profesional siempre cerca de ti" style={{ width: '100%', display: 'block' }} />
+      <div style={{ margin: '0 16px 20px', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 4px 12px rgba(0,0,0,0.08)', height: '220px', position: 'relative' }}>
+        <img src={bannerPros} alt="Un profesional siempre cerca de ti" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top', display: 'block' }} />
       </div>
 
+      <Publicidad lang={lang} />
+      
       <SocialLinks />
 
       {isPro ? (
