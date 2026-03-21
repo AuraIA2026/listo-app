@@ -395,11 +395,9 @@ export default function HomePage({ lang, navigate, userRole }) {
 
       <Publicidad lang={lang} />
       
-      {!isPro && (
-        <div style={{ margin: '0 16px 20px', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}>
-          <img src={bannerPros} alt="Un profesional siempre cerca de ti" style={{ width: '100%', display: 'block' }} />
-        </div>
-      )}
+      <div style={{ margin: '0 16px 20px', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}>
+        <img src={bannerPros} alt="Un profesional siempre cerca de ti" style={{ width: '100%', display: 'block' }} />
+      </div>
 
       <SocialLinks />
 
