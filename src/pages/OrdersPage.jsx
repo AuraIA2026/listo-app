@@ -816,7 +816,7 @@ export default function OrdersPage({ lang = 'es', navigate, userData, userRole }
   const renderActions = (o) => (
     <div className="oc-actions">
       {o.status==='onway'   && userRole==='pro'  && <button className="oc-btn trato" onClick={()=>advanceStatus(o.id,o.status)}>{T.status.arrived}</button>}
-      {o.status==='onway'   && userRole!=='pro'  && <button className="oc-btn track" onClick={()=>navigate('tracking',o)}>📍 {T.track}</button>}
+      {['accepted', 'onway', 'arrived', 'trato', 'working'].includes(o.status) && userRole!=='pro' && <button className="oc-btn track" onClick={()=>navigate('tracking',o)}>📍 {T.track}</button>}
       {o.status==='arrived' && userRole==='pro'  && <button className="oc-btn trato" onClick={()=>advanceStatus(o.id,o.status)}>{T.tratoHecho}</button>}
       {o.status==='trato'   && userRole==='pro'  && <button className="oc-btn track" onClick={()=>advanceStatus(o.id,o.status)}>{T.status.working}</button>}
       {o.status==='working' && userRole==='pro'  && (
@@ -840,6 +840,9 @@ export default function OrdersPage({ lang = 'es', navigate, userData, userRole }
           <button className="oc-btn decline" onClick={()=>advanceStatus(o.id,o.status,'cancelled')} style={{ flex:1, background:'#FFF0F0', color:'#E31837', border:'1px solid currentColor' }}>{T.decline}</button>
           <button className="oc-btn listo"   onClick={()=>advanceStatus(o.id,o.status)} style={{ flex:1 }}>Aceptar Servicio</button>
         </div>
+      )}
+      {o.status==='pending' && userRole!=='pro' && (
+        <button className="oc-btn decline" onClick={()=>advanceStatus(o.id,o.status,'cancelled')} style={{ width:'100%', background:'#FFF0F0', color:'#E31837', border:'1px solid currentColor', marginTop: 4 }}>{lang==='es'?'Cancelar Pedido':'Cancel Order'}</button>
       )}
       {['accepted','onway','arrived','trato','working'].includes(o.status) && o.otherUid && (
         <button className="oc-btn track" style={{ background:'#FFF3EC', color:'#F26000', border:'1px solid #FFD4B0' }} onClick={()=>openChat(o)}>
