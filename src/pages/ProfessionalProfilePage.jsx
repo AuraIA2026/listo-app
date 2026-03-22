@@ -140,10 +140,7 @@ function PhotoGrid({ photos, lang }) {
             <div className="photo-overlay"><span>{photo.caption}</span></div>
           </button>
         ))}
-        <button className={`photo-upload-btn ${uploading ? 'loading' : ''} ${uploaded ? 'done' : ''}`} onClick={handleUpload}>
-          {uploading ? <span className="upload-spinner" /> : uploaded ? '✅' : '📷'}
-          <span>{uploaded ? T.photoUploaded : uploading ? '...' : T.addPhoto}</span>
-        </button>
+
       </div>
 
       {lightbox && (
