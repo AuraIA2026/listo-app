@@ -85,8 +85,26 @@ export default function SplashScreen({ onFinish, lang = 'es' }) {
   }, [])
 
   useEffect(() => {
+    const tryAutoplay = () => {
+      if (audioRef.current && !musicOn) {
+        audioRef.current.volume = 0.35
+        audioRef.current.play().then(() => setMusicOn(true)).catch(() => {})
+      }
+    }
+    
+    // Intentar al montar
+    tryAutoplay()
+    
+    // Intentar reproducir al primer toque si el navegador lo bloqueó
+    document.addEventListener('touchstart', tryAutoplay, { once: true })
+    document.addEventListener('click', tryAutoplay, { once: true })
+
     const t = setTimeout(() => setPhase('onboarding'), 2200)
-    return () => clearTimeout(t)
+    return () => {
+      clearTimeout(t)
+      document.removeEventListener('touchstart', tryAutoplay)
+      document.removeEventListener('click', tryAutoplay)
+    }
   }, [])
 
   useEffect(() => {
@@ -145,31 +163,27 @@ export default function SplashScreen({ onFinish, lang = 'es' }) {
     onFinish()
   }
 
-  if (phase === 'splash') {
-    return (
-      <div className="splash-screen">
-        <audio ref={audioRef} loop preload="auto">
-          <source src="/audio/the_mountain-acoustic-131417.mp3" type="audio/mpeg" />
-        </audio>
-        <div className="splash-logo-wrap">
-          <img src={logoImg} alt="Listo" className="splash-logo" />
-        </div>
-        <p className="splash-tagline">Listo, patrón.</p>
-        <div className="splash-loader">
-          <div className="splash-bar" />
-        </div>
-      </div>
-    )
-  }
-
   const slide = onboardingSlides[slideIndex]
   const isLast = slideIndex === onboardingSlides.length - 1
 
   return (
-    <div className="onboarding-screen">
-      <audio ref={audioRef} loop preload="auto">
+    <>
+      <audio ref={audioRef} loop preload="auto" autoPlay>
         <source src="/audio/the_mountain-acoustic-131417.mp3" type="audio/mpeg" />
       </audio>
+
+      {phase === 'splash' ? (
+        <div className="splash-screen">
+          <div className="splash-logo-wrap">
+            <img src={logoImg} alt="Listo" className="splash-logo" />
+          </div>
+          <p className="splash-tagline">Listo, patrón.</p>
+          <div className="splash-loader">
+            <div className="splash-bar" />
+          </div>
+        </div>
+      ) : (
+        <div className="onboarding-screen">
 
       {onboardingSlides.map((s, index) => (
         <video
@@ -236,5 +250,7 @@ export default function SplashScreen({ onFinish, lang = 'es' }) {
         </button>
       </div>
     </div>
+      )}
+    </>
   )
 }
