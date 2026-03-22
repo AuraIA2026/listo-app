@@ -2,6 +2,9 @@ import { useState, useEffect, useRef } from 'react'
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet'
 import { collection, addDoc, serverTimestamp, doc, updateDoc, onSnapshot, orderBy, query, setDoc, getDoc, deleteDoc } from 'firebase/firestore'
 import { db, auth } from '../firebase'
+import { Capacitor } from '@capacitor/core'
+import { registerPlugin } from '@capacitor/core'
+const BackgroundGeolocation = registerPlugin('BackgroundGeolocation')
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import './TrackingPage.css'
@@ -424,23 +427,61 @@ export default function TrackingPage({ lang = 'es', navigate, professional, user
     return () => unsub()
   }, [professional?.id])
 
-  // GPS Tracking Real para el Profesional
+  // GPS Tracking Real para el Profesional (Soporta Segundo Plano en Native)
   useEffect(() => {
     if (userRole !== 'pro' || !professional?.id || workStatus !== 'tracking' || status === 'arrived') return
     
-    if (navigator.geolocation) {
-      const watchId = navigator.geolocation.watchPosition(
-        (pos) => {
-          const { latitude, longitude } = pos.coords
-          setProPos([latitude, longitude])
-          updateDoc(doc(db, 'orders', professional.id), {
-            proCoords: { lat: latitude, lng: longitude }
-          }).catch(()=>{})
-        },
-        (err) => console.error("GPS Error:", err),
-        { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
-      )
-      return () => navigator.geolocation.clearWatch(watchId)
+    let watcherId = null
+
+    const startTracking = async () => {
+      if (Capacitor.isNativePlatform()) {
+        try {
+          watcherId = await BackgroundGeolocation.addWatcher(
+            {
+              backgroundMessage: "Tracking activo en camino al cliente.",
+              backgroundTitle: "Listo Patrón - En camino",
+              requestPermissions: true,
+              stale: false,
+              distanceFilter: 10
+            },
+            (location, error) => {
+              if (error) return console.error('BgGeo Error:', error)
+              if (!location) return
+              const { latitude, longitude } = location
+              setProPos([latitude, longitude])
+              updateDoc(doc(db, 'orders', professional.id), {
+                proCoords: { lat: latitude, lng: longitude }
+              }).catch(()=>{})
+            }
+          )
+        } catch (e) {
+          console.error("No se pudo iniciar background geolocation", e)
+        }
+      } else if (navigator.geolocation) {
+        watcherId = navigator.geolocation.watchPosition(
+          (pos) => {
+            const { latitude, longitude } = pos.coords
+            setProPos([latitude, longitude])
+            updateDoc(doc(db, 'orders', professional.id), {
+              proCoords: { lat: latitude, lng: longitude }
+            }).catch(()=>{})
+          },
+          (err) => console.error("GPS Error:", err),
+          { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+        )
+      }
+    }
+
+    startTracking()
+
+    return () => {
+      if (watcherId !== null) {
+        if (Capacitor.isNativePlatform()) {
+          BackgroundGeolocation.removeWatcher({ id: watcherId }).catch(()=>{})
+        } else if (navigator.geolocation) {
+          navigator.geolocation.clearWatch(watcherId)
+        }
+      }
     }
   }, [userRole, professional?.id, workStatus, status])
 
