@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { collection, query, where, getDocs, updateDoc, doc, addDoc, serverTimestamp } from 'firebase/firestore'
+import { collection, query, where, getDocs, updateDoc, doc, getDoc, addDoc, serverTimestamp } from 'firebase/firestore'
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage'
 import { db, storage } from '../firebase'
 import listoLogo from '../assets/logo listo blanco.png'
@@ -43,6 +43,19 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
     if (!finalUserData?.uid) return
     const fetchLatestOrder = async () => {
       try {
+        // 1. Si venimos directamente desde el proceso de pago con el ID exacto del pedido:
+        if (professional?.orderId) {
+          const snap = await getDoc(doc(db, 'orders', professional.orderId))
+          if (snap.exists()) {
+            setLatestOrder({ id: snap.id, ...snap.data() })
+            if (!isPro) {
+              setFormData(prev => ({ ...prev, nombreProfesional: snap.data().proName || snap.data().pro || proName }))
+            }
+            return // Terminamos aquí sin buscar el "último pedido genérico"
+          }
+        }
+        
+        // 2. Comportamiento por defecto: buscar el último pedido
         let q;
         if (isPro) {
           q = query(collection(db, 'orders'), where('proId', '==', finalUserData.uid))
@@ -108,15 +121,23 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
     if (formData.calificacion >= 4 || formData.calificacion > 0) {
       setIsUploading(true)
       try {
+        // Auto-completar reseñas vacías para que no sean invisibles en el Home
+        let finalComment = formData.experiencia?.trim() || ''
+        if (!finalComment && formData.calificacion >= 4) {
+          finalComment = "¡Excelente servicio! Muy recomendado."
+        } else if (!finalComment && formData.calificacion > 0) {
+          finalComment = "Servicio completado."
+        }
+
         // Actualizar Firestore orders
         await updateDoc(doc(db, 'orders', latestOrder.id), {
           rated: true,
           ratingScore: formData.calificacion,
-          ratingComment: formData.experiencia,
+          ratingComment: finalComment,
           reviewerName: finalUserData?.name || 'Cliente',
-          checkoutMontoAcordado: formData.montoAcordado,
-          checkoutMontoFinal: formData.montoFinal,
-          checkoutFormaPago: formData.formaPago
+          checkoutMontoAcordado: formData.montoAcordado || '',
+          checkoutMontoFinal: formData.montoFinal || '',
+          checkoutFormaPago: formData.formaPago || ''
         })
 
         // Notificar al profesional con push nativo

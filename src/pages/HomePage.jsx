@@ -132,8 +132,8 @@ function TestimonialsCarousel({ lang }) {
         const docs = []
         snapshot.forEach(doc => docs.push({ id: doc.id, ...doc.data() }))
         
-        // Exigir una calificación de 4 o 5 y que tengan texto. (Solo mostraríamos moderados idealmente)
-        const topReviews = docs.filter(d => (d.ratingScore >= 4 || d.moderated) && d.ratingComment?.trim().length > 0)
+        // Exigir una calificación de 4 o 5 (Permitimos sin texto para regenerarlo automáticamente)
+        const topReviews = docs.filter(d => (d.ratingScore >= 4 || d.moderated))
         
         // Ordenamos los más recientes primero
         topReviews.sort((a,b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0))
@@ -146,8 +146,8 @@ function TestimonialsCarousel({ lang }) {
           dateEn: d.dateToken || 'Recent',
           specEs: d.proSpecialty || d.specialty || 'Servicio',
           specEn: d.proSpecialty || d.specialty || 'Service',
-          textEs: d.ratingComment,
-          textEn: d.ratingComment
+          textEs: d.ratingComment?.trim() ? d.ratingComment : (d.ratingScore >= 4 ? '¡Excelente servicio! Muy profesional.' : 'Servicio completado.'),
+          textEn: d.ratingComment?.trim() ? d.ratingComment : (d.ratingScore >= 4 ? 'Excellent service! Very professional.' : 'Service completed.')
         }))
 
         if (formatted.length > 0) {
