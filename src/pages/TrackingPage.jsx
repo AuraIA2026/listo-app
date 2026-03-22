@@ -366,13 +366,17 @@ export default function TrackingPage({ lang = 'es', navigate, professional, user
     uid:      userRole === 'pro' ? (professional?.clientId || professional?.otherUid) : (professional?.proId || professional?.otherUid || professional?.uid),
   }
 
-  const [proPos,         setProPos]         = useState(PRO_START)
+  const fallbackClientPos = [18.4745, -69.9310] // S.D. solo si falla todo
+  const cPos = professional?.coords && professional.coords.lat ? [professional.coords.lat, professional.coords.lng] : fallbackClientPos
+  const pPos = professional?.proCoords && professional.proCoords.lat ? [professional.proCoords.lat, professional.proCoords.lng] : [cPos[0] + 0.005, cPos[1]]
+
+  const [clientLoc,      setClientLoc]      = useState(cPos)
+  const [proPos,         setProPos]         = useState(pPos)
+  const [mapCenter,      setMapCenter]      = useState(cPos)
+
   const [eta,            setEta]            = useState(18)
   const [status,         setStatus]         = useState('on_way')
   const [workStatus,     setWorkStatus]     = useState('tracking')
-  const [routeSoFar,     setRouteSoFar]     = useState([PRO_START])
-  const [remainingRoute, setRemainingRoute] = useState(PRO_WAYPOINTS)
-  const [mapCenter]                         = useState([18.4832, -69.9180])
   const [vanVisible,     setVanVisible]     = useState(true)
   const [showChat,       setShowChat]       = useState(false)
 
@@ -442,14 +446,26 @@ export default function TrackingPage({ lang = 'es', navigate, professional, user
 
   useEffect(() => {
     if (workStatus !== 'retreating') return
+    
+    // Generar ruta de retirada dinámica basada en la ubicación del cliente
+    // Para no teletransportarse a Santo Domingo si están en otra ciudad
+    const dynamicRetreatWaypoints = [
+      clientLoc,
+      [clientLoc[0] + 0.0015, clientLoc[1] + 0.003],
+      [clientLoc[0] + 0.0045, clientLoc[1] + 0.007],
+      [clientLoc[0] + 0.0085, clientLoc[1] + 0.012],
+      [clientLoc[0] + 0.0135, clientLoc[1] + 0.019],
+      [clientLoc[0] + 0.0200, clientLoc[1] + 0.028],
+    ]
+
     let idx = 0
     const interval = setInterval(() => {
       idx += 1
-      if (idx >= RETREAT_WAYPOINTS.length) { clearInterval(interval); setVanVisible(false); setWorkStatus('declined_done'); return }
-      setProPos(RETREAT_WAYPOINTS[idx])
+      if (idx >= dynamicRetreatWaypoints.length) { clearInterval(interval); setVanVisible(false); setWorkStatus('declined_done'); return }
+      setProPos(dynamicRetreatWaypoints[idx])
     }, 1500)
     return () => clearInterval(interval)
-  }, [workStatus])
+  }, [workStatus, clientLoc])
 
   // ── PRO confirma trato → notifica al cliente ──────────────────────────────
   const [tratoConfirming, setTratoConfirming] = useState(false)
@@ -552,7 +568,7 @@ export default function TrackingPage({ lang = 'es', navigate, professional, user
         <MapContainer center={mapCenter} zoom={14} className="tracking-map" zoomControl={false} attributionControl={false}>
           <MapResizer />
           <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-          <Marker position={CLIENT_POS} icon={clientIcon}><Popup>{lang==='es'?'Tu ubicación':'Your location'}</Popup></Marker>
+          <Marker position={clientLoc} icon={clientIcon}><Popup>{lang==='es'?'Tu ubicación':'Your location'}</Popup></Marker>
           {vanVisible && <SmoothMarker targetPos={proPos} icon={workStatus==='working'?workerIcon.current:vanIcon.current} visible={vanVisible}><Popup>{pro.name}</Popup></SmoothMarker>}
         </MapContainer>
         {workStatus==='tracking' && (
