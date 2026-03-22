@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
 import { doc, updateDoc } from "firebase/firestore";
-import { db, auth } from "../firebase";
+import { ref, uploadString, getDownloadURL } from "firebase/storage";
+import { db, auth, storage } from "../firebase";
 import { useUserData } from "../useUserData";
 
 const COLORS = {
@@ -134,15 +135,34 @@ export default function VerificacionPage({ onBack }) {
     try {
       const uid = auth.currentUser?.uid;
       if (uid) {
+        // Función para subir a Storage
+        const uploadToStorage = async (base64, pathName) => {
+          if (!base64 || !base64.startsWith('data:image')) return base64; // Si ya es url o nulo
+          const storageRef = ref(storage, `verificaciones/${uid}/${pathName}_${Date.now()}.jpg`);
+          await uploadString(storageRef, base64, 'data_url');
+          return await getDownloadURL(storageRef);
+        };
+
+        const [urlFrontal, urlTrasera, urlSelfie, urlConducta] = await Promise.all([
+          uploadToStorage(docs.cedulaFrontal?.base64, 'cedula_frontal'),
+          uploadToStorage(docs.cedulaTrasera?.base64, 'cedula_trasera'),
+          uploadToStorage(docs.selfie?.base64, 'selfie'),
+          uploadToStorage(docs.buenaConducta?.base64, 'buena_conducta')
+        ]);
+
+        const urlsPortafolio = await Promise.all(
+          docs.portafolio.map((p, i) => uploadToStorage(p.base64, `portafolio_${i}`))
+        );
+
         await updateDoc(doc(db, "users", uid), {
           verificacion: {
             ...form,
             docs: {
-              cedulaFrontal: docs.cedulaFrontal?.base64 || null,
-              cedulaTrasera: docs.cedulaTrasera?.base64 || null,
-              selfie:        docs.selfie?.base64        || null,
-              buenaConducta: docs.buenaConducta?.base64 || null,
-              portafolio:    docs.portafolio.map(p => p.base64),
+              cedulaFrontal: urlFrontal || null,
+              cedulaTrasera: urlTrasera || null,
+              selfie:        urlSelfie  || null,
+              buenaConducta: urlConducta|| null,
+              portafolio:    urlsPortafolio,
             },
             estado: "en_revision",
             enviadoEn: new Date().toISOString(),
