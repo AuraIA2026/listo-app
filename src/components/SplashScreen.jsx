@@ -45,7 +45,7 @@ export default function SplashScreen({ onFinish, lang = 'es' }) {
   const videoRefs = useRef({})
 
   useEffect(() => {
-    const t = setTimeout(() => setPhase('onboarding'), 2200)
+    const t = setTimeout(() => setPhase('onboarding'), 4000)
     return () => clearTimeout(t)
   }, [])
 
