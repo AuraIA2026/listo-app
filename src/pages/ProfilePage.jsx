@@ -408,7 +408,7 @@ function PrivacyDocScreen({ lang, onBack }) {
           </div>
         </div>
         <div style={{ fontSize: '14px', lineHeight: '1.6', color: '#444', marginTop: '20px' }}>
-          <p><strong>1. Recopilación de Datos</strong><br/>Recopilamos su nombre, teléfono, ubicación GPS e imágenes de su perfil y trabajos realizados únicamente para el correcto funcionamiento de la plataforma 'Listo Patrón'.</p>
+          <p><strong>1. Recopilación de Datos</strong><br/>Recopilamos su nombre, teléfono, ubicación GPS, imágenes de su perfil y rasgos biométricos (reconocimiento facial) únicamente para la seguridad y el correcto funcionamiento de 'Listo Patrón'.</p>
           <br/>
           <p><strong>2. Uso de la Ubicación</strong><br/>La aplicación requiere acceso a su ubicación en primer y segundo plano para conectar clientes con los profesionales más cercanos y permitir el seguimiento en tiempo real del trayecto.</p>
           <br/>
