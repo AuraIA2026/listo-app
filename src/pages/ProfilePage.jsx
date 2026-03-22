@@ -255,72 +255,42 @@ function AyudaScreen({ lang, onBack, onFaq }) {
 
 function FaqBotScreen({ lang, onBack }) {
   const T = txt[lang]
-  const [messages, setMessages] = useState([{ role: 'assistant', text: '¡Hola! 👋 Soy el asistente de Listo. ¿En qué puedo ayudarte hoy?' }])
-  const [input, setInput]     = useState('')
-  const [loading, setLoading] = useState(false)
-  const bottomRef = useRef(null)
-  const suggested = ['¿Cómo cancelo un servicio?', '¿Cómo funcionan los planes?', '¿Cómo solicito un reembolso?', '¿Cómo contacto al soporte?']
-
-  const sendMessage = async (text) => {
-    const userText = text || input.trim()
-    if (!userText) return
-    setInput(''); setLoading(true)
-    const newMessages = [...messages, { role: 'user', text: userText }]
-    setMessages(newMessages)
-    try {
-      const res = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 1000, system: LISTO_PROMPT, messages: newMessages.map(m => ({ role: m.role, content: m.text })) })
-      })
-      const data = await res.json()
-      setMessages(prev => [...prev, { role: 'assistant', text: data.content?.[0]?.text || 'Lo siento, intenta de nuevo.' }])
-    } catch {
-      setMessages(prev => [...prev, { role: 'assistant', text: 'Error de conexión.' }])
-    } finally { setLoading(false) }
-  }
+  const faqs = [
+    { q: '¿Cómo funciona Listo?', a: 'Listo conecta a clientes que necesitan un servicio (electricistas, plomeros, mecánicos, etc.) con profesionales calificados. Tú eliges, acuerdas y nosotros garantizamos el enlace seguro.' },
+    { q: '¿Cómo cancelo un servicio?', a: 'Para cancelar un servicio, ve a la pestaña "Pedidos", entra a los detalles del trabajo en curso y pulsa "Cancelar Pedido". Solo puedes cancelar antes de que el profesional inicie formalmente el trabajo para evitar penalidad.' },
+    { q: '¿Cómo funcionan los planes de Profesional?', a: 'Los planes VIP y Estándar te dan "contratos" para postularte a solicitudes de clientes. Un contrato se gasta únicamente cuando el cliente acepta tu propuesta y el trabajo comienza.' },
+    { q: '¿Los pagos son seguros?', a: 'Actualmente, los pagos por el servicio los gestionas directamente con el profesional. Nosotros no intervenimos en cobros de servicios, lo que te garantiza precios justos y reales.' },
+    { q: '¿Cómo reporto un problema con un profesional?', a: 'Ve a "Pedidos", entra al chat con el profesional y toca el icono superior "⚠️" para Reportar o Bloquear. Nuestro equipo revisará el caso de manera manual.' },
+    { q: '¿Cómo contacto a un humano de soporte?', a: 'Regresa a la pantalla anterior pulsando atrás, y luego toca en "Chatear con soporte" para comunicarte por WhatsApp con nuestro equipo directamente. O mediante el correo listopatron.app@gmail.com.' },
+  ]
+  const [openIndex, setOpenIndex] = useState(null)
 
   return (
-    <div className="sub-screen" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+    <div className="sub-screen" style={{ display: 'flex', flexDirection: 'column', height: '100%', background: '#FAFAFA' }}>
       <ScreenHeader title={T.helpFaq} onBack={onBack} />
-      <div style={{ flex: 1, overflowY: 'auto', padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-        {messages.map((msg, i) => (
-          <div key={i} style={{ display: 'flex', justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start' }}>
-            {msg.role === 'assistant' && (
-              <div style={{ width:28,height:28,borderRadius:'50%',background:'linear-gradient(135deg,#FF6B35,#FF8C42)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:14,marginRight:8,flexShrink:0,marginTop:2 }}>🤖</div>
-            )}
-            <div style={{ maxWidth:'75%',padding:'10px 14px',borderRadius:msg.role==='user'?'18px 18px 4px 18px':'18px 18px 18px 4px',background:msg.role==='user'?'linear-gradient(135deg,#FF6B35,#FF8C42)':'#fff',color:msg.role==='user'?'#fff':'#1a1a1a',fontSize:14,lineHeight:1.5,boxShadow:'0 1px 4px rgba(0,0,0,0.08)',whiteSpace:'pre-wrap' }}>
-              {msg.text}
+      <div style={{ flex: 1, overflowY: 'auto', padding: '20px' }}>
+        <h2 style={{ fontSize: '20px', fontWeight: '900', marginBottom: '20px', color: '#1a1a1a' }}>💡 Dudas más comunes</h2>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          {faqs.map((faq, i) => (
+            <div key={i} style={{ background: '#fff', borderRadius: '16px', padding: '16px', boxShadow: '0 4px 14px rgba(0,0,0,0.03)', border: '1px solid #eaeaea' }}>
+              <button 
+                onClick={() => setOpenIndex(openIndex === i ? null : i)}
+                style={{ width: '100%', background: 'none', border: 'none', textAlign: 'left', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', padding: 0 }}
+              >
+                <span style={{ fontSize: '15px', fontWeight: '700', color: openIndex === i ? '#F26000' : '#333', paddingRight: '14px', lineHeight: 1.4 }}>{faq.q}</span>
+                <span style={{ color: '#ccc', fontSize: '24px', transition: 'transform 0.3s', transform: openIndex === i ? 'rotate(180deg)' : 'rotate(0deg)' }}>▾</span>
+              </button>
+              {openIndex === i && (
+                <div style={{ marginTop: '14px', paddingTop: '14px', borderTop: '1px solid #f0f0f0', fontSize: '14px', color: '#666', lineHeight: '1.6', animation: 'slideDown 0.3s ease' }}>
+                  {faq.a}
+                </div>
+              )}
             </div>
-          </div>
-        ))}
-        {loading && (
-          <div style={{ display:'flex',alignItems:'center',gap:8 }}>
-            <div style={{ width:28,height:28,borderRadius:'50%',background:'linear-gradient(135deg,#FF6B35,#FF8C42)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:14 }}>🤖</div>
-            <div style={{ background:'#fff',borderRadius:'18px 18px 18px 4px',padding:'10px 16px',boxShadow:'0 1px 4px rgba(0,0,0,0.08)' }}>
-              <span style={{ display:'flex',gap:4 }}>
-                {[0,1,2].map(n => <span key={n} style={{ width:7,height:7,borderRadius:'50%',background:'#FF6B35',animation:`bounce 1.2s infinite ${n*0.2}s`,display:'inline-block' }} />)}
-              </span>
-            </div>
-          </div>
-        )}
-        {messages.length === 1 && (
-          <div style={{ marginTop:8 }}>
-            <p style={{ fontSize:12,color:'#999',marginBottom:8 }}>Preguntas frecuentes:</p>
-            <div style={{ display:'flex',flexDirection:'column',gap:6 }}>
-              {suggested.map((s,i) => (
-                <button key={i} onClick={() => sendMessage(s)} style={{ background:'#fff',border:'1px solid #FF6B3540',borderRadius:12,padding:'8px 14px',textAlign:'left',fontSize:13,color:'#FF6B35',cursor:'pointer' }}>{s}</button>
-              ))}
-            </div>
-          </div>
-        )}
-        <div ref={bottomRef} />
+          ))}
+        </div>
+        <p style={{ textAlign: 'center', marginTop: '30px', fontSize: '13px', color: '#aaa' }}>¿No encontraste lo que buscabas? <br/>¡Usa las opciones de contacto directo con nuestro equipo!</p>
       </div>
-      <div style={{ padding:'12px 16px',borderTop:'1px solid #f0f0f0',background:'#fff',display:'flex',gap:8,alignItems:'center' }}>
-        <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key==='Enter'&&!loading&&sendMessage()} placeholder="Escribe tu pregunta..." disabled={loading} style={{ flex:1,border:'1.5px solid #eee',borderRadius:24,padding:'10px 16px',fontSize:14,outline:'none',background:'#fafafa' }} />
-        <button onClick={() => sendMessage()} disabled={loading||!input.trim()} style={{ width:40,height:40,borderRadius:'50%',background:input.trim()&&!loading?'linear-gradient(135deg,#FF6B35,#FF8C42)':'#eee',border:'none',cursor:input.trim()&&!loading?'pointer':'default',display:'flex',alignItems:'center',justifyContent:'center',fontSize:18 }}>➤</button>
-      </div>
-      <style>{`@keyframes bounce{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-6px)}}`}</style>
+      <style>{`@keyframes slideDown{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}`}</style>
     </div>
   )
 }
