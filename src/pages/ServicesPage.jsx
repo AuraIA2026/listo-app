@@ -270,7 +270,7 @@ export default function ServicesPage({ lang = 'es', navigate }) {
             <div className="card-footer">
               <span className="pro-price">{pro.price}</span>
               <div className="card-actions">
-                <button className="btn-profile" onClick={() => navigate('profile', pro)}>
+                <button className="btn-profile" onClick={() => navigate('proProfile', pro)}>
                   👤 {T.profile}
                 </button>
                 <button className="btn-book" onClick={() => navigate('booking', pro)}>

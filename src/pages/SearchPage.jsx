@@ -274,7 +274,7 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
                   🤝 Precio a convenir
                 </span>
                 <div className="card-actions">
-                  <button className="btn-profile" onClick={() => navigate('profile', pro)}>
+                  <button className="btn-profile" onClick={() => navigate('proProfile', pro)}>
                     👤 {T.profile}
                   </button>
                   <button className="btn-book" onClick={() => navigate('booking', pro)}>
