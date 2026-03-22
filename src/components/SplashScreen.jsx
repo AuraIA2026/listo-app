@@ -84,27 +84,31 @@ export default function SplashScreen({ onFinish, lang = 'es' }) {
     })
   }, [])
 
-  useEffect(() => {
-    const tryAutoplay = () => {
-      if (audioRef.current && !musicOn) {
-        audioRef.current.volume = 0.35
-        audioRef.current.play().then(() => setMusicOn(true)).catch(() => {})
-      }
+  // Ref para rastrear si ya encendimos la música por primera vez automáticamente
+  const playedRef = useRef(false)
+
+  const handleScreenTap = () => {
+    if (playedRef.current || musicOn) return
+    playedRef.current = true
+    if (audioRef.current) {
+      audioRef.current.volume = 0.35
+      audioRef.current.play().then(() => setMusicOn(true)).catch(() => {
+        playedRef.current = false // Si falla, intentarlo en el próximo toque
+      })
     }
-    
-    // Intentar al montar
-    tryAutoplay()
-    
-    // Intentar reproducir al primer toque si el navegador lo bloqueó
-    document.addEventListener('touchstart', tryAutoplay, { once: true })
-    document.addEventListener('click', tryAutoplay, { once: true })
+  }
+
+  useEffect(() => {
+    if (audioRef.current && !playedRef.current) {
+      audioRef.current.volume = 0.35
+      audioRef.current.play().then(() => {
+        playedRef.current = true
+        setMusicOn(true)
+      }).catch(() => {})
+    }
 
     const t = setTimeout(() => setPhase('onboarding'), 2200)
-    return () => {
-      clearTimeout(t)
-      document.removeEventListener('touchstart', tryAutoplay)
-      document.removeEventListener('click', tryAutoplay)
-    }
+    return () => clearTimeout(t)
   }, [])
 
   useEffect(() => {
@@ -128,7 +132,10 @@ export default function SplashScreen({ onFinish, lang = 'es' }) {
       setMusicOn(false)
     } else {
       audioRef.current.volume = 0.35
-      audioRef.current.play().then(() => setMusicOn(true)).catch(() => {})
+      audioRef.current.play().then(() => {
+        playedRef.current = true
+        setMusicOn(true)
+      }).catch(() => {})
     }
   }
 
@@ -168,12 +175,12 @@ export default function SplashScreen({ onFinish, lang = 'es' }) {
 
   return (
     <>
-      <audio ref={audioRef} loop preload="auto" autoPlay>
+      <audio ref={audioRef} loop preload="auto">
         <source src="/audio/the_mountain-acoustic-131417.mp3" type="audio/mpeg" />
       </audio>
 
       {phase === 'splash' ? (
-        <div className="splash-screen">
+        <div className="splash-screen" onClick={handleScreenTap} onTouchStart={handleScreenTap}>
           <div className="splash-logo-wrap">
             <img src={logoImg} alt="Listo" className="splash-logo" />
           </div>
@@ -183,7 +190,7 @@ export default function SplashScreen({ onFinish, lang = 'es' }) {
           </div>
         </div>
       ) : (
-        <div className="onboarding-screen">
+        <div className="onboarding-screen" onClick={handleScreenTap} onTouchStart={handleScreenTap}>
 
       {onboardingSlides.map((s, index) => (
         <video
