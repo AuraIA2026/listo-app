@@ -17,7 +17,7 @@ const onboardingSlides = [
     titleEn: 'Verified professionals',
     subEs: 'Cada profesional pasa por un proceso de verificación de identidad y experiencia.',
     subEn: 'Every professional goes through an identity and experience verification process.',
-    bg: '#C24D00',
+    bg: '#F26000',
     videos: ['/videos/profesionales1.mp4', '/videos/profesionales3.mp4'],
   },
   {
@@ -25,11 +25,12 @@ const onboardingSlides = [
     titleEn: 'Book in minutes',
     subEs: 'Selecciona, agenda y listo. Tu profesional llega a donde estás.',
     subEn: 'Select, schedule and done. Your professional comes to you.',
-    bg: '#7A3000',
+    bg: '#F26000',
     videos: ['/videos/reserva1.mp4', '/videos/reserva2.mp4'],
   },
 ]
 
+const ALL_VIDEOS = onboardingSlides.flatMap(s => s.videos)
 const SLIDE_DURATION = 8000
 const VIDEO_DURATION = 4000
 
@@ -38,10 +39,17 @@ export default function SplashScreen({ onFinish, lang = 'es' }) {
   const [slideIndex, setSlideIndex] = useState(0)
   const [videoIndex, setVideoIndex] = useState(0)
   const [animating, setAnimating] = useState(false)
-  const [musicStarted, setMusicStarted] = useState(false)
   const audioRef = useRef(null)
   const autoTimer = useRef(null)
   const videoTimer = useRef(null)
+
+  // Arrancar música apenas el usuario toca la pantalla del splash
+  const tryPlayMusic = () => {
+    if (audioRef.current && audioRef.current.paused) {
+      audioRef.current.volume = 0.35
+      audioRef.current.play().catch(() => {})
+    }
+  }
 
   useEffect(() => {
     const t = setTimeout(() => setPhase('onboarding'), 2200)
@@ -73,13 +81,6 @@ export default function SplashScreen({ onFinish, lang = 'es' }) {
     return () => clearInterval(videoTimer.current)
   }, [phase, slideIndex])
 
-  const startMusic = () => {
-    if (!musicStarted && audioRef.current) {
-      audioRef.current.volume = 0.35
-      audioRef.current.play().then(() => setMusicStarted(true)).catch(() => {})
-    }
-  }
-
   const stopMusic = () => {
     if (audioRef.current) {
       audioRef.current.pause()
@@ -99,7 +100,7 @@ export default function SplashScreen({ onFinish, lang = 'es' }) {
   }
 
   const goNext = () => {
-    startMusic()
+    tryPlayMusic()
     if (slideIndex < onboardingSlides.length - 1) {
       goTo(slideIndex + 1)
     } else {
@@ -117,7 +118,16 @@ export default function SplashScreen({ onFinish, lang = 'es' }) {
 
   if (phase === 'splash') {
     return (
-      <div className="splash-screen">
+      // El toque en el splash arranca la música
+      <div className="splash-screen" onClick={tryPlayMusic} onTouchStart={tryPlayMusic}>
+        <audio ref={audioRef} loop preload="auto">
+          <source src="/audio/the_mountain-acoustic-131417.mp3" type="audio/mpeg" />
+        </audio>
+        <div style={{ display: 'none' }}>
+          {ALL_VIDEOS.map(src => (
+            <video key={src} src={src} preload="auto" muted playsInline />
+          ))}
+        </div>
         <div className="splash-logo-wrap">
           <img src={logoImg} alt="Listo" className="splash-logo" />
         </div>
@@ -134,22 +144,26 @@ export default function SplashScreen({ onFinish, lang = 'es' }) {
   const currentVideo = slide.videos[videoIndex]
 
   return (
-    <div className="onboarding-screen" onClick={startMusic}>
+    <div className="onboarding-screen" onClick={tryPlayMusic}>
 
       <audio ref={audioRef} loop preload="auto">
         <source src="/audio/the_mountain-acoustic-131417.mp3" type="audio/mpeg" />
       </audio>
 
-      <video
-        key={currentVideo}
-        autoPlay
-        muted
-        loop
-        playsInline
-        className="onboarding-video-bg"
-      >
-        <source src={currentVideo} type="video/mp4" />
-      </video>
+      {ALL_VIDEOS.map(src => (
+        <video
+          key={src}
+          autoPlay={src === currentVideo}
+          muted
+          loop
+          playsInline
+          preload="auto"
+          className="onboarding-video-bg"
+          style={{ display: src === currentVideo ? 'block' : 'none' }}
+        >
+          <source src={src} type="video/mp4" />
+        </video>
+      ))}
 
       <div
         className="onboarding-overlay"
