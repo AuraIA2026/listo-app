@@ -28,6 +28,30 @@ const onboardingSlides = [
     bg: '#F26000',
     video: '/videos/servicios3.mp4',
   },
+  {
+    titleEs: 'Trabajo de primera',
+    titleEn: 'Top-notch work',
+    subEs: 'Resultados impecables y garantizados. Estamos comprometidos con tu satisfacción.',
+    subEn: 'Flawless and guaranteed results. We are committed to your satisfaction.',
+    bg: '#F26000',
+    video: '/videos/profesionales3.mp4',
+  },
+  {
+    titleEs: 'Síguelo en el mapa',
+    titleEn: 'Track on the map',
+    subEs: 'Observa en tiempo real cómo tu profesional llega directo a tu ubicación.',
+    subEn: 'Watch in real-time as your professional arrives straight to your location.',
+    bg: '#F26000',
+    video: '/videos/reserva1.mp4',
+  },
+  {
+    titleEs: 'Paga sin complicaciones',
+    titleEn: 'Hassle-free payments',
+    subEs: 'Transacciones 100% seguras y al instante, directamente desde la app.',
+    subEn: '100% secure and instant transactions, right from the app.',
+    bg: '#F26000',
+    video: '/videos/reserva2.mp4',
+  },
 ]
 
 const SLIDE_DURATION = 8000
@@ -39,6 +63,15 @@ export default function SplashScreen({ onFinish, lang = 'es' }) {
   const [musicOn, setMusicOn] = useState(false)
   const audioRef = useRef(null)
   const autoTimer = useRef(null)
+  const videoRefs = useRef([])
+
+  useEffect(() => {
+    if (phase === 'onboarding') {
+      videoRefs.current.forEach(v => {
+        if (v) v.play().catch(() => {})
+      })
+    }
+  }, [phase])
 
   // Precargar los 3 videos al montar
   useEffect(() => {
@@ -138,16 +171,24 @@ export default function SplashScreen({ onFinish, lang = 'es' }) {
         <source src="/audio/the_mountain-acoustic-131417.mp3" type="audio/mpeg" />
       </audio>
 
-      <video
-        key={slide.video}
-        src={slide.video}
-        autoPlay
-        muted
-        loop
-        playsInline
-        preload="auto"
-        className="onboarding-video-bg"
-      />
+      {onboardingSlides.map((s, index) => (
+        <video
+          key={s.video}
+          ref={el => videoRefs.current[index] = el}
+          src={s.video}
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="auto"
+          className="onboarding-video-bg"
+          style={{
+            opacity: index === slideIndex ? 1 : 0,
+            transition: 'opacity 0.6s ease-in-out',
+            zIndex: index === slideIndex ? 0 : -1
+          }}
+        />
+      ))}
 
       <div
         className="onboarding-overlay"
