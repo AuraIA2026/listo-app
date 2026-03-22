@@ -411,30 +411,34 @@ export default function TrackingPage({ lang = 'es', navigate, professional, user
         if (d.status === 'working') setWorkStatus('working')
         if (d.status === 'done') setWorkStatus('done')
         if (d.status === 'cancelled') setWorkStatus('declined_done')
+        if (d.status === 'arrived') { setStatus('arrived'); setWorkStatus('awaiting_deal'); stopArrivingSound() }
+        
+        // Use real GPS coordinates if available
+        if (d.proCoords) setProPos([d.proCoords.lat, d.proCoords.lng])
       }
     })
     return () => unsub()
   }, [professional?.id])
 
+  // GPS Tracking Real para el Profesional
   useEffect(() => {
-    if (workStatus !== 'tracking') return
-    let idx = 0
-    intervalRef.current = setInterval(() => {
-      idx += 1
-      if (idx >= PRO_WAYPOINTS.length) {
-        clearInterval(intervalRef.current)
-        setStatus('arrived'); setEta(0); setWorkStatus('awaiting_deal')
-        setProPos(CLIENT_POS); setRouteSoFar(PRO_WAYPOINTS); setRemainingRoute([])
-        stopArrivingSound(); return
-      }
-      setProPos(PRO_WAYPOINTS[idx])
-      setRouteSoFar(PRO_WAYPOINTS.slice(0, idx + 1))
-      setRemainingRoute(PRO_WAYPOINTS.slice(idx))
-      setEta(e => Math.max(0, e - Math.floor(18 / PRO_WAYPOINTS.length)))
-      if (idx === PRO_WAYPOINTS.length - 2) { setStatus('arriving'); playArrivingSound() }
-    }, 4500)
-    return () => clearInterval(intervalRef.current)
-  }, [workStatus]) // eslint-disable-line
+    if (userRole !== 'pro' || !professional?.id || workStatus !== 'tracking' || status === 'arrived') return
+    
+    if (navigator.geolocation) {
+      const watchId = navigator.geolocation.watchPosition(
+        (pos) => {
+          const { latitude, longitude } = pos.coords
+          setProPos([latitude, longitude])
+          updateDoc(doc(db, 'orders', professional.id), {
+            proCoords: { lat: latitude, lng: longitude }
+          }).catch(()=>{})
+        },
+        (err) => console.error("GPS Error:", err),
+        { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+      )
+      return () => navigator.geolocation.clearWatch(watchId)
+    }
+  }, [userRole, professional?.id, workStatus, status])
 
   useEffect(() => {
     if (workStatus !== 'retreating') return
@@ -442,7 +446,7 @@ export default function TrackingPage({ lang = 'es', navigate, professional, user
     const interval = setInterval(() => {
       idx += 1
       if (idx >= RETREAT_WAYPOINTS.length) { clearInterval(interval); setVanVisible(false); setWorkStatus('declined_done'); return }
-      setProPos(RETREAT_WAYPOINTS[idx]); setRemainingRoute(RETREAT_WAYPOINTS.slice(idx))
+      setProPos(RETREAT_WAYPOINTS[idx])
     }, 1500)
     return () => clearInterval(interval)
   }, [workStatus])
@@ -548,8 +552,6 @@ export default function TrackingPage({ lang = 'es', navigate, professional, user
         <MapContainer center={mapCenter} zoom={14} className="tracking-map" zoomControl={false} attributionControl={false}>
           <MapResizer />
           <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-          {routeSoFar.length>1    && <Polyline positions={routeSoFar}     pathOptions={{ color:'#BBBBBB', weight:4, opacity:0.5, dashArray:'8 4' }} />}
-          {remainingRoute.length>1 && <Polyline positions={remainingRoute} pathOptions={{ color:workStatus==='retreating'?'#EF4444':'#F26000', weight:5, opacity:0.85 }} />}
           <Marker position={CLIENT_POS} icon={clientIcon}><Popup>{lang==='es'?'Tu ubicación':'Your location'}</Popup></Marker>
           {vanVisible && <SmoothMarker targetPos={proPos} icon={workStatus==='working'?workerIcon.current:vanIcon.current} visible={vanVisible}><Popup>{pro.name}</Popup></SmoothMarker>}
         </MapContainer>
@@ -620,6 +622,16 @@ export default function TrackingPage({ lang = 'es', navigate, professional, user
                 </div>
               ))}
             </div>
+
+            {/* ── Acciones de tracking para el Pro ── */}
+            {workStatus==='tracking' && userRole==='pro' && status !== 'arrived' && (
+              <div style={{ marginTop: 16 }}>
+                <button onClick={async () => {
+                  try { await updateDoc(doc(db, 'orders', professional.id), { status: 'arrived' }) } catch(e) {}
+                  setStatus('arrived'); setWorkStatus('awaiting_deal'); stopArrivingSound()
+                }} style={{ width:'100%', padding:16, borderRadius:16, border:'none', background:'#F26000', color:'#fff', fontWeight:900, fontSize:16, boxShadow:'0 8px 30px rgba(242,96,0,0.4)', cursor:'pointer', animation: 'timerPulse 2s infinite' }}>✅ {lang==='es'?'Llegué a la ubicación':'I arrived'}</button>
+              </div>
+            )}
 
             {/* ── Trabajando: pro ve info, usuario ve info ── */}
             {workStatus==='working' && (
