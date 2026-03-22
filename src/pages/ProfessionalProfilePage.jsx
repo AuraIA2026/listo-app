@@ -65,14 +65,6 @@ const mockReviews = [
   { id: 4, user: 'Luis García', avatar: 'LG', color: '#7A3000', rating: 3, comment: 'Buen trabajo pero llegó un poco tarde.', date: '5 Feb 2026', service: 'Reparación general' },
 ]
 
-const mockPhotos = [
-  { id: 1, url: 'https://images.unsplash.com/photo-1621905251918-48416bd8575a?w=400&q=80', caption: 'Instalación panel eléctrico' },
-  { id: 2, url: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&q=80', caption: 'Reparación de tomacorrientes' },
-  { id: 3, url: 'https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=400&q=80', caption: 'Trabajo en breakers' },
-  { id: 4, url: 'https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=400&q=80', caption: 'Instalación completa' },
-  { id: 5, url: 'https://images.unsplash.com/photo-1565814329452-e1efa11c5b89?w=400&q=80', caption: 'Cableado nuevo' },
-  { id: 6, url: 'https://images.unsplash.com/photo-1592520113018-180c8bc831c9?w=400&q=80', caption: 'Tablero eléctrico' },
-]
 
 function Stars({ rating, interactive = false, onRate }) {
   const [hovered, setHovered] = useState(0)
@@ -133,6 +125,12 @@ function PhotoGrid({ photos, lang }) {
 
   return (
     <div className="photo-section">
+      {localPhotos.length === 0 && (
+         <div style={{ textAlign: 'center', padding: '40px 20px' }}>
+            <span style={{ fontSize: 40, display: 'block', marginBottom: 12 }}>📸</span>
+            <p style={{ fontWeight: 'bold', margin: 0, color: '#333' }}>{T.noPhotos}</p>
+         </div>
+      )}
       <div className="photos-grid">
         {localPhotos.map(photo => (
           <button key={photo.id} className="photo-thumb" onClick={() => setLightbox(photo)}>
@@ -140,7 +138,6 @@ function PhotoGrid({ photos, lang }) {
             <div className="photo-overlay"><span>{photo.caption}</span></div>
           </button>
         ))}
-
       </div>
 
       {lightbox && (
@@ -359,7 +356,7 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
       <div className="pro-tab-content">
         {/* FOTOS */}
         {activeTab === 'photos' && (
-          <PhotoGrid photos={mockPhotos} lang={lang} />
+          <PhotoGrid photos={pro.photos || []} lang={lang} />
         )}
 
         {/* RESEÑAS */}
