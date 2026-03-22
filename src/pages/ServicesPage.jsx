@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react'
+import { collection, query, where, getDocs } from 'firebase/firestore'
+import { db } from '../firebase'
 import './ServicesPage.css'
-
-// ── Fotos de perfil (randomuser.me — consistentes por seed) ──────────────────
-const RU = (gender, seed) => `https://randomuser.me/api/portraits/${gender}/${seed}.jpg`
 
 // ── Categorías ────────────────────────────────────────────────────────────────
 const categories = {
@@ -32,23 +31,7 @@ const categories = {
   ]
 }
 
-// ── Profesionales ─────────────────────────────────────────────────────────────
-const professionals = [
-  { id: 1,  name: 'Carlos Méndez',     category: 'mechanic',    rating: 4.9, reviews: 128, price: 'RD$800/hr',  location: 'Santo Domingo', experience: '8 años',  available: true,  photo: RU('men',   10) },
-  { id: 2,  name: 'Ana Rodríguez',     category: 'electrician', rating: 4.8, reviews: 94,  price: 'RD$950/hr',  location: 'Santiago',      experience: '6 años',  available: true,  photo: RU('women', 20) },
-  { id: 3,  name: 'Pedro Sánchez',     category: 'plumber',     rating: 4.7, reviews: 211, price: 'RD$750/hr',  location: 'Santo Domingo', experience: '12 años', available: false, photo: RU('men',   30) },
-  { id: 4,  name: 'María López',       category: 'nanny',       rating: 5.0, reviews: 67,  price: 'RD$400/hr',  location: 'La Romana',     experience: '5 años',  available: true,  photo: RU('women', 40) },
-  { id: 5,  name: 'Luis García',       category: 'painter',     rating: 4.6, reviews: 45,  price: 'RD$600/hr',  location: 'Santiago',      experience: '9 años',  available: true,  photo: RU('men',   50) },
-  { id: 6,  name: 'Carmen Díaz',       category: 'cleaner',     rating: 4.9, reviews: 302, price: 'RD$350/hr',  location: 'Santo Domingo', experience: '7 años',  available: true,  photo: RU('women', 60) },
-  { id: 7,  name: 'Roberto Torres',    category: 'carpenter',   rating: 4.8, reviews: 88,  price: 'RD$700/hr',  location: 'Puerto Plata',  experience: '15 años', available: false, photo: RU('men',   70) },
-  { id: 8,  name: 'Sofía Martínez',    category: 'gardener',    rating: 4.7, reviews: 53,  price: 'RD$500/hr',  location: 'Santo Domingo', experience: '4 años',  available: true,  photo: RU('women', 15) },
-  { id: 9,  name: 'Juan Herrera',      category: 'electrician', rating: 4.5, reviews: 139, price: 'RD$900/hr',  location: 'Santo Domingo', experience: '10 años', available: true,  photo: RU('men',   25) },
-  { id: 10, name: 'Elena Castillo',    category: 'nanny',       rating: 4.9, reviews: 41,  price: 'RD$450/hr',  location: 'Santiago',      experience: '3 años',  available: true,  photo: RU('women', 35) },
-  { id: 11, name: 'Miguel Ángel Ruiz', category: 'mechanic',    rating: 4.6, reviews: 77,  price: 'RD$850/hr',  location: 'La Vega',       experience: '11 años', available: true,  photo: RU('men',   45) },
-  { id: 12, name: 'Patricia Núñez',    category: 'cleaner',     rating: 4.8, reviews: 189, price: 'RD$380/hr',  location: 'Santo Domingo', experience: '6 años',  available: false, photo: RU('women', 55) },
-  { id: 13, name: 'José Reyes',        category: 'locksmith',   rating: 4.7, reviews: 63,  price: 'RD$650/hr',  location: 'Santo Domingo', experience: '8 años',  available: true,  photo: RU('men',   65) },
-  { id: 14, name: 'Diana Peña',        category: 'locksmith',   rating: 4.8, reviews: 34,  price: 'RD$600/hr',  location: 'Santiago',      experience: '5 años',  available: true,  photo: RU('women', 75) },
-]
+// ── Profesionales (lista de fallback local removida) ──────────────────────────
 
 // ── Textos ────────────────────────────────────────────────────────────────────
 const txt = {
@@ -92,9 +75,72 @@ export default function ServicesPage({ lang = 'es', navigate }) {
   const [search,         setSearch]         = useState('')
   const [onlyAvailable,  setOnlyAvailable]  = useState(false)
   const [sortBy,         setSortBy]         = useState('all') // all | topRated | nearest
+  const [professionals,  setProfessionals]  = useState([])
+  const [loading,        setLoading]        = useState(true)
 
   const cats = categories[lang]
   const T    = txt[lang]
+
+  useEffect(() => {
+    const fetchPros = async () => {
+      try {
+        setLoading(true)
+        const q = query(collection(db, 'users'), where('role', '==', 'professional'))
+        const querySnapshot = await getDocs(q)
+        const pros = []
+        querySnapshot.forEach((doc) => {
+          const data = doc.data()
+          // Filtramos perfiles incompletos si es necesario, pero mostramos todos los 'professional'
+          pros.push({
+            id: doc.id,
+            name: data.name || data.displayName || 'Profesional',
+            category: data.specialty || data.category || 'all',
+            rating: data.rating || 5.0,
+            reviews: data.reviews || 0,
+            price: data.basePrice || 'RD$0/hr',
+            location: data.city || data.location || 'República Dominicana',
+            experience: data.experience || '1 año',
+            available: data.available !== false, // Por defecto true
+            photo: data.photoURL || data.avatar || null,
+            avatar: (data.name || 'P').substring(0,2).toUpperCase(),
+            phone: data.phone || data.telefono || '',
+            ...data
+          })
+        })
+        
+        // Unificar con 'pro' (algunos podrían tener role 'pro' en vez de 'professional')
+        const q2 = query(collection(db, 'users'), where('role', '==', 'pro'))
+        const querySnapshot2 = await getDocs(q2)
+        querySnapshot2.forEach((doc) => {
+          const data = doc.data()
+          if (!pros.find(p => p.id === doc.id)) {
+            pros.push({
+              id: doc.id,
+              name: data.name || data.displayName || 'Profesional',
+              category: data.specialty || data.category || 'all',
+              rating: data.rating || 5.0,
+              reviews: data.reviews || 0,
+              price: data.basePrice || 'RD$0/hr',
+              location: data.city || data.location || 'República Dominicana',
+              experience: data.experience || '1 año',
+              available: data.available !== false,
+              photo: data.photoURL || data.avatar || null,
+              avatar: (data.name || 'P').substring(0,2).toUpperCase(),
+              phone: data.phone || data.telefono || '',
+              ...data
+            })
+          }
+        })
+
+        setProfessionals(pros)
+      } catch (error) {
+        console.error("Error fetching professionals:", error)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchPros()
+  }, [])
 
   const filtered = professionals
     .filter(p => {
@@ -168,8 +214,17 @@ export default function ServicesPage({ lang = 'es', navigate }) {
 
       {/* ── Contador ── */}
       <div className="results-bar">
-        <span className="results-count">{filtered.length} {T.results}</span>
+        <span className="results-count">
+          {loading ? (lang === 'es' ? 'Cargando profesionales...' : 'Loading professionals...') : `${filtered.length} ${T.results}`}
+        </span>
       </div>
+
+      {loading && (
+        <div style={{ padding: 40, textAlign: 'center' }}>
+          <div style={{ display: 'inline-block', width: 30, height: 30, borderRadius: '50%', border: '3px solid #F26000', borderTopColor: 'transparent', animation: 'spin 1s linear infinite' }}></div>
+          <style>{`@keyframes spin { 100% { transform: rotate(360deg); } }`}</style>
+        </div>
+      )}
 
       {/* ── Grid de profesionales ── */}
       <div className="professionals-grid">
@@ -186,7 +241,7 @@ export default function ServicesPage({ lang = 'es', navigate }) {
               ) : (
                 <div
                   className="pro-avatar-big"
-                  style={{ background: avatarColors[pro.id % avatarColors.length] }}
+                  style={{ background: avatarColors[(pro.id.length || pro.id) % avatarColors.length] || avatarColors[0] }}
                 >
                   {pro.avatar}
                 </div>
