@@ -737,29 +737,7 @@ export default function BtnHamburguesa({ onClose, navigate, initialOpenSection =
 
             ) : (
               <>
-                {/* ══ 1. PERFIL — DATOS REALES ══ */}
-                <div className="pp-profile">
-                  <div className="pp-avatar">
-                    {loading
-                      ? <span style={{ fontSize: 14 }}>...</span>
-                      : displayPhoto
-                        ? <img src={displayPhoto} alt={displayName} />
-                        : <span>{getInitials(displayName)}</span>
-                    }
-                  </div>
-                  <div className="pp-profile-info">
-                    <p className="pp-name">{loading ? '...' : displayName}</p>
-                    <p className="pp-spec">{displaySpec}</p>
-                    <p className="pp-meta">⭐ {displayRating} &nbsp;|&nbsp; 📍 {displayCity}</p>
-                    <StatusBadge status={displayStatus} />
-                  </div>
-                  {/* ── Botón ✏️ FUNCIONAL ── */}
-                  <button 
-                    className="pp-edit-btn" 
-                    onClick={() => setShowEditModal(true)}
-                    style={{ animation: !profileComplete && userData?.approved ? 'pulseGuide 1.5s infinite' : 'none' }}
-                  >✏️ Editar</button>
-                </div>
+                {/* ══ 1. PERFIL — DATOS REALES (Removido por solicitud) ══ */}
 
                 {/* ══ 2. PLANES 3D ══ */}
                 <div className="pp-accordion" ref={planesRef}>
@@ -860,9 +838,8 @@ export default function BtnHamburguesa({ onClose, navigate, initialOpenSection =
                           <span className="pp-toggle-slider" />
                         </label>
                       </div>
-                      {['🔑 Cambiar contraseña', '✏️ Editar información personal'].map((item, i) => (
-                        <button key={i} className="pp-config-btn">{item}</button>
-                      ))}
+                      <button className="pp-config-btn">🔑 Cambiar contraseña</button>
+                      <button className="pp-config-btn" onClick={() => setShowEditModal(true)}>✏️ Editar información personal</button>
                     </div>
                   )}
                 </div>
