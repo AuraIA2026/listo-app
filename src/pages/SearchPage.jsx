@@ -158,17 +158,8 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
         </div>
       </div>
 
-      {/* Filtros rápidos */}
-      <div className="quick-filters">
-        {FILTERS.map(f => (
-          <button
-            key={f.id}
-            className={`qf-btn ${activeFilter === f.id ? 'active' : ''}`}
-            onClick={() => setActiveFilter(activeFilter === f.id ? null : f.id)}
-          >
-            {f.icon} {lang === 'es' ? f.labelEs : f.labelEn}
-          </button>
-        ))}
+      {/* Filtros de disponibilidad */}
+      <div className="quick-filters" style={{ padding: '0 16px', display: 'flex', justifyContent: 'flex-end', marginBottom: '4px' }}>
         <label className="avail-toggle">
           <input
             type="checkbox"
