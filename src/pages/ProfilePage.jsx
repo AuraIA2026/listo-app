@@ -1,10 +1,12 @@
 import { useState, useRef } from 'react'
-import { doc, updateDoc } from 'firebase/firestore'
-import { db } from '../firebase'
+import { db, auth } from '../firebase'
+import { doc, updateDoc, deleteDoc } from 'firebase/firestore'
+import { deleteUser } from 'firebase/auth'
 import { useUserData } from '../useUserData'
 import './ProfilePage.css'
 import VerificacionPage    from './VerificacionPage'
 import RegistroClientePage from './RegistroClientePage'
+import PlanesPage          from './PlanesPage'
 
 const txt = {
   es: {
@@ -479,7 +481,19 @@ export default function ProfilePage({ lang, setLang, navigate, onLogout }) {
   const handleDeleteAccount = async () => {
     setShowDelete(false)
     if (userData?.uid) {
-      await updateDoc(doc(db, 'users', userData.uid), { deleted: true, available: false })
+      try {
+        // Obligatorio para Apple/Google: Borrar cuenta de Auth permanentemente
+        const user = auth.currentUser;
+        if (user) {
+          await deleteUser(user);
+        }
+        // Borrar el documento de la base de datos
+        await deleteDoc(doc(db, 'users', userData.uid));
+      } catch (err) {
+        console.error("Error borrando cuenta (posible sesión antigua):", err);
+        // Fallback: Si Firebase Auth pide re-autenticación, al menos ocultamos la cuenta
+        await updateDoc(doc(db, 'users', userData.uid), { deleted: true, available: false, name: 'Usuario Eliminado', phone: '' });
+      }
     }
     if (onLogout) onLogout()
     else navigate('login')
@@ -507,6 +521,7 @@ export default function ProfilePage({ lang, setLang, navigate, onLogout }) {
       case 'completar-perfil': return (
         <RegistroClientePage onBack={back} onSuccess={() => back()} />
       )
+      case 'planes':           return <PlanesPage onBack={back} navigate={navigate} />
       default: return null
     }
   }
@@ -590,6 +605,20 @@ export default function ProfilePage({ lang, setLang, navigate, onLogout }) {
             <span className={profileComplete ? 'completo-badge' : 'completar-badge'}>
               {profileComplete ? '✓ Listo' : '¡Complétalo!'}
             </span>
+          </button>
+        )}
+
+        {userRole === 'pro' && (
+          <button 
+            className="profile-menu-item" 
+            onClick={() => handleMenu('planes')}
+            style={{ background: 'linear-gradient(135deg, #FFFBEB, #FEF3C7)', border: '1px solid #FDE68A', marginBottom: '8px' }}
+          >
+            <span className="pmi-icon">👑</span>
+            <span className="pmi-label" style={{ fontWeight: 800, color: '#92400E' }}>
+              {lang === 'es' ? 'Suscripción y Planes' : 'Subscription & Plans'}
+            </span>
+            <span className="pmi-arrow" style={{ color: '#92400E' }}>›</span>
           </button>
         )}
 
