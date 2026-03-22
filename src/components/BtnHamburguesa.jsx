@@ -795,41 +795,7 @@ export default function BtnHamburguesa({ onClose, navigate, initialOpenSection =
                   )}
                 </div>
 
-                {/* ══ 5. POSTULARSE ══ */}
-                {!userData?.approved && (
-                  <div className="pp-accordion" style={{ animation: 'pulseGuide 2s infinite', borderRadius: '16px', boxShadow: '0 0 10px rgba(242,96,0,0.3)' }}>
-                    <button className="pp-acc-header" onClick={() => toggle('apply')}>
-                      <span>📝 Postularse como Profesional</span>
-                      <span className="pp-acc-arrow">{openSection === 'apply' ? '▲' : '▼'}</span>
-                    </button>
-                    {openSection === 'apply' && (
-                      <div className="pp-acc-body">
-                        <button className="pp-stats-btn" onClick={() => { if (navigate) navigate('verificacion'); onClose(); }}>👉 Iniciar Verificación Oficial</button>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* ══ 6. CONFIGURACIÓN ══ */}
-                <div className="pp-accordion">
-                  <button className="pp-acc-header" onClick={() => toggle('config')}>
-                    <span>⚙️ Configuración</span>
-                    <span className="pp-acc-arrow">{openSection === 'config' ? '▲' : '▼'}</span>
-                  </button>
-                  {openSection === 'config' && (
-                    <div className="pp-acc-body">
-                      <div className="pp-config-row">
-                        <span>🟢 Disponibilidad</span>
-                        <label className="pp-toggle">
-                          <input type="checkbox" checked={available} onChange={() => setAvailable(!available)} />
-                          <span className="pp-toggle-slider" />
-                        </label>
-                      </div>
-                      <button className="pp-config-btn" onClick={handleResetPassword}>🔑 Cambiar contraseña</button>
-                      <button className="pp-config-btn" onClick={() => setShowEditModal(true)}>✏️ Editar información personal</button>
-                    </div>
-                  )}
-                </div>
+                {/* ══ 5. POSTULARSE y 6. CONFIGURACIÓN han sido removidos (duplicidad con Perfil Principal) ══ */}
 
                 <div style={{ height: 30 }} />
               </>
