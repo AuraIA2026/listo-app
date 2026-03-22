@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { getAuth, updateProfile } from 'firebase/auth'
+import { getAuth, updateProfile, sendPasswordResetEmail } from 'firebase/auth'
 import { doc, updateDoc, collection, addDoc, serverTimestamp } from 'firebase/firestore'
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
 import { db, storage } from '../firebase'
@@ -662,26 +662,17 @@ export default function BtnHamburguesa({ onClose, navigate, initialOpenSection =
     }
   }
 
-  // Datos a mostrar: Firebase o fallback
-  const displayName = userData?.name || user?.displayName || 'Profesional'
-  const displayCity = userData?.city || 'Santo Domingo'
-  const displayRating = userData?.rating || '—'
-  const displayPhoto = userData?.photoURL || user?.photoURL || null
-  const displayStatus = userData?.planStatus || 'inactive'
-  const displaySpec = userData?.category || userData?.specialty || 'Profesional'
-
-  const ApplyForm = () => (
-    <div className="pp-apply">
-      <h3 className="pp-sec-title">📝 Postularse como Profesional</h3>
-      {['Nombre completo', 'Especialidad', 'Teléfono', 'Ciudad', 'Años de experiencia'].map((f, i) => (
-        <input key={i} className="pp-input" placeholder={f} />
-      ))}
-      <textarea className="pp-input pp-textarea" placeholder="Descripción" rows={3} />
-      <label className="pp-file-label">📄 Subir cédula<input type="file" accept="image/*,application/pdf" style={{ display: 'none' }} /></label>
-      <label className="pp-file-label">🏅 Subir certificaciones<input type="file" accept="image/*,application/pdf" style={{ display: 'none' }} /></label>
-      <button className="pp-submit-btn">👉 Enviar Solicitud</button>
-    </div>
-  )
+  // ── Restablecer Contraseña ──
+  const handleResetPassword = () => {
+    if (!user?.email) {
+      alert("No se encontró un correo asociado a tu cuenta.");
+      return;
+    }
+    const auth = getAuth();
+    sendPasswordResetEmail(auth, user.email)
+      .then(() => alert("Te hemos enviado un enlace a tu correo para restablecer la contraseña."))
+      .catch((e) => alert("Error: " + e.message));
+  }
 
   const Stats = () => (
     <div className="pp-stats">
@@ -723,11 +714,7 @@ export default function BtnHamburguesa({ onClose, navigate, initialOpenSection =
             {section === 'payment' && planDetalle ? (
               <PaymentSection plan={planDetalle} onBack={() => { setSection('main'); setPlanDetalle(null) }} onConfirm={createPaymentInDb} />
 
-            ) : section === 'apply' ? (
-              <>
-                <ApplyForm />
-                <button className="pp-back-btn" onClick={() => setSection('main')}>← Volver</button>
-              </>
+
 
             ) : section === 'stats' ? (
               <>
@@ -817,7 +804,7 @@ export default function BtnHamburguesa({ onClose, navigate, initialOpenSection =
                     </button>
                     {openSection === 'apply' && (
                       <div className="pp-acc-body">
-                        <button className="pp-stats-btn" onClick={() => setSection('apply')}>👉 Abrir formulario</button>
+                        <button className="pp-stats-btn" onClick={() => { if (navigate) navigate('verificacion'); onClose(); }}>👉 Iniciar Verificación Oficial</button>
                       </div>
                     )}
                   </div>
@@ -838,7 +825,7 @@ export default function BtnHamburguesa({ onClose, navigate, initialOpenSection =
                           <span className="pp-toggle-slider" />
                         </label>
                       </div>
-                      <button className="pp-config-btn">🔑 Cambiar contraseña</button>
+                      <button className="pp-config-btn" onClick={handleResetPassword}>🔑 Cambiar contraseña</button>
                       <button className="pp-config-btn" onClick={() => setShowEditModal(true)}>✏️ Editar información personal</button>
                     </div>
                   )}
