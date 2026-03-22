@@ -562,12 +562,31 @@ function NotificacionesModal({ onClose, notifs, lang, onMarkAllRead, navigate, o
             </div>
           ) : notifs.map((n, i) => {
             const isPago = isPaymentNotif(n.text), isNuevoPedido = isNewOrderNotif(n)
-            const relatedOrder = n.orderId ? orders.find(o => o.id===n.orderId) : orders.find(o => o.status==='done'&&o.paymentStatus!=='approved'&&o.paymentStatus!=='pending_cash')
-            const isClickable = (isPago&&relatedOrder)||(isNuevoPedido&&n.orderId)
+            const isReview = n.type === 'new_review' || (n.text || '').toLowerCase().includes('estrella')
+            // Buscar relatedOrder relajando el filtro para incluir cualquier orden válida que coincida con orderId
+            const relatedOrder = n.orderId ? orders.find(o => o.id===n.orderId) : null
+            
+            const isClickable = isPago || isNuevoPedido || isReview || relatedOrder
             const handleClick = async () => {
               try { await updateDoc(doc(db,'notificaciones',n.id), { read:true }) } catch(e) {}
-              if (isPago&&relatedOrder) { onClose(); navigate('payment', { ...relatedOrder, orderId:relatedOrder.id }) }
-              else if (isNuevoPedido&&n.orderId) { onClose(); onOpenOrder(n.orderId) }
+              
+              if (isNuevoPedido && n.orderId) { 
+                onClose(); onOpenOrder(n.orderId) 
+              }
+              else if (isReview) { 
+                onClose(); navigate('profile') 
+              }
+              else if (isPago && relatedOrder) { 
+                onClose(); navigate('payment', { ...relatedOrder, orderId:relatedOrder.id }) 
+              }
+              else if (relatedOrder) {
+                onClose(); 
+                if (relatedOrder.status === 'done' && relatedOrder.paymentStatus !== 'approved' && relatedOrder.paymentStatus !== 'pending_cash') {
+                  navigate('payment', { ...relatedOrder, orderId:relatedOrder.id })
+                } else {
+                  navigate('tracking', { ...relatedOrder })
+                }
+              }
             }
             return (
               <div key={i} onClick={isClickable?handleClick:undefined} style={{ display:'flex', alignItems:'flex-start', gap:12, padding:12, borderRadius:12, marginBottom:8, background:n.read?'#fff':'#FFF3EC', border:n.read?'1px solid #f0f0f0':'1px solid #FFD580', cursor:isClickable?'pointer':'default', transition:'transform 0.15s' }}
