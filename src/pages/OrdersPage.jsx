@@ -3,6 +3,7 @@ import { collection, query, where, onSnapshot, doc, updateDoc, getDoc, deleteDoc
          addDoc, serverTimestamp, orderBy, setDoc } from 'firebase/firestore'
 import { auth, db } from '../firebase'
 import './OrdersPage.css'
+import { ReportModal } from './ChatPage'
 
 const txt = {
   es: {
@@ -363,6 +364,7 @@ function FloatingChat({ otherUid, otherName, otherColor = '#F26000', otherPhone 
   const [inputText, setInputText] = useState('')
   const [isTyping,  setIsTyping]  = useState(false)
   const [showCall,  setShowCall]  = useState(false)
+  const [showReport, setShowReport] = useState(false)
 
   const messagesEndRef = useRef(null)
   const typingTimer    = useRef(null)
@@ -482,6 +484,7 @@ function FloatingChat({ otherUid, otherName, otherColor = '#F26000', otherPhone 
             <p style={{ margin:0, fontWeight:800, fontSize:15, color:'#1A1A2E' }}>{otherName}</p>
             <p style={{ margin:0, fontSize:12, fontWeight:600, color: isTyping?'#F26000':'#22C55E' }}>{isTyping?'✍️ Escribiendo...':'● En línea'}</p>
           </div>
+          <button onClick={() => setShowReport(true)} style={{ width:38, height:38, borderRadius:'50%', background:'#FEE2E2', border:'none', display:'flex', alignItems:'center', justifyContent:'center', fontSize:18, cursor:'pointer', flexShrink:0 }} title="Reportar / Bloquear">⚠️</button>
           <button onClick={() => setShowCall(true)} style={{ width:38, height:38, borderRadius:'50%', background:otherPhone?'#FFF3EC':'#f5f5f5', border:otherPhone?'1px solid #FFD4B0':'1px solid #eee', display:'flex', alignItems:'center', justifyContent:'center', fontSize:18, cursor:'pointer', opacity:otherPhone?1:0.45 }}>📞</button>
           <button onClick={onClose} style={{ width:38, height:38, borderRadius:'50%', background:'#f5f5f5', border:'none', fontSize:16, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>✕</button>
         </div>
@@ -533,6 +536,7 @@ function FloatingChat({ otherUid, otherName, otherColor = '#F26000', otherPhone 
         </div>
       </div>
       {showCall && <CallModal name={otherName} phone={otherPhone} lang={lang} onClose={() => setShowCall(false)} />}
+      {showReport && <ReportModal lang={lang} otherUser={{ uid: otherUid, name: otherName }} onClose={() => setShowReport(false)} />}
     </>
   )
 }

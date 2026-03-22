@@ -6,6 +6,7 @@ import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import './TrackingPage.css'
 import vanImg from '../assets/van.png'
+import { ReportModal } from './ChatPage'
 
 delete L.Icon.Default.prototype._getIconUrl
 L.Icon.Default.mergeOptions({
@@ -121,6 +122,7 @@ function FloatingChat({ pro, lang, onClose }) {
   const [inputText, setInputText] = useState('')
   const [isTyping,  setIsTyping]  = useState(false)
   const [showCall,  setShowCall]  = useState(false)
+  const [showReport, setShowReport] = useState(false)
 
   const messagesEndRef = useRef(null)
   const typingTimer    = useRef(null)
@@ -228,6 +230,7 @@ function FloatingChat({ pro, lang, onClose }) {
             <p style={{ margin:0, fontWeight:800, fontSize:15, color:'#1A1A2E' }}>{pro?.name||'Usuario'}</p>
             <p style={{ margin:0, fontSize:12, color:isTyping?'#F26000':'#22C55E', fontWeight:600 }}>{isTyping?'✍️ Escribiendo...':'● En línea'}</p>
           </div>
+          <button onClick={() => setShowReport(true)} style={{ width:38, height:38, borderRadius:'50%', background:'#FEE2E2', border:'none', display:'flex', alignItems:'center', justifyContent:'center', fontSize:18, cursor:'pointer', flexShrink:0 }} title="Reportar / Bloquear">⚠️</button>
           <button onClick={() => setShowCall(true)} style={{ width:38, height:38, borderRadius:'50%', background:pro?.phone?'#FFF3EC':'#f5f5f5', border:pro?.phone?'1px solid #FFD4B0':'1px solid #eee', display:'flex', alignItems:'center', justifyContent:'center', fontSize:18, cursor:'pointer', opacity:pro?.phone?1:0.4 }}>📞</button>
           <button onClick={onClose} style={{ width:38, height:38, borderRadius:'50%', background:'#f5f5f5', border:'none', fontSize:18, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>✕</button>
         </div>
@@ -277,6 +280,7 @@ function FloatingChat({ pro, lang, onClose }) {
         </div>
       </div>
       {showCall && <CallModal name={pro?.name} phone={pro?.phone} lang={lang} onClose={() => setShowCall(false)} />}
+      {showReport && <ReportModal lang={lang} otherUser={pro} onClose={() => setShowReport(false)} />}
     </>
   )
 }

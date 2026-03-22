@@ -70,6 +70,7 @@ export default function ChatPage({ lang = 'es', navigate, professional, userData
   const [inputText,    setInputText]    = useState('')
   const [isTyping,     setIsTyping]     = useState(false)
   const [showQuick,    setShowQuick]    = useState(false)
+  const [showReport,   setShowReport]   = useState(false)
   const [loading,      setLoading]      = useState(true)
   const messagesEndRef = useRef(null)
   const inputRef       = useRef(null)
@@ -395,6 +396,7 @@ export default function ChatPage({ lang = 'es', navigate, professional, userData
             </button>
           )}
           <button className="chat-action-btn" title="Reservar" onClick={() => navigate('booking', otherUser)}>📅</button>
+          <button className="chat-action-btn" title="Reportar / Bloquear" onClick={() => setShowReport(true)} style={{ color: '#EF4444' }}>⚠️</button>
         </div>
       </div>
 
@@ -509,6 +511,72 @@ export default function ChatPage({ lang = 'es', navigate, professional, userData
           onClick={() => sendMessage(inputText)}
           disabled={!inputText.trim()}
         >➤</button>
+      </div>
+      
+      {showReport && <ReportModal lang={lang} otherUser={otherUser} onClose={() => setShowReport(false)} />}
+    </div>
+  )
+}
+
+// ── Modal de Reporte (Google Play UGC Compliance) ──────────────────────────
+export function ReportModal({ lang, otherUser, onClose }) {
+  const me = auth.currentUser
+  const [reason, setReason] = useState('')
+  const [submitting, setSubmitting] = useState(false)
+  const [done, setDone] = useState(false)
+  
+  const T = lang === 'es' ? {
+    title: 'Reportar o Bloquear', sub: `¿Problemas con ${otherUser?.name || 'este usuario'}?`,
+    placeholder: 'Explica el motivo del reporte (spam, acoso, etc)...',
+    report: 'Reportar', block: 'Bloquear', cancel: 'Cancelar',
+    success: 'Reporte enviado. Revisaremos el caso en menos de 24h.'
+  } : {
+    title: 'Report or Block', sub: `Problems with ${otherUser?.name || 'this user'}?`,
+    placeholder: 'Explain the reason for reporting (spam, abuse, etc)...',
+    report: 'Report', block: 'Block', cancel: 'Cancel',
+    success: 'Report sent. We will review within 24h.'
+  }
+
+  const submitReport = async (isBlock) => {
+    if (!reason.trim()) return alert(lang === 'es' ? 'Ingresa un motivo' : 'Enter a reason')
+    setSubmitting(true)
+    try {
+      await addDoc(collection(db, 'reports'), {
+        reporterId: me.uid, reportedId: otherUser?.uid || otherUser?.proId || otherUser?.clientId || 'unknown',
+        reason: reason.trim(), action: isBlock ? 'blocked' : 'reported',
+        createdAt: serverTimestamp(), status: 'pending'
+      })
+      if (isBlock) {
+        // En un chat activo, bloquear puede evitar ver mensajes futuros si la query lo filtra (opcional por ahora).
+        // Guardamos la intención de bloqueo a nivel global (el administrador lo suspenderá).
+      }
+      setDone(true)
+    } catch(e) { console.error(e) }
+    setSubmitting(false)
+  }
+
+  return (
+    <div onClick={onClose} style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.6)', zIndex:9999, display:'flex', alignItems:'center', justifyContent:'center', padding:20 }}>
+      <div onClick={e=>e.stopPropagation()} style={{ background:'#fff', borderRadius:16, padding:24, width:'100%', maxWidth:360, boxShadow:'0 10px 40px rgba(0,0,0,0.2)' }}>
+        {done ? (
+          <div style={{ textAlign:'center' }}>
+            <div style={{ fontSize:48, marginBottom:10 }}>🛡️</div>
+            <h3 style={{ margin:'0 0 16px', color:'#1A1A2E' }}>{T.success}</h3>
+            <button onClick={onClose} style={{ width:'100%', padding:14, borderRadius:12, border:'none', background:'#F5F5F5', fontWeight:'bold', cursor:'pointer' }}>OK</button>
+          </div>
+        ) : (
+          <>
+            <div style={{ width:48, height:48, borderRadius:'50%', background:'#FEE2E2', color:'#EF4444', display:'flex', alignItems:'center', justifyContent:'center', fontSize:24, margin:'0 auto 16px' }}>⚠️</div>
+            <h3 style={{ textAlign:'center', margin:'0 0 8px', color:'#1A1A2E' }}>{T.title}</h3>
+            <p style={{ textAlign:'center', margin:'0 0 16px', fontSize:14, color:'#666' }}>{T.sub}</p>
+            <textarea value={reason} onChange={e=>setReason(e.target.value)} placeholder={T.placeholder} style={{ width:'100%', height:80, padding:12, borderRadius:8, border:'1px solid #ddd', resize:'none', marginBottom:16, fontFamily:'inherit', fontSize:14 }} />
+            <div style={{ display:'flex', gap:10, marginBottom:10 }}>
+              <button onClick={()=>submitReport(false)} disabled={submitting} style={{ flex:1, padding:12, borderRadius:8, border:'none', background:'#F59E0B', color:'#fff', fontWeight:'bold', cursor:'pointer' }}>{submitting ? '...' : T.report}</button>
+              <button onClick={()=>submitReport(true)} disabled={submitting} style={{ flex:1, padding:12, borderRadius:8, border:'none', background:'#EF4444', color:'#fff', fontWeight:'bold', cursor:'pointer' }}>{submitting ? '...' : T.block}</button>
+            </div>
+            <button onClick={onClose} style={{ width:'100%', padding:12, borderRadius:8, border:'none', background:'transparent', color:'#666', fontWeight:'bold', cursor:'pointer' }}>{T.cancel}</button>
+          </>
+        )}
       </div>
     </div>
   )
