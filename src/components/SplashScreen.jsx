@@ -39,17 +39,10 @@ export default function SplashScreen({ onFinish, lang = 'es' }) {
   const [slideIndex, setSlideIndex] = useState(0)
   const [videoIndex, setVideoIndex] = useState(0)
   const [animating, setAnimating] = useState(false)
+  const [musicOn, setMusicOn] = useState(false)
   const audioRef = useRef(null)
   const autoTimer = useRef(null)
   const videoTimer = useRef(null)
-
-  // Arrancar música apenas el usuario toca la pantalla del splash
-  const tryPlayMusic = () => {
-    if (audioRef.current && audioRef.current.paused) {
-      audioRef.current.volume = 0.35
-      audioRef.current.play().catch(() => {})
-    }
-  }
 
   useEffect(() => {
     const t = setTimeout(() => setPhase('onboarding'), 2200)
@@ -81,6 +74,18 @@ export default function SplashScreen({ onFinish, lang = 'es' }) {
     return () => clearInterval(videoTimer.current)
   }, [phase, slideIndex])
 
+  const toggleMusic = (e) => {
+    e.stopPropagation()
+    if (!audioRef.current) return
+    if (musicOn) {
+      audioRef.current.pause()
+      setMusicOn(false)
+    } else {
+      audioRef.current.volume = 0.35
+      audioRef.current.play().then(() => setMusicOn(true)).catch(() => {})
+    }
+  }
+
   const stopMusic = () => {
     if (audioRef.current) {
       audioRef.current.pause()
@@ -100,7 +105,6 @@ export default function SplashScreen({ onFinish, lang = 'es' }) {
   }
 
   const goNext = () => {
-    tryPlayMusic()
     if (slideIndex < onboardingSlides.length - 1) {
       goTo(slideIndex + 1)
     } else {
@@ -118,8 +122,7 @@ export default function SplashScreen({ onFinish, lang = 'es' }) {
 
   if (phase === 'splash') {
     return (
-      // El toque en el splash arranca la música
-      <div className="splash-screen" onClick={tryPlayMusic} onTouchStart={tryPlayMusic}>
+      <div className="splash-screen">
         <audio ref={audioRef} loop preload="auto">
           <source src="/audio/the_mountain-acoustic-131417.mp3" type="audio/mpeg" />
         </audio>
@@ -144,7 +147,7 @@ export default function SplashScreen({ onFinish, lang = 'es' }) {
   const currentVideo = slide.videos[videoIndex]
 
   return (
-    <div className="onboarding-screen" onClick={tryPlayMusic}>
+    <div className="onboarding-screen">
 
       <audio ref={audioRef} loop preload="auto">
         <source src="/audio/the_mountain-acoustic-131417.mp3" type="audio/mpeg" />
@@ -170,7 +173,12 @@ export default function SplashScreen({ onFinish, lang = 'es' }) {
         style={{ background: slide.bg + '99' }}
       />
 
-      <button className="skip-btn" onClick={(e) => { e.stopPropagation(); skip() }}>
+      {/* BOTÓN DE MÚSICA */}
+      <button className="music-btn" onClick={toggleMusic}>
+        {musicOn ? '🔊' : '🔇'}
+      </button>
+
+      <button className="skip-btn" onClick={skip}>
         {lang === 'es' ? 'Omitir' : 'Skip'} →
       </button>
 
