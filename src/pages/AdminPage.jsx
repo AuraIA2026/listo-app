@@ -428,8 +428,10 @@ export default function AdminPage({ navigate }) {
   const [tab, setTab]           = useState('pagos');
   const [payments, setPayments] = useState([]);
   const [users, setUsers]       = useState([]);
+  const [verifications, setVerifications] = useState([]); // Nuevos postulantes
   const [toast, setToast]       = useState('');
   const [confirm, setConfirm]   = useState(null); // { type, obj }
+  const [viewDocs, setViewDocs] = useState(null); // Usuario a inspeccionar documentos
 
   // Formulario de Regalos
   const [giftUser, setGiftUser] = useState(''); // UID del usuario seleccionado
@@ -451,7 +453,13 @@ export default function AdminPage({ navigate }) {
       setUsers(arr);
     });
 
-    return () => { unsubPay(); unsubUsers(); };
+    // 3. Escuchar Nuevas Postulaciones a Profesionales
+    const unsubVerif = onSnapshot(query(collection(db, 'users'), where('verificacion.estado', '==', 'en_revision')), (snap) => {
+      const arr = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      setVerifications(arr);
+    });
+
+    return () => { unsubPay(); unsubUsers(); unsubVerif(); };
   }, []);
 
   const showToast = (msg) => {
@@ -483,6 +491,38 @@ export default function AdminPage({ navigate }) {
         } else {
            showToast(`💚 Transferencia de ${obj.proName} validada`);
         }
+      }
+      
+      if (type === 'approve_verif') {
+        const payload = {
+          role: 'professional',
+          approved: true,
+          planStatus: 'active',
+          contracts: 5, // Bono inicial gratis
+          rating: '5.0', // Valor inicial
+          completedJobs: 0,
+          pendingJobs: 0,
+          'verificacion.estado': 'aprobada',
+          'verificacion.fechaAprobacion': new Date().toISOString()
+        };
+        // También copias su nombre y teléfono principal al nivel raíz si no existen
+        if (obj.verificacion?.nombre) payload.name = obj.verificacion.nombre;
+        if (obj.verificacion?.telefono) payload.phone = obj.verificacion.telefono;
+        if (obj.verificacion?.cedula) payload.cedula = obj.verificacion.cedula;
+        if (obj.verificacion?.docs?.selfie) payload.photoURL = obj.verificacion.docs.selfie;
+
+        await updateDoc(doc(db, 'users', obj.id), payload);
+        showToast(`🎉 ¡${obj.verificacion?.nombre || 'El usuario'} ahora es Profesional!`);
+        setViewDocs(null); // Cerrar modal
+      }
+
+      if (type === 'reject_verif') {
+        await updateDoc(doc(db, 'users', obj.id), {
+          'verificacion.estado': 'rechazada',
+          'verificacion.fechaOculto': new Date().toISOString()
+        });
+        showToast(`🔴 Postulación rechazada`);
+        setViewDocs(null); // Cerrar modal
       }
       
       if (type === 'block') {
@@ -589,6 +629,7 @@ export default function AdminPage({ navigate }) {
         {/* TABS */}
         <div className="admin-tabs" style={{overflowX:'auto', paddingBottom:4}}>
           {[
+            { id:'postulaciones', icon:'🛡️', label:'Nuevos', count:verifications.length },
             { id:'pagos',      icon:'💳', label:'Historial',  count:completedPayments.length },
             { id:'comisiones', icon:'⏳', label:'Validar', count:pendienteCount },
             { id:'bloqueados', icon:'👥', label:'Directorio', count:users.length },
@@ -601,6 +642,91 @@ export default function AdminPage({ navigate }) {
             </button>
           ))}
         </div>
+
+        {/* ── TAB: POSTULACIONES (Aprobar Nuevos Profesionales) ── */}
+        {tab === 'postulaciones' && (
+          <div className="admin-section" style={{marginTop:16}}>
+            <div className="section-header">
+              <span className="section-title">Nuevas Solicitudes ({verifications.length})</span>
+            </div>
+            {verifications.length === 0 && (
+              <div className="empty-admin"><p>No hay postulaciones nuevas por revisar.</p></div>
+            )}
+            {verifications.map((v, i) => {
+              const vf = v.verificacion || {};
+              const docsInfo = vf.docs || {};
+              const numDocs = Object.keys(docsInfo).filter(k => docsInfo[k]).length;
+              return (
+                <div className="payment-card" key={v.id} style={{animationDelay:`${i*.06}s`, borderColor:'rgba(59,130,246,0.3)'}}>
+                  <div className="pc-top" style={{alignItems:'center'}}>
+                    <div className="pc-avatar" style={{background:'#3B82F6', backgroundImage: `url(${docsInfo.selfie})`, backgroundSize: 'cover', backgroundPosition: 'center'}}>
+                      {!docsInfo.selfie && '🛡️'}
+                    </div>
+                    <div className="pc-info">
+                      <div className="pc-name">{vf.nombre || 'Sin nombre'}</div>
+                      <div className="pc-detail">{vf.cedula || 'Sin cédula'} · {vf.direccion}</div>
+                    </div>
+                    <div className="pc-right">
+                      <button className="cc-btn remind" style={{background:'#3B82F6', color:'#fff', border:'none', padding:'6px 12px', fontSize:'11px'}} onClick={() => setViewDocs(v)}>
+                        🔎 Revisar
+                      </button>
+                    </div>
+                  </div>
+                  <div style={{fontSize:'11px', color:'var(--muted)', marginTop:8, display:'flex', gap:6}}>
+                    <span style={{background:'rgba(255,255,255,0.05)', padding:'3px 8px', borderRadius:20}}>📸 {numDocs} documentos adjuntos</span>
+                    <span style={{background:'rgba(255,255,255,0.05)', padding:'3px 8px', borderRadius:20}}>📞 {vf.telefono}</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* ── MODAL: REVISIÓN DE DOCUMENTOS ── */}
+        {viewDocs && (
+          <div style={{position:'fixed', inset:0, background:'rgba(0,0,0,0.8)', zIndex:999, display:'flex', flexDirection:'column',backdropFilter:'blur(5px)'}} onClick={() => setViewDocs(null)}>
+            <div style={{background:'#151820', width:'100%', maxWidth:500, margin:'auto', borderRadius:20, padding:20, maxHeight:'90vh', overflowY:'auto', border:'1px solid rgba(255,255,255,0.1)'}} onClick={e => e.stopPropagation()}>
+              <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:16}}>
+                <h3 style={{fontSize:18, fontWeight:800, fontFamily:'var(--display)', color:'#fff', margin:0}}>Expediente de Profesional</h3>
+                <button onClick={() => setViewDocs(null)} style={{background:'none', border:'none', color:'#fff', fontSize:20, cursor:'pointer'}}>✕</button>
+              </div>
+
+              <div style={{background:'rgba(255,255,255,0.03)', padding:16, borderRadius:12, marginBottom:16}}>
+                <p style={{margin:'0 0 4px', fontSize:14}}><strong style={{color:'#F26000'}}>Nombre:</strong> {viewDocs.verificacion?.nombre}</p>
+                <p style={{margin:'0 0 4px', fontSize:14}}><strong style={{color:'#F26000'}}>Cédula:</strong> {viewDocs.verificacion?.cedula}</p>
+                <p style={{margin:'0 0 4px', fontSize:14}}><strong style={{color:'#F26000'}}>Dirección:</strong> {viewDocs.verificacion?.direccion}, {viewDocs.verificacion?.sector}</p>
+                <p style={{margin:'0 0 4px', fontSize:14}}><strong style={{color:'#F26000'}}>Contacto:</strong> {viewDocs.verificacion?.telefono} {viewDocs.verificacion?.telefonoAlt ? ` / ${viewDocs.verificacion.telefonoAlt}` : ''}</p>
+              </div>
+
+              <div style={{display:'flex', flexDirection:'column', gap:12, marginBottom:20}}>
+                {viewDocs.verificacion?.docs?.cedulaFrontal && (
+                  <div><span style={{fontSize:12, color:'#aaa', display:'block', marginBottom:4}}>Cédula: Frente</span>
+                  <img src={viewDocs.verificacion.docs.cedulaFrontal} style={{width:'100%', borderRadius:8, border:'1px solid #333'}} alt="Frente"/></div>
+                )}
+                {viewDocs.verificacion?.docs?.cedulaTrasera && (
+                  <div><span style={{fontSize:12, color:'#aaa', display:'block', marginBottom:4}}>Cédula: Reverso</span>
+                  <img src={viewDocs.verificacion.docs.cedulaTrasera} style={{width:'100%', borderRadius:8, border:'1px solid #333'}} alt="Reverso"/></div>
+                )}
+                {viewDocs.verificacion?.docs?.selfie && (
+                  <div><span style={{fontSize:12, color:'#aaa', display:'block', marginBottom:4}}>Selfie de Autenticidad</span>
+                  <img src={viewDocs.verificacion.docs.selfie} style={{width:'100%', borderRadius:8, border:'1px solid #333'}} alt="Selfie"/></div>
+                )}
+                {viewDocs.verificacion?.docs?.buenaConducta && (
+                  <div><span style={{fontSize:12, color:'#aaa', display:'block', marginBottom:4}}>Certificado de Buena Conducta</span>
+                  {viewDocs.verificacion.docs.buenaConducta.includes('.pdf') 
+                    ? <a href={viewDocs.verificacion.docs.buenaConducta} target="_blank" rel="noreferrer" style={{color:'#3B82F6'}}>📄 Ver PDF Buena Conducta</a>
+                    : <img src={viewDocs.verificacion.docs.buenaConducta} style={{width:'100%', borderRadius:8, border:'1px solid #333'}} alt="Antecedentes"/>}
+                  </div>
+                )}
+              </div>
+
+              <div style={{display:'flex', gap:10}}>
+                <button onClick={() => setConfirm({type:'approve_verif', obj: viewDocs})} style={{flex:1, background:'#10B981', color:'#fff', padding:14, borderRadius:12, border:'none', fontSize:14, fontWeight:800, cursor:'pointer'}}>✅ APROBAR</button>
+                <button onClick={() => setConfirm({type:'reject_verif', obj: viewDocs})} style={{flex:1, background:'#EF4444', color:'#fff', padding:14, borderRadius:12, border:'none', fontSize:14, fontWeight:800, cursor:'pointer'}}>❌ RECHAZAR</button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* ── TAB: PAGOS (Historial Completado) ── */}
         {tab === 'pagos' && (
