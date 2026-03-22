@@ -30,7 +30,6 @@ const onboardingSlides = [
   },
 ]
 
-const ALL_VIDEOS = onboardingSlides.flatMap(s => s.videos)
 const SLIDE_DURATION = 8000
 const VIDEO_DURATION = 4000
 
@@ -43,12 +42,14 @@ export default function SplashScreen({ onFinish, lang = 'es' }) {
   const audioRef = useRef(null)
   const autoTimer = useRef(null)
   const videoTimer = useRef(null)
+  const videoRefs = useRef({})
 
   useEffect(() => {
     const t = setTimeout(() => setPhase('onboarding'), 2200)
     return () => clearTimeout(t)
   }, [])
 
+  // Auto-avance slide
   useEffect(() => {
     if (phase !== 'onboarding') return
     autoTimer.current = setTimeout(() => {
@@ -62,17 +63,26 @@ export default function SplashScreen({ onFinish, lang = 'es' }) {
     return () => clearTimeout(autoTimer.current)
   }, [phase, slideIndex])
 
+  // Rotar video dentro del slide
   useEffect(() => {
     if (phase !== 'onboarding') return
     setVideoIndex(0)
     videoTimer.current = setInterval(() => {
-      setVideoIndex(i => {
-        const total = onboardingSlides[slideIndex].videos.length
-        return (i + 1) % total
-      })
+      setVideoIndex(i => (i + 1) % onboardingSlides[slideIndex].videos.length)
     }, VIDEO_DURATION)
     return () => clearInterval(videoTimer.current)
   }, [phase, slideIndex])
+
+  // Cuando cambia el video activo, reproducirlo
+  useEffect(() => {
+    if (phase !== 'onboarding') return
+    const currentSrc = onboardingSlides[slideIndex].videos[videoIndex]
+    const videoEl = videoRefs.current[currentSrc]
+    if (videoEl) {
+      videoEl.currentTime = 0
+      videoEl.play().catch(() => {})
+    }
+  }, [slideIndex, videoIndex, phase])
 
   const toggleMusic = (e) => {
     e.stopPropagation()
@@ -126,11 +136,6 @@ export default function SplashScreen({ onFinish, lang = 'es' }) {
         <audio ref={audioRef} loop preload="auto">
           <source src="/audio/the_mountain-acoustic-131417.mp3" type="audio/mpeg" />
         </audio>
-        <div style={{ display: 'none' }}>
-          {ALL_VIDEOS.map(src => (
-            <video key={src} src={src} preload="auto" muted playsInline />
-          ))}
-        </div>
         <div className="splash-logo-wrap">
           <img src={logoImg} alt="Listo" className="splash-logo" />
         </div>
@@ -144,36 +149,31 @@ export default function SplashScreen({ onFinish, lang = 'es' }) {
 
   const slide = onboardingSlides[slideIndex]
   const isLast = slideIndex === onboardingSlides.length - 1
-  const currentVideo = slide.videos[videoIndex]
+  const currentSrc = slide.videos[videoIndex]
 
   return (
     <div className="onboarding-screen">
-
       <audio ref={audioRef} loop preload="auto">
         <source src="/audio/the_mountain-acoustic-131417.mp3" type="audio/mpeg" />
       </audio>
 
-      {ALL_VIDEOS.map(src => (
-        <video
-          key={src}
-          autoPlay={src === currentVideo}
-          muted
-          loop
-          playsInline
-          preload="auto"
-          className="onboarding-video-bg"
-          style={{ display: src === currentVideo ? 'block' : 'none' }}
-        >
-          <source src={src} type="video/mp4" />
-        </video>
-      ))}
+      {/* Un solo video que cambia su src */}
+      <video
+        ref={el => { if (el) videoRefs.current[currentSrc] = el }}
+        key={currentSrc}
+        src={currentSrc}
+        autoPlay
+        muted
+        loop
+        playsInline
+        className="onboarding-video-bg"
+      />
 
       <div
         className="onboarding-overlay"
         style={{ background: slide.bg + '99' }}
       />
 
-      {/* BOTÓN DE MÚSICA */}
       <button className="music-btn" onClick={toggleMusic}>
         {musicOn ? '🔊' : '🔇'}
       </button>
@@ -214,7 +214,6 @@ export default function SplashScreen({ onFinish, lang = 'es' }) {
           }
         </button>
       </div>
-
     </div>
   )
 }
