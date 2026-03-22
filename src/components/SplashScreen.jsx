@@ -45,6 +45,15 @@ export default function SplashScreen({ onFinish, lang = 'es' }) {
   const videoRefs = useRef({})
 
   useEffect(() => {
+    // Precargar todos los videos
+    const allSrcs = onboardingSlides.flatMap(s => s.videos)
+    allSrcs.forEach(src => {
+      const v = document.createElement('video')
+      v.src = src
+      v.preload = 'auto'
+      v.muted = true
+      v.load()
+    })
     const t = setTimeout(() => setPhase('onboarding'), 4000)
     return () => clearTimeout(t)
   }, [])
