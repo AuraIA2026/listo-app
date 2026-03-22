@@ -435,6 +435,12 @@ function FloatingChat({ otherUid, otherName, otherColor = '#F26000', otherPhone 
     await updateDoc(doc(db, 'chats', chatId), { lastMsg: text, updatedAt: serverTimestamp() }).catch(() => {})
   }
 
+  const handleDeleteMessage = async (msgId) => {
+    if (window.confirm(lang === 'es' ? '¿Borrar este mensaje?' : 'Delete this message?')) {
+      await deleteDoc(doc(db, 'chats', chatId, 'messages', msgId)).catch(() => {})
+    }
+  }
+
   const handleInput = (e) => {
     setInputText(e.target.value)
     if (!chatId || !me) return
@@ -494,7 +500,16 @@ function FloatingChat({ otherUid, otherName, otherColor = '#F26000', otherPhone 
                 {!isMe && <div style={{ width:26, height:26, borderRadius:'50%', background:otherColor, display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontWeight:700, fontSize:10, flexShrink:0, marginTop:2 }}>{initials}</div>}
                 <div style={{ maxWidth:'72%', padding:'9px 13px', borderRadius:isMe?'18px 18px 4px 18px':'18px 18px 18px 4px', background:isMe?'#F26000':'#F5F5F5', color:isMe?'#fff':'#1A1A2E', fontSize:14, lineHeight:1.4 }}>
                   <p style={{ margin:0 }}>{msg.text}</p>
-                  <p style={{ margin:'4px 0 0', fontSize:10, opacity:0.7, textAlign:'right' }}>{fmtTime(msg.createdAt)} {isMe&&'✓✓'}</p>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '4px', marginTop: 4 }}>
+                    {isMe && (
+                      <span 
+                        onClick={() => handleDeleteMessage(msg.id)} 
+                        style={{ cursor: 'pointer', fontSize: 13, opacity: 0.9, marginRight: 4 }}
+                        title={lang === 'es' ? 'Borrar mensaje' : 'Delete message'}
+                      >🗑️</span>
+                    )}
+                    <span style={{ fontSize:10, opacity:0.7 }}>{fmtTime(msg.createdAt)} {isMe&&'✓✓'}</span>
+                  </div>
                 </div>
               </div>
             )
@@ -841,8 +856,8 @@ export default function OrdersPage({ lang = 'es', navigate, userData, userRole }
           <button className="oc-btn listo"   onClick={()=>advanceStatus(o.id,o.status)} style={{ flex:1 }}>Aceptar Servicio</button>
         </div>
       )}
-      {o.status==='pending' && userRole!=='pro' && (
-        <button className="oc-btn decline" onClick={()=>advanceStatus(o.id,o.status,'cancelled')} style={{ width:'100%', background:'#FFF0F0', color:'#E31837', border:'1px solid currentColor', marginTop: 4 }}>{lang==='es'?'Cancelar Pedido':'Cancel Order'}</button>
+      {!['done', 'cancelled', 'working'].includes(o.status) && userRole!=='pro' && (
+        <button className="oc-btn decline" onClick={()=>advanceStatus(o.id,o.status,'cancelled')} style={{ width:'100%', background:'#F26000', color:'#FFFFFF', border:'none', marginTop: 4, fontWeight:'bold', boxShadow:'0 4px 10px rgba(242,96,0,0.3)' }}>{lang==='es'?'Cancelar Pedido':'Cancel Order'}</button>
       )}
       {['accepted','onway','arrived','trato','working'].includes(o.status) && o.otherUid && (
         <button className="oc-btn track" style={{ background:'#FFF3EC', color:'#F26000', border:'1px solid #FFD4B0' }} onClick={()=>openChat(o)}>

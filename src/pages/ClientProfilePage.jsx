@@ -88,16 +88,18 @@ export default function ClientProfilePage({ lang = 'es', navigate, userData, onE
     if (!userData?.uid) { setLoading(false); return }
     const loadData = async () => {
       try {
-        // Pedidos del cliente
-        const pedidosQ = query(collection(db, 'pedidos'), where('clienteId', '==', userData.uid))
+        // Pedidos del cliente en colección 'orders'
+        const pedidosQ = query(collection(db, 'orders'), where('clientId', '==', userData.uid))
         const pedidosSnap = await getDocs(pedidosQ)
         const pedidosList = pedidosSnap.docs.map(d => ({ id: d.id, ...d.data() }))
+        
+        // Ordenar por las más recientes primero
+        pedidosList.sort((a,b) => (b.createdAt?.toMillis?.() || 0) - (a.createdAt?.toMillis?.() || 0))
+        
         setOrders(pedidosList)
 
-        // Reseñas dadas por el cliente
-        const reviewsQ = query(collection(db, 'resenas'), where('clienteId', '==', userData.uid))
-        const reviewsSnap = await getDocs(reviewsQ)
-        const reviewsList = reviewsSnap.docs.map(d => ({ id: d.id, ...d.data() }))
+        // Reseñas dadas por el cliente (tienen field rated === true)
+        const reviewsList = pedidosList.filter(o => o.rated === true)
         setReviews(reviewsList)
       } catch (err) {
         console.error('Error cargando datos:', err)
@@ -109,13 +111,11 @@ export default function ClientProfilePage({ lang = 'es', navigate, userData, onE
   }, [userData?.uid])
 
   const statusColor = (status) => {
-    switch (status) {
-      case 'completado': return { bg: '#DCFCE7', color: '#16A34A', label: '✅ Completado' }
-      case 'en_camino':  return { bg: '#FEF3C7', color: '#D97706', label: '🚗 En camino' }
-      case 'pendiente':  return { bg: '#EFF6FF', color: '#2563EB', label: '⏳ Pendiente' }
-      case 'cancelado':  return { bg: '#FEE2E2', color: '#DC2626', label: '❌ Cancelado' }
-      default:           return { bg: '#F3F4F6', color: '#6B7280', label: status || 'Desconocido' }
-    }
+    if (['completed', 'done'].includes(status)) return { bg: '#DCFCE7', color: '#16A34A', label: '✅ Completado' }
+    if (['accepted', 'onway', 'arrived', 'working', 'trato'].includes(status)) return { bg: '#FEF3C7', color: '#D97706', label: '🚗 Activo' }
+    if (status === 'pending') return { bg: '#EFF6FF', color: '#2563EB', label: '⏳ Pendiente' }
+    if (['rejected', 'declined', 'canceled'].includes(status)) return { bg: '#FEE2E2', color: '#DC2626', label: '❌ Cancelado' }
+    return { bg: '#F3F4F6', color: '#6B7280', label: status || 'Desconocido' }
   }
 
   return (
@@ -236,19 +236,19 @@ export default function ClientProfilePage({ lang = 'es', navigate, userData, onE
               </div>
             ) : (
               orders.map(order => {
-                const st = statusColor(order.estado)
+                const st = statusColor(order.status)
                 return (
                   <div key={order.id} className="order-card">
                     <div className="order-card-top">
                       <div className="order-icon">🔧</div>
                       <div className="order-info">
-                        <p className="order-title">{order.servicio || 'Servicio'}</p>
-                        <p className="order-pro">👷 {order.profesionalNombre || 'Profesional'}</p>
-                        <p className="order-date">📅 {order.fecha || '—'}</p>
+                        <p className="order-title">{order.proSpecialty || 'Servicio'}</p>
+                        <p className="order-pro">👷 {order.proName || 'Profesional'}</p>
+                        <p className="order-date">📅 {order.dateToken || '—'}</p>
                       </div>
                       <div>
                         <span className="order-status" style={{ background: st.bg, color: st.color }}>{st.label}</span>
-                        {order.precio && <p className="order-price">💰 {order.precio}</p>}
+                        {order.price && <p className="order-price">💰 RD${order.price}</p>}
                       </div>
                     </div>
                   </div>
@@ -275,17 +275,17 @@ export default function ClientProfilePage({ lang = 'es', navigate, userData, onE
                   <div className="review-card-top">
                     <div className="review-pro-icon">👷</div>
                     <div className="review-card-info">
-                      <p className="review-pro-name">{review.profesionalNombre || 'Profesional'}</p>
-                      <p className="review-service">{review.servicio || '—'}</p>
+                      <p className="review-pro-name">{review.proName || 'Profesional'}</p>
+                      <p className="review-service">{review.proSpecialty || '—'}</p>
                     </div>
                     <div className="review-stars">
                       {[1,2,3,4,5].map(n => (
-                        <span key={n} style={{ color: n <= review.rating ? '#FFB800' : '#DDD', fontSize:14 }}>★</span>
+                        <span key={n} style={{ color: n <= (review.ratingScore || 0) ? '#FFB800' : '#DDD', fontSize:14 }}>★</span>
                       ))}
                     </div>
                   </div>
-                  {review.comentario && <p className="review-comment-text">{review.comentario}</p>}
-                  <p className="review-date-text">{review.fecha || '—'}</p>
+                  {review.ratingComment && <p className="review-comment-text">{review.ratingComment}</p>}
+                  <p className="review-date-text">{review.dateToken || '—'}</p>
                 </div>
               ))
             )}

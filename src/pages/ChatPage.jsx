@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import {
   collection, query, where, orderBy, onSnapshot,
   addDoc, serverTimestamp, doc, setDoc, getDoc,
-  updateDoc, getDocs
+  updateDoc, getDocs, deleteDoc
 } from 'firebase/firestore'
 import { auth, db } from '../firebase'
 import './ChatPage.css'
@@ -196,6 +196,13 @@ export default function ChatPage({ lang = 'es', navigate, professional, userData
       updatedAt: serverTimestamp(),
       ...(otherId ? { [`unreadCount.${otherId}`]: (chats.find(c => c.chatId === activeChatId)?.unread || 0) + 1 } : {}),
     }).catch(() => {})
+  }
+
+  // ── Borrar mensaje ────────────────────────────────────────────────────────
+  const handleDeleteMessage = async (msgId) => {
+    if (window.confirm(lang === 'es' ? '¿Borrar este mensaje?' : 'Delete this message?')) {
+      await deleteDoc(doc(db, 'chats', activeChatId, 'messages', msgId)).catch(() => {})
+    }
   }
 
   // ── Indicador de typing ───────────────────────────────────────────────────
@@ -431,7 +438,14 @@ export default function ChatPage({ lang = 'es', navigate, professional, userData
               )}
               <div className={`msg-bubble ${isMe ? 'bubble-me' : 'bubble-pro'}`}>
                 <p className="msg-text">{msg.text}</p>
-                <div className="msg-meta">
+                <div className="msg-meta" style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '4px' }}>
+                  {isMe && (
+                    <span 
+                      onClick={() => handleDeleteMessage(msg.id)} 
+                      style={{ cursor: 'pointer', fontSize: 13, opacity: 0.9, marginRight: 4 }}
+                      title={lang === 'es' ? 'Borrar mensaje' : 'Delete message'}
+                    >🗑️</span>
+                  )}
                   <span className="msg-time">{formatTime(msg.createdAt)}</span>
                   {isMe && (
                     <span className="msg-status">

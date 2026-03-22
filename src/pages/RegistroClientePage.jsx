@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { doc, updateDoc } from "firebase/firestore";
+import { db, auth } from "../firebase";
 
 /* ─── PALETA ─────────────────────────────────────────────────── */
 const C = {
@@ -62,11 +64,24 @@ export default function RegistroClientePage({ onBack, onSuccess }) {
   /* Badge "Usuario Verificado" se gana cuando teléfono + correo confirmados */
   const isVerified = smsVerif && emailVerif;
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!checks.c1 || !checks.c2 || !checks.c3) {
       alert("Por favor acepta todos los términos.");
       return;
     }
+
+    if (auth.currentUser) {
+      try {
+        await updateDoc(doc(db, 'users', auth.currentUser.uid), {
+          ...form,
+          profileComplete: true,
+          phoneVerified: isVerified
+        });
+      } catch (err) {
+        console.error("Error al guardar el perfil:", err);
+      }
+    }
+
     setSubmitted(true);
     setTimeout(() => onSuccess?.(), 2000);
   };

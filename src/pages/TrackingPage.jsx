@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet'
-import { collection, addDoc, serverTimestamp, doc, updateDoc, onSnapshot, orderBy, query, setDoc, getDoc } from 'firebase/firestore'
+import { collection, addDoc, serverTimestamp, doc, updateDoc, onSnapshot, orderBy, query, setDoc, getDoc, deleteDoc } from 'firebase/firestore'
 import { db, auth } from '../firebase'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
@@ -182,6 +182,12 @@ function FloatingChat({ pro, lang, onClose }) {
     await updateDoc(doc(db, 'chats', chatId), { lastMsg: text, updatedAt: serverTimestamp() }).catch(() => {})
   }
 
+  const handleDeleteMessage = async (msgId) => {
+    if (window.confirm(lang === 'es' ? '¿Borrar este mensaje?' : 'Delete this message?')) {
+      await deleteDoc(doc(db, 'chats', chatId, 'messages', msgId)).catch(() => {})
+    }
+  }
+
   const handleInput = (e) => {
     setInputText(e.target.value)
     if (!chatId || !me) return
@@ -239,7 +245,16 @@ function FloatingChat({ pro, lang, onClose }) {
                 {!isMe && <div style={{ width:26, height:26, borderRadius:'50%', background:pro?.color||'#F26000', display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontWeight:700, fontSize:10, flexShrink:0, marginTop:2 }}>{initials}</div>}
                 <div style={{ maxWidth:'72%', padding:'9px 13px', borderRadius:isMe?'18px 18px 4px 18px':'18px 18px 18px 4px', background:isMe?'#F26000':'#F5F5F5', color:isMe?'#fff':'#1A1A2E', fontSize:14, lineHeight:1.4 }}>
                   <p style={{ margin:0 }}>{msg.text}</p>
-                  <p style={{ margin:'4px 0 0', fontSize:10, opacity:0.7, textAlign:'right' }}>{fmtTime(msg.createdAt)} {isMe&&'✓✓'}</p>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '4px', marginTop: 4 }}>
+                    {isMe && (
+                      <span 
+                        onClick={() => handleDeleteMessage(msg.id)} 
+                        style={{ cursor: 'pointer', fontSize: 13, opacity: 0.9, marginRight: 4 }}
+                        title={lang === 'es' ? 'Borrar mensaje' : 'Delete message'}
+                      >🗑️</span>
+                    )}
+                    <span style={{ fontSize:10, opacity:0.7 }}>{fmtTime(msg.createdAt)} {isMe&&'✓✓'}</span>
+                  </div>
                 </div>
               </div>
             )
