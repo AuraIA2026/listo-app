@@ -41,7 +41,7 @@ const txt = {
 
 const avatarColors = ['#F26000','#C24D00','#FF8533','#7A3000','#FFB380']
 
-export default function SearchPage({ lang = 'es', navigate, initialCategory = 'all' }) {
+export default function SearchPage({ lang = 'es', navigate, initialCategory = 'all', userRole = 'client' }) {
   const [activeCategory,    setActiveCategory]    = useState('all')
   const [activeSubcategory, setActiveSubcategory] = useState('all')
   const [openCategory,      setOpenCategory]      = useState(null)
@@ -158,8 +158,56 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
         </div>
       </div>
 
+      {/* Banner de Reseñas Mamey Animado */}
+      <style>{`
+        @keyframes pulseBanner {
+          0% { box-shadow: 0 4px 15px rgba(242, 96, 0, 0.2); }
+          50% { box-shadow: 0 6px 20px rgba(242, 96, 0, 0.6); transform: scale(1.01); }
+          100% { box-shadow: 0 4px 15px rgba(242, 96, 0, 0.2); }
+        }
+        @keyframes bounceIcon {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-4px) scale(1.1); }
+        }
+        .review-promo-banner {
+          background: linear-gradient(135deg, #FF6A00, #F26000);
+          margin: 0 16px 16px;
+          padding: 14px 18px;
+          border-radius: 14px;
+          color: white;
+          display: flex;
+          align-items: center;
+          gap: 14px;
+          animation: pulseBanner 3s infinite ease-in-out;
+        }
+        .review-promo-icon {
+          font-size: 28px;
+          animation: bounceIcon 2s infinite ease-in-out;
+          filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+        }
+        .review-promo-text {
+          font-size: 13.5px;
+          font-weight: 700;
+          line-height: 1.35;
+          flex: 1;
+          text-shadow: 0 1px 2px rgba(0,0,0,0.15);
+        }
+      `}</style>
+      <div className="review-promo-banner">
+        <span className="review-promo-icon">⭐</span>
+        <div className="review-promo-text">
+          {userRole === 'pro' 
+            ? (lang === 'es' 
+              ? '¡Sube de posición! Pide a tus clientes reseñas de 5 estrellas al terminar para posicionarte y ganar más trabajos.' 
+              : 'Rank up! Ask clients for 5-star reviews after each job to stand out and get more work.')
+            : (lang === 'es'
+              ? '¡Tu opinión manda! Califica con estrellas a los profesionales para ayudar a otros a elegir siempre lo mejor.'
+              : 'Your voice matters! Rate professionals with stars to help everyone choose the best.')}
+        </div>
+      </div>
+
       {/* Filtros de disponibilidad */}
-      <div className="quick-filters" style={{ padding: '0 16px', display: 'flex', justifyContent: 'flex-end', marginBottom: '4px' }}>
+      <div className="quick-filters" style={{ padding: '0 16px', display: 'flex', justifyContent: 'flex-end', marginBottom: '8px' }}>
         <label className="avail-toggle">
           <input
             type="checkbox"

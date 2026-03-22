@@ -517,7 +517,7 @@ export default function App() {
 
       {currentPage === 'home'     && <HomePage     {...userProps} />}
       {currentPage === 'services' && <ServicesPage {...commonProps} />}
-      {currentPage === 'search'   && <SearchPage   {...commonProps} initialCategory={selectedPro?.catToSelect || 'all'} />}
+      {currentPage === 'search'   && <SearchPage   {...userProps} initialCategory={selectedPro?.catToSelect || 'all'} />}
       {currentPage === 'orders'   && <OrdersPage   {...userProps} />}
       {currentPage === 'login'    && <LoginPage    {...commonProps} />}
       {currentPage === 'register' && <RegisterPage {...commonProps} />}
