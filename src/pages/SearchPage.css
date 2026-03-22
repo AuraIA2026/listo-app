@@ -117,3 +117,105 @@
   display: inline-flex; align-items: center; gap: 4px;
 }
 .sc-profile-btn:hover { background: var(--mamey-pale); border-color: var(--mamey); }
+
+/* ── Categorías Horizontales ── */
+.categories-wrapper {
+  margin-bottom: 16px;
+  background: white;
+  border-top: 1px solid rgba(0,0,0,0.05);
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+  padding: 12px 0;
+}
+
+.categories-scroll {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding: 0 16px;
+  scrollbar-width: none;
+}
+.categories-scroll::-webkit-scrollbar { display: none; }
+
+.cat-pill {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 100px;
+  background: var(--off-white);
+  border: 1.5px solid transparent;
+  font-size: 14px;
+  font-weight: 600;
+  color: #555;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.cat-pill:hover { background: #f0f0f0; }
+.cat-pill.active {
+  background: var(--mamey-pale);
+  color: var(--mamey-dark);
+  border-color: var(--mamey);
+}
+
+.subcategories-scroll {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 12px 16px 0;
+  scrollbar-width: none;
+  animation: slideIn 0.3s ease;
+}
+.subcategories-scroll::-webkit-scrollbar { display: none; }
+
+.sub-pill {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 8px;
+  background: #FFF;
+  border: 1px solid rgba(0,0,0,0.08);
+  font-size: 13px;
+  color: #666;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.sub-pill:hover { border-color: rgba(242,96,0,0.4); color: var(--mamey); }
+.sub-pill.active { background: var(--mamey); color: white; border-color: var(--mamey); }
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Rediseño Moderno de Card */
+.pro-card {
+  background: white; border-radius: 20px; padding: 18px; margin-bottom: 14px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.03);
+}
+.card-photo { position: relative; width: 70px; height: 70px; margin-bottom: 12px; }
+.pro-avatar-big {
+  width: 100%; height: 100%; border-radius: 20px; display: flex; align-items: center;
+  justify-content: center; color: white; font-size: 24px; font-weight: 800;
+}
+.status-badge {
+  position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%);
+  font-size: 9px; font-weight: 800; padding: 3px 8px; border-radius: 100px;
+  white-space: nowrap; letter-spacing: 0.5px; text-transform: uppercase;
+}
+.status-badge.avail { background: #10B981; color: white; border: 2px solid white; box-shadow: 0 2px 4px rgba(16,185,129,0.3); }
+.status-badge.busy { background: #EF4444; color: white; border: 2px solid white; }
+.pro-name { font-size: 18px; font-weight: 800; color: #111; margin: 0 0 4px; }
+.pro-cat { font-size: 14px; color: #666; margin: 0 0 6px; display: flex; align-items: center; gap: 6px; }
+.pro-location { font-size: 13px; color: #888; margin: 0 0 10px; }
+.pro-meta { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+.pro-rating { font-size: 14px; font-weight: 800; color: #333; }
+.pro-rating em { font-weight: 500; font-style: normal; color: #999; font-size: 12px; }
+.pro-exp { font-size: 13px; color: #666; background: #F3F4F6; padding: 4px 10px; border-radius: 100px; font-weight: 600; }
+.card-footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-top: 14px; border-top: 1px solid #F3F4F6; }
+.card-actions { display: flex; gap: 8px; }
+.btn-profile { background: white; border: 1.5px solid #E5E7EB; color: #4B5563; padding: 8px 16px; border-radius: 12px; font-weight: 700; font-size: 13px; cursor: pointer; }
+.btn-book { background: var(--mamey); color: white; border: none; padding: 8px 18px; border-radius: 12px; font-weight: 800; font-size: 13px; cursor: pointer; box-shadow: 0 4px 12px rgba(242,96,0,0.25); }

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { collection, query, where, getDocs } from 'firebase/firestore'
 import { db } from '../firebase'
 import { CATEGORIES, FILTERS } from '../categories'
-import './ServicesPage.css'
+import './SearchPage.css'
 
 const txt = {
   es: {
@@ -108,9 +108,24 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
     setOpenCategory(null)
   }
 
+  const getMappedProCatId = (catString) => {
+    if (!catString) return 'all';
+    const cleanStr = catString.toLowerCase();
+    const allSubs = CATEGORIES.flatMap(c => c.subcategories);
+    const foundSub = allSubs.find(s => s.id === cleanStr || s.labelEn.toLowerCase() === cleanStr);
+    if (foundSub) return foundSub.id;
+    const foundMain = CATEGORIES.find(c => c.id === cleanStr || c.labelEn.toLowerCase() === cleanStr);
+    if (foundMain) return foundMain.id;
+    return catString;
+  }
+
+  const currentCat = CATEGORIES.find(c => c.id === activeCategory)
+
   const filtered = professionals
     .filter(p => {
-      const matchCat    = activeCategory === 'all' || p.category === activeCategory || p.category === activeSubcategory
+      const mappedCat = getMappedProCatId(p.category);
+      const isSubInMain = currentCat && currentCat.subcategories.some(s => s.id === mappedCat);
+      const matchCat = activeCategory === 'all' || mappedCat === activeCategory || mappedCat === activeSubcategory || isSubInMain;
       const matchSearch = p.name.toLowerCase().includes(search.toLowerCase()) ||
                           p.location.toLowerCase().includes(search.toLowerCase())
       const matchAvail  = !onlyAvailable || p.available
@@ -122,7 +137,6 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
       return 0
     })
 
-  const currentCat = CATEGORIES.find(c => c.id === activeCategory)
 
   return (
     <div className="services-page">
@@ -166,62 +180,48 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
         </label>
       </div>
 
-      {/* Categorías desplegables */}
-      <div className="categories-accordion">
-
-        {/* Botón "Todos" */}
-        <button
-          className={`cat-main-btn ${activeCategory === 'all' ? 'active' : ''}`}
-          onClick={() => handleCategoryClick('all')}
-        >
-          <span className="cat-icon">✦</span>
-          <span className="cat-main-label">{T.allCats}</span>
-        </button>
-
-        {/* Categorías principales */}
-        {CATEGORIES.map(cat => (
-          <div key={cat.id} className="cat-accordion-item">
+      {/* Categorías Principales */}
+      <div className="categories-wrapper">
+        <div className="categories-scroll">
+          <button
+            className={`cat-pill ${activeCategory === 'all' ? 'active' : ''}`}
+            onClick={() => handleCategoryClick('all')}
+          >
+            <span className="cat-icon">✦</span> {T.allCats}
+          </button>
+          {CATEGORIES.map(cat => (
             <button
-              className={`cat-main-btn ${activeCategory === cat.id ? 'active' : ''}`}
+              key={cat.id}
+              className={`cat-pill ${activeCategory === cat.id ? 'active' : ''}`}
               onClick={() => handleCategoryClick(cat.id)}
             >
               <span className="cat-icon">{cat.icon}</span>
-              <span className="cat-main-label">{lang === 'es' ? cat.labelEs : cat.labelEn}</span>
-              <span className={`cat-arrow ${openCategory === cat.id ? 'open' : ''}`}>›</span>
+              {lang === 'es' ? cat.labelEs : cat.labelEn}
             </button>
-
-            {/* Subcategorías desplegables */}
-            {openCategory === cat.id && (
-              <div className="cat-subcategories">
-                {cat.subcategories.map(sub => (
-                  <button
-                    key={sub.id}
-                    className={`cat-sub-btn ${activeSubcategory === sub.id ? 'active' : ''}`}
-                    onClick={() => handleSubcategoryClick(sub.id)}
-                  >
-                    <span>{sub.icon}</span>
-                    <span>{lang === 'es' ? sub.labelEs : sub.labelEn}</span>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
-
-      {/* Subcategoría activa */}
-      {activeSubcategory !== 'all' && (
-        <div className="active-sub-badge">
-          <span>
-            {currentCat?.subcategories.find(s => s.id === activeSubcategory)?.icon}{' '}
-            {lang === 'es'
-              ? currentCat?.subcategories.find(s => s.id === activeSubcategory)?.labelEs
-              : currentCat?.subcategories.find(s => s.id === activeSubcategory)?.labelEn
-            }
-          </span>
-          <button onClick={() => setActiveSubcategory('all')}>✕</button>
+          ))}
         </div>
-      )}
+
+        {/* Subcategorías Scroll (solo si hay una categoría activa distinta a 'all') */}
+        {currentCat && currentCat.subcategories && currentCat.subcategories.length > 0 && (
+          <div className="subcategories-scroll">
+            <button
+              className={`sub-pill ${activeSubcategory === 'all' ? 'active' : ''}`}
+              onClick={() => handleSubcategoryClick('all')}
+            >
+              ✓ Todas en {lang === 'es' ? currentCat.labelEs : currentCat.labelEn}
+            </button>
+            {currentCat.subcategories.map(sub => (
+              <button
+                key={sub.id}
+                className={`sub-pill ${activeSubcategory === sub.id ? 'active' : ''}`}
+                onClick={() => handleSubcategoryClick(sub.id)}
+              >
+                <span>{sub.icon}</span> {lang === 'es' ? sub.labelEs : sub.labelEn}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* Contador */}
       <div className="results-bar">
@@ -234,9 +234,10 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
       {/* Grid de profesionales */}
       <div className="professionals-grid">
         {filtered.map((pro, i) => {
+          const mappedCat = getMappedProCatId(pro.category)
           const allSubs = CATEGORIES.flatMap(c => c.subcategories)
-          const subCat  = allSubs.find(s => s.id === pro.category)
-          const mainCat = CATEGORIES.find(c => c.id === pro.category || c.subcategories.some(s => s.id === pro.category))
+          const subCat  = allSubs.find(s => s.id === mappedCat)
+          const mainCat = CATEGORIES.find(c => c.id === mappedCat || c.subcategories.some(s => s.id === mappedCat))
 
           return (
             <div key={pro.id} className="pro-card" style={{ animationDelay: `${i * 0.06}s` }}>
