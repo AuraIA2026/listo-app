@@ -15,7 +15,7 @@ const planes = [
     titulo: 'Plan Estándar — Empieza a crecer',
     subtitulo: 'Ideal para conseguir tus primeros clientes.',
     descripcion: 'Con 3 contratos disponibles puedes darte a conocer. Apto para quienes prueban la app.',
-    beneficios: ['✅ Perfil público en la app', '✅ Hasta 3 postulaciones al mes', '✅ Soporte estándar'],
+    beneficios: ['✅ Perfil público en la app', '✅ Hasta 3 contratos al mes', '✅ Soporte estándar'],
     cta: '¡El mejor punto de partida!',
   },
   {
@@ -24,7 +24,7 @@ const planes = [
     titulo: 'Pack Gold — El más pedido',
     subtitulo: 'El favorito de los profesionales que quieren crecer rápido.',
     descripcion: 'Aumenta tus oportunidades y presencia en búsquedas con 8 aplicaciones a trabajos.',
-    beneficios: ['⚡ Mejor visibilidad que el Estándar', '⚡ Hasta 8 postulaciones al mes', '⚡ Perfil Recomendado'],
+    beneficios: ['⚡ Mejor visibilidad que el Estándar', '⚡ Hasta 8 contratos al mes', '⚡ Perfil Recomendado'],
     cta: '¡El plan para profesionales activos!',
   },
   {
@@ -33,7 +33,7 @@ const planes = [
     titulo: 'Pack Platinum — Para gente activa',
     subtitulo: 'Aumenta tu estatus y aplica con más margen.',
     descripcion: 'Aplica a 15 trabajos directamente y accede a clientes premium con prioridad.',
-    beneficios: ['🔥 Mayor visibilidad en búsquedas', '🔥 Hasta 15 postulaciones al mes', '🔥 Crecimiento sostenido'],
+    beneficios: ['🔥 Mayor visibilidad en búsquedas', '🔥 Hasta 15 contratos al mes', '🔥 Crecimiento sostenido'],
     cta: 'Para quienes no quieren perderse grandes clientes.',
   },
   {
@@ -41,8 +41,8 @@ const planes = [
     precio: 'RD$2,500/mes', colorKey: 'vip', badge: 'ÉLITE',
     titulo: 'VIP Ilimitado — Sin límites',
     subtitulo: 'Sin restricciones. Requiere +3 años de experiencia.',
-    descripcion: 'Postúlate ilimitadamente cada mes. Exclusividad total, contacto directo y estatus N°1.',
-    beneficios: ['🚀 Postulaciones ILIMITADAS', '🚀 Prioridad absoluta N°1 en búsquedas', '🚀 Requiere +3 años exp. comprobada'],
+    descripcion: 'Acepta contratos sin límite cada mes. Exclusividad total, contacto directo y estatus N°1.',
+    beneficios: ['🚀 Contratos ILIMITADOS', '🚀 Prioridad absoluta N°1 en búsquedas', '🚀 Requiere +3 años exp. comprobada'],
     cta: 'Si tienes la experiencia, este es el plan para dominar.',
   },
 ]
@@ -181,7 +181,7 @@ function PlanModal({ plan, onClose, onConfirm }) {
           ))}
         </div>
         <p style={{ fontSize: '13px', fontWeight: '700', fontStyle: 'italic', color: pal.primary, textAlign: 'center', margin: '0 0 22px', lineHeight: 1.5 }}>"{plan.cta}"</p>
-        <Btn3D onClick={onConfirm} bg={pal.gradient} shadow={pal.btn3d}>💎 Postularme al {plan.nombre}</Btn3D>
+        <Btn3D onClick={onConfirm} bg={pal.gradient} shadow={pal.btn3d}>💎 Activar el {plan.nombre}</Btn3D>
         <Btn3D onClick={onClose} secondary>🤔 Lo pensaré más tarde</Btn3D>
       </div>
     </div>

@@ -23,7 +23,7 @@ export default function PlanesPage({ onBack, navigate }) {
       color: '#9CA3AF',
       features: [
         'Perfil público en la app',
-        'Hasta 3 postulaciones (trabajos) al mes',
+        'Hasta 3 contratos al mes',
         'Soporte estándar',
       ],
       limitations: [
@@ -42,7 +42,7 @@ export default function PlanesPage({ onBack, navigate }) {
       color: '#F59E0B',
       features: [
         'Mejor visibilidad en búsquedas que el Básico',
-        'Hasta 8 postulaciones a trabajos al mes',
+        'Hasta 8 contratos al mes',
         'Perfil con etiqueta "Recomendado"',
         'Soporte estándar'
       ]
@@ -58,7 +58,7 @@ export default function PlanesPage({ onBack, navigate }) {
       color: '#1A1A2E',
       badge: 'Popular 🔥',
       features: [
-        'Hasta 15 postulaciones a trabajos al mes',
+        'Hasta 15 contratos al mes',
         'Alta visibilidad en búsquedas',
         'Acceso a clientes premium',
         'Badge destacado Platinum'
