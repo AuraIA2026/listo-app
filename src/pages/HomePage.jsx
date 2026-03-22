@@ -301,14 +301,21 @@ export default function HomePage({ lang, navigate, userRole }) {
           })
         })
         
-        // Ordenar destacados por estrellas y cantidad de reseñas
-        const sortedFeatured = [...prosList].sort((a, b) => {
+        // Lógica de Destacados: 5 estrellas libres, 4 estrellas máximo 3 apariciones
+        const elitePros = prosList.filter(p => p.rating >= 5.0).sort((a, b) => b.reviews - a.reviews);
+        const goodPros  = prosList.filter(p => p.rating >= 4.0 && p.rating < 5.0).sort((a, b) => b.reviews - a.reviews);
+        
+        // Máximo 3 de 4 estrellas
+        const limitedGoodPros = goodPros.slice(0, 3);
+        
+        // Combinamos y ordenamos
+        const finalFeatured = [...elitePros, ...limitedGoodPros].sort((a, b) => {
           if (b.rating !== a.rating) return b.rating - a.rating;
           return b.reviews - a.reviews;
         });
 
         setAllProsReal(prosList)
-        setFeaturedReal(sortedFeatured.slice(0, 6)) // Top 6 mejores calificados
+        setFeaturedReal(finalFeatured.slice(0, 12)) // Top 12 para mostrar el volumen de élites
       } catch (err) {
         console.error("Error fetching pros in Home: ", err)
       }
