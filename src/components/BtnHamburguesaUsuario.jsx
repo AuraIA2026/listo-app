@@ -18,6 +18,59 @@ function Accordion({ title, open, onToggle, children }) {
   )
 }
 
+/* ─── PLANES DE MUESTRA PARA USUARIOS ─── */
+const planes = [
+  { id: 'standard', num: '1', emoji: '🔹', nombre: 'Plan Estándar', contratos: '5 contratos', precio: 'RD$500', colorKey: 'standard', badge: 'BÁSICO' },
+  { id: 'gold', num: '2', emoji: '🥇', nombre: 'Pack Gold', contratos: '10 contratos', precio: 'RD$1,000', colorKey: 'gold', badge: 'POPULAR' },
+  { id: 'platinum', num: '3', emoji: '🥈', nombre: 'Pack Platinum', contratos: '15 contratos', precio: 'RD$1,500', colorKey: 'platinum', badge: 'ACTIVO' },
+  { id: 'vip', num: '4', emoji: '💎', nombre: 'VIP Ilimitado', contratos: '∞ contratos', precio: 'RD$2,000/mes', colorKey: 'vip', badge: 'ÉLITE' },
+]
+
+const palettes = {
+  standard: { primary: '#2E7D32', gradient: 'linear-gradient(145deg, #66BB6A 0%, #388E3C 40%, #2E7D32 70%, #4CAF50 100%)', shadow: 'rgba(46,125,50,0.55)', shine: 'rgba(165,214,167,0.65)', badgeBg: '#1B5E20' },
+  gold: { primary: '#D4A017', gradient: 'linear-gradient(145deg, #F5C842 0%, #D4940A 40%, #B8780A 70%, #E8B832 100%)', shadow: 'rgba(212,160,23,0.55)', shine: 'rgba(255,240,160,0.65)', badgeBg: '#7A4D00' },
+  platinum: { primary: '#7A8FA8', gradient: 'linear-gradient(145deg, #C8D4E0 0%, #8E9BAF 40%, #6B7A8D 70%, #B0BEC8 100%)', shadow: 'rgba(110,130,155,0.55)', shine: 'rgba(220,230,240,0.75)', badgeBg: '#3A5068' },
+  vip: { primary: '#F26000', gradient: 'linear-gradient(145deg, #FF8C42 0%, #F26000 35%, #C94E00 65%, #FF7020 100%)', shadow: 'rgba(242,96,0,0.6)', shine: 'rgba(255,200,140,0.55)', badgeBg: '#6B1D00' },
+}
+
+function PlanCardPreview({ plan, onClick }) {
+  const [hover, setHover] = useState(false)
+  const pal = palettes[plan.colorKey]
+  const isVip = plan.colorKey === 'vip'
+  return (
+    <div
+      onClick={onClick}
+      onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
+      style={{
+        position: 'relative', cursor: 'pointer',
+        transform: hover ? 'translateY(-7px) scale(1.05)' : 'translateY(0) scale(1)',
+        transition: 'transform 0.25s cubic-bezier(0.34,1.56,0.64,1)',
+        filter: hover ? `drop-shadow(0 14px 28px ${pal.shadow})` : `drop-shadow(0 5px 12px ${pal.shadow})`,
+      }}
+    >
+      <div style={{ position: 'absolute', bottom: '-7px', left: '7px', right: '-2px', height: '100%', borderRadius: '18px', background: pal.primary, opacity: 0.28, filter: 'blur(5px)', zIndex: 0 }} />
+      <div style={{
+        position: 'relative', zIndex: 1, background: pal.gradient, borderRadius: '18px',
+        padding: '18px 10px 16px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px',
+        border: `1.5px solid ${pal.shine}`, minHeight: '158px', overflow: 'hidden',
+        boxShadow: hover ? `0 0 22px ${pal.shadow}` : `inset 0 1px 0 ${pal.shine}`, transition: 'box-shadow 0.3s',
+      }}>
+        <div style={{ position: 'absolute', top: 0, left: '8%', right: '8%', height: '38%', background: `linear-gradient(180deg,${pal.shine} 0%,transparent 100%)`, borderRadius: '0 0 50% 50%', pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', top: '8px', right: '8px', background: pal.badgeBg, color: 'white', fontSize: '7px', fontWeight: '900', letterSpacing: '0.5px', padding: '2px 6px', borderRadius: '5px' }}>{plan.badge}</div>
+        <div style={{ position: 'absolute', top: '8px', left: '8px', background: 'rgba(0,0,0,0.18)', color: 'rgba(255,255,255,0.9)', width: '20px', height: '20px', borderRadius: '50%', fontSize: '10px', fontWeight: '900', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{plan.num}</div>
+        <div style={{ marginTop: '12px', position: 'relative' }}>
+          <span style={{ fontSize: '32px', filter: 'drop-shadow(0 3px 5px rgba(0,0,0,0.3))' }}>{plan.emoji}</span>
+          {isVip && <span style={{ position: 'absolute', top: '-8px', right: '-13px', fontSize: '13px', animation: 'twinkle 0.8s ease-in-out infinite alternate' }}>✨</span>}
+        </div>
+        <p style={{ fontSize: '12px', fontWeight: '800', color: 'white', margin: '6px 0 0', textShadow: '0 1px 4px rgba(0,0,0,0.4)', textAlign: 'center', lineHeight: 1.2 }}>{plan.nombre}</p>
+        <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.85)', margin: 0, fontWeight: '600' }}>{plan.contratos}</p>
+        <div style={{ background: 'rgba(0,0,0,0.18)', borderRadius: '8px', padding: '4px 10px', marginTop: '5px', border: '1px solid rgba(255,255,255,0.2)' }}>
+          <p style={{ fontSize: '13px', fontWeight: '900', color: 'white', margin: 0, textShadow: '0 1px 4px rgba(0,0,0,0.5)' }}>{plan.precio}</p>
+        </div>
+      </div>
+    </div>
+  )
+}
 
 /* ─── COMPONENTE PRINCIPAL ─── */
 export default function BtnHamburguesaUsuario({ onClose, navigate, lang = 'es' }) {
@@ -173,23 +226,26 @@ export default function BtnHamburguesaUsuario({ onClose, navigate, lang = 'es' }
               </div>
             </Accordion>
 
-            {/* ══ 7. POSTULARSE COMO PROFESIONAL ══ */}
-            <div style={{
-              background: 'linear-gradient(135deg,#1C1C1C 0%,#3A1500 55%,#F26000 100%)',
-              borderRadius: '16px', padding: '16px', marginBottom: '10px',
-              display: 'flex', alignItems: 'center', gap: '12px',
-              animation: profileComplete ? 'pulseGuide 2s infinite' : 'none'
-            }}>
-              <span style={{ fontSize: '28px' }}>💼</span>
-              <div style={{ flex: 1 }}>
-                <p style={{ margin: '0 0 2px', color: 'white', fontSize: '13px', fontWeight: '800' }}>¿Quieres ganar dinero?</p>
-                <p style={{ margin: 0, color: 'rgba(255,255,255,0.7)', fontSize: '11px' }}>Postúlate como profesional en Listo</p>
+            {/* ── 7. POSTULARSE COMO PROFESIONAL ── */}
+            <Accordion title="💼 Postularse (Ver Planes)" open={open === 'postularse'} onToggle={() => toggle('postularse')}>
+              <p style={{ fontSize: '13px', color: '#666', marginBottom: '16px', lineHeight: 1.5 }}>
+                {lang === 'es' 
+                  ? 'Selecciona un plan para iniciar tu postulación. Te guiaremos en la verificación de tus documentos para comenzar a ganar dinero.' 
+                  : 'Select a plan to start your application. We will prompt you to verify your identity to begin earning money.'}
+              </p>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '8px' }}>
+                {planes.map((p, i) => (
+                  <PlanCardPreview 
+                    key={i} 
+                    plan={p} 
+                    onClick={() => {
+                      if(navigate) navigate('verificacion')
+                      onClose()
+                    }} 
+                  />
+                ))}
               </div>
-              <button style={{
-                background: '#F26000', color: '#fff', border: 'none',
-                borderRadius: '10px', padding: '8px 12px', fontSize: '12px', fontWeight: '800', cursor: 'pointer',
-              }}>👉 Aplicar</button>
-            </div>
+            </Accordion>
 
             <div style={{ height: 20 }} />
           </div>
