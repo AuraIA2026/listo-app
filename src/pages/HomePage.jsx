@@ -8,6 +8,7 @@ import VIPBanner from '../components/VIPBanner'
 import BtnHamburguesa from '../components/BtnHamburguesa'
 import BtnHamburguesaUsuario from '../components/BtnHamburguesaUsuario'
 import { useUserData } from '../useUserData'
+import { CATEGORIES, ALL_SUBCATEGORIES } from '../categories'
 
 import mecanico   from '../assets/pros/Mecanico.jpg'
 import mecanico1  from '../assets/pros/Mecanico1.jpg'
@@ -33,26 +34,17 @@ const testimonials = [
   { nameEs:'Carlos Herrera',  photo: jardinero,  rating:5, dateEs:'Hace 1 mes',     dateEn:'1 month ago',  specEs:'Jardinero',    specEn:'Gardener',     textEs:'Transformó mi jardín completamente. Muy creativo y trabajador. El resultado superó mis expectativas.', textEn:'He completely transformed my garden. Very creative and hardworking. The result exceeded my expectations.' },
 ]
 
-const categories = [
-  { id: 'mechanic',    icon:'🔧', labelEs:'Mecánico',            labelEn:'Mechanic' },
-  { id: 'electrician', icon:'⚡', labelEs:'Electricista',        labelEn:'Electrician' },
-  { id: 'plumber',     icon:'🔩', labelEs:'Plomero',             labelEn:'Plumber' },
-  { id: 'locksmith',   icon:'🔑', labelEs:'Cerrajero',           labelEn:'Locksmith' },
-  { id: 'painter',     icon:'🎨', labelEs:'Pintor',              labelEn:'Painter' },
-  { id: 'gardener',    icon:'🌿', labelEs:'Jardinero',          labelEn:'Gardening' },
-  { id: 'nanny',       icon:'👶', labelEs:'Niñera',              labelEn:'Nanny' },
-  { id: 'cleaner',     icon:'🧹', labelEs:'Limpieza',            labelEn:'Cleaning' },
-  { id: 'all',         icon:'❄️', labelEs:'Refrigeración',       labelEn:'Refrigeration' },
-  { id: 'all',         icon:'🛵', labelEs:'Mensajeros',          labelEn:'Messengers' },
-  { id: 'all',         icon:'🔧', labelEs:'Instalación',         labelEn:'Installation' },
-  { id: 'all',         icon:'👕', labelEs:'Lavandería',          labelEn:'Laundry' },
-  { id: 'all',         icon:'🛠️', labelEs:'Mantenimiento',       labelEn:'Maintenance' },
-  { id: 'all',         icon:'🔩', labelEs:'Montaje',             labelEn:'Assembly' },
-  { id: 'all',         icon:'📦', labelEs:'Mudanzas',            labelEn:'Moving' },
-  { id: 'all',         icon:'🎯', labelEs:'Personalizado',       labelEn:'Custom' },
-  { id: 'all',         icon:'🐛', labelEs:'Plagas',              labelEn:'Pest control' },
-  { id: 'all',         icon:'🏗️', labelEs:'Reformas',           labelEn:'Renovations' },
-  { id: 'all',         icon:'🔨', labelEs:'Reparación',          labelEn:'Repair' },
+// 8 de los oficios más populares para mostrar en la cinta superior del Home
+const topHomeCategories = [
+  { id: 'mecanico',    icon:'🔧', labelEs:'Mecánico',      labelEn:'Mechanic' },
+  { id: 'electricista', icon:'⚡', labelEs:'Electricista',  labelEn:'Electrician' },
+  { id: 'plomero',     icon:'🔩', labelEs:'Plomero',       labelEn:'Plumber' },
+  { id: 'cerrajero',   icon:'🔑', labelEs:'Cerrajero',     labelEn:'Locksmith' },
+  { id: 'pintor',      icon:'🎨', labelEs:'Pintor',        labelEn:'Painter' },
+  { id: 'jardinero',   icon:'🌿', labelEs:'Jardinero',     labelEn:'Gardener' },
+  { id: 'ninera',      icon:'👶', labelEs:'Niñera',        labelEn:'Nanny' },
+  { id: 'refrigeracion',icon:'❄️', labelEs:'Refrigeración', labelEn:'A/C' },
+  { id: 'limpieza_hogar',icon:'🧹', labelEs:'Limpieza',     labelEn:'Cleaning' },
 ]
 
 const featuredStatic = [
@@ -279,14 +271,25 @@ export default function HomePage({ lang, navigate, userRole }) {
         const q = query(collection(db, 'users'), where('type', '==', 'pro'))
         const querySnapshot = await getDocs(q)
         const prosList = []
+        const getMappedProCatId = (catString) => {
+          if (!catString) return 'all';
+          const cleanStr = catString.toLowerCase();
+          const foundSub = ALL_SUBCATEGORIES.find(s => s.id === cleanStr || s.labelEn.toLowerCase() === cleanStr);
+          if (foundSub) return foundSub;
+          const foundMain = CATEGORIES.find(c => c.id === cleanStr || c.labelEn.toLowerCase() === cleanStr);
+          return foundMain || null;
+        }
+
         querySnapshot.forEach((doc) => {
           const data = doc.data()
+          const catObj = getMappedProCatId(data.category)
+          
           prosList.push({
             id: doc.id,
             nameEs: data.name || 'Sin nombre',
             nameEn: data.name || 'No name',
-            specEs: categories.find(c => c.id === data.category)?.labelEs || 'Servicio General',
-            specEn: categories.find(c => c.id === data.category)?.labelEn || 'General service',
+            specEs: catObj ? catObj.labelEs : 'Servicios Integrales',
+            specEn: catObj ? catObj.labelEn : 'General services',
             category: data.category || 'unknown',
             rating: data.rating || 5.0,
             reviews: data.reviewCount || data.reviews || 0,
@@ -392,7 +395,7 @@ export default function HomePage({ lang, navigate, userRole }) {
         </div>
       ) : (
         <div className="hp-cats-scroll">
-          {categories.map((c, i) => (
+          {topHomeCategories.map((c, i) => (
             <button key={i} className="hp-cat-btn" onClick={() => navigate('search', { catToSelect: c.id || 'all' })}>
               <span className="hp-cat-icon">{c.icon}</span>
               <span className="hp-cat-label">{lang === 'es' ? c.labelEs : c.labelEn}</span>
@@ -511,7 +514,7 @@ export default function HomePage({ lang, navigate, userRole }) {
               <h2 className="hp-sec-title">🗂️ {lang === 'es' ? 'Explorar servicios' : 'Explore services'}</h2>
             </div>
             <div className="cat-list">
-              {categories.map((c, i) => (
+              {CATEGORIES.map((c, i) => (
                 <button key={i} className="cat-list-item" style={{ animationDelay: `${i * 0.05}s` }} onClick={() => navigate('search', { catToSelect: c.id || 'all' })}>
                   <span className="cat-list-icon">{c.icon}</span>
                   <span className="cat-list-label">{lang === 'es' ? c.labelEs : c.labelEn}</span>
