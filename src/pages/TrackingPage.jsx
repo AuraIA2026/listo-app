@@ -344,7 +344,7 @@ export default function TrackingPage({ lang = 'es', navigate, professional, user
     category: targetCat,
     rating:   professional?.rating   || 5.0,
     phone:    professional?.phone    || professional?.clientPhone || professional?.proPhone || null,
-    uid:      professional?.uid      || professional?.proId      || professional?.clientId || null,
+    uid:      userRole === 'pro' ? (professional?.clientId || professional?.otherUid) : (professional?.proId || professional?.otherUid || professional?.uid),
   }
 
   const [proPos,         setProPos]         = useState(PRO_START)
@@ -575,7 +575,7 @@ export default function TrackingPage({ lang = 'es', navigate, professional, user
           </div>
         )}
 
-        {!['awaiting_deal','declined_done'].includes(workStatus) && (
+        {!['declined_done'].includes(workStatus) && (
           <>
             <div className="tracking-pro-info">
               <div className="tracking-pro-left">
