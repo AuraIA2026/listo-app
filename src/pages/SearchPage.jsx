@@ -376,12 +376,11 @@ function ProDelMes({ lang, navigate, userRole }) {
           background: linear-gradient(160deg, #fffbf0, #fff8e1);
           padding: 14px;
           display: grid;
+          grid-template-columns: 1fr 1fr;
           gap: 12px;
           position: relative;
           overflow: hidden;
         }
-        .pdm-body-two-cols { grid-template-columns: 1fr 1fr; }
-        .pdm-body-one-col  { grid-template-columns: 1fr; }
 
         .pdm-shine {
           position: absolute; top: 0; left: -80%;
@@ -511,10 +510,10 @@ function ProDelMes({ lang, navigate, userRole }) {
           <span className="pdm-trophy">🏆</span>
         </div>
 
-        {/* Body — FIX: clase dinámica según rol */}
-        <div className={`pdm-body ${isClient ? 'pdm-body-one-col' : 'pdm-body-two-cols'}`}>
+        {/* Body */}
+        <div className="pdm-body">
           <div className="pdm-shine" />
-          {!isClient && <div className="pdm-divider" />}
+          <div className="pdm-divider" />
 
           {/* IZQUIERDA — siempre visible */}
           <div className="pdm-left">
@@ -539,55 +538,53 @@ function ProDelMes({ lang, navigate, userRole }) {
             </button>
           </div>
 
-          {/* DERECHA — reseñas, solo para pros */}
-          {!isClient && (
-            <div className="pdm-right">
-              <p className="pdm-resenas-title">
-                {lang === 'es' ? '💬 Lo que dicen' : '💬 Reviews'}
-              </p>
+          {/* DERECHA — reseñas, visible para todos */}
+          <div className="pdm-right">
+            <p className="pdm-resenas-title">
+              {lang === 'es' ? '💬 Lo que dicen' : '💬 Reviews'}
+            </p>
 
-              {resenas.length === 0 ? (
-                <div className="pdm-resena-empty">
-                  {lang === 'es' ? 'Sin reseñas aún este mes' : 'No reviews yet this month'}
-                </div>
-              ) : (
-                <>
-                  {visibles.map((r, i) => (
-                    <div key={`${resenaIdx}-${i}`} className="pdm-resena-card">
-                      {r.clientPhoto
-                        ? <img src={r.clientPhoto} alt={r.clientName} className="pdm-client-photo" />
-                        : <div className="pdm-client-avatar" style={{ background: clientAvatarBg(r.clientName) }}>
-                            {(r.clientName || 'C').charAt(0).toUpperCase()}
-                          </div>
-                      }
-                      <div className="pdm-resena-content">
-                        <p className="pdm-client-name">{r.clientName}</p>
-                        <div className="pdm-resena-stars">
-                          {'★'.repeat(r.score)}{'☆'.repeat(5 - r.score)}
+            {resenas.length === 0 ? (
+              <div className="pdm-resena-empty">
+                {lang === 'es' ? 'Sin reseñas aún este mes' : 'No reviews yet this month'}
+              </div>
+            ) : (
+              <>
+                {visibles.map((r, i) => (
+                  <div key={`${resenaIdx}-${i}`} className="pdm-resena-card">
+                    {r.clientPhoto
+                      ? <img src={r.clientPhoto} alt={r.clientName} className="pdm-client-photo" />
+                      : <div className="pdm-client-avatar" style={{ background: clientAvatarBg(r.clientName) }}>
+                          {(r.clientName || 'C').charAt(0).toUpperCase()}
                         </div>
-                        <p className="pdm-resena-text">"{r.comment}"</p>
+                    }
+                    <div className="pdm-resena-content">
+                      <p className="pdm-client-name">{r.clientName}</p>
+                      <div className="pdm-resena-stars">
+                        {'★'.repeat(r.score)}{'☆'.repeat(5 - r.score)}
                       </div>
+                      <p className="pdm-resena-text">"{r.comment}"</p>
                     </div>
-                  ))}
+                  </div>
+                ))}
 
-                  {resenas.length > 2 && (
-                    <div className="pdm-dots">
-                      {resenas.map((_, i) => (
-                        <button
-                          key={i}
-                          className={`pdm-dot${i === resenaIdx % resenas.length ? ' active' : ''}`}
-                          onClick={() => {
-                            clearInterval(resenaTimer.current)
-                            setResenaIdx(i)
-                          }}
-                        />
-                      ))}
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
-          )}
+                {resenas.length > 2 && (
+                  <div className="pdm-dots">
+                    {resenas.map((_, i) => (
+                      <button
+                        key={i}
+                        className={`pdm-dot${i === resenaIdx % resenas.length ? ' active' : ''}`}
+                        onClick={() => {
+                          clearInterval(resenaTimer.current)
+                          setResenaIdx(i)
+                        }}
+                      />
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
+          </div>
         </div>
       </div>
     </>
