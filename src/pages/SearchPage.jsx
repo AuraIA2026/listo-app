@@ -110,47 +110,24 @@ function PromoBanner({ lang, userRole }) {
           overflow: hidden;
         }
         .listo-promo-spark {
-          position: absolute;
-          font-size: 10px;
-          color: #fff;
-          opacity: 0.3;
-          animation: listo-shimmer 2s ease-in-out infinite;
+          position: absolute; font-size: 10px; color: #fff;
+          opacity: 0.3; animation: listo-shimmer 2s ease-in-out infinite;
           pointer-events: none;
         }
         .listo-promo-star {
-          font-size: 28px;
-          flex-shrink: 0;
-          margin-top: 4px;
+          font-size: 28px; flex-shrink: 0; margin-top: 4px;
           animation: listo-starPop 2s ease-in-out infinite, listo-starFloat 3s ease-in-out infinite;
           filter: drop-shadow(0 0 6px rgba(255,220,0,0.8));
         }
-        .listo-promo-body {
-          flex: 1;
-          min-height: 58px;
-          position: relative;
-        }
-        .listo-promo-msg {
-          animation: listo-fadeSlide 5s ease-in-out forwards;
-        }
-        .listo-mini-stars {
-          display: flex;
-          gap: 2px;
-          margin-bottom: 4px;
-        }
-        .listo-mini-star {
-          font-size: 11px;
-          animation: listo-shimmer 1.5s ease-in-out infinite;
-        }
+        .listo-promo-body { flex: 1; min-height: 58px; position: relative; }
+        .listo-promo-msg  { animation: listo-fadeSlide 5s ease-in-out forwards; }
+        .listo-mini-stars { display: flex; gap: 2px; margin-bottom: 4px; }
+        .listo-mini-star  { font-size: 11px; animation: listo-shimmer 1.5s ease-in-out infinite; }
         .listo-promo-text {
-          margin: 0;
-          font-size: 13px;
-          font-weight: 500;
-          color: #fff;
-          line-height: 1.5;
-          text-shadow: 0 1px 3px rgba(0,0,0,0.2);
+          margin: 0; font-size: 13px; font-weight: 500; color: #fff;
+          line-height: 1.5; text-shadow: 0 1px 3px rgba(0,0,0,0.2);
         }
       `}</style>
-
       <div className="listo-promo-banner">
         <span className="listo-promo-spark" style={{ top:'8px',  left:'35%', animationDelay:'0.3s' }}>★</span>
         <span className="listo-promo-spark" style={{ top:'55%', left:'60%', animationDelay:'0.9s' }}>★</span>
@@ -175,9 +152,13 @@ function PromoBanner({ lang, userRole }) {
 
 // ── Profesional del Mes ─────────────────────────────────────────
 function ProDelMes({ lang, navigate }) {
-  const [proDelMes, setProDelMes] = useState(null)
+  const [proDelMes,      setProDelMes]      = useState(null)
   const [totalEstrellas, setTotalEstrellas] = useState(0)
-  const [loading, setLoading] = useState(true)
+  const [resenas,        setResenas]        = useState([])
+  const [resenaIdx,      setResenaIdx]      = useState(0)
+  const [loading,        setLoading]        = useState(true)
+  const resenaTimer = useRef(null)
+
   const [mes] = useState(() => {
     const now = new Date()
     return new Intl.DateTimeFormat(lang === 'es' ? 'es-DO' : 'en-US', { month: 'long', year: 'numeric' }).format(now)
@@ -186,62 +167,70 @@ function ProDelMes({ lang, navigate }) {
   useEffect(() => {
     const calcularProDelMes = async () => {
       try {
-        // Obtener inicio del mes actual
         const now = new Date()
         const inicioMes = new Date(now.getFullYear(), now.getMonth(), 1)
         const inicioMesTs = Math.floor(inicioMes.getTime() / 1000)
 
-        // Traer todas las órdenes calificadas del mes
         const q = query(collection(db, 'orders'), where('rated', '==', true))
         const snapshot = await getDocs(q)
 
-        const conteo = {} // { proId: { estrellas, nombre, foto, especialidad } }
+        const conteo = {}
 
         snapshot.forEach(doc => {
           const d = doc.data()
           const createdTs = d.createdAt?.seconds || 0
-          if (createdTs < inicioMesTs) return // solo este mes
+          if (createdTs < inicioMesTs) return
 
           const proId = d.proId || d.professionalId
           if (!proId) return
 
           if (!conteo[proId]) {
             conteo[proId] = {
-              id: proId,
-              nombre: d.proName || d.professionalName || 'Profesional',
-              foto: d.proPhoto || d.professionalPhoto || null,
+              id:           proId,
+              nombre:       d.proName || d.professionalName || 'Profesional',
+              foto:         d.proPhoto || d.professionalPhoto || null,
               especialidad: d.proSpecialty || d.specialty || 'Servicios',
-              estrellas: 0,
-              contratos: 0,
+              estrellas:    0,
+              contratos:    0,
+              resenas:      [],
             }
           }
           conteo[proId].estrellas += (d.ratingScore || 5)
           conteo[proId].contratos += 1
+
+          if (d.ratingComment?.trim()) {
+            conteo[proId].resenas.push({
+              clientName:  d.clientName || d.reviewerName || 'Cliente',
+              clientPhoto: d.clientPhoto || d.reviewerPhoto || null,
+              comment:     d.ratingComment,
+              score:       d.ratingScore || 5,
+            })
+          }
         })
 
         const lista = Object.values(conteo)
+
         if (lista.length === 0) {
-          // Si no hay datos del mes, buscar el mejor pro general
+          // fallback: mejor pro general
           const qPros = query(collection(db, 'users'), where('type', '==', 'pro'))
           const snapPros = await getDocs(qPros)
           let mejor = null
           snapPros.forEach(doc => {
             const d = doc.data()
-            if (!mejor || (d.rating || 0) > (mejor.rating || 0)) {
-              mejor = { id: doc.id, ...d }
-            }
+            if (!mejor || (d.rating || 0) > (mejor.rating || 0)) mejor = { id: doc.id, ...d }
           })
           if (mejor) {
             setProDelMes({
-              id: mejor.id,
-              nombre: mejor.name || 'Profesional',
-              foto: mejor.photoURL || null,
+              id:           mejor.id,
+              nombre:       mejor.name || 'Profesional',
+              foto:         mejor.photoURL || null,
               especialidad: mejor.category || 'Servicios',
-              estrellas: Math.round((mejor.rating || 5) * (mejor.reviews || 1)),
-              contratos: mejor.reviews || 0,
-              avatar: (mejor.name || 'P').substring(0, 2).toUpperCase(),
+              estrellas:    Math.round((mejor.rating || 5) * (mejor.reviews || 1)),
+              contratos:    mejor.reviews || 0,
+              avatar:       (mejor.name || 'P').substring(0, 2).toUpperCase(),
             })
             setTotalEstrellas(Math.round((mejor.rating || 5) * (mejor.reviews || 1)))
+            setResenas([])
           }
         } else {
           lista.sort((a, b) => b.estrellas - a.estrellas)
@@ -249,6 +238,7 @@ function ProDelMes({ lang, navigate }) {
           ganador.avatar = ganador.nombre.substring(0, 2).toUpperCase()
           setProDelMes(ganador)
           setTotalEstrellas(ganador.estrellas)
+          setResenas(ganador.resenas.slice(0, 5))
         }
       } catch (e) {
         console.error('Error calculando pro del mes:', e)
@@ -259,11 +249,26 @@ function ProDelMes({ lang, navigate }) {
     calcularProDelMes()
   }, [])
 
+  // Auto-scroll reseñas cada 3.5s
+  useEffect(() => {
+    if (resenas.length <= 2) return
+    resenaTimer.current = setInterval(() => {
+      setResenaIdx(i => (i + 1) % resenas.length)
+    }, 3500)
+    return () => clearInterval(resenaTimer.current)
+  }, [resenas])
+
   if (loading || !proDelMes) return null
 
   const avatarBg = avatarColors[
     Array.from(proDelMes.id || 'pro').reduce((acc, c) => acc + c.charCodeAt(0), 0) % avatarColors.length
   ]
+  const clientAvatarBg = (name) =>
+    avatarColors[Array.from(name || 'c').reduce((acc, c) => acc + c.charCodeAt(0), 0) % avatarColors.length]
+
+  // Reseñas visibles: 2 a la vez con wrap circular
+  const visibles = resenas.length === 0 ? [] :
+    [resenas[resenaIdx % resenas.length], resenas[(resenaIdx + 1) % resenas.length]].filter(Boolean)
 
   return (
     <>
@@ -274,11 +279,11 @@ function ProDelMes({ lang, navigate }) {
         }
         @keyframes pdm-crown {
           0%,100% { transform: translateY(0) rotate(-5deg) scale(1); }
-          50%      { transform: translateY(-5px) rotate(5deg) scale(1.15); }
+          50%      { transform: translateY(-6px) rotate(6deg) scale(1.18); }
         }
         @keyframes pdm-glow {
-          0%,100% { box-shadow: 0 6px 24px rgba(255,180,0,0.35), 0 2px 8px rgba(0,0,0,0.12); }
-          50%      { box-shadow: 0 8px 32px rgba(255,180,0,0.6),  0 2px 8px rgba(0,0,0,0.12); }
+          0%,100% { box-shadow: 0 6px 28px rgba(255,180,0,0.4), 0 2px 8px rgba(0,0,0,0.1); }
+          50%      { box-shadow: 0 10px 40px rgba(255,180,0,0.7), 0 2px 8px rgba(0,0,0,0.1); }
         }
         @keyframes pdm-badge-pop {
           0%  { transform: scale(0.7); opacity: 0; }
@@ -286,193 +291,267 @@ function ProDelMes({ lang, navigate }) {
           100%{ transform: scale(1);   opacity: 1; }
         }
         @keyframes pdm-star-spin {
-          0%   { transform: rotate(0deg) scale(1); }
-          50%  { transform: rotate(20deg) scale(1.3); }
-          100% { transform: rotate(0deg) scale(1); }
+          0%,100% { transform: rotate(0deg) scale(1); }
+          50%     { transform: rotate(22deg) scale(1.3); }
         }
+        @keyframes pdm-resena-in {
+          0%   { opacity: 0; transform: translateX(10px); }
+          100% { opacity: 1; transform: translateX(0); }
+        }
+
         .pdm-wrapper {
           margin: 0 16px 20px;
           border-radius: 20px;
           overflow: hidden;
           animation: pdm-glow 2.5s ease-in-out infinite;
-          position: relative;
         }
+
+        /* HEADER */
         .pdm-header {
-          background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
-          padding: 10px 16px 8px;
+          background: linear-gradient(135deg, #0f0c29, #1c1c50, #24243e);
+          padding: 11px 16px;
           display: flex;
           align-items: center;
           gap: 8px;
+          position: relative;
+        }
+        .pdm-header::after {
+          content: '';
+          position: absolute;
+          bottom: 0; left: 0; right: 0; height: 2px;
+          background: linear-gradient(90deg, transparent, #FFD700, #FFA500, #FFD700, transparent);
         }
         .pdm-crown {
-          font-size: 22px;
+          font-size: 24px;
           animation: pdm-crown 2s ease-in-out infinite;
-          filter: drop-shadow(0 0 8px rgba(255,215,0,0.9));
+          filter: drop-shadow(0 0 12px rgba(255,215,0,1));
         }
-        .pdm-header-text {
-          flex: 1;
-        }
+        .pdm-header-text { flex: 1; }
         .pdm-label {
-          font-size: 11px;
-          font-weight: 700;
-          color: rgba(255,215,0,0.8);
-          text-transform: uppercase;
-          letter-spacing: 0.08em;
-          margin: 0;
+          font-size: 10px; font-weight: 800; color: #FFD700;
+          text-transform: uppercase; letter-spacing: 0.12em; margin: 0;
         }
         .pdm-mes {
-          font-size: 13px;
-          font-weight: 800;
-          color: #fff;
-          margin: 0;
-          text-transform: capitalize;
+          font-size: 14px; font-weight: 800; color: #fff;
+          margin: 0; text-transform: capitalize;
         }
+        .pdm-trophy {
+          font-size: 22px;
+          filter: drop-shadow(0 0 8px rgba(255,215,0,0.9));
+        }
+
+        /* BODY — 2 columnas */
         .pdm-body {
-          background: linear-gradient(135deg, #fff9ee, #fff3d6);
-          padding: 16px;
-          display: flex;
-          gap: 14px;
-          align-items: center;
+          background: linear-gradient(160deg, #fffbf0, #fff8e1);
+          padding: 14px;
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 12px;
           position: relative;
           overflow: hidden;
         }
         .pdm-shine {
-          position: absolute;
-          top: 0; left: -80%;
+          position: absolute; top: 0; left: -80%;
           width: 50%; height: 100%;
-          background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
+          background: linear-gradient(90deg, transparent, rgba(255,255,255,0.65), transparent);
           transform: skewX(-15deg);
-          animation: pdm-shine 3s ease-in-out infinite;
+          animation: pdm-shine 3.5s ease-in-out infinite;
           pointer-events: none;
         }
-        .pdm-photo-wrap {
-          position: relative;
-          flex-shrink: 0;
+        .pdm-divider {
+          position: absolute; top: 14px; bottom: 14px;
+          left: 50%; width: 1px;
+          background: linear-gradient(to bottom, transparent, #FFD70055, #FFA50055, transparent);
         }
+
+        /* COLUMNA IZQUIERDA */
+        .pdm-left {
+          display: flex; flex-direction: column;
+          align-items: center; text-align: center; gap: 5px;
+        }
+        .pdm-photo-wrap { position: relative; margin-bottom: 2px; }
         .pdm-photo {
-          width: 80px;
-          height: 80px;
-          border-radius: 50%;
+          width: 78px; height: 78px; border-radius: 50%;
           object-fit: cover;
           border: 3px solid #FFD700;
-          box-shadow: 0 0 0 3px rgba(255,215,0,0.3);
+          box-shadow: 0 0 0 4px rgba(255,215,0,0.2), 0 4px 16px rgba(255,150,0,0.25);
         }
         .pdm-avatar {
-          width: 80px;
-          height: 80px;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 26px;
-          font-weight: 800;
-          color: #fff;
+          width: 78px; height: 78px; border-radius: 50%;
+          display: flex; align-items: center; justify-content: center;
+          font-size: 26px; font-weight: 800; color: #fff;
           border: 3px solid #FFD700;
-          box-shadow: 0 0 0 3px rgba(255,215,0,0.3);
+          box-shadow: 0 0 0 4px rgba(255,215,0,0.2), 0 4px 16px rgba(255,150,0,0.25);
         }
         .pdm-badge {
-          position: absolute;
-          bottom: -4px;
-          right: -4px;
+          position: absolute; bottom: -2px; right: -2px;
           background: linear-gradient(135deg, #FFD700, #FFA500);
-          border-radius: 50%;
-          width: 26px;
-          height: 26px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 14px;
-          border: 2px solid #fff;
+          border-radius: 50%; width: 26px; height: 26px;
+          display: flex; align-items: center; justify-content: center;
+          font-size: 13px; border: 2px solid #fff;
           animation: pdm-badge-pop 0.5s ease-out forwards, pdm-star-spin 3s ease-in-out 0.5s infinite;
         }
-        .pdm-info {
-          flex: 1;
-        }
         .pdm-nombre {
-          font-size: 17px;
-          font-weight: 800;
-          color: #1a1a2e;
-          margin: 0 0 2px;
+          font-size: 14px; font-weight: 800; color: #1a1a2e; margin: 0;
         }
-        .pdm-spec {
-          font-size: 13px;
-          color: #666;
-          margin: 0 0 6px;
-        }
+        .pdm-spec { font-size: 11px; color: #999; margin: 0; }
         .pdm-stars-row {
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          margin-bottom: 8px;
+          display: flex; align-items: center; gap: 4px; justify-content: center;
         }
-        .pdm-stars {
-          color: #FFD700;
-          font-size: 15px;
-          letter-spacing: 1px;
-        }
+        .pdm-stars { color: #FFD700; font-size: 12px; letter-spacing: 1px; }
         .pdm-star-count {
-          font-size: 12px;
-          font-weight: 700;
-          color: #F26000;
-          background: rgba(242,96,0,0.1);
-          padding: 2px 8px;
-          border-radius: 20px;
+          font-size: 11px; font-weight: 800; color: #F26000;
+          background: rgba(242,96,0,0.1); padding: 1px 7px; border-radius: 20px;
         }
-        .pdm-contratos {
-          font-size: 12px;
-          color: #888;
-          margin: 0 0 10px;
-        }
+        .pdm-contratos { font-size: 11px; color: #999; margin: 0; }
         .pdm-btn {
           background: linear-gradient(135deg, #F26000, #C94E00);
-          color: #fff;
-          border: none;
-          border-radius: 22px;
-          padding: 8px 18px;
-          font-size: 13px;
-          font-weight: 800;
-          cursor: pointer;
-          box-shadow: 0 3px 10px rgba(242,96,0,0.35);
-          transition: transform 0.1s;
+          color: #fff; border: none; border-radius: 22px;
+          padding: 7px 12px; font-size: 12px; font-weight: 800;
+          cursor: pointer; width: 100%;
+          box-shadow: 0 3px 10px rgba(242,96,0,0.3);
+          transition: transform 0.1s; margin-top: 2px;
         }
         .pdm-btn:active { transform: scale(0.96); }
+
+        /* COLUMNA DERECHA — reseñas */
+        .pdm-right {
+          display: flex; flex-direction: column; gap: 6px; overflow: hidden;
+        }
+        .pdm-resenas-title {
+          font-size: 11px; font-weight: 800; color: #1a1a2e;
+          text-transform: uppercase; letter-spacing: 0.06em; margin: 0;
+        }
+        .pdm-resena-card {
+          background: #fff;
+          border-radius: 10px;
+          padding: 8px 9px;
+          border-left: 3px solid #FFD700;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+          animation: pdm-resena-in 0.35s ease-out forwards;
+          display: flex; gap: 7px; align-items: flex-start;
+        }
+        .pdm-client-photo {
+          width: 30px; height: 30px; border-radius: 50%;
+          object-fit: cover; flex-shrink: 0; border: 2px solid #FFD700;
+        }
+        .pdm-client-avatar {
+          width: 30px; height: 30px; border-radius: 50%;
+          display: flex; align-items: center; justify-content: center;
+          font-size: 11px; font-weight: 800; color: #fff;
+          flex-shrink: 0; border: 2px solid #FFD700;
+        }
+        .pdm-resena-content { flex: 1; min-width: 0; }
+        .pdm-client-name {
+          font-size: 11px; font-weight: 800; color: #1a1a2e;
+          margin: 0 0 1px; white-space: nowrap;
+          overflow: hidden; text-overflow: ellipsis;
+        }
+        .pdm-resena-stars { color: #FFD700; font-size: 9px; letter-spacing: 0.5px; }
+        .pdm-resena-text {
+          font-size: 10px; color: #666; margin: 2px 0 0; line-height: 1.4;
+          display: -webkit-box; -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical; overflow: hidden;
+        }
+        .pdm-resena-empty {
+          font-size: 11px; color: #bbb; text-align: center; padding: 16px 4px;
+        }
+        .pdm-dots {
+          display: flex; gap: 4px; justify-content: center; margin-top: 2px;
+        }
+        .pdm-dot {
+          width: 5px; height: 5px; border-radius: 50%;
+          background: #ddd; border: none; padding: 0; cursor: pointer;
+          transition: background 0.2s, transform 0.2s;
+        }
+        .pdm-dot.active { background: #FFD700; transform: scale(1.3); }
       `}</style>
 
       <div className="pdm-wrapper">
+        {/* Header */}
         <div className="pdm-header">
           <span className="pdm-crown">👑</span>
           <div className="pdm-header-text">
             <p className="pdm-label">{lang === 'es' ? 'Profesional del Mes' : 'Professional of the Month'}</p>
             <p className="pdm-mes">{mes}</p>
           </div>
-          <span style={{ fontSize: '20px' }}>🏆</span>
+          <span className="pdm-trophy">🏆</span>
         </div>
 
+        {/* Body */}
         <div className="pdm-body">
           <div className="pdm-shine" />
-          <div className="pdm-photo-wrap">
-            {proDelMes.foto
-              ? <img src={proDelMes.foto} alt={proDelMes.nombre} className="pdm-photo" />
-              : <div className="pdm-avatar" style={{ background: avatarBg }}>{proDelMes.avatar}</div>
-            }
-            <span className="pdm-badge">⭐</span>
-          </div>
+          <div className="pdm-divider" />
 
-          <div className="pdm-info">
+          {/* IZQUIERDA */}
+          <div className="pdm-left">
+            <div className="pdm-photo-wrap">
+              {proDelMes.foto
+                ? <img src={proDelMes.foto} alt={proDelMes.nombre} className="pdm-photo" />
+                : <div className="pdm-avatar" style={{ background: avatarBg }}>{proDelMes.avatar}</div>
+              }
+              <span className="pdm-badge">⭐</span>
+            </div>
             <p className="pdm-nombre">{proDelMes.nombre}</p>
             <p className="pdm-spec">🔧 {proDelMes.especialidad}</p>
             <div className="pdm-stars-row">
               <span className="pdm-stars">★★★★★</span>
-              <span className="pdm-star-count">
-                {totalEstrellas} {lang === 'es' ? 'estrellas' : 'stars'}
-              </span>
+              <span className="pdm-star-count">{totalEstrellas}⭐</span>
             </div>
             <p className="pdm-contratos">
-              ✅ {proDelMes.contratos} {lang === 'es' ? 'contratos este mes' : 'contracts this month'}
+              ✅ {proDelMes.contratos} {lang === 'es' ? 'contratos' : 'contracts'}
             </p>
             <button className="pdm-btn" onClick={() => navigate('booking', proDelMes)}>
-              {lang === 'es' ? '🤝 Contratar ahora' : '🤝 Hire now'}
+              {lang === 'es' ? '🤝 Contratar' : '🤝 Hire'}
             </button>
+          </div>
+
+          {/* DERECHA — reseñas */}
+          <div className="pdm-right">
+            <p className="pdm-resenas-title">
+              {lang === 'es' ? '💬 Lo que dicen' : '💬 Reviews'}
+            </p>
+
+            {resenas.length === 0 ? (
+              <div className="pdm-resena-empty">
+                {lang === 'es' ? 'Sin reseñas aún\neste mes' : 'No reviews yet\nthis month'}
+              </div>
+            ) : (
+              <>
+                {visibles.map((r, i) => (
+                  <div key={`${resenaIdx}-${i}`} className="pdm-resena-card">
+                    {r.clientPhoto
+                      ? <img src={r.clientPhoto} alt={r.clientName} className="pdm-client-photo" />
+                      : <div className="pdm-client-avatar" style={{ background: clientAvatarBg(r.clientName) }}>
+                          {(r.clientName || 'C').charAt(0).toUpperCase()}
+                        </div>
+                    }
+                    <div className="pdm-resena-content">
+                      <p className="pdm-client-name">{r.clientName}</p>
+                      <div className="pdm-resena-stars">
+                        {'★'.repeat(r.score)}{'☆'.repeat(5 - r.score)}
+                      </div>
+                      <p className="pdm-resena-text">"{r.comment}"</p>
+                    </div>
+                  </div>
+                ))}
+
+                {resenas.length > 2 && (
+                  <div className="pdm-dots">
+                    {resenas.map((_, i) => (
+                      <button
+                        key={i}
+                        className={`pdm-dot${i === resenaIdx % resenas.length ? ' active' : ''}`}
+                        onClick={() => {
+                          clearInterval(resenaTimer.current)
+                          setResenaIdx(i)
+                        }}
+                      />
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -529,45 +608,33 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
 
   const handleCategoryClick = (catId) => {
     if (catId === 'all') {
-      setActiveCategory('all')
-      setActiveSubcategory('all')
-      setOpenCategory(null)
-      return
+      setActiveCategory('all'); setActiveSubcategory('all'); setOpenCategory(null); return
     }
-    if (openCategory === catId) {
-      setOpenCategory(null)
-    } else {
-      setOpenCategory(catId)
-      setActiveCategory(catId)
-      setActiveSubcategory('all')
-    }
+    if (openCategory === catId) { setOpenCategory(null) }
+    else { setOpenCategory(catId); setActiveCategory(catId); setActiveSubcategory('all') }
   }
 
-  const handleSubcategoryClick = (subId) => {
-    setActiveSubcategory(subId)
-    setOpenCategory(null)
-  }
+  const handleSubcategoryClick = (subId) => { setActiveSubcategory(subId); setOpenCategory(null) }
 
   const getMappedProCatId = (catString) => {
-    if (!catString) return 'all';
-    const cleanStr = catString.toLowerCase();
-    const allSubs = CATEGORIES.flatMap(c => c.subcategories);
-    const foundSub = allSubs.find(s => s.id === cleanStr || s.labelEn.toLowerCase() === cleanStr);
-    if (foundSub) return foundSub.id;
-    const foundMain = CATEGORIES.find(c => c.id === cleanStr || c.labelEn.toLowerCase() === cleanStr);
-    if (foundMain) return foundMain.id;
-    return catString;
+    if (!catString) return 'all'
+    const cleanStr = catString.toLowerCase()
+    const allSubs = CATEGORIES.flatMap(c => c.subcategories)
+    const foundSub = allSubs.find(s => s.id === cleanStr || s.labelEn.toLowerCase() === cleanStr)
+    if (foundSub) return foundSub.id
+    const foundMain = CATEGORIES.find(c => c.id === cleanStr || c.labelEn.toLowerCase() === cleanStr)
+    if (foundMain) return foundMain.id
+    return catString
   }
 
   const currentCat = CATEGORIES.find(c => c.id === activeCategory)
 
   const filtered = professionals
     .filter(p => {
-      const mappedCat = getMappedProCatId(p.category);
-      const isSubInMain = currentCat && currentCat.subcategories.some(s => s.id === mappedCat);
-      const matchCat = activeCategory === 'all' || mappedCat === activeCategory || mappedCat === activeSubcategory || isSubInMain;
-      const matchSearch = p.name.toLowerCase().includes(search.toLowerCase()) ||
-                          p.location.toLowerCase().includes(search.toLowerCase())
+      const mappedCat = getMappedProCatId(p.category)
+      const isSubInMain = currentCat && currentCat.subcategories.some(s => s.id === mappedCat)
+      const matchCat    = activeCategory === 'all' || mappedCat === activeCategory || mappedCat === activeSubcategory || isSubInMain
+      const matchSearch = p.name.toLowerCase().includes(search.toLowerCase()) || p.location.toLowerCase().includes(search.toLowerCase())
       const matchAvail  = !onlyAvailable || p.available
       return matchCat && matchSearch && matchAvail
     })
@@ -580,77 +647,45 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
   return (
     <div className="services-page">
 
-      {/* Header */}
       <div className="search-header">
         <h1 className="search-title">{T.title}</h1>
         <div className="search-bar">
           <span className="search-icon">🔍</span>
-          <input
-            type="text"
-            placeholder={T.search}
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-          />
-          {search && (
-            <button className="search-clear" onClick={() => setSearch('')}>✕</button>
-          )}
+          <input type="text" placeholder={T.search} value={search} onChange={e => setSearch(e.target.value)} />
+          {search && <button className="search-clear" onClick={() => setSearch('')}>✕</button>}
         </div>
       </div>
 
-      {/* ── BANNER ANIMADO ── */}
       <PromoBanner lang={lang} userRole={userRole} />
-
-      {/* ── PROFESIONAL DEL MES ── */}
       <ProDelMes lang={lang} navigate={navigate} />
 
-      {/* Filtros de disponibilidad */}
       <div className="quick-filters" style={{ padding: '0 16px', display: 'flex', justifyContent: 'flex-end', marginBottom: '8px' }}>
         <label className="avail-toggle">
-          <input
-            type="checkbox"
-            checked={onlyAvailable}
-            onChange={e => setOnlyAvailable(e.target.checked)}
-          />
+          <input type="checkbox" checked={onlyAvailable} onChange={e => setOnlyAvailable(e.target.checked)} />
           <span className="toggle-track" />
           <span className="toggle-label">{T.filterAvail}</span>
         </label>
       </div>
 
-      {/* Categorías Principales */}
       <div className="categories-wrapper">
         <div className="categories-scroll">
-          <button
-            className={`cat-pill ${activeCategory === 'all' ? 'active' : ''}`}
-            onClick={() => handleCategoryClick('all')}
-          >
+          <button className={`cat-pill ${activeCategory === 'all' ? 'active' : ''}`} onClick={() => handleCategoryClick('all')}>
             <span className="cat-icon">✦</span> {T.allCats}
           </button>
           {CATEGORIES.map(cat => (
-            <button
-              key={cat.id}
-              className={`cat-pill ${activeCategory === cat.id ? 'active' : ''}`}
-              onClick={() => handleCategoryClick(cat.id)}
-            >
+            <button key={cat.id} className={`cat-pill ${activeCategory === cat.id ? 'active' : ''}`} onClick={() => handleCategoryClick(cat.id)}>
               <span className="cat-icon">{cat.icon}</span>
               {lang === 'es' ? cat.labelEs : cat.labelEn}
             </button>
           ))}
         </div>
-
         {currentCat && currentCat.subcategories && currentCat.subcategories.length > 0 && (
           <div className="subcategories-scroll">
-            <button
-              className={`sub-pill ${activeSubcategory === 'all' ? 'active' : ''}`}
-              onClick={() => handleSubcategoryClick('all')}
-            >
+            <button className={`sub-pill ${activeSubcategory === 'all' ? 'active' : ''}`} onClick={() => handleSubcategoryClick('all')}>
               ✓ Todas en {lang === 'es' ? currentCat.labelEs : currentCat.labelEn}
             </button>
             {currentCat.subcategories.map(sub => (
-              <button
-                key={sub.id}
-                className={`sub-pill ${activeSubcategory === sub.id ? 'active' : ''}`}
-                onClick={() => handleSubcategoryClick(sub.id)}
-              >
+              <button key={sub.id} className={`sub-pill ${activeSubcategory === sub.id ? 'active' : ''}`} onClick={() => handleSubcategoryClick(sub.id)}>
                 <span>{sub.icon}</span> {lang === 'es' ? sub.labelEs : sub.labelEn}
               </button>
             ))}
@@ -658,7 +693,6 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
         )}
       </div>
 
-      {/* Contador */}
       <div className="results-bar">
         {loading
           ? <span className="results-count">Cargando...</span>
@@ -666,32 +700,23 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
         }
       </div>
 
-      {/* Grid de profesionales */}
       <div className="professionals-grid">
         {filtered.map((pro, i) => {
           const mappedCat = getMappedProCatId(pro.category)
-          const allSubs = CATEGORIES.flatMap(c => c.subcategories)
-          const subCat  = allSubs.find(s => s.id === mappedCat)
-          const mainCat = CATEGORIES.find(c => c.id === mappedCat || c.subcategories.some(s => s.id === mappedCat))
-
+          const allSubs   = CATEGORIES.flatMap(c => c.subcategories)
+          const subCat    = allSubs.find(s => s.id === mappedCat)
+          const mainCat   = CATEGORIES.find(c => c.id === mappedCat || c.subcategories.some(s => s.id === mappedCat))
           return (
             <div key={pro.id} className="pro-card" style={{ animationDelay: `${i * 0.06}s` }}>
               <div className="card-photo">
-                {pro.photoURL ? (
-                  <img src={pro.photoURL} alt={pro.name} className="pro-photo" />
-                ) : (
-                  <div
-                    className="pro-avatar-big"
-                    style={{ background: avatarColors[(Array.from(pro.id).reduce((acc, char) => acc + char.charCodeAt(0), 0)) % avatarColors.length] }}
-                  >
-                    {pro.avatar}
-                  </div>
-                )}
+                {pro.photoURL
+                  ? <img src={pro.photoURL} alt={pro.name} className="pro-photo" />
+                  : <div className="pro-avatar-big" style={{ background: avatarColors[(Array.from(pro.id).reduce((acc, char) => acc + char.charCodeAt(0), 0)) % avatarColors.length] }}>{pro.avatar}</div>
+                }
                 <span className={`status-badge ${pro.available ? 'avail' : 'busy'}`}>
                   {pro.available ? T.available : T.busy}
                 </span>
               </div>
-
               <div className="card-body">
                 <h3 className="pro-name">{pro.name}</h3>
                 <p className="pro-cat">
@@ -704,18 +729,13 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
                   <span className="pro-exp">⏱ {pro.experience}</span>
                 </div>
               </div>
-
               <div className="card-footer">
                 <span className="pro-exp-badge" style={{ color:'#666', fontSize:'13px', fontWeight:'600', padding:'4px 8px', background:'#eee', borderRadius:'6px' }}>
                   🤝 Precio a convenir
                 </span>
                 <div className="card-actions">
-                  <button className="btn-profile" onClick={() => navigate('proProfile', pro)}>
-                    👤 {T.profile}
-                  </button>
-                  <button className="btn-book" onClick={() => navigate('booking', pro)}>
-                    {T.book}
-                  </button>
+                  <button className="btn-profile" onClick={() => navigate('proProfile', pro)}>👤 {T.profile}</button>
+                  <button className="btn-book"    onClick={() => navigate('booking', pro)}>{T.book}</button>
                 </div>
               </div>
             </div>
@@ -724,10 +744,7 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
       </div>
 
       {!loading && filtered.length === 0 && (
-        <div className="empty-state">
-          <span>🔍</span>
-          <p>{T.empty}</p>
-        </div>
+        <div className="empty-state"><span>🔍</span><p>{T.empty}</p></div>
       )}
 
       <div style={{ height: 80 }} />
