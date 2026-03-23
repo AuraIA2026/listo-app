@@ -100,10 +100,6 @@ const menuItems = [
   { icon: '🛡️', labelEs: 'Política de Privacidad',     labelEn: 'Privacy Policy',            action: 'privacyDoc' },
 ]
 
-const LISTO_PROMPT = `Eres el asistente virtual de Listo Patrón, app dominicana de servicios a domicilio.
-Sin comisiones por trabajo, compra tus contratos y quédate con el 100% de tus ganancias. Soporte: listopatron.app@gmail.com / +1 (809) 909-0455.
-Responde en español, amable y breve.`
-
 const compressImage = (file) => new Promise((resolve, reject) => {
   const reader = new FileReader()
   reader.onload = (e) => {
@@ -275,7 +271,7 @@ function FaqBotScreen({ lang, onBack }) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           {faqs.map((faq, i) => (
             <div key={i} style={{ background: '#fff', borderRadius: '16px', padding: '16px', boxShadow: '0 4px 14px rgba(0,0,0,0.03)', border: '1px solid #eaeaea' }}>
-              <button 
+              <button
                 onClick={() => setOpenIndex(openIndex === i ? null : i)}
                 style={{ width: '100%', background: 'none', border: 'none', textAlign: 'left', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', padding: 0 }}
               >
@@ -424,7 +420,6 @@ function DeleteAccountModal({ lang, onConfirm, onCancel }) {
 }
 
 export default function ProfilePage({ lang, setLang, navigate, onLogout }) {
-  // ── Datos SIEMPRE desde Firestore en tiempo real via hook ──
   const { userData, userRole, profileComplete, getMemberSince } = useUserData()
 
   const [screen,      setScreen]      = useState(null)
@@ -438,7 +433,6 @@ export default function ProfilePage({ lang, setLang, navigate, onLogout }) {
   const cameraInputRef = useRef(null)
   const T = txt[lang]
 
-  // ── Datos del usuario siempre frescos de Firestore ──
   const displayName  = userData?.name  || 'Usuario'
   const displayEmail = userData?.email || ''
   const photoURL     = userData?.photoURL || null
@@ -454,7 +448,6 @@ export default function ProfilePage({ lang, setLang, navigate, onLogout }) {
     try {
       const base64 = await compressImage(file)
       if (userData?.uid) {
-        // Guarda en Firestore → onSnapshot lo detecta → UI se actualiza sola
         await updateDoc(doc(db, 'users', userData.uid), { photoURL: base64 })
       }
       setPhotoStatus('saved')
@@ -482,16 +475,11 @@ export default function ProfilePage({ lang, setLang, navigate, onLogout }) {
     setShowDelete(false)
     if (userData?.uid) {
       try {
-        // Obligatorio para Apple/Google: Borrar cuenta de Auth permanentemente
         const user = auth.currentUser;
-        if (user) {
-          await deleteUser(user);
-        }
-        // Borrar el documento de la base de datos
+        if (user) await deleteUser(user);
         await deleteDoc(doc(db, 'users', userData.uid));
       } catch (err) {
         console.error("Error borrando cuenta (posible sesión antigua):", err);
-        // Fallback: Si Firebase Auth pide re-autenticación, al menos ocultamos la cuenta
         await updateDoc(doc(db, 'users', userData.uid), { deleted: true, available: false, name: 'Usuario Eliminado', phone: '' });
       }
     }
@@ -518,9 +506,7 @@ export default function ProfilePage({ lang, setLang, navigate, onLogout }) {
       case 'terms':            return <TermsScreen lang={lang} onBack={back} userRole={userRole} />
       case 'privacyDoc':       return <PrivacyDocScreen lang={lang} onBack={back} />
       case 'verification':     return <VerificacionPage lang={lang} onBack={back} />
-      case 'completar-perfil': return (
-        <RegistroClientePage onBack={back} onSuccess={() => back()} />
-      )
+      case 'completar-perfil': return <RegistroClientePage onBack={back} onSuccess={() => back()} />
       case 'planes':           return <PlanesPage onBack={back} navigate={navigate} />
       default: return null
     }
@@ -531,13 +517,11 @@ export default function ProfilePage({ lang, setLang, navigate, onLogout }) {
   return (
     <div className="profile-page">
 
-      {/* Inputs ocultos */}
       <input ref={fileInputRef}   type="file" accept="image/*"               style={{ display:'none' }} onChange={handleFileSelected} />
       <input ref={cameraInputRef} type="file" accept="image/*" capture="user" style={{ display:'none' }} onChange={handleFileSelected} />
 
       <div className="profile-header">
         <div className="profile-avatar-wrap">
-          {/* Avatar: foto real desde Firestore o iniciales */}
           <div className="profile-avatar" style={photoURL ? { padding:0, overflow:'hidden' } : {}}>
             {photoURL
               ? <img src={photoURL} alt="perfil" style={{ width:'100%', height:'100%', objectFit:'cover' }} />
@@ -560,7 +544,6 @@ export default function ProfilePage({ lang, setLang, navigate, onLogout }) {
           </div>
         )}
 
-        {/* Nombre y email reales */}
         <h1 className="profile-name">{displayName}</h1>
         <p className="profile-email">{displayEmail}</p>
 
@@ -583,7 +566,6 @@ export default function ProfilePage({ lang, setLang, navigate, onLogout }) {
       </div>
 
       <div className="profile-menu">
-        {/* Botón ver perfil público */}
         <button className="profile-menu-item" onClick={() => handleMenu('clientProfile')}>
           <span className="pmi-icon">👤</span>
           <span className="pmi-label">{lang==='es' ? 'Ver mi perfil público' : 'View my public profile'}</span>
@@ -608,20 +590,6 @@ export default function ProfilePage({ lang, setLang, navigate, onLogout }) {
           </button>
         )}
 
-        {userRole === 'pro' && (
-          <button 
-            className="profile-menu-item" 
-            onClick={() => handleMenu('planes')}
-            style={{ background: 'linear-gradient(135deg, #FFFBEB, #FEF3C7)', border: '1px solid #FDE68A', marginBottom: '8px' }}
-          >
-            <span className="pmi-icon">👑</span>
-            <span className="pmi-label" style={{ fontWeight: 800, color: '#92400E' }}>
-              {lang === 'es' ? 'Suscripción y Planes' : 'Subscription & Plans'}
-            </span>
-            <span className="pmi-arrow" style={{ color: '#92400E' }}>›</span>
-          </button>
-        )}
-
         {menuItems
           .filter(item => item.action !== 'verification' || userRole === 'pro')
           .map((item, i) => {
@@ -635,8 +603,8 @@ export default function ProfilePage({ lang, setLang, navigate, onLogout }) {
                 <span className="pmi-label">{lang==='es' ? item.labelEs : item.labelEn}</span>
                 {item.action === 'verification'
                   ? <span className={isProVerifComplete ? "verif-badge" : "verif-badge-blue"}>
-                      {isProVerifComplete 
-                        ? (userData?.verificacion?.estado === 'verificado' ? '✓ Verificado' : 'En revisión') 
+                      {isProVerifComplete
+                        ? (userData?.verificacion?.estado === 'verificado' ? '✓ Verificado' : 'En revisión')
                         : '¡Veríficate!'}
                     </span>
                   : <span className="pmi-arrow">›</span>
@@ -662,7 +630,6 @@ export default function ProfilePage({ lang, setLang, navigate, onLogout }) {
 
       <div style={{ height: 80 }} />
 
-      {/* Modal foto */}
       {showPhoto && (
         <div className="modal-overlay" onClick={() => setShowPhoto(false)}>
           <div className="modal-card" onClick={e => e.stopPropagation()}>

@@ -34,7 +34,6 @@ const testimonials = [
   { nameEs:'Carlos Herrera',  photo: jardinero,  rating:5, dateEs:'Hace 1 mes',     dateEn:'1 month ago',  specEs:'Jardinero',    specEn:'Gardener',     textEs:'Transformó mi jardín completamente. Muy creativo y trabajador. El resultado superó mis expectativas.', textEn:'He completely transformed my garden. Very creative and hardworking. The result exceeded my expectations.' },
 ]
 
-// 8 de los oficios más populares para mostrar en la cinta superior del Home
 const topHomeCategories = [
   { id: 'mecanico',    icon:'🔧', labelEs:'Mecánico',      labelEn:'Mechanic' },
   { id: 'electricista', icon:'⚡', labelEs:'Electricista',  labelEn:'Electrician' },
@@ -110,29 +109,103 @@ function useScrollReveal(threshold = 0.15) {
   return [ref, visible]
 }
 
+/* ── BOTÓN POSTULARME MAMEY ── */
+function PostularmeBtn({ isPro, userData, onClick }) {
+  const [pressed, setPressed] = useState(false)
+
+  const label = isPro
+    ? (userData?.planStatus === 'active' ? '👑 Mis Planes' : '🚀 Postularme')
+    : '💼 Postularme'
+
+  return (
+    <>
+      <style>{`
+        @keyframes pm-glow {
+          0%,100% { box-shadow: 0 4px 0 #a33800, 0 0 12px rgba(242,96,0,0.4); }
+          50%      { box-shadow: 0 4px 0 #a33800, 0 0 28px rgba(255,180,0,0.8); }
+        }
+        @keyframes pm-star1 {
+          0%,100% { transform: translate(0,0) scale(1);   opacity: 0.9; }
+          50%      { transform: translate(-3px,-4px) scale(1.3); opacity: 1; }
+        }
+        @keyframes pm-star2 {
+          0%,100% { transform: translate(0,0) scale(1);   opacity: 0.7; }
+          50%      { transform: translate(3px,-3px) scale(1.2); opacity: 1; }
+        }
+        @keyframes pm-star3 {
+          0%,100% { transform: translate(0,0) scale(0.8); opacity: 0.6; }
+          50%      { transform: translate(4px,2px) scale(1.1); opacity: 1; }
+        }
+        @keyframes pm-shimmer {
+          0%   { left: -60%; }
+          100% { left: 130%; }
+        }
+        .pm-btn-wrap { position: relative; flex-shrink: 0; }
+        .pm-spark {
+          position: absolute;
+          font-size: 11px;
+          pointer-events: none;
+          line-height: 1;
+        }
+        .pm-spark-1 { top: -6px; left: -4px;  animation: pm-star1 1.4s ease-in-out infinite; }
+        .pm-spark-2 { top: -4px; right: -5px; animation: pm-star2 1.8s ease-in-out infinite; }
+        .pm-spark-3 { bottom: -4px; right: 2px; animation: pm-star3 2.1s ease-in-out infinite; }
+        .pm-btn {
+          position: relative;
+          overflow: hidden;
+          background: linear-gradient(135deg, #FF7A1A, #F26000, #C94E00);
+          color: #fff;
+          border: none;
+          border-radius: 22px;
+          padding: 9px 16px;
+          font-size: 13px;
+          font-weight: 900;
+          letter-spacing: 0.3px;
+          cursor: pointer;
+          white-space: nowrap;
+          animation: pm-glow 2s ease-in-out infinite;
+          transition: transform 0.08s, box-shadow 0.08s;
+          text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+        .pm-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 #a33800 !important; }
+        .pm-shimmer {
+          position: absolute;
+          top: 0; left: -60%;
+          width: 40%; height: 100%;
+          background: linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent);
+          transform: skewX(-15deg);
+          animation: pm-shimmer 2.4s ease-in-out infinite;
+          pointer-events: none;
+        }
+      `}</style>
+      <div className="pm-btn-wrap">
+        <span className="pm-spark pm-spark-1">✦</span>
+        <span className="pm-spark pm-spark-2">★</span>
+        <span className="pm-spark pm-spark-3">✦</span>
+        <button className="pm-btn" onClick={onClick}>
+          <span className="pm-shimmer" />
+          {label}
+        </button>
+      </div>
+    </>
+  )
+}
+
 function TestimonialsCarousel({ lang }) {
   const [allTestimonials, setAllTestimonials] = useState(testimonials)
 
   useEffect(() => {
     const fetchTopReviews = async () => {
       try {
-        const q = query(
-          collection(db, 'orders'),
-          where('rated', '==', true)
-        )
+        const q = query(collection(db, 'orders'), where('rated', '==', true))
         const snapshot = await getDocs(q)
         const docs = []
         snapshot.forEach(doc => docs.push({ id: doc.id, ...doc.data() }))
-        
-        // Exigir una calificación de 4 o 5 (Permitimos sin texto para regenerarlo automáticamente)
         const topReviews = docs.filter(d => (d.ratingScore >= 4 || d.moderated))
-        
-        // Ordenamos los más recientes primero
         topReviews.sort((a,b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0))
-        
         const formatted = topReviews.slice(0, 10).map(d => ({
           nameEs: d.reviewerName || d.clientName || 'Cliente',
-          photo: '', // Avatar vacío para que use la letra inicial
+          photo: '',
           rating: d.ratingScore || 5,
           dateEs: d.dateToken || 'Reciente',
           dateEn: d.dateToken || 'Recent',
@@ -141,10 +214,7 @@ function TestimonialsCarousel({ lang }) {
           textEs: d.ratingComment?.trim() ? d.ratingComment : (d.ratingScore >= 4 ? '¡Excelente servicio! Muy profesional.' : 'Servicio completado.'),
           textEn: d.ratingComment?.trim() ? d.ratingComment : (d.ratingScore >= 4 ? 'Excellent service! Very professional.' : 'Service completed.')
         }))
-
-        if (formatted.length > 0) {
-          setAllTestimonials([...formatted, ...testimonials])
-        }
+        if (formatted.length > 0) setAllTestimonials([...formatted, ...testimonials])
       } catch (e) {
         console.error("Error fetching top reviews", e)
       }
@@ -162,26 +232,19 @@ function TestimonialsCarousel({ lang }) {
     clearInterval(timerRef.current)
     timerRef.current = setInterval(() => setIdx(i => (i + 1) % allTestimonials.length), 5000)
   }
-
-  useEffect(() => {
-    startAutoPlay()
-    return () => clearInterval(timerRef.current)
-  }, [])
+  useEffect(() => { startAutoPlay(); return () => clearInterval(timerRef.current) }, [])
 
   const goTo = (i) => { setIdx(i); startAutoPlay() }
   const prev = () => goTo((idx - 1 + allTestimonials.length) % allTestimonials.length)
   const next = () => goTo((idx + 1) % allTestimonials.length)
-
   const onTouchStart = (e) => { touchStartX.current = e.touches[0].clientX; touchEndX.current = null }
   const onTouchMove  = (e) => { touchEndX.current = e.touches[0].clientX }
   const onTouchEnd   = () => {
     if (touchStartX.current === null || touchEndX.current === null) return
     const diff = touchStartX.current - touchEndX.current
     if (Math.abs(diff) > 40) diff > 0 ? next() : prev()
-    touchStartX.current = null
-    touchEndX.current   = null
+    touchStartX.current = null; touchEndX.current = null
   }
-
   const t = allTestimonials[idx] || allTestimonials[0]
 
   return (
@@ -279,11 +342,9 @@ export default function HomePage({ lang, navigate, userRole }) {
           const foundMain = CATEGORIES.find(c => c.id === cleanStr || c.labelEn.toLowerCase() === cleanStr);
           return foundMain || null;
         }
-
         querySnapshot.forEach((doc) => {
           const data = doc.data()
           const catObj = getMappedProCatId(data.category)
-          
           prosList.push({
             id: doc.id,
             nameEs: data.name || 'Sin nombre',
@@ -296,26 +357,19 @@ export default function HomePage({ lang, navigate, userRole }) {
             location: data.location || 'RD',
             experience: data.experience || '1 año',
             avatar: (data.name || 'P').substring(0, 2).toUpperCase(),
-            avail: data.available !== false, // Default a true
+            avail: data.available !== false,
             img: data.photoURL || null
           })
         })
-        
-        // Lógica de Destacados: 5 estrellas libres, 4 estrellas máximo 3 apariciones
         const elitePros = prosList.filter(p => p.rating >= 5.0).sort((a, b) => b.reviews - a.reviews);
         const goodPros  = prosList.filter(p => p.rating >= 4.0 && p.rating < 5.0).sort((a, b) => b.reviews - a.reviews);
-        
-        // Máximo 3 de 4 estrellas
         const limitedGoodPros = goodPros.slice(0, 3);
-        
-        // Combinamos y ordenamos
         const finalFeatured = [...elitePros, ...limitedGoodPros].sort((a, b) => {
           if (b.rating !== a.rating) return b.rating - a.rating;
           return b.reviews - a.reviews;
         });
-
         setAllProsReal(prosList)
-        setFeaturedReal(finalFeatured.slice(0, 12)) // Top 12 para mostrar el volumen de élites
+        setFeaturedReal(finalFeatured.slice(0, 12))
       } catch (err) {
         console.error("Error fetching pros in Home: ", err)
       }
@@ -325,7 +379,6 @@ export default function HomePage({ lang, navigate, userRole }) {
 
   const allProsToUse = allProsReal.length > 0 ? allProsReal : featuredStatic
   const featuredProsToUse = featuredReal.length > 0 ? featuredReal : featuredStatic
-
   const specs = ['todos', ...new Set(allProsToUse.filter(p=>p.specEs).map(p => p.specEs))]
   const filteredPros = proFilter === 'todos' ? allProsToUse : allProsToUse.filter(p => p.specEs === proFilter)
 
@@ -334,42 +387,14 @@ export default function HomePage({ lang, navigate, userRole }) {
 
       {/* ── SEARCH BAR / HEADER ── */}
       <div className="hp-search-bar" style={{ background: isPro ? '#1A1A2E' : '#FFF' }}>
-        <style>{`
-          @keyframes floatTip { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(4px); } }
-          @keyframes pulseBtn { 0%, 100% { transform: scale(1); box-shadow: 0 0 0 rgba(242,96,0,0); } 50% { transform: scale(1.1); box-shadow: 0 0 15px rgba(242,96,0,0.6); borderRadius: 50%; background: rgba(242,96,0,0.1); } }
-        `}</style>
-        <button className="hp-notif" onClick={() => setShowHamburguesa(true)} style={{ 
-          position: 'relative', 
-          color: isPro ? '#FFF' : '#333',
-          animation: userData && ((isPro && userData.planStatus !== 'active') || (!isPro)) ? 'pulseBtn 2s infinite' : 'none'
-        }}>
-          
-          {/* TOOLTIP COMPRAR PLAN / POSTULARSE (PARA PROS Y USUARIOS) */}
-          {userData && (
-            <div style={{
-              position: 'absolute', top: '130%', left: '0', background: '#F26000', color: '#FFF',
-              padding: '6px 12px', borderRadius: '8px', fontSize: '11px', fontWeight: '800',
-              whiteSpace: 'nowrap', boxShadow: '0 4px 12px rgba(242,96,0,0.4)',
-              animation: 'floatTip 2s ease-in-out infinite', zIndex: 100,
-              display: (isPro && userData.planStatus === 'active') ? 'none' : 'block' // Ocultar si ya es pro activo
-            }}>
-              <div style={{
-                position: 'absolute', top: '-4px', left: '12px', width: '10px', height: '10px',
-                background: '#F26000', transform: 'rotate(45deg)'
-              }} />
-              {isPro 
-                ? (userData.approved ? '🎁 Activa tu plan aquí' : '📝 Termina tu postulación') 
-                : '💼 Postúlate aquí'
-              }
-            </div>
-          )}
 
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-            <line x1="3" y1="6" x2="21" y2="6"/>
-            <line x1="3" y1="12" x2="21" y2="12"/>
-            <line x1="3" y1="18" x2="21" y2="18"/>
-          </svg>
-        </button>
+        {/* ── BOTÓN POSTULARME (reemplaza hamburguesa) ── */}
+        <PostularmeBtn
+          isPro={isPro}
+          userData={userData}
+          onClick={() => setShowHamburguesa(true)}
+        />
+
         {!isPro ? (
           <button className="hp-search-btn" onClick={() => navigate('search')}>
             <span>🔍</span>
@@ -392,7 +417,6 @@ export default function HomePage({ lang, navigate, userRole }) {
       </div>
 
       <Publicidad lang={lang} />
-      
       <SocialLinks />
 
       {isPro ? (
@@ -449,7 +473,6 @@ export default function HomePage({ lang, navigate, userRole }) {
 
       {!isPro && (
         <>
-
           {sections.map(sec => (
             <section key={sec.id} className="hp-service-section">
               <div className="hp-sec-header">
@@ -537,7 +560,7 @@ export default function HomePage({ lang, navigate, userRole }) {
 
       {showTour && <TutorialTour lang={lang} onFinish={closeTour} />}
 
-      {/* ── MENÚ HAMBURGUESA — profesional o usuario según rol ── */}
+      {/* ── MENÚ — profesional o usuario según rol ── */}
       {showHamburguesa && (
         isPro
           ? <BtnHamburguesa        onClose={() => setShowHamburguesa(false)} navigate={navigate} />
