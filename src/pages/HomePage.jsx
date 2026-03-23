@@ -109,7 +109,7 @@ function useScrollReveal(threshold = 0.15) {
   return [ref, visible]
 }
 
-/* ── BOTÓN POSTULARME MAMEY ── */
+/* ── BOTÓN POSTULARME — solo para profesionales ── */
 function PostularmeBtn({ isPro, userData, onClick }) {
   const [pressed, setPressed] = useState(false)
 
@@ -388,12 +388,14 @@ export default function HomePage({ lang, navigate, userRole }) {
       {/* ── SEARCH BAR / HEADER ── */}
       <div className="hp-search-bar" style={{ background: isPro ? '#1A1A2E' : '#FFF' }}>
 
-        {/* ── BOTÓN POSTULARME (reemplaza hamburguesa) ── */}
-        <PostularmeBtn
-          isPro={isPro}
-          userData={userData}
-          onClick={() => setShowHamburguesa(true)}
-        />
+        {/* ── BOTÓN POSTULARME — solo visible para profesionales ── */}
+        {isPro && (
+          <PostularmeBtn
+            isPro={isPro}
+            userData={userData}
+            onClick={() => setShowHamburguesa(true)}
+          />
+        )}
 
         {!isPro ? (
           <button className="hp-search-btn" onClick={() => navigate('search')}>
@@ -560,11 +562,9 @@ export default function HomePage({ lang, navigate, userRole }) {
 
       {showTour && <TutorialTour lang={lang} onFinish={closeTour} />}
 
-      {/* ── MENÚ — profesional o usuario según rol ── */}
-      {showHamburguesa && (
-        isPro
-          ? <BtnHamburguesa        onClose={() => setShowHamburguesa(false)} navigate={navigate} />
-          : <BtnHamburguesaUsuario onClose={() => setShowHamburguesa(false)} navigate={navigate} />
+      {/* ── MENÚ — solo para profesionales ── */}
+      {showHamburguesa && isPro && (
+        <BtnHamburguesa onClose={() => setShowHamburguesa(false)} navigate={navigate} />
       )}
 
     </div>
