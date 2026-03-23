@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { collection, query, where, getDocs } from 'firebase/firestore'
+import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore'
 import { db } from '../firebase'
 import { CATEGORIES, FILTERS } from '../categories'
 import './SearchPage.css'
@@ -57,8 +57,16 @@ const proMessages = {
 }
 
 const clientMessages = {
-  es: ['¡Tu opinión manda! Califica con estrellas a los profesionales para ayudar a otros a elegir siempre lo mejor.'],
-  en: ['Your voice matters! Rate professionals with stars to help everyone choose the best.'],
+  es: [
+    '¡Tu opinión manda! Califica con estrellas a los profesionales para ayudar a otros a elegir siempre lo mejor.',
+    '¿Buscas al mejor? Revisa las reseñas y calificaciones antes de contratar. ¡Tu satisfacción es lo primero!',
+    'Contratar un profesional nunca fue tan fácil. ¡Encuentra el que necesitas y agenda en segundos!',
+  ],
+  en: [
+    'Your voice matters! Rate professionals with stars to help everyone choose the best.',
+    'Looking for the best? Check reviews and ratings before hiring. Your satisfaction comes first!',
+    'Hiring a professional has never been easier. Find who you need and book in seconds!',
+  ],
 }
 
 // ── Banner animado ──────────────────────────────────────────────
@@ -151,7 +159,8 @@ function PromoBanner({ lang, userRole }) {
 }
 
 // ── Profesional del Mes ─────────────────────────────────────────
-function ProDelMes({ lang, navigate }) {
+// FIX: recibe userRole para adaptar el layout
+function ProDelMes({ lang, navigate, userRole }) {
   const [proDelMes,      setProDelMes]      = useState(null)
   const [totalEstrellas, setTotalEstrellas] = useState(0)
   const [resenas,        setResenas]        = useState([])
@@ -176,8 +185,8 @@ function ProDelMes({ lang, navigate }) {
 
         const conteo = {}
 
-        snapshot.forEach(doc => {
-          const d = doc.data()
+        snapshot.forEach(docSnap => {
+          const d = docSnap.data()
           const createdTs = d.createdAt?.seconds || 0
           if (createdTs < inicioMesTs) return
 
@@ -188,7 +197,7 @@ function ProDelMes({ lang, navigate }) {
             conteo[proId] = {
               id:           proId,
               nombre:       d.proName || d.professionalName || 'Profesional',
-              foto:         d.proPhoto || d.professionalPhoto || null,
+              foto:         d.proPhoto || d.professionalPhoto || d.proPhotoURL || null,
               especialidad: d.proSpecialty || d.specialty || 'Servicios',
               estrellas:    0,
               contratos:    0,
@@ -215,15 +224,16 @@ function ProDelMes({ lang, navigate }) {
           const qPros = query(collection(db, 'users'), where('type', '==', 'pro'))
           const snapPros = await getDocs(qPros)
           let mejor = null
-          snapPros.forEach(doc => {
-            const d = doc.data()
-            if (!mejor || (d.rating || 0) > (mejor.rating || 0)) mejor = { id: doc.id, ...d }
+          snapPros.forEach(docSnap => {
+            const d = docSnap.data()
+            if (!mejor || (d.rating || 0) > (mejor.rating || 0)) mejor = { id: docSnap.id, ...d }
           })
           if (mejor) {
             setProDelMes({
               id:           mejor.id,
               nombre:       mejor.name || 'Profesional',
-              foto:         mejor.photoURL || null,
+              // FIX: más campos posibles para la foto
+              foto:         mejor.photoURL || mejor.photo || mejor.profilePhoto || mejor.avatar || null,
               especialidad: mejor.category || 'Servicios',
               estrellas:    Math.round((mejor.rating || 5) * (mejor.reviews || 1)),
               contratos:    mejor.reviews || 0,
@@ -235,6 +245,24 @@ function ProDelMes({ lang, navigate }) {
         } else {
           lista.sort((a, b) => b.estrellas - a.estrellas)
           const ganador = lista[0]
+
+          // FIX: buscar la foto real del ganador directamente en 'users'
+          try {
+            const userSnap = await getDoc(doc(db, 'users', ganador.id))
+            if (userSnap.exists()) {
+              const userData = userSnap.data()
+              ganador.foto =
+                userData.photoURL      ||
+                userData.photo         ||
+                userData.profilePhoto  ||
+                userData.avatar        ||
+                ganador.foto           ||
+                null
+            }
+          } catch (e) {
+            console.warn('No se pudo obtener foto del ganador:', e)
+          }
+
           ganador.avatar = ganador.nombre.substring(0, 2).toUpperCase()
           setProDelMes(ganador)
           setTotalEstrellas(ganador.estrellas)
@@ -269,6 +297,9 @@ function ProDelMes({ lang, navigate }) {
   // Reseñas visibles: 2 a la vez con wrap circular
   const visibles = resenas.length === 0 ? [] :
     [resenas[resenaIdx % resenas.length], resenas[(resenaIdx + 1) % resenas.length]].filter(Boolean)
+
+  // FIX: en vista cliente, 1 columna; en vista pro, 2 columnas
+  const isClient = userRole !== 'pro'
 
   return (
     <>
@@ -340,16 +371,18 @@ function ProDelMes({ lang, navigate }) {
           filter: drop-shadow(0 0 8px rgba(255,215,0,0.9));
         }
 
-        /* BODY — 2 columnas */
+        /* BODY */
         .pdm-body {
           background: linear-gradient(160deg, #fffbf0, #fff8e1);
           padding: 14px;
           display: grid;
-          grid-template-columns: 1fr 1fr;
           gap: 12px;
           position: relative;
           overflow: hidden;
         }
+        .pdm-body-two-cols { grid-template-columns: 1fr 1fr; }
+        .pdm-body-one-col  { grid-template-columns: 1fr; }
+
         .pdm-shine {
           position: absolute; top: 0; left: -80%;
           width: 50%; height: 100%;
@@ -478,12 +511,12 @@ function ProDelMes({ lang, navigate }) {
           <span className="pdm-trophy">🏆</span>
         </div>
 
-        {/* Body */}
-        <div className="pdm-body">
+        {/* Body — FIX: clase dinámica según rol */}
+        <div className={`pdm-body ${isClient ? 'pdm-body-one-col' : 'pdm-body-two-cols'}`}>
           <div className="pdm-shine" />
-          <div className="pdm-divider" />
+          {!isClient && <div className="pdm-divider" />}
 
-          {/* IZQUIERDA */}
+          {/* IZQUIERDA — siempre visible */}
           <div className="pdm-left">
             <div className="pdm-photo-wrap">
               {proDelMes.foto
@@ -506,53 +539,55 @@ function ProDelMes({ lang, navigate }) {
             </button>
           </div>
 
-          {/* DERECHA — reseñas */}
-          <div className="pdm-right">
-            <p className="pdm-resenas-title">
-              {lang === 'es' ? '💬 Lo que dicen' : '💬 Reviews'}
-            </p>
+          {/* DERECHA — reseñas, solo para pros */}
+          {!isClient && (
+            <div className="pdm-right">
+              <p className="pdm-resenas-title">
+                {lang === 'es' ? '💬 Lo que dicen' : '💬 Reviews'}
+              </p>
 
-            {resenas.length === 0 ? (
-              <div className="pdm-resena-empty">
-                {lang === 'es' ? 'Sin reseñas aún\neste mes' : 'No reviews yet\nthis month'}
-              </div>
-            ) : (
-              <>
-                {visibles.map((r, i) => (
-                  <div key={`${resenaIdx}-${i}`} className="pdm-resena-card">
-                    {r.clientPhoto
-                      ? <img src={r.clientPhoto} alt={r.clientName} className="pdm-client-photo" />
-                      : <div className="pdm-client-avatar" style={{ background: clientAvatarBg(r.clientName) }}>
-                          {(r.clientName || 'C').charAt(0).toUpperCase()}
+              {resenas.length === 0 ? (
+                <div className="pdm-resena-empty">
+                  {lang === 'es' ? 'Sin reseñas aún este mes' : 'No reviews yet this month'}
+                </div>
+              ) : (
+                <>
+                  {visibles.map((r, i) => (
+                    <div key={`${resenaIdx}-${i}`} className="pdm-resena-card">
+                      {r.clientPhoto
+                        ? <img src={r.clientPhoto} alt={r.clientName} className="pdm-client-photo" />
+                        : <div className="pdm-client-avatar" style={{ background: clientAvatarBg(r.clientName) }}>
+                            {(r.clientName || 'C').charAt(0).toUpperCase()}
+                          </div>
+                      }
+                      <div className="pdm-resena-content">
+                        <p className="pdm-client-name">{r.clientName}</p>
+                        <div className="pdm-resena-stars">
+                          {'★'.repeat(r.score)}{'☆'.repeat(5 - r.score)}
                         </div>
-                    }
-                    <div className="pdm-resena-content">
-                      <p className="pdm-client-name">{r.clientName}</p>
-                      <div className="pdm-resena-stars">
-                        {'★'.repeat(r.score)}{'☆'.repeat(5 - r.score)}
+                        <p className="pdm-resena-text">"{r.comment}"</p>
                       </div>
-                      <p className="pdm-resena-text">"{r.comment}"</p>
                     </div>
-                  </div>
-                ))}
+                  ))}
 
-                {resenas.length > 2 && (
-                  <div className="pdm-dots">
-                    {resenas.map((_, i) => (
-                      <button
-                        key={i}
-                        className={`pdm-dot${i === resenaIdx % resenas.length ? ' active' : ''}`}
-                        onClick={() => {
-                          clearInterval(resenaTimer.current)
-                          setResenaIdx(i)
-                        }}
-                      />
-                    ))}
-                  </div>
-                )}
-              </>
-            )}
-          </div>
+                  {resenas.length > 2 && (
+                    <div className="pdm-dots">
+                      {resenas.map((_, i) => (
+                        <button
+                          key={i}
+                          className={`pdm-dot${i === resenaIdx % resenas.length ? ' active' : ''}`}
+                          onClick={() => {
+                            clearInterval(resenaTimer.current)
+                            setResenaIdx(i)
+                          }}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </>
@@ -580,10 +615,10 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
         const q = query(collection(db, 'users'), where('type', '==', 'pro'))
         const querySnapshot = await getDocs(q)
         const prosList = []
-        querySnapshot.forEach((doc) => {
-          const data = doc.data()
+        querySnapshot.forEach((docSnap) => {
+          const data = docSnap.data()
           prosList.push({
-            id:         doc.id,
+            id:         docSnap.id,
             name:       data.name       || 'Sin nombre',
             category:   data.category   || 'unknown',
             rating:     data.rating     || 5.0,
@@ -657,7 +692,9 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
       </div>
 
       <PromoBanner lang={lang} userRole={userRole} />
-      <ProDelMes lang={lang} navigate={navigate} />
+
+      {/* FIX: se pasa userRole a ProDelMes */}
+      <ProDelMes lang={lang} navigate={navigate} userRole={userRole} />
 
       <div className="quick-filters" style={{ padding: '0 16px', display: 'flex', justifyContent: 'flex-end', marginBottom: '8px' }}>
         <label className="avail-toggle">
