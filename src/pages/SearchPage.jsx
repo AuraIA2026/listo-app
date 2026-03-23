@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { collection, query, where, getDocs } from 'firebase/firestore'
 import { db } from '../firebase'
 import { CATEGORIES, FILTERS } from '../categories'
@@ -40,6 +40,141 @@ const txt = {
 }
 
 const avatarColors = ['#F26000','#C24D00','#FF8533','#7A3000','#FFB380']
+
+const proMessages = {
+  es: [
+    'Solo los profesionales con 4 o 5 estrellas aparecen en el carrusel de destacados. Cumple cada contrato con excelencia y mejora tu visibilidad.',
+    'Cumple cada contrato con excelencia. Las buenas reseñas generan confianza y te traen más clientes.',
+    'Tu esfuerzo se convierte en oportunidades. Un cliente satisfecho deja mejores reseñas y más contratos.',
+    'Más calidad = más contratos. Destácate, recibe 5 estrellas y aumenta tus ingresos.',
+  ],
+  en: [
+    'Only professionals with 4 or 5 stars appear in the featured carousel. Complete every job with excellence.',
+    'Complete every contract with excellence. Good reviews build trust and bring you more clients.',
+    'Your effort turns into opportunities. A satisfied client leaves better reviews and more contracts.',
+    'More quality = more contracts. Stand out, get 5 stars and increase your income.',
+  ]
+}
+
+const clientMessages = {
+  es: ['¡Tu opinión manda! Califica con estrellas a los profesionales para ayudar a otros a elegir siempre lo mejor.'],
+  en: ['Your voice matters! Rate professionals with stars to help everyone choose the best.'],
+}
+
+// ── Banner animado ──────────────────────────────────────────────
+function PromoBanner({ lang, userRole }) {
+  const messages = userRole === 'pro' ? proMessages[lang] : clientMessages[lang]
+  const [current, setCurrent] = useState(0)
+  const [animKey, setAnimKey] = useState(0)
+
+  useEffect(() => {
+    if (messages.length <= 1) return
+    const interval = setInterval(() => {
+      setCurrent(prev => (prev + 1) % messages.length)
+      setAnimKey(prev => prev + 1)
+    }, 5200)
+    return () => clearInterval(interval)
+  }, [messages.length])
+
+  return (
+    <>
+      <style>{`
+        @keyframes listo-starPop {
+          0%,100% { transform: scale(1) rotate(0deg); }
+          50%      { transform: scale(1.4) rotate(20deg); }
+        }
+        @keyframes listo-starFloat {
+          0%,100% { transform: translateY(0px); }
+          50%      { transform: translateY(-4px); }
+        }
+        @keyframes listo-shimmer {
+          0%,100% { opacity: 0.5; }
+          50%      { opacity: 1; }
+        }
+        @keyframes listo-fadeSlide {
+          0%   { opacity: 0; transform: translateY(10px); }
+          12%  { opacity: 1; transform: translateY(0); }
+          85%  { opacity: 1; transform: translateY(0); }
+          100% { opacity: 0; transform: translateY(-10px); }
+        }
+        .listo-promo-banner {
+          background: linear-gradient(135deg, #FF6B00, #FF8C00);
+          margin: 0 16px 16px;
+          border-radius: 14px;
+          padding: 14px 16px;
+          position: relative;
+          display: flex;
+          align-items: flex-start;
+          gap: 12px;
+          box-shadow: 0 4px 16px rgba(255,107,0,0.25);
+          overflow: hidden;
+        }
+        .listo-promo-spark {
+          position: absolute;
+          font-size: 10px;
+          color: #fff;
+          opacity: 0.3;
+          animation: listo-shimmer 2s ease-in-out infinite;
+          pointer-events: none;
+        }
+        .listo-promo-star {
+          font-size: 28px;
+          flex-shrink: 0;
+          margin-top: 4px;
+          animation: listo-starPop 2s ease-in-out infinite, listo-starFloat 3s ease-in-out infinite;
+          filter: drop-shadow(0 0 6px rgba(255,220,0,0.8));
+        }
+        .listo-promo-body {
+          flex: 1;
+          min-height: 58px;
+          position: relative;
+        }
+        .listo-promo-msg {
+          animation: listo-fadeSlide 5s ease-in-out forwards;
+        }
+        .listo-mini-stars {
+          display: flex;
+          gap: 2px;
+          margin-bottom: 4px;
+        }
+        .listo-mini-star {
+          font-size: 11px;
+          animation: listo-shimmer 1.5s ease-in-out infinite;
+        }
+        .listo-promo-text {
+          margin: 0;
+          font-size: 13px;
+          font-weight: 500;
+          color: #fff;
+          line-height: 1.5;
+          text-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+      `}</style>
+
+      <div className="listo-promo-banner">
+        <span className="listo-promo-spark" style={{ top:'8px',  left:'35%', animationDelay:'0.3s' }}>★</span>
+        <span className="listo-promo-spark" style={{ top:'55%', left:'60%', animationDelay:'0.9s' }}>★</span>
+        <span className="listo-promo-spark" style={{ top:'15%', left:'80%', animationDelay:'0.5s' }}>★</span>
+        <span className="listo-promo-spark" style={{ top:'70%', left:'25%', animationDelay:'1.2s' }}>★</span>
+        <span className="listo-promo-spark" style={{ top:'65%', left:'75%', animationDelay:'0.1s' }}>★</span>
+
+        <span className="listo-promo-star">⭐</span>
+
+        <div className="listo-promo-body">
+          <div key={animKey} className="listo-promo-msg">
+            <div className="listo-mini-stars">
+              {[0,1,2,3,4].map(i => (
+                <span key={i} className="listo-mini-star" style={{ animationDelay:`${i*0.2}s` }}>⭐</span>
+              ))}
+            </div>
+            <p className="listo-promo-text">{messages[current]}</p>
+          </div>
+        </div>
+      </div>
+    </>
+  )
+}
+// ───────────────────────────────────────────────────────────────
 
 export default function SearchPage({ lang = 'es', navigate, initialCategory = 'all', userRole = 'client' }) {
   const [activeCategory,    setActiveCategory]    = useState('all')
@@ -137,7 +272,6 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
       return 0
     })
 
-
   return (
     <div className="services-page">
 
@@ -158,53 +292,8 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
         </div>
       </div>
 
-      {/* Banner de Reseñas Mamey Animado */}
-      <style>{`
-        @keyframes pulseBanner {
-          0% { box-shadow: 0 4px 15px rgba(242, 96, 0, 0.2); }
-          50% { box-shadow: 0 6px 20px rgba(242, 96, 0, 0.6); transform: scale(1.01); }
-          100% { box-shadow: 0 4px 15px rgba(242, 96, 0, 0.2); }
-        }
-        @keyframes bounceIcon {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-4px) scale(1.1); }
-        }
-        .review-promo-banner {
-          background: linear-gradient(135deg, #FF6A00, #F26000);
-          margin: 0 16px 16px;
-          padding: 14px 18px;
-          border-radius: 14px;
-          color: white;
-          display: flex;
-          align-items: center;
-          gap: 14px;
-          animation: pulseBanner 3s infinite ease-in-out;
-        }
-        .review-promo-icon {
-          font-size: 28px;
-          animation: bounceIcon 2s infinite ease-in-out;
-          filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
-        }
-        .review-promo-text {
-          font-size: 13.5px;
-          font-weight: 700;
-          line-height: 1.35;
-          flex: 1;
-          text-shadow: 0 1px 2px rgba(0,0,0,0.15);
-        }
-      `}</style>
-      <div className="review-promo-banner">
-        <span className="review-promo-icon">⭐</span>
-        <div className="review-promo-text">
-          {userRole === 'pro' 
-            ? (lang === 'es' 
-              ? '¡Sube de posición! Pide a tus clientes reseñas de 5 estrellas al terminar para posicionarte y ganar más trabajos.' 
-              : 'Rank up! Ask clients for 5-star reviews after each job to stand out and get more work.')
-            : (lang === 'es'
-              ? '¡Tu opinión manda! Califica con estrellas a los profesionales para ayudar a otros a elegir siempre lo mejor.'
-              : 'Your voice matters! Rate professionals with stars to help everyone choose the best.')}
-        </div>
-      </div>
+      {/* ── NUEVO BANNER ANIMADO ── */}
+      <PromoBanner lang={lang} userRole={userRole} />
 
       {/* Filtros de disponibilidad */}
       <div className="quick-filters" style={{ padding: '0 16px', display: 'flex', justifyContent: 'flex-end', marginBottom: '8px' }}>
@@ -240,7 +329,6 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
           ))}
         </div>
 
-        {/* Subcategorías Scroll (solo si hay una categoría activa distinta a 'all') */}
         {currentCat && currentCat.subcategories && currentCat.subcategories.length > 0 && (
           <div className="subcategories-scroll">
             <button
