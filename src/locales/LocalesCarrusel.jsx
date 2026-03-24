@@ -43,8 +43,9 @@ export default function LocalesCarrusel({ lang = 'es', navigate }) {
         </div>
         <button
           className="locales-ver-todos"
-          onClick={() => navigate('locales')}  {/* ✅ corregido: era 'localesPage' */}
+          onClick={() => navigate('locales')}
         >
+          {/* ✅ corregido: era 'localesPage' */}
           {lang === 'es' ? 'Ver todos' : 'See all'}
         </button>
       </div>
