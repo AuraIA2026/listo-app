@@ -572,6 +572,21 @@ export default function ProfilePage({ lang, setLang, navigate, onLogout }) {
           <span className="pmi-arrow">›</span>
         </button>
 
+        {/* ✅ BOTÓN MI LOCAL VIP — solo para profesionales */}
+        {userRole === 'pro' && (
+          <button
+            className="profile-menu-item"
+            style={{ background: 'linear-gradient(135deg, #fffbf0, #fff8e1)', border: '1.5px solid #FFD700' }}
+            onClick={() => navigate('crearLocal')}
+          >
+            <span className="pmi-icon">🏢</span>
+            <span className="pmi-label">{lang === 'es' ? 'Mi Local VIP' : 'My VIP Shop'}</span>
+            <span style={{ fontSize: 11, fontWeight: 800, color: '#F26000', background: 'rgba(242,96,0,0.1)', padding: '2px 8px', borderRadius: 20 }}>
+              👑 VIP
+            </span>
+          </button>
+        )}
+
         {userRole === 'user' && (
           <button
             className={`profile-menu-item ${profileComplete ? 'perfil-completo-item' : 'completar-perfil-item'}`}
