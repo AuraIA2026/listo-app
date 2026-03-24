@@ -19,6 +19,8 @@ export default function LocalesCarrusel({ lang = 'es', navigate }) {
         const snap = await getDocs(q)
         const lista = []
         snap.forEach(doc => lista.push({ id: doc.id, ...doc.data() }))
+        // Ordenar por rating descendente
+        lista.sort((a, b) => (b.rating || 0) - (a.rating || 0))
         setLocales(lista)
       } catch (e) {
         console.error('Error cargando locales:', e)
@@ -29,7 +31,6 @@ export default function LocalesCarrusel({ lang = 'es', navigate }) {
     fetchLocales()
   }, [])
 
-  // No mostrar si no hay locales
   if (loading || locales.length === 0) return null
 
   return (
@@ -42,7 +43,7 @@ export default function LocalesCarrusel({ lang = 'es', navigate }) {
         </div>
         <button
           className="locales-ver-todos"
-          onClick={() => navigate('localesPage')}
+          onClick={() => navigate('locales')}  {/* ✅ corregido: era 'localesPage' */}
         >
           {lang === 'es' ? 'Ver todos' : 'See all'}
         </button>

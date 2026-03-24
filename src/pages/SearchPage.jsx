@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore'
 import { db } from '../firebase'
 import { CATEGORIES, FILTERS } from '../categories'
+import LocalesCarrusel from '../locales/LocalesCarrusel'  // ✅ importado
 import './SearchPage.css'
 
 const txt = {
@@ -159,7 +160,6 @@ function PromoBanner({ lang, userRole }) {
 }
 
 // ── Profesional del Mes ─────────────────────────────────────────
-// FIX: recibe userRole para adaptar el layout
 function ProDelMes({ lang, navigate, userRole }) {
   const [proDelMes,      setProDelMes]      = useState(null)
   const [totalEstrellas, setTotalEstrellas] = useState(0)
@@ -209,7 +209,7 @@ function ProDelMes({ lang, navigate, userRole }) {
 
           if (d.ratingComment?.trim()) {
             conteo[proId].resenas.push({
-              clientName:  d.clientName || d.reviewerName || 'Cliente',
+              clientName:  d.clientName  || d.reviewerName || 'Cliente',
               clientPhoto: d.clientPhoto || d.reviewerPhoto || null,
               comment:     d.ratingComment,
               score:       d.ratingScore || 5,
@@ -220,7 +220,6 @@ function ProDelMes({ lang, navigate, userRole }) {
         const lista = Object.values(conteo)
 
         if (lista.length === 0) {
-          // fallback: mejor pro general
           const qPros = query(collection(db, 'users'), where('type', '==', 'pro'))
           const snapPros = await getDocs(qPros)
           let mejor = null
@@ -232,7 +231,6 @@ function ProDelMes({ lang, navigate, userRole }) {
             setProDelMes({
               id:           mejor.id,
               nombre:       mejor.name || 'Profesional',
-              // FIX: más campos posibles para la foto
               foto:         mejor.photoURL || mejor.photo || mejor.profilePhoto || mejor.avatar || null,
               especialidad: mejor.category || 'Servicios',
               estrellas:    Math.round((mejor.rating || 5) * (mejor.reviews || 1)),
@@ -246,22 +244,19 @@ function ProDelMes({ lang, navigate, userRole }) {
           lista.sort((a, b) => b.estrellas - a.estrellas)
           const ganador = lista[0]
 
-          // FIX: buscar la foto real del ganador directamente en 'users'
           try {
             const userSnap = await getDoc(doc(db, 'users', ganador.id))
             if (userSnap.exists()) {
               const userData = userSnap.data()
               ganador.foto =
-                userData.photoURL      ||
-                userData.photo         ||
-                userData.profilePhoto  ||
-                userData.avatar        ||
-                ganador.foto           ||
+                userData.photoURL     ||
+                userData.photo        ||
+                userData.profilePhoto ||
+                userData.avatar       ||
+                ganador.foto          ||
                 null
             }
-          } catch (e) {
-            console.warn('No se pudo obtener foto del ganador:', e)
-          }
+          } catch (e) {}
 
           ganador.avatar = ganador.nombre.substring(0, 2).toUpperCase()
           setProDelMes(ganador)
@@ -277,7 +272,6 @@ function ProDelMes({ lang, navigate, userRole }) {
     calcularProDelMes()
   }, [])
 
-  // Auto-scroll reseñas cada 3.5s
   useEffect(() => {
     if (resenas.length <= 2) return
     resenaTimer.current = setInterval(() => {
@@ -294,12 +288,8 @@ function ProDelMes({ lang, navigate, userRole }) {
   const clientAvatarBg = (name) =>
     avatarColors[Array.from(name || 'c').reduce((acc, c) => acc + c.charCodeAt(0), 0) % avatarColors.length]
 
-  // Reseñas visibles: 2 a la vez con wrap circular
   const visibles = resenas.length === 0 ? [] :
     [resenas[resenaIdx % resenas.length], resenas[(resenaIdx + 1) % resenas.length]].filter(Boolean)
-
-  // FIX: en vista cliente, 1 columna; en vista pro, 2 columnas
-  const isClient = userRole !== 'pro'
 
   return (
     <>
@@ -329,178 +319,46 @@ function ProDelMes({ lang, navigate, userRole }) {
           0%   { opacity: 0; transform: translateX(10px); }
           100% { opacity: 1; transform: translateX(0); }
         }
-
-        .pdm-wrapper {
-          margin: 0 16px 20px;
-          border-radius: 20px;
-          overflow: hidden;
-          animation: pdm-glow 2.5s ease-in-out infinite;
-        }
-
-        /* HEADER */
-        .pdm-header {
-          background: linear-gradient(135deg, #0f0c29, #1c1c50, #24243e);
-          padding: 11px 16px;
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          position: relative;
-        }
-        .pdm-header::after {
-          content: '';
-          position: absolute;
-          bottom: 0; left: 0; right: 0; height: 2px;
-          background: linear-gradient(90deg, transparent, #FFD700, #FFA500, #FFD700, transparent);
-        }
-        .pdm-crown {
-          font-size: 24px;
-          animation: pdm-crown 2s ease-in-out infinite;
-          filter: drop-shadow(0 0 12px rgba(255,215,0,1));
-        }
+        .pdm-wrapper { margin: 0 16px 20px; border-radius: 20px; overflow: hidden; animation: pdm-glow 2.5s ease-in-out infinite; }
+        .pdm-header { background: linear-gradient(135deg, #0f0c29, #1c1c50, #24243e); padding: 11px 16px; display: flex; align-items: center; gap: 8px; position: relative; }
+        .pdm-header::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, #FFD700, #FFA500, #FFD700, transparent); }
+        .pdm-crown { font-size: 24px; animation: pdm-crown 2s ease-in-out infinite; filter: drop-shadow(0 0 12px rgba(255,215,0,1)); }
         .pdm-header-text { flex: 1; }
-        .pdm-label {
-          font-size: 10px; font-weight: 800; color: #FFD700;
-          text-transform: uppercase; letter-spacing: 0.12em; margin: 0;
-        }
-        .pdm-mes {
-          font-size: 14px; font-weight: 800; color: #fff;
-          margin: 0; text-transform: capitalize;
-        }
-        .pdm-trophy {
-          font-size: 22px;
-          filter: drop-shadow(0 0 8px rgba(255,215,0,0.9));
-        }
-
-        /* BODY */
-        .pdm-body {
-          background: linear-gradient(160deg, #fffbf0, #fff8e1);
-          padding: 14px;
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 12px;
-          position: relative;
-          overflow: hidden;
-        }
-
-        .pdm-shine {
-          position: absolute; top: 0; left: -80%;
-          width: 50%; height: 100%;
-          background: linear-gradient(90deg, transparent, rgba(255,255,255,0.65), transparent);
-          transform: skewX(-15deg);
-          animation: pdm-shine 3.5s ease-in-out infinite;
-          pointer-events: none;
-        }
-        .pdm-divider {
-          position: absolute; top: 14px; bottom: 14px;
-          left: 50%; width: 1px;
-          background: linear-gradient(to bottom, transparent, #FFD70055, #FFA50055, transparent);
-        }
-
-        /* COLUMNA IZQUIERDA */
-        .pdm-left {
-          display: flex; flex-direction: column;
-          align-items: center; text-align: center; gap: 5px;
-        }
+        .pdm-label { font-size: 10px; font-weight: 800; color: #FFD700; text-transform: uppercase; letter-spacing: 0.12em; margin: 0; }
+        .pdm-mes { font-size: 14px; font-weight: 800; color: #fff; margin: 0; text-transform: capitalize; }
+        .pdm-trophy { font-size: 22px; filter: drop-shadow(0 0 8px rgba(255,215,0,0.9)); }
+        .pdm-body { background: linear-gradient(160deg, #fffbf0, #fff8e1); padding: 14px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; position: relative; overflow: hidden; }
+        .pdm-shine { position: absolute; top: 0; left: -80%; width: 50%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.65), transparent); transform: skewX(-15deg); animation: pdm-shine 3.5s ease-in-out infinite; pointer-events: none; }
+        .pdm-divider { position: absolute; top: 14px; bottom: 14px; left: 50%; width: 1px; background: linear-gradient(to bottom, transparent, #FFD70055, #FFA50055, transparent); }
+        .pdm-left { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 5px; }
         .pdm-photo-wrap { position: relative; margin-bottom: 2px; }
-        .pdm-photo {
-          width: 78px; height: 78px; border-radius: 50%;
-          object-fit: cover;
-          border: 3px solid #FFD700;
-          box-shadow: 0 0 0 4px rgba(255,215,0,0.2), 0 4px 16px rgba(255,150,0,0.25);
-        }
-        .pdm-avatar {
-          width: 78px; height: 78px; border-radius: 50%;
-          display: flex; align-items: center; justify-content: center;
-          font-size: 26px; font-weight: 800; color: #fff;
-          border: 3px solid #FFD700;
-          box-shadow: 0 0 0 4px rgba(255,215,0,0.2), 0 4px 16px rgba(255,150,0,0.25);
-        }
-        .pdm-badge {
-          position: absolute; bottom: -2px; right: -2px;
-          background: linear-gradient(135deg, #FFD700, #FFA500);
-          border-radius: 50%; width: 26px; height: 26px;
-          display: flex; align-items: center; justify-content: center;
-          font-size: 13px; border: 2px solid #fff;
-          animation: pdm-badge-pop 0.5s ease-out forwards, pdm-star-spin 3s ease-in-out 0.5s infinite;
-        }
-        .pdm-nombre {
-          font-size: 14px; font-weight: 800; color: #1a1a2e; margin: 0;
-        }
+        .pdm-photo { width: 78px; height: 78px; border-radius: 50%; object-fit: cover; border: 3px solid #FFD700; box-shadow: 0 0 0 4px rgba(255,215,0,0.2), 0 4px 16px rgba(255,150,0,0.25); }
+        .pdm-avatar { width: 78px; height: 78px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 26px; font-weight: 800; color: #fff; border: 3px solid #FFD700; box-shadow: 0 0 0 4px rgba(255,215,0,0.2), 0 4px 16px rgba(255,150,0,0.25); }
+        .pdm-badge { position: absolute; bottom: -2px; right: -2px; background: linear-gradient(135deg, #FFD700, #FFA500); border-radius: 50%; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; font-size: 13px; border: 2px solid #fff; animation: pdm-badge-pop 0.5s ease-out forwards, pdm-star-spin 3s ease-in-out 0.5s infinite; }
+        .pdm-nombre { font-size: 14px; font-weight: 800; color: #1a1a2e; margin: 0; }
         .pdm-spec { font-size: 11px; color: #999; margin: 0; }
-        .pdm-stars-row {
-          display: flex; align-items: center; gap: 4px; justify-content: center;
-        }
+        .pdm-stars-row { display: flex; align-items: center; gap: 4px; justify-content: center; }
         .pdm-stars { color: #FFD700; font-size: 12px; letter-spacing: 1px; }
-        .pdm-star-count {
-          font-size: 11px; font-weight: 800; color: #F26000;
-          background: rgba(242,96,0,0.1); padding: 1px 7px; border-radius: 20px;
-        }
+        .pdm-star-count { font-size: 11px; font-weight: 800; color: #F26000; background: rgba(242,96,0,0.1); padding: 1px 7px; border-radius: 20px; }
         .pdm-contratos { font-size: 11px; color: #999; margin: 0; }
-        .pdm-btn {
-          background: linear-gradient(135deg, #F26000, #C94E00);
-          color: #fff; border: none; border-radius: 22px;
-          padding: 7px 12px; font-size: 12px; font-weight: 800;
-          cursor: pointer; width: 100%;
-          box-shadow: 0 3px 10px rgba(242,96,0,0.3);
-          transition: transform 0.1s; margin-top: 2px;
-        }
+        .pdm-btn { background: linear-gradient(135deg, #F26000, #C94E00); color: #fff; border: none; border-radius: 22px; padding: 7px 12px; font-size: 12px; font-weight: 800; cursor: pointer; width: 100%; box-shadow: 0 3px 10px rgba(242,96,0,0.3); transition: transform 0.1s; margin-top: 2px; }
         .pdm-btn:active { transform: scale(0.96); }
-
-        /* COLUMNA DERECHA — reseñas */
-        .pdm-right {
-          display: flex; flex-direction: column; gap: 6px; overflow: hidden;
-        }
-        .pdm-resenas-title {
-          font-size: 11px; font-weight: 800; color: #1a1a2e;
-          text-transform: uppercase; letter-spacing: 0.06em; margin: 0;
-        }
-        .pdm-resena-card {
-          background: #fff;
-          border-radius: 10px;
-          padding: 8px 9px;
-          border-left: 3px solid #FFD700;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-          animation: pdm-resena-in 0.35s ease-out forwards;
-          display: flex; gap: 7px; align-items: flex-start;
-        }
-        .pdm-client-photo {
-          width: 30px; height: 30px; border-radius: 50%;
-          object-fit: cover; flex-shrink: 0; border: 2px solid #FFD700;
-        }
-        .pdm-client-avatar {
-          width: 30px; height: 30px; border-radius: 50%;
-          display: flex; align-items: center; justify-content: center;
-          font-size: 11px; font-weight: 800; color: #fff;
-          flex-shrink: 0; border: 2px solid #FFD700;
-        }
+        .pdm-right { display: flex; flex-direction: column; gap: 6px; overflow: hidden; }
+        .pdm-resenas-title { font-size: 11px; font-weight: 800; color: #1a1a2e; text-transform: uppercase; letter-spacing: 0.06em; margin: 0; }
+        .pdm-resena-card { background: #fff; border-radius: 10px; padding: 8px 9px; border-left: 3px solid #FFD700; box-shadow: 0 2px 8px rgba(0,0,0,0.05); animation: pdm-resena-in 0.35s ease-out forwards; display: flex; gap: 7px; align-items: flex-start; }
+        .pdm-client-photo { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; flex-shrink: 0; border: 2px solid #FFD700; }
+        .pdm-client-avatar { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; color: #fff; flex-shrink: 0; border: 2px solid #FFD700; }
         .pdm-resena-content { flex: 1; min-width: 0; }
-        .pdm-client-name {
-          font-size: 11px; font-weight: 800; color: #1a1a2e;
-          margin: 0 0 1px; white-space: nowrap;
-          overflow: hidden; text-overflow: ellipsis;
-        }
+        .pdm-client-name { font-size: 11px; font-weight: 800; color: #1a1a2e; margin: 0 0 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .pdm-resena-stars { color: #FFD700; font-size: 9px; letter-spacing: 0.5px; }
-        .pdm-resena-text {
-          font-size: 10px; color: #666; margin: 2px 0 0; line-height: 1.4;
-          display: -webkit-box; -webkit-line-clamp: 2;
-          -webkit-box-orient: vertical; overflow: hidden;
-        }
-        .pdm-resena-empty {
-          font-size: 11px; color: #bbb; text-align: center; padding: 16px 4px;
-        }
-        .pdm-dots {
-          display: flex; gap: 4px; justify-content: center; margin-top: 2px;
-        }
-        .pdm-dot {
-          width: 5px; height: 5px; border-radius: 50%;
-          background: #ddd; border: none; padding: 0; cursor: pointer;
-          transition: background 0.2s, transform 0.2s;
-        }
+        .pdm-resena-text { font-size: 10px; color: #666; margin: 2px 0 0; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .pdm-resena-empty { font-size: 11px; color: #bbb; text-align: center; padding: 16px 4px; }
+        .pdm-dots { display: flex; gap: 4px; justify-content: center; margin-top: 2px; }
+        .pdm-dot { width: 5px; height: 5px; border-radius: 50%; background: #ddd; border: none; padding: 0; cursor: pointer; transition: background 0.2s, transform 0.2s; }
         .pdm-dot.active { background: #FFD700; transform: scale(1.3); }
       `}</style>
 
       <div className="pdm-wrapper">
-        {/* Header */}
         <div className="pdm-header">
           <span className="pdm-crown">👑</span>
           <div className="pdm-header-text">
@@ -510,12 +368,10 @@ function ProDelMes({ lang, navigate, userRole }) {
           <span className="pdm-trophy">🏆</span>
         </div>
 
-        {/* Body */}
         <div className="pdm-body">
           <div className="pdm-shine" />
           <div className="pdm-divider" />
 
-          {/* IZQUIERDA — siempre visible */}
           <div className="pdm-left">
             <div className="pdm-photo-wrap">
               {proDelMes.foto
@@ -538,7 +394,6 @@ function ProDelMes({ lang, navigate, userRole }) {
             </button>
           </div>
 
-          {/* DERECHA — reseñas, visible para todos */}
           <div className="pdm-right">
             <p className="pdm-resenas-title">
               {lang === 'es' ? '💬 Lo que dicen' : '💬 Reviews'}
@@ -590,7 +445,6 @@ function ProDelMes({ lang, navigate, userRole }) {
     </>
   )
 }
-// ───────────────────────────────────────────────────────────────
 
 export default function SearchPage({ lang = 'es', navigate, initialCategory = 'all', userRole = 'client' }) {
   const [activeCategory,    setActiveCategory]    = useState('all')
@@ -599,7 +453,6 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
   const [search,            setSearch]            = useState('')
   const [onlyAvailable,     setOnlyAvailable]     = useState(false)
   const [sortBy,            setSortBy]            = useState('all')
-  const [activeFilter,      setActiveFilter]      = useState(null)
   const [professionals,     setProfessionals]     = useState([])
   const [loading,           setLoading]           = useState(true)
 
@@ -663,9 +516,9 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
 
   const filtered = professionals
     .filter(p => {
-      const mappedCat = getMappedProCatId(p.category)
+      const mappedCat  = getMappedProCatId(p.category)
       const isSubInMain = currentCat && currentCat.subcategories.some(s => s.id === mappedCat)
-      const matchCat    = activeCategory === 'all' || mappedCat === activeCategory || mappedCat === activeSubcategory || isSubInMain
+      const matchCat   = activeCategory === 'all' || mappedCat === activeCategory || mappedCat === activeSubcategory || isSubInMain
       const matchSearch = p.name.toLowerCase().includes(search.toLowerCase()) || p.location.toLowerCase().includes(search.toLowerCase())
       const matchAvail  = !onlyAvailable || p.available
       return matchCat && matchSearch && matchAvail
@@ -690,10 +543,12 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
 
       <PromoBanner lang={lang} userRole={userRole} />
 
-      {/* FIX: se pasa userRole a ProDelMes */}
+      {/* ✅ Carrusel de Locales VIP — aparece automáticamente si hay locales */}
+      <LocalesCarrusel lang={lang} navigate={navigate} />
+
       <ProDelMes lang={lang} navigate={navigate} userRole={userRole} />
 
-      <div className="quick-filters" style={{ padding: '0 16px', display: 'flex', justifyContent: 'flex-end', marginBottom: '8px' }}>
+      <div className="quick-filters" style={{ padding:'0 16px', display:'flex', justifyContent:'flex-end', marginBottom:'8px' }}>
         <label className="avail-toggle">
           <input type="checkbox" checked={onlyAvailable} onChange={e => setOnlyAvailable(e.target.checked)} />
           <span className="toggle-track" />
@@ -741,7 +596,7 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
           const subCat    = allSubs.find(s => s.id === mappedCat)
           const mainCat   = CATEGORIES.find(c => c.id === mappedCat || c.subcategories.some(s => s.id === mappedCat))
           return (
-            <div key={pro.id} className="pro-card" style={{ animationDelay: `${i * 0.06}s` }}>
+            <div key={pro.id} className="pro-card" style={{ animationDelay:`${i * 0.06}s` }}>
               <div className="card-photo">
                 {pro.photoURL
                   ? <img src={pro.photoURL} alt={pro.name} className="pro-photo" />

@@ -7,15 +7,16 @@ import './Locales.css'
 
 const ICONOS_SERVICIOS = ['🔧','🪛','🔨','🚿','⚡','🧹','🌿','🎨','🚗','💻','📦','🏗️','🔑','🪟','❄️']
 
-export default function CrearLocal({ lang = 'es', navigate, currentUser }) {
-  const [nombre,      setNombre]      = useState('')
-  const [categoria,   setCategoria]   = useState('')
-  const [descripcion, setDescripcion] = useState('')
-  const [logoFile,    setLogoFile]    = useState(null)
-  const [logoPreview, setLogoPreview] = useState(null)
-  const [portadaFile, setPortadaFile] = useState(null)
-  const [portadaPreview, setPortadaPreview] = useState(null)
-  const [servicios,   setServicios]   = useState([
+// ✅ Recibe userData (no currentUser) igual que el resto de páginas en App.jsx
+export default function CrearLocal({ lang = 'es', navigate, userData }) {
+  const [nombre,        setNombre]        = useState('')
+  const [categoria,     setCategoria]     = useState('')
+  const [descripcion,   setDescripcion]   = useState('')
+  const [logoFile,      setLogoFile]      = useState(null)
+  const [logoPreview,   setLogoPreview]   = useState(null)
+  const [portadaFile,   setPortadaFile]   = useState(null)
+  const [portadaPreview,setPortadaPreview]= useState(null)
+  const [servicios,     setServicios]     = useState([
     { nombre: '', descripcion: '', precio: '', icono: '🔧' }
   ])
   const [saving,  setSaving]  = useState(false)
@@ -48,49 +49,54 @@ export default function CrearLocal({ lang = 'es', navigate, currentUser }) {
   }
 
   const handleGuardar = async () => {
-    if (!nombre.trim()) { setError(lang === 'es' ? 'El nombre es obligatorio' : 'Name is required'); return }
+    if (!nombre.trim()) {
+      setError(lang === 'es' ? 'El nombre es obligatorio' : 'Name is required')
+      return
+    }
+    if (!userData?.uid) {
+      setError(lang === 'es' ? 'Debes iniciar sesión' : 'You must be logged in')
+      return
+    }
+
     setSaving(true)
     setError(null)
+
     try {
       let logoURL    = null
       let portadaURL = null
 
-      // Subir logo
       if (logoFile) {
-        const logoRef = ref(storage, `locales/${currentUser.uid}/logo_${Date.now()}`)
+        const logoRef = ref(storage, `locales/${userData.uid}/logo_${Date.now()}`)
         await uploadBytes(logoRef, logoFile)
         logoURL = await getDownloadURL(logoRef)
       }
 
-      // Subir portada
       if (portadaFile) {
-        const portadaRef = ref(storage, `locales/${currentUser.uid}/portada_${Date.now()}`)
+        const portadaRef = ref(storage, `locales/${userData.uid}/portada_${Date.now()}`)
         await uploadBytes(portadaRef, portadaFile)
         portadaURL = await getDownloadURL(portadaRef)
       }
 
-      // Filtrar servicios vacíos
       const serviciosFiltrados = servicios.filter(s => s.nombre.trim())
 
-      // Guardar en Firestore
       await addDoc(collection(db, 'locales'), {
-        proId:       currentUser.uid,
-        proNombre:   currentUser.displayName || currentUser.name || 'Profesional',
-        nombre:      nombre.trim(),
-        categoria:   categoria.trim(),
-        descripcion: descripcion.trim(),
+        proId:        userData.uid,
+        proNombre:    userData.name || userData.displayName || 'Profesional',
+        nombre:       nombre.trim(),
+        categoria:    categoria.trim(),
+        descripcion:  descripcion.trim(),
         logoURL,
         portadaURL,
-        servicios:   serviciosFiltrados,
-        activo:      true,
-        plan:        'vip',
-        rating:      currentUser.rating   || 5,
-        contratos:   currentUser.reviews  || 0,
-        totalResenas:currentUser.reviews  || 0,
-        createdAt:   serverTimestamp(),
+        servicios:    serviciosFiltrados,
+        activo:       true,
+        plan:         'vip',
+        rating:       userData.rating  || 5,
+        contratos:    userData.reviews || 0,
+        totalResenas: userData.reviews || 0,
+        createdAt:    serverTimestamp(),
       })
 
-      navigate('proPanel')
+      navigate('profile')  // ✅ vuelve a perfil del pro
     } catch (e) {
       console.error('Error creando local:', e)
       setError(lang === 'es' ? 'Error al guardar. Intenta de nuevo.' : 'Error saving. Please try again.')
@@ -104,9 +110,15 @@ export default function CrearLocal({ lang = 'es', navigate, currentUser }) {
 
       {/* Header */}
       <div className="crear-local-header">
-        <div className="crear-local-header-title">
-          <span style={{ fontSize: 24 }}>🏢</span>
-          <h1>{lang === 'es' ? 'Crear mi Local VIP' : 'Create my VIP Shop'}</h1>
+        <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:4 }}>
+          <button
+            onClick={() => navigate('profile')}
+            style={{ background:'rgba(255,255,255,0.15)', border:'none', color:'#fff', borderRadius:'50%', width:32, height:32, fontSize:16, cursor:'pointer', flexShrink:0 }}
+          >←</button>
+          <div className="crear-local-header-title">
+            <span style={{ fontSize: 24 }}>🏢</span>
+            <h1>{lang === 'es' ? 'Crear mi Local VIP' : 'Create my VIP Shop'}</h1>
+          </div>
         </div>
         <p className="crear-local-header-sub">
           {lang === 'es'
@@ -165,7 +177,7 @@ export default function CrearLocal({ lang = 'es', navigate, currentUser }) {
           </label>
           <label className="crear-local-upload">
             {logoPreview
-              ? <img src={logoPreview} alt="logo" className="crear-local-upload-preview" style={{ height: 80, width: 80, borderRadius: 12, objectFit: 'cover' }} />
+              ? <img src={logoPreview} alt="logo" className="crear-local-upload-preview" style={{ height:80, width:80, borderRadius:12, objectFit:'cover' }} />
               : <>
                   <span className="crear-local-upload-icon">📷</span>
                   <span className="crear-local-upload-text">
@@ -207,22 +219,20 @@ export default function CrearLocal({ lang = 'es', navigate, currentUser }) {
               {servicios.length > 1 && (
                 <button className="crear-local-servicio-delete" onClick={() => removeServicio(idx)}>✕</button>
               )}
-
-              {/* Selector de icono */}
               <div style={{ display:'flex', gap:6, flexWrap:'wrap', marginBottom:4 }}>
                 {ICONOS_SERVICIOS.map(ico => (
                   <button
                     key={ico}
                     onClick={() => updateServicio(idx, 'icono', ico)}
                     style={{
-                      fontSize:18, background: srv.icono === ico ? 'rgba(242,96,0,0.15)' : 'transparent',
+                      fontSize:18,
+                      background: srv.icono === ico ? 'rgba(242,96,0,0.15)' : 'transparent',
                       border: srv.icono === ico ? '2px solid #F26000' : '2px solid transparent',
                       borderRadius:8, padding:'2px 4px', cursor:'pointer'
                     }}
                   >{ico}</button>
                 ))}
               </div>
-
               <input
                 className="crear-local-input"
                 placeholder={lang === 'es' ? 'Nombre del servicio' : 'Service name'}
@@ -251,14 +261,12 @@ export default function CrearLocal({ lang = 'es', navigate, currentUser }) {
           </button>
         </div>
 
-        {/* Error */}
         {error && (
           <p style={{ color:'#e55', fontSize:13, fontWeight:600, textAlign:'center', margin:0 }}>
             ⚠️ {error}
           </p>
         )}
 
-        {/* Guardar */}
         <button
           className="crear-local-save-btn"
           onClick={handleGuardar}
