@@ -27,6 +27,7 @@ import TutorialTour           from './components/TutorialTour'
 import { ExoticOrderNotification, OrderDetailsModal } from './pages/OrdersPage'
 import LocalesPage            from './locales/LocalesPage'
 import LocalDetalle           from './locales/LocalDetalle'
+import CrearLocal             from './locales/CrearLocal'   // ✅ AGREGADO
 import './App.css'
 
 const TOUR_KEY = 'listo_tour_done'
@@ -433,6 +434,7 @@ export default function App() {
       {currentPage === 'admin'        && <AdminPage    {...commonProps} />}
       {currentPage === 'locales'      && <LocalesPage  {...userProps} />}
       {currentPage === 'localDetalle' && <LocalDetalle {...userProps} local={selectedLocal} />}
+      {currentPage === 'crearLocal'   && <CrearLocal   {...userProps} />}  {/* ✅ AGREGADO */}
 
       {currentPage === 'booking'       && <BookingPage             {...userProps}   professional={selectedPro} />}
       {currentPage === 'chat'          && <ChatPage                {...commonProps} professional={selectedPro} userData={userData} />}
