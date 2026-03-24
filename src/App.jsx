@@ -25,10 +25,12 @@ import BottomNav              from './components/BottomNav'
 import SplashScreen           from './components/SplashScreen'
 import TutorialTour           from './components/TutorialTour'
 import { ExoticOrderNotification, OrderDetailsModal } from './pages/OrdersPage'
+import LocalesPage            from './locales/LocalesPage'
+import LocalDetalle           from './locales/LocalDetalle'
 import './App.css'
 
 const TOUR_KEY = 'listo_tour_done'
-const PAGES_WITH_BOTTOM_NAV = ['home','services','search','orders','profile','workdone']
+const PAGES_WITH_BOTTOM_NAV = ['home','services','search','orders','profile','workdone','locales']
 const PAGES_WITH_TOP_NAV    = ['login','register']
 
 /* ── Banner mensaje nuevo ────────────────────────────────────────────────── */
@@ -124,6 +126,7 @@ export default function App() {
   const [currentPage,     setCurrentPage]     = useState('login')
   const [lang,            setLang]            = useState('es')
   const [selectedPro,     setSelectedPro]     = useState(null)
+  const [selectedLocal,   setSelectedLocal]   = useState(null)
   const [showTour,        setShowTour]        = useState(false)
   const [authReady,       setAuthReady]       = useState(false)
   const [userData,        setUserData]        = useState(null)
@@ -144,13 +147,11 @@ export default function App() {
   const alertActiveRef     = useRef(false)
   const listenerReadyRef   = useRef(false)
   const jobDoneNotifIdsRef = useRef(new Set())
-  const notifiedMsgIds     = useRef(new Set())  // IDs de mensajes ya procesados
-  // ↓ chatIds donde ya mostramos el banner — se limpia cuando el usuario abre orders
+  const notifiedMsgIds     = useRef(new Set())
   const banneredChatIds    = useRef(new Set())
   const chatListenerReady  = useRef(false)
-  const currentPageRef     = useRef('login')    // ref para leer en listeners sin stale closure
+  const currentPageRef     = useRef('login')
 
-  // Mantener currentPageRef sincronizado
   useEffect(() => { currentPageRef.current = currentPage }, [currentPage])
 
   // ─── OFFLINE & UPDATE CHECK ───────────────────────────────────────────────
@@ -169,11 +170,11 @@ export default function App() {
           const minV = snap.data().minVersion
           if (minV && minV > CURRENT_APP_VERSION) setUpdateRequired(true)
         }
-      }).catch(() => {}) // Ignorar si no existe, no falla
+      }).catch(() => {})
     })
   }, [])
 
-  // ─── AUDIO PEDIDO (pro) ───────────────────────────────────────────────────
+  // ─── AUDIO ───────────────────────────────────────────────────────────────
   const startAlertSound = () => {
     if (isPlayingRef.current) return
     try {
@@ -191,8 +192,6 @@ export default function App() {
     } catch (e) {}
     isPlayingRef.current = false; alertActiveRef.current = false
   }
-
-  // ─── AUDIO TRABAJO TERMINADO ──────────────────────────────────────────────
   const playJobDoneSound = () => {
     try {
       const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3')
@@ -200,14 +199,11 @@ export default function App() {
       setTimeout(() => { audio.pause(); audio.currentTime = 0 }, 30000)
     } catch (e) {}
   }
-
-  // ─── AUDIO MENSAJE NUEVO (tono corto, no loop) ────────────────────────────
   const playMsgSound = () => {
     try {
       const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3')
       audio.volume = 0.45; audio.loop = false
       audio.play().catch(() => {})
-      // Cortar después de 1.2s para que suene solo una vez breve
       setTimeout(() => { try { audio.pause(); audio.currentTime = 0 } catch(e){} }, 1200)
     } catch (e) {}
   }
@@ -227,19 +223,16 @@ export default function App() {
             localStorage.setItem('listoUserData', JSON.stringify(fullData))
             setProfileComplete(data.profileComplete || false)
 
-            // ─── PUSH NOTIFICATIONS REGISTRATION ───
             if (Capacitor.isNativePlatform()) {
               PushNotifications.requestPermissions().then(result => {
-                if (result.receive === 'granted') {
-                  PushNotifications.register()
-                }
+                if (result.receive === 'granted') PushNotifications.register()
               })
               PushNotifications.removeAllListeners().then(() => {
                 PushNotifications.addListener('registration', token => {
                   updateDoc(doc(db, 'users', firebaseUser.uid), { fcmToken: token.value }).catch(()=>{})
                 })
                 PushNotifications.addListener('pushNotificationActionPerformed', () => {
-                  setCurrentPage('orders') // Ir a pedidos al tocar la push
+                  setCurrentPage('orders')
                 })
               })
             }
@@ -258,109 +251,60 @@ export default function App() {
   // ─── LISTENER MENSAJES NUEVOS ─────────────────────────────────────────────
   useEffect(() => {
     if (!authReady || !userData) return
-
-    const q = query(
-      collection(db, 'chats'),
-      where('members', 'array-contains', userData.uid)
-    )
-
-    const unsubMap = new Map() // Para no duplicar listeners por cada mensaje
-
+    const q = query(collection(db, 'chats'), where('members', 'array-contains', userData.uid))
+    const unsubMap = new Map()
     const unsubChats = onSnapshot(q, (chatsSnap) => {
       chatsSnap.forEach(chatDoc => {
         const chatId = chatDoc.id
-
-        if (unsubMap.has(chatId)) return // Ya estamos escuchando este chat
-
-        // Escuchar mensajes de OTROS usuarios en este chat
-        const msgQ = query(
-          collection(db, 'chats', chatId, 'messages'),
-          where('senderId', '!=', userData.uid)
-        )
-
-        // Marcar este chat específico para evitar spamear al iniciar
+        if (unsubMap.has(chatId)) return
+        const msgQ = query(collection(db, 'chats', chatId, 'messages'), where('senderId', '!=', userData.uid))
         let isFirstLoad = true
-
         const unsubMsg = onSnapshot(msgQ, async (msgsSnap) => {
           if (isFirstLoad) {
-            // Primera carga: marcar todos como vistos en notificaciones
             msgsSnap.forEach(d => notifiedMsgIds.current.add(d.id))
             isFirstLoad = false
             return
           }
-
-          let hasNew = false
-          let lastMsg = null
-
+          let hasNew = false; let lastMsg = null
           msgsSnap.forEach(msgDoc => {
             if (notifiedMsgIds.current.has(msgDoc.id)) return
             notifiedMsgIds.current.add(msgDoc.id)
-            hasNew = true
-            lastMsg = msgDoc.data()
+            hasNew = true; lastMsg = msgDoc.data()
           })
-
           if (!hasNew || !lastMsg) return
-
-          // Si ya está en orders o chat, NO mostrar banner pero SÍ sonar
           const page = currentPageRef.current
-          if (page === 'orders' || page === 'chat') {
-            playMsgSound()
-            return
-          }
-
-          if (banneredChatIds.current.has(chatId)) {
-            playMsgSound()
-            return
-          }
-
+          if (page === 'orders' || page === 'chat') { playMsgSound(); return }
+          if (banneredChatIds.current.has(chatId)) { playMsgSound(); return }
           let senderName = 'Profesional'
           try {
-            const uSnap = await getDocs(
-              query(collection(db, 'users'), where('__name__', '==', lastMsg.senderId))
-            )
+            const uSnap = await getDocs(query(collection(db, 'users'), where('__name__', '==', lastMsg.senderId)))
             if (!uSnap.empty) senderName = uSnap.docs[0].data().name || senderName
           } catch(e) {}
-
           banneredChatIds.current.add(chatId)
           playMsgSound()
           setChatBanner({ sender: senderName, text: lastMsg.text || '📎 Mensaje', chatId })
         })
-
         unsubMap.set(chatId, unsubMsg)
       })
     })
-
-    return () => {
-      unsubChats()
-      unsubMap.forEach(unsubFn => unsubFn())
-      unsubMap.clear()
-    }
+    return () => { unsubChats(); unsubMap.forEach(fn => fn()); unsubMap.clear() }
   }, [authReady, userData]) // eslint-disable-line
 
-  // Cuando el usuario navega a orders → limpiar banneredChatIds para que
-  // vuelvan a notificar si hay mensajes nuevos después de salir
   useEffect(() => {
-    if (currentPage === 'orders') {
-      banneredChatIds.current.clear()
-    }
+    if (currentPage === 'orders') banneredChatIds.current.clear()
   }, [currentPage])
 
   // ─── LISTENER job_done ────────────────────────────────────────────────────
   useEffect(() => {
     if (!authReady || !userData || userRole !== 'user') return
-    const q = query(
-      collection(db, 'notificaciones'),
-      where('userId', '==', userData.uid),
-      where('type',   '==', 'job_done')
-    )
+    const q = query(collection(db, 'notificaciones'), where('userId', '==', userData.uid), where('type', '==', 'job_done'))
     let initialized = false
     const existingIds = new Set()
     const unsub = onSnapshot(q, (snapshot) => {
       if (!initialized) {
         snapshot.forEach(d => existingIds.add(d.id))
         jobDoneNotifIdsRef.current = existingIds
-        initialized = true
-        return
+        initialized = true; return
       }
       snapshot.forEach(docSnap => {
         if (jobDoneNotifIdsRef.current.has(docSnap.id)) return
@@ -378,87 +322,48 @@ export default function App() {
   useEffect(() => {
     if (!authReady || !userData) return
     let unsubscribeOrders = () => {}
-
     const setupListener = async () => {
       if (userRole === 'pro') {
-        const q = query(
-          collection(db, 'orders'),
-          where('proId',  '==', userData.uid),
-          where('status', '==', 'pending')
-        )
+        const q = query(collection(db, 'orders'), where('proId', '==', userData.uid), where('status', '==', 'pending'))
         const existingSnap = await getDocs(q)
-        const existingIds  = new Set()
+        const existingIds = new Set()
         existingSnap.forEach(d => existingIds.add(d.id))
         setNotifiedOrderIds(existingIds)
         listenerReadyRef.current = true
-
         unsubscribeOrders = onSnapshot(q, (snapshot) => {
-          if (!listenerReadyRef.current) return
-          if (alertActiveRef.current) return
+          if (!listenerReadyRef.current || alertActiveRef.current) return
           const newPendings = []
           snapshot.forEach(docSnap => {
             if (existingIds.has(docSnap.id)) return
             const d = docSnap.data()
-            newPendings.push({
-              id: docSnap.id,
-              pro: d.clientName || d.clientEmail || 'Cliente',
-              specialty: d.proSpecialty || 'Servicio',
-              avatar: d.clientName ? d.clientName.substring(0,2).toUpperCase() : '👤',
-              photoURL: d.clientPhotoURL || null,
-              date: `${d.dateToken} - ${d.timeToken}`,
-              price: d.price || 'RD$0',
-              status: d.status || 'pending',
-              icon: '🔧',
-              clientAddress: d.clientAddress || d.address || '',
-              ...d
-            })
+            newPendings.push({ id: docSnap.id, pro: d.clientName || d.clientEmail || 'Cliente', specialty: d.proSpecialty || 'Servicio', avatar: d.clientName ? d.clientName.substring(0,2).toUpperCase() : '👤', photoURL: d.clientPhotoURL || null, date: `${d.dateToken} - ${d.timeToken}`, price: d.price || 'RD$0', status: d.status || 'pending', icon: '🔧', clientAddress: d.clientAddress || d.address || '', ...d })
           })
           if (newPendings.length > 0) {
             newPendings.sort((a,b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0))
             const newest = newPendings[0]
             setNotifiedOrderIds(prev => {
               if (!prev.has(newest.id)) {
-                alertActiveRef.current = true
-                startAlertSound()
-                setAlertOrder(newest)
-                const nextSet = new Set(prev)
-                nextSet.add(newest.id)
-                return nextSet
+                alertActiveRef.current = true; startAlertSound(); setAlertOrder(newest)
+                const nextSet = new Set(prev); nextSet.add(newest.id); return nextSet
               }
               return prev
             })
           }
         })
-
       } else if (userRole === 'user') {
-        const q = query(
-          collection(db, 'orders'),
-          where('clientId', '==', userData.uid),
-          where('status', 'in', ['accepted', 'onway'])
-        )
+        const q = query(collection(db, 'orders'), where('clientId', '==', userData.uid), where('status', 'in', ['accepted', 'onway']))
         const existingSnap = await getDocs(q)
-        const existingIds  = new Set()
+        const existingIds = new Set()
         existingSnap.forEach(d => existingIds.add(d.id + '_accepted'))
         setNotifiedOrderIds(existingIds)
         listenerReadyRef.current = true
-
         unsubscribeOrders = onSnapshot(q, (snapshot) => {
           if (!listenerReadyRef.current) return
           const activeOrders = []
           snapshot.forEach(docSnap => {
             if (existingIds.has(docSnap.id + '_accepted')) return
             const d = docSnap.data()
-            activeOrders.push({
-              id: docSnap.id,
-              pro: d.proName || 'Profesional',
-              specialty: d.proSpecialty || 'Servicio',
-              avatar: d.proAvatar || 'P',
-              photoURL: d.proPhotoURL || null,
-              date: `${d.dateToken} - ${d.timeToken}`,
-              price: d.price || 'RD$0',
-              status: d.status,
-              ...d
-            })
+            activeOrders.push({ id: docSnap.id, pro: d.proName || 'Profesional', specialty: d.proSpecialty || 'Servicio', avatar: d.proAvatar || 'P', photoURL: d.proPhotoURL || null, date: `${d.dateToken} - ${d.timeToken}`, price: d.price || 'RD$0', status: d.status, ...d })
           })
           if (activeOrders.length > 0) {
             activeOrders.sort((a,b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0))
@@ -466,9 +371,7 @@ export default function App() {
             setNotifiedOrderIds(prev => {
               if (!prev.has(newest.id + '_accepted')) {
                 setAlertOrder({ ...newest, isUserAlert: true })
-                const nextSet = new Set(prev)
-                nextSet.add(newest.id + '_accepted')
-                return nextSet
+                const nextSet = new Set(prev); nextSet.add(newest.id + '_accepted'); return nextSet
               }
               return prev
             })
@@ -476,13 +379,18 @@ export default function App() {
         })
       }
     }
-
     listenerReadyRef.current = false
     setupListener()
     return () => { listenerReadyRef.current = false; unsubscribeOrders() }
   }, [authReady, userData, userRole])
 
+  // ─── NAVIGATE ─────────────────────────────────────────────────────────────
   const navigate = (page, data) => {
+    if (page === 'localDetalle' && data) {
+      setSelectedLocal(data)
+      setCurrentPage('localDetalle')
+      return
+    }
     if (data?.professional) setSelectedPro(data.professional)
     if (data && !data.user && !data.professional) setSelectedPro(data)
     if (page === 'home' && !localStorage.getItem(TOUR_KEY)) setTimeout(() => setShowTour(true), 800)
@@ -515,21 +423,23 @@ export default function App() {
 
       {showTop && <Navbar navigate={navigate} currentPage={currentPage} lang={lang} setLang={setLang} />}
 
-      {currentPage === 'home'     && <HomePage     {...userProps} />}
-      {currentPage === 'services' && <ServicesPage {...commonProps} />}
-      {currentPage === 'search'   && <SearchPage   {...userProps} initialCategory={selectedPro?.catToSelect || 'all'} />}
-      {currentPage === 'orders'   && <OrdersPage   {...userProps} />}
-      {currentPage === 'login'    && <LoginPage    {...commonProps} />}
-      {currentPage === 'register' && <RegisterPage {...commonProps} />}
-      {currentPage === 'workdone' && <WorkDonePage {...commonProps} userRole={userRole} userData={userData} professional={selectedPro} />}
-      {currentPage === 'admin'    && <AdminPage    {...commonProps} />}
+      {currentPage === 'home'         && <HomePage     {...userProps} />}
+      {currentPage === 'services'     && <ServicesPage {...commonProps} />}
+      {currentPage === 'search'       && <SearchPage   {...userProps} initialCategory={selectedPro?.catToSelect || 'all'} />}
+      {currentPage === 'orders'       && <OrdersPage   {...userProps} />}
+      {currentPage === 'login'        && <LoginPage    {...commonProps} />}
+      {currentPage === 'register'     && <RegisterPage {...commonProps} />}
+      {currentPage === 'workdone'     && <WorkDonePage {...commonProps} userRole={userRole} userData={userData} professional={selectedPro} />}
+      {currentPage === 'admin'        && <AdminPage    {...commonProps} />}
+      {currentPage === 'locales'      && <LocalesPage  {...userProps} />}
+      {currentPage === 'localDetalle' && <LocalDetalle {...userProps} local={selectedLocal} />}
 
-      {currentPage === 'booking'       && <BookingPage              {...userProps}   professional={selectedPro} />}
-      {currentPage === 'chat'          && <ChatPage                 {...commonProps} professional={selectedPro} userData={userData} />}
-      {currentPage === 'tracking'      && <TrackingPage             {...userProps}   professional={selectedPro} />}
-      {currentPage === 'payment'       && <PaymentPage              {...commonProps} professional={selectedPro} />}
-      {currentPage === 'proProfile'    && <ProfessionalProfilePage  {...commonProps} professional={selectedPro} />}
-      {currentPage === 'clientProfile' && <ClientProfilePage        {...commonProps} userData={userData} onEditProfile={() => navigate('profile')} />}
+      {currentPage === 'booking'       && <BookingPage             {...userProps}   professional={selectedPro} />}
+      {currentPage === 'chat'          && <ChatPage                {...commonProps} professional={selectedPro} userData={userData} />}
+      {currentPage === 'tracking'      && <TrackingPage            {...userProps}   professional={selectedPro} />}
+      {currentPage === 'payment'       && <PaymentPage             {...commonProps} professional={selectedPro} />}
+      {currentPage === 'proProfile'    && <ProfessionalProfilePage {...commonProps} professional={selectedPro} />}
+      {currentPage === 'clientProfile' && <ClientProfilePage       {...commonProps} userData={userData} onEditProfile={() => navigate('profile')} />}
 
       {currentPage === 'profile' && (
         <ProfilePage lang={lang} setLang={setLang} navigate={navigate} userData={userData} userRole={userRole}
@@ -542,22 +452,18 @@ export default function App() {
         <TutorialTour lang={lang} onFinish={() => { setShowTour(false); localStorage.setItem(TOUR_KEY, 'true') }} />
       )}
 
-      {/* ── Regalo de Contratos de parte del Admin ── */}
       {userData?.bonusMessage && (
         <BonusMessageModal bonus={userData.bonusMessage} userId={userData.uid} onClose={() => {}} />
       )}
 
-      {/* ── Banner mensaje: UNA vez por chat, se limpia al ir a orders ── */}
       {chatBanner && (
         <ChatMessageBanner
-          sender={chatBanner.sender}
-          text={chatBanner.text}
+          sender={chatBanner.sender} text={chatBanner.text}
           onClose={() => setChatBanner(null)}
           onClick={() => { setChatBanner(null); navigate('orders') }}
         />
       )}
 
-      {/* ── Alerta PRO: nuevo pedido ── */}
       {alertOrder && !alertOrder.isUserAlert && (
         <ExoticOrderNotification
           order={alertOrder} lang={lang}
@@ -566,7 +472,6 @@ export default function App() {
         />
       )}
 
-      {/* ── Alerta USUARIO: pedido aceptado ── */}
       {alertOrder && alertOrder.isUserAlert && (
         <div className="exotic-notif-container" onClick={() => { navigate('tracking', alertOrder); setAlertOrder(null) }}>
           <div className="exotic-notif-glow" style={{ background: 'linear-gradient(135deg, #10B981, #34D399, #059669)' }} />
@@ -589,7 +494,6 @@ export default function App() {
         </div>
       )}
 
-      {/* ── Alerta USUARIO: trabajo terminado ── */}
       {jobDoneAlert && (
         <div className="exotic-notif-container" onClick={() => { setJobDoneAlert(null); navigate('orders') }}>
           <div className="exotic-notif-glow" style={{ background: 'linear-gradient(135deg, #6366F1, #8B5CF6, #A78BFA)' }} />
@@ -611,7 +515,6 @@ export default function App() {
         </div>
       )}
 
-      {/* ── Modal detalles ── */}
       {detailsModalOrder && (
         <OrderDetailsModal
           order={detailsModalOrder} lang={lang}

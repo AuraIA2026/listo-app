@@ -67,7 +67,6 @@ export default function LocalDetalle({ lang = 'es', navigate, local }) {
           ? <img src={local.portadaURL} alt={local.nombre} className="local-detalle-portada" />
           : <div className="local-detalle-portada-placeholder">🏢</div>
         }
-        {/* ✅ Vuelve a locales, no a search */}
         <button className="local-detalle-back" onClick={() => navigate('locales')}>
           ←
         </button>
@@ -152,24 +151,24 @@ export default function LocalDetalle({ lang = 'es', navigate, local }) {
             💬 {lang === 'es' ? 'Lo que dicen' : 'Reviews'}
           </p>
           {resenas.map((r, i) => (
-            <div key={i} className="local-servicio-card" style={{ alignItems:'flex-start' }}>
+            <div key={i} className="local-servicio-card" style={{ alignItems: 'flex-start' }}>
               {r.clientPhoto
-                ? <img src={r.clientPhoto} alt={r.clientName} style={{ width:36, height:36, borderRadius:'50%', objectFit:'cover', flexShrink:0 }} />
+                ? <img src={r.clientPhoto} alt={r.clientName} style={{ width: 36, height: 36, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
                 : <div style={{
-                    width:36, height:36, borderRadius:'50%', flexShrink:0,
+                    width: 36, height: 36, borderRadius: '50%', flexShrink: 0,
                     background: getAvatarColor(r.clientName),
-                    display:'flex', alignItems:'center', justifyContent:'center',
-                    fontSize:13, fontWeight:800, color:'#fff'
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: 13, fontWeight: 800, color: '#fff'
                   }}>
                     {(r.clientName || 'C').charAt(0).toUpperCase()}
                   </div>
               }
               <div className="local-servicio-info">
                 <p className="local-servicio-nombre">{r.clientName}</p>
-                <div style={{ color:'#FFD700', fontSize:11, marginBottom:2 }}>
+                <div style={{ color: '#FFD700', fontSize: 11, marginBottom: 2 }}>
                   {'★'.repeat(r.score)}{'☆'.repeat(5 - r.score)}
                 </div>
-                <p style={{ fontSize:12, color:'#666', margin:0, lineHeight:1.4 }}>"{r.comment}"</p>
+                <p style={{ fontSize: 12, color: '#666', margin: 0, lineHeight: 1.4 }}>"{r.comment}"</p>
               </div>
             </div>
           ))}
