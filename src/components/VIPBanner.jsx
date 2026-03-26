@@ -2,24 +2,24 @@ import { useState, useEffect } from 'react'
 
 const planes = [
   {
-    emoji: '⚪', nombre: 'Plan Básico',   precio: 'RD$500/mes',
-    bg: 'linear-gradient(135deg, #D1D5DB 0%, #9CA3AF 50%, #6B7280 100%)',
-    glow: 'rgba(156,163,175,0.6)', color: '#E5E7EB', stars: '#9CA3AF',
+    emoji: '🔹', nombre: 'Plan Estándar', precio: 'RD$500',
+    bg: 'linear-gradient(145deg, #66BB6A 0%, #388E3C 40%, #2E7D32 70%, #4CAF50 100%)',
+    glow: 'rgba(46,125,50,0.55)', color: '#4CAF50', stars: '#66BB6A',
   },
   {
-    emoji: '🥇', nombre: 'Pack Gold',     precio: 'RD$1,000/mes',
-    bg: 'linear-gradient(135deg, #F5C842 0%, #D4940A 50%, #B8780A 100%)',
-    glow: 'rgba(212,160,23,0.6)', color: '#F5C842', stars: '#FFD700',
+    emoji: '🥇', nombre: 'Pack Gold',     precio: 'RD$1,000',
+    bg: 'linear-gradient(145deg, #F5C842 0%, #D4940A 40%, #B8780A 70%, #E8B832 100%)',
+    glow: 'rgba(212,160,23,0.55)', color: '#F5C842', stars: '#FFD700',
   },
   {
-    emoji: '🥈', nombre: 'Pack Platinum', precio: 'RD$1,500/mes',
-    bg: 'linear-gradient(135deg, #C8D4E0 0%, #8E9BAF 50%, #6B7A8D 100%)',
-    glow: 'rgba(122,143,168,0.6)', color: '#C8D4E0', stars: '#B0C4DE',
+    emoji: '🥈', nombre: 'Pack Platinum', precio: 'RD$1,500',
+    bg: 'linear-gradient(145deg, #C8D4E0 0%, #8E9BAF 40%, #6B7A8D 70%, #B0BEC8 100%)',
+    glow: 'rgba(110,130,155,0.55)', color: '#C8D4E0', stars: '#B0C4DE',
   },
   {
-    emoji: '💎', nombre: 'VIP Exclusivo', precio: 'RD$2,500/mes',
-    bg: 'linear-gradient(135deg, #3B82F6 0%, #2563EB 50%, #1D4ED8 100%)',
-    glow: 'rgba(59,130,246,0.7)', color: '#93C5FD', stars: '#60A5FA',
+    emoji: '💎', nombre: 'VIP Ilimitado', precio: 'RD$2,500/mes',
+    bg: 'linear-gradient(145deg, #FF8C42 0%, #F26000 35%, #C94E00 65%, #FF7020 100%)',
+    glow: 'rgba(242,96,0,0.6)', color: '#FF8C42', stars: '#FF8C42',
   },
 ]
 
