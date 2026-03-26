@@ -187,8 +187,8 @@ export default function PlanesPage({ onBack, navigate }) {
         </div>
 
         <div className="planes-promo fade-up">
-          <h3>🎁 Oferta de Bienvenida</h3>
-          <p>¿Nuevo en Listo? Todos los profesionales nuevos reciben automáticamente <strong>7 días gratis en el plan VIP</strong> para que prueben los beneficios de conseguir clientes de alto nivel.</p>
+          <h3>🎁 Bienvenida a Listo</h3>
+          <p>¿Nuevo en Listo? Todos los profesionales nuevos reciben automáticamente <strong>1 mes gratis en el plan BÁSICO</strong> para que prueben la plataforma y comiencen a conseguir clientes.</p>
         </div>
 
         <div style={{ height: 40 }} />

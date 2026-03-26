@@ -382,6 +382,25 @@ export default function HomePage({ lang, navigate, userRole }) {
   const specs = ['todos', ...new Set(allProsToUse.filter(p=>p.specEs).map(p => p.specEs))]
   const filteredPros = proFilter === 'todos' ? allProsToUse : allProsToUse.filter(p => p.specEs === proFilter)
 
+  // Cálculos para la expiración del plan
+  let showWarning = false;
+  let isExpired = false;
+  let daysRemaining = null;
+  
+  if (isPro && userData?.planExpirationDate) {
+    const expDate = new Date(userData.planExpirationDate);
+    const now = new Date();
+    const diffTime = expDate - now;
+    daysRemaining = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (daysRemaining <= 0) {
+      isExpired = true;
+      daysRemaining = 0;
+    } else if (daysRemaining <= 7) {
+      showWarning = true;
+    }
+  }
+
   return (
     <div className="home-page">
 
@@ -422,9 +441,43 @@ export default function HomePage({ lang, navigate, userRole }) {
       <SocialLinks />
 
       {isPro ? (
-        <div style={{ padding: '20px 24px', background: 'white', margin: '0 16px 20px', borderRadius: '16px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
-           <h2 style={{ fontSize: '20px', margin: '0 0 8px' }}>👋 ¡Hola, Socio!</h2>
-           <p style={{ color: '#666', fontSize: '14px', margin: 0 }}>Tienes la agenda abierta. Los clientes te pueden encontrar.</p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', margin: '0 16px 20px' }}>
+          <div style={{ padding: '20px 24px', background: 'white', borderRadius: '16px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
+             <h2 style={{ fontSize: '20px', margin: '0 0 8px' }}>👋 ¡Hola, Socio!</h2>
+             <p style={{ color: '#666', fontSize: '14px', margin: 0 }}>Tienes la agenda abierta. Los clientes te pueden encontrar.</p>
+          </div>
+          
+          {isExpired && (
+            <div style={{ padding: '16px', background: '#FEF2F2', border: '1px solid #F87171', borderRadius: '12px' }}>
+              <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '8px' }}>
+                <span style={{ fontSize: '24px' }}>⚠️</span>
+                <span style={{ fontWeight: 'bold', color: '#991B1B', fontSize: '15px' }}>Tu período de prueba ha expirado</span>
+              </div>
+              <p style={{ margin: '0 0 12px', fontSize: '13px', color: '#7F1D1D', lineHeight: '1.4' }}>Selecciona un plan para mantener tu perfil activo y visible para los clientes.</p>
+              <button 
+                onClick={() => setShowHamburguesa(true)}
+                style={{ background: '#DC2626', color: 'white', border: 'none', padding: '10px 16px', borderRadius: '8px', fontWeight: 'bold', width: '100%', cursor: 'pointer' }}
+              >
+                Elegir mi próximo plan
+              </button>
+            </div>
+          )}
+
+          {showWarning && !isExpired && (
+            <div style={{ padding: '16px', background: '#FFFBEB', border: '1px solid #FCD34D', borderRadius: '12px' }}>
+              <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '8px' }}>
+                <span style={{ fontSize: '24px' }}>⏳</span>
+                <span style={{ fontWeight: 'bold', color: '#92400E', fontSize: '15px' }}>Tu prueba expira en {daysRemaining} {daysRemaining === 1 ? 'día' : 'días'}</span>
+              </div>
+              <p style={{ margin: '0 0 12px', fontSize: '13px', color: '#B45309', lineHeight: '1.4' }}>Asegura tu visibilidad en la plataforma. ¿Ya sabes qué plan elegir?</p>
+              <button 
+                onClick={() => setShowHamburguesa(true)}
+                style={{ background: '#D97706', color: 'white', border: 'none', padding: '10px 16px', borderRadius: '8px', fontWeight: 'bold', width: '100%', cursor: 'pointer' }}
+              >
+                Ver planes disponibles
+              </button>
+            </div>
+          )}
         </div>
       ) : (
         <div className="hp-cats-scroll">

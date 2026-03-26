@@ -111,12 +111,19 @@ export default function RegisterPage({ lang, navigate }) {
 
       // Guardar en Firestore
       const userId = result.user.uid
+      const expireDate = new Date()
+      expireDate.setDate(expireDate.getDate() + 30)
+
       await setDoc(doc(db, 'users', userId), {
         name: form.name,
         email: form.email,
         phone: form.phone,
         type: userType,
-        ...(userType === 'pro' && { category: form.category }),
+        ...(userType === 'pro' && { 
+          category: form.category,
+          plan: 'basico',
+          planExpirationDate: expireDate.toISOString()
+        }),
         createdAt: serverTimestamp(),
       })
 
