@@ -6,8 +6,13 @@ import { db, storage } from '../firebase'
 import './Locales.css'
 
 const ICONOS_SERVICIOS = ['🔧','🪛','🔨','🚿','⚡','🧹','🌿','🎨','🚗','💻','📦','🏗️','🔑','🪟','❄️']
+const METODOS_PAGO_OPTS = [
+  { id: 'efectivo', label: 'Efectivo 💵' },
+  { id: 'transferencia', label: 'Transferencia 🏦' },
+  { id: 'tarjeta', label: 'Tarjeta 💳' },
+  { id: 'paypal', label: 'PayPal 📱' }
+]
 
-// ✅ Recibe userData (no currentUser) igual que el resto de páginas en App.jsx
 export default function CrearLocal({ lang = 'es', navigate, userData }) {
   const [nombre,        setNombre]        = useState('')
   const [categoria,     setCategoria]     = useState('')
@@ -16,9 +21,17 @@ export default function CrearLocal({ lang = 'es', navigate, userData }) {
   const [logoPreview,   setLogoPreview]   = useState(null)
   const [portadaFile,   setPortadaFile]   = useState(null)
   const [portadaPreview,setPortadaPreview]= useState(null)
+  
+  // Novedades VIP
+  const [whatsapp,      setWhatsapp]      = useState('')
+  const [instagram,     setInstagram]     = useState('')
+  const [horario,       setHorario]       = useState('Lunes a Viernes, 8:00 AM - 6:00 PM')
+  const [pagos,         setPagos]         = useState(['efectivo', 'transferencia'])
+
   const [servicios,     setServicios]     = useState([
-    { nombre: '', descripcion: '', precio: '', icono: '🔧' }
+    { nombre: '', descripcion: '', tipoPrecio: 'fijo', precio: '', icono: '🔧' }
   ])
+  
   const [saving,  setSaving]  = useState(false)
   const [error,   setError]   = useState(null)
 
@@ -36,8 +49,12 @@ export default function CrearLocal({ lang = 'es', navigate, userData }) {
     setPortadaPreview(URL.createObjectURL(file))
   }
 
+  const handlePagoToggle = (id) => {
+    setPagos(prev => prev.includes(id) ? prev.filter(p => p !== id) : [...prev, id])
+  }
+
   const addServicio = () => {
-    setServicios(prev => [...prev, { nombre: '', descripcion: '', precio: '', icono: '🔧' }])
+    setServicios(prev => [...prev, { nombre: '', descripcion: '', tipoPrecio: 'fijo', precio: '', icono: '🔧' }])
   }
 
   const removeServicio = (idx) => {
@@ -49,14 +66,8 @@ export default function CrearLocal({ lang = 'es', navigate, userData }) {
   }
 
   const handleGuardar = async () => {
-    if (!nombre.trim()) {
-      setError(lang === 'es' ? 'El nombre es obligatorio' : 'Name is required')
-      return
-    }
-    if (!userData?.uid) {
-      setError(lang === 'es' ? 'Debes iniciar sesión' : 'You must be logged in')
-      return
-    }
+    if (!nombre.trim()) { setError(lang === 'es' ? 'El nombre es obligatorio' : 'Name is required'); return }
+    if (!userData?.uid) { setError(lang === 'es' ? 'Debes iniciar sesión' : 'You must be logged in'); return }
 
     setSaving(true)
     setError(null)
@@ -70,7 +81,6 @@ export default function CrearLocal({ lang = 'es', navigate, userData }) {
         await uploadBytes(logoRef, logoFile)
         logoURL = await getDownloadURL(logoRef)
       }
-
       if (portadaFile) {
         const portadaRef = ref(storage, `locales/${userData.uid}/portada_${Date.now()}`)
         await uploadBytes(portadaRef, portadaFile)
@@ -87,6 +97,10 @@ export default function CrearLocal({ lang = 'es', navigate, userData }) {
         descripcion:  descripcion.trim(),
         logoURL,
         portadaURL,
+        whatsapp:     whatsapp.trim(),
+        instagram:    instagram.trim(),
+        horario:      horario.trim(),
+        pagos:        pagos,
         servicios:    serviciosFiltrados,
         activo:       true,
         plan:         'vip',
@@ -96,7 +110,7 @@ export default function CrearLocal({ lang = 'es', navigate, userData }) {
         createdAt:    serverTimestamp(),
       })
 
-      navigate('profile')  // ✅ vuelve a perfil del pro
+      navigate('profile')
     } catch (e) {
       console.error('Error creando local:', e)
       setError(lang === 'es' ? 'Error al guardar. Intenta de nuevo.' : 'Error saving. Please try again.')
@@ -107,177 +121,137 @@ export default function CrearLocal({ lang = 'es', navigate, userData }) {
 
   return (
     <div className="crear-local-page">
-
-      {/* Header */}
       <div className="crear-local-header">
         <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:4 }}>
-          <button
-            onClick={() => navigate('profile')}
-            style={{ background:'rgba(255,255,255,0.15)', border:'none', color:'#fff', borderRadius:'50%', width:32, height:32, fontSize:16, cursor:'pointer', flexShrink:0 }}
-          >←</button>
+          <button onClick={() => navigate('profile')} className="crear-local-back">←</button>
           <div className="crear-local-header-title">
             <span style={{ fontSize: 24 }}>🏢</span>
-            <h1>{lang === 'es' ? 'Crear mi Local VIP' : 'Create my VIP Shop'}</h1>
+            <h1>{lang === 'es' ? 'Mi Local VIP' : 'My VIP Shop'}</h1>
           </div>
         </div>
         <p className="crear-local-header-sub">
-          {lang === 'es'
-            ? 'Configura tu espacio exclusivo en Listo Patrón'
-            : 'Set up your exclusive space in Listo Patrón'}
+          {lang === 'es' ? 'Diseña tu escaparate profesional de alto impacto.' : 'Design your high-impact professional storefront.'}
         </p>
       </div>
 
       <div className="crear-local-form">
-
-        {/* Nombre */}
-        <div className="crear-local-field">
-          <label className="crear-local-label">
-            🏷️ {lang === 'es' ? 'Nombre del local' : 'Shop name'}
-          </label>
-          <input
-            className="crear-local-input"
-            placeholder={lang === 'es' ? 'Ej: Plomería Express RD' : 'Ex: Express Plumbing RD'}
-            value={nombre}
-            onChange={e => setNombre(e.target.value)}
-          />
-        </div>
-
-        {/* Categoría */}
-        <div className="crear-local-field">
-          <label className="crear-local-label">
-            🔧 {lang === 'es' ? 'Categoría principal' : 'Main category'}
-          </label>
-          <input
-            className="crear-local-input"
-            placeholder={lang === 'es' ? 'Ej: Plomería, Electricidad...' : 'Ex: Plumbing, Electricity...'}
-            value={categoria}
-            onChange={e => setCategoria(e.target.value)}
-          />
-        </div>
-
-        {/* Descripción */}
-        <div className="crear-local-field">
-          <label className="crear-local-label">
-            📝 {lang === 'es' ? 'Descripción' : 'Description'}
-          </label>
-          <textarea
-            className="crear-local-textarea"
-            placeholder={lang === 'es'
-              ? 'Cuéntales a los clientes quiénes son y qué ofrecen...'
-              : 'Tell clients who you are and what you offer...'}
-            value={descripcion}
-            onChange={e => setDescripcion(e.target.value)}
-          />
-        </div>
-
-        {/* Logo */}
-        <div className="crear-local-field">
-          <label className="crear-local-label">
-            🖼️ {lang === 'es' ? 'Logo del local' : 'Shop logo'}
-          </label>
-          <label className="crear-local-upload">
-            {logoPreview
-              ? <img src={logoPreview} alt="logo" className="crear-local-upload-preview" style={{ height:80, width:80, borderRadius:12, objectFit:'cover' }} />
-              : <>
-                  <span className="crear-local-upload-icon">📷</span>
-                  <span className="crear-local-upload-text">
-                    {lang === 'es' ? 'Toca para subir logo' : 'Tap to upload logo'}
-                  </span>
-                </>
-            }
-            <input type="file" accept="image/*" style={{ display:'none' }} onChange={handleLogoChange} />
-          </label>
-        </div>
-
-        {/* Portada */}
-        <div className="crear-local-field">
-          <label className="crear-local-label">
-            🏞️ {lang === 'es' ? 'Foto de portada' : 'Cover photo'}
-          </label>
-          <label className="crear-local-upload">
-            {portadaPreview
-              ? <img src={portadaPreview} alt="portada" className="crear-local-upload-preview" />
-              : <>
-                  <span className="crear-local-upload-icon">🏞️</span>
-                  <span className="crear-local-upload-text">
-                    {lang === 'es' ? 'Toca para subir portada' : 'Tap to upload cover'}
-                  </span>
-                </>
-            }
-            <input type="file" accept="image/*" style={{ display:'none' }} onChange={handlePortadaChange} />
-          </label>
-        </div>
-
-        {/* Servicios */}
-        <div className="crear-local-field">
-          <label className="crear-local-label">
-            🛠️ {lang === 'es' ? 'Servicios que ofreces' : 'Services you offer'}
-          </label>
-
-          {servicios.map((srv, idx) => (
-            <div key={idx} className="crear-local-servicio-item">
-              {servicios.length > 1 && (
-                <button className="crear-local-servicio-delete" onClick={() => removeServicio(idx)}>✕</button>
-              )}
-              <div style={{ display:'flex', gap:6, flexWrap:'wrap', marginBottom:4 }}>
-                {ICONOS_SERVICIOS.map(ico => (
-                  <button
-                    key={ico}
-                    onClick={() => updateServicio(idx, 'icono', ico)}
-                    style={{
-                      fontSize:18,
-                      background: srv.icono === ico ? 'rgba(242,96,0,0.15)' : 'transparent',
-                      border: srv.icono === ico ? '2px solid #F26000' : '2px solid transparent',
-                      borderRadius:8, padding:'2px 4px', cursor:'pointer'
-                    }}
-                  >{ico}</button>
-                ))}
-              </div>
-              <input
-                className="crear-local-input"
-                placeholder={lang === 'es' ? 'Nombre del servicio' : 'Service name'}
-                value={srv.nombre}
-                onChange={e => updateServicio(idx, 'nombre', e.target.value)}
-                style={{ marginBottom: 6 }}
-              />
-              <input
-                className="crear-local-input"
-                placeholder={lang === 'es' ? 'Descripción breve (opcional)' : 'Short description (optional)'}
-                value={srv.descripcion}
-                onChange={e => updateServicio(idx, 'descripcion', e.target.value)}
-                style={{ marginBottom: 6 }}
-              />
-              <input
-                className="crear-local-input"
-                placeholder={lang === 'es' ? 'Precio (ej: 1500 o "A convenir")' : 'Price (e.g. 1500 or "To agree")'}
-                value={srv.precio}
-                onChange={e => updateServicio(idx, 'precio', e.target.value)}
-              />
+        {/* SECCIÓN 1: IDENTIDAD VISUAL */}
+        <div className="crear-local-section">
+          <h2 className="cls-title">🎨 {lang === 'es' ? 'Identidad Visual' : 'Visual Identity'}</h2>
+          
+          <div className="cls-grid">
+            <div className="crear-local-field">
+              <label className="crear-local-label">🖼️ {lang === 'es' ? 'Logo del negocio' : 'Business logo'}</label>
+              <label className="crear-local-upload">
+                {logoPreview ? <img src={logoPreview} alt="logo" className="cl-preview-img-logo" /> : <><span className="cl-upload-ico">📷</span><span className="cl-upload-txt">Subir Logo</span></>}
+                <input type="file" accept="image/*" style={{ display:'none' }} onChange={handleLogoChange} />
+              </label>
             </div>
-          ))}
-
-          <button className="crear-local-add-servicio" onClick={addServicio}>
-            + {lang === 'es' ? 'Agregar otro servicio' : 'Add another service'}
-          </button>
+            
+            <div className="crear-local-field">
+              <label className="crear-local-label">🏞️ {lang === 'es' ? 'Foto de Portada' : 'Cover Photo'}</label>
+              <label className="crear-local-upload covertop">
+                {portadaPreview ? <img src={portadaPreview} alt="portada" className="cl-preview-img-cover" /> : <><span className="cl-upload-ico">🏞️</span><span className="cl-upload-txt">Subir Portada</span></>}
+                <input type="file" accept="image/*" style={{ display:'none' }} onChange={handlePortadaChange} />
+              </label>
+            </div>
+          </div>
         </div>
 
-        {error && (
-          <p style={{ color:'#e55', fontSize:13, fontWeight:600, textAlign:'center', margin:0 }}>
-            ⚠️ {error}
-          </p>
-        )}
+        {/* SECCIÓN 2: INFORMACIÓN BÁSICA */}
+        <div className="crear-local-section">
+          <h2 className="cls-title">📝 {lang === 'es' ? 'Información General' : 'General Info'}</h2>
+          <div className="crear-local-field">
+            <label className="crear-local-label">Nombre del local</label>
+            <input className="crear-local-input" placeholder="Ej: Plomería Express RD" value={nombre} onChange={e => setNombre(e.target.value)} />
+          </div>
+          <div className="crear-local-field">
+            <label className="crear-local-label">Categoría Especializada</label>
+            <input className="crear-local-input" placeholder="Ej: Instalaciones Eléctricas, Tutorías..." value={categoria} onChange={e => setCategoria(e.target.value)} />
+          </div>
+          <div className="crear-local-field">
+            <label className="crear-local-label">Descripción Atractiva</label>
+            <textarea className="crear-local-textarea" placeholder="Convence a tus clientes por qué eres el mejor..." value={descripcion} onChange={e => setDescripcion(e.target.value)} />
+          </div>
+        </div>
 
-        <button
-          className="crear-local-save-btn"
-          onClick={handleGuardar}
-          disabled={saving}
-        >
-          {saving
-            ? (lang === 'es' ? '⏳ Guardando...' : '⏳ Saving...')
-            : (lang === 'es' ? '🏢 Publicar mi Local VIP' : '🏢 Publish my VIP Shop')
-          }
+        {/* SECCIÓN 3: OPERACIONES Y CONTACTO */}
+        <div className="crear-local-section">
+          <h2 className="cls-title">⚙️ {lang === 'es' ? 'Operaciones y Contacto' : 'Operations & Contact'}</h2>
+          
+          <div className="crear-local-field">
+            <label className="crear-local-label">🕒 Horarios de Atención</label>
+            <input className="crear-local-input" placeholder="Ej: Lun-Vie 8am - 6pm, Sábados 9am - 2pm" value={horario} onChange={e => setHorario(e.target.value)} />
+          </div>
+
+          <div className="crear-local-field">
+            <label className="crear-local-label">📱 WhatsApp del Negocio (Opcional)</label>
+            <input className="crear-local-input" placeholder="+1 809-000-0000" value={whatsapp} onChange={e => setWhatsapp(e.target.value)} />
+          </div>
+
+          <div className="crear-local-field">
+            <label className="crear-local-label">📸 Usuario de Instagram (Opcional)</label>
+            <input className="crear-local-input" placeholder="@tu_negocio_rd" value={instagram} onChange={e => setInstagram(e.target.value)} />
+          </div>
+
+          <div className="crear-local-field">
+            <label className="crear-local-label">💳 Métodos de Pago Aceptados</label>
+            <div className="cl-pagos-grid">
+              {METODOS_PAGO_OPTS.map(p => (
+                <label key={p.id} className={`cl-pago-opt ${pagos.includes(p.id) ? 'active' : ''}`}>
+                  <input type="checkbox" checked={pagos.includes(p.id)} onChange={() => handlePagoToggle(p.id)} style={{ display:'none' }} />
+                  {p.label}
+                </label>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* SECCIÓN 4: CATÁLOGO DE SERVICIOS */}
+        <div className="crear-local-section">
+          <h2 className="cls-title">🛠️ {lang === 'es' ? 'Catálogo de Servicios' : 'Service Catalog'}</h2>
+          <p className="cls-subtitle">Ofrece opciones claras. Agrega desde productos físicos hasta servicios por hora.</p>
+          
+          <div className="cl-servicios-list">
+            {servicios.map((srv, idx) => (
+              <div key={idx} className="cl-servicio-card">
+                {servicios.length > 1 && <button className="cl-servicio-delete" onClick={() => removeServicio(idx)}>✕</button>}
+                
+                <div className="cls-ico-scroll">
+                  {ICONOS_SERVICIOS.map(ico => (
+                    <button key={ico} className={`cls-ico-btn ${srv.icono === ico ? 'active' : ''}`} onClick={() => updateServicio(idx, 'icono', ico)}>{ico}</button>
+                  ))}
+                </div>
+
+                <div className="cl-sg-row">
+                  <input className="crear-local-input slim" placeholder="Nombre del servicio" value={srv.nombre} onChange={e => updateServicio(idx, 'nombre', e.target.value)} />
+                </div>
+                
+                <input className="crear-local-input slim text-sm" placeholder="Descripción breve (opcional)" value={srv.descripcion} onChange={e => updateServicio(idx, 'descripcion', e.target.value)} />
+                
+                <div className="cl-price-row">
+                  <select className="cl-price-select" value={srv.tipoPrecio} onChange={e => updateServicio(idx, 'tipoPrecio', e.target.value)}>
+                    <option value="fijo">Precio Fijo</option>
+                    <option value="desde">A partir de</option>
+                    <option value="convenir">A convenir</option>
+                  </select>
+                  {srv.tipoPrecio !== 'convenir' && (
+                    <input className="crear-local-input slim cl-money" placeholder="RD$ 1,500" value={srv.precio} onChange={e => updateServicio(idx, 'precio', e.target.value)} />
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+          <button className="cl-add-servicio-btn" onClick={addServicio}>+ {lang === 'es' ? 'Añadir otro servicio' : 'Add service'}</button>
+        </div>
+
+        {error && <div className="cl-error-toast">⚠️ {error}</div>}
+
+        <button className="crear-local-save-btn glow" onClick={handleGuardar} disabled={saving}>
+          {saving ? '⏳ Guardando Universo...' : '🚀 Poner en línea mi Local VIP'}
         </button>
       </div>
+      <div style={{ height: 60 }} />
     </div>
   )
 }
