@@ -54,7 +54,7 @@ export function useUserData() {
 
   const getInitials = (name) => {
     if (!name) return '?'
-    return name.trim().split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+    return String(name).trim().split(' ').map(n => String(n)[0] || '').join('').toUpperCase().slice(0, 2)
   }
 
   const getMemberSince = (lang = 'es') => {
