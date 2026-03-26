@@ -8,10 +8,10 @@ const css = `
 
 *{box-sizing:border-box;margin:0;padding:0;}
 :root{
-  --bg:#07090F;
-  --surface:#0E1117;
-  --surface2:#151820;
-  --border:rgba(255,255,255,0.06);
+  --bg:#F8FAFC;
+  --surface:#FFFFFF;
+  --surface2:#F1F5F9;
+  --border:rgba(0,0,0,0.08);
   --brand:#F26000;
   --brand-dim:rgba(242,96,0,0.12);
   --brand-glow:rgba(242,96,0,0.3);
@@ -23,8 +23,8 @@ const css = `
   --yellow-dim:rgba(245,158,11,0.12);
   --blue:#3B82F6;
   --blue-dim:rgba(59,130,246,0.12);
-  --text:#ECE9E3;
-  --muted:#5C5A56;
+  --text:#1E293B;
+  --muted:#64748B;
   --mono:'IBM Plex Mono',monospace;
   --display:'Syne',sans-serif;
   --body:'DM Sans',sans-serif;
@@ -60,7 +60,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--body);}
 /* ── TOPBAR ── */
 .admin-topbar{
   position:sticky;top:0;z-index:50;
-  background:rgba(7,9,15,0.92);
+  background:rgba(255,255,255,0.92);
   backdrop-filter:blur(16px);
   border-bottom:1px solid var(--border);
   display:flex;align-items:center;justify-content:space-between;
@@ -111,7 +111,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--body);}
 }
 .tab-count{
   font-family:var(--mono);font-size:10px;
-  background:rgba(255,255,255,0.06);
+  background:var(--surface2);
   padding:1px 6px;border-radius:4px;
   color:var(--muted);
 }
@@ -170,7 +170,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--body);}
   animation:fadeUp .35s ease both;
   transition:border-color .2s;
 }
-.payment-card:hover{border-color:rgba(255,255,255,0.1);}
+.payment-card:hover{border-color:rgba(0,0,0,0.15);box-shadow:0 4px 12px rgba(0,0,0,0.03);}
 
 .pc-top{display:flex;align-items:flex-start;gap:12px;}
 .pc-avatar{
@@ -274,7 +274,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--body);}
 .cc-btn.block{background:var(--red-dim);color:var(--red);border:1px solid rgba(239,68,68,.25);}
 .cc-btn.block:hover{background:rgba(239,68,68,.2);}
 .cc-btn.remind{background:var(--surface2);color:var(--muted);border:1px solid var(--border);}
-.cc-btn.remind:hover{color:var(--text);border-color:rgba(255,255,255,.15);}
+.cc-btn.remind:hover{color:var(--text);border-color:var(--border);background:#E2E8F0;}
 .cc-btn.paid{background:var(--green-dim);color:var(--green);border:1px solid rgba(16,185,129,.25);}
 .cc-btn.paid:hover{background:rgba(16,185,129,.2);}
 
@@ -309,7 +309,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--body);}
 .bc-btn.unblock{background:var(--green-dim);color:var(--green);border:1px solid rgba(16,185,129,.25);}
 .bc-btn.unblock:hover{background:rgba(16,185,129,.2);}
 .bc-btn.contact{background:var(--surface2);color:var(--muted);border:1px solid var(--border);}
-.bc-btn.contact:hover{color:var(--text);}
+.bc-btn.contact:hover{color:var(--text);background:#E2E8F0;}
 
 /* ── EMPTY ── */
 .empty-admin{
@@ -341,7 +341,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--body);}
 }
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 .confirm-modal{
-  background:var(--surface);border:1px solid rgba(255,255,255,.08);
+  background:var(--surface);border:1px solid var(--border);
   border-radius:24px 24px 0 0;padding:28px 24px 44px;
   width:100%;max-width:480px;text-align:center;
   animation:slideUp .3s cubic-bezier(.34,1.56,.64,1);
@@ -363,18 +363,18 @@ body{background:var(--bg);color:var(--text);font-family:var(--body);}
 
 /* ── FORMULARIO REGALOS ── */
 .gift-form{
-  background:linear-gradient(180deg, rgba(20,24,36,0.8), rgba(11,15,25,0.9));
-  border:1px solid rgba(255,255,255,0.05);
-  box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
+  background:var(--surface);
+  border:1px solid var(--border);
+  box-shadow: 0 10px 30px -10px rgba(0,0,0,0.05);
   border-radius:24px;padding:32px;
 }
-.gift-label{display:block;font-family:var(--display);font-size:13px;font-weight:700;color:#A1A1AA;margin-bottom:10px;text-transform:uppercase;letter-spacing:0.5px;}
+.gift-label{display:block;font-family:var(--display);font-size:13px;font-weight:700;color:var(--muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.5px;}
 .gift-input, .gift-textarea{
-  width:100%;background:rgba(0,0,0,0.2);border:1px solid rgba(255,255,255,0.1);
+  width:100%;background:var(--surface2);border:1px solid var(--border);
   color:var(--text);border-radius:16px;padding:16px;font-family:var(--body);font-size:15px;
   margin-bottom:24px;outline:none;transition:all .3s ease;
 }
-.gift-input:focus, .gift-textarea:focus{border-color:var(--yellow);box-shadow:0 0 0 4px rgba(245,158,11,0.1);}
+.gift-input:focus, .gift-textarea:focus{border-color:var(--yellow);box-shadow:0 0 0 4px rgba(245,158,11,0.1);background:var(--surface);}
 .gift-textarea{resize:vertical;min-height:90px;}
 .gift-btn{
   width:100%;background:linear-gradient(135deg, #F59E0B, #F26000);color:#FFF;border:none;border-radius:16px;
@@ -391,23 +391,23 @@ body{background:var(--bg);color:var(--text);font-family:var(--body);}
 .ac-input-wrapper { position:relative; }
 .ac-input-wrapper input { margin-bottom: 0; }
 .ac-dropdown {
-  position:absolute; top:100%; left:0; right:0; background:#1A1D27; border:1px solid rgba(255,255,255,0.1);
+  position:absolute; top:100%; left:0; right:0; background:var(--surface); border:1px solid var(--border);
   border-radius:12px; margin-top:8px; max-height:220px; overflow-y:auto; z-index:999;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.08);
 }
 .ac-item {
-  padding:12px 16px; border-bottom:1px solid rgba(255,255,255,0.05); cursor:pointer;
+  padding:12px 16px; border-bottom:1px solid var(--border); cursor:pointer;
   display:flex; align-items:center; gap:12px; transition:background .2s;
 }
 .ac-item:last-child { border-bottom:none; }
-.ac-item:hover { background:rgba(255,255,255,0.05); }
+.ac-item:hover { background:var(--surface2); }
 .ac-avatar {
   width:36px; height:36px; border-radius:10px; background:var(--yellow); display:flex; align-items:center; justifyContent:center;
   color:#000; font-family:var(--display); font-weight:800; overflow:hidden; flex-shrink:0;
 }
 .ac-avatar img { width:100%; height:100%; object-fit:cover; }
 .ac-text { display:flex; flex-direction:column; gap:4px; }
-.ac-name { font-size:14px; font-weight:700; color:#fff; }
+.ac-name { font-size:14px; font-weight:700; color:var(--text); }
 .ac-detail { font-size:12px; color:var(--muted); }
 `;
 
@@ -684,18 +684,18 @@ export default function AdminPage({ navigate }) {
 
         {/* ── MODAL: REVISIÓN DE DOCUMENTOS ── */}
         {viewDocs && (
-          <div style={{position:'fixed', inset:0, background:'rgba(0,0,0,0.8)', zIndex:999, display:'flex', flexDirection:'column',backdropFilter:'blur(5px)'}} onClick={() => setViewDocs(null)}>
-            <div style={{background:'#151820', width:'100%', maxWidth:500, margin:'auto', borderRadius:20, padding:20, maxHeight:'90vh', overflowY:'auto', border:'1px solid rgba(255,255,255,0.1)'}} onClick={e => e.stopPropagation()}>
+          <div style={{position:'fixed', inset:0, background:'rgba(0,0,0,0.6)', zIndex:999, display:'flex', flexDirection:'column',backdropFilter:'blur(5px)'}} onClick={() => setViewDocs(null)}>
+            <div style={{background:'var(--surface)', width:'100%', maxWidth:500, margin:'auto', borderRadius:20, padding:20, maxHeight:'90vh', overflowY:'auto', border:'1px solid var(--border)'}} onClick={e => e.stopPropagation()}>
               <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:16}}>
-                <h3 style={{fontSize:18, fontWeight:800, fontFamily:'var(--display)', color:'#fff', margin:0}}>Expediente de Profesional</h3>
-                <button onClick={() => setViewDocs(null)} style={{background:'none', border:'none', color:'#fff', fontSize:20, cursor:'pointer'}}>✕</button>
+                <h3 style={{fontSize:18, fontWeight:800, fontFamily:'var(--display)', color:'var(--text)', margin:0}}>Expediente de Profesional</h3>
+                <button onClick={() => setViewDocs(null)} style={{background:'none', border:'none', color:'var(--text)', fontSize:20, cursor:'pointer'}}>✕</button>
               </div>
 
-              <div style={{background:'rgba(255,255,255,0.03)', padding:16, borderRadius:12, marginBottom:16}}>
-                <p style={{margin:'0 0 4px', fontSize:14}}><strong style={{color:'#F26000'}}>Nombre:</strong> {viewDocs.verificacion?.nombre}</p>
-                <p style={{margin:'0 0 4px', fontSize:14}}><strong style={{color:'#F26000'}}>Cédula:</strong> {viewDocs.verificacion?.cedula}</p>
-                <p style={{margin:'0 0 4px', fontSize:14}}><strong style={{color:'#F26000'}}>Dirección:</strong> {viewDocs.verificacion?.direccion}, {viewDocs.verificacion?.sector}</p>
-                <p style={{margin:'0 0 4px', fontSize:14}}><strong style={{color:'#F26000'}}>Contacto:</strong> {viewDocs.verificacion?.telefono} {viewDocs.verificacion?.telefonoAlt ? ` / ${viewDocs.verificacion.telefonoAlt}` : ''}</p>
+              <div style={{background:'var(--surface2)', padding:16, borderRadius:12, marginBottom:16}}>
+                <p style={{margin:'0 0 4px', fontSize:14}}><strong style={{color:'var(--brand)'}}>Nombre:</strong> {viewDocs.verificacion?.nombre}</p>
+                <p style={{margin:'0 0 4px', fontSize:14}}><strong style={{color:'var(--brand)'}}>Cédula:</strong> {viewDocs.verificacion?.cedula}</p>
+                <p style={{margin:'0 0 4px', fontSize:14}}><strong style={{color:'var(--brand)'}}>Dirección:</strong> {viewDocs.verificacion?.direccion}, {viewDocs.verificacion?.sector}</p>
+                <p style={{margin:'0 0 4px', fontSize:14}}><strong style={{color:'var(--brand)'}}>Contacto:</strong> {viewDocs.verificacion?.telefono} {viewDocs.verificacion?.telefonoAlt ? ` / ${viewDocs.verificacion.telefonoAlt}` : ''}</p>
               </div>
 
               <div style={{display:'flex', flexDirection:'column', gap:12, marginBottom:20}}>
@@ -836,7 +836,7 @@ export default function AdminPage({ navigate }) {
             {users.map((u, i) => (
               <div className="blocked-card" key={u.id} style={{animationDelay:`${i*.06}s`, borderColor: u.planStatus==='inactive'?'rgba(239,68,68,0.25)':'rgba(255,255,255,0.1)'}}>
                 <div className="bc-top">
-                  <div className="cc-avatar" style={{background: u.planStatus==='inactive'?'#EF4444':'#10B981', width:40, height:40, borderRadius:12, display:'flex', alignItems:'center', justifyContent:'center', fontFamily:'Syne,sans-serif', fontWeight:800, fontSize:12, color:'#fff', flexShrink:0}}>
+                  <div className="cc-avatar" style={{background: u.planStatus==='inactive'?'#EF4444':'var(--green)', width:40, height:40, borderRadius:12, display:'flex', alignItems:'center', justifyContent:'center', fontFamily:'Syne,sans-serif', fontWeight:800, fontSize:12, color:'#fff', flexShrink:0}}>
                      {u.name?u.name.charAt(0).toUpperCase():'P'}
                   </div>
                   <div className="bc-info">
