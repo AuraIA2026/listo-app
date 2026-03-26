@@ -516,7 +516,7 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
             location:   data.location   || 'República Dominicana',
             experience: data.experience || '1 año',
             avatar:     (data.name || 'P').substring(0, 2).toUpperCase(),
-            available:  data.available !== false,
+            available:  data.profileComplete && data.available !== false,
             photoURL:   data.photoURL   || null,
             phone:      data.phone      || null,
           })

@@ -100,7 +100,7 @@ export default function ServicesPage({ lang = 'es', navigate }) {
             price: data.basePrice || 'RD$0/hr',
             location: data.city || data.location || 'República Dominicana',
             experience: data.experience || '1 año',
-            available: data.available !== false, // Por defecto true
+            available: data.profileComplete && data.available !== false,
             photo: data.photoURL || data.avatar || null,
             avatar: (data.name || 'P').substring(0,2).toUpperCase(),
             phone: data.phone || data.telefono || '',
@@ -123,7 +123,7 @@ export default function ServicesPage({ lang = 'es', navigate }) {
               price: data.basePrice || 'RD$0/hr',
               location: data.city || data.location || 'República Dominicana',
               experience: data.experience || '1 año',
-              available: data.available !== false,
+              available: data.profileComplete && data.available !== false,
               photo: data.photoURL || data.avatar || null,
               avatar: (data.name || 'P').substring(0,2).toUpperCase(),
               phone: data.phone || data.telefono || '',

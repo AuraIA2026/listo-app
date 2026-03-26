@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { collection, query, where, getDocs, limit } from 'firebase/firestore'
+import { collection, query, where, getDocs, limit, doc, updateDoc } from 'firebase/firestore'
 import { db } from '../firebase'
 import './HomePage.css'
 import TutorialTour, { useTour } from '../components/TutorialTour'
@@ -356,7 +356,7 @@ export default function HomePage({ lang, navigate, userRole }) {
             location: data.location || 'RD',
             experience: data.experience || '1 año',
             avatar: (data.name || 'P').substring(0, 2).toUpperCase(),
-            avail: data.available !== false,
+            avail: data.profileComplete && data.available !== false,
             img: data.photoURL || null
           })
         })
@@ -380,6 +380,23 @@ export default function HomePage({ lang, navigate, userRole }) {
   const featuredProsToUse = featuredReal.length > 0 ? featuredReal : featuredStatic
   const specs = ['todos', ...new Set(allProsToUse.filter(p=>p.specEs).map(p => p.specEs))]
   const filteredPros = proFilter === 'todos' ? allProsToUse : allProsToUse.filter(p => p.specEs === proFilter)
+
+  // Cálculos para disponibilidad y el toggle
+  const isAvailable = profileComplete && (userData?.available !== false);
+
+  const toggleAvailability = async () => {
+    if (!profileComplete) {
+      alert(lang === 'es' ? "Debes completar tu perfil para poder activarte y recibir pedidos." : "You must complete your profile to become active and receive orders.");
+      return;
+    }
+    if (!userData?.uid) return;
+    try {
+      const currentAvail = userData?.available !== false;
+      await updateDoc(doc(db, 'users', userData.uid), { available: !currentAvail });
+    } catch(e) {
+      console.error('Error toggling availability', e);
+    }
+  };
 
   // Cálculos para la expiración del plan
   let showWarning = false;
@@ -441,8 +458,39 @@ export default function HomePage({ lang, navigate, userRole }) {
       {isPro ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', margin: '0 16px 20px' }}>
           <div style={{ padding: '20px 24px', background: 'white', borderRadius: '16px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
-             <h2 style={{ fontSize: '20px', margin: '0 0 8px' }}>👋 ¡Hola, Socio!</h2>
-             <p style={{ color: '#666', fontSize: '14px', margin: 0 }}>Tienes la agenda abierta. Los clientes te pueden encontrar.</p>
+             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+               <h2 style={{ fontSize: '20px', margin: 0 }}>👋 ¡Hola, Socio!</h2>
+               <div 
+                 onClick={toggleAvailability}
+                 style={{ 
+                   width: '48px', height: '26px', borderRadius: '13px', 
+                   background: isAvailable ? '#22C55E' : '#E5E7EB', 
+                   position: 'relative', cursor: 'pointer', transition: 'background 0.3s',
+                   opacity: profileComplete ? 1 : 0.6
+                 }}
+               >
+                 <div style={{
+                   width: '20px', height: '20px', borderRadius: '50%', background: 'white',
+                   position: 'absolute', top: '3px', left: isAvailable ? '25px' : '3px',
+                   transition: 'left 0.3s', boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+                 }} />
+               </div>
+             </div>
+             
+             {!profileComplete ? (
+               <div style={{ padding: '12px', background: '#FEF2F2', borderRadius: '10px', border: '1px solid #FECACA', marginTop: '8px' }}>
+                 <p style={{ margin: '0 0 8px', fontSize: '13px', color: '#991B1B', fontWeight: 'bold' }}>
+                   ⚠️ Tu perfil está incompleto.
+                 </p>
+                 <p style={{ margin: 0, fontSize: '12px', color: '#B91C1C' }}>
+                   No puedes recibir pedidos. Cuando termines de completar tu perfil, pulsa el interruptor de arriba para activarte.
+                 </p>
+               </div>
+             ) : (
+               <p style={{ color: isAvailable ? '#15803D' : '#6B7280', fontSize: '14px', margin: 0, fontWeight: '500' }}>
+                 {isAvailable ? '🟢 Estás en línea. Los clientes te pueden encontrar.' : '⚫ Estás desconectado. Ningún cliente te verá.'}
+               </p>
+             )}
           </div>
           
           {isExpired && (
