@@ -192,11 +192,29 @@
 }
 
 /* Rediseño Moderno de Card */
-.pro-card {
-  background: white; border-radius: 20px; padding: 18px; margin-bottom: 14px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.03);
+.professionals-grid {
+  display: flex;
+  flex-direction: row;
+  overflow-x: auto;
+  gap: 14px;
+  padding: 0 16px 16px;
+  scrollbar-width: none;
+  scroll-snap-type: x mandatory;
 }
-.card-photo { position: relative; width: 70px; height: 70px; margin-bottom: 12px; }
+.professionals-grid::-webkit-scrollbar { display: none; }
+
+.pro-card {
+  background: white; border-radius: 20px; padding: 16px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.03);
+  min-width: calc(50% - 7px);
+  max-width: calc(50% - 7px);
+  flex-shrink: 0;
+  scroll-snap-align: start;
+  display: flex;
+  flex-direction: column;
+}
+.card-photo { position: relative; width: 100%; height: 120px; margin-bottom: 12px; }
+.pro-photo { width: 100%; height: 100%; object-fit: cover; border-radius: 16px; display: block; }
 .pro-avatar-big {
   width: 100%; height: 100%; border-radius: 20px; display: flex; align-items: center;
   justify-content: center; color: white; font-size: 24px; font-weight: 800;
@@ -208,14 +226,14 @@
 }
 .status-badge.avail { background: #10B981; color: white; border: 2px solid white; box-shadow: 0 2px 4px rgba(16,185,129,0.3); }
 .status-badge.busy { background: #EF4444; color: white; border: 2px solid white; }
-.pro-name { font-size: 18px; font-weight: 800; color: #111; margin: 0 0 4px; }
+.pro-name { font-size: 16px; font-weight: 800; color: #111; margin: 0 0 4px; line-height: 1.2; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; }
 .pro-cat { font-size: 14px; color: #666; margin: 0 0 6px; display: flex; align-items: center; gap: 6px; }
-.pro-location { font-size: 13px; color: #888; margin: 0 0 10px; }
+.pro-location { font-size: 12px; color: #888; margin: 0 0 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .pro-meta { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
 .pro-rating { font-size: 14px; font-weight: 800; color: #333; }
 .pro-rating em { font-weight: 500; font-style: normal; color: #999; font-size: 12px; }
-.pro-exp { font-size: 13px; color: #666; background: #F3F4F6; padding: 4px 10px; border-radius: 100px; font-weight: 600; }
-.card-footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-top: 14px; border-top: 1px solid #F3F4F6; }
-.card-actions { display: flex; gap: 8px; }
-.btn-profile { background: white; border: 1.5px solid #E5E7EB; color: #4B5563; padding: 8px 16px; border-radius: 12px; font-weight: 700; font-size: 13px; cursor: pointer; }
-.btn-book { background: var(--mamey); color: white; border: none; padding: 8px 18px; border-radius: 12px; font-weight: 800; font-size: 13px; cursor: pointer; box-shadow: 0 4px 12px rgba(242,96,0,0.25); }
+.pro-exp { font-size: 11px; color: #666; background: #F3F4F6; padding: 4px 8px; border-radius: 100px; font-weight: 600; white-space: nowrap; }
+.card-footer { display: flex; flex-direction: column; gap: 10px; padding-top: 12px; border-top: 1px solid #F3F4F6; margin-top: auto; }
+.card-actions { display: flex; gap: 8px; justify-content: space-between; width: 100%; }
+.btn-profile { flex: 1; text-align: center; background: white; border: 1.5px solid #E5E7EB; color: #4B5563; padding: 8px 4px; border-radius: 12px; font-weight: 700; font-size: 12px; cursor: pointer; }
+.btn-book { flex: 1; text-align: center; background: var(--mamey); color: white; border: none; padding: 8px 4px; border-radius: 12px; font-weight: 800; font-size: 12px; cursor: pointer; box-shadow: 0 4px 12px rgba(242,96,0,0.25); }
