@@ -925,7 +925,7 @@ export default function AdminPage({ navigate }) {
                     .filter(u => u.role === 'professional')
                     .filter(u => {
                       const term = dirSearch.toLowerCase().trim();
-                      return (u.name||'').toLowerCase().includes(term) || (u.phone||'').includes(term);
+                      return String(u.name||'').toLowerCase().includes(term) || String(u.phone||'').includes(term);
                     })
                     .slice(0, 8)
                     .map(u => (
@@ -950,7 +950,7 @@ export default function AdminPage({ navigate }) {
               )}
             </div>
 
-            {users.filter(u => u.role === 'professional').filter(u => !dirSearch || (u.name||'').toLowerCase().includes(dirSearch.toLowerCase().trim()) || (u.phone||'').includes(dirSearch.trim())).length === 0 && (
+            {users.filter(u => u.role === 'professional').filter(u => !dirSearch || String(u.name||'').toLowerCase().includes(dirSearch.toLowerCase().trim()) || String(u.phone||'').includes(dirSearch.trim())).length === 0 && (
               <div className="empty-admin">
                 <span>🚫</span>
                 <p>No se encontraron resultados</p>
@@ -959,7 +959,7 @@ export default function AdminPage({ navigate }) {
             
             {users
               .filter(u => u.role === 'professional')
-              .filter(u => !dirSearch || (u.name||'').toLowerCase().includes(dirSearch.toLowerCase().trim()) || (u.phone||'').includes(dirSearch.trim()))
+              .filter(u => !dirSearch || String(u.name||'').toLowerCase().includes(dirSearch.toLowerCase().trim()) || String(u.phone||'').includes(dirSearch.trim()))
               .map((u, i) => (
               <div className="blocked-card" key={u.id} style={{animationDelay:`${i*.06}s`, borderColor: u.planStatus==='inactive'?'rgba(239,68,68,0.25)':'var(--border)'}}>
                 <div className="bc-top">
@@ -1032,9 +1032,9 @@ export default function AdminPage({ navigate }) {
                     {users
                       .filter(u => {
                         const term = giftSearch.toLowerCase().trim();
-                        const userName = (u.name || '').toLowerCase();
-                        const userPhone = (u.phone || '');
-                        const userService = (u.service || '').toLowerCase();
+                        const userName = String(u.name || '').toLowerCase();
+                        const userPhone = String(u.phone || '').toLowerCase();
+                        const userService = String(u.service || '').toLowerCase();
                         return userName.includes(term) || userPhone.includes(term) || userService.includes(term);
                       })
                       .slice(0, 10) // Mostrar máximo 10
