@@ -456,8 +456,8 @@ export default function AdminPage({ navigate }) {
       setPayments(arr);
     });
 
-    // 2. Escuchar Usuarios (role: 'professional')
-    const unsubUsers = onSnapshot(query(collection(db, 'users'), where('role', '==', 'professional')), (snap) => {
+    // 2. Escuchar Usuarios (TODOS, para poder regalar a usuarios normales)
+    const unsubUsers = onSnapshot(query(collection(db, 'users')), (snap) => {
       const arr = snap.docs.map(d => ({ id: d.id, ...d.data() }));
       setUsers(arr);
     });
@@ -606,8 +606,8 @@ export default function AdminPage({ navigate }) {
   // Separemos los pagos en completados y pendientes
   const completedPayments = payments.filter(p => p.status === 'paid');
   const pendingPayments   = payments.filter(p => p.status === 'pending');
-  // Usuarios bloqueados/pendientes de aprobar
-  const blockedUsers      = users.filter(u => !u.approved || u.planStatus === 'inactive');
+  // Usuarios bloqueados/pendientes de aprobar (solo profesionales)
+  const blockedUsers      = users.filter(u => u.role === 'professional' && (!u.approved || u.planStatus === 'inactive'));
 
   const pendienteCount = pendingPayments.length;
   const bloqueadoCount = blockedUsers.length;
@@ -910,6 +910,7 @@ export default function AdminPage({ navigate }) {
               {showDirAc && dirSearch && (
                 <div className="ac-dropdown">
                   {users
+                    .filter(u => u.role === 'professional')
                     .filter(u => {
                       const term = dirSearch.toLowerCase().trim();
                       return (u.name||'').toLowerCase().includes(term) || (u.phone||'').includes(term);
@@ -937,7 +938,7 @@ export default function AdminPage({ navigate }) {
               )}
             </div>
 
-            {users.filter(u => !dirSearch || (u.name||'').toLowerCase().includes(dirSearch.toLowerCase().trim()) || (u.phone||'').includes(dirSearch.trim())).length === 0 && (
+            {users.filter(u => u.role === 'professional').filter(u => !dirSearch || (u.name||'').toLowerCase().includes(dirSearch.toLowerCase().trim()) || (u.phone||'').includes(dirSearch.trim())).length === 0 && (
               <div className="empty-admin">
                 <span>🚫</span>
                 <p>No se encontraron resultados</p>
@@ -945,6 +946,7 @@ export default function AdminPage({ navigate }) {
             )}
             
             {users
+              .filter(u => u.role === 'professional')
               .filter(u => !dirSearch || (u.name||'').toLowerCase().includes(dirSearch.toLowerCase().trim()) || (u.phone||'').includes(dirSearch.trim()))
               .map((u, i) => (
               <div className="blocked-card" key={u.id} style={{animationDelay:`${i*.06}s`, borderColor: u.planStatus==='inactive'?'rgba(239,68,68,0.25)':'var(--border)'}}>
