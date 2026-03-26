@@ -1072,7 +1072,7 @@ export default function AdminPage({ navigate }) {
                             {u.profilePic || u.photoURL || u.avatarId ? (
                                <img src={u.profilePic || u.photoURL || `https://i.pravatar.cc/100?u=${u.avatarId||u.id}`} alt="pro" />
                             ) : (
-                               (u.name ? u.name.charAt(0).toUpperCase() : 'P')
+                               (u.name ? String(u.name).charAt(0).toUpperCase() : 'P')
                             )}
                           </div>
                           <div className="ac-text">
@@ -1083,7 +1083,10 @@ export default function AdminPage({ navigate }) {
                       ))}
                     {users.filter(u => {
                       const term = giftSearch.toLowerCase().trim();
-                      return (u.name||'').toLowerCase().includes(term) || (u.phone||'').includes(term) || (u.service||'').toLowerCase().includes(term);
+                      const userName = String(u.name || '').toLowerCase();
+                      const userPhone = String(u.phone || '').toLowerCase();
+                      const userService = String(u.service || '').toLowerCase();
+                      return userName.includes(term) || userPhone.includes(term) || userService.includes(term);
                     }).length === 0 && (
                       <div className="ac-item"><div className="ac-text"><span className="ac-detail">No se encontraron resultados</span></div></div>
                     )}
