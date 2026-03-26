@@ -433,6 +433,10 @@ export default function AdminPage({ navigate }) {
   const [confirm, setConfirm]   = useState(null); // { type, obj }
   const [viewDocs, setViewDocs] = useState(null); // Usuario a inspeccionar documentos
 
+  // Búsqueda en Directorio
+  const [dirSearch, setDirSearch] = useState('');
+  const [showDirAc, setShowDirAc] = useState(false);
+
   // Formulario de Regalos
   const [giftUser, setGiftUser] = useState(''); // UID del usuario seleccionado
   const [giftSearch, setGiftSearch] = useState(''); // Texto escrito para buscar
@@ -827,17 +831,71 @@ export default function AdminPage({ navigate }) {
             <div className="section-header">
               <span className="section-title">Todos los profesionales</span>
             </div>
-            {users.length === 0 && (
+
+            <div className="ac-container">
+              <div className="ac-input-wrapper">
+                <input 
+                  type="text" 
+                  className="gift-input" 
+                  placeholder="Buscar profesional (escribe el nombre)..." 
+                  value={dirSearch} 
+                  onChange={e => {
+                    setDirSearch(e.target.value);
+                    setShowDirAc(true);
+                  }}
+                  onFocus={() => setShowDirAc(true)}
+                  style={{marginBottom: 16}}
+                />
+              </div>
+              
+              {showDirAc && dirSearch && (
+                <div className="ac-dropdown">
+                  {users
+                    .filter(u => {
+                      const term = dirSearch.toLowerCase().trim();
+                      return (u.name||'').toLowerCase().includes(term) || (u.phone||'').includes(term);
+                    })
+                    .slice(0, 8)
+                    .map(u => (
+                      <div key={u.id} className="ac-item" onClick={() => {
+                        setDirSearch(u.name || u.phone);
+                        setShowDirAc(false);
+                      }}>
+                        <div className="ac-avatar">
+                          {u.profilePic || u.photoURL || u.avatarId ? (
+                             <img src={u.profilePic || u.photoURL || `https://i.pravatar.cc/100?u=${u.avatarId||u.id}`} alt="pro" />
+                          ) : (
+                             (u.name ? u.name.charAt(0).toUpperCase() : 'P')
+                          )}
+                        </div>
+                        <div className="ac-text">
+                          <span className="ac-name">{u.name || 'Sin nombre'} {u.approved ? '✅' : ''}</span>
+                          <span className="ac-detail">{u.service || 'Usuario'} · Tel: {u.phone}</span>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              )}
+            </div>
+
+            {users.filter(u => !dirSearch || (u.name||'').toLowerCase().includes(dirSearch.toLowerCase().trim()) || (u.phone||'').includes(dirSearch.trim())).length === 0 && (
               <div className="empty-admin">
                 <span>🚫</span>
-                <p>No hay profesionales</p>
+                <p>No se encontraron resultados</p>
               </div>
             )}
-            {users.map((u, i) => (
-              <div className="blocked-card" key={u.id} style={{animationDelay:`${i*.06}s`, borderColor: u.planStatus==='inactive'?'rgba(239,68,68,0.25)':'rgba(255,255,255,0.1)'}}>
+            
+            {users
+              .filter(u => !dirSearch || (u.name||'').toLowerCase().includes(dirSearch.toLowerCase().trim()) || (u.phone||'').includes(dirSearch.trim()))
+              .map((u, i) => (
+              <div className="blocked-card" key={u.id} style={{animationDelay:`${i*.06}s`, borderColor: u.planStatus==='inactive'?'rgba(239,68,68,0.25)':'var(--border)'}}>
                 <div className="bc-top">
-                  <div className="cc-avatar" style={{background: u.planStatus==='inactive'?'#EF4444':'var(--green)', width:40, height:40, borderRadius:12, display:'flex', alignItems:'center', justifyContent:'center', fontFamily:'Syne,sans-serif', fontWeight:800, fontSize:12, color:'#fff', flexShrink:0}}>
-                     {u.name?u.name.charAt(0).toUpperCase():'P'}
+                  <div className="cc-avatar" style={{background: u.planStatus==='inactive'?'#EF4444':'var(--green)', width:40, height:40, borderRadius:12, display:'flex', alignItems:'center', justifyContent:'center', fontFamily:'Syne,sans-serif', fontWeight:800, fontSize:12, color:'#fff', flexShrink:0, overflow:'hidden'}}>
+                     {u.profilePic || u.photoURL || u.avatarId ? (
+                        <img src={u.profilePic || u.photoURL || `https://i.pravatar.cc/100?u=${u.avatarId||u.id}`} alt="pro" style={{width:'100%', height:'100%', objectFit:'cover'}}/>
+                     ) : (
+                        u.name?u.name.charAt(0).toUpperCase():'P'
+                     )}
                   </div>
                   <div className="bc-info">
                     <div className="bc-name">{u.name || 'Profesional'} {u.approved ? '✅' : '⏳'}</div>
