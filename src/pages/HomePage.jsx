@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from 'react'
 import { collection, query, where, getDocs, limit } from 'firebase/firestore'
 import { db } from '../firebase'
 import './HomePage.css'
-import Publicidad from './Publicidad'
 import TutorialTour, { useTour } from '../components/TutorialTour'
 import VIPBanner from '../components/VIPBanner'
 import BtnHamburguesa from '../components/BtnHamburguesa'
@@ -437,7 +436,6 @@ export default function HomePage({ lang, navigate, userRole }) {
         <img src={bannerPros} alt="Un profesional siempre cerca de ti" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top', display: 'block' }} />
       </div>
 
-      <Publicidad lang={lang} />
       <SocialLinks />
 
       {isPro ? (
