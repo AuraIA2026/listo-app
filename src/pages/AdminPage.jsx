@@ -1,6 +1,30 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect, Component } from "react";
 import { collection, query, where, onSnapshot, doc, updateDoc, orderBy } from 'firebase/firestore';
 import { db } from '../firebase';
+
+class ErrorBoundary extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, errorStr: '' };
+  }
+  static getDerivedStateFromError(error) {
+    return { hasError: true, errorStr: error.toString() + '\\n' + error.stack };
+  }
+  componentDidCatch(error, errorInfo) {
+    console.error("ErrorBoundary caught error", error, errorInfo);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{padding: 40, background: '#fff', color: '#EF4444', minHeight: '100vh'}}>
+          <h1>CRASH REPORTED</h1>
+          <pre style={{whiteSpace: 'pre-wrap', wordBreak: 'break-all'}}>{this.state.errorStr}</pre>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 /* ─── ESTILOS ─────────────────────────────────────────────── */
 const css = `
@@ -659,7 +683,7 @@ export default function AdminPage({ navigate }) {
   }
 
   return (
-    <>
+    <ErrorBoundary>
       <style>{css}</style>
       <div className="admin-wrap">
 
@@ -1154,6 +1178,6 @@ export default function AdminPage({ navigate }) {
         )}
 
       </div>
-    </>
+    </ErrorBoundary>
   );
 }
