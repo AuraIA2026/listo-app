@@ -34,6 +34,61 @@ const TOUR_KEY = 'listo_tour_done'
 const PAGES_WITH_BOTTOM_NAV = ['home','services','search','orders','profile','workdone','locales']
 const PAGES_WITH_TOP_NAV    = ['login','register']
 
+/* ── Modal Mensaje Bono/Regalo ───────────────────────────────────────────── */
+function BonusMessageModal({ bonus, userId, onClose }) {
+  const [closing, setClosing] = useState(false);
+
+  const handleClose = async () => {
+    setClosing(true);
+    if (userId) {
+      try {
+        await updateDoc(doc(db, 'users', userId), { bonusMessage: null });
+      } catch (e) {
+        console.error('Error limpiando bonus', e);
+      }
+    }
+    setTimeout(onClose, 300);
+  };
+
+  return (
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 99999,
+      background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(4px)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px',
+      opacity: closing ? 0 : 1, transition: 'opacity 0.3s'
+    }}>
+      <div style={{
+        width: '100%', maxWidth: '360px', borderRadius: '24px', padding: '32px 24px',
+        background: 'linear-gradient(135deg, #1A1A2E, #2A2A4A)', border: '2px solid #F26000',
+        boxShadow: '0 20px 40px rgba(0,0,0,0.5)', textAlign: 'center',
+        transform: closing ? 'scale(0.9)' : 'scale(1)', transition: 'transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
+      }}>
+        <span style={{ fontSize: '64px', display: 'block', marginBottom: '16px' }}>🎁</span>
+        <h2 style={{ color: '#FFF', margin: '0 0 12px', fontSize: '24px', fontWeight: '900' }}>¡Tienes un Regalo!</h2>
+        <p style={{ color: '#E2E8F0', fontSize: '15px', lineHeight: '1.5', margin: '0 0 24px' }}>
+          {bonus?.message || 'Has recibido un bono especial de la administración.'}
+        </p>
+        <div style={{ background: 'rgba(242,96,0,0.15)', border: '1px dashed #F26000', borderRadius: '16px', padding: '16px', marginBottom: '24px' }}>
+          <p style={{ margin: 0, color: '#FFF', fontSize: '18px', fontWeight: 'bold' }}>
+            +{bonus?.amount || 0} Contratos 📄
+          </p>
+        </div>
+        <button
+          onClick={handleClose}
+          style={{
+            width: '100%', padding: '16px', borderRadius: '14px', border: 'none',
+            background: 'linear-gradient(135deg, #F26000, #FF8C42)', color: '#fff',
+            fontSize: '16px', fontWeight: '800', cursor: 'pointer',
+            boxShadow: '0 8px 16px rgba(242,96,0,0.3)'
+          }}
+        >
+          ¡Aceptar Regalo!
+        </button>
+      </div>
+    </div>
+  );
+}
+
 /* ── Banner mensaje nuevo ────────────────────────────────────────────────── */
 function ChatMessageBanner({ sender, text, onClose, onClick }) {
   useEffect(() => {
