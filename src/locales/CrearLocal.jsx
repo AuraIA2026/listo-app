@@ -1,9 +1,26 @@
 // src/locales/CrearLocal.jsx
 import { useState } from 'react'
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore'
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
-import { db, storage } from '../firebase'
+import { db } from '../firebase'
 import './Locales.css'
+
+const compressImage = (file, maxRes = 600) => new Promise((resolve, reject) => {
+  const reader = new FileReader()
+  reader.onload = (e) => {
+    const img = new Image()
+    img.onload = () => {
+      let { width, height } = img
+      if (width > height) { if (width > maxRes) { height = Math.round(height * maxRes / width); width = maxRes } }
+      else { if (height > maxRes) { width = Math.round(width * maxRes / height); height = maxRes } }
+      const canvas = document.createElement('canvas')
+      canvas.width = width; canvas.height = height
+      canvas.getContext('2d').drawImage(img, 0, 0, width, height)
+      resolve(canvas.toDataURL('image/jpeg', 0.7))
+    }
+    img.onerror = reject; img.src = e.target.result
+  }
+  reader.onerror = reject; reader.readAsDataURL(file)
+})
 
 const ICONOS_SERVICIOS = ['🔧','🪛','🔨','🚿','⚡','🧹','🌿','🎨','🚗','💻','📦','🏗️','🔑','🪟','❄️']
 const METODOS_PAGO_OPTS = [
@@ -73,20 +90,17 @@ export default function CrearLocal({ lang = 'es', navigate, userData }) {
     setError(null)
     try {
       let logoURL = null, portadaURL = null
+      
       if (logoFile) {
-        const logoRef = ref(storage, `locales/${userData.uid}/logo_${Date.now()}`)
-        await uploadBytes(logoRef, logoFile); logoURL = await getDownloadURL(logoRef)
+        logoURL = await compressImage(logoFile, 400)
       }
       if (portadaFile) {
-        const portadaRef = ref(storage, `locales/${userData.uid}/portada_${Date.now()}`)
-        await uploadBytes(portadaRef, portadaFile); portadaURL = await getDownloadURL(portadaRef)
+        portadaURL = await compressImage(portadaFile, 800)
       }
 
       const galeriaURLs = []
       for (let i = 0; i < galeriaFiles.length; i++) {
-        const fotoRef = ref(storage, `locales/${userData.uid}/galeria_${Date.now()}_${i}`)
-        await uploadBytes(fotoRef, galeriaFiles[i].file)
-        const url = await getDownloadURL(fotoRef)
+        const url = await compressImage(galeriaFiles[i].file, 800)
         galeriaURLs.push(url)
       }
 
