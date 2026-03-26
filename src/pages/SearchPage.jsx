@@ -70,6 +70,46 @@ const clientMessages = {
   ],
 }
 
+// ── Banner de Creación VIP ──────────────────────────────────────
+function VipShopEntryBanner({ navigate, userRole }) {
+  const [isOpen, setIsOpen] = useState(false)
+  if (userRole !== 'pro') return null
+
+  return (
+    <div className="vip-entry-banner" style={{ margin: '0 16px 16px', background: 'linear-gradient(135deg, #1a1a2e, #16213e)', borderRadius: 14, overflow: 'hidden', color: '#fff', boxShadow: '0 8px 20px rgba(0,0,0,0.15)' }}>
+      <div onClick={() => setIsOpen(!isOpen)} style={{ padding: '14px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <span style={{ fontSize: 28, filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' }}>🏬</span>
+          <div>
+            <h3 style={{ margin: 0, fontSize: 16, fontWeight: 900, color: '#FFD700', textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>Crea tu Local VIP</h3>
+            <p style={{ margin: 0, fontSize: 12, color: '#ccc', fontWeight: 600 }}>Destaca entre la competencia</p>
+          </div>
+        </div>
+        <span style={{ transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: '0.3s', fontSize: 14, color: '#FFD700' }}>▼</span>
+      </div>
+      
+      {isOpen && (
+        <div style={{ padding: '0 16px 16px', animation: 'vip-slide-in 0.3s' }}>
+          <div style={{ background: 'rgba(255,255,255,0.08)', borderRadius: 10, padding: 12, marginBottom: 12 }}>
+            <ul style={{ margin: '0 0 10px', paddingLeft: 20, fontSize: 13, lineHeight: 1.6, color: '#ddd' }}>
+              <li>Menú de servicios detallado</li>
+              <li>Tus redes sociales y WhatsApp</li>
+              <li>Atrae mucha más clientela</li>
+            </ul>
+            <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: '#FFD700', textAlign: 'center', background: 'rgba(255,215,0,0.1)', padding: '6px', borderRadius: '6px' }}>Suscripción: RD$ 10,000 / mes</p>
+          </div>
+          <button 
+            style={{ width: '100%', padding: 14, borderRadius: 12, border: 'none', background: 'linear-gradient(135deg, #FFD700, #FFA500)', color: '#1a1a2e', fontSize: 15, fontWeight: 900, cursor: 'pointer', boxShadow: '0 4px 15px rgba(255,165,0,0.4)' }}
+            onClick={() => navigate('crear-local')}
+          >
+            🚀 Configurar mi Tienda Ahora
+          </button>
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ── Banner animado ──────────────────────────────────────────────
 function PromoBanner({ lang, userRole }) {
   const messages = userRole === 'pro' ? proMessages[lang] : clientMessages[lang]
@@ -541,6 +581,7 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
         </div>
       </div>
 
+      <VipShopEntryBanner navigate={navigate} userRole={userRole} />
       <PromoBanner lang={lang} userRole={userRole} />
 
       {/* ✅ Carrusel de Locales VIP — aparece automáticamente si hay locales */}
