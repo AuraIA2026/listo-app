@@ -433,6 +433,11 @@ export default function AdminPage({ navigate }) {
   const [confirm, setConfirm]   = useState(null); // { type, obj }
   const [viewDocs, setViewDocs] = useState(null); // Usuario a inspeccionar documentos
 
+  // Seguridad
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [adminPass, setAdminPass] = useState('');
+  const [passError, setPassError] = useState(false);
+
   // Búsqueda en Directorio
   const [dirSearch, setDirSearch] = useState('');
   const [showDirAc, setShowDirAc] = useState(false);
@@ -469,6 +474,16 @@ export default function AdminPage({ navigate }) {
   const showToast = (msg) => {
     setToast(msg);
     setTimeout(() => setToast(''), 2800);
+  };
+
+  const handleLogin = (e) => {
+    e.preventDefault();
+    if (adminPass === 'SoyArte(20251975)') {
+      setIsAuthenticated(true);
+      setPassError(false);
+    } else {
+      setPassError(true);
+    }
   };
 
   /* Confirmar acciones reales con Firebase */
@@ -568,6 +583,20 @@ export default function AdminPage({ navigate }) {
          setGiftUser('');
          setGiftAmount('5');
       }
+      
+      if (type === 'remind') {
+         import('firebase/firestore').then(({ addDoc, collection }) => {
+           addDoc(collection(db, 'notificaciones'), {
+              userId: obj.proId || obj.userId || obj.id,
+              type: 'system',
+              title: 'Recordatorio Administrativo',
+              text: 'Hola socio, te recordamos completar tu proceso pendiente o pago en la plataforma de Listo para evitar suspensiones. Gracias.',
+              date: new Date().toISOString(),
+              read: false
+           });
+         });
+         showToast(`📱 Recordatorio In-App enviado a ${obj.name || obj.proName || 'Usuario'}`);
+      }
     } catch(err) {
       console.error(err);
       showToast('❌ Ocurrió un error en la base de datos');
@@ -586,6 +615,36 @@ export default function AdminPage({ navigate }) {
   const totalVentas = completedPayments.reduce((a,p) => a + (p.planPriceVal || p.transferAmount || 0), 0);
   const planesVendidos = completedPayments.length;
   const planesPorVerificar = pendingPayments.reduce((a,p) => a + (p.planPriceVal || p.transferAmount || 0), 0);
+
+  if (!isAuthenticated) {
+    return (
+      <>
+        <style>{css}</style>
+        <div className="admin-wrap" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', padding: 20 }}>
+          <div style={{ background: 'var(--surface)', padding: '50px 40px', borderRadius: 24, boxShadow: '0 20px 40px rgba(0,0,0,0.05)', border: '1px solid var(--border)', width: '100%', maxWidth: 400, textAlign: 'center', animation: 'slideUp 0.4s ease' }}>
+            <div style={{ fontSize: 56, marginBottom: 16 }}>🛡️</div>
+            <h2 style={{ fontFamily: 'var(--display)', fontSize: 24, fontWeight: 800, marginBottom: 8, color: 'var(--text)' }}>Acceso Restringido</h2>
+            <p style={{ color: 'var(--muted)', fontSize: 13, marginBottom: 32 }}>Ingresa la clave maestra para poder administrar la plataforma Listo y los contratos.</p>
+            <form onSubmit={handleLogin}>
+              <input 
+                type="password" 
+                placeholder="Contraseña" 
+                value={adminPass} 
+                onChange={e => { setAdminPass(e.target.value); setPassError(false); }}
+                style={{ width: '100%', padding: '16px 20px', borderRadius: 16, border: `1px solid ${passError ? 'var(--red)' : 'var(--border)'}`, background: 'var(--surface2)', color: 'var(--text)', fontSize: 16, fontFamily: 'var(--mono)', marginBottom: 16, outline: 'none' }}
+                autoFocus
+              />
+              {passError && <p style={{ color: 'var(--red)', fontSize: 12, marginTop: -8, marginBottom: 16, textAlign: 'left', fontWeight: 'bold' }}>Clave incorrecta. Inténtalo de nuevo.</p>}
+              <button type="submit" style={{ width: '100%', padding: 18, background: 'linear-gradient(135deg, var(--brand), #C24E00)', color: '#fff', border: 'none', borderRadius: 16, fontSize: 16, fontWeight: 800, fontFamily: 'var(--display)', cursor: 'pointer', boxShadow: '0 8px 16px var(--brand-dim)' }}>
+                Desbloquear Panel
+              </button>
+            </form>
+            <button onClick={() => navigate && navigate('profile')} style={{ background: 'none', border: 'none', color: 'var(--muted)', fontSize: 13, marginTop: 24, cursor: 'pointer', textDecoration: 'underline' }}>Regresar a la App Segura</button>
+          </div>
+        </div>
+      </>
+    )
+  }
 
   return (
     <>
@@ -807,7 +866,7 @@ export default function AdminPage({ navigate }) {
 
                   <div className="cc-actions">
                     <button className="cc-btn remind"
-                      onClick={() => showToast(`📱 Recordatorio enviado a ${c.proName}`)}>
+                      onClick={() => setConfirm({type:'remind', obj:c})}>
                       📱 Mensaje
                     </button>
                     <button className="cc-btn paid"
@@ -1027,6 +1086,7 @@ export default function AdminPage({ navigate }) {
                  confirm.type==='add_contract' ? '¿Sumar contrato?' :
                  confirm.type==='sub_contract' ? '¿Restar contrato?' :
                  confirm.type==='send_gift'    ? '¿Enviar regalo sorpresa?' :
+                 confirm.type==='remind'       ? '¿Enviar Recordatorio?' :
                  '¿Aprobar transferencia?'}
               </h3>
               <p className="cm-sub">
@@ -1040,6 +1100,8 @@ export default function AdminPage({ navigate }) {
                   ? `Se quitará 1 contrato de la cuenta de ${confirm.obj.name}.`
                   : confirm.type==='send_gift'
                   ? `Se enviarán ${giftAmount} contratos a este usuario y saltará el confeti en su app.`
+                  : confirm.type==='remind'
+                  ? `Se enviará una notificación In-App al celular de ${confirm.obj.name || confirm.obj.proName} recordándole que termine el proceso.`
                   : `Se marcará el pago como verificado y se agregará el plan a la cuenta de ${confirm.obj.proName}.`}
               </p>
               <button
@@ -1050,6 +1112,7 @@ export default function AdminPage({ navigate }) {
                  confirm.type==='add_contract' ? '➕ Sí, sumar' :
                  confirm.type==='sub_contract' ? '➖ Sí, restar' :
                  confirm.type==='send_gift' ? '🎁 Enviar ahora' :
+                 confirm.type==='remind' ? '📱 Enviar Recordatorio' :
                  '💚 Confirmar validación'}
               </button>
               <button className="cm-btn ghost" onClick={() => setConfirm(null)}>Cancelar</button>
