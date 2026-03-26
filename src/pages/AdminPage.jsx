@@ -441,6 +441,9 @@ export default function AdminPage({ navigate }) {
   // Búsqueda en Directorio
   const [dirSearch, setDirSearch] = useState('');
   const [showDirAc, setShowDirAc] = useState(false);
+  
+  // Razón de Suspensión
+  const [blockReason, setBlockReason] = useState('');
 
   // Formulario de Regalos
   const [giftUser, setGiftUser] = useState(''); // UID del usuario seleccionado
@@ -545,8 +548,17 @@ export default function AdminPage({ navigate }) {
       }
       
       if (type === 'block') {
-         await updateDoc(doc(db, 'users', obj.id), { planStatus: 'inactive', approved: false });
-         showToast(`🔴 ${obj.name} bloqueado`);
+         await updateDoc(doc(db, 'users', obj.id), { 
+            planStatus: 'inactive', 
+            approved: false,
+            blockReason: blockReason.trim()
+         });
+         showToast(`🔴 ${obj.name} marcado como suspendido`);
+         setBlockReason(''); // Resetear
+      }
+      if (type === 'reject_payment') {
+         await updateDoc(doc(db, 'payments', obj.id), { status: 'rejected' });
+         showToast(`🔴 Pago de ${obj.proName} rechazado`);
       }
       if (type === 'unblock') {
          await updateDoc(doc(db, 'users', obj.id), { planStatus: 'active', approved: true });
@@ -871,10 +883,10 @@ export default function AdminPage({ navigate }) {
                     </button>
                     <button className="cc-btn paid"
                       onClick={() => setConfirm({type:'paid', obj:c})}>
-                      ✅ Validar pago & activar
+                      ✅ Validar
                     </button>
                     <button className="cc-btn block"
-                      onClick={() => setConfirm({type:'block', obj:c})}>
+                      onClick={() => setConfirm({type:'reject_payment', obj:c})}>
                       🔴 Rechazar
                     </button>
                   </div>
@@ -1077,7 +1089,7 @@ export default function AdminPage({ navigate }) {
 
         {/* CONFIRM MODAL */}
         {confirm && (
-          <div className="confirm-overlay" onClick={() => setConfirm(null)}>
+          <div className="confirm-overlay" onClick={() => {setConfirm(null); setBlockReason('');}}>
             <div className="confirm-modal" onClick={e => e.stopPropagation()}>
               <span className="cm-icon">
                 {confirm.type==='block' ? '🔴' : confirm.type==='sub_contract' ? '➖' : confirm.type==='add_contract' ? '➕' : confirm.type==='unblock' ? '✅' : '💚'}
@@ -1089,11 +1101,12 @@ export default function AdminPage({ navigate }) {
                  confirm.type==='sub_contract' ? '¿Restar contrato?' :
                  confirm.type==='send_gift'    ? '¿Enviar regalo sorpresa?' :
                  confirm.type==='remind'       ? '¿Enviar Recordatorio?' :
+                 confirm.type==='reject_payment' ? '¿Rechazar Pago?' :
                  '¿Aprobar transferencia?'}
               </h3>
               <p className="cm-sub">
                 {confirm.type==='block'
-                  ? `${confirm.obj.name} quedará inactivo y no recibirá trabajos.`
+                  ? `Estás a punto de suspender a ${confirm.obj.name} (${confirm.obj.service || 'Profesional'}). Quedará inactivo.`
                   : confirm.type==='unblock'
                   ? `Se activará el perfil de ${confirm.obj.name} en el sistema.`
                   : confirm.type==='add_contract'
@@ -1104,10 +1117,27 @@ export default function AdminPage({ navigate }) {
                   ? `Se enviarán ${giftAmount} contratos a este usuario y saltará el confeti en su app.`
                   : confirm.type==='remind'
                   ? `Se enviará una notificación In-App al celular de ${confirm.obj.name || confirm.obj.proName} recordándole que termine el proceso.`
+                  : confirm.type==='reject_payment'
+                  ? `El pago de la comisión de ${confirm.obj.proName} será rechazado.`
                   : `Se marcará el pago como verificado y se agregará el plan a la cuenta de ${confirm.obj.proName}.`}
               </p>
+
+              {confirm.type === 'block' && (
+                <div style={{textAlign: 'left', margin: '-8px 0 24px'}}>
+                  <label className="gift-label" style={{fontSize: 12}}>Motivo de la suspensión (Visible para auditoría)</label>
+                  <textarea 
+                    className="gift-textarea" 
+                    placeholder="Escribe la razón detallada del bloqueo..." 
+                    value={blockReason} 
+                    onChange={e => setBlockReason(e.target.value)}
+                    style={{marginBottom: 0, minHeight: 80}}
+                  />
+                </div>
+              )}
+
               <button
-                className={`cm-btn ${confirm.type==='block'||confirm.type==='sub_contract'?'danger':'success'}`}
+                className={`cm-btn ${confirm.type==='block'||confirm.type==='sub_contract'||confirm.type==='reject_payment'?'danger':'success'}`}
+                disabled={confirm.type === 'block' && !blockReason.trim()}
                 onClick={ejecutarConfirm}>
                 {confirm.type==='block'   ? '🔴 Sí, suspender'    :
                  confirm.type==='unblock' ? '✅ Sí, activar' :
@@ -1115,9 +1145,10 @@ export default function AdminPage({ navigate }) {
                  confirm.type==='sub_contract' ? '➖ Sí, restar' :
                  confirm.type==='send_gift' ? '🎁 Enviar ahora' :
                  confirm.type==='remind' ? '📱 Enviar Recordatorio' :
+                 confirm.type==='reject_payment' ? '🔴 Rechazar Pago' :
                  '💚 Confirmar validación'}
               </button>
-              <button className="cm-btn ghost" onClick={() => setConfirm(null)}>Cancelar</button>
+              <button className="cm-btn ghost" onClick={() => {setConfirm(null); setBlockReason('');}}>Cancelar</button>
             </div>
           </div>
         )}
