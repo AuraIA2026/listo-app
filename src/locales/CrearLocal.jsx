@@ -22,6 +22,7 @@ export default function CrearLocal({ lang = 'es', navigate, userData }) {
   const [logoPreview,   setLogoPreview]   = useState(null)
   const [portadaFile,   setPortadaFile]   = useState(null)
   const [portadaPreview,setPortadaPreview]= useState(null)
+  const [galeriaFiles,  setGaleriaFiles]  = useState([])
   
   const [whatsapp,      setWhatsapp]      = useState('')
   const [instagram,     setInstagram]     = useState('')
@@ -42,6 +43,16 @@ export default function CrearLocal({ lang = 'es', navigate, userData }) {
   const handlePortadaChange = (e) => {
     const file = e.target.files[0]; if (!file) return;
     setPortadaFile(file); setPortadaPreview(URL.createObjectURL(file))
+  }
+  const handleGaleriaChange = (e) => {
+    const files = Array.from(e.target.files)
+    if (!files.length) return
+    const newItems = files.map(file => ({ file, preview: URL.createObjectURL(file) }))
+    setGaleriaFiles(prev => [...prev, ...newItems].slice(0, 6)) // Máx 6
+    e.target.value = ''
+  }
+  const removeGaleria = (idx) => {
+    setGaleriaFiles(prev => prev.filter((_, i) => i !== idx))
   }
   const handlePagoToggle = (id) => {
     setPagos(prev => prev.includes(id) ? prev.filter(p => p !== id) : [...prev, id])
@@ -71,6 +82,14 @@ export default function CrearLocal({ lang = 'es', navigate, userData }) {
         await uploadBytes(portadaRef, portadaFile); portadaURL = await getDownloadURL(portadaRef)
       }
 
+      const galeriaURLs = []
+      for (let i = 0; i < galeriaFiles.length; i++) {
+        const fotoRef = ref(storage, `locales/${userData.uid}/galeria_${Date.now()}_${i}`)
+        await uploadBytes(fotoRef, galeriaFiles[i].file)
+        const url = await getDownloadURL(fotoRef)
+        galeriaURLs.push(url)
+      }
+
       await addDoc(collection(db, 'locales'), {
         proId:        userData.uid,
         proNombre:    userData.name || userData.displayName || 'Profesional',
@@ -83,6 +102,7 @@ export default function CrearLocal({ lang = 'es', navigate, userData }) {
         horario:      horario.trim(),
         pagos:        pagos,
         servicios:    servicios.filter(s => s.nombre.trim()),
+        fotosTrabajos: galeriaURLs,
         activo:       true,
         plan:         'vip',
         suscripcionPaida: true,
@@ -193,6 +213,27 @@ export default function CrearLocal({ lang = 'es', navigate, userData }) {
                 <input type="file" accept="image/*" style={{ display:'none' }} onChange={handlePortadaChange} />
               </label>
             </div>
+          </div>
+        </div>
+
+        {/* SECCIÓN 1.5: GALERÍA DE TRABAJOS */}
+        <div className="crear-local-section">
+          <h2 className="cls-title">📷 {lang === 'es' ? 'Trabajos Realizados' : 'Completed Work'}</h2>
+          <p className="cls-subtitle">{lang === 'es' ? 'Sube fotos del "antes y después" o de tus mejores proyectos (Máx. 6).' : 'Upload photos of your best previous works (Max 6)'}</p>
+          <div className="cl-galeria-grid">
+            {galeriaFiles.map((fObj, i) => (
+              <div key={i} className="cl-galeria-item">
+                <img src={fObj.preview} alt={`Trabajo ${i+1}`} className="cl-galeria-img" />
+                <button className="cl-galeria-del" onClick={() => removeGaleria(i)}>✕</button>
+              </div>
+            ))}
+            {galeriaFiles.length < 6 && (
+              <label className="cl-galeria-add">
+                <span style={{ fontSize: 24, marginBottom: 2 }}>+</span>
+                <span style={{ fontSize: 11, fontWeight: 700, textAlign: 'center' }}>Añadir Foto<br/>({galeriaFiles.length}/6)</span>
+                <input type="file" multiple accept="image/*" style={{ display:'none' }} onChange={handleGaleriaChange} />
+              </label>
+            )}
           </div>
         </div>
 

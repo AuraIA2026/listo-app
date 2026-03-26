@@ -57,6 +57,7 @@ export default function LocalDetalle({ lang = 'es', navigate, local }) {
   const rating    = local.rating    || 5
   const contratos = local.contratos || 0
   const pagos = local.pagos || []
+  const fotosTrabajos = local.fotosTrabajos || []
 
   const handleWhatsapp = () => {
     if (local.whatsapp) {
@@ -109,6 +110,7 @@ export default function LocalDetalle({ lang = 'es', navigate, local }) {
       {/* TABS DE NAVEGACIÓN */}
       <div className="ld-tabs-container">
         <button className={`ld-tab ${activeTab==='servicios'?'active':''}`} onClick={()=>setActiveTab('servicios')}>🛠️ Servicios</button>
+        {fotosTrabajos.length > 0 && <button className={`ld-tab ${activeTab==='galeria'?'active':''}`} onClick={()=>setActiveTab('galeria')}>📷 Galería</button>}
         <button className={`ld-tab ${activeTab==='acerca'?'active':''}`} onClick={()=>setActiveTab('acerca')}>ℹ️ Acerca de</button>
         <button className={`ld-tab ${activeTab==='resenas'?'active':''}`} onClick={()=>setActiveTab('resenas')}>💬 Reseñas</button>
       </div>
@@ -138,6 +140,15 @@ export default function LocalDetalle({ lang = 'es', navigate, local }) {
                 </div>
               ))
             )}
+          </div>
+        )}
+
+        {/* TAB GALERIA */}
+        {activeTab === 'galeria' && (
+          <div className="ld-galeria-grid">
+            {fotosTrabajos.map((foto, i) => (
+              <img key={i} src={foto} alt={`Trabajo ${i+1}`} className="ld-galeria-img" />
+            ))}
           </div>
         )}
 
