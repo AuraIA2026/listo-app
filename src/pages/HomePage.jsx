@@ -478,12 +478,15 @@ export default function HomePage({ lang, navigate, userRole }) {
              </div>
              
              {!profileComplete ? (
-               <div style={{ padding: '12px', background: '#FEF2F2', borderRadius: '10px', border: '1px solid #FECACA', marginTop: '8px' }}>
+               <div 
+                 onClick={() => navigate('profile', { screen: 'verification' })} 
+                 style={{ padding: '12px', background: '#FEF2F2', borderRadius: '10px', border: '1px solid #FECACA', marginTop: '8px', cursor: 'pointer' }}
+               >
                  <p style={{ margin: '0 0 8px', fontSize: '13px', color: '#991B1B', fontWeight: 'bold' }}>
-                   ⚠️ Tu perfil está incompleto.
+                   ⚠️ Tu perfil está incompleto (presiona aquí para verificar).
                  </p>
                  <p style={{ margin: 0, fontSize: '12px', color: '#B91C1C' }}>
-                   No puedes recibir pedidos. Cuando termines de completar tu perfil, pulsa el interruptor de arriba para activarte.
+                   No puedes recibir pedidos. Cuando termines de completar tu perfil y verificación, actívate.
                  </p>
                </div>
              ) : (

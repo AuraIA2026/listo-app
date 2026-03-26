@@ -132,6 +132,7 @@ export default function App() {
   const [authReady,       setAuthReady]       = useState(false)
   const [userData,        setUserData]        = useState(null)
   const [userRole,        setUserRole]        = useState('user')
+  const [profileInitScreen, setProfileInitScreen] = useState(null)
   const [profileComplete, setProfileComplete] = useState(false)
   const [alertOrder,        setAlertOrder]        = useState(null)
   const [detailsModalOrder, setDetailsModalOrder] = useState(null)
@@ -393,7 +394,9 @@ export default function App() {
       return
     }
     if (data?.professional) setSelectedPro(data.professional)
-    if (data && !data.user && !data.professional) setSelectedPro(data)
+    if (data && !data.user && !data.professional && page !== 'profile') setSelectedPro(data)
+    if (page === 'profile' && data?.screen) setProfileInitScreen(data.screen)
+    else if (page === 'profile') setProfileInitScreen(null)
     if (page === 'home' && !localStorage.getItem(TOUR_KEY)) setTimeout(() => setShowTour(true), 800)
     setCurrentPage(page)
   }
@@ -445,7 +448,7 @@ export default function App() {
 
       {currentPage === 'profile' && (
         <ProfilePage lang={lang} setLang={setLang} navigate={navigate} userData={userData} userRole={userRole}
-          profileComplete={profileComplete} onProfileCompleted={() => setProfileComplete(true)} onLogout={handleLogout} />
+          profileComplete={profileComplete} onProfileCompleted={() => setProfileComplete(true)} onLogout={handleLogout} initialScreen={profileInitScreen} />
       )}
 
       {showBottom && <BottomNav currentPage={currentPage} navigate={navigate} lang={lang} userData={userData} />}

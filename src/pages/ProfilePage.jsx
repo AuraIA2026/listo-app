@@ -419,10 +419,10 @@ function DeleteAccountModal({ lang, onConfirm, onCancel }) {
   )
 }
 
-export default function ProfilePage({ lang, setLang, navigate, onLogout }) {
+export default function ProfilePage({ lang, setLang, navigate, onLogout, initialScreen }) {
   const { userData, userRole, profileComplete, getMemberSince } = useUserData()
 
-  const [screen,      setScreen]      = useState(null)
+  const [screen,      setScreen]      = useState(initialScreen || null)
   const [showLogout,  setShowLogout]  = useState(false)
   const [showDelete,  setShowDelete]  = useState(false)
   const [showPhoto,   setShowPhoto]   = useState(false)
