@@ -1,6 +1,6 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { db, auth } from '../firebase'
-import { doc, updateDoc, deleteDoc } from 'firebase/firestore'
+import { doc, updateDoc, deleteDoc, collection, query, where, getDocs } from 'firebase/firestore'
 import { deleteUser } from 'firebase/auth'
 import { useUserData } from '../useUserData'
 import './ProfilePage.css'
@@ -428,6 +428,22 @@ export default function ProfilePage({ lang, setLang, navigate, onLogout, initial
   const [showPhoto,   setShowPhoto]   = useState(false)
   const [photoStatus, setPhotoStatus] = useState(null)
   const [tapCount,    setTapCount]    = useState(0)
+  const [ordersCount, setOrdersCount] = useState(0)
+
+  useEffect(() => {
+    if (!userData?.uid) return
+    const fetchOrdersCount = async () => {
+      try {
+        const field = userRole === 'pro' ? 'proId' : 'clientId'
+        const q = query(collection(db, 'orders'), where(field, '==', userData.uid))
+        const snap = await getDocs(q)
+        setOrdersCount(snap.size)
+      } catch (err) {
+        console.error("Error fetching orders count:", err)
+      }
+    }
+    fetchOrdersCount()
+  }, [userData?.uid, userRole])
 
   const fileInputRef   = useRef(null)
   const cameraInputRef = useRef(null)
@@ -549,12 +565,12 @@ export default function ProfilePage({ lang, setLang, navigate, onLogout, initial
 
         <div className="profile-stats">
           <div className="stat-item">
-            <span className="stat-num">0</span>
+            <span className="stat-num">{ordersCount}</span>
             <span className="stat-label">{T.orders}</span>
           </div>
           <div className="stat-divider" />
           <div className="stat-item">
-            <span className="stat-num">—</span>
+            <span className="stat-num">{userRole === 'pro' ? Number(userData?.rating || 5).toFixed(1) : '—'}</span>
             <span className="stat-label">{T.rating}</span>
           </div>
           <div className="stat-divider" />
