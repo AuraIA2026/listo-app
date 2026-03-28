@@ -1129,6 +1129,8 @@ export default function AdminPage({ navigate }) {
                  confirm.type==='send_gift'    ? '¿Enviar regalo sorpresa?' :
                  confirm.type==='remind'       ? '¿Enviar Recordatorio?' :
                  confirm.type==='reject_payment' ? '¿Rechazar Pago?' :
+                 confirm.type==='approve_verif' ? '¿Aprobar Profesional?' :
+                 confirm.type==='reject_verif' ? '¿Rechazar Verificación?' :
                  '¿Aprobar transferencia?'}
               </h3>
               <p className="cm-sub">
@@ -1146,6 +1148,10 @@ export default function AdminPage({ navigate }) {
                   ? `Se enviará una notificación In-App al celular de ${confirm.obj.name || confirm.obj.proName} recordándole que termine el proceso.`
                   : confirm.type==='reject_payment'
                   ? `El pago de la comisión de ${confirm.obj.proName} será rechazado.`
+                  : confirm.type==='approve_verif'
+                  ? `El usuario ${confirm.obj.verificacion?.nombre || 'este perfil'} será promovido a Profesional Premium y se le recargarán contratos iniciales.`
+                  : confirm.type==='reject_verif'
+                  ? `Se rechazará esta verificación y el usuario tendrá que intentar de nuevo.`
                   : `Se marcará el pago como verificado y se agregará el plan a la cuenta de ${confirm.obj.proName}.`}
               </p>
 
@@ -1163,7 +1169,7 @@ export default function AdminPage({ navigate }) {
               )}
 
               <button
-                className={`cm-btn ${confirm.type==='block'||confirm.type==='sub_contract'||confirm.type==='reject_payment'?'danger':'success'}`}
+                className={`cm-btn ${confirm.type==='block'||confirm.type==='sub_contract'||confirm.type==='reject_payment'||confirm.type==='reject_verif'?'danger':'success'}`}
                 disabled={confirm.type === 'block' && !blockReason.trim()}
                 onClick={ejecutarConfirm}>
                 {confirm.type==='block'   ? '🔴 Sí, suspender'    :
@@ -1173,6 +1179,8 @@ export default function AdminPage({ navigate }) {
                  confirm.type==='send_gift' ? '🎁 Enviar ahora' :
                  confirm.type==='remind' ? '📱 Enviar Recordatorio' :
                  confirm.type==='reject_payment' ? '🔴 Rechazar Pago' :
+                 confirm.type==='approve_verif' ? '✅ Aprobar Profesional' :
+                 confirm.type==='reject_verif' ? '❌ Sí, rechazar' :
                  '💚 Confirmar validación'}
               </button>
               <button className="cm-btn ghost" onClick={() => {setConfirm(null); setBlockReason('');}}>Cancelar</button>
