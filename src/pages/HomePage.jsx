@@ -327,6 +327,12 @@ export default function HomePage({ lang, navigate, userRole }) {
 
   const isPro = userRole === 'pro'
 
+  const [showLowContractWarning, setShowLowContractWarning] = useState(true)
+  useEffect(() => {
+    const timer = setTimeout(() => setShowLowContractWarning(false), 3 * 60 * 1000) // 3 minutes
+    return () => clearTimeout(timer)
+  }, [])
+
   useEffect(() => {
     const fetchPros = async () => {
       try {
@@ -383,15 +389,20 @@ export default function HomePage({ lang, navigate, userRole }) {
 
   // Cálculos para disponibilidad y el toggle
   const isAvailable = profileComplete && (userData?.available !== false);
+  const isLowContracts = (userData?.contracts || 0) === 1;
 
   const toggleAvailability = async () => {
     if (!profileComplete) {
       alert(lang === 'es' ? "Debes completar tu perfil para poder activarte y recibir pedidos." : "You must complete your profile to become active and receive orders.");
       return;
     }
+    const currentAvail = userData?.available !== false;
+    if (!currentAvail && (userData?.contracts || 0) <= 0) {
+      alert(lang === 'es' ? "No tienes contratos disponibles. Postúlate a un plan para recibir clientes." : "No contracts available. Select a plan to receive clients.");
+      return;
+    }
     if (!userData?.uid) return;
     try {
-      const currentAvail = userData?.available !== false;
       await updateDoc(doc(db, 'users', userData.uid), { available: !currentAvail });
     } catch(e) {
       console.error('Error toggling availability', e);
@@ -464,7 +475,7 @@ export default function HomePage({ lang, navigate, userRole }) {
                  onClick={toggleAvailability}
                  style={{ 
                    width: '48px', height: '26px', borderRadius: '13px', 
-                   background: isAvailable ? '#22C55E' : '#E5E7EB', 
+                   background: isAvailable ? (isLowContracts && showLowContractWarning ? '#EF4444' : '#22C55E') : '#E5E7EB', 
                    position: 'relative', cursor: 'pointer', transition: 'background 0.3s',
                    opacity: profileComplete ? 1 : 0.6
                  }}
@@ -490,8 +501,12 @@ export default function HomePage({ lang, navigate, userRole }) {
                  </p>
                </div>
              ) : (
-               <p style={{ color: isAvailable ? '#15803D' : '#6B7280', fontSize: '14px', margin: 0, fontWeight: '500' }}>
-                 {isAvailable ? '🟢 Estás en línea. Los clientes te pueden encontrar.' : '⚫ Estás desconectado. Ningún cliente te verá.'}
+               <p style={{ color: isAvailable ? (isLowContracts && showLowContractWarning ? '#B91C1C' : '#15803D') : '#6B7280', fontSize: '14px', margin: 0, fontWeight: '500' }}>
+                 {isAvailable 
+                   ? (isLowContracts && showLowContractWarning
+                       ? '🔴 Solo te queda un contrato, postulate para que no pierdas clientes.'
+                       : '🟢 Estás en línea. Los clientes te pueden encontrar.') 
+                   : '⚫ Estás desconectado. Ningún cliente te verá.'}
                </p>
              )}
           </div>
