@@ -135,12 +135,21 @@ export default function VerificacionPage({ onBack }) {
     try {
       const uid = auth.currentUser?.uid;
       if (uid) {
-        // Función para subir a Storage
+        // Función para subir a Storage con TimeOut de 15 segundos para evitar bloqueos infinitos
         const uploadToStorage = async (base64, pathName) => {
           if (!base64 || !base64.startsWith('data:image')) return base64; // Si ya es url o nulo
           const storageRef = ref(storage, `verificaciones/${uid}/${pathName}_${Date.now()}.jpg`);
-          await uploadString(storageRef, base64, 'data_url');
-          return await getDownloadURL(storageRef);
+          
+          const uploadTask = async () => {
+            await uploadString(storageRef, base64, 'data_url');
+            return await getDownloadURL(storageRef);
+          };
+
+          const timeoutTask = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('TIMEOUT_STORAGE')), 15000)
+          );
+
+          return await Promise.race([uploadTask(), timeoutTask]);
         };
 
         const [urlFrontal, urlTrasera, urlSelfie, urlConducta] = await Promise.all([
@@ -154,7 +163,7 @@ export default function VerificacionPage({ onBack }) {
           docs.portafolio.map((p, i) => uploadToStorage(p.base64, `portafolio_${i}`))
         );
 
-        await updateDoc(doc(db, "users", uid), {
+        const firestoreUpdateTask = updateDoc(doc(db, "users", uid), {
           verificacion: {
             ...form,
             docs: {
@@ -168,11 +177,23 @@ export default function VerificacionPage({ onBack }) {
             enviadoEn: new Date().toISOString(),
           }
         });
+
+        const firestoreTimeout = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('TIMEOUT_FIRESTORE')), 10000)
+        );
+
+        await Promise.race([firestoreUpdateTask, firestoreTimeout]);
       }
       setSubmitted(true);
     } catch (err) {
       console.error("Error guardando verificación:", err);
-      alert("Error al enviar. Intenta de nuevo.");
+      if (err.message && err.message.includes('TIMEOUT_STORAGE')) {
+        alert("Error: El servidor tardó demasiado en guardar las fotos. Verifica si 'Firebase Storage' está activado en tu panel de Firebase.");
+      } else if (err.message && err.message.includes('TIMEOUT_FIRESTORE')) {
+        alert("Error: No se pudo guardar en la base de datos. Verifica tu conexión a internet.");
+      } else {
+        alert("Error al enviar. Detalles: " + err.message);
+      }
     }
     setSaving(false);
   };
