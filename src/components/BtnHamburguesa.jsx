@@ -726,6 +726,18 @@ export default function BtnHamburguesa({ onClose, navigate, initialOpenSection =
               <>
                 {/* ══ 1. PERFIL — DATOS REALES (Removido por solicitud) ══ */}
 
+                {/* ══ 1.5 CONTRATOS HIGHLIGHT ══ */}
+                <div style={{ background: 'linear-gradient(135deg, #FFF0E6, #FFE4D6)', borderRadius: '16px', padding: '16px', margin: '4px 20px 24px', border: '1px solid #F2600044', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 4px 12px rgba(242,96,0,0.08)' }}>
+                   <div style={{ textAlign: 'center', flex: 1, borderRight: '1px solid #F2600033' }}>
+                      <span style={{ display: 'block', fontSize: '28px', fontWeight: '900', color: '#F26000', lineHeight: 1 }}>{userData?.contracts || 0}</span>
+                      <span style={{ fontSize: '11px', fontWeight: '800', color: '#B34700', textTransform: 'uppercase', marginTop: '6px', display: 'block' }}>Restantes</span>
+                   </div>
+                   <div style={{ textAlign: 'center', flex: 1 }}>
+                      <span style={{ display: 'block', fontSize: '28px', fontWeight: '900', color: '#666', lineHeight: 1 }}>{userData?.contractsUsed || 0}</span>
+                      <span style={{ fontSize: '11px', fontWeight: '800', color: '#777', textTransform: 'uppercase', marginTop: '6px', display: 'block' }}>Usados</span>
+                   </div>
+                </div>
+
                 {/* ══ 2. PLANES 3D ══ */}
                 <div className="pp-accordion" ref={planesRef}>
                   <button className="pp-acc-header" onClick={() => toggle('plans')}>

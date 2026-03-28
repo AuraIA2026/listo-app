@@ -335,9 +335,15 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
 
       {/* Action buttons */}
       <div className="pro-actions">
-        <button className="pro-btn-book" onClick={() => navigate('booking', pro)}>
-          📅 {T.book}
-        </button>
+        {typeof pro.contracts !== 'undefined' && pro.contracts <= 0 ? (
+          <button className="pro-btn-book" style={{ background: '#E0E0E0', color: '#888', cursor: 'not-allowed' }} disabled>
+            🚫 {lang === 'es' ? 'Sin turnos disponibles' : 'No available slots'}
+          </button>
+        ) : (
+          <button className="pro-btn-book" onClick={() => navigate('booking', pro)}>
+            📅 {T.book}
+          </button>
+        )}
         <button className="pro-btn-chat" onClick={() => navigate('chat', pro)}>
           💬 {T.chat}
         </button>

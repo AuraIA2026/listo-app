@@ -1,6 +1,4 @@
-import { useState, useEffect } from 'react'
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore'
-import { auth, db } from '../firebase'
+import { collection, addDoc, serverTimestamp, getDoc, doc, increment, updateDoc } from 'firebase/firestore'
 import './BookingPage.css'
 
 import { bookingTxt }                         from './bookingTexts'
@@ -97,6 +95,22 @@ export default function BookingPage({ lang = 'es', navigate, professional, userD
     if (!auth.currentUser) { setErrorMsg('Debes iniciar sesión para hacer una reserva.'); return }
     setLoading(true); setErrorMsg('')
     try {
+      // Validar contratos del profesional
+      let proSnap = null;
+      if (pro.id !== 'unknown' && pro.id !== 'desconocido') {
+        const proRef = doc(db, 'users', pro.id)
+        proSnap = await getDoc(proRef)
+        if (proSnap.exists()) {
+          const proData = proSnap.data()
+          const currentContracts = proData.contracts || 0
+          if (currentContracts <= 0) {
+            setErrorMsg(lang === 'es' ? 'Este profesional ya no tiene turnos disponibles actualmente.' : 'This professional has no available slots.')
+            setLoading(false)
+            return
+          }
+        }
+      }
+
       const orderData = {
         clientId:       auth.currentUser.uid,
         clientEmail:    auth.currentUser.email,
@@ -137,6 +151,26 @@ export default function BookingPage({ lang = 'es', navigate, professional, userD
         icon:      '💼',
         createdAt: serverTimestamp(),
       })
+
+      if (proSnap && proSnap.exists()) {
+        const currentContracts = proSnap.data().contracts || 0
+        const proRef = doc(db, 'users', pro.id)
+        await updateDoc(proRef, {
+          contracts: increment(-1),
+          contractsUsed: increment(1)
+        })
+        if (currentContracts - 1 === 1) {
+          await addDoc(collection(db, 'notificaciones'), {
+            userId: pro.id,
+            type: 'low_contracts',
+            title: '⚠️ Contratos Bajos',
+            text: '¡Solo te queda 1 contrato disponible! Renueva tu plan para seguir recibiendo pedidos.',
+            read: false,
+            icon: '📄',
+            createdAt: serverTimestamp()
+          })
+        }
+      }
 
       setConfirmed(true)
     } catch (error) {
