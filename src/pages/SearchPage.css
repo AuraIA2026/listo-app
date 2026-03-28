@@ -140,31 +140,39 @@
   flex-shrink: 0;
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 16px;
+  gap: 8px;
+  padding: 10px 20px;
   border-radius: 100px;
-  background: var(--off-white);
-  border: 1.5px solid transparent;
+  background: #F8FAFC;
+  border: 1px solid rgba(0,0,0,0.04);
   font-size: 14px;
-  font-weight: 600;
-  color: #555;
+  font-weight: 700;
+  color: #64748B;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.02);
 }
-.cat-pill:hover { background: #f0f0f0; }
+.cat-pill:hover { 
+  background: white; 
+  color: var(--mamey);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+  transform: translateY(-1px);
+}
 .cat-pill.active {
-  background: var(--mamey-pale);
-  color: var(--mamey-dark);
-  border-color: var(--mamey);
+  background: linear-gradient(135deg, var(--mamey), #FF8533);
+  color: white;
+  border: 1px solid transparent;
+  box-shadow: 0 6px 16px rgba(242,96,0,0.3);
+  transform: translateY(-2px);
 }
 
 .subcategories-scroll {
   display: flex;
-  gap: 8px;
+  gap: 10px;
   overflow-x: auto;
-  padding: 12px 16px 0;
+  padding: 14px 16px 4px;
   scrollbar-width: none;
-  animation: slideIn 0.3s ease;
+  animation: slideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .subcategories-scroll::-webkit-scrollbar { display: none; }
 
@@ -173,18 +181,29 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 14px;
-  border-radius: 8px;
-  background: #FFF;
-  border: 1px solid rgba(0,0,0,0.08);
+  padding: 8px 18px;
+  border-radius: 100px;
+  background: white;
+  border: 1.5px solid #E2E8F0;
   font-size: 13px;
-  color: #666;
-  font-weight: 500;
+  color: #64748B;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.25s ease;
 }
-.sub-pill:hover { border-color: rgba(242,96,0,0.4); color: var(--mamey); }
-.sub-pill.active { background: var(--mamey); color: white; border-color: var(--mamey); }
+.sub-pill:hover { 
+  border-color: rgba(242,96,0,0.3); 
+  color: var(--mamey);
+  background: #FFF9F5;
+  box-shadow: 0 2px 8px rgba(242,96,0,0.08);
+}
+.sub-pill.active { 
+  background: #FFF3EC; 
+  color: var(--mamey-dark); 
+  border-color: var(--mamey); 
+  font-weight: 800;
+  box-shadow: inset 0 0 0 1px var(--mamey);
+}
 
 @keyframes slideIn {
   from { opacity: 0; transform: translateY(-5px); }
