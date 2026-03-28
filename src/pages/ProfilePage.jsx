@@ -509,6 +509,16 @@ export default function ProfilePage({ lang, setLang, navigate, onLogout, initial
     if (next >= 5) { setTapCount(0); navigate('admin') }
   }
 
+  const toggleAvailability = async () => {
+    if (!userData?.uid) return;
+    const current = userData.available !== false;
+    try {
+      await updateDoc(doc(db, 'users', userData.uid), { available: !current });
+    } catch (err) {
+      console.error("Error updating availability:", err);
+    }
+  }
+
   const renderScreen = () => {
     const back = () => setScreen(null)
     switch (screen) {
@@ -562,6 +572,34 @@ export default function ProfilePage({ lang, setLang, navigate, onLogout, initial
 
         <h1 className="profile-name">{displayName}</h1>
         <p className="profile-email">{displayEmail}</p>
+
+        {userRole === 'pro' && (
+          <button 
+             onClick={toggleAvailability}
+             style={{ 
+               margin: '12px auto', 
+               background: userData?.available !== false ? '#10B981' : '#EF4444', 
+               color: 'white', 
+               border: 'none', 
+               padding: '10px 24px', 
+               borderRadius: '100px', 
+               fontWeight: '800', 
+               display: 'flex', 
+               alignItems: 'center', 
+               gap: '8px', 
+               cursor: 'pointer', 
+               boxShadow: userData?.available !== false ? '0 4px 12px rgba(16,185,129,0.3)' : '0 4px 12px rgba(239,68,68,0.3)', 
+               transition: 'all 0.2s', 
+               transform: 'scale(1)' 
+             }}
+             onMouseDown={e => e.currentTarget.style.transform='scale(0.95)'}
+             onMouseUp={e => e.currentTarget.style.transform='scale(1)'}
+             onMouseLeave={e => e.currentTarget.style.transform='scale(1)'}
+          >
+            <span style={{ fontSize: '16px' }}>{userData?.available !== false ? '✅' : '⛔'}</span>
+            {userData?.available !== false ? (lang==='es'?'DISPONIBLE':'AVAILABLE') : (lang==='es'?'OCUPADO':'BUSY')}
+          </button>
+        )}
 
         <div className="profile-stats">
           <div className="stat-item">
