@@ -10,7 +10,7 @@ import PlanesPage          from './PlanesPage'
 
 const txt = {
   es: {
-    orders: 'pedidos', rating: 'calificación', memberSince: 'Miembro desde',
+    orders: 'pedidos', rating: 'calificación', memberSince: 'Miembro desde', contracts: 'contratos',
     favTitle: 'Favoritos', favEmpty: 'Aún no tienes favoritos', favSub: 'Guarda tus profesionales favoritos aquí',
     notifTitle: 'Notificaciones', notifOrders: 'Pedidos y reservas', notifPromos: 'Promociones y ofertas',
     notifNews: 'Novedades de la app', notifReminders: 'Recordatorios',
@@ -60,7 +60,7 @@ const txt = {
     ],
   },
   en: {
-    orders: 'orders', rating: 'rating', memberSince: 'Member since',
+    orders: 'orders', rating: 'rating', memberSince: 'Member since', contracts: 'contracts',
     favTitle: 'Favorites', favEmpty: 'No favorites yet', favSub: 'Save your favorite professionals here',
     notifTitle: 'Notifications', notifOrders: 'Orders & bookings', notifPromos: 'Promotions & offers',
     notifNews: 'App updates', notifReminders: 'Reminders',
@@ -573,6 +573,15 @@ export default function ProfilePage({ lang, setLang, navigate, onLogout, initial
             <span className="stat-num">{userRole === 'pro' ? Number(userData?.rating || 5).toFixed(1) : '—'}</span>
             <span className="stat-label">{T.rating}</span>
           </div>
+          {userRole === 'pro' && (
+            <>
+              <div className="stat-divider" />
+              <div className="stat-item">
+                <span className="stat-num" style={{ color: '#FFD700' }}>{userData?.contracts || 0}</span>
+                <span className="stat-label">{T.contracts}</span>
+              </div>
+            </>
+          )}
           <div className="stat-divider" />
           <div className="stat-item">
             <span className="stat-num">{memberSince}</span>
