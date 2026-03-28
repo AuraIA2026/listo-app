@@ -656,9 +656,9 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
                   {lang === 'es' ? (subCat?.labelEs || mainCat?.labelEs || pro.category) : (subCat?.labelEn || mainCat?.labelEn || pro.category)}
                   {(() => {
                     const planStr = (pro.currentPlan || '').toLowerCase();
-                    if (planStr.includes('vip') || planStr.includes('elite') || planStr.includes('ilimitado')) return <span style={{marginLeft: '6px', fontSize: '9px', textTransform: 'uppercase', background: '#FF6B00', color: '#fff', padding: '2px 6px', borderRadius: '6px', fontWeight: '800'}}>VIP</span>;
-                    if (planStr.includes('gold')) return <span style={{marginLeft: '6px', fontSize: '9px', textTransform: 'uppercase', background: '#FFD700', color: '#1a1a2e', padding: '2px 6px', borderRadius: '6px', fontWeight: '800'}}>GOLD</span>;
-                    if (planStr.includes('platinum') || planStr.includes('platino')) return <span style={{marginLeft: '6px', fontSize: '9px', textTransform: 'uppercase', background: '#94A3B8', color: '#fff', padding: '2px 6px', borderRadius: '6px', fontWeight: '800'}}>PLATINUM</span>;
+                    if (planStr.includes('vip') || planStr.includes('elite') || planStr.includes('ilimitado')) return <span style={{marginLeft: '6px', fontSize: '10px', textTransform: 'uppercase', background: 'linear-gradient(135deg, #FF6B00, #FF3D00)', color: '#fff', padding: '2px 8px', borderRadius: '100px', fontWeight: '900', boxShadow: '0 2px 8px rgba(255,107,0,0.4)', textShadow: '0 1px 2px rgba(0,0,0,0.3)'}}>✨ VIP</span>;
+                    if (planStr.includes('gold')) return <span style={{marginLeft: '6px', fontSize: '10px', textTransform: 'uppercase', background: 'linear-gradient(135deg, #FFD700, #FFA500)', color: '#1a1a2e', padding: '2px 8px', borderRadius: '100px', fontWeight: '900', boxShadow: '0 2px 8px rgba(255,215,0,0.4)'}}>⭐ GOLD</span>;
+                    if (planStr.includes('platinum') || planStr.includes('platino')) return <span style={{marginLeft: '6px', fontSize: '10px', textTransform: 'uppercase', background: 'linear-gradient(135deg, #B0BEC5, #78909C)', color: '#fff', padding: '2px 8px', borderRadius: '100px', fontWeight: '900', boxShadow: '0 2px 8px rgba(120,144,156,0.4)'}}>💎 PLATINUM</span>;
                     return null;
                   })()}
                 </p>
