@@ -89,7 +89,7 @@ function StarRating({ rating }) {
   return (
     <span className="star-rating">
       {'★'.repeat(Math.floor(rating))}{'☆'.repeat(5 - Math.floor(rating))}
-      <span className="star-num">{rating.toFixed(1)}</span>
+      <span className="star-num">{Number(rating || 5).toFixed(1)}</span>
     </span>
   )
 }

@@ -655,7 +655,7 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
                 </p>
                 <p className="pro-location">📍 {pro.location}</p>
                 <div className="pro-meta">
-                  <span className="pro-rating">★ {pro.rating.toFixed(1)} <em>({pro.reviews} {T.reviews})</em></span>
+                  <span className="pro-rating">★ {Number(pro.rating || 5).toFixed(1)} <em>({pro.reviews} {T.reviews})</em></span>
                   <span className="pro-exp">⏱ {pro.experience}</span>
                 </div>
               </div>

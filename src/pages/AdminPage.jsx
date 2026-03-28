@@ -545,7 +545,7 @@ export default function AdminPage({ navigate }) {
           approved: true,
           planStatus: 'active',
           contracts: 5, // Bono inicial gratis
-          rating: '5.0', // Valor inicial
+          rating: 5.0, // Valor inicial
           completedJobs: 0,
           pendingJobs: 0,
           'verificacion.estado': 'aprobada',

@@ -47,7 +47,7 @@ export default function LocalCard({ local, onPress }) {
           <span className="local-card-stars">
             {'★'.repeat(Math.round(local.rating || 5))}{'☆'.repeat(5 - Math.round(local.rating || 5))}
           </span>
-          <span className="local-card-rating-num">{(local.rating || 5).toFixed(1)}</span>
+          <span className="local-card-rating-num">{Number(local.rating || 5).toFixed(1)}</span>
           <span className="local-card-reviews">({local.totalResenas || 0})</span>
         </div>
 

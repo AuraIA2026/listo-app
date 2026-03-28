@@ -91,7 +91,7 @@ export default function LocalDetalle({ lang = 'es', navigate, local }) {
         <p className="local-detalle-categoria">🔧 {local.categoria || 'Servicios Especializados'}</p>
 
         <div className="local-detalle-stats">
-          <div className="local-detalle-stat"><span className="ld-num">★ {rating.toFixed(1)}</span><span className="ld-lbl">{lang==='es'?'Rating':'Rating'}</span></div>
+          <div className="local-detalle-stat"><span className="ld-num">★ {Number(rating||5).toFixed(1)}</span><span className="ld-lbl">{lang==='es'?'Rating':'Rating'}</span></div>
           <div className="local-detalle-stat"><span className="ld-num">{contratos}</span><span className="ld-lbl">{lang==='es'?'Contratos':'Jobs'}</span></div>
           <div className="local-detalle-stat"><span className="ld-num">{servicios.length}</span><span className="ld-lbl">{lang==='es'?'Servicios':'Services'}</span></div>
           <div className="local-detalle-stat"><span className="ld-num">{resenas.length}</span><span className="ld-lbl">{lang==='es'?'Reseñas':'Reviews'}</span></div>
