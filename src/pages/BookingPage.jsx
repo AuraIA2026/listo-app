@@ -1,4 +1,6 @@
+import { useState, useEffect } from 'react'
 import { collection, addDoc, serverTimestamp, getDoc, doc, increment, updateDoc } from 'firebase/firestore'
+import { auth, db } from '../firebase'
 import './BookingPage.css'
 
 import { bookingTxt }                         from './bookingTexts'
