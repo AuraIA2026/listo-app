@@ -82,14 +82,16 @@ export default function ClientProfilePage({ lang = 'es', navigate, userData, onE
   const photoURL     = userData?.photoURL || null
   const address      = userData?.address  || null
   const avatarColor  = avatarColors[displayName.charCodeAt(0) % avatarColors.length]
+  const isPro        = userData?.type === 'pro' || userData?.role === 'professional' || userData?.verificacion?.estado === 'aprobada'
 
   // Cargar pedidos y reseñas reales de Firestore
   useEffect(() => {
     if (!userData?.uid) { setLoading(false); return }
     const loadData = async () => {
       try {
-        // Pedidos del cliente en colección 'orders'
-        const pedidosQ = query(collection(db, 'orders'), where('clientId', '==', userData.uid))
+        // Pedidos dependiendo del rol
+        const field = isPro ? 'proId' : 'clientId'
+        const pedidosQ = query(collection(db, 'orders'), where(field, '==', userData.uid))
         const pedidosSnap = await getDocs(pedidosQ)
         const pedidosList = pedidosSnap.docs.map(d => ({ id: d.id, ...d.data() }))
         
@@ -98,7 +100,7 @@ export default function ClientProfilePage({ lang = 'es', navigate, userData, onE
         
         setOrders(pedidosList)
 
-        // Reseñas dadas por el cliente (tienen field rated === true)
+        // Reseñas 
         const reviewsList = pedidosList.filter(o => o.rated === true)
         setReviews(reviewsList)
       } catch (err) {
@@ -159,8 +161,17 @@ export default function ClientProfilePage({ lang = 'es', navigate, userData, onE
         <div className="client-stat-divider" />
         <div className="client-stat">
           <span className="client-stat-num">{reviews.length}</span>
-          <span className="client-stat-label">{T.reviews}</span>
+          <span className="client-stat-label">{isPro ? (lang==='es' ? 'Reseñas' : 'Reviews') : T.reviews}</span>
         </div>
+        {isPro && (
+          <>
+            <div className="client-stat-divider" />
+            <div className="client-stat">
+              <span className="client-stat-num" style={{ color: '#F26000' }}>{userData?.contracts || 0}</span>
+              <span className="client-stat-label">{lang==='es' ? 'Contratos' : 'Contracts'}</span>
+            </div>
+          </>
+        )}
         <div className="client-stat-divider" />
         <div className="client-stat">
           <span className="client-stat-num">{memberSince}</span>
@@ -240,10 +251,14 @@ export default function ClientProfilePage({ lang = 'es', navigate, userData, onE
                 return (
                   <div key={order.id} className="order-card">
                     <div className="order-card-top">
-                      <div className="order-icon">🔧</div>
+                      <div className="order-icon">{isPro ? '👤' : '🔧'}</div>
                       <div className="order-info">
                         <p className="order-title">{order.proSpecialty || 'Servicio'}</p>
-                        <p className="order-pro">👷 {order.proName || 'Profesional'}</p>
+                        <p className="order-pro">
+                          {isPro 
+                            ? `👤 ${order.clientName || 'Cliente'}`
+                            : `👷 ${order.proName || 'Profesional'}`}
+                        </p>
                         <p className="order-date">📅 {order.dateToken || '—'}</p>
                       </div>
                       <div>
@@ -273,9 +288,13 @@ export default function ClientProfilePage({ lang = 'es', navigate, userData, onE
               reviews.map(review => (
                 <div key={review.id} className="review-card-client">
                   <div className="review-card-top">
-                    <div className="review-pro-icon">👷</div>
+                    <div className="review-pro-icon">{isPro ? '👤' : '👷'}</div>
                     <div className="review-card-info">
-                      <p className="review-pro-name">{review.proName || 'Profesional'}</p>
+                      <p className="review-pro-name">
+                        {isPro 
+                          ? (review.reviewerName || review.clientName || 'Cliente')
+                          : (review.proName || 'Profesional')}
+                      </p>
                       <p className="review-service">{review.proSpecialty || '—'}</p>
                     </div>
                     <div className="review-stars">
