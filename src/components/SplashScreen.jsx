@@ -176,7 +176,7 @@ export default function SplashScreen({ onFinish, lang = 'es' }) {
   return (
     <>
       <audio ref={audioRef} loop preload="auto">
-        <source src="/audio/the_mountain-acoustic-131417.mp3" type="audio/mpeg" />
+        <source src="/audio/intro_app.mp3" type="audio/mpeg" />
       </audio>
 
       {phase === 'splash' ? (
