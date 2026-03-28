@@ -204,7 +204,7 @@ function TestimonialsCarousel({ lang }) {
         topReviews.sort((a,b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0))
         const formatted = topReviews.slice(0, 10).map(d => ({
           nameEs: d.reviewerName || d.clientName || 'Cliente',
-          photo: '',
+          photo: d.reviewerPhoto || d.clientPhoto || null,
           rating: d.ratingScore || 5,
           dateEs: d.dateToken || 'Reciente',
           dateEn: d.dateToken || 'Recent',
