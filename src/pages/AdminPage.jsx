@@ -832,7 +832,7 @@ export default function AdminPage({ navigate }) {
           <div className="admin-section" style={{marginTop:16}}>
             <div className="section-header">
               <span className="section-title">Todos los pagos</span>
-              <button className="section-action">Exportar →</button>
+              <button className="section-action" onClick={() => showToast('⏳ Exportación CSV en desarrollo')}>Exportar →</button>
             </div>
             {completedPayments.length === 0 && (
                <div className="empty-admin"><p>Aún no hay transacciones validadas.</p></div>

@@ -308,10 +308,21 @@ exports.enviarAlertaNuevoPedido = functions.firestore
       await transporter.sendMail(mailOptions);
       console.log(`✅ Alerta enviada exitosamente a ${destinoEmail} para la orden ${context.params.orderId}`);
       
+      // 4. DISPARAR PUSH NOTIFICATION EN PANTALLA BLOQUEADA
+      await db.collection("notificaciones").add({
+        userId: proId,
+        type: 'new_order',
+        title: '🔔 ¡NUEVA SOLICITUD DE SERVICIO!',
+        text: `¡Felicidades ${proData.name.split(' ')[0]}! Un cliente te necesita. ¡Abre la app para ver los detalles del trabajo!`,
+        orderId: context.params.orderId,
+        date: new Date().toISOString(),
+        read: false
+      });
+
       return { success: true };
 
     } catch (error) {
-      console.error("❌ Error enviando la alerta Mágica:", error);
+      console.error("❌ Error enviando la alerta Mágica o Push Notification:", error);
       return null;
     }
   });
