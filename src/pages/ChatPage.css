@@ -466,7 +466,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 10px 16px 16px;
+  padding: 10px 16px 86px;
   background: white;
   border-top: 1px solid rgba(0,0,0,0.05);
   flex-shrink: 0;
