@@ -277,7 +277,7 @@ export default function VerificacionPage({ onBack }) {
                 {n === 1 && (
                   <div style={styles.fieldsWrap}>
                     <Field label="Nombre completo" req>
-                      <input style={{...styles.input, background: '#eee', color: '#666' }} name="nombre" value={form.nombre} onChange={handleForm} placeholder="Como aparece en tu cédula" readOnly />
+                      <input style={styles.input} name="nombre" value={form.nombre} onChange={handleForm} placeholder="Como aparece en tu cédula" />
                     </Field>
                     <div style={styles.fieldRow}>
                       <Field label="Nº Cédula" req>
