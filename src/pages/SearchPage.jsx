@@ -636,8 +636,9 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
           const allSubs   = CATEGORIES.flatMap(c => c.subcategories)
           const subCat    = allSubs.find(s => s.id === mappedCat)
           const mainCat   = CATEGORIES.find(c => c.id === mappedCat || c.subcategories.some(s => s.id === mappedCat))
+          const isTopRated = Number(pro.rating || 0) >= 4.8;
           return (
-            <div key={pro.id} className="pro-card" style={{ animationDelay:`${i * 0.06}s` }}>
+            <div key={pro.id} className={`pro-card ${isTopRated ? 'top-rated' : ''}`} style={{ animationDelay:`${i * 0.06}s` }}>
               <div className="card-photo">
                 {pro.photoURL
                   ? <img src={pro.photoURL} alt={pro.name} className="pro-photo" />
