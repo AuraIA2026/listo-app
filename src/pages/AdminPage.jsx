@@ -542,6 +542,8 @@ export default function AdminPage({ navigate }) {
       if (type === 'approve_verif') {
         const payload = {
           role: 'professional',
+          type: 'pro',
+          profileComplete: true,
           approved: true,
           planStatus: 'active',
           contracts: 5, // Bono inicial gratis

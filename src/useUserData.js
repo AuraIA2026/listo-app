@@ -69,8 +69,8 @@ export function useUserData() {
     } catch { return '—' }
   }
 
-  const userRole     = userData?.type === 'pro' ? 'pro' : 'user'
-  const profileComplete = userData?.profileComplete || false
+  const userRole     = (userData?.type === 'pro' || userData?.role === 'professional' || userData?.verificacion?.estado === 'aprobada') ? 'pro' : 'user'
+  const profileComplete = userData?.profileComplete || userData?.verificacion?.estado === 'aprobada' || false
 
   return {
     userData,
