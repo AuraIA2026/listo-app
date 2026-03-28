@@ -31,7 +31,7 @@ import CrearLocal             from './locales/CrearLocal'   // ✅ AGREGADO
 import './App.css'
 
 const TOUR_KEY = 'listo_tour_done'
-const PAGES_WITH_BOTTOM_NAV = ['home','services','search','orders','profile','workdone','locales']
+const PAGES_WITH_BOTTOM_NAV = ['home','services','search','orders','profile','workdone','locales','chat']
 const PAGES_WITH_TOP_NAV    = ['login','register']
 
 /* ── Modal Mensaje Bono/Regalo ───────────────────────────────────────────── */

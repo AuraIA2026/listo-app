@@ -5,6 +5,7 @@ import icInicio  from '../assets/icons/inicio.png'
 import icBuscar  from '../assets/icons/buscar.png'
 import icPedidos from '../assets/icons/pedidos.png'
 import icPerfil  from '../assets/icons/perfil.png'
+import icMensaje from '../assets/icons/mensaje.png'
 
 const IconTrabajoListo = ({ active }) => (
   <svg width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -27,6 +28,7 @@ const tabs = [
   { id: 'search',   labelEs: 'Buscar',        labelEn: 'Search',   icon: icBuscar,  type: 'img' },
   { id: 'workdone', labelEs: 'Trabajo\nListo', labelEn: 'Work\nDone', type: 'svg' },
   { id: 'orders',   labelEs: 'Pedidos',       labelEn: 'Orders',   icon: icPedidos, type: 'img' },
+  { id: 'chat',     labelEs: 'Mensajes',      labelEn: 'Chat',     icon: icMensaje, type: 'img' },
   { id: 'profile',  labelEs: 'Perfil',        labelEn: 'Profile',  icon: icPerfil,  type: 'img' },
 ]
 
@@ -140,6 +142,7 @@ export default function BottomNav({ currentPage, navigate, lang = 'es', userRole
     currentPage === 'search'   ? 'search'   :
     currentPage === 'workdone' ? 'workdone' :
     currentPage === 'orders'   ? 'orders'   :
+    currentPage === 'chat'     ? 'chat'     :
     currentPage === 'profile'  ? 'profile'  : 'home'
 
   const handleTab = (id) => {
