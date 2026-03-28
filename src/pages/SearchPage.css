@@ -210,25 +210,18 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* Rediseño Moderno de Card */
+/* Rediseño Moderno de Card y Wrap Multi-Fila */
 .professionals-grid {
-  display: flex;
-  flex-direction: row;
-  overflow-x: auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
   gap: 14px;
   padding: 0 16px 16px;
-  scrollbar-width: none;
-  scroll-snap-type: x mandatory;
 }
-.professionals-grid::-webkit-scrollbar { display: none; }
 
 .pro-card {
   background: white; border-radius: 20px; padding: 16px;
   box-shadow: 0 4px 15px rgba(0,0,0,0.04); border: 1px solid rgba(0,0,0,0.04);
-  min-width: calc(50% - 7px);
-  max-width: calc(50% - 7px);
-  flex-shrink: 0;
-  scroll-snap-align: start;
+  width: 100%;
   display: flex;
   flex-direction: column;
   transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
@@ -309,3 +302,61 @@
 }
 .btn-book:hover { box-shadow: 0 6px 16px rgba(242,96,0,0.4); filter: brightness(1.05); transform: translateY(-1px); }
 .btn-book:active { transform: scale(0.94); box-shadow: 0 2px 6px rgba(242,96,0,0.3); }
+
+/* GOLD PLAN BUTTON */
+.btn-book.gold-plan {
+  background: linear-gradient(135deg, #FFD700, #FFA500);
+  color: #1a1a2e;
+  box-shadow: 0 4px 12px rgba(255, 165, 0, 0.4);
+}
+.btn-book.gold-plan .anim-icon {
+  display: inline-block;
+  animation: star-spin 3s linear infinite;
+}
+
+/* PLATINUM PLAN BUTTON */
+.btn-book.platinum-plan {
+  background: linear-gradient(135deg, #B0BEC5, #78909C);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(120, 144, 156, 0.4);
+}
+.btn-book.platinum-plan .anim-icon {
+  display: inline-block;
+  animation: float-shimmer 2s ease-in-out infinite;
+}
+
+/* VIP PLAN BUTTON */
+.btn-book.vip-plan {
+  background: linear-gradient(135deg, #FF6B00, #FF3D00);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(255, 107, 0, 0.4);
+  position: relative;
+  overflow: hidden;
+}
+.btn-book.vip-plan::after {
+  content: '';
+  position: absolute;
+  top: -50%; left: -100%; width: 200%; height: 200%;
+  background: linear-gradient(rgba(255,255,255,0.4), transparent);
+  transform: rotate(45deg);
+  animation: vip-shine 3s linear infinite;
+  pointer-events: none;
+}
+.btn-book.vip-plan .anim-icon {
+  display: inline-block;
+  animation: float-shimmer 2.5s ease-in-out infinite;
+}
+
+@keyframes star-spin {
+  0% { transform: rotate(0deg) scale(1); }
+  50% { transform: rotate(180deg) scale(1.2); }
+  100% { transform: rotate(360deg) scale(1); }
+}
+@keyframes float-shimmer {
+  0%, 100% { transform: translateY(0) scale(1); filter: brightness(1); }
+  50% { transform: translateY(-2px) scale(1.15); filter: brightness(1.2); }
+}
+@keyframes vip-shine {
+  0% { transform: translateX(-150%) rotate(45deg); }
+  100% { transform: translateX(150%) rotate(45deg); }
+}

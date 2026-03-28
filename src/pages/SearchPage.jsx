@@ -519,6 +519,7 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
             available:  data.profileComplete && data.available !== false,
             photoURL:   data.photoURL   || null,
             phone:      data.phone      || null,
+            currentPlan: data.currentPlan || data.planId || data.plan || 'basico',
           })
         })
         setProfessionals(prosList)
@@ -653,6 +654,13 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
                 <p className="pro-cat">
                   {subCat?.icon || mainCat?.icon || '🔧'}{' '}
                   {lang === 'es' ? (subCat?.labelEs || mainCat?.labelEs || pro.category) : (subCat?.labelEn || mainCat?.labelEn || pro.category)}
+                  {(() => {
+                    const planStr = (pro.currentPlan || '').toLowerCase();
+                    if (planStr.includes('vip') || planStr.includes('elite') || planStr.includes('ilimitado')) return <span style={{marginLeft: '6px', fontSize: '9px', textTransform: 'uppercase', background: '#FF6B00', color: '#fff', padding: '2px 6px', borderRadius: '6px', fontWeight: '800'}}>VIP</span>;
+                    if (planStr.includes('gold')) return <span style={{marginLeft: '6px', fontSize: '9px', textTransform: 'uppercase', background: '#FFD700', color: '#1a1a2e', padding: '2px 6px', borderRadius: '6px', fontWeight: '800'}}>GOLD</span>;
+                    if (planStr.includes('platinum') || planStr.includes('platino')) return <span style={{marginLeft: '6px', fontSize: '9px', textTransform: 'uppercase', background: '#94A3B8', color: '#fff', padding: '2px 6px', borderRadius: '6px', fontWeight: '800'}}>PLATINUM</span>;
+                    return null;
+                  })()}
                 </p>
                 <p className="pro-location">📍 {pro.location}</p>
                 <div className="pro-meta">
@@ -666,7 +674,32 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
                 </span>
                 <div className="card-actions">
                   <button className="btn-profile" onClick={() => navigate('proProfile', pro)}>👤 {T.profile}</button>
-                  <button className="btn-book"    onClick={() => navigate('booking', pro)}>{T.book}</button>
+                  {(() => {
+                    const plan = (pro.currentPlan || '').toLowerCase();
+                    const isGold = plan.includes('gold');
+                    const isPlatinum = plan.includes('platinum') || plan.includes('platino');
+                    const isVip = plan.includes('vip') || plan.includes('elite') || plan.includes('ilimitado');
+
+                    let btnClass = 'btn-book';
+                    let btnIcon = '';
+                    if (isVip) {
+                      btnClass += ' vip-plan';
+                      btnIcon = <span className="anim-icon">💎</span>;
+                    } else if (isPlatinum) {
+                      btnClass += ' platinum-plan';
+                      btnIcon = <span className="anim-icon">💎</span>;
+                    } else if (isGold) {
+                      btnClass += ' gold-plan';
+                      btnIcon = <span className="anim-icon">⭐</span>;
+                    }
+                    
+                    return (
+                      <button className={btnClass} onClick={() => navigate('booking', pro)}>
+                        {btnIcon && <span style={{marginRight: '4px'}}>{btnIcon}</span>}
+                        {T.book}
+                      </button>
+                    )
+                  })()}
                 </div>
               </div>
             </div>
