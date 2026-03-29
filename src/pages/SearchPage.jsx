@@ -638,6 +638,67 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
           const subCat    = allSubs.find(s => s.id === mappedCat)
           const mainCat   = CATEGORIES.find(c => c.id === mappedCat || c.subcategories.some(s => s.id === mappedCat))
           const isTopRated = Number(pro.rating || 0) >= 4.8;
+          
+          const planStr = (pro.currentPlan || '').toLowerCase()
+          const isVip = planStr.includes('vip') || planStr.includes('elite') || planStr.includes('ilimitado')
+          const isPlatinum = planStr.includes('platinum') || planStr.includes('platino')
+          const isPremium = isVip || isPlatinum
+
+          if (isPremium) {
+            return (
+              <div key={pro.id} className="pro-card-premium" style={{ animationDelay:`${i * 0.06}s` }} onClick={() => navigate('proProfile', pro)}>
+                <div className="premium-photo-wrap">
+                  {isPlatinum && <div className="premium-badges-top"><span className="premium-amz-badge" style={{background: 'linear-gradient(135deg, #B0BEC5, #78909C)'}}>💎 PLATINUM Choice</span></div>}
+                  {isVip && <div className="premium-badges-top"><span className="premium-amz-badge" style={{background: 'linear-gradient(135deg, #FF6B00, #FF3D00)'}}>✨ VIP Exclusive</span></div>}
+                  
+                  {pro.photoURL
+                    ? <img src={pro.photoURL} alt={pro.name} className="premium-photo" />
+                    : <div className="premium-avatar" style={{ background: avatarColors[(Array.from(pro.id).reduce((acc, char) => acc + char.charCodeAt(0), 0)) % avatarColors.length] }}>{pro.avatar}</div>
+                  }
+                  <span className={`status-badge ${pro.available ? 'avail' : 'busy'}`} style={{ bottom: '16px', fontSize: '12px', padding: '6px 14px' }}>
+                    {pro.available ? T.available : T.busy}
+                  </span>
+                </div>
+                
+                <div className="premium-title-row">
+                  <div>
+                    <h3 className="premium-name">{pro.name}</h3>
+                    <p className="premium-cat">{subCat?.icon || mainCat?.icon || '🔧'} {lang === 'es' ? (subCat?.labelEs || mainCat?.labelEs || pro.category) : (subCat?.labelEn || mainCat?.labelEn || pro.category)}</p>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <p className="pro-location" style={{ margin: 0, fontSize: '13px' }}>📍 {pro.location}</p>
+                    <p style={{ margin: '6px 0 0', color: '#B12704', fontWeight: '900', fontSize: '15px' }}>{lang === 'es' ? 'Precios a convenir' : 'Fixed prices'}</p>
+                  </div>
+                </div>
+
+                <div className="premium-rating-row">
+                  <span className="premium-stars">{'★'.repeat(Math.round(pro.rating || 5))}{'☆'.repeat(5 - Math.round(pro.rating || 5))}</span>
+                  <span className="premium-rating-text">{Number(pro.rating || 5).toFixed(1)} ({pro.reviews > 0 ? pro.reviews : '24'} {lang==='es'?'valoraciones':'ratings'})</span>
+                </div>
+
+                <div className="premium-stats">
+                  <p>🔥 +{pro.reviews > 10 ? pro.reviews * 3 : 50} <span>{lang==='es'?'contratados el mes pasado':'hired last month'}</span></p>
+                </div>
+
+                <div className="premium-review-box">
+                  <span className="premium-quote-icon">💬</span>
+                  <p className="premium-review-text">
+                    <strong>¡Excelente trabajo!</strong> "El mejor {lang==='es' ? (subCat?.labelEs || mainCat?.labelEs || pro.category) : 'profesional'} que he contratado. Muy dedicado, súper puntual y dejó todo limpio. Vale cada centavo."
+                  </p>
+                </div>
+
+                <div className="premium-actions">
+                  <button className="premium-btn-profile" onClick={(e) => { e.stopPropagation(); navigate('proProfile', pro); }}>
+                    👤 {T.profile}
+                  </button>
+                  <button className="premium-btn-book" onClick={(e) => { e.stopPropagation(); navigate('booking', pro); }} style={{ background: isVip ? 'linear-gradient(135deg, #FF6B00, #FF3D00)' : 'linear-gradient(135deg, #B0BEC5, #78909C)', boxShadow: isVip ? '0 4px 15px rgba(255, 107, 0, 0.4)' : '0 4px 15px rgba(120, 144, 156, 0.4)' }}>
+                    {isVip ? '✨' : '💎'} {lang === 'es' ? 'Reservar' : 'Book'}
+                  </button>
+                </div>
+              </div>
+            )
+          }
+
           return (
             <div key={pro.id} className={`pro-card ${isTopRated ? 'top-rated' : ''}`} style={{ animationDelay:`${i * 0.06}s` }}>
               <div className="card-photo">
