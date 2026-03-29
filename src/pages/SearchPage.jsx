@@ -491,7 +491,7 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
   const [activeSubcategory, setActiveSubcategory] = useState('all')
   const [openCategory,      setOpenCategory]      = useState(null)
   const [search,            setSearch]            = useState('')
-  const [onlyAvailable,     setOnlyAvailable]     = useState(false)
+  const [quickFilter,       setQuickFilter]       = useState('all')
   const [sortBy,            setSortBy]            = useState('all')
   const [professionals,     setProfessionals]     = useState([])
   const [loading,           setLoading]           = useState(true)
@@ -561,8 +561,13 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
       const isSubInMain = currentCat && currentCat.subcategories.some(s => s.id === mappedCat)
       const matchCat   = activeCategory === 'all' || mappedCat === activeCategory || mappedCat === activeSubcategory || isSubInMain
       const matchSearch = p.name.toLowerCase().includes(search.toLowerCase()) || p.location.toLowerCase().includes(search.toLowerCase())
-      const matchAvail  = !onlyAvailable || p.available
-      return matchCat && matchSearch && matchAvail
+      
+      let matchPill = true
+      if (quickFilter === 'available') matchPill = p.available === true
+      if (quickFilter === 'topRated') matchPill = Number(p.rating || 0) >= 4.8
+      if (quickFilter === 'premium') matchPill = (p.currentPlan || '').toLowerCase().includes('vip') || (p.currentPlan || '').toLowerCase().includes('platinum') || (p.currentPlan || '').toLowerCase().includes('elite')
+
+      return matchCat && matchSearch && matchPill
     })
     .sort((a, b) => {
       if (sortBy === 'topRated') return b.rating - a.rating
@@ -590,12 +595,19 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
 
       <ProDelMes lang={lang} navigate={navigate} userRole={userRole} />
 
-      <div className="quick-filters" style={{ padding:'0 16px', display:'flex', justifyContent:'flex-end', marginBottom:'8px' }}>
-        <label className="avail-toggle">
-          <input type="checkbox" checked={onlyAvailable} onChange={e => setOnlyAvailable(e.target.checked)} />
-          <span className="toggle-track" />
-          <span className="toggle-label">{T.filterAvail}</span>
-        </label>
+      <div className="pill-filters">
+        <button className={`pill-btn ${quickFilter === 'all' ? 'active' : ''}`} onClick={() => setQuickFilter('all')}>
+          🌐 {lang === 'es' ? 'Todos' : 'All'}
+        </button>
+        <button className={`pill-btn ${quickFilter === 'available' ? 'active' : ''}`} onClick={() => setQuickFilter('available')}>
+          ⚡ {lang === 'es' ? 'Disponibles' : 'Available'}
+        </button>
+        <button className={`pill-btn ${quickFilter === 'topRated' ? 'active' : ''}`} onClick={() => setQuickFilter('topRated')}>
+          ⭐ {lang === 'es' ? 'Mejores' : 'Top Rated'}
+        </button>
+        <button className={`pill-btn ${quickFilter === 'premium' ? 'active' : ''}`} onClick={() => setQuickFilter('premium')}>
+          💎 {lang === 'es' ? 'Premium' : 'Premium'}
+        </button>
       </div>
 
       <div className="categories-wrapper">
@@ -625,14 +637,26 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
       </div>
 
       <div className="results-bar">
-        {loading
-          ? <span className="results-count">Cargando...</span>
-          : <span className="results-count">{filtered.length} {T.results}</span>
-        }
+        {!loading && <span className="results-count">{filtered.length} {T.results}</span>}
       </div>
 
-      <div className="professionals-grid">
-        {filtered.map((pro, i) => {
+      {loading ? (
+        <div className="professionals-grid">
+          {[1,2,3,4,5,6,7,8].map(n => (
+            <div key={n} className="skeleton-card pro-card-skel">
+              <div className="sk-photo" />
+              <div className="sk-body-vertical">
+                <div className="sk-line w-80" />
+                <div className="sk-line w-50" />
+                <div className="sk-line w-60 mt-2" />
+                <div className="sk-line w-100 mt-auto" style={{ height: '36px', borderRadius: '12px' }} />
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="professionals-grid">
+          {filtered.map((pro, i) => {
           const mappedCat = getMappedProCatId(pro.category)
           const allSubs   = CATEGORIES.flatMap(c => c.subcategories)
           const subCat    = allSubs.find(s => s.id === mappedCat)
@@ -773,6 +797,7 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
           )
         })}
       </div>
+      )}
 
       {!loading && filtered.length === 0 && (
         <div className="empty-state"><span>🔍</span><p>{T.empty}</p></div>

@@ -429,3 +429,88 @@
   0% { transform: translateX(-150%) rotate(45deg); }
   100% { transform: translateX(150%) rotate(45deg); }
 }
+
+/* Skeletons */
+@keyframes shimmer {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.skeleton-card.pro-card-skel {
+  background: white; border-radius: 20px; padding: 16px;
+  display: flex; flex-direction: column; gap: 12px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+  border: 1px solid rgba(0,0,0,0.04);
+  position: relative; overflow: hidden;
+  height: 100%; min-height: 280px;
+}
+
+.skeleton-card.pro-card-skel::after {
+  content: ''; position: absolute; top:0; left:0; width: 100%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
+  animation: shimmer 1.5s infinite linear;
+  z-index: 2;
+}
+
+.sk-photo { width: 100%; height: 120px; border-radius: 16px; background: #F1F5F9; flex-shrink: 0; }
+.sk-body-vertical { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+.sk-line { background: #F1F5F9; height: 14px; border-radius: 6px; }
+.sk-line.w-80 { width: 80%; height: 18px; }
+.sk-line.w-50 { width: 50%; }
+.sk-line.w-60 { width: 60%; }
+.sk-line.w-100 { width: 100%; }
+.mt-2 { margin-top: 8px; }
+.mt-auto { margin-top: auto; }
+
+/* Pills Quick Filters - Píldoras Flotantes */
+@keyframes pill-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+.pill-filters {
+  display: flex; gap: 12px; overflow-x: auto; padding: 8px 16px 20px;
+  margin-bottom: 4px; scrollbar-width: none;
+  background: transparent;
+}
+.pill-filters::-webkit-scrollbar { display: none; }
+
+.pill-btn {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  border-radius: 100px;
+  padding: 10px 20px; 
+  font-size: 13px; font-weight: 800; color: #475569;
+  white-space: nowrap; cursor: pointer; 
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  font-family: var(--font-display, inherit);
+  display: flex; align-items: center; gap: 8px;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.06), 0 2px 4px rgba(0,0,0,0.02);
+  animation: pill-float 4s ease-in-out infinite;
+}
+
+/* Retraso progresivo para el rebote */
+.pill-btn:nth-child(1) { animation-delay: 0s; }
+.pill-btn:nth-child(2) { animation-delay: 0.5s; }
+.pill-btn:nth-child(3) { animation-delay: 1.0s; }
+.pill-btn:nth-child(4) { animation-delay: 1.5s; }
+
+.pill-btn:hover { 
+  transform: translateY(-4px) scale(1.03);
+  box-shadow: 0 12px 24px rgba(0,0,0,0.1);
+  color: var(--mamey);
+  background: #FFF;
+  border-color: rgba(242,96,0,0.2);
+}
+
+.pill-btn:active { transform: scale(0.95); }
+
+.pill-btn.active {
+  background: linear-gradient(135deg, var(--mamey), #FF8533);
+  color: white; border: none;
+  box-shadow: 0 8px 24px rgba(242,96,0,0.35), inset 0 2px 4px rgba(255,255,255,0.3);
+  animation: none; /* Se detiene de flotar cuando está activa */
+  transform: translateY(-2px);
+}

@@ -480,31 +480,50 @@ export default function HomePage({ lang, navigate, userRole }) {
   return (
     <div className="home-page">
 
-      {/* ── SEARCH BAR / HEADER ── */}
-      <div className="hp-search-bar" style={{ background: isPro ? '#1A1A2E' : '#FFF' }}>
-
-        {/* ── BOTÓN POSTULARME — solo visible para profesionales ── */}
-        {isPro && (
-          <PostularmeBtn
-            isPro={isPro}
-            userData={userData}
-            onClick={() => setShowHamburguesa(true)}
-          />
+      {/* ── NEW HERO HEADER (GLASSMORPHISM) ── */}
+      <div className="hp-header-glass">
+        
+        {/* Saludo y Títulos */}
+        {!isPro ? (
+          <div className="hp-greeting" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div>
+              <h1>👋 {lang === 'es' ? `Hola, ${userData?.name?.split(' ')[0] || 'Cliente'}` : `Hi, ${userData?.name?.split(' ')[0] || 'Client'}`}</h1>
+              <p>{lang === 'es' ? '¿Qué necesitas solucionar hoy?' : 'What do you need to fix today?'}</p>
+            </div>
+            {/* Foto de perfil del cliente arriba a la derecha */}
+            {userData?.profilePhoto || userData?.photoURL ? (
+              <img src={userData.profilePhoto || userData.photoURL} alt="Profile" style={{ width: '44px', height: '44px', borderRadius: '50%', objectFit: 'cover', border: '2px solid white', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }} onClick={() => navigate('profile')} />
+            ) : (
+              <div onClick={() => navigate('profile')} style={{ width: '44px', height: '44px', borderRadius: '50%', background: '#1A1A2E', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.15)', cursor: 'pointer' }}>
+                {(userData?.name || 'C').charAt(0).toUpperCase()}
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="hp-greeting" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div>
+              <h1>👋 {lang === 'es' ? 'Panel Profesional' : 'Pro Dashboard'}</h1>
+              <p>{lang === 'es' ? `Hola, ${userData?.name?.split(' ')[0] || 'Socio'}` : `Hi, ${userData?.name?.split(' ')[0] || 'Partner'}`}</p>
+            </div>
+            <PostularmeBtn isPro={isPro} userData={userData} onClick={() => setShowHamburguesa(true)} />
+          </div>
         )}
 
-        {!isPro ? (
-          <button className="hp-search-btn" onClick={() => navigate('search')}>
-            <span style={{ fontSize: '18px' }}>🔍</span>
+        {/* Buscador Gigante o Botón de Postularse (si no es pro) */}
+        {!isPro && (
+          <button className="hp-hero-search-btn" onClick={() => navigate('search')}>
+            <span className="hp-hero-icon">🔍</span>
             <div className="hp-search-placeholder-wrap">
               <span className="hp-search-placeholder text-slide-anim" key={phIdx}>
                 {searchPlaceholders[phIdx]}
               </span>
             </div>
+            <div className="hp-hero-action">
+              <span style={{ fontSize: '11px', background: 'linear-gradient(135deg, #FF7A1A, #F26000)', color: 'white', padding: '6px 12px', borderRadius: '20px', fontWeight: '900', boxShadow: '0 2px 6px rgba(242,96,0,0.4)' }}>
+                {lang === 'es' ? 'Buscar' : 'Search'}
+              </span>
+            </div>
           </button>
-        ) : (
-          <div style={{ flex: 1, color: '#FFF', fontWeight: 'bold', fontSize: '18px', textAlign: 'center', marginRight: '32px' }}>
-            {lang === 'es' ? 'Panel Profesional' : 'Pro Dashboard'}
-          </div>
         )}
       </div>
 
