@@ -512,7 +512,6 @@ export default function HomePage({ lang, navigate, userRole }) {
       {isPro && <VIPBanner onOpenPlanes={() => setShowHamburguesa(true)} />}
 
       <div className="hp-banner-container" style={{ margin: '0 16px 20px', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 6px 16px rgba(0,0,0,0.12)', height: '220px', position: 'relative' }}>
-        <div className="hp-banner-overlay" />
         <img src={bannerPros} alt="Un profesional siempre cerca de ti" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 15%', display: 'block' }} />
         
         {/* Animated Tip Overlay */}

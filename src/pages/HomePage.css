@@ -43,11 +43,6 @@
 .hp-notif:hover { background: #E8EBF0; }
 
 /* ── MAIN IMAGE BANNER WITH OVERLAYS ──────────── */
-.hp-banner-container .hp-banner-overlay {
-  position: absolute; inset: 0;
-  background: linear-gradient(to right, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.1) 75%, transparent 100%);
-  pointer-events: none; z-index: 1;
-}
 
 /* Tip Overlay */
 .hp-tip-overlay {
