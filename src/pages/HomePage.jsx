@@ -327,9 +327,21 @@ export default function HomePage({ lang, navigate, userRole }) {
     : ['Looking for a plumber?', 'Need an electrician?', 'Maybe a mechanic...', 'Find solutions here'];
   const [phIdx, setPhIdx] = useState(0);
 
+  const clientTips = lang === 'es' ? [
+    { icon: '⭐', text: 'Al finalizar un trabajo, valora a tu profesional. Tu opinión garantiza la mejor calidad.' },
+    { icon: '🛡️', text: 'Comunícate y agenda directamente en la plataforma para mayor seguridad.' },
+    { icon: '🤝', text: 'Acuerda el precio siempre antes de que el trabajo inicie, ¡evita sorpresas!' }
+  ] : [
+    { icon: '⭐', text: 'Rate your pro when the job is done. Your feedback ensures better quality.' },
+    { icon: '🛡️', text: 'Keep direct communication via the platform for better security.' },
+    { icon: '🤝', text: 'Always agree on the price before the job starts, avoid surprises!' }
+  ];
+  const [tipIdx, setTipIdx] = useState(0);
+
   useEffect(() => {
     const t = setInterval(() => setPhIdx(i => (i + 1) % searchPlaceholders.length), 3500);
-    return () => clearInterval(t);
+    const t2 = setInterval(() => setTipIdx(i => (i + 1) % clientTips.length), 4500);
+    return () => { clearInterval(t); clearInterval(t2); };
   }, [lang]);
 
   const [allProsReal, setAllProsReal] = useState([])
@@ -485,8 +497,29 @@ export default function HomePage({ lang, navigate, userRole }) {
       {/* ── VIP BANNER — solo para profesionales ── */}
       {isPro && <VIPBanner onOpenPlanes={() => setShowHamburguesa(true)} />}
 
-      <div style={{ margin: '0 16px 20px', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 4px 12px rgba(0,0,0,0.08)', height: '220px', position: 'relative' }}>
-        <img src={bannerPros} alt="Un profesional siempre cerca de ti" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top', display: 'block' }} />
+      <div className="hp-banner-container" style={{ margin: '0 16px 20px', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 6px 16px rgba(0,0,0,0.12)', height: '220px', position: 'relative' }}>
+        <div className="hp-banner-overlay" />
+        <img src={bannerPros} alt="Un profesional siempre cerca de ti" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 15%', display: 'block' }} />
+        
+        {/* Animated Tip Overlay */}
+        <div className="hp-tip-overlay">
+          <div className="hp-tip-card" key={tipIdx}>
+            <span className="hp-tip-icon">{clientTips[tipIdx].icon}</span>
+            <p className="hp-tip-text">{clientTips[tipIdx].text}</p>
+          </div>
+        </div>
+
+        {/* Recruitment Banner (Only for Clients) */}
+        {!isPro && (
+          <div className="hp-recruitment-banner" onClick={() => navigate('profile')}>
+            <div className="shimmer-effect"></div>
+            <span className="recruitment-icon">🚀</span>
+            <div className="recruitment-text">
+              <strong>{lang === 'es' ? '¿Quieres generar ingresos?' : 'Want to generate income?'}</strong>
+              <span>{lang === 'es' ? '¡Postúlate como profesional!' : 'Apply as a professional!'} ›</span>
+            </div>
+          </div>
+        )}
       </div>
 
       <SocialLinks />

@@ -42,44 +42,54 @@
 }
 .hp-notif:hover { background: #E8EBF0; }
 
-/* ── HERO BANNER ──────────────────────────────── */
-.hero-banner {
-  margin: 12px 16px; border-radius: 20px;
-  padding: 28px 22px 36px;
-  display: flex; align-items: flex-start; justify-content: space-between;
-  position: relative; overflow: hidden; min-height: 160px;
-  transition: background 0.7s ease;
+/* ── MAIN IMAGE BANNER WITH OVERLAYS ──────────── */
+.hp-banner-container .hp-banner-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(to right, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.1) 75%, transparent 100%);
+  pointer-events: none; z-index: 1;
 }
-.hero-banner::before {
-  content: ''; position: absolute; inset: 0;
-  background: rgba(255,255,255,0.05); border-radius: 20px; pointer-events: none;
+
+/* Tip Overlay */
+.hp-tip-overlay {
+  position: absolute; top: 16px; left: 16px; width: 65%; z-index: 2;
 }
-.hero-text { flex: 1; position: relative; z-index: 1; }
-.hero-title { color: #fff; font-size: 22px; font-weight: 800; line-height: 1.25; margin-bottom: 6px; text-shadow: 0 2px 8px rgba(0,0,0,0.2); }
-.hero-sub   { color: rgba(255,255,255,0.85); font-size: 13px; margin-bottom: 14px; }
-.hero-cta {
-  background: rgba(255,255,255,0.95); color: #222; border: none;
-  border-radius: 10px; padding: 9px 20px; font-size: 13px; font-weight: 700;
-  cursor: pointer; box-shadow: 0 3px 10px rgba(0,0,0,0.15);
-  transition: transform .15s, box-shadow .15s;
+.hp-tip-card {
+  display: flex; gap: 10px; background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  border: 1px solid rgba(255,255,255,0.15); border-radius: 12px;
+  padding: 10px 14px; animation: tip-fade-slide 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
-.hero-cta:hover { transform: scale(1.04); box-shadow: 0 5px 14px rgba(0,0,0,0.2); }
-.hero-emoji {
-  font-size: 54px; position: relative; z-index: 1;
-  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.15));
-  animation: floatEmoji 3s ease-in-out infinite;
+.hp-tip-icon { font-size: 18px; line-height: 1; flex-shrink: 0; margin-top: 2px; }
+.hp-tip-text { color: #fff; font-size: 12px; font-weight: 600; margin: 0; line-height: 1.35; text-shadow: 0 1px 3px rgba(0,0,0,0.5); }
+
+@keyframes tip-fade-slide {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
-@keyframes floatEmoji {
-  0%,100% { transform: translateY(0); }
-  50%      { transform: translateY(-8px); }
+
+/* Recruitment Banner Overlay */
+.hp-recruitment-banner {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  background: linear-gradient(90deg, #1A1A2E, #2563EB); padding: 10px 16px;
+  display: flex; align-items: center; gap: 12px; z-index: 2; cursor: pointer;
+  overflow: hidden; border-top: 1px solid rgba(255,255,255,0.15);
 }
-.hero-dots { position: absolute; bottom: 14px; left: 22px; display: flex; gap: 6px; z-index: 2; }
-.hdot {
-  width: 8px; height: 8px; border-radius: 4px;
-  background: rgba(255,255,255,0.45); border: none; cursor: pointer;
-  transition: all .3s; padding: 0;
+.hp-recruitment-banner:active { background: #1A1A2E; }
+.hp-recruitment-banner .shimmer-effect {
+  position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
+  background: linear-gradient(to right, transparent, rgba(255,255,255,0.25), transparent);
+  transform: skewX(-20deg); animation: shimmer-wave 3.5s infinite;
 }
-.hdot.active { width: 22px; background: #fff; }
+.recruitment-icon { font-size: 22px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)); }
+.recruitment-text { display: flex; flex-direction: column; color: #fff; }
+.recruitment-text strong { font-size: 13px; font-weight: 800; letter-spacing: 0.3px; text-shadow: 0 1px 2px rgba(0,0,0,0.3); }
+.recruitment-text span { font-size: 11px; font-weight: 500; color: #DBEAFE; margin-top: 2px; }
+
+@keyframes shimmer-wave {
+  0% { left: -100%; }
+  25% { left: 200%; }
+  100% { left: 200%; }
+}
 
 /* ── CATEGORÍAS RÁPIDAS ───────────────────────── */
 .hp-cats-scroll {
