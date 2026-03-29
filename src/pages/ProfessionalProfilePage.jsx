@@ -439,7 +439,7 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
       {/* Sticky Bottom Actions */}
       <div className="pro-actions-sticky slide-up-anim">
         {(() => {
-          let btnStyle = { flex: 1, padding: '16px', borderRadius: '16px', border: 'none', color: '#fff', fontSize: '16px', fontWeight: '800', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)' };
+          let btnStyle = { flex: 1, padding: '16px', borderRadius: '100px', border: 'none', color: '#fff', fontSize: '16px', fontWeight: '800', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)' };
           const planStr = (pro.currentPlan || '').toLowerCase();
           const isVip = planStr.includes('vip') || planStr.includes('elite') || planStr.includes('ilimitado');
           const isGold = planStr.includes('gold');
