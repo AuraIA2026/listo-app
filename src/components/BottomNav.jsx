@@ -1,6 +1,8 @@
+import { useState, useEffect } from 'react'
+import { collection, query, where, onSnapshot } from 'firebase/firestore'
+import { db, auth } from '../firebase'
 import { useUserData } from '../useUserData'
 import './BottomNav.css'
-
 const IconSvg = ({ type, active }) => {
   const color = active ? '#F26000' : '#8E8E93'
 
@@ -93,8 +95,34 @@ const allTabs = [
   { id: 'profile',  labelEs: 'Perfil',    labelEn: 'Profile', iconType: 'profile' }
 ]
 
-export default function BottomNav({ currentPage, navigate, lang = 'es', userRole = 'client' }) {
-  const { userData, profileComplete } = useUserData()
+export default function BottomNav({ currentPage, navigate, lang = 'es', userRole }) {
+  const { userData, profileComplete, userRole: fetchedRole } = useUserData()
+  const resolvedRole = userRole || fetchedRole
+
+  const [unreadChats, setUnreadChats]     = useState(0)
+  const [pendingOrders, setPendingOrders] = useState(0)
+
+  useEffect(() => {
+    if (!auth.currentUser) return
+    const uid = auth.currentUser.uid
+
+    // Unread Chats Logic
+    const qChats = query(collection(db, 'chats'), where('members', 'array-contains', uid))
+    const unsubChats = onSnapshot(qChats, snap => {
+      let count = 0
+      snap.forEach(d => { count += (d.data().unreadCount?.[uid] || 0) })
+      setUnreadChats(count)
+    }, () => {})
+
+    // Pending Orders Logic
+    const fieldType = resolvedRole === 'pro' || userData?.type === 'pro' ? 'proId' : 'clientId'
+    const qOrders = query(collection(db, 'orders'), where(fieldType, '==', uid), where('status', '==', 'pending'))
+    const unsubOrders = onSnapshot(qOrders, snap => {
+      setPendingOrders(snap.size)
+    }, () => {})
+
+    return () => { unsubChats(); unsubOrders() }
+  }, [resolvedRole, userData?.type])
 
   const activeTab =
     currentPage === 'home'     ? 'home'     :
@@ -129,6 +157,14 @@ export default function BottomNav({ currentPage, navigate, lang = 'es', userRole
                      boxShadow: '0 2px 8px rgba(255,59,48,0.5)',
                      animation: 'tipBounce 1.5s ease-in-out infinite', zIndex: 100
                    }} />
+                )}
+
+                {/* Badges de Notificaciones */}
+                {tab.id === 'chat' && unreadChats > 0 && (
+                  <span className="nav-badge">{unreadChats > 99 ? '99+' : unreadChats}</span>
+                )}
+                {tab.id === 'orders' && pendingOrders > 0 && (
+                  <span className="nav-badge">{pendingOrders > 99 ? '99+' : pendingOrders}</span>
                 )}
                 
                 <span className="nav-icon" style={{ animation: isActive ? 'popIcon 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)' : 'none' }}>
