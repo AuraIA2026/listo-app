@@ -370,7 +370,7 @@ export default function BookingPage({ lang = 'es', navigate, professional, userD
                 <span className="summary-price" style={{ fontSize:'15px', color:'#008F39' }}>A acordar</span>
               </div>
               <p className="price-note" style={{ fontSize:'12px', color:'#666', marginTop:'6px' }}>
-                💡 En Listo no cobramos tarifas fijas. Discute y acuerda el precio directamente con tu profesional a través del chat o al ser visitado.
+                💡 En Listo Patrón no cobramos tarifas fijas. Discute y acuerda el precio directamente con tu profesional a través del chat o al ser visitado.
               </p>
             </div>
 
@@ -386,7 +386,7 @@ export default function BookingPage({ lang = 'es', navigate, professional, userD
               <div className="trust-badge">
                 <span className="trust-icon" style={{ background: '#ECFDF5', color: '#10B981' }}>🛡️</span>
                 <div>
-                  <h4>{lang === 'es' ? 'Garantía Listo' : 'Listo Guarantee'}</h4>
+                  <h4>{lang === 'es' ? 'Garantía Listo Patrón' : 'Listo Patrón Guarantee'}</h4>
                   <p>{lang === 'es' ? 'Te cubrimos ante cualquier eventualidad.' : 'Covered against any eventuality.'}</p>
                 </div>
               </div>
