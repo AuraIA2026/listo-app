@@ -84,26 +84,17 @@ const IconSvg = ({ type, active }) => {
   }
 }
 
-const clientTabs = [
-  { id: 'home',    labelEs: 'Inicio',   labelEn: 'Home',   iconType: 'home' },
-  { id: 'search',  labelEs: 'Buscar',   labelEn: 'Search', iconType: 'search' },
-  { id: 'orders',  labelEs: 'Pedidos',  labelEn: 'Orders', iconType: 'orders' },
-  { id: 'profile', labelEs: 'Perfil',   labelEn: 'Profile',iconType: 'profile' }
-]
-
-const proTabs = [
-  { id: 'home',     labelEs: 'Panel',     labelEn: 'Dash',   iconType: 'home' },
-  { id: 'workdone', labelEs: 'Trabajo',   labelEn: 'Done',   iconType: 'workdone' },
-  { id: 'chat',     labelEs: 'Mensajes',  labelEn: 'Chat',   iconType: 'chat' },
-  { id: 'profile',  labelEs: 'Perfil',    labelEn: 'Profile',iconType: 'profile' }
+const allTabs = [
+  { id: 'home',     labelEs: 'Inicio',    labelEn: 'Home',    iconType: 'home' },
+  { id: 'search',   labelEs: 'Buscar',    labelEn: 'Search',  iconType: 'search' },
+  { id: 'workdone', labelEs: 'Trabajo',   labelEn: 'Done',    iconType: 'workdone' },
+  { id: 'orders',   labelEs: 'Pedidos',   labelEn: 'Orders',  iconType: 'orders' },
+  { id: 'chat',     labelEs: 'Mensajes',  labelEn: 'Chat',    iconType: 'chat' },
+  { id: 'profile',  labelEs: 'Perfil',    labelEn: 'Profile', iconType: 'profile' }
 ]
 
 export default function BottomNav({ currentPage, navigate, lang = 'es', userRole = 'client' }) {
   const { userData, profileComplete } = useUserData()
-  
-  // Distinguir entre vista Pro y Cliente
-  const isPro = userData?.type === 'pro' || userRole === 'pro'
-  const activeSet = isPro ? proTabs : clientTabs
 
   const activeTab =
     currentPage === 'home'     ? 'home'     :
@@ -121,7 +112,7 @@ export default function BottomNav({ currentPage, navigate, lang = 'es', userRole
       `}</style>
       <nav className="bottom-nav">
         <div className="bottom-nav-inner">
-          {activeSet.map(tab => {
+          {allTabs.map(tab => {
             const isActive = activeTab === tab.id
             const label = lang === 'es' ? tab.labelEs : tab.labelEn
             return (
