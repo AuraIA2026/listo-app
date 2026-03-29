@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { getAuth, updateProfile, sendPasswordResetEmail } from 'firebase/auth'
-import { doc, updateDoc, collection, addDoc, serverTimestamp } from 'firebase/firestore'
+import { doc, updateDoc, collection, addDoc, serverTimestamp, query, where, getDocs } from 'firebase/firestore'
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
 import { db, storage } from '../firebase'
 import { useUserData } from '../useUserData'
@@ -570,9 +570,31 @@ function EditModal({ userData, onSave, onCancel }) {
 
 /* ─── COMPONENTE PRINCIPAL ─── */
 export default function BtnHamburguesa({ onClose, navigate, initialOpenSection = 'plans' }) {
-  const { userData, loading, user, getInitials, profileComplete } = useUserData()
+  const { userData, loading, user, userRole, getInitials, profileComplete } = useUserData()
 
   const [section, setSection] = useState('main')
+  const [computedStats, setComputedStats] = useState({ completed: 0, requests: 0, pending: 0 })
+
+  useEffect(() => {
+    if (!user?.uid || userRole !== 'pro') return
+    const fetchOrdersStats = async () => {
+      try {
+        const q = query(collection(db, 'orders'), where('proId', '==', user.uid))
+        const snap = await getDocs(q)
+        let c = 0, r = 0, p = 0
+        snap.forEach(doc => {
+          const o = doc.data()
+          r++
+          if (o.status === 'done') c++
+          else if (o.status !== 'cancelled') p++
+        })
+        setComputedStats({ completed: c, requests: r, pending: p })
+      } catch (err) {
+        console.error("Error fetching pro orders for stats:", err)
+      }
+    }
+    fetchOrdersStats()
+  }, [user?.uid, userRole])
   const [planDetalle, setPlanDetalle] = useState(null)
   const [confirmed, setConfirmed] = useState(null)
   const [available, setAvailable] = useState(true)
@@ -680,10 +702,10 @@ export default function BtnHamburguesa({ onClose, navigate, initialOpenSection =
       <div className="pp-stats-grid">
         {[
           { icon: '📦', label: 'Contratos disponibles', val: userData?.contracts || 0 },
-          { icon: '📈', label: 'Trabajos completados', val: userData?.completedJobs || 0 },
-          { icon: '⭐', label: 'Calificación promedio', val: userData?.rating || '—' },
-          { icon: '📩', label: 'Solicitudes recibidas', val: userData?.requests || 0 },
-          { icon: '📌', label: 'Trabajos pendientes', val: userData?.pendingJobs || 0 },
+          { icon: '📈', label: 'Trabajos completados', val: computedStats.completed },
+          { icon: '⭐', label: 'Calificación promedio', val: Number(userData?.rating || 5).toFixed(1) },
+          { icon: '📩', label: 'Solicitudes recibidas', val: computedStats.requests },
+          { icon: '📌', label: 'Trabajos pendientes', val: computedStats.pending },
         ].map((s, i) => (
           <div key={i} className="pp-stat-card">
             <span className="pp-stat-icon">{s.icon}</span>
@@ -790,10 +812,10 @@ export default function BtnHamburguesa({ onClose, navigate, initialOpenSection =
                       <div className="pp-stats-mini">
                         {[
                           { icon: '📦', label: 'Contratos', val: userData?.contracts || 0 },
-                          { icon: '📈', label: 'Completados', val: userData?.completedJobs || 0 },
-                          { icon: '⭐', label: 'Calificación', val: userData?.rating || '—' },
-                          { icon: '📩', label: 'Solicitudes', val: userData?.requests || 0 },
-                          { icon: '📌', label: 'Pendientes', val: userData?.pendingJobs || 0 },
+                          { icon: '📈', label: 'Completados', val: computedStats.completed },
+                          { icon: '⭐', label: 'Calificación', val: Number(userData?.rating || 5).toFixed(1) },
+                          { icon: '📩', label: 'Solicitudes', val: computedStats.requests },
+                          { icon: '📌', label: 'Pendientes', val: computedStats.pending },
                         ].map((s, i) => (
                           <div key={i} className="pp-stat-mini">
                             <span className="pp-stat-icon">{s.icon}</span>
