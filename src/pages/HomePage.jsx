@@ -322,6 +322,16 @@ export default function HomePage({ lang, navigate, userRole }) {
   const [allProsRef,  allProsVisible]  = useScrollReveal(0.05)
   const [catListRef,  catListVisible]  = useScrollReveal(0.05)
 
+  const searchPlaceholders = lang === 'es' 
+    ? ['¿Buscas a un plomero?', '¿Necesitas un electricista?', 'O quizás un mecánico...', 'Encuentra soluciones aquí'] 
+    : ['Looking for a plumber?', 'Need an electrician?', 'Maybe a mechanic...', 'Find solutions here'];
+  const [phIdx, setPhIdx] = useState(0);
+
+  useEffect(() => {
+    const t = setInterval(() => setPhIdx(i => (i + 1) % searchPlaceholders.length), 3500);
+    return () => clearInterval(t);
+  }, [lang]);
+
   const [allProsReal, setAllProsReal] = useState([])
   const [featuredReal, setFeaturedReal] = useState([])
 
@@ -458,10 +468,12 @@ export default function HomePage({ lang, navigate, userRole }) {
 
         {!isPro ? (
           <button className="hp-search-btn" onClick={() => navigate('search')}>
-            <span>🔍</span>
-            <span className="hp-search-placeholder">
-              {lang === 'es' ? '¿Cómo podemos ayudar?' : 'How can we help?'}
-            </span>
+            <span style={{ fontSize: '18px' }}>🔍</span>
+            <div className="hp-search-placeholder-wrap">
+              <span className="hp-search-placeholder text-slide-anim" key={phIdx}>
+                {searchPlaceholders[phIdx]}
+              </span>
+            </div>
           </button>
         ) : (
           <div style={{ flex: 1, color: '#FFF', fontWeight: 'bold', fontSize: '18px', textAlign: 'center', marginRight: '32px' }}>
@@ -559,12 +571,14 @@ export default function HomePage({ lang, navigate, userRole }) {
       ) : (
         <div className="hp-cats-scroll">
           {topHomeCategories.map((c, i) => (
-            <button key={i} className="hp-cat-btn" onClick={() => navigate('search', { catToSelect: c.id || 'all' })}>
+            <div key={i} className="hp-cat-btn" onClick={() => navigate('search', { catToSelect: c.id || 'all' })}>
               {i === 0 && <span className="cat-flash-badge">🔥 HOT</span>}
               {i === 2 && <span className="cat-flash-badge" style={{background:'#10B981', boxShadow: '0 4px 8px rgba(16, 185, 129, 0.4)'}}>NUEVO</span>}
-              <span className="hp-cat-icon">{c.icon}</span>
+              <div className="cat-icon-wrap">
+                <span className="hp-cat-icon">{c.icon}</span>
+              </div>
               <span className="hp-cat-label">{lang === 'es' ? c.labelEs : c.labelEn}</span>
-            </button>
+            </div>
           ))}
         </div>
       )}
@@ -607,28 +621,44 @@ export default function HomePage({ lang, navigate, userRole }) {
 
       {!isPro && (
         <>
-          {sections.map(sec => (
-            <section key={sec.id} className="hp-service-section">
-              <div className="hp-sec-header">
-                <h2 className="hp-sec-title">{lang === 'es' ? sec.titleEs : sec.titleEn}</h2>
-                <button className="hp-see-all" onClick={() => navigate('search')}>{lang === 'es' ? 'Ver todo' : 'See all'}</button>
-              </div>
-              <div className="hp-service-cards">
-                {sec.services.map((s, i) => (
-                  <div key={i} className="hp-svc-card" onClick={() => navigate('booking', { specialty: sec.id })}>
-                    <div className="hp-svc-img-wrap">
-                      {s.tag && <span className="hp-svc-tag">{s.tag}</span>}
-                      <img src={s.img} alt={s.nameEs} className="hp-svc-img" />
+          {sections.map((sec, idx) => {
+            // Colores temáticos extraidos de los Planes VIP/Platinum/Gold/Basico para dar forma
+            const amzThemes = [
+              { bg: 'linear-gradient(145deg, #EFF6FF 0%, #DBEAFE 100%)', color: '#1E3A8A', card: '#FFF' }, // VIP Blue
+              { bg: 'linear-gradient(145deg, #FFFBEB 0%, #FEF3C7 100%)', color: '#92400E', card: '#FFF' }, // Gold Orange
+              { bg: 'linear-gradient(145deg, #F8FAFC 0%, #F1F5F9 100%)', color: '#334155', card: '#FFF' }, // Básico Silver
+              { bg: 'linear-gradient(145deg, #FDF4FF 0%, #FCE7F3 100%)', color: '#831843', card: '#FFF' }, // Pink
+              { bg: 'linear-gradient(145deg, #F0FDF4 0%, #DCFCE7 100%)', color: '#166534', card: '#FFF' }, // Green
+              { bg: 'linear-gradient(145deg, #FEF2F2 0%, #FEE2E2 100%)', color: '#991B1B', card: '#FFF' }, // Red
+              { bg: 'linear-gradient(145deg, #FAF5FF 0%, #F3E8FF 100%)', color: '#4C1D95', card: '#FFF' }, // Purple
+            ];
+            const theme = amzThemes[idx % amzThemes.length];
+
+            return (
+              <section key={sec.id} className="hp-service-section reveal" style={{ background: theme.bg }}>
+                <div className="hp-sec-header amz-sec-header">
+                  <h2 className="hp-sec-title amz-sec-title" style={{ color: theme.color }}>{lang === 'es' ? sec.titleEs : sec.titleEn}</h2>
+                  <button className="hp-see-all amz-see-all" style={{ color: theme.color }} onClick={() => navigate('search')}>
+                    {lang === 'es' ? 'Ver todo' : 'See all'} ›
+                  </button>
+                </div>
+                <div className="hp-service-cards amz-cards-scroll">
+                  {sec.services.map((s, i) => (
+                    <div key={i} className="hp-svc-card amz-bento-card" style={{ background: theme.card }} onClick={() => navigate('booking', { specialty: sec.id })}>
+                      <div className="hp-svc-img-wrap">
+                        {s.tag && <span className="hp-svc-tag">{s.tag}</span>}
+                        <img src={s.img} alt={s.nameEs} className="hp-svc-img" />
+                      </div>
+                      <div className="hp-svc-info">
+                        <p className="hp-svc-name">{lang === 'es' ? s.nameEs : s.nameEn}</p>
+                        <p className="hp-svc-price">{s.price}</p>
+                      </div>
                     </div>
-                    <div className="hp-svc-info">
-                      <p className="hp-svc-name">{lang === 'es' ? s.nameEs : s.nameEn}</p>
-                      <p className="hp-svc-price">{s.price}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </section>
-          ))}
+                  ))}
+                </div>
+              </section>
+            );
+          })}
 
           <section ref={allProsRef} className={`all-pros-section${allProsVisible ? ' reveal' : ''}`}>
             <div className="hp-sec-header" style={{ marginBottom: 12 }}>
