@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore'
 import { db } from '../firebase'
-import { CATEGORIES, FILTERS } from '../categories'
+import { CATEGORIES, FILTERS, ALL_SUBCATEGORIES } from '../categories'
 import LocalesCarrusel from '../locales/LocalesCarrusel'  // ✅ importado
 import './SearchPage.css'
 
