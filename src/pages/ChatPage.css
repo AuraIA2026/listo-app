@@ -176,6 +176,38 @@
   word-wrap: break-word; box-shadow: 0 2px 8px rgba(0,0,0,0.04);
 }
 
+.bubble-selected {
+  position: relative;
+  z-index: 50;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.15) !important;
+}
+
+.msg-actions-menu {
+  display: flex; gap: 4px; padding: 6px;
+  background: white; border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  margin-top: 4px; animation: scaleIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  position: relative; z-index: 40;
+}
+
+.actions-right { align-self: flex-end; margin-right: 32px; }
+.actions-left { align-self: flex-start; margin-left: 32px; }
+
+.msg-actions-menu button {
+  background: #F8FAFC; border: none; padding: 8px 12px;
+  border-radius: 8px; font-size: 13px; font-weight: 700;
+  color: var(--black); cursor: pointer; transition: all 0.2s;
+  display: flex; align-items: center; gap: 4px; font-family: inherit;
+}
+.msg-actions-menu button:hover { background: #E2E8F0; }
+.msg-actions-menu button.delete-text { color: #EF4444; background: #FEF2F2; }
+.msg-actions-menu button.delete-text:hover { background: #FEE2E2; }
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.9) translateY(-10px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
 .bubble-pro {
   background: white; color: var(--black);
   border-radius: 20px 20px 20px 4px;
