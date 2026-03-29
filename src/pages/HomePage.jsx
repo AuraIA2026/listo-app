@@ -338,11 +338,25 @@ export default function HomePage({ lang, navigate, userRole }) {
   ];
   const [tipIdx, setTipIdx] = useState(0);
 
+  const [showBlackTips, setShowBlackTips] = useState(true);
+  const [showBlueBanner, setShowBlueBanner] = useState(true);
+  const [blueBannerMsg, setBlueBannerMsg] = useState(null);
+
   useEffect(() => {
     const t = setInterval(() => setPhIdx(i => (i + 1) % searchPlaceholders.length), 3500);
     const t2 = setInterval(() => setTipIdx(i => (i + 1) % clientTips.length), 4500);
-    return () => { clearInterval(t); clearInterval(t2); };
+    const tipsTimer = setTimeout(() => setShowBlackTips(false), 60000);
+    return () => { clearInterval(t); clearInterval(t2); clearTimeout(tipsTimer); };
   }, [lang]);
+
+  const handleBlueBannerClick = () => {
+    setBlueBannerMsg(lang === 'es' 
+      ? 'ℹ️ Debes cambiar a perfil de profesional en el menú' 
+      : 'ℹ️ You must switch to your professional profile in the menu');
+    setTimeout(() => {
+      setShowBlueBanner(false);
+    }, 4500);
+  };
 
   const [allProsReal, setAllProsReal] = useState([])
   const [featuredReal, setFeaturedReal] = useState([])
@@ -502,22 +516,32 @@ export default function HomePage({ lang, navigate, userRole }) {
         <img src={bannerPros} alt="Un profesional siempre cerca de ti" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 15%', display: 'block' }} />
         
         {/* Animated Tip Overlay */}
-        <div className="hp-tip-overlay">
-          <div className="hp-tip-card" key={tipIdx}>
-            <span className="hp-tip-icon">{clientTips[tipIdx].icon}</span>
-            <p className="hp-tip-text">{clientTips[tipIdx].text}</p>
+        {showBlackTips && (
+          <div className="hp-tip-overlay" style={{ transition: 'opacity 0.8s' }}>
+            <div className="hp-tip-card" key={tipIdx}>
+              <span className="hp-tip-icon">{clientTips[tipIdx].icon}</span>
+              <p className="hp-tip-text">{clientTips[tipIdx].text}</p>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Recruitment Banner (Only for Clients) */}
-        {!isPro && (
-          <div className="hp-recruitment-banner" onClick={() => navigate('profile')}>
+        {!isPro && showBlueBanner && (
+          <div className="hp-recruitment-banner" onClick={handleBlueBannerClick} style={{ transition: 'all 0.5s ease-out' }}>
             <div className="shimmer-effect"></div>
-            <span className="recruitment-icon">🚀</span>
-            <div className="recruitment-text">
-              <strong>{lang === 'es' ? '¿Quieres generar ingresos?' : 'Want to generate income?'}</strong>
-              <span>{lang === 'es' ? '¡Postúlate como profesional!' : 'Apply as a professional!'} ›</span>
-            </div>
+            {blueBannerMsg ? (
+              <div className="recruitment-text" style={{ flex: 1, textAlign: 'center', animation: 'tip-fade-slide 0.4s ease' }}>
+                <strong style={{ fontSize: '13.5px', color: '#FFF' }}>{blueBannerMsg}</strong>
+              </div>
+            ) : (
+              <>
+                <span className="recruitment-icon">🚀</span>
+                <div className="recruitment-text">
+                  <strong>{lang === 'es' ? '¿Quieres generar ingresos?' : 'Want to generate income?'}</strong>
+                  <span>{lang === 'es' ? '¡Postúlate como profesional!' : 'Apply as a professional!'} ›</span>
+                </div>
+              </>
+            )}
           </div>
         )}
       </div>

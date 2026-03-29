@@ -54,9 +54,9 @@
   position: absolute; top: 16px; left: 16px; width: 65%; z-index: 2;
 }
 .hp-tip-card {
-  display: flex; gap: 10px; background: rgba(0, 0, 0, 0.45);
-  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
-  border: 1px solid rgba(255,255,255,0.15); border-radius: 12px;
+  display: flex; gap: 10px; background: rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+  border: 1px solid rgba(255,255,255,0.08); border-radius: 12px;
   padding: 10px 14px; animation: tip-fade-slide 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 .hp-tip-icon { font-size: 18px; line-height: 1; flex-shrink: 0; margin-top: 2px; }
