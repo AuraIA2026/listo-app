@@ -55,31 +55,31 @@ const featuredStatic = [
 ]
 
 const sections = [
-  { id:'mecanico',     titleEs:'🔧 Mecánico',     titleEn:'🔧 Mechanic',    services:[
+  { id:'mecanico',     image: '/icons/mecanico.webp', icon:'🔧', titleEs:'Mecánico',     titleEn:'Mechanic',    services:[
     { img:mecanico1,  nameEs:'Diagnóstico vehicular', nameEn:'Vehicle diagnostic',  price:'RD$800',   tag:'Popular' },
     { img:mecanico,   nameEs:'Cambio de aceite',      nameEn:'Oil change',          price:'RD$650',   tag:null },
   ]},
-  { id:'electricista', titleEs:'⚡ Electricista', titleEn:'⚡ Electrician', services:[
+  { id:'electricista', image: '/icons/electricista.webp', icon:'⚡', titleEs:'Electricista', titleEn:'Electrician', services:[
     { img:electrica1, nameEs:'Instalación eléctrica',  nameEn:'Electrical install', price:'RD$950',   tag:'Popular' },
     { img:electrica,  nameEs:'Reparación de circuito', nameEn:'Circuit repair',     price:'RD$750',   tag:null },
   ]},
-  { id:'plomero',      titleEs:'🔩 Plomero',      titleEn:'🔩 Plumber',     services:[
+  { id:'plomero',      image: '/icons/plomero.webp', icon:'🔩', titleEs:'Plomero',      titleEn:'Plumber',     services:[
     { img:plomero,    nameEs:'Reparación de tubería', nameEn:'Pipe repair',          price:'RD$700',   tag:'Popular' },
     { img:refrig,     nameEs:'Refrigeración y A/C',   nameEn:'A/C & Refrigeration', price:'RD$1,200', tag:'24/7' },
   ]},
-  { id:'cerrajero',    titleEs:'🔑 Cerrajero',    titleEn:'🔑 Locksmith',   services:[
+  { id:'cerrajero',    image: '/icons/cerrajero.webp', icon:'🔑', titleEs:'Cerrajero',    titleEn:'Locksmith',   services:[
     { img:cerrajero,  nameEs:'Apertura de puertas',  nameEn:'Door opening',    price:'RD$500',   tag:'Urgente' },
     { img:cerrajero1, nameEs:'Cambio de cerraduras', nameEn:'Lock replacement', price:'RD$650',   tag:null },
   ]},
-  { id:'pintor',       titleEs:'🎨 Pintor',       titleEn:'🎨 Painter',     services:[
+  { id:'pintor',       image: '/icons/pintor.webp', icon:'🎨', titleEs:'Pintor',       titleEn:'Painter',     services:[
     { img:pintor,     nameEs:'Pintura interior',   nameEn:'Interior painting', price:'RD$2,500', tag:'Popular' },
     { img:pintor1,    nameEs:'Pintura de fachada', nameEn:'Exterior painting', price:'RD$3,500', tag:null },
   ]},
-  { id:'jardinero',    titleEs:'🌿 Jardinero',    titleEn:'🌿 Gardener',    services:[
+  { id:'jardinero',    image: '/icons/jardinero.webp', icon:'🌿', titleEs:'Jardinero',    titleEn:'Gardener',    services:[
     { img:jardinero,  nameEs:'Poda y mantenimiento', nameEn:'Pruning & maintenance', price:'RD$600',   tag:'Popular' },
     { img:ninera,     nameEs:'Diseño de jardín',     nameEn:'Garden design',         price:'RD$1,800', tag:null },
   ]},
-  { id:'ninera',       titleEs:'👶 Niñera',       titleEn:'👶 Nanny',       services:[
+  { id:'ninera',       image: '/icons/ninera.webp', icon:'👶', titleEs:'Niñera',       titleEn:'Nanny',       services:[
     { img:ninera,     nameEs:'Cuidado de niños', nameEn:'Child care',          price:'RD$400/hr', tag:'Popular' },
     { img:ninera1,    nameEs:'Apoyo educativo',  nameEn:'Educational support', price:'RD$500/hr', tag:null },
   ]},
@@ -775,7 +775,10 @@ export default function HomePage({ lang, navigate, userRole }) {
             return (
               <section key={sec.id} className="hp-service-section reveal" style={{ background: theme.bg }}>
                 <div className="hp-sec-header amz-sec-header">
-                  <h2 className="hp-sec-title amz-sec-title" style={{ color: theme.color }}>{lang === 'es' ? sec.titleEs : sec.titleEn}</h2>
+                  <h2 className="hp-sec-title amz-sec-title" style={{ color: theme.color, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    {sec.image ? <img src={sec.image} alt={sec.titleEs} style={{ width: '24px', height: '24px', objectFit: 'contain' }} /> : sec.icon} 
+                    {lang === 'es' ? sec.titleEs : sec.titleEn}
+                  </h2>
                   <button className="hp-see-all amz-see-all" style={{ color: theme.color }} onClick={() => navigate('search')}>
                     {lang === 'es' ? 'Ver todo' : 'See all'} ›
                   </button>
