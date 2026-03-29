@@ -63,7 +63,7 @@ export const CATEGORIES = [
       { id: 'albanil',       icon: '🧱', image: '/icons/albanil.webp', labelEs: 'Albañil',          labelEn: 'Mason' },
       { id: 'plomero',       icon: '🔩', image: '/icons/plomero.webp', labelEs: 'Plomero',          labelEn: 'Plumber' },
       { id: 'electricista',  icon: '⚡', image: '/icons/electricista.webp', labelEs: 'Electricista',     labelEn: 'Electrician' },
-      { id: 'mecanico',      icon: '🔧', labelEs: 'Mecánico',         labelEn: 'Mechanic' },
+      { id: 'mecanico',      icon: '🔧', image: '/icons/mecanico.webp', labelEs: 'Mecánico',         labelEn: 'Mechanic' },
       { id: 'refrigeracion', icon: '❄️', labelEs: 'Refrigeración',    labelEn: 'Refrigeration' },
       { id: 'cerrajero',     icon: '🔑', image: '/icons/cerrajero.webp', labelEs: 'Cerrajero',        labelEn: 'Locksmith' },
       { id: 'pintor',        icon: '🎨', image: '/icons/pintor.webp', labelEs: 'Pintor',           labelEn: 'Painter' },
