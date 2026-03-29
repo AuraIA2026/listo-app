@@ -57,6 +57,7 @@ export const CATEGORIES = [
   {
     id: 'mantenimiento',
     icon: '🔧',
+    image: '/icons/cat_mantenimiento.webp',
     labelEs: 'Mantenimiento',
     labelEn: 'Maintenance',
     subcategories: [
@@ -79,6 +80,7 @@ export const CATEGORIES = [
   {
     id: 'limpieza',
     icon: '🧹',
+    image: '/icons/cat_limpieza.webp',
     labelEs: 'Limpieza',
     labelEn: 'Cleaning',
     subcategories: [
@@ -95,6 +97,7 @@ export const CATEGORIES = [
   {
     id: 'cuidado',
     icon: '👶',
+    image: '/icons/cat_cuidado_personal.webp',
     labelEs: 'Cuidado personal',
     labelEn: 'Personal care',
     subcategories: [
@@ -110,6 +113,7 @@ export const CATEGORIES = [
   {
     id: 'belleza',
     icon: '💆',
+    image: '/icons/cat_belleza_y_bienestar.webp',
     labelEs: 'Belleza y Bienestar',
     labelEn: 'Beauty & Wellness',
     subcategories: [
@@ -122,6 +126,7 @@ export const CATEGORIES = [
   {
     id: 'transporte',
     icon: '🚚',
+    image: '/icons/cat_transporte.webp',
     labelEs: 'Transporte',
     labelEn: 'Transport',
     subcategories: [
@@ -134,6 +139,7 @@ export const CATEGORIES = [
   {
     id: 'eventos',
     icon: '🎉',
+    image: '/icons/cat_eventos.webp',
     labelEs: 'Eventos',
     labelEn: 'Events',
     subcategories: [
@@ -194,6 +200,7 @@ export const CATEGORIES = [
   {
     id: 'personalizado',
     icon: '🎯',
+    image: '/icons/cat_personalizado.webp',
     labelEs: 'Personalizado',
     labelEn: 'Custom',
     subcategories: [

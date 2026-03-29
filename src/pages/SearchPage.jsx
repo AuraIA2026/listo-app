@@ -617,7 +617,9 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
           </button>
           {CATEGORIES.map(cat => (
             <button key={cat.id} className={`cat-pill ${activeCategory === cat.id ? 'active' : ''}`} onClick={() => handleCategoryClick(cat.id)}>
-              <span className="cat-icon">{cat.icon}</span>
+              <span className="cat-icon">
+                {cat.image ? <img src={cat.image} alt={cat.labelEs} style={{ width: '16px', height: '16px', objectFit: 'contain', verticalAlign: 'middle' }} /> : cat.icon}
+              </span>
               {lang === 'es' ? cat.labelEs : cat.labelEn}
             </button>
           ))}

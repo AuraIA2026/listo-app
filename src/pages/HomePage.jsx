@@ -852,7 +852,9 @@ export default function HomePage({ lang, navigate, userRole }) {
             <div className="cat-list">
               {CATEGORIES.map((c, i) => (
                 <button key={i} className="cat-list-item" style={{ animationDelay: `${i * 0.05}s` }} onClick={() => navigate('search', { catToSelect: c.id || 'all' })}>
-                  <span className="cat-list-icon">{c.icon}</span>
+                  <span className="cat-list-icon">
+                    {c.image ? <img src={c.image} alt={c.labelEs} style={{ width: '24px', height: '24px', objectFit: 'contain' }} /> : c.icon}
+                  </span>
                   <span className="cat-list-label">{lang === 'es' ? c.labelEs : c.labelEn}</span>
                   <span className="cat-list-arrow">›</span>
                 </button>
