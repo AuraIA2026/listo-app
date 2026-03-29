@@ -357,75 +357,93 @@
 }
 .btn-confirm:hover { background: var(--mamey-dark); transform: translateY(-1px); }
 
-/* Success screen */
-.booking-success { max-width: 480px; margin: 40px auto 0; text-align: center; }
+/* ── HUD & Buttons ── */
+.live-status {
+  font-size: 10px; font-weight: 800; color: #EF4444; background: #FEF2F2;
+  padding: 4px 8px; border-radius: 100px; margin-left: 8px; vertical-align: middle;
+  text-transform: uppercase; animation: pulseLive 1.5s infinite alternate; letter-spacing: 0.5px;
+}
+@keyframes pulseLive { from { opacity: 0.7; } to { opacity: 1; transform: scale(1.05); } }
 
-.success-icon {
-  width: 72px; height: 72px; border-radius: 50%;
-  background: var(--mamey); color: white;
-  font-size: 32px; font-weight: 700;
+.radar-btn {
+  background: linear-gradient(135deg, #F26000, #FF3D00) !important;
+  box-shadow: 0 4px 16px rgba(242,96,0,0.4) !important;
+  color: white !important;
+}
+
+.glass-summary { background: rgba(255,255,255,0.7) !important; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.4); }
+
+/* ── Live Radar Screen ── */
+.radar-mode {
+  min-height: 100vh; background: #0F172A; display: flex; align-items: center; justify-content: center;
+  position: fixed; inset: 0; z-index: 99999; margin: 0; padding: 0;
+}
+
+.radar-container {
+  display: flex; flex-direction: column; align-items: center; text-align: center; width: 100%; max-width: 480px; padding: 24px;
+}
+
+.radar-title { font-family: var(--font-display, 'SF Pro Display', system-ui, sans-serif); font-size: 28px; font-weight: 900; color: white; margin-bottom: 8px; letter-spacing: -0.5px; }
+.radar-sub   { font-size: 15px; color: #94A3B8; margin-bottom: 40px; }
+
+.radar-animation-box {
+  position: relative; width: 200px; height: 200px; display: flex; align-items: center; justify-content: center; margin-bottom: 40px;
+}
+
+.radar-ring {
+  position: absolute; width: 100%; height: 100%; border-radius: 50%;
+  border: 2px solid rgba(242,96,0,0.6); box-shadow: 0 0 24px rgba(242,96,0,0.2);
+  animation: radarExpanding 2s cubic-bezier(0.2, 0.8, 0.2, 1) infinite;
+}
+.radar-ring.r1 { animation-delay: 0s; }
+.radar-ring.r2 { animation-delay: 0.6s; }
+.radar-ring.r3 { animation-delay: 1.2s; }
+
+@keyframes radarExpanding {
+  0% { transform: scale(0.5); opacity: 1; border-width: 4px; border-color: rgba(242,96,0,1); }
+  100% { transform: scale(2); opacity: 0; border-width: 1px; border-color: rgba(242,96,0,0); }
+}
+
+.radar-center-avatar {
+  width: 80px; height: 80px; border-radius: 50%; z-index: 10;
   display: flex; align-items: center; justify-content: center;
-  margin: 0 auto 20px;
-  box-shadow: 0 4px 24px rgba(242,96,0,0.4);
-  animation: pulse 2s infinite;
+  font-family: var(--font-display, sans-serif); font-size: 24px; font-weight: 800; color: white;
+  box-shadow: 0 8px 32px rgba(242,96,0,0.6); border: 3px solid #F26000; background: #1E293B;
 }
 
-@keyframes pulse {
-  0%,100% { box-shadow: 0 4px 24px rgba(242,96,0,0.4); }
-  50%      { box-shadow: 0 4px 36px rgba(242,96,0,0.65); }
+.floating-info-card {
+  position: absolute; bottom: -20px; background: rgba(30,41,59,0.9);
+  padding: 12px 20px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1);
+  box-shadow: 0 12px 32px rgba(0,0,0,0.3); backdrop-filter: blur(10px); z-index: 20; min-width: 180px;
 }
 
-.success-title { font-family: var(--font-display); font-size: 26px; font-weight: 800; color: var(--black); margin-bottom: 8px; }
-.success-sub   { font-size: 15px; color: var(--gray); margin-bottom: 28px; }
+.floating-info-card h4 { font-size: 16px; color: white; margin: 4px 0 2px; }
+.floating-info-card p  { font-size: 13px; color: #94A3B8; margin: 0; }
 
-.success-card {
-  background: white; border-radius: 20px; padding: 24px;
-  border: 1.5px solid rgba(0,0,0,0.06);
-  box-shadow: var(--shadow-dark); margin-bottom: 24px; text-align: left;
+.live-pill {
+  position: absolute; top: -10px; right: -10px; background: #EF4444; color: white;
+  font-size: 10px; font-weight: 800; padding: 4px 8px; border-radius: 12px;
+  animation: pulseLive 1.5s infinite alternate; letter-spacing: 0.5px; border: 2px solid #1E293B;
 }
 
-.success-pro { display: flex; align-items: center; gap: 14px; margin-bottom: 20px; }
-
-.success-avatar {
-  width: 48px; height: 48px; border-radius: 14px;
-  display: flex; align-items: center; justify-content: center;
-  font-family: var(--font-display); font-weight: 700;
-  font-size: 16px; color: white;
+.glass-eta {
+  background: rgba(255,255,255,0.05) !important; border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 16px; width: 100%; text-align: center; margin-bottom: 24px; backdrop-filter: blur(10px); padding: 16px !important;
 }
 
-.success-name { font-family: var(--font-display); font-weight: 700; font-size: 16px; color: var(--black); }
-.success-date { font-size: 13px; color: var(--gray); margin-top: 2px; }
+.glass-eta .eta-label { color: #CBD5E1; font-size: 12px; letter-spacing: 1px; }
+.glass-eta .eta-subtext { color: #64748B; font-size: 12px; margin-top: 6px; }
 
-.eta-box     { background: var(--mamey-pale); border-radius: 12px; padding: 16px; }
-.eta-label   { display: block; font-size: 12px; font-weight: 600; color: var(--mamey-dark); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.05em; }
-.eta-time    { display: block; font-family: var(--font-display); font-size: 28px; font-weight: 800; color: var(--mamey); margin-bottom: 10px; }
-.eta-bar     { height: 6px; background: rgba(242,96,0,0.15); border-radius: 3px; overflow: hidden; }
-.eta-progress { height: 100%; width: 35%; background: var(--mamey); border-radius: 3px; animation: progress 3s ease-in-out infinite alternate; }
-
-@keyframes progress {
-  from { width: 20%; }
-  to   { width: 70%; }
-}
-
-.success-actions { display: flex; gap: 12px; }
-
-.btn-track {
-  flex: 1; background: var(--black); color: white;
-  border: none; border-radius: 12px; padding: 14px;
-  font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s;
-}
-.btn-track:hover { background: var(--dark); transform: translateY(-1px); }
-
-.btn-new {
-  flex: 1; background: white; color: var(--mamey-dark);
-  border: 2px solid var(--mamey-light); border-radius: 12px;
-  padding: 14px; font-size: 14px; font-weight: 600;
+.btn-cancel-radar {
+  background: transparent; color: #94A3B8; border: 1px solid #475569;
+  padding: 12px 24px; border-radius: 100px; font-size: 14px; font-weight: 600;
   cursor: pointer; transition: all 0.2s;
 }
-.btn-new:hover { background: var(--mamey-pale); }
+.btn-cancel-radar:hover { background: rgba(239,68,68,0.1); color: #EF4444; border-color: #EF4444; }
 
 @media (max-width: 600px) {
   .booking-page  { padding: 20px 12px 48px; }
+  .radar-mode    { padding: 0; }
   .step-content  { padding: 20px 16px; }
   .time-slots    { grid-template-columns: repeat(3, 1fr); }
   .step-line     { width: 24px; }
