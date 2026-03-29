@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { collection, query, where, getDocs, orderBy } from 'firebase/firestore'
 import { db } from '../firebase'
+import { CATEGORIES, ALL_SUBCATEGORIES } from '../categories'
 import './ProfessionalProfilePage.css'
 
 const txt = {
@@ -325,7 +326,17 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
             <span className="pro-verified">✓</span>
           </div>
           <p className="pro-cat">
-            {pro.icon || '🔧'} {pro.category || pro.categoryEs || 'Profesional'}
+            {(() => {
+              const catStr = pro.categoryId || pro.category || pro.specEs || pro.categoryEs || '';
+              const lower = catStr.toLowerCase();
+              const subCat = ALL_SUBCATEGORIES.find(s => s.id === lower || s.labelEs?.toLowerCase() === lower);
+              const mainCat = CATEGORIES.find(c => c.id === lower || c.labelEs?.toLowerCase() === lower);
+              if (subCat?.image || mainCat?.image) {
+                return <img src={subCat?.image || mainCat?.image} alt="" style={{ width: '22px', height: '22px', objectFit: 'contain', verticalAlign: 'middle', marginRight: '6px' }} />;
+              }
+              return (subCat?.icon || mainCat?.icon || pro.icon || '🔧') + ' ';
+            })()} 
+            {pro.category || pro.categoryEs || pro.specEs || 'Profesional'}
             {(() => {
               const planStr = (pro.currentPlan || '').toLowerCase();
               if (planStr.includes('vip') || planStr.includes('elite') || planStr.includes('ilimitado')) return <span style={{marginLeft: '6px', fontSize: '10px', textTransform: 'uppercase', background: 'linear-gradient(135deg, #FF6B00, #FF3D00)', color: '#fff', padding: '2px 8px', borderRadius: '100px', fontWeight: '900', boxShadow: '0 2px 8px rgba(255,107,0,0.4)', textShadow: '0 1px 2px rgba(0,0,0,0.3)'}}>✨ VIP</span>;

@@ -421,7 +421,17 @@ function ProDelMes({ lang, navigate, userRole }) {
               <span className="pdm-badge">⭐</span>
             </div>
             <p className="pdm-nombre">{proDelMes.nombre}</p>
-            <p className="pdm-spec">🔧 {proDelMes.especialidad}</p>
+            <p className="pdm-spec">
+              {(() => {
+                const specStr = (proDelMes.especialidad || '').toLowerCase();
+                const subCat = ALL_SUBCATEGORIES.find(s => s.id === specStr || s.labelEs?.toLowerCase() === specStr);
+                const mainCat = CATEGORIES.find(c => c.id === specStr || c.labelEs?.toLowerCase() === specStr);
+                const imgUrl = subCat?.image || mainCat?.image;
+                if (imgUrl) return <img src={imgUrl} alt="" style={{ width: '16px', height: '16px', objectFit: 'contain', verticalAlign: 'middle', marginRight: '4px' }} />;
+                return subCat?.icon || mainCat?.icon || '🔧 ';
+              })()}
+              {proDelMes.especialidad}
+            </p>
             <div className="pdm-stars-row">
               <span className="pdm-stars">★★★★★</span>
               <span className="pdm-star-count">{totalEstrellas}⭐</span>
@@ -695,7 +705,10 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
                 <div className="premium-title-row">
                   <div>
                     <h3 className="premium-name">{pro.name}</h3>
-                    <p className="premium-cat">{subCat?.icon || mainCat?.icon || '🔧'} {lang === 'es' ? (subCat?.labelEs || mainCat?.labelEs || pro.category) : (subCat?.labelEn || mainCat?.labelEn || pro.category)}</p>
+                    <p className="premium-cat">
+                      {(subCat?.image || mainCat?.image) ? <img src={subCat?.image || mainCat?.image} style={{ width: '16px', height: '16px', objectFit: 'contain', verticalAlign: 'middle', marginRight: '4px' }} alt="" /> : (subCat?.icon || mainCat?.icon || '🔧')} 
+                      {lang === 'es' ? (subCat?.labelEs || mainCat?.labelEs || pro.category) : (subCat?.labelEn || mainCat?.labelEn || pro.category)}
+                    </p>
                   </div>
                   <div style={{ textAlign: 'right' }}>
                     <p className="pro-location" style={{ margin: 0, fontSize: '13px' }}>📍 {pro.location}</p>
@@ -745,7 +758,7 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
               <div className="card-body">
                 <h3 className="pro-name">{pro.name}</h3>
                 <p className="pro-cat">
-                  {subCat?.icon || mainCat?.icon || '🔧'}{' '}
+                  {(subCat?.image || mainCat?.image) ? <img src={subCat?.image || mainCat?.image} style={{ width: '16px', height: '16px', objectFit: 'contain', verticalAlign: 'middle', marginRight: '4px' }} alt="" /> : (subCat?.icon || mainCat?.icon || '🔧')}{' '}
                   {lang === 'es' ? (subCat?.labelEs || mainCat?.labelEs || pro.category) : (subCat?.labelEn || mainCat?.labelEn || pro.category)}
                   {(() => {
                     const planStr = (pro.currentPlan || '').toLowerCase();
