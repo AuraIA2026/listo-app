@@ -137,15 +137,15 @@ export default function PlanesPage({ onBack, navigate }) {
               <div 
                 key={plan.id} 
                 className={`plan-card ${plan.id} ${isCurrent ? 'current' : ''}`}
-                style={{ borderColor: plan.color }}
+                style={{ borderColor: isCurrent ? '' : plan.color }}
               >
-                {plan.badge && <div className="plan-card-badge" style={{ background: plan.color }}>{plan.badge}</div>}
+                {plan.badge && <div className="plan-card-badge" style={{ background: plan.id === 'vip' ? '#1A1A2E' : plan.color, color: plan.id === 'vip' ? '#FFD700' : 'white' }}>{plan.badge}</div>}
                 
-                <div className="plan-top" style={{ background: plan.id==='platinum' ? '#1A1A2E' : plan.id==='vip' ? '#EFF6FF' : '#FFFBEB' }}>
+                <div className="plan-top" style={{ background: plan.id === 'platinum' || plan.id === 'vip' ? 'transparent' : '#FFFBEB' }}>
                   <div className="plan-icon">{plan.icon}</div>
                   <div className="plan-name-wrap">
-                    <h3 className="plan-name" style={{ color: plan.id==='platinum'?'white':'#1a1a1a' }}>{plan.name}</h3>
-                    <p className="plan-target" style={{ color: plan.id==='platinum'?'#aaa':'#666' }}>{plan.target}</p>
+                    <h3 className="plan-name" style={{ color: plan.id === 'platinum' || plan.id === 'vip' ? 'white' : '#1a1a1a' }}>{plan.name}</h3>
+                    <p className="plan-target" style={{ color: plan.id === 'platinum' || plan.id === 'vip' ? '#aaa' : '#666' }}>{plan.target}</p>
                   </div>
                 </div>
 
