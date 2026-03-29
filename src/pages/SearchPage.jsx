@@ -648,8 +648,14 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
             return (
               <div key={pro.id} className="pro-card-premium" style={{ animationDelay:`${i * 0.06}s` }} onClick={() => navigate('proProfile', pro)}>
                 <div className="premium-photo-wrap">
-                  {isPlatinum && <div className="premium-badges-top"><span className="premium-amz-badge" style={{background: 'linear-gradient(135deg, #B0BEC5, #78909C)'}}>💎 PLATINUM Choice</span></div>}
-                  {isVip && <div className="premium-badges-top"><span className="premium-amz-badge" style={{background: 'linear-gradient(135deg, #FF6B00, #FF3D00)'}}>✨ VIP Exclusive</span></div>}
+                  {isPlatinum && <div className="premium-badges-top">
+                    <span className="premium-amz-badge" style={{background: 'linear-gradient(135deg, #B0BEC5, #78909C)'}}>💎 Selección Platinum</span>
+                    <span className="premium-amz-badge badge-urgent" style={{background: '#E11D48'}}>🔥 Alta demanda</span>
+                  </div>}
+                  {isVip && <div className="premium-badges-top">
+                    <span className="premium-amz-badge" style={{background: 'linear-gradient(135deg, #FF6B00, #FF3D00)'}}>✨ Exclusivo VIP</span>
+                    <span className="premium-amz-badge badge-urgent" style={{background: '#E11D48'}}>⚡ Responde al instante</span>
+                  </div>}
                   
                   {pro.photoURL
                     ? <img src={pro.photoURL} alt={pro.name} className="premium-photo" />

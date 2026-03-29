@@ -373,8 +373,21 @@ export default function HomePage({ lang, navigate, userRole }) {
           if (b.rating !== a.rating) return b.rating - a.rating;
           return b.reviews - a.reviews;
         });
+
+        // E-Commerce gamification: Automagically assign Temu/Amazon style badges to top professionals
+        const topFeatured = finalFeatured.slice(0, 12);
+        topFeatured.forEach((p, idx) => {
+          if (!p.badge) {
+            if (idx === 0) p.badge = "🔥 TOP 1";
+            else if (idx === 1 || idx === 2) p.badge = "⚡ MÁS VENDIDO";
+            else if (idx % 3 === 0) p.badge = "🎟️ EN PROMOCIÓN";
+            else if (idx % 4 === 0) p.badge = "⏳ MUY BUSCADO";
+            else p.badge = "⭐ POPULAR";
+          }
+        });
+
         setAllProsReal(prosList)
-        setFeaturedReal(finalFeatured.slice(0, 12))
+        setFeaturedReal(topFeatured)
       } catch (err) {
         console.error("Error fetching pros in Home: ", err)
       }
@@ -547,6 +560,8 @@ export default function HomePage({ lang, navigate, userRole }) {
         <div className="hp-cats-scroll">
           {topHomeCategories.map((c, i) => (
             <button key={i} className="hp-cat-btn" onClick={() => navigate('search', { catToSelect: c.id || 'all' })}>
+              {i === 0 && <span className="cat-flash-badge">🔥 HOT</span>}
+              {i === 2 && <span className="cat-flash-badge" style={{background:'#10B981', boxShadow: '0 4px 8px rgba(16, 185, 129, 0.4)'}}>NUEVO</span>}
               <span className="hp-cat-icon">{c.icon}</span>
               <span className="hp-cat-label">{lang === 'es' ? c.labelEs : c.labelEn}</span>
             </button>
@@ -638,6 +653,7 @@ export default function HomePage({ lang, navigate, userRole }) {
                          <div style={{width: 80, height: 80, borderRadius: 12, background: '#FF8533', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28, fontWeight: 'bold'}}>{pro.avatar}</div>
                       )}
                       <span className={`pro-avail-dot${pro.avail ? ' online' : ''}`} />
+                      {i % 4 === 0 && <span className="cat-flash-badge" style={{top: '-8px', right: '-8px', animation: 'ecom-pop 1s infinite alternate'}}>⚡ {lang === 'es' ? 'RÁPIDO' : 'FAST'}</span>}
                     </div>
                     <div className="pro-list-info">
                       <p className="pro-list-name">{pro.nameEs}</p>
