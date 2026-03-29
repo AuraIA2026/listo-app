@@ -516,7 +516,7 @@ export default function HomePage({ lang, navigate, userRole }) {
         <img src={bannerPros} alt="Un profesional siempre cerca de ti" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 15%', display: 'block' }} />
         
         {/* Animated Tip Overlay */}
-        {showBlackTips && (
+        {!isPro && showBlackTips && (
           <div className="hp-tip-overlay" style={{ transition: 'opacity 0.8s' }}>
             <div className="hp-tip-card" key={tipIdx}>
               <span className="hp-tip-icon">{clientTips[tipIdx].icon}</span>
