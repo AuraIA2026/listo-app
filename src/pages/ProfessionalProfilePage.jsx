@@ -213,51 +213,72 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
 
   const [activeTab, setActiveTab] = useState('photos')
   const [reviews, setReviews] = useState([])
+  const [proPhotos, setProPhotos] = useState([])
   const [loadingReviews, setLoadingReviews] = useState(true)
   const [showWriteReview, setShowWriteReview] = useState(false)
   const avatarColors = ['#F26000','#C24D00','#FF8533','#7A3000','#FFB380']
   const proColor = avatarColors[pro.id % avatarColors.length] || '#F26000'
 
   useEffect(() => {
-    const fetchReviews = async () => {
+    const fetchData = async () => {
       try {
         const q = query(
           collection(db, 'orders'),
-          where('proId', '==', pro.id || pro.uid),
-          where('rated', '==', true)
+          where('proId', '==', pro.id || pro.uid)
         )
         const snapshot = await getDocs(q)
-        const fetched = []
+        const fetchedReviews = []
+        const fetchedEvidences = []
+        let photoIdCounter = 1
+
         snapshot.forEach(doc => {
           const d = doc.data()
-          fetched.push({
-            id: doc.id,
-            user: d.reviewerName || d.clientName || 'Cliente',
-            avatar: (d.reviewerName || d.clientName || 'C').substring(0,2).toUpperCase(),
-            color: avatarColors[Math.floor(Math.random() * avatarColors.length)],
-            rating: d.ratingScore || 5,
-            comment: d.ratingComment || '',
-            date: d.dateToken || 'Reciente',
-            service: d.proSpecialty || d.specialty || 'Servicio General',
-            createdAt: d.createdAt?.seconds || 0
-          })
+          // 1. Extraer reseñas si están calificadas
+          if (d.rated === true || typeof d.ratingScore === 'number') {
+            fetchedReviews.push({
+              id: doc.id,
+              user: d.reviewerName || d.clientName || 'Cliente',
+              avatar: (d.reviewerName || d.clientName || 'C').substring(0,2).toUpperCase(),
+              color: avatarColors[Math.floor(Math.random() * avatarColors.length)],
+              rating: d.ratingScore || 5,
+              comment: d.ratingComment || '',
+              date: d.dateToken || 'Reciente',
+              service: d.proSpecialty || d.specialty || 'Servicio General',
+              createdAt: d.createdAt?.seconds || 0
+            })
+          }
+          // 2. Extraer evidencias visuales subidas en "Trabajo Listo"
+          if (d.evidences && Array.isArray(d.evidences) && d.evidences.length > 0) {
+            d.evidences.forEach(url => {
+              fetchedEvidences.push({
+                id: photoIdCounter++,
+                url: url,
+                caption: d.evidenceText || d.specialty || d.proSpecialty || 'Evidencia de trabajo completado',
+                createdAt: d.createdAt?.seconds || 0
+              })
+            })
+          }
         })
         
-        // Add some mock reviews if none fetched so UI is not completely empty for testing
-        if (fetched.length === 0) {
+        // Setup fotos final
+        fetchedEvidences.sort((a,b) => b.createdAt - a.createdAt)
+        setProPhotos(fetchedEvidences.length > 0 ? fetchedEvidences : (pro.photos || []).map((url, i) => ({ id: `p${i}`, url, caption: 'Foto de perfil' })))
+        
+        // Replicar comportamiento de prueba para reseñas si no hay (o usar siempre reales si prefieres)
+        if (fetchedReviews.length === 0) {
           setReviews(mockReviews)
         } else {
-          fetched.sort((a,b) => b.createdAt - a.createdAt)
-          setReviews(fetched)
+          fetchedReviews.sort((a,b) => b.createdAt - a.createdAt)
+          setReviews(fetchedReviews)
         }
-      } catch(e) {
-        console.error("Error fetching reviews:", e)
+      } catch (e) {
+        console.error('Error fetching data:', e)
         setReviews(mockReviews)
       } finally {
         setLoadingReviews(false)
       }
     }
-    fetchReviews()
+    fetchData()
   }, [pro.id, pro.uid])
 
   const avgRating = reviews.length > 0 ? (reviews.reduce((s, r) => s + r.rating, 0) / reviews.length).toFixed(1) : '5.0'
@@ -359,9 +380,9 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
       </div>
 
       <div className="pro-tab-content">
-        {/* FOTOS */}
+        {/* FOTOS Y EVIDENCIAS */}
         {activeTab === 'photos' && (
-          <PhotoGrid photos={pro.photos || []} lang={lang} />
+          <PhotoGrid photos={proPhotos} lang={lang} />
         )}
 
         {/* RESEÑAS */}
