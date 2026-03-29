@@ -192,6 +192,11 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
         evidenceText: formData.experiencia
       })
       
+      if (finalUserData?.uid) {
+        localStorage.removeItem('hideUpgrade_Listo_' + finalUserData.uid)
+        localStorage.setItem('showUpgradeOverride_Listo_' + finalUserData.uid, 'true')
+      }
+      
       setSubmitted(true)
     } catch (err) {
       console.error("Upload error:", err)

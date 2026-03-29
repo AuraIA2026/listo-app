@@ -429,6 +429,7 @@ export default function ProfilePage({ lang, setLang, navigate, onLogout, initial
   const [photoStatus, setPhotoStatus] = useState(null)
   const [tapCount,    setTapCount]    = useState(0)
   const [ordersCount, setOrdersCount] = useState(0)
+  const [hideUpgrade, setHideUpgrade] = useState(() => localStorage.getItem('hideUpgrade_Listo_' + (userData?.uid || 'guest')) === 'true')
 
   useEffect(() => {
     if (!userData?.uid) return
@@ -639,11 +640,31 @@ export default function ProfilePage({ lang, setLang, navigate, onLogout, initial
             </div>
             <p className="perf-sub">{lang==='es' ? '¡Tu perfil destaca sobre los demás!' : 'Your profile stands out!'} {lang==='es' ? 'Mantén el buen servicio.' : 'Keep up the good work.'}</p>
             
-            {(!userData?.planId || userData?.planId === 'basico' || userData?.currentPlan === 'basico') && (
-              <button className="perf-action" onClick={() => navigate('profile', { screen: 'planes' })}>
-                <span>💎 {lang === 'es' ? 'Sube de Nivel (Gana más)' : 'Upgrade Level (Earn more)'}</span>
-                <span style={{ fontSize: '18px' }}>›</span>
-              </button>
+            {(!hideUpgrade && (!userData?.planId || userData?.planId === 'basico' || userData?.currentPlan === 'basico' || localStorage.getItem('showUpgradeOverride_Listo_' + userData?.uid) === 'true')) && (
+              <div style={{ position: 'relative', marginTop: '12px' }}>
+                <button className="perf-action" onClick={() => setScreen('planes')} style={{ margin: 0, width: '100%' }}>
+                  <span>💎 {lang === 'es' ? 'Sube de Nivel (Gana más)' : 'Upgrade Level (Earn more)'}</span>
+                  <span style={{ fontSize: '18px' }}>›</span>
+                </button>
+                <button 
+                  onClick={(e) => { 
+                    e.stopPropagation(); 
+                    setHideUpgrade(true); 
+                    localStorage.setItem('hideUpgrade_Listo_' + userData?.uid, 'true');
+                    localStorage.removeItem('showUpgradeOverride_Listo_' + userData?.uid);
+                  }}
+                  style={{
+                    position: 'absolute', top: '-6px', right: '-6px',
+                    background: '#ECECEC', color: '#666', border: 'none',
+                    borderRadius: '50%', width: '22px', height: '22px',
+                    fontSize: '12px', fontWeight: 'bold', cursor: 'pointer',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                  }}
+                >
+                  ✕
+                </button>
+              </div>
             )}
             
             {(userData?.planId === 'gold' || userData?.planId === 'platinum' || userData?.planId === 'vip' || (userData?.currentPlan||'').includes('vip')) && (
