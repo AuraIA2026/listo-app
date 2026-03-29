@@ -35,14 +35,14 @@ const testimonials = [
 
 const topHomeCategories = [
   { id: 'mecanico',    icon:'🔧', labelEs:'Mecánico',      labelEn:'Mechanic' },
-  { id: 'electricista', icon:'⚡', labelEs:'Electricista',  labelEn:'Electrician' },
-  { id: 'plomero',     icon:'🔩', labelEs:'Plomero',       labelEn:'Plumber' },
-  { id: 'cerrajero',   icon:'🔑', labelEs:'Cerrajero',     labelEn:'Locksmith' },
-  { id: 'pintor',      icon:'🎨', labelEs:'Pintor',        labelEn:'Painter' },
-  { id: 'jardinero',   icon:'🌿', labelEs:'Jardinero',     labelEn:'Gardener' },
-  { id: 'ninera',      icon:'👶', labelEs:'Niñera',        labelEn:'Nanny' },
+  { id: 'electricista', icon:'⚡', image: '/icons/electricista.webp', labelEs:'Electricista',  labelEn:'Electrician' },
+  { id: 'plomero',     icon:'🔩', image: '/icons/plomero.webp', labelEs:'Plomero',       labelEn:'Plumber' },
+  { id: 'cerrajero',   icon:'🔑', image: '/icons/cerrajero.webp', labelEs:'Cerrajero',     labelEn:'Locksmith' },
+  { id: 'pintor',      icon:'🎨', image: '/icons/pintor.webp', labelEs:'Pintor',        labelEn:'Painter' },
+  { id: 'jardinero',   icon:'🌿', image: '/icons/jardinero.webp', labelEs:'Jardinero',     labelEn:'Gardener' },
+  { id: 'ninera',      icon:'👶', image: '/icons/ninera.webp', labelEs:'Niñera',        labelEn:'Nanny' },
   { id: 'refrigeracion',icon:'❄️', labelEs:'Refrigeración', labelEn:'A/C' },
-  { id: 'limpieza_hogar',icon:'🧹', labelEs:'Limpieza',     labelEn:'Cleaning' },
+  { id: 'limpieza_hogar',icon:'🧹', image: '/icons/limpieza.webp', labelEs:'Limpieza',     labelEn:'Cleaning' },
 ]
 
 const featuredStatic = [
@@ -709,7 +709,11 @@ export default function HomePage({ lang, navigate, userRole }) {
               {i === 0 && <span className="cat-flash-badge">🔥 HOT</span>}
               {i === 2 && <span className="cat-flash-badge" style={{background:'#10B981', boxShadow: '0 4px 8px rgba(16, 185, 129, 0.4)'}}>NUEVO</span>}
               <div className="cat-icon-wrap">
-                <span className="hp-cat-icon">{c.icon}</span>
+                {c.image ? (
+                  <img src={c.image} alt={c.labelEs} style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '10px' }} />
+                ) : (
+                  <span className="hp-cat-icon">{c.icon}</span>
+                )}
               </div>
               <span className="hp-cat-label">{lang === 'es' ? c.labelEs : c.labelEn}</span>
             </div>

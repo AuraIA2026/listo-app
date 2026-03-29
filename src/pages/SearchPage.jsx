@@ -629,7 +629,7 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
             </button>
             {currentCat.subcategories.map(sub => (
               <button key={sub.id} className={`sub-pill ${activeSubcategory === sub.id ? 'active' : ''}`} onClick={() => handleSubcategoryClick(sub.id)}>
-                <span>{sub.icon}</span> {lang === 'es' ? sub.labelEs : sub.labelEn}
+                <span>{sub.image ? <img src={sub.image} alt={sub.labelEs} style={{ width: '16px', height: '16px', objectFit: 'contain', verticalAlign: 'middle', marginRight: '4px' }} /> : sub.icon}</span> {lang === 'es' ? sub.labelEs : sub.labelEn}
               </button>
             ))}
           </div>
