@@ -187,7 +187,7 @@ export default function PlanesPage({ onBack, navigate }) {
         </div>
 
         <div className="planes-promo fade-up">
-          <h3>🎁 Bienvenida a Listo</h3>
+          <h3>🎁 Bienvenido a Listo Patrón</h3>
           <p>¿Nuevo en Listo? Todos los profesionales nuevos reciben automáticamente <strong>1 mes gratis en el plan BÁSICO</strong> para que prueben la plataforma y comiencen a conseguir clientes.</p>
         </div>
 
