@@ -1,13 +1,16 @@
 .bottom-nav {
   position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 68px;
-  background: white;
-  border-top: 1px solid rgba(0,0,0,0.08);
-  z-index: 200;
-  box-shadow: 0 -4px 24px rgba(0,0,0,0.07);
+  bottom: 20px;
+  left: 20px;
+  right: 20px;
+  height: 64px;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  z-index: 2000;
 }
 
 .bottom-nav-inner {
@@ -15,6 +18,7 @@
   align-items: center;
   justify-content: space-around;
   height: 100%;
+  padding: 0 10px;
 }
 
 .nav-tab {
@@ -23,54 +27,40 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 4px;
-  background: none;
+  gap: 3px;
+  background: transparent;
   border: none;
   cursor: pointer;
-  padding: 8px 0;
+  padding: 6px 0;
   position: relative;
-  transition: transform 0.15s ease;
+  transition: opacity 0.2s;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.nav-tab:active { transform: scale(0.90); }
-
-.nav-tab-pill {
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 24px;
-  height: 3px;
-  background: var(--mamey);
-  border-radius: 0 0 4px 4px;
+.nav-tab:active {
+  opacity: 0.6;
 }
 
 .nav-icon {
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.nav-icon-img {
-  width: 24px;
-  height: 24px;
-  object-fit: contain;
-  opacity: 1;
+  width: 28px;
+  height: 28px;
   transition: transform 0.2s;
 }
 
-.nav-icon-img.active {
-  transform: scale(1.12);
-}
-
 .nav-label {
-  font-size: 11px;
-  font-weight: 500;
-  color: #bbb;
+  font-size: 10px;
+  font-weight: 600;
+  color: #8E8E93;
   transition: color 0.2s, font-weight 0.2s;
+  line-height: 1;
+  font-family: var(--font-display, inherit);
+  letter-spacing: -0.2px;
 }
 
 .nav-tab.active .nav-label {
-  color: var(--mamey);
-  font-weight: 700;
+  color: #F26000;
+  font-weight: 800;
 }
