@@ -346,40 +346,7 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
         </div>
       </div>
 
-      {/* Action buttons */}
-      <div className="pro-actions">
-        {(() => {
-          let btnStyle = { flex: 1, padding: '14px', borderRadius: '14px', border: 'none', color: '#fff', fontSize: '15px', fontWeight: '800', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'transform 0.2s' };
-          const planStr = (pro.currentPlan || '').toLowerCase();
-          const isVip = planStr.includes('vip') || planStr.includes('elite') || planStr.includes('ilimitado');
-          const isGold = planStr.includes('gold');
-          const isPlatinum = planStr.includes('platinum') || planStr.includes('platino');
-          
-          if (isVip) { btnStyle.background = 'linear-gradient(135deg, #FF6B00, #FF3D00)'; btnStyle.boxShadow = '0 4px 15px rgba(255, 107, 0, 0.4)'; }
-          else if (isPlatinum) { btnStyle.background = 'linear-gradient(135deg, #B0BEC5, #78909C)'; btnStyle.boxShadow = '0 4px 15px rgba(176, 190, 197, 0.4)'; }
-          else if (isGold) { btnStyle.background = 'linear-gradient(135deg, #FFD700, #FFA500)'; btnStyle.color = '#1a1a2e'; btnStyle.boxShadow = '0 4px 15px rgba(255, 215, 0, 0.4)'; }
-          else { btnStyle.background = '#F26000'; btnStyle.boxShadow = '0 4px 12px rgba(242, 96, 0, 0.3)'; }
-          
-          let icon = '📅';
-          if(isVip) icon = '✨'; else if(isPlatinum) icon = '💎'; else if(isGold) icon = '⭐';
 
-          if (typeof pro.contracts !== 'undefined' && pro.contracts <= 0) {
-            return (
-              <button style={{ ...btnStyle, background: '#E0E0E0', color: '#888', boxShadow: 'none', cursor: 'not-allowed' }} disabled>
-                🚫 {lang === 'es' ? 'Sin turnos disponibles' : 'No available slots'}
-              </button>
-            )
-          }
-          return (
-            <button style={btnStyle} onClick={() => navigate('booking', pro)} onMouseDown={e => e.currentTarget.style.transform='scale(0.96)'} onMouseUp={e => e.currentTarget.style.transform='scale(1)'} onMouseLeave={e => e.currentTarget.style.transform='scale(1)'}>
-              {icon} {T.book}
-            </button>
-          )
-        })()}
-        <button className="pro-btn-chat" onClick={() => navigate('chat', pro)}>
-          💬 {T.chat}
-        </button>
-      </div>
 
       {/* Tabs */}
       <div className="pro-tabs">
@@ -446,8 +413,43 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
           </div>
         )}
       </div>
+      <div style={{ height: 110 }} />
 
-      <div style={{ height: 80 }} />
+      {/* Sticky Bottom Actions */}
+      <div className="pro-actions-sticky slide-up-anim">
+        {(() => {
+          let btnStyle = { flex: 1, padding: '16px', borderRadius: '16px', border: 'none', color: '#fff', fontSize: '16px', fontWeight: '800', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)' };
+          const planStr = (pro.currentPlan || '').toLowerCase();
+          const isVip = planStr.includes('vip') || planStr.includes('elite') || planStr.includes('ilimitado');
+          const isGold = planStr.includes('gold');
+          const isPlatinum = planStr.includes('platinum') || planStr.includes('platino');
+          
+          if (isVip) { btnStyle.background = 'linear-gradient(135deg, #FF6B00, #FF3D00)'; btnStyle.boxShadow = '0 8px 20px rgba(255, 107, 0, 0.35)'; }
+          else if (isPlatinum) { btnStyle.background = 'linear-gradient(135deg, #B0BEC5, #78909C)'; btnStyle.boxShadow = '0 8px 20px rgba(176, 190, 197, 0.35)'; }
+          else if (isGold) { btnStyle.background = 'linear-gradient(135deg, #FFD700, #FFA500)'; btnStyle.color = '#1a1a2e'; btnStyle.boxShadow = '0 8px 20px rgba(255, 215, 0, 0.35)'; }
+          else { btnStyle.background = 'linear-gradient(135deg, #F26000, #E65C00)'; btnStyle.boxShadow = '0 8px 20px rgba(242, 96, 0, 0.3)'; }
+          
+          let icon = '📅';
+          if(isVip) icon = '✨'; else if(isPlatinum) icon = '💎'; else if(isGold) icon = '⭐';
+
+          if (typeof pro.contracts !== 'undefined' && pro.contracts <= 0) {
+            return (
+              <button style={{ ...btnStyle, background: '#E0E0E0', color: '#888', boxShadow: 'none', cursor: 'not-allowed' }} disabled>
+                🚫 {lang === 'es' ? 'Sin turnos disponibles' : 'No available slots'}
+              </button>
+            )
+          }
+          return (
+            <button className="book-btn-squish" style={btnStyle} onClick={() => navigate('booking', pro)}>
+              {icon} {T.book}
+            </button>
+          )
+        })()}
+        <button className="pro-btn-chat" onClick={() => navigate('chat', pro)}>
+          💬
+        </button>
+      </div>
+
     </div>
   )
 }
