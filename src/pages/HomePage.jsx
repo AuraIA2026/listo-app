@@ -317,6 +317,8 @@ export default function HomePage({ lang, navigate, userRole }) {
   const [proFilter, setProFilter] = useState('todos')
   const [showTour, closeTour]     = useTour()
   const [showHamburguesa, setShowHamburguesa] = useState(false)
+  const [homeSearch, setHomeSearch] = useState('')
+  const [showDropdown, setShowDropdown] = useState(false)
 
   const [featuredRef, featuredVisible] = useScrollReveal()
   const [allProsRef,  allProsVisible]  = useScrollReveal(0.05)
@@ -509,21 +511,78 @@ export default function HomePage({ lang, navigate, userRole }) {
           </div>
         )}
 
-        {/* Buscador Gigante o Botón de Postularse (si no es pro) */}
+        {/* Buscador Gigante Autocompletable */}
         {!isPro && (
-          <button className="hp-hero-search-btn" onClick={() => navigate('search')}>
-            <span className="hp-hero-icon">🔍</span>
-            <div className="hp-search-placeholder-wrap">
-              <span className="hp-search-placeholder text-slide-anim" key={phIdx}>
-                {searchPlaceholders[phIdx]}
-              </span>
+          <div className="hp-hero-search-container" style={{ position: 'relative', width: '100%', maxWidth: '600px', margin: '0 auto' }}>
+            <div className="hp-hero-search-btn" style={{ padding: '0 6px 0 16px', display: 'flex', alignItems: 'center', cursor: 'text' }} onClick={() => document.getElementById('hp-search-input').focus()}>
+              <span className="hp-hero-icon">🔍</span>
+              {homeSearch.length === 0 && (
+                <div className="hp-search-placeholder-wrap" style={{ position: 'absolute', left: '46px', pointerEvents: 'none' }}>
+                  <span className="hp-search-placeholder text-slide-anim" key={phIdx}>
+                    {searchPlaceholders[phIdx]}
+                  </span>
+                </div>
+              )}
+              <input 
+                id="hp-search-input"
+                type="text" 
+                value={homeSearch} 
+                onChange={(e) => {
+                  setHomeSearch(e.target.value);
+                  setShowDropdown(true);
+                }}
+                onFocus={() => setShowDropdown(true)}
+                onBlur={() => setTimeout(() => setShowDropdown(false), 200)}
+                style={{ flex: 1, border: 'none', background: 'transparent', height: '100%', outline: 'none', fontSize: '15px', fontWeight: '600', color: '#1a1a2e', padding: '16px 0', zIndex: 2 }}
+              />
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (homeSearch.trim()) {
+                     navigate('search', { state: { searchQuery: homeSearch } });
+                  } else {
+                     navigate('search');
+                  }
+                }}
+                className="hp-hero-action" style={{ background: 'transparent', border: 'none', padding: 0, cursor: 'pointer', zIndex: 3 }}>
+                <span style={{ fontSize: '12px', background: 'linear-gradient(135deg, #FF7A1A, #F26000)', color: 'white', padding: '10px 18px', borderRadius: '20px', fontWeight: '900', boxShadow: '0 2px 6px rgba(242,96,0,0.4)', display: 'inline-block' }}>
+                  {lang === 'es' ? 'Buscar' : 'Search'}
+                </span>
+              </button>
             </div>
-            <div className="hp-hero-action">
-              <span style={{ fontSize: '11px', background: 'linear-gradient(135deg, #FF7A1A, #F26000)', color: 'white', padding: '6px 12px', borderRadius: '20px', fontWeight: '900', boxShadow: '0 2px 6px rgba(242,96,0,0.4)' }}>
-                {lang === 'es' ? 'Buscar' : 'Search'}
-              </span>
-            </div>
-          </button>
+            
+            {/* Dropdown de Resultados (Autocompletado) */}
+            {showDropdown && homeSearch.trim().length > 0 && (
+              <div className="fade-up" style={{ position: 'absolute', top: '100%', left: 0, right: 0, marginTop: '10px', background: 'rgba(255, 255, 255, 0.95)', backdropFilter: 'blur(16px)', borderRadius: '20px', boxShadow: '0 10px 40px rgba(0,0,0,0.15)', overflow: 'hidden', zIndex: 100, border: '1px solid rgba(0,0,0,0.06)', maxHeight: '350px', overflowY: 'auto' }}>
+                {allProsToUse.filter(p => p.nameEs?.toLowerCase().includes(homeSearch.toLowerCase()) || p.specEs?.toLowerCase().includes(homeSearch.toLowerCase())).length > 0 ? (
+                  allProsToUse.filter(p => p.nameEs?.toLowerCase().includes(homeSearch.toLowerCase()) || p.specEs?.toLowerCase().includes(homeSearch.toLowerCase())).slice(0, 5).map(pro => (
+                    <div key={pro.id} onClick={() => navigate('proProfile', pro)} style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '14px 16px', borderBottom: '1px solid rgba(0,0,0,0.04)', cursor: 'pointer', transition: 'all 0.2s' }} onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(242,96,0,0.06)'; e.currentTarget.style.paddingLeft = '20px'; }} onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.paddingLeft = '16px'; }}>
+                      {pro.img ? (
+                        <img src={pro.img} alt={pro.nameEs} style={{ width: '44px', height: '44px', borderRadius: '50%', objectFit: 'cover', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }} />
+                      ) : (
+                        <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: '#FF8533', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '18px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>{pro.avatar}</div>
+                      )}
+                      <div style={{ flex: 1 }}>
+                        <p style={{ margin: 0, fontSize: '15px', fontWeight: '800', color: '#1a1a2e' }}>{pro.nameEs}</p>
+                        <p style={{ margin: 0, fontSize: '12px', color: '#666', fontWeight: '600' }}>{pro.specEs} <span style={{color: '#FFD700', marginLeft: '4px'}}>⭐ {Number(pro.rating).toFixed(1)}</span></p>
+                      </div>
+                      <span style={{ fontSize: '18px', color: '#ccc', fontWeight: 'bold' }}>›</span>
+                    </div>
+                  ))
+                ) : (
+                  <div style={{ padding: '24px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontSize: '32px' }}>🕵️‍♂️</span>
+                    <p style={{ margin: 0, color: '#666', fontSize: '14px', fontWeight: '600' }}>
+                      {lang === 'es' ? 'No encontramos a nadie con esa búsqueda.' : 'No one found with that search.'}
+                    </p>
+                  </div>
+                )}
+                <div onClick={() => navigate('search')} style={{ padding: '12px', textAlign: 'center', background: '#f8f9fa', color: '#F26000', fontSize: '13px', fontWeight: '800', cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.05em' }} onMouseEnter={(e) => e.currentTarget.style.background = '#f1f3f5'} onMouseLeave={(e) => e.currentTarget.style.background = '#f8f9fa'}>
+                  {lang === 'es' ? 'Ver todos los profesionales' : 'See all professionals'}
+                </div>
+              </div>
+            )}
+          </div>
         )}
       </div>
 
