@@ -1,304 +1,187 @@
 /* ── Splash ── */
 .splash-screen {
-  position: fixed;
-  inset: 0;
-  background: var(--mamey);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  z-index: 9999;
-  gap: 20px;
+  position: fixed; inset: 0; z-index: 99999;
+  background: linear-gradient(135deg, #F26000 0%, #FF3D00 100%);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 24px; overflow: hidden;
 }
+
+.splash-screen::before {
+  content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+  background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 60%);
+  animation: rotateGlow 15s linear infinite; pointer-events: none;
+}
+@keyframes rotateGlow { 100% { transform: rotate(360deg); } }
 
 .splash-logo-wrap {
-  animation: splashPop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  position: relative;
+  animation: splashPop 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
 }
+.splash-logo-wrap::after {
+  content: ''; position: absolute; inset: -20px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,255,255,0.4) 0%, transparent 60%);
+  z-index: -1; animation: pulseGlow 2s ease-in-out infinite alternate;
+}
+@keyframes pulseGlow { 0% { transform: scale(0.8); opacity: 0.5; } 100% { transform: scale(1.4); opacity: 1; } }
 
 .splash-logo {
-  width: 130px;
-  height: 130px;
-  border-radius: 50%;
-  box-shadow: 0 12px 48px rgba(0,0,0,0.25);
+  width: 140px; height: 140px; border-radius: 50%;
+  box-shadow: 0 16px 48px rgba(0,0,0,0.3); border: 2px solid rgba(255,255,255,0.1);
+  background: white; object-fit: contain;
 }
 
 .splash-tagline {
-  font-family: var(--font-display);
-  font-size: 22px;
-  font-weight: 700;
-  color: white;
-  letter-spacing: 0.02em;
-  animation: fadeUp 0.5s 0.4s ease both;
+  font-family: var(--font-display, 'SF Pro Display', system-ui, sans-serif);
+  font-size: 26px; font-weight: 900; color: white; letter-spacing: -0.5px; margin: 0;
+  animation: fadeUp 0.6s 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  text-shadow: 0 4px 12px rgba(0,0,0,0.2);
 }
 
 .splash-loader {
-  width: 140px;
-  height: 4px;
-  background: rgba(255,255,255,0.25);
-  border-radius: 2px;
-  overflow: hidden;
-  animation: fadeUp 0.4s 0.6s ease both;
-  opacity: 0;
+  width: 160px; height: 6px; background: rgba(255,255,255,0.2);
+  border-radius: 100px; overflow: hidden; margin-top: 10px;
+  animation: fadeUp 0.6s 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .splash-bar {
-  height: 100%;
-  background: white;
-  border-radius: 2px;
-  animation: loadBar 1.8s 0.7s ease forwards;
-  width: 0%;
+  height: 100%; border-radius: 100px;
+  background: linear-gradient(90deg, #FFFFFF, #FFE0B2);
+  box-shadow: 0 0 10px rgba(255,255,255,0.8);
+  animation: loadBar 1.8s 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards; width: 0%;
 }
 
 @keyframes splashPop {
-  0%   { transform: scale(0.4); opacity: 0; }
-  70%  { transform: scale(1.1); opacity: 1; }
-  100% { transform: scale(1);   opacity: 1; }
+  0%   { transform: scale(0.4) translateY(20px); opacity: 0; }
+  70%  { transform: scale(1.05) translateY(-5px); opacity: 1; }
+  100% { transform: scale(1) translateY(0); opacity: 1; }
 }
 
 @keyframes loadBar {
   0%   { width: 0%; }
-  60%  { width: 80%; }
+  50%  { width: 70%; }
   100% { width: 100%; }
+}
+
+@keyframes fadeUp {
+  0% { opacity: 0; transform: translateY(20px); }
+  100% { opacity: 1; transform: translateY(0); }
 }
 
 /* ── Onboarding ── */
 .onboarding-screen {
-  position: fixed;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: space-between;
-  padding: 60px 32px 48px;
-  z-index: 9999;
-  overflow: hidden;
+  position: fixed; inset: 0; z-index: 99999;
+  display: flex; flex-direction: column; align-items: center; justify-content: space-between;
+  padding: 60px 32px 48px; overflow: hidden; background: #000;
 }
 
-/* VIDEO DE FONDO */
 .onboarding-video-bg {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  z-index: 0;
+  position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0;
 }
 
-/* OVERLAY DE COLOR */
 .onboarding-overlay {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  transition: background 0.5s ease;
+  position: absolute; inset: 0; z-index: 1;
+  transition: background 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
 }
 
-/* Todo el contenido encima del video */
-.skip-btn,
-.onboarding-content,
-.onboarding-footer {
-  position: relative;
-  z-index: 2;
+.skip-btn, .onboarding-content, .onboarding-footer, .music-btn {
+  position: relative; z-index: 2;
 }
 
 .skip-btn {
-  align-self: flex-end;
-  background: rgba(255,255,255,0.2);
-  border: none;
-  color: white;
-  font-size: 14px;
-  font-weight: 600;
-  padding: 8px 16px;
-  border-radius: 100px;
-  cursor: pointer;
-  transition: background 0.2s;
+  position: absolute; top: 20px; right: 24px;
+  background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.2);
+  color: white; font-size: 14px; font-weight: 700; padding: 10px 20px;
+  border-radius: 100px; cursor: pointer; backdrop-filter: blur(10px);
+  transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1); margin-top: 10px;
 }
+.skip-btn:hover { background: rgba(255,255,255,0.25); transform: scale(1.05); }
 
-.skip-btn:hover {
-  background: rgba(255,255,255,0.3);
+.music-btn {
+  position: absolute; top: 20px; left: 24px;
+  background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.2);
+  color: #fff; font-size: 18px; width: 44px; height: 44px; border-radius: 50%;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  backdrop-filter: blur(10px); transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1); margin-top: 10px;
 }
+.music-btn:hover { background: rgba(255,255,255,0.25); transform: scale(1.1); }
 
 .onboarding-content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  gap: 24px;
-  max-width: 400px;
+  flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; gap: 20px; max-width: 440px; margin-top: 20px;
 }
 
-.onboarding-content.slide-in {
-  animation: slideIn 0.35s ease forwards;
-}
+.onboarding-content.slide-in { animation: slideInOb 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+.onboarding-content.slide-out { animation: slideOutOb 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
 
-.onboarding-content.slide-out {
-  animation: slideOut 0.3s ease forwards;
+@keyframes slideInOb {
+  from { opacity: 0; transform: translateX(50px) scale(0.95); }
+  to   { opacity: 1; transform: translateX(0) scale(1); }
 }
-
-@keyframes slideIn {
-  from { opacity: 0; transform: translateX(40px); }
-  to   { opacity: 1; transform: translateX(0); }
-}
-
-@keyframes slideOut {
-  from { opacity: 1; transform: translateX(0); }
-  to   { opacity: 0; transform: translateX(-40px); }
+@keyframes slideOutOb {
+  from { opacity: 1; transform: translateX(0) scale(1); }
+  to   { opacity: 0; transform: translateX(-50px) scale(0.95); }
 }
 
 .onboarding-logo-big-wrap {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 32px;
-  animation: floatEmoji 3s ease-in-out infinite;
+  display: flex; justify-content: center; margin-bottom: 24px;
+  animation: floatEmoji 3.5s ease-in-out infinite;
 }
 
 .onboarding-logo-big {
-  width: 180px;
-  height: 180px;
-  object-fit: contain;
-  filter: drop-shadow(0 8px 32px rgba(0,0,0,0.25));
+  width: 160px; height: 160px; object-fit: contain;
+  filter: drop-shadow(0 12px 32px rgba(0,0,0,0.4));
 }
-
 @keyframes floatEmoji {
   0%, 100% { transform: translateY(0); }
-  50%       { transform: translateY(-12px); }
+  50% { transform: translateY(-16px); }
 }
 
 .onboarding-title {
-  font-family: var(--font-display);
-  font-size: clamp(24px, 5vw, 32px);
-  font-weight: 800;
-  color: white;
-  line-height: 1.15;
-  letter-spacing: -0.02em;
+  font-family: var(--font-display, 'SF Pro Display', system-ui, sans-serif);
+  font-size: clamp(28px, 6vw, 36px); font-weight: 900; color: white;
+  line-height: 1.15; letter-spacing: -0.5px; margin: 0;
+  text-shadow: 0 4px 16px rgba(0,0,0,0.3);
 }
 
 .onboarding-sub {
-  font-size: 16px;
-  color: rgba(255,255,255,0.85);
-  font-weight: 300;
-  line-height: 1.6;
+  font-size: 16px; color: rgba(255,255,255,0.9); font-weight: 500;
+  line-height: 1.6; margin: 0; max-width: 90%;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.3);
 }
 
 /* Footer */
 .onboarding-footer {
-  width: 100%;
-  max-width: 400px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 24px;
+  width: 100%; max-width: 400px; display: flex; flex-direction: column; align-items: center; gap: 24px;
 }
 
-.onboarding-dots {
-  display: flex;
-  gap: 8px;
+.onboarding-progress {
+  width: 100%; height: 4px; background: rgba(255,255,255,0.2);
+  border-radius: 100px; overflow: hidden;
 }
+.onboarding-progress-bar {
+  height: 100%; background: white; border-radius: 100px; width: 0%;
+  animation: progressFill linear forwards; box-shadow: 0 0 10px rgba(255,255,255,0.8);
+}
+@keyframes progressFill { from { width: 0%; } to { width: 100%; } }
 
+.onboarding-dots { display: flex; gap: 10px; }
 .ob-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.35);
-  transition: all 0.3s ease;
+  width: 8px; height: 8px; border-radius: 50%;
+  background: rgba(255,255,255,0.3); transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
-
 .ob-dot.active {
-  background: white;
-  width: 24px;
-  border-radius: 4px;
+  background: white; width: 32px; border-radius: 100px; box-shadow: 0 0 12px rgba(255,255,255,0.6);
 }
 
 .onboarding-btn {
-  width: 100%;
-  background: white;
-  color: var(--mamey-dark);
-  border: none;
-  border-radius: 16px;
-  padding: 16px;
-  font-size: 17px;
-  font-weight: 800;
-  font-family: var(--font-display);
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 24px rgba(0,0,0,0.15);
+  width: 100%; background: white; color: #1a1a2e;
+  border: none; border-radius: 20px; padding: 18px;
+  font-size: 18px; font-weight: 900; font-family: var(--font-display, 'SF Pro Display', system-ui, sans-serif);
+  cursor: pointer; transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.25); letter-spacing: 0.5px;
 }
-
 .onboarding-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 30px rgba(0,0,0,0.2);
-}
-
-/* ── Video de fondo ── */
-.onboarding-screen {
-  overflow: hidden;
-}
-
-.onboarding-video-bg {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  z-index: 0;
-}
-
-.onboarding-overlay {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  transition: background 0.5s ease;
-}
-
-.skip-btn,
-.onboarding-content,
-.onboarding-footer {
-  position: relative;
-  z-index: 2;
-}
-
-/* ── Barra de progreso ── */
-.onboarding-progress {
-  width: 100%;
-  height: 3px;
-  background: rgba(255,255,255,0.25);
-  border-radius: 2px;
-  overflow: hidden;
-}
-
-.onboarding-progress-bar {
-  height: 100%;
-  background: white;
-  border-radius: 2px;
-  width: 0%;
-  animation: progressFill linear forwards;
-}
-
-@keyframes progressFill {
-  from { width: 0%; }
-  to   { width: 100%; }
-}
-
-/* ── Botón de música ── */
-.music-btn {
-  position: absolute;
-  top: 20px;
-  left: 20px;
-  z-index: 20;
-  background: rgba(255,255,255,0.2);
-  border: 1px solid rgba(255,255,255,0.35);
-  color: #fff;
-  font-size: 1.2rem;
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.2s;
-}
-.music-btn:hover {
-  background: rgba(255,255,255,0.35);
+  transform: translateY(-4px); box-shadow: 0 12px 40px rgba(0,0,0,0.3);
 }
