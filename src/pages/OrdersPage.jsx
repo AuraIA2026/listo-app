@@ -929,14 +929,33 @@ export default function OrdersPage({ lang = 'es', navigate, userData, userRole }
                 <div className="oc-right"><span className="oc-status" style={{ color:statusColor(o.status),background:statusColor(o.status)+'18' }}>{T.status[o.status]}</span><p className="oc-price">{o.price}</p></div>
               </div>
               <div className="order-progress">
-                {PROGRESS_STEPS.map((s, idx, arr) => (
-                  <div key={s} className="op-step">
-                    <div className={`op-dot ${PROGRESS_STEPS.indexOf(o.status)>=idx?'done':''}`} />
-                    {idx<arr.length-1 && <div className={`op-line ${PROGRESS_STEPS.indexOf(o.status)>idx?'done':''}`} />}
-                  </div>
-                ))}
+                {PROGRESS_STEPS.map((s, idx, arr) => {
+                  const isDone = PROGRESS_STEPS.indexOf(o.status) > idx;
+                  const isActive = PROGRESS_STEPS.indexOf(o.status) === idx;
+                  const dotClass = isDone ? 'done' : (isActive ? 'active-step' : '');
+                  return (
+                    <div key={s} className="op-step">
+                      <div className={`op-dot ${dotClass}`} />
+                      {idx<arr.length-1 && <div className={`op-line ${isDone ? 'done' : ''}`} />}
+                    </div>
+                  );
+                })}
               </div>
-              <div className="order-progress-labels">{PROGRESS_LABELS[lang].map((l, idx) => <span key={idx} className="op-label">{l}</span>)}</div>
+              <div className="order-progress-labels">
+                {PROGRESS_LABELS[lang].map((l, idx) => {
+                  const isActive = PROGRESS_STEPS.indexOf(o.status) === idx;
+                  return <span key={idx} className="op-label" style={{ fontWeight: isActive ? 800 : 500, color: isActive ? '#F26000' : 'var(--gray)' }}>{l}</span>;
+                })}
+              </div>
+              
+              {o.status !== 'done' && o.status !== 'cancelled' && (
+                <div style={{ background: '#FFFBEB', padding: '8px 12px', borderRadius: 8, display: 'flex', alignItems: 'center', gap: 8, marginTop: 8, marginBottom: 12, border: '1px solid #FEF3C7' }}>
+                  <span style={{ fontSize: 16 }}>🚚</span>
+                  <p style={{ margin: 0, fontSize: 11, color: '#D97706', fontWeight: 600 }}>
+                    {lang === 'es' ? 'Pedido en curso. Tiempo estimado: Alta demanda ⭐' : 'Order in progress. Estimated time: High demand ⭐'}
+                  </p>
+                </div>
+              )}
               {renderActions(o)}
             </div>
           ))}

@@ -626,6 +626,34 @@ export default function ProfilePage({ lang, setLang, navigate, onLogout, initial
             <span className="stat-label">{T.memberSince}</span>
           </div>
         </div>
+
+        {/* ── Gamified Seller Dashboard ── */}
+        {userRole === 'pro' && (
+          <div className="pro-performance-dash">
+            <div className="perf-header">
+              <span className="perf-title">📈 {lang==='es' ? 'Rendimiento' : 'Performance'}</span>
+              <span className="perf-badge">🚀 TOP {Math.max(1, Math.floor((6 - (userData?.rating || 5)) * 10))}%</span>
+            </div>
+            <div className="perf-bar-bg">
+              <div className="perf-bar-fill" style={{ width: `${Math.min(((userData?.rating || 5.0) / 5) * 100, 100)}%` }} />
+            </div>
+            <p className="perf-sub">{lang==='es' ? '¡Tu perfil destaca sobre los demás!' : 'Your profile stands out!'} {lang==='es' ? 'Mantén el buen servicio.' : 'Keep up the good work.'}</p>
+            
+            {(!userData?.planId || userData?.planId === 'basico' || userData?.currentPlan === 'basico') && (
+              <button className="perf-action" onClick={() => navigate('profile', { screen: 'planes' })}>
+                <span>💎 {lang === 'es' ? 'Sube de Nivel (Gana más)' : 'Upgrade Level (Earn more)'}</span>
+                <span style={{ fontSize: '18px' }}>›</span>
+              </button>
+            )}
+            
+            {(userData?.planId === 'gold' || userData?.planId === 'platinum' || userData?.planId === 'vip' || (userData?.currentPlan||'').includes('vip')) && (
+              <div style={{ marginTop: 16, padding: 12, background: '#F0FDF4', borderRadius: 12, border: '1px solid #BBF7D0', color: '#166534', fontSize: 13, fontWeight: 700, display: 'flex', gap: 10, alignItems: 'center', boxShadow: '0 2px 8px rgba(22,101,52,0.05)' }}>
+                <span style={{ fontSize: 24, animation: 'floatEmoji 3s infinite' }}>👑</span>
+                <span style={{ lineHeight: 1.3 }}>{lang === 'es' ? 'Eres un perfil Premium. Tienes prioridad máxima en las búsquedas.' : 'Premium Profile. You have top priority in searches.'}</span>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="profile-menu">

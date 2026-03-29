@@ -46,15 +46,18 @@
 .oc-status { font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 100px; white-space: nowrap; }
 .oc-price { font-family: var(--font-display); font-size: 14px; font-weight: 800; color: var(--mamey-dark); }
 
-.order-progress { display: flex; align-items: center; margin-bottom: 4px; padding: 0 4px; }
-.op-step { display: flex; align-items: center; flex: 1; }
-.op-dot  { width: 10px; height: 10px; border-radius: 50%; background: #E5E7EB; flex-shrink: 0; transition: background 0.3s; }
-.op-dot.done { background: var(--mamey); }
-.op-line { flex: 1; height: 2px; background: #E5E7EB; transition: background 0.3s; }
-.op-line.done { background: var(--mamey); }
+/* E-commerce Gamified Tracking Bar */
+.order-progress { display: flex; align-items: center; margin-bottom: 8px; padding: 12px; background: #F8FAFC; border-radius: 12px; border: 1px solid #F1F5F9; }
+.op-step { display: flex; align-items: center; flex: 1; position: relative; }
+.op-dot  { width: 14px; height: 14px; border-radius: 50%; background: #E2E8F0; border: 3px solid #FFF; flex-shrink: 0; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); z-index: 2; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+.op-dot.done { background: linear-gradient(135deg, #10B981, #059669); transform: scale(1.1); }
+.op-dot.active-step { background: linear-gradient(135deg, #F26000, #FF3D00); animation: trackingPulse 1.5s infinite; transform: scale(1.2); }
+@keyframes trackingPulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(242,96,0,0.4); } 50% { box-shadow: 0 0 0 6px rgba(242,96,0,0); } }
+.op-line { flex: 1; height: 4px; background: #E2E8F0; transition: background 0.4s; z-index: 1; margin: 0 -2px; }
+.op-line.done { background: linear-gradient(90deg, #10B981, #34D399); }
 
-.order-progress-labels { display: flex; justify-content: space-between; margin-bottom: 12px; padding: 0 2px; }
-.op-label { font-size: 9px; color: var(--gray); text-align: center; flex: 1; white-space: nowrap; }
+.order-progress-labels { display: flex; justify-content: space-between; margin-bottom: 8px; padding: 0 2px; }
+.op-label { font-size: 9px; color: var(--gray); text-align: center; flex: 1; white-space: nowrap; transition: color 0.3s; }
 
 .oc-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 
