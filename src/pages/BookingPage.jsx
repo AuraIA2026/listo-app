@@ -373,6 +373,32 @@ export default function BookingPage({ lang = 'es', navigate, professional, userD
                 💡 En Listo no cobramos tarifas fijas. Discute y acuerda el precio directamente con tu profesional a través del chat o al ser visitado.
               </p>
             </div>
+
+            {/* ── TRUST BADGES E-COMMERCE ── */}
+            <div className="booking-trust-badges fade-up" style={{ animationDelay: '0.1s' }}>
+              <div className="trust-badge">
+                <span className="trust-icon" style={{ background: '#FFF3EC', color: '#F26000' }}>🔒</span>
+                <div>
+                  <h4>{lang === 'es' ? 'Reserva Segura' : 'Secure Booking'}</h4>
+                  <p>{lang === 'es' ? 'Paga directo al profesional al finalizar.' : 'Pay the pro directly when done.'}</p>
+                </div>
+              </div>
+              <div className="trust-badge">
+                <span className="trust-icon" style={{ background: '#ECFDF5', color: '#10B981' }}>🛡️</span>
+                <div>
+                  <h4>{lang === 'es' ? 'Garantía Listo' : 'Listo Guarantee'}</h4>
+                  <p>{lang === 'es' ? 'Te cubrimos ante cualquier eventualidad.' : 'Covered against any eventuality.'}</p>
+                </div>
+              </div>
+              <div className="trust-badge">
+                <span className="trust-icon" style={{ background: '#FEF3C7', color: '#D97706' }}>⭐</span>
+                <div>
+                  <h4>{lang === 'es' ? 'Profesionales Verificados' : 'Verified Pros'}</h4>
+                  <p>{lang === 'es' ? 'Identidad e historial comprobados.' : 'Identity and history verified.'}</p>
+                </div>
+              </div>
+            </div>
+
             <div className="step-nav">
               {errorMsg && <p style={{ color:'red', marginBottom:10 }}>{errorMsg}</p>}
               <button className="btn-back" disabled={loading} onClick={() => setStep(2)}>{T.back}</button>

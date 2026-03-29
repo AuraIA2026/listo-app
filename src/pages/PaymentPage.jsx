@@ -428,6 +428,21 @@ export default function PaymentPage({ lang = 'es', navigate, professional }) {
           </div>
         )}
 
+        {/* ESCUDOS DE SEGURIDAD BANCARIA */}
+        <div className="payment-security-footer fade-up" style={{ animationDelay: '0.2s' }}>
+          <div className="security-logos">
+            <div className="security-badge">
+              <span>🔒</span> 256-bit SSL
+            </div>
+            <div className="security-badge">
+              <span>🛡️</span> PCI DSS Compliant
+            </div>
+          </div>
+          <p className="security-text">
+            {lang === 'es' ? 'Tus pagos están encriptados y protegidos por estándares globales de seguridad.' : 'Your payments are encrypted and protected by global security standards.'}
+          </p>
+        </div>
+
         <button
           className={`pay-confirm-btn ${canConfirm ? 'active' : ''} ${loading ? 'loading' : ''}`}
           disabled={!canConfirm || loading}

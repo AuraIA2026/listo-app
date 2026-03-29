@@ -228,6 +228,21 @@ export default function LoginPage({ lang, navigate }) {
             {T.noAccount}{' '}
             <span onClick={() => navigate('register')}>{T.register}</span>
           </p>
+
+          <div className="auth-social-proof fade-up" style={{animationDelay: '0.2s'}}>
+            <div className="avatar-group">
+              <img src="https://i.pravatar.cc/100?img=1" className="avatar-overlap" alt="User 1" />
+              <img src="https://i.pravatar.cc/100?img=33" className="avatar-overlap" alt="User 2" />
+              <img src="https://i.pravatar.cc/100?img=47" className="avatar-overlap" alt="User 3" />
+              <img src="https://i.pravatar.cc/100?img=12" className="avatar-overlap" alt="User 4" />
+              <div className="avatar-overlap" style={{ color:'#fc9842', backgroundColor:'#fff' }}>10k+</div>
+            </div>
+            <p className="auth-social-text">
+              {lang === 'es' 
+                ? <>Únete a <strong>más de 10,000 dominicanos</strong> que ya confían en Listo.</>
+                : <>Join <strong>over 10,000 customers</strong> who already trust Listo.</>}
+            </p>
+          </div>
         </div>
       </div>
 
