@@ -181,7 +181,7 @@ export default function SplashScreen({ onFinish, lang = 'es' }) {
       {phase === 'splash' ? (
         <div className="splash-screen" onClick={handleScreenTap} onTouchStart={handleScreenTap}>
           <div className="splash-logo-wrap">
-            <img src={logoImg} alt="Listo" className="splash-logo" />
+            <img src={logoBlanco} alt="Listo" className="splash-logo" />
           </div>
           <p className="splash-tagline">Listo, patrón.</p>
           <div className="splash-loader">
