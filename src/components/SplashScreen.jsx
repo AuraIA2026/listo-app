@@ -5,51 +5,27 @@ import './SplashScreen.css'
 
 const onboardingSlides = [
   {
-    titleEs: 'Todos los servicios en un solo lugar',
-    titleEn: 'All services in one place',
-    subEs: 'Mecánicos, electricistas, plomeros, niñeras y más — cuando los necesitas.',
-    subEn: 'Mechanics, electricians, plumbers, nannies and more — when you need them.',
+    titleEs: 'Todos los servicios',
+    titleEn: 'All services',
+    subEs: 'Plomeros, electricistas, niñeras y más — cuando los necesitas.',
+    subEn: 'Plumbers, electricians, nannies & more — when you need them.',
     bg: '#F26000',
     video: '/videos/servicios1.mp4',
   },
   {
-    titleEs: 'Profesionales verificados',
-    titleEn: 'Verified professionals',
-    subEs: 'Cada profesional pasa por un proceso de verificación de identidad y experiencia.',
-    subEn: 'Every professional goes through an identity and experience verification process.',
-    bg: '#F26000',
+    titleEs: 'Profesionales seguros',
+    titleEn: 'Verified pros',
+    subEs: 'Cada experto está 100% verificado para brindarte seguridad.',
+    subEn: 'Every expert is 100% verified for your peace of mind.',
+    bg: '#10B981', // Verde suave para diferenciar
     video: '/videos/profesionales1.mp4',
   },
   {
-    titleEs: 'Reserva en minutos',
-    titleEn: 'Book in minutes',
-    subEs: 'Selecciona, agenda y listo. Tu profesional llega a donde estás.',
-    subEn: 'Select, schedule and done. Your professional comes to you.',
-    bg: '#F26000',
-    video: '/videos/servicios3.mp4',
-  },
-  {
-    titleEs: 'Trabajo de primera',
-    titleEn: 'Top-notch work',
-    subEs: 'Resultados impecables y garantizados. Estamos comprometidos con tu satisfacción.',
-    subEn: 'Flawless and guaranteed results. We are committed to your satisfaction.',
-    bg: '#F26000',
-    video: '/videos/profesionales3.mp4',
-  },
-  {
-    titleEs: 'Síguelo en el mapa',
-    titleEn: 'Track on the map',
-    subEs: 'Observa en tiempo real cómo tu profesional llega directo a tu ubicación.',
-    subEn: 'Watch in real-time as your professional arrives straight to your location.',
-    bg: '#F26000',
-    video: '/videos/reserva1.mp4',
-  },
-  {
-    titleEs: 'Paga sin complicaciones',
-    titleEn: 'Hassle-free payments',
-    subEs: 'Transacciones 100% seguras y al instante, directamente desde la app.',
-    subEn: '100% secure and instant transactions, right from the app.',
-    bg: '#F26000',
+    titleEs: 'Reserva rápido',
+    titleEn: 'Quick booking',
+    subEs: 'Elige, cotiza y el profesional llega a tu puerta en minutos.',
+    subEn: 'Choose, quote and the pro arrives at your door in minutes.',
+    bg: '#3B82F6', // Azul para diferenciar
     video: '/videos/reserva2.mp4',
   },
 ]
@@ -201,19 +177,24 @@ export default function SplashScreen({ onFinish, lang = 'es' }) {
           muted
           loop
           playsInline
-          preload="auto"
           className="onboarding-video-bg"
           style={{
             opacity: index === slideIndex ? 1 : 0,
-            transition: 'opacity 0.6s ease-in-out',
-            zIndex: index === slideIndex ? 0 : -1
+            transition: 'opacity 0.8s ease-in-out',
+            zIndex: index === slideIndex ? 0 : -1,
+            pointerEvents: 'none'
+          }}
+          onLoadedData={(e) => {
+             if (index === slideIndex) e.target.play().catch(() => {})
           }}
         />
       ))}
 
       <div
         className="onboarding-overlay"
-        style={{ background: slide.bg + '99' }}
+        style={{ 
+          background: slideIndex === 0 ? 'rgba(242, 96, 0, 0.45)' : slideIndex === 1 ? 'rgba(16, 185, 129, 0.45)' : 'rgba(59, 130, 246, 0.45)' 
+        }}
       />
 
       <button className="music-btn" onClick={toggleMusic}>
