@@ -328,9 +328,23 @@
 .testi-photo-wrap { width: 120px; height: 120px; border-radius: 14px; overflow: hidden; flex-shrink: 0; border: 2px solid rgba(255,255,255,0.5); box-shadow: 0 2px 12px rgba(0,0,0,0.2); align-self: flex-start; }
 .testi-photo { width: 100%; height: 100%; object-fit: cover; object-position: top center; }
 
+/* ── TODAS LAS PROFESIONES ─────────────────────── */
+.all-professions-section { margin: 0; padding: 0; background: #fff; }
+.all-professions-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 0 16px; }
+.profession-item {
+  display: flex; align-items: center; gap: 10px;
+  background: #FAFBFC; border: 1.5px solid #EAECF0;
+  border-radius: 12px; padding: 12px; cursor: pointer;
+  transition: all .2s;
+}
+.profession-item:hover { background: #FFF8F3; border-color: #F26000; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(242,96,0,0.08); }
+.profession-icon { font-size: 20px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+.profession-name { font-size: 13px; font-weight: 700; color: #1A1A2E; line-height: 1.25; }
+
 /* ── RESPONSIVE ───────────────────────────────── */
 @media (min-width: 480px) {
   .all-pros-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .all-professions-grid { grid-template-columns: repeat(3, 1fr); }
 }
 @media (min-width: 768px) {
   .featured-card { min-width: 180px; max-width: 180px; }

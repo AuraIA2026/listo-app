@@ -57,7 +57,7 @@ export const CATEGORIES = [
   {
     id: 'mantenimiento',
     icon: '🔧',
-    image: '/icons/cat_mantenimiento.webp',
+    image: '/icons/cat_mantenimiento.png',
     labelEs: 'Mantenimiento y Reparación',
     labelEn: 'Maintenance & Repair',
     subcategories: [
@@ -85,7 +85,7 @@ export const CATEGORIES = [
   {
     id: 'limpieza',
     icon: '🧹',
-    image: '/icons/cat_limpieza.webp',
+    image: '/icons/cat_limpieza.png',
     labelEs: 'Limpieza',
     labelEn: 'Cleaning',
     subcategories: [
@@ -102,7 +102,7 @@ export const CATEGORIES = [
   {
     id: 'cuidado',
     icon: '👶',
-    image: '/icons/cat_cuidado_personal.webp',
+    image: '/icons/cat_cuidado_personal.jpg',
     labelEs: 'Cuidado personal',
     labelEn: 'Personal care',
     subcategories: [
@@ -119,7 +119,7 @@ export const CATEGORIES = [
   {
     id: 'belleza',
     icon: '💆',
-    image: '/icons/cat_belleza_y_bienestar.webp',
+    image: '/icons/cat_belleza_y_bienestar.png',
     labelEs: 'Belleza y Bienestar',
     labelEn: 'Beauty & Wellness',
     subcategories: [
@@ -136,7 +136,7 @@ export const CATEGORIES = [
   {
     id: 'mascotas',
     icon: '🐾',
-    image: '/icons/cat_mascotas.webp',
+    image: '/icons/cat_mascotas.png',
     labelEs: 'Mascotas',
     labelEn: 'Pets',
     subcategories: [
@@ -151,7 +151,7 @@ export const CATEGORIES = [
   {
     id: 'transporte',
     icon: '🚚',
-    image: '/icons/cat_transporte.webp',
+    image: '/icons/cat_transporte.png',
     labelEs: 'Transporte',
     labelEn: 'Transport',
     subcategories: [
@@ -164,7 +164,7 @@ export const CATEGORIES = [
   {
     id: 'eventos',
     icon: '🎉',
-    image: '/icons/cat_eventos.webp',
+    image: '/icons/cat_eventos.png',
     labelEs: 'Eventos',
     labelEn: 'Events',
     subcategories: [
@@ -225,7 +225,7 @@ export const CATEGORIES = [
   {
     id: 'personalizado',
     icon: '🎯',
-    image: '/icons/cat_personalizado.webp',
+    image: '/icons/cat_personalizado.png',
     labelEs: 'Personalizado',
     labelEn: 'Custom',
     subcategories: [

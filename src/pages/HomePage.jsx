@@ -801,6 +801,43 @@ export default function HomePage({ lang, navigate, userRole }) {
             );
           })}
 
+
+          <section ref={catListRef} className={`cat-list-section${catListVisible ? ' reveal' : ''}`}>
+            <div className="hp-sec-header">
+              <h2 className="hp-sec-title">🗂️ {lang === 'es' ? 'Explorar servicios' : 'Explore services'}</h2>
+            </div>
+            <div className="cat-list">
+              {CATEGORIES.map((c, i) => (
+                <button key={i} className="cat-list-item" style={{ animationDelay: `${i * 0.05}s` }} onClick={() => navigate('search', { catToSelect: c.id || 'all' })}>
+                  <span className="cat-list-icon">
+                    {c.image ? <img src={c.image} alt={c.labelEs} style={{ width: '24px', height: '24px', objectFit: 'contain' }} /> : c.icon}
+                  </span>
+                  <span className="cat-list-label">{lang === 'es' ? c.labelEs : c.labelEn}</span>
+                  <span className="cat-list-arrow">›</span>
+                </button>
+              ))}
+            </div>
+          </section>
+          <section className="all-professions-section reveal">
+            <div className="hp-sec-header" style={{ marginBottom: '16px', padding: '0 16px' }}>
+              <h2 className="hp-sec-title">🛠️ {lang === 'es' ? 'Todas las Profesiones' : 'All Professions'}</h2>
+            </div>
+            <div className="all-professions-grid">
+              {ALL_SUBCATEGORIES.map((sub, i) => (
+                <div 
+                  key={i} 
+                  className="profession-item" 
+                  onClick={() => navigate('search', { catToSelect: sub.parentId, subCatToSelect: sub.id })}
+                >
+                  <span className="profession-icon">
+                    {sub.image ? <img src={sub.image} alt={sub.labelEs} style={{ width: '24px', height: '24px', objectFit: 'contain' }} /> : sub.icon || '👷'}
+                  </span>
+                  <span className="profession-name">{lang === 'es' ? sub.labelEs : sub.labelEn}</span>
+                </div>
+              ))}
+            </div>
+          </section>
+
           <section ref={allProsRef} className={`all-pros-section${allProsVisible ? ' reveal' : ''}`}>
             <div className="hp-sec-header" style={{ marginBottom: 12 }}>
               <h2 className="hp-sec-title">👥 {lang === 'es' ? 'Todos los Profesionales' : 'All Professionals'}</h2>
@@ -842,23 +879,6 @@ export default function HomePage({ lang, navigate, userRole }) {
                   {lang === 'es' ? '🔍 No se encontraron profesionales en esta categoría.' : '🔍 No professionals found in this category.'}
                 </div>
               )}
-            </div>
-          </section>
-
-          <section ref={catListRef} className={`cat-list-section${catListVisible ? ' reveal' : ''}`}>
-            <div className="hp-sec-header">
-              <h2 className="hp-sec-title">🗂️ {lang === 'es' ? 'Explorar servicios' : 'Explore services'}</h2>
-            </div>
-            <div className="cat-list">
-              {CATEGORIES.map((c, i) => (
-                <button key={i} className="cat-list-item" style={{ animationDelay: `${i * 0.05}s` }} onClick={() => navigate('search', { catToSelect: c.id || 'all' })}>
-                  <span className="cat-list-icon">
-                    {c.image ? <img src={c.image} alt={c.labelEs} style={{ width: '24px', height: '24px', objectFit: 'contain' }} /> : c.icon}
-                  </span>
-                  <span className="cat-list-label">{lang === 'es' ? c.labelEs : c.labelEn}</span>
-                  <span className="cat-list-arrow">›</span>
-                </button>
-              ))}
             </div>
           </section>
         </>
