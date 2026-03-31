@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import logoImg from '../assets/logo_listo.png'
 import logoBlanco from '../assets/logo listo blanco.png'
+import letrasLogo from '../assets/letras_listo_patron.png'
 import './SplashScreen.css'
 
 const onboardingSlides = [
@@ -181,8 +182,9 @@ export default function SplashScreen({ onFinish, lang = 'es' }) {
       {phase === 'splash' ? (
         <div className="splash-screen" onClick={handleScreenTap} onTouchStart={handleScreenTap}>
           <div className="splash-logo-wrap">
-            <img src={logoBlanco} alt="Listo Patrón" className="splash-logo" />
+            <img src={logoImg} alt="Listo" className="splash-logo" />
           </div>
+          <img src={letrasLogo} alt="Listo Patrón" className="splash-letras" />
           <div className="splash-loader">
             <div className="splash-bar" />
           </div>
