@@ -9,15 +9,15 @@ const onboardingSlides = [
     titleEn: 'All services',
     subEs: 'Plomeros, electricistas, niñeras y más — cuando los necesitas.',
     subEn: 'Plumbers, electricians, nannies & more — when you need them.',
-    bg: '#F26000',
+    overlay: 'rgba(242, 96, 0, 0.45)', // Naranja (Mamey)
     video: '/videos/servicios1.mp4',
   },
   {
     titleEs: 'Profesionales seguros',
     titleEn: 'Verified pros',
-    subEs: 'Cada experto está 100% verificado para brindarte seguridad.',
+    subEs: 'Cada experto está 100% verificado para brindarte total seguridad.',
     subEn: 'Every expert is 100% verified for your peace of mind.',
-    bg: '#10B981', // Verde suave para diferenciar
+    overlay: 'rgba(16, 185, 129, 0.45)', // Verde
     video: '/videos/profesionales1.mp4',
   },
   {
@@ -25,11 +25,34 @@ const onboardingSlides = [
     titleEn: 'Quick booking',
     subEs: 'Elige, cotiza y el profesional llega a tu puerta en minutos.',
     subEn: 'Choose, quote and the pro arrives at your door in minutes.',
-    bg: '#3B82F6', // Azul para diferenciar
+    overlay: 'rgba(59, 130, 246, 0.45)', // Azul
+    video: '/videos/servicios3.mp4',
+  },
+  {
+    titleEs: 'Trabajo de primera',
+    titleEn: 'Top-notch work',
+    subEs: 'Resultados impecables y garantizados. Estamos comprometidos a cumplirte.',
+    subEn: 'Flawless and guaranteed results. We are committed to you.',
+    overlay: 'rgba(168, 85, 247, 0.45)', // Morado
+    video: '/videos/profesionales3.mp4',
+  },
+  {
+    titleEs: 'Síguelo en el mapa',
+    titleEn: 'Track on the map',
+    subEs: 'Observa en tiempo real cómo tu profesional llega directo a tu ubicación.',
+    subEn: 'Watch in real-time as your professional arrives straight to your location.',
+    overlay: 'rgba(236, 72, 153, 0.45)', // Rosa
+    video: '/videos/reserva1.mp4',
+  },
+  {
+    titleEs: 'Paga sin complicaciones',
+    titleEn: 'Hassle-free payments',
+    subEs: 'Transacciones 100% seguras y al instante, directamente desde la app.',
+    subEn: '100% secure and instant transactions, right from the app.',
+    overlay: 'rgba(245, 158, 11, 0.45)', // Amarillo ámbar
     video: '/videos/reserva2.mp4',
   },
 ]
-
 const SLIDE_DURATION = 8000
 
 export default function SplashScreen({ onFinish, lang = 'es' }) {
@@ -192,9 +215,7 @@ export default function SplashScreen({ onFinish, lang = 'es' }) {
 
       <div
         className="onboarding-overlay"
-        style={{ 
-          background: slideIndex === 0 ? 'rgba(242, 96, 0, 0.45)' : slideIndex === 1 ? 'rgba(16, 185, 129, 0.45)' : 'rgba(59, 130, 246, 0.45)' 
-        }}
+        style={{ background: slide.overlay || 'rgba(242, 96, 0, 0.45)' }}
       />
 
       <button className="music-btn" onClick={toggleMusic}>
