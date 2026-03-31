@@ -58,21 +58,26 @@ export const CATEGORIES = [
     id: 'mantenimiento',
     icon: '🔧',
     image: '/icons/cat_mantenimiento.webp',
-    labelEs: 'Mantenimiento',
-    labelEn: 'Maintenance',
+    labelEs: 'Mantenimiento y Reparación',
+    labelEn: 'Maintenance & Repair',
     subcategories: [
       { id: 'albanil',       icon: '🧱', image: '/icons/albanil.webp', labelEs: 'Albañil',          labelEn: 'Mason' },
       { id: 'plomero',       icon: '🔩', image: '/icons/plomero.webp', labelEs: 'Plomero',          labelEn: 'Plumber' },
       { id: 'electricista',  icon: '⚡', image: '/icons/electricista.webp', labelEs: 'Electricista',     labelEn: 'Electrician' },
-      { id: 'mecanico',      icon: '🔧', image: '/icons/mecanico.webp', labelEs: 'Mecánico',         labelEn: 'Mechanic' },
-      { id: 'refrigeracion', icon: '❄️', labelEs: 'Refrigeración',    labelEn: 'Refrigeration' },
+      { id: 'mecanico',      icon: '🔧', image: '/icons/mecanico.webp', labelEs: 'Mecánico / Asistencia Vial', labelEn: 'Mechanic / Roadside Assistance' },
+      { id: 'refrigeracion', icon: '❄️', labelEs: 'Instalación de Aire/AC', labelEn: 'AC / Refrigeration' },
+      { id: 'pisos',         icon: '🪵', labelEs: 'Instalación de Pisos',   labelEn: 'Floor Installation' },
+      { id: 'camaras',       icon: '📹', labelEs: 'Cámaras de Seguridad',   labelEn: 'Security Cameras / CCTV' },
+      { id: 'inversores',    icon: '🔋', labelEs: 'Inversores y Solares',   labelEn: 'Inverters & Solar Panels' },
+      { id: 'computadoras',  icon: '💻', labelEs: 'Técnico PC/TV',          labelEn: 'PC/TV Technician' },
+      { id: 'celulares',     icon: '📱', labelEs: 'Técnico de Celulares',   labelEn: 'Phone Repair' },
       { id: 'cerrajero',     icon: '🔑', image: '/icons/cerrajero.webp', labelEs: 'Cerrajero',        labelEn: 'Locksmith' },
       { id: 'pintor',        icon: '🎨', image: '/icons/pintor.webp', labelEs: 'Pintor',           labelEn: 'Painter' },
       { id: 'carpintero',    icon: '🪵', image: '/icons/carpintero1.webp', labelEs: 'Carpintero',       labelEn: 'Carpenter' },
-      { id: 'instalacion',   icon: '🔨', labelEs: 'Instalación',      labelEn: 'Installation' },
-      { id: 'reparacion',    icon: '🛠️', labelEs: 'Reparación',       labelEn: 'Repair' },
-      { id: 'reformas',      icon: '🏗️', labelEs: 'Reformas',         labelEn: 'Renovations' },
-      { id: 'montaje',       icon: '🔩', labelEs: 'Montaje',          labelEn: 'Assembly' },
+      { id: 'herrero',       icon: '🛠️', labelEs: 'Herrero / Soldador',     labelEn: 'Welder' },
+      { id: 'tapicero',      icon: '🛋️', labelEs: 'Tapicero',             labelEn: 'Upholstery' },
+      { id: 'constructor',   icon: '🏗️', labelEs: 'Maestro Constructor',    labelEn: 'Master Builder' },
+      { id: 'instalacion',   icon: '🔨', labelEs: 'Instalación General',    labelEn: 'General Installation' },
     ]
   },
 
@@ -86,9 +91,9 @@ export const CATEGORIES = [
     subcategories: [
       { id: 'limpieza_hogar',   icon: '🏠', image: '/icons/limpieza.webp', labelEs: 'Limpieza del hogar',   labelEn: 'Home cleaning' },
       { id: 'limpieza_oficina', icon: '🏢', labelEs: 'Limpieza de oficina',  labelEn: 'Office cleaning' },
-      { id: 'limpieza_auto',    icon: '🚗', labelEs: 'Limpieza de auto',     labelEn: 'Car cleaning' },
+      { id: 'limpieza_auto',    icon: '🧽', labelEs: 'Car Wash a Domicilio', labelEn: 'Mobile Car Wash' },
       { id: 'limpieza_muebles', icon: '🛋️', labelEs: 'Limpieza de muebles', labelEn: 'Furniture cleaning' },
-      { id: 'lavanderia',       icon: '👕', labelEs: 'Lavandería',           labelEn: 'Laundry' },
+      { id: 'lavanderia',       icon: '👕', labelEs: 'Lavandería / Planchado', labelEn: 'Laundry & Ironing' },
       { id: 'plagas',           icon: '🐛', image: '/icons/control_de_plaga.webp', labelEs: 'Control de plagas',    labelEn: 'Pest control' },
     ]
   },
@@ -102,7 +107,8 @@ export const CATEGORIES = [
     labelEn: 'Personal care',
     subcategories: [
       { id: 'ninera',     icon: '👶', image: '/icons/ninera.webp', labelEs: 'Niñera',           labelEn: 'Nanny' },
-      { id: 'educativo',  icon: '📚', labelEs: 'Apoyo educativo',  labelEn: 'Educational support' },
+      { id: 'ancianos',   icon: '👵', labelEs: 'Cuidado de Mayores', labelEn: 'Elder Care' },
+      { id: 'educativo',  icon: '📚', labelEs: 'Tutorías / Clases',  labelEn: 'Tutoring / Classes' },
       { id: 'jardinero',  icon: '🌿', image: '/icons/jardinero.webp', labelEs: 'Jardinero',        labelEn: 'Gardener' },
       { id: 'mensajero',  icon: '🛵', labelEs: 'Mensajero',        labelEn: 'Messenger' },
       { id: 'mudanzas',   icon: '📦', labelEs: 'Mudanzas',         labelEn: 'Moving' },
@@ -117,8 +123,27 @@ export const CATEGORIES = [
     labelEs: 'Belleza y Bienestar',
     labelEn: 'Beauty & Wellness',
     subcategories: [
-      { id: 'masajista',  icon: '💆', image: '/icons/masajes.webp', labelEs: 'Masajista',        labelEn: 'Masseur / Masseuse' },
-      { id: 'peluquero',  icon: '✂️', image: '/icons/peluquero.webp', labelEs: 'Peluquero/a',      labelEn: 'Hairdresser' },
+      { id: 'masajista',  icon: '💆', image: '/icons/masajes.webp', labelEs: 'Masajes a domicilio',  labelEn: 'In-home Massage' },
+      { id: 'peluquero',  icon: '✂️', image: '/icons/peluquero.webp', labelEs: 'Peluquero / Estilista', labelEn: 'Hairdresser / Stylist' },
+      { id: 'barbero',    icon: '💈', labelEs: 'Barbero a domicilio',    labelEn: 'In-home Barber' },
+      { id: 'maquillaje', icon: '💄', labelEs: 'Maquillaje Profesional', labelEn: 'Professional Makeup' },
+      { id: 'manicura',   icon: '💅', labelEs: 'Manicura y Pedicura',    labelEn: 'Manicure & Pedicure' },
+      { id: 'entrenador', icon: '🏋️', labelEs: 'Entrenador Personal',    labelEn: 'Personal Trainer' },
+    ]
+  },
+
+  // ── MASCOTAS ──
+  {
+    id: 'mascotas',
+    icon: '🐾',
+    image: '/icons/cat_mascotas.webp',
+    labelEs: 'Mascotas',
+    labelEn: 'Pets',
+    subcategories: [
+      { id: 'paseador',   icon: '🐕', labelEs: 'Paseador de Perros',     labelEn: 'Dog Walker' },
+      { id: 'pelu_canina',icon: '✂️', labelEs: 'Peluquería Canina',      labelEn: 'Pet Grooming' },
+      { id: 'veterinario',icon: '🩺', labelEs: 'Veterinario a domicilio',labelEn: 'Mobile Vet' },
+      { id: 'cuidador',   icon: '🏡', labelEs: 'Cuidador de Mascotas',   labelEn: 'Pet Sitter' },
     ]
   },
 
