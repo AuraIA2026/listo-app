@@ -5,17 +5,7 @@ import { db } from '../firebase'
 import { useFaceAuth } from '../useFaceAuth'
 import './AuthPage.css'
 import './FaceModal.css'
-
-const categories = [
-  { id: 'mechanic',     label: { es: 'Mecánico',     en: 'Mechanic'    }, icon: '🔧' },
-  { id: 'electrician',  label: { es: 'Electricista', en: 'Electrician' }, icon: '⚡' },
-  { id: 'plumber',      label: { es: 'Plomero',      en: 'Plumber'     }, icon: '🔩' },
-  { id: 'nanny',        label: { es: 'Niñera',       en: 'Nanny'       }, icon: '👶' },
-  { id: 'painter',      label: { es: 'Pintor',       en: 'Painter'     }, icon: '🎨' },
-  { id: 'carpenter',    label: { es: 'Carpintero',   en: 'Carpenter'   }, icon: '🪵' },
-  { id: 'cleaner',      label: { es: 'Limpieza',     en: 'Cleaning'    }, icon: '🧹' },
-  { id: 'gardener',     label: { es: 'Jardinero',    en: 'Gardener'    }, icon: '🌿' },
-]
+import { ALL_SUBCATEGORIES } from '../categories'
 
 const txt = {
   es: {
@@ -279,8 +269,8 @@ export default function RegisterPage({ lang, navigate }) {
                 <select value={form.category} onChange={e => set('category', e.target.value)}
                   className={errors.category ? 'input-error' : ''}>
                   <option value="">{T.selectCat}</option>
-                  {categories.map(cat => (
-                    <option key={cat.id} value={cat.id}>{cat.icon} {cat.label[lang]}</option>
+                  {ALL_SUBCATEGORIES.map(cat => (
+                    <option key={cat.id} value={cat.id}>{cat.icon} {lang === 'es' ? cat.labelEs : cat.labelEn}</option>
                   ))}
                 </select>
                 {errors.category && <span className="error-msg">{errors.category}</span>}
