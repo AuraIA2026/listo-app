@@ -523,7 +523,7 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
             category:   data.category   || 'unknown',
             rating:     data.rating     || 5.0,
             reviews:    data.reviews    || 0,
-            location:   data.location   || 'República Dominicana',
+            location:   data.verificacion?.municipio || data.verificacion?.provincia || data.city || data.location || 'República Dominicana',
             experience: data.experience || '1 año',
             avatar:     (data.name || 'P').substring(0, 2).toUpperCase(),
             available:  data.available !== false,
