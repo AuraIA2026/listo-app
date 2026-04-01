@@ -433,6 +433,54 @@ body{background:var(--bg);color:var(--text);font-family:var(--body);}
 .ac-text { display:flex; flex-direction:column; gap:4px; }
 .ac-name { font-size:14px; font-weight:700; color:var(--text); }
 .ac-detail { font-size:12px; color:var(--muted); }
+
+/* ── MODAL CENTRAL DE MANDO ── */
+.pro-stats-modal {
+  background: var(--surface); border: 1px solid rgba(242,96,0,0.3); border-radius: 24px;
+  width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; margin: auto;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.2); animation: scaleUp .3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes scaleUp { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+.ps-header {
+  background: linear-gradient(135deg, #111827, #1E293B); color: #fff; padding: 24px;
+  border-radius: 24px 24px 0 0; position: relative; display:flex; align-items:center; gap: 16px;
+}
+.ps-close {
+  position: absolute; top: 16px; right: 20px; font-size: 24px; color: rgba(255,255,255,0.5);
+  background: none; border: none; cursor: pointer; transition: color .2s;
+}
+.ps-close:hover { color: #fff; }
+.ps-avatar {
+  width: 64px; height: 64px; border-radius: 18px; border: 2px solid rgba(255,255,255,0.2);
+  display: flex; align-items: center; justify-content: center; font-family: var(--display);
+  font-weight: 800; font-size: 24px; background: rgba(255,255,255,0.1); overflow: hidden;
+}
+.ps-info-top h3 { font-family: var(--display); font-size: 20px; font-weight: 800; margin: 0 0 4px; }
+.ps-info-top p { margin: 0; font-size: 13px; color: rgba(255,255,255,0.7); }
+.ps-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 20px; }
+.ps-metric { background: var(--surface2); padding: 16px; border-radius: 16px; border: 1px solid var(--border); text-align: center; }
+.ps-metric-val { font-family: var(--mono); font-size: 24px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+.ps-metric-label { font-family: var(--display); font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
+
+/* Dashboard Cards */
+.dash-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+  padding: 16px; margin-bottom: 12px; cursor: pointer; transition: all .2s;
+  display: flex; align-items: center; gap: 16px;
+}
+.dash-card:hover { border-color: var(--brand); box-shadow: 0 6px 12px var(--brand-dim); transform: translateY(-2px); }
+.dash-avatar {
+  width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 16px; background: var(--surface2); color: var(--text); overflow: hidden; flex-shrink:0;
+}
+.dash-info { flex: 1; }
+.dash-name { font-family: var(--display); font-size: 15px; font-weight: 700; margin-bottom: 2px; color: var(--text); }
+.dash-sub { font-size: 12px; color: var(--muted); }
+.dash-status { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink:0; }
+.dash-pill { padding: 4px 8px; border-radius: 8px; font-size: 10px; font-weight: 700; letter-spacing: .5px; }
+.dash-pill.online { background: #DCFCE7; color: #166534; }
+.dash-pill.offline { background: #F1F5F9; color: #475569; }
+.dash-pill.working { background: #FEF08A; color: #854D0E; }
 `;
 
 /* ─── HELPERS ────────────────────────────────────────────── */
@@ -456,8 +504,7 @@ export default function AdminPage({ navigate }) {
   const [toast, setToast]       = useState('');
   const [confirm, setConfirm]   = useState(null); // { type, obj }
   const [viewDocs, setViewDocs] = useState(null); // Usuario a inspeccionar documentos
-
-  // Seguridad
+  const [viewProStats, setViewProStats] = useState(null); // Modal avanzado de central de mando
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [adminPass, setAdminPass] = useState('');
   const [passError, setPassError] = useState(false);
@@ -1036,8 +1083,169 @@ export default function AdminPage({ navigate }) {
           </div>
         )}
 
-        {/* ── TAB: REGALOS (Bonos de contratos) ── */}
-        {tab === 'regalos' && (
+        {/* ── CENTRAL DE MANDO (Directorio) ── */}
+        {tab === 'bloqueados' && (
+          <div className="admin-section" style={{marginTop:16}}>
+            <div className="section-header">
+              <span className="section-title">Central de Mando</span>
+            </div>
+            
+            {/* Live Metrics */}
+            <div style={{display:'flex', gap:8, marginBottom: 16}}>
+              <div style={{flex:1, background:'var(--surface)', border:'1px solid var(--border)', borderRadius:12, padding:12, textAlign:'center'}}>
+                <div style={{fontSize:18, fontWeight:800, fontFamily:'var(--mono)'}}>{users.filter(u => u.role === 'professional').length}</div>
+                <div style={{fontSize:10, color:'var(--muted)', fontWeight:700, textTransform:'uppercase'}}>Total</div>
+              </div>
+              <div style={{flex:1, background:'#DCFCE7', border:'1px solid #BBF7D0', borderRadius:12, padding:12, textAlign:'center'}}>
+                <div style={{fontSize:18, fontWeight:800, color:'#166534', fontFamily:'var(--mono)'}}>{users.filter(u => u.role === 'professional' && u.available).length}</div>
+                <div style={{fontSize:10, color:'#166534', fontWeight:700, textTransform:'uppercase'}}>En Línea</div>
+              </div>
+              <div style={{flex:1, background:'#F1F5F9', border:'1px solid #E2E8F0', borderRadius:12, padding:12, textAlign:'center'}}>
+                <div style={{fontSize:18, fontWeight:800, color:'#475569', fontFamily:'var(--mono)'}}>{users.filter(u => u.role === 'professional' && !u.available).length}</div>
+                <div style={{fontSize:10, color:'#475569', fontWeight:700, textTransform:'uppercase'}}>Inactivos</div>
+              </div>
+            </div>
+
+            <div className="ac-container" style={{marginBottom: 16}}>
+              <div className="ac-input-wrapper">
+                <input 
+                  type="text" 
+                  className="gift-input" 
+                  placeholder="Buscar en tiempo real..." 
+                  value={dirSearch} 
+                  onChange={e => setDirSearch(e.target.value)}
+                  style={{marginBottom: 0, paddingLeft:40}}
+                />
+                <span style={{position:'absolute', left:14, top:16, color:'var(--muted)'}}>🔍</span>
+              </div>
+            </div>
+
+            {users.filter(u => u.role === 'professional').filter(u => !dirSearch || String(u.name||'').toLowerCase().includes(dirSearch.toLowerCase().trim()) || String(u.phone||'').includes(dirSearch.trim())).length === 0 && (
+              <div className="empty-admin">
+                <span>🚫</span>
+                <p>Nadie en el radar</p>
+              </div>
+            )}
+            
+            {users
+              .filter(u => u.role === 'professional')
+              .filter(u => !dirSearch || String(u.name||'').toLowerCase().includes(dirSearch.toLowerCase().trim()) || String(u.phone||'').includes(dirSearch.trim()))
+              .sort((a,b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0)) // Ordenar más nuevos primero
+              .map((u, i) => (
+              <div className="dash-card" key={u.id} style={{animationDelay:`${i*.05}s`}} onClick={() => setViewProStats(u)}>
+                <div className="dash-avatar" style={{background: u.planStatus==='inactive'?'#EF4444' : u.available?'#10B981':'var(--surface2)', color: u.available?'#fff':'var(--text)'}}>
+                   {u.profilePic || u.photoURL || u.avatarId ? (
+                      <img src={u.profilePic || u.photoURL || `https://i.pravatar.cc/100?u=${u.avatarId||u.id}`} alt="pro" style={{width:'100%', height:'100%', objectFit:'cover'}}/>
+                   ) : (
+                      u.name?u.name.charAt(0).toUpperCase():'P'
+                   )}
+                </div>
+                <div className="dash-info">
+                  <div className="dash-name">{u.name || 'Profesional'} {u.approved ? '✅' : '⏳'} {u.verificacion?.estado === 'en_revision' ? '⚠️' : ''}</div>
+                  <div className="dash-sub">{u.category || u.service || 'Servicios Generales'} · {u.contracts||0} CT</div>
+                </div>
+                <div className="dash-status">
+                  <span className={`dash-pill ${u.available ? 'online' : 'offline'}`}>{u.available ? 'ONLINE' : 'OFFLINE'}</span>
+                  <span style={{fontSize:10, color:'var(--muted)'}}>{fmtDate(u.createdAt)}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* ── MODAL FLOTANTE DE ESTADÍSTICAS (CENTRAL DE MANDO) ── */}
+        {viewProStats && (
+          <div style={{position:'fixed', inset:0, background:'rgba(0,0,0,0.85)', zIndex:999, display:'flex', flexDirection:'column', backdropFilter:'blur(10px)', padding:16}} onClick={() => setViewProStats(null)}>
+            <div className="pro-stats-modal" onClick={e => e.stopPropagation()}>
+              
+              {/* Header Dark Mode */}
+              <div className="ps-header">
+                <button className="ps-close" onClick={() => setViewProStats(null)}>✕</button>
+                <div className="ps-avatar">
+                   {viewProStats.profilePic || viewProStats.photoURL || viewProStats.avatarId ? (
+                      <img src={viewProStats.profilePic || viewProStats.photoURL || `https://i.pravatar.cc/100?u=${viewProStats.avatarId||viewProStats.id}`} alt="pro" style={{width:'100%', height:'100%', objectFit:'cover'}}/>
+                   ) : (
+                      viewProStats.name?viewProStats.name.charAt(0).toUpperCase():'P'
+                   )}
+                </div>
+                <div className="ps-info-top">
+                  <h3>{viewProStats.name || 'Sin Nombre'} {viewProStats.verificacion?.estado === 'en_revision' ? '⚠️' : (viewProStats.approved ? '✅' : '⏳')}</h3>
+                  <p>{viewProStats.phone} · {viewProStats.email || 'Sin correo'}</p>
+                </div>
+              </div>
+
+              {/* Informacion de Plan */}
+              <div style={{background:'var(--brand-dim)', padding:'12px 20px', display:'flex', justifyContent:'space-between', alignItems:'center', borderBottom:'1px solid var(--border)'}}>
+                <div>
+                  <div style={{fontSize:11, fontWeight:700, color:'var(--brand)', textTransform:'uppercase'}}>Suscripción Actual</div>
+                  <div style={{fontFamily:'var(--display)', fontSize:16, fontWeight:800}}>{viewProStats.planName || (viewProStats.currentPlan === 'vip' ? 'Plan VIP' : viewProStats.currentPlan === 'premium' ? 'Plan Premium' : 'Plan Básico')}</div>
+                </div>
+                <span className={`status-pill ${viewProStats.planStatus === 'active' ? 'paid' : 'blocked'}`}>
+                   {viewProStats.planStatus === 'active' ? 'Activo' : 'Inactivo'}
+                </span>
+              </div>
+
+              <div className="ps-grid">
+                <div className="ps-metric">
+                  <div className="ps-metric-val">{viewProStats.contracts || 0}</div>
+                  <div className="ps-metric-label">Contratos Libres</div>
+                </div>
+                <div className="ps-metric">
+                  <div className="ps-metric-val">⭐ {Number(viewProStats.rating || 5).toFixed(1)}</div>
+                  <div className="ps-metric-label">Calificación ({viewProStats.reviews||0})</div>
+                </div>
+                <div className="ps-metric">
+                  <div className="ps-metric-val">{viewProStats.completedJobs || 0}</div>
+                  <div className="ps-metric-label">Completados</div>
+                </div>
+                <div className="ps-metric">
+                  <div className="ps-metric-val" style={{color:'var(--brand)'}}>{viewProStats.pendingJobs || 0}</div>
+                  <div className="ps-metric-label">En Progreso</div>
+                </div>
+              </div>
+
+              {/* Acciones de Mando */}
+              <div style={{padding:'0 20px 20px'}}>
+                <div style={{fontSize:12, fontWeight:800, color:'var(--muted)', marginBottom:10, textTransform:'uppercase'}}>Operaciones de Mando</div>
+                
+                {/* Contratos */}
+                <div style={{display:'flex', gap:8, marginBottom:12}}>
+                  <button className="cc-btn paid" onClick={() => setConfirm({type:'add_contract', obj:viewProStats})}>
+                     ➕ Dar 1 Contrato
+                  </button>
+                  <button className="cc-btn block" style={{background:'var(--surface2)', color:'var(--red)', borderColor:'var(--border)'}} onClick={() => setConfirm({type:'sub_contract', obj:viewProStats})}>
+                     ➖ Quitar 1 Contrato
+                  </button>
+                </div>
+
+                {/* Suspensiones */}
+                <div style={{display:'flex', gap:8, marginBottom:12}}>
+                  {viewProStats.planStatus === 'inactive' || !viewProStats.approved ? (
+                    <button className="cc-btn paid" style={{background:'#10B981', color:'#fff', flex:1}} onClick={() => setConfirm({type:'unblock', obj:viewProStats})}>
+                      ✅ Reactivar Perfil
+                    </button>
+                  ) : (
+                    <button className="cc-btn block" style={{background:'#EF4444', color:'#fff', flex:1}} onClick={() => setConfirm({type:'block', obj:viewProStats})}>
+                      🔴 Suspender Perfil
+                    </button>
+                  )}
+                </div>
+
+                {/* Expediente Limitado */}
+                {viewProStats.verificacion && (
+                  <button className="cc-btn remind" style={{width:'100%', background:'#3B82F6', color:'#fff', border:'none', padding:14, fontSize:13}} onClick={() => {
+                    setViewDocs(viewProStats); // Abre el modal original del expediente encima de este
+                  }}>
+                    🔎 Ver Expediente Legal {viewProStats.verificacion?.estado === 'en_revision' ? '(Pendiente)' : ''}
+                  </button>
+                )}
+                {!viewProStats.verificacion && (
+                  <div style={{textAlign:'center', fontSize:12, color:'var(--muted)', marginTop:8}}>El usuario no ha subido documentos de verificación.</div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
           <div className="admin-section" style={{marginTop:16}}>
             <div className="section-header">
               <span className="section-title">🎁 Central de Regalos</span>
