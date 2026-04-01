@@ -546,13 +546,16 @@ export default function AdminPage({ navigate }) {
           profileComplete: true,
           approved: true,
           planStatus: 'active',
-          contracts: 5, // Bono inicial gratis
-          rating: 5.0, // Valor inicial
-          completedJobs: 0,
-          pendingJobs: 0,
           'verificacion.estado': 'aprobada',
           'verificacion.fechaAprobacion': new Date().toISOString()
         };
+        // Solo establecer bonos si el profesional no ha sido aprobado previamente
+        if (!obj.approved) {
+           payload.contracts = 5;
+           payload.rating = 5.0;
+           payload.completedJobs = 0;
+           payload.pendingJobs = 0;
+        }
         // También copias su nombre y teléfono principal al nivel raíz si no existen
         if (obj.verificacion?.nombre) payload.name = obj.verificacion.nombre;
         if (obj.verificacion?.telefono) payload.phone = obj.verificacion.telefono;
@@ -997,8 +1000,8 @@ export default function AdminPage({ navigate }) {
                      )}
                   </div>
                   <div className="bc-info">
-                    <div className="bc-name">{u.name || 'Profesional'} {u.approved ? '✅' : '⏳'}</div>
-                    <div className="bc-reason" style={{color: 'var(--muted)'}}>Contratos: {u.contracts || 0} · Tel: {u.phone}</div>
+                    <div className="bc-name">{u.name || 'Profesional'} {u.approved ? '✅' : '⏳'} {u.verificacion?.estado === 'en_revision' ? '⚠️' : ''}</div>
+                    <div className="bc-reason" style={{color: 'var(--muted)'}}>Contratos: {u.contracts || 0} · Tel: {u.phone} {u.verificacion?.estado === 'en_revision' ? '· (Pendiente revisar doc)' : ''}</div>
                   </div>
                 </div>
                 <div className="bc-actions">
@@ -1019,6 +1022,12 @@ export default function AdminPage({ navigate }) {
                     <button className="bc-btn contact" style={{color:'#EF4444', borderColor:'rgba(239,68,68,0.2)'}}
                       onClick={() => setConfirm({type:'block', obj:u})}>
                       🔴 Suspender
+                    </button>
+                  )}
+                  {u.verificacion && (
+                    <button className="bc-btn contact" style={{background:'#3B82F6', color:'#fff', border:'none'}}
+                      onClick={() => setViewDocs(u)}>
+                      🔎 Expediente
                     </button>
                   )}
                 </div>
