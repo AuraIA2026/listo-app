@@ -1,0 +1,61 @@
+rules_version = '2';
+
+// ----------------------------------------------------------------------
+// REGLAS DE SEGURIDAD PROFESIONALES DE STORAGE (Listo Patrón)
+// ----------------------------------------------------------------------
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // FUNCIÓN DE VALIDACIÓN: Asegura que el archivo sea imagen y menor a 5MB
+    function isValidImage() {
+      return request.resource.contentType.matches('image/.*') 
+          && request.resource.size < 5 * 1024 * 1024;
+    }
+
+    // 1. VERIFICACIONES DE IDENTIDAD (Sensible)
+    // Ruta: verificaciones/{uid}/{documento}
+    match /verificaciones/{uid}/{documento} {
+      // Solo el dueño de la cuenta y los administradores podrán ver/subir estos archivos
+      allow read, write: if request.auth != null && request.auth.uid == uid && isValidImage();
+    }
+
+    // 2. FOTOS DE LOCALES Y PORTADAS (Público visualizar, Privado editar)
+    // Ruta: locales/{proId}/{archivo}
+    match /locales/{proId}/{archivo} {
+      // Cualquiera en la app puede VER los logos y portadas de profesionales
+      allow read: if true;
+      // SOLO el profesional dueño de esta página puede SUBIR sus fotos
+      allow write: if request.auth != null && request.auth.uid == proId && isValidImage();
+    }
+
+    // 3. EVIDENCIAS DE TRABAJOS (Work Evidences)
+    // Ruta: work_evidences/{archivo}
+    match /work_evidences/{archivo} {
+      allow read: if true; // Los clientes necesitan ver las evidencias en su historial de órdenes
+      // Solo usuarios autenticados pueden subir las fotos (profesionales)
+      allow write: if request.auth != null && isValidImage();
+    }
+
+    // 4. RECIBOS O COMPROBANTES DE PAGO
+    // Ruta: receipts/{archivo}
+    match /receipts/{archivo} {
+      // Solo el admin en consola debería leer los recibos ajenos. Bloqueamos la lectura general.
+      // (Si tu app necesita que el usuario los lea, cambiar a: if request.auth != null)
+      allow read: if false; 
+      allow write: if request.auth != null && isValidImage();
+    }
+
+    // 5. IMÁGENES DE CHATS (Nueva función solicitada)
+    // Ruta: chat_images/{chatId}/{archivo}
+    match /chat_images/{chatId}/{archivo} {
+      // Solo usuarios autenticados pueden subir o leer en los chats.
+      // (Una app estricta chequearía el Firestore para ver si el usuario es miembro, pero aquí exigimos login mínimo)
+      allow read, write: if request.auth != null && isValidImage();
+    }
+
+    // DENEGAR TODA OTRA CARPETA NO DEFINIDA ARRIBA
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -502,6 +502,7 @@ export default function AdminPage({ navigate }) {
   const [users, setUsers]       = useState([]);
   const [verifications, setVerifications] = useState([]); // Nuevos postulantes
   const [reports, setReports]   = useState([]); // Quejas y Reportes de Usuarios
+  const [editRequests, setEditRequests] = useState([]); // Solicitudes de Edición
   const [toast, setToast]       = useState('');
   const [confirm, setConfirm]   = useState(null); // { type, obj }
   const [viewDocs, setViewDocs] = useState(null); // Usuario a inspeccionar documentos
@@ -551,7 +552,13 @@ export default function AdminPage({ navigate }) {
       setReports(arr);
     });
 
-    return () => { unsubPay(); unsubUsers(); unsubVerif(); unsubReps(); };
+    // 5. Escuchar Solicitudes de Edición
+    const unsubEdits = onSnapshot(query(collection(db, 'profile_edit_requests'), orderBy('createdAt', 'desc')), (snap) => {
+      const arr = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      setEditRequests(arr);
+    });
+
+    return () => { unsubPay(); unsubUsers(); unsubVerif(); unsubReps(); unsubEdits(); };
   }, []);
 
   const showToast = (msg) => {
@@ -699,6 +706,27 @@ export default function AdminPage({ navigate }) {
          });
          showToast(`📱 Recordatorio In-App enviado a ${obj.name || obj.proName || 'Usuario'}`);
       }
+      
+      if (type === 'approve_edit') {
+         await updateDoc(doc(db, 'users', obj.userId), obj.requestedChanges);
+         await updateDoc(doc(db, 'profile_edit_requests', obj.id), { status: 'approved', processedAt: new Date().toISOString() });
+         showToast(`✅ Cambios aplicados al perfil de ${obj.userName}`);
+      }
+
+      if (type === 'reject_edit') {
+         await updateDoc(doc(db, 'profile_edit_requests', obj.id), { status: 'rejected', processedAt: new Date().toISOString() });
+         import('firebase/firestore').then(({ addDoc, collection }) => {
+            addDoc(collection(db, 'notificaciones'), {
+               userId: obj.userId,
+               type: 'system',
+               title: 'Cambio de Perfil Rechazado',
+               text: 'Hola, tu solicitud para actualizar tus datos o foto de perfil no fue aprobada por nuestros agentes. Intenta de nuevo con información válida.',
+               date: new Date().toISOString(),
+               read: false
+            });
+         });
+         showToast(`🔴 Solicitud de cambio rechazada`);
+      }
     } catch(err) {
       console.error(err);
       showToast('❌ Ocurrió un error en la base de datos');
@@ -798,6 +826,7 @@ export default function AdminPage({ navigate }) {
             { id:'pagos',      icon:'💳', label:'Historial',  count:completedPayments.length },
             { id:'comisiones', icon:'⏳', label:'Validar', count:pendienteCount },
             { id:'bloqueados', icon:'👥', label:'Directorio', count:users.length },
+            { id:'ediciones',  icon:'✏️', label:'Ediciones', count: editRequests.filter(r => r.status === 'pending').length },
             { id:'quejas',     icon:'🚨', label:'Quejas', count: reports.filter(r => r.status === 'pending').length },
             { id:'regalos',    icon:'🎁', label:'Regalos', count: '+' },
           ].map(t => (
@@ -1188,6 +1217,90 @@ export default function AdminPage({ navigate }) {
             </div>
           </div>
         )}
+
+        {/* ── TAB: EDICIONES DE PERFIL ── */}
+        {tab === 'ediciones' && (
+          <div className="admin-section" style={{marginTop:16}}>
+            <div className="section-header">
+              <span className="section-title">✏️ Solicitudes de Edición</span>
+            </div>
+            {editRequests.filter(r => r.status === 'pending').length === 0 && (
+               <div className="empty-admin">
+                 <span style={{fontSize:40, marginBottom:10}}>✅</span>
+                 <p>No hay solicitudes de cambio de perfil pendientes.</p>
+               </div>
+            )}
+            {editRequests.filter(r => r.status === 'pending').map(req => {
+               const u = users.find(x => x.id === req.userId);
+               const isPhoto = req.type === 'photo';
+               return (
+                  <div className="dash-card" key={req.id} style={{alignItems: 'flex-start', background: '#FFFBEB', borderColor: '#FDE68A'}}>
+                     <div className="dash-info" style={{width:'100%'}}>
+                        <div style={{display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:8}}>
+                          <span className="dash-pill" style={{background:'#F59E0B', color:'#fff', fontSize:11}}>
+                            {isPhoto ? '📸 CAMBIO DE FOTO' : '📝 CAMBIO DE DATOS'}
+                          </span>
+                          <span style={{fontSize:11, color:'var(--muted)'}}>{fmtDate(req.createdAt)}</span>
+                        </div>
+                        <div style={{fontSize:14, fontWeight:700, color:'var(--text)', marginBottom:8}}>
+                          <span style={{color:'var(--brand)'}}>{u?.name || req.userName}</span> ha solicitado actualizar su perfil.
+                        </div>
+                        
+                        {isPhoto ? (
+                          <div style={{display:'flex', gap:10, marginBottom:12}}>
+                             <div style={{flex:1, textAlign:'center'}}>
+                               <div style={{fontSize:11, color:'var(--muted)', marginBottom:4}}>Foto Actual</div>
+                               <img src={u?.photoURL || 'https://via.placeholder.com/100?text=Vacio'} style={{width:80, height:80, borderRadius:'50%', objectFit:'cover', border:'2px solid var(--border)'}} alt="Current"/>
+                             </div>
+                             <div style={{display:'flex', alignItems:'center', fontSize:24, color:'var(--muted)'}}>➔</div>
+                             <div style={{flex:1, textAlign:'center'}}>
+                               <div style={{fontSize:11, color:'var(--brand)', fontWeight:700, marginBottom:4}}>Foto Nueva</div>
+                               <img src={req.requestedChanges.photoURL} style={{width:80, height:80, borderRadius:'50%', objectFit:'cover', border:'3px solid #10B981'}} alt="New"/>
+                             </div>
+                          </div>
+                        ) : (
+                          <div style={{background:'rgba(255,255,255,0.7)', padding:12, borderRadius:8, marginBottom:12, border:'1px solid #FDE68A', overflowX:'auto'}}>
+                             <table style={{width:'100%', fontSize:12, textAlign:'left', borderCollapse:'collapse'}}>
+                                <thead>
+                                   <tr style={{borderBottom:'1px solid #FDE68A'}}>
+                                     <th style={{paddingBottom:6}}>Campo</th>
+                                     <th style={{paddingBottom:6}}>Actual</th>
+                                     <th style={{paddingBottom:6, color:'var(--brand)'}}>Nuevo</th>
+                                   </tr>
+                                </thead>
+                                <tbody>
+                                   {Object.keys(req.requestedChanges).map(key => {
+                                      const oldVal = u?.[key] || '';
+                                      const newVal = req.requestedChanges[key];
+                                      if (oldVal === newVal) return null;
+                                      return (
+                                        <tr key={key} style={{borderBottom:'1px dashed #FEF08A'}}>
+                                           <td style={{padding:'6px 8px 6px 0', fontWeight:600, textTransform:'capitalize', color:'var(--text)'}}>{key}</td>
+                                           <td style={{padding:'6px 8px 6px 0', color:'var(--muted)'}}>{oldVal || '-'}</td>
+                                           <td style={{padding:'6px 0', color:'#10B981', fontWeight:700}}>{newVal}</td>
+                                        </tr>
+                                      )
+                                   })}
+                                </tbody>
+                             </table>
+                          </div>
+                        )}
+
+                        <div style={{display:'flex', gap:8}}>
+                          <button className="cc-btn paid" style={{flex:1, fontSize:12, padding:10}} onClick={() => setConfirm({type:'approve_edit', obj: req})}>
+                             ✅ APROBAR
+                          </button>
+                          <button className="cc-btn block" style={{flex:1, fontSize:12, padding:10}} onClick={() => setConfirm({type:'reject_edit', obj: req})}>
+                             ❌ RECHAZAR
+                          </button>
+                        </div>
+                     </div>
+                  </div>
+               )
+            })}
+          </div>
+        )}
+
         {/* ── TAB: CENTRAL DE REGALOS ── */}
         {tab === 'regalos' && (
           <div className="admin-section" style={{marginTop:16}}>
@@ -1375,6 +1488,8 @@ export default function AdminPage({ navigate }) {
                  confirm.type==='approve_verif' ? '¿Aprobar Profesional?' :
                  confirm.type==='reject_verif' ? '¿Rechazar Verificación?' :
                  confirm.type==='resolve_report' ? '¿Marcar como resuelta?' :
+                 confirm.type==='approve_edit' ? '¿Aprobar cambios?' :
+                 confirm.type==='reject_edit' ? '¿Rechazar solicitud de edición?' :
                  '¿Aprobar transferencia?'}
               </h3>
               <p className="cm-sub">
@@ -1398,6 +1513,10 @@ export default function AdminPage({ navigate }) {
                   ? `Se rechazará esta verificación y el usuario tendrá que intentar de nuevo.`
                   : confirm.type==='resolve_report'
                   ? `La queja de ${confirm.obj.reporterName} será archivada y se quitará de la lista de pendientes.`
+                  : confirm.type==='approve_edit'
+                  ? `Los nuevos datos o foto sobrescribirán el perfil de ${confirm.obj.userName}.`
+                  : confirm.type==='reject_edit'
+                  ? `La solicitud será descartada y se enviará una notificación In-App al usuario.`
                   : `Se marcará el pago como verificado y se agregará el plan a la cuenta de ${confirm.obj.proName}.`}
               </p>
 
@@ -1428,6 +1547,8 @@ export default function AdminPage({ navigate }) {
                  confirm.type==='approve_verif' ? '✅ Aprobar Profesional' :
                  confirm.type==='reject_verif' ? '❌ Sí, rechazar' :
                  confirm.type==='resolve_report' ? '✔️ Confirmar Resolución' :
+                 confirm.type==='approve_edit' ? '✅ Aplicar Cambios' :
+                 confirm.type==='reject_edit' ? '❌ Rechazar Cambios' :
                  '💚 Confirmar validación'}
               </button>
               <button className="cm-btn ghost" onClick={() => {setConfirm(null); setBlockReason('');}}>Cancelar</button>

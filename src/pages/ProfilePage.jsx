@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { db, auth } from '../firebase'
-import { doc, updateDoc, deleteDoc, collection, query, where, getDocs } from 'firebase/firestore'
+import { doc, updateDoc, deleteDoc, collection, query, where, getDocs, addDoc, serverTimestamp } from 'firebase/firestore'
 import { deleteUser } from 'firebase/auth'
 import { useUserData } from '../useUserData'
 import './ProfilePage.css'
@@ -404,6 +404,94 @@ function LogoutModal({ lang, onConfirm, onCancel }) {
   )
 }
 
+function EditRequestScreen({ lang, user, onBack }) {
+  const [form, setForm] = useState({
+    name: user?.name || '',
+    phone: user?.phone || '',
+    provincia: user?.provincia || '',
+    municipio: user?.municipio || '',
+    direccion: user?.direccion || ''
+  });
+  const [loading, setLoading] = useState(false);
+  const [done, setDone] = useState(false);
+
+  const handleSubmit = async () => {
+    if (!form.name || !form.phone) return alert("Nombre y teléfono requeridos");
+    setLoading(true);
+    try {
+       await addDoc(collection(db, 'profile_edit_requests'), {
+          userId: user.uid,
+          userName: user.name,
+          requestedChanges: form,
+          status: 'pending',
+          createdAt: serverTimestamp(),
+          type: 'data'
+       });
+       setDone(true);
+    } catch (e) {
+       console.error(e);
+       alert("Error al enviar la solicitud");
+    }
+    setLoading(false);
+  };
+
+  if (done) {
+     return (
+       <div className="sub-screen" style={{display:'flex', flexDirection:'column', height:'100%'}}>
+         <ScreenHeader title="Solicitud Enviada" onBack={onBack} />
+         <div className="empty-state">
+           <span className="empty-icon">⏳</span>
+           <p className="empty-title">¡Recibido!</p>
+           <p className="empty-sub">El equipo de administración revisará tus datos en un plazo de hasta 72 horas. Si todo está correcto, se actualizará tu perfil automáticamente.</p>
+           <button style={{marginTop: 20, padding: '12px 24px', borderRadius: 99, background: '#F3F4F6', color: '#333', border: 'none', fontWeight: 800, cursor: 'pointer'}} onClick={onBack}>Regresar al perfil</button>
+         </div>
+       </div>
+     );
+  }
+
+  return (
+    <div className="sub-screen" style={{display:'flex', flexDirection:'column', height:'100%', background:'#FAFAFA'}}>
+      <ScreenHeader title={lang==='es' ? 'Cambio de Datos' : 'Request Data Change'} onBack={onBack} />
+      <div style={{flex: 1, overflowY: 'auto', padding: '20px'}}>
+        <div style={{background: '#FFFBEB', border: '1px solid #FDE68A', borderRadius: '12px', padding: '12px', marginBottom: '20px', fontSize: '13px', color: '#92400E', lineHeight: '1.5'}}>
+          💡 Por seguridad, como tu perfil ya está activo, cualquier cambio principal debe ser aprobado por la administración (demora hasta 72 horas laborales).
+        </div>
+        
+        <div style={{marginBottom: '16px'}}>
+          <label style={{fontSize: '12px', fontWeight: 700, color: '#666', marginBottom: '6px', display: 'block'}}>Nombre Completo</label>
+          <input type="text" value={form.name} onChange={e=>setForm({...form, name: e.target.value})} style={{width:'100%', padding: '14px', borderRadius: '12px', border: '1.5px solid #E5E7EB', outline: 'none', background: '#fff'}} />
+        </div>
+        <div style={{marginBottom: '16px'}}>
+          <label style={{fontSize: '12px', fontWeight: 700, color: '#666', marginBottom: '6px', display: 'block'}}>Número de Teléfono</label>
+          <input type="text" value={form.phone} onChange={e=>setForm({...form, phone: e.target.value})} style={{width:'100%', padding: '14px', borderRadius: '12px', border: '1.5px solid #E5E7EB', outline: 'none', background: '#fff'}} />
+        </div>
+        <div style={{display:'flex', gap:'10px', marginBottom: '16px'}}>
+           <div style={{flex:1}}>
+             <label style={{fontSize: '12px', fontWeight: 700, color: '#666', marginBottom: '6px', display: 'block'}}>Provincia</label>
+             <input type="text" value={form.provincia} onChange={e=>setForm({...form, provincia: e.target.value})} style={{width:'100%', padding: '14px', borderRadius: '12px', border: '1.5px solid #E5E7EB', outline: 'none', background: '#fff'}} />
+           </div>
+           <div style={{flex:1}}>
+             <label style={{fontSize: '12px', fontWeight: 700, color: '#666', marginBottom: '6px', display: 'block'}}>Municipio</label>
+             <input type="text" value={form.municipio} onChange={e=>setForm({...form, municipio: e.target.value})} style={{width:'100%', padding: '14px', borderRadius: '12px', border: '1.5px solid #E5E7EB', outline: 'none', background: '#fff'}} />
+           </div>
+        </div>
+        <div style={{marginBottom: '24px'}}>
+          <label style={{fontSize: '12px', fontWeight: 700, color: '#666', marginBottom: '6px', display: 'block'}}>Dirección Exacta</label>
+          <input type="text" value={form.direccion} onChange={e=>setForm({...form, direccion: e.target.value})} style={{width:'100%', padding: '14px', borderRadius: '12px', border: '1.5px solid #E5E7EB', outline: 'none', background: '#fff'}} />
+        </div>
+
+        <button 
+           onClick={handleSubmit} 
+           disabled={loading || (form.name===user?.name && form.phone===user?.phone && form.provincia===user?.provincia && form.municipio===user?.municipio && form.direccion===user?.direccion)}
+           style={{width: '100%', background: '#F26000', color: '#fff', border: 'none', padding: '16px', borderRadius: '16px', fontSize: '16px', fontWeight: 800, opacity: loading ? 0.6 : 1, transition:'0.3s', cursor: 'pointer', boxShadow: '0 4px 14px rgba(242,96,0,0.3)'}}
+        >
+           {loading ? 'Enviando...' : 'Enviar Solicitud al Administrador'}
+        </button>
+      </div>
+    </div>
+  )
+}
+
 function DeleteAccountModal({ lang, onConfirm, onCancel }) {
   const T = txt[lang]
   return (
@@ -464,11 +552,25 @@ export default function ProfilePage({ lang, setLang, navigate, onLogout, initial
     setPhotoStatus('saving')
     try {
       const base64 = await compressImage(file)
-      if (userData?.uid) {
-        await updateDoc(doc(db, 'users', userData.uid), { photoURL: base64 })
+      
+      if (profileComplete || isProVerifComplete) {
+         await addDoc(collection(db, 'profile_edit_requests'), {
+            userId: userData.uid,
+            userName: userData.name,
+            requestedChanges: { photoURL: base64 },
+            status: 'pending',
+            createdAt: serverTimestamp(),
+            type: 'photo'
+         });
+         setPhotoStatus('saved_request')
+         setTimeout(() => setPhotoStatus(null), 4000)
+      } else {
+         if (userData?.uid) {
+           await updateDoc(doc(db, 'users', userData.uid), { photoURL: base64 })
+         }
+         setPhotoStatus('saved')
+         setTimeout(() => setPhotoStatus(null), 2500)
       }
-      setPhotoStatus('saved')
-      setTimeout(() => setPhotoStatus(null), 2500)
     } catch {
       setPhotoStatus('error')
       setTimeout(() => setPhotoStatus(null), 3000)
@@ -535,6 +637,7 @@ export default function ProfilePage({ lang, setLang, navigate, onLogout, initial
       case 'verification':     return <VerificacionPage lang={lang} onBack={back} />
       case 'completar-perfil': return <RegistroClientePage onBack={back} onSuccess={() => back()} />
       case 'planes':           return <PlanesPage onBack={back} navigate={navigate} />
+      case 'edit-request':     return <EditRequestScreen lang={lang} user={userData} onBack={back} />
       default: return null
     }
   }
@@ -563,6 +666,11 @@ export default function ProfilePage({ lang, setLang, navigate, onLogout, initial
         {photoStatus === 'saved' && (
           <div style={{ background:'#22C55E',color:'white',borderRadius:99,padding:'4px 14px',fontSize:12,fontWeight:700,marginBottom:6 }}>
             ✅ {T.photoSaved}
+          </div>
+        )}
+        {photoStatus === 'saved_request' && (
+          <div style={{ background:'#F59E0B',color:'white',borderRadius:12,padding:'8px 14px',fontSize:12,fontWeight:700,marginBottom:10,textAlign:'center',boxShadow:'0 4px 10px rgba(245,158,11,0.2)' }}>
+            ⏳ Foto enviada a revisión.<br/>Se actualizará en un máximo de 72h.
           </div>
         )}
         {photoStatus === 'error' && (
@@ -683,6 +791,14 @@ export default function ProfilePage({ lang, setLang, navigate, onLogout, initial
           <span className="pmi-label">{lang==='es' ? 'Ver mi perfil público' : 'View my public profile'}</span>
           <span className="pmi-arrow">›</span>
         </button>
+
+        {(profileComplete || isProVerifComplete) && (
+          <button className="profile-menu-item" onClick={() => handleMenu('edit-request')}>
+            <span className="pmi-icon" style={{background:'#FFFBEB', color:'#F59E0B', borderRadius:'8px', fontSize:'16px'}}>✏️</span>
+            <span className="pmi-label">{lang==='es' ? 'Solicitar cambio de datos' : 'Request data edit'}</span>
+            <span className="pmi-arrow">›</span>
+          </button>
+        )}
 
 
 

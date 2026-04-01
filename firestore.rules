@@ -1,0 +1,75 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Función global: Verifica que el usuario haya iniciado sesión
+    function isAuth() {
+      return request.auth != null;
+    }
+
+    // 1. USUARIOS (users)
+    match /users/{userId} {
+      // Público puede buscar perfiles (para que clientes vean a los profesionales)
+      allow read: if isAuth(); 
+      // Solo el propietario puede editar sus propios datos
+      allow write: if isAuth() && request.auth.uid == userId; 
+      
+      // Colecciones anidadas (como historiales)
+      match /{subcollections=**} {
+        allow read, write: if isAuth() && request.auth.uid == userId;
+      }
+    }
+
+    // 2. CHATS PRIVADOS (chats)
+    match /chats/{chatId} {
+      // Un usuario puede ver el chat solo si su UID está dentro del arreglo "members" y borrar chats si los tiene
+      allow read, update, delete: if isAuth() && request.auth.uid in resource.data.members;
+      // Cualquier usuario autenticado puede crear un chat nuevo
+      allow create: if isAuth();
+
+      // MENSAGES DEL CHAT (subcolección)
+      match /messages/{messageId} {
+        // Lee/escribe mensajes solo si es miembro del chat padre
+        allow read, write: if isAuth() &&
+          request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.members;
+      }
+    }
+
+    // 3. PEDIDOS / ÓRDENES (orders)
+    match /orders/{orderId} {
+      // Solo el cliente o el profesional asignado pueden ver o editar el pedido
+      // Validamos ambas propiedades (clientId y proId) según lo que usa tu app
+      allow read, update: if isAuth() && (
+        request.auth.uid == resource.data.clientId || 
+        request.auth.uid == resource.data.proId
+      );
+      // Cualquier cliente autenticado puede crear un pedido
+      allow create: if isAuth();
+      // Eliminar pedidos lo limitamos preferiblemente
+      allow delete: if false; 
+    }
+
+    // 4. LOCALES DE PROFESIONALES (locales)
+    match /locales/{localId} {
+      // Todo el mundo puede ver la lista de locales
+      allow read: if isAuth();
+      // Solo el dueño (que su UID coincida con el proId) puede modificar
+      allow create: if isAuth() && request.auth.uid == request.resource.data.proId;
+      allow update, delete: if isAuth() && request.auth.uid == resource.data.proId;
+    }
+
+    // 5. NOTIFICACIONES (notificaciones)
+    match /notificaciones/{notifId} {
+      allow read, write: if isAuth() && request.auth.uid == resource.data.userId;
+    }
+
+    // 6. OTRAS COLECCIONES PUBLICAS TEMPORALES (comisiones, etc)
+    // Para simplificar cualquier otra cosa no cubierta por estas prioridades:
+    match /{document=**} {
+      // Temporalmente permitimos que usuarios autenticados pasen si no coinciden arriba
+      // (En producción futura debes cerrarlo poniendo allow read, write: if false;)
+      allow read, write: if isAuth();
+    }
+  }
+}
