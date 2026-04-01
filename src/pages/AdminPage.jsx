@@ -505,6 +505,8 @@ export default function AdminPage({ navigate }) {
   const [confirm, setConfirm]   = useState(null); // { type, obj }
   const [viewDocs, setViewDocs] = useState(null); // Usuario a inspeccionar documentos
   const [viewProStats, setViewProStats] = useState(null); // Modal avanzado de central de mando
+  const [psFilter, setPsFilter] = useState('all'); // Filtros rápidos
+  const [psLimit, setPsLimit] = useState(20); // Paginación
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [adminPass, setAdminPass] = useState('');
   const [passError, setPassError] = useState(false);
@@ -972,116 +974,7 @@ export default function AdminPage({ navigate }) {
           </div>
         )}
 
-        {/* ── TAB: DIRECTORIO (Todos los usuarios) ── */}
-        {tab === 'bloqueados' && (
-          <div className="admin-section" style={{marginTop:16}}>
-            <div className="section-header">
-              <span className="section-title">Todos los profesionales</span>
-            </div>
 
-            <div className="ac-container">
-              <div className="ac-input-wrapper">
-                <input 
-                  type="text" 
-                  className="gift-input" 
-                  placeholder="Buscar profesional (escribe el nombre)..." 
-                  value={dirSearch} 
-                  onChange={e => {
-                    setDirSearch(e.target.value);
-                    setShowDirAc(true);
-                  }}
-                  onFocus={() => setShowDirAc(true)}
-                  style={{marginBottom: 16}}
-                />
-              </div>
-              
-              {showDirAc && dirSearch && (
-                <div className="ac-dropdown">
-                  {users
-                    .filter(u => u.role === 'professional')
-                    .filter(u => {
-                      const term = dirSearch.toLowerCase().trim();
-                      return String(u.name||'').toLowerCase().includes(term) || String(u.phone||'').includes(term);
-                    })
-                    .slice(0, 8)
-                    .map(u => (
-                      <div key={u.id} className="ac-item" onClick={() => {
-                        setDirSearch(u.name || u.phone);
-                        setShowDirAc(false);
-                      }}>
-                        <div className="ac-avatar">
-                          {u.profilePic || u.photoURL || u.avatarId ? (
-                             <img src={u.profilePic || u.photoURL || `https://i.pravatar.cc/100?u=${u.avatarId||u.id}`} alt="pro" />
-                          ) : (
-                             (u.name ? u.name.charAt(0).toUpperCase() : 'P')
-                          )}
-                        </div>
-                        <div className="ac-text">
-                          <span className="ac-name">{u.name || 'Sin nombre'} {u.approved ? '✅' : ''}</span>
-                          <span className="ac-detail">{u.service || 'Usuario'} · Tel: {u.phone}</span>
-                        </div>
-                      </div>
-                    ))}
-                </div>
-              )}
-            </div>
-
-            {users.filter(u => u.role === 'professional').filter(u => !dirSearch || String(u.name||'').toLowerCase().includes(dirSearch.toLowerCase().trim()) || String(u.phone||'').includes(dirSearch.trim())).length === 0 && (
-              <div className="empty-admin">
-                <span>🚫</span>
-                <p>No se encontraron resultados</p>
-              </div>
-            )}
-            
-            {users
-              .filter(u => u.role === 'professional')
-              .filter(u => !dirSearch || String(u.name||'').toLowerCase().includes(dirSearch.toLowerCase().trim()) || String(u.phone||'').includes(dirSearch.trim()))
-              .map((u, i) => (
-              <div className="blocked-card" key={u.id} style={{animationDelay:`${i*.06}s`, borderColor: u.planStatus==='inactive'?'rgba(239,68,68,0.25)':'var(--border)'}}>
-                <div className="bc-top">
-                  <div className="cc-avatar" style={{background: u.planStatus==='inactive'?'#EF4444':'var(--green)', width:40, height:40, borderRadius:12, display:'flex', alignItems:'center', justifyContent:'center', fontFamily:'Syne,sans-serif', fontWeight:800, fontSize:12, color:'#fff', flexShrink:0, overflow:'hidden'}}>
-                     {u.profilePic || u.photoURL || u.avatarId ? (
-                        <img src={u.profilePic || u.photoURL || `https://i.pravatar.cc/100?u=${u.avatarId||u.id}`} alt="pro" style={{width:'100%', height:'100%', objectFit:'cover'}}/>
-                     ) : (
-                        u.name?u.name.charAt(0).toUpperCase():'P'
-                     )}
-                  </div>
-                  <div className="bc-info">
-                    <div className="bc-name">{u.name || 'Profesional'} {u.approved ? '✅' : '⏳'} {u.verificacion?.estado === 'en_revision' ? '⚠️' : ''}</div>
-                    <div className="bc-reason" style={{color: 'var(--muted)'}}>Contratos: {u.contracts || 0} · Tel: {u.phone} {u.verificacion?.estado === 'en_revision' ? '· (Pendiente revisar doc)' : ''}</div>
-                  </div>
-                </div>
-                <div className="bc-actions">
-                  <button className="bc-btn unblock" onClick={() => setConfirm({type:'add_contract', obj:u})}>
-                    ➕ 1 Contrato
-                  </button>
-                  <button className="bc-btn contact" style={{color:'var(--yellow)', borderColor:'rgba(245,158,11,0.2)'}} onClick={() => setConfirm({type:'sub_contract', obj:u})}>
-                    ➖ 1 Contrato
-                  </button>
-                </div>
-                <div className="bc-actions" style={{marginTop:8}}>
-                  {u.planStatus === 'inactive' || !u.approved ? (
-                    <button className="bc-btn unblock"
-                      onClick={() => setConfirm({type:'unblock', obj:u})}>
-                      ✅ Activar
-                    </button>
-                  ) : (
-                    <button className="bc-btn contact" style={{color:'#EF4444', borderColor:'rgba(239,68,68,0.2)'}}
-                      onClick={() => setConfirm({type:'block', obj:u})}>
-                      🔴 Suspender
-                    </button>
-                  )}
-                  {u.verificacion && (
-                    <button className="bc-btn contact" style={{background:'#3B82F6', color:'#fff', border:'none'}}
-                      onClick={() => setViewDocs(u)}>
-                      🔎 Expediente
-                    </button>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
 
         {/* ── CENTRAL DE MANDO (Directorio) ── */}
         {tab === 'bloqueados' && (
@@ -1120,36 +1013,72 @@ export default function AdminPage({ navigate }) {
               </div>
             </div>
 
-            {users.filter(u => u.role === 'professional').filter(u => !dirSearch || String(u.name||'').toLowerCase().includes(dirSearch.toLowerCase().trim()) || String(u.phone||'').includes(dirSearch.trim())).length === 0 && (
-              <div className="empty-admin">
-                <span>🚫</span>
-                <p>Nadie en el radar</p>
-              </div>
-            )}
-            
-            {users
-              .filter(u => u.role === 'professional')
-              .filter(u => !dirSearch || String(u.name||'').toLowerCase().includes(dirSearch.toLowerCase().trim()) || String(u.phone||'').includes(dirSearch.trim()))
-              .sort((a,b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0)) // Ordenar más nuevos primero
-              .map((u, i) => (
-              <div className="dash-card" key={u.id} style={{animationDelay:`${i*.05}s`}} onClick={() => setViewProStats(u)}>
-                <div className="dash-avatar" style={{background: u.planStatus==='inactive'?'#EF4444' : u.available?'#10B981':'var(--surface2)', color: u.available?'#fff':'var(--text)'}}>
-                   {u.profilePic || u.photoURL || u.avatarId ? (
-                      <img src={u.profilePic || u.photoURL || `https://i.pravatar.cc/100?u=${u.avatarId||u.id}`} alt="pro" style={{width:'100%', height:'100%', objectFit:'cover'}}/>
-                   ) : (
-                      u.name?u.name.charAt(0).toUpperCase():'P'
+            {/* Quick Filters */}
+            <div style={{display:'flex', gap:6, overflowX:'auto', paddingBottom:8, marginBottom:16}}>
+              {['all', 'online', 'pending', 'suspended'].map(f => (
+                <button key={f} onClick={() => {setPsFilter(f); setPsLimit(20);}} style={{
+                  padding:'6px 12px', borderRadius:20, border: psFilter===f?'none':'1px solid var(--border)',
+                  background: psFilter===f?'var(--text)':'var(--surface)', color: psFilter===f?'#fff':'var(--muted)',
+                  fontSize:11, fontWeight:700, cursor:'pointer', whiteSpace:'nowrap', transition:'all .2s'
+                }}>
+                  {f==='all' ? 'Todos' : f==='online' ? '🟢 En Línea' : f==='pending' ? '⚠️ Pendientes' : '🔴 Suspendidos'}
+                </button>
+              ))}
+            </div>
+
+            {(() => {
+              const filteredList = users
+                .filter(u => u.role === 'professional')
+                .filter(u => !dirSearch || String(u.name||'').toLowerCase().includes(dirSearch.toLowerCase().trim()) || String(u.phone||'').includes(dirSearch.trim()))
+                .filter(u => {
+                   if (psFilter === 'all') return true;
+                   if (psFilter === 'online') return u.available;
+                   if (psFilter === 'pending') return u.verificacion?.estado === 'en_revision';
+                   if (psFilter === 'suspended') return !u.approved || u.planStatus === 'inactive';
+                   return true;
+                })
+                .sort((a,b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0));
+                
+              if (filteredList.length === 0) {
+                 return (
+                  <div className="empty-admin">
+                    <span>🚫</span>
+                    <p>Nadie en el radar</p>
+                  </div>
+                 )
+              }
+              
+              const visibleList = filteredList.slice(0, psLimit);
+
+              return (
+                 <>
+                   {visibleList.map((u, i) => (
+                      <div className="dash-card" key={u.id} style={{animationDelay:`${(i%20)*.05}s`}} onClick={() => setViewProStats(u)}>
+                        <div className="dash-avatar" style={{background: u.planStatus==='inactive'?'#EF4444' : u.available?'#10B981':'var(--surface2)', color: u.available?'#fff':'var(--text)'}}>
+                           {u.profilePic || u.photoURL || u.avatarId ? (
+                              <img src={u.profilePic || u.photoURL || `https://i.pravatar.cc/100?u=${u.avatarId||u.id}`} alt="pro" style={{width:'100%', height:'100%', objectFit:'cover'}}/>
+                           ) : (
+                              u.name?u.name.charAt(0).toUpperCase():'P'
+                           )}
+                        </div>
+                        <div className="dash-info">
+                          <div className="dash-name">{u.name || 'Profesional'} {u.approved ? '✅' : '⏳'} {u.verificacion?.estado === 'en_revision' ? '⚠️' : ''}</div>
+                          <div className="dash-sub">{u.category || u.service || 'Servicios Generales'} · {u.contracts||0} CT</div>
+                        </div>
+                        <div className="dash-status">
+                          <span className={`dash-pill ${u.available ? 'online' : 'offline'}`}>{u.available ? 'ONLINE' : 'OFFLINE'}</span>
+                          <span style={{fontSize:10, color:'var(--muted)'}}>{fmtDate(u.createdAt)}</span>
+                        </div>
+                      </div>
+                   ))}
+                   {filteredList.length > psLimit && (
+                      <button onClick={() => setPsLimit(prev => prev + 20)} style={{width:'100%', padding:16, marginTop:8, borderRadius:16, border:'1px solid var(--border)', background:'var(--surface2)', color:'var(--text)', fontSize:13, fontWeight:700, cursor:'pointer', transition:'all .2s'}}>
+                        Cargar más ({filteredList.length - psLimit} restantes) ↓
+                      </button>
                    )}
-                </div>
-                <div className="dash-info">
-                  <div className="dash-name">{u.name || 'Profesional'} {u.approved ? '✅' : '⏳'} {u.verificacion?.estado === 'en_revision' ? '⚠️' : ''}</div>
-                  <div className="dash-sub">{u.category || u.service || 'Servicios Generales'} · {u.contracts||0} CT</div>
-                </div>
-                <div className="dash-status">
-                  <span className={`dash-pill ${u.available ? 'online' : 'offline'}`}>{u.available ? 'ONLINE' : 'OFFLINE'}</span>
-                  <span style={{fontSize:10, color:'var(--muted)'}}>{fmtDate(u.createdAt)}</span>
-                </div>
-              </div>
-            ))}
+                 </>
+              )
+            })()}
           </div>
         )}
 
