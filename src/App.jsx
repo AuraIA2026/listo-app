@@ -236,7 +236,7 @@ export default function App() {
     if (isPlayingRef.current) return
     try {
       // Un sonido original, positivo y muy suave (campana de cristal/burbuja mágica)
-      const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2862/2862-preview.mp3')
+      const audio = new Audio('/audio/notification.mp3')
       audio.volume = 0.7; audio.loop = true
       audio.play().catch(() => {})
       alertAudioRef.current = audio; isPlayingRef.current = true
@@ -253,7 +253,7 @@ export default function App() {
   const playJobDoneSound = () => {
     try {
       // Sonido positivo y alegre de tarea terminada, suena 1 sola vez
-      const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2311/2311-preview.mp3')
+      const audio = new Audio('/audio/notification.mp3')
       audio.volume = 0.8; audio.loop = false; audio.play().catch(() => {})
       setTimeout(() => { try { audio.pause(); audio.currentTime = 0 } catch(e){} }, 5000)
     } catch (e) {}
@@ -261,7 +261,7 @@ export default function App() {
   const playMsgSound = () => {
     try {
       // Sonido muy sutil ("pop" líquido) para los mensajes del chat
-      const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2312/2312-preview.mp3')
+      const audio = new Audio('/audio/notification.mp3')
       audio.volume = 0.6; audio.loop = false
       audio.play().catch(() => {})
       setTimeout(() => { try { audio.pause(); audio.currentTime = 0 } catch(e){} }, 2000)
