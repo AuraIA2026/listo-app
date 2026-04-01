@@ -1188,6 +1188,8 @@ export default function AdminPage({ navigate }) {
             </div>
           </div>
         )}
+        {/* ── TAB: CENTRAL DE REGALOS ── */}
+        {tab === 'regalos' && (
           <div className="admin-section" style={{marginTop:16}}>
             <div className="section-header">
               <span className="section-title">🎁 Central de Regalos</span>
