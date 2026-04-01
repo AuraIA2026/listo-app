@@ -542,17 +542,25 @@ export default function ChatPage({ lang = 'es', navigate, professional, userData
 export function ReportModal({ lang, otherUser, onClose }) {
   const me = auth.currentUser
   const [reason, setReason] = useState('')
+  const [severity, setSeverity] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [done, setDone] = useState(false)
   
   const submitReport = async (isBlock) => {
-    if (!reason.trim()) return alert('Ingresa un motivo')
+    if (!severity) return alert('Por favor selecciona la gravedad de la queja primero.')
+    if (!reason.trim()) return alert('Escribe el motivo de la queja.')
     setSubmitting(true)
     try {
       await addDoc(collection(db, 'reports'), {
-        reporterId: me.uid, reportedId: otherUser?.uid || 'unknown',
-        reason: reason.trim(), action: isBlock ? 'blocked' : 'reported',
-        createdAt: serverTimestamp(), status: 'pending'
+        reporterId: me.uid, 
+        reporterName: me.displayName || 'Usuario',
+        reportedId: otherUser?.uid || 'unknown',
+        reportedName: otherUser?.name || 'Profesional',
+        reason: reason.trim(), 
+        severity: severity,
+        action: isBlock ? 'blocked' : 'reported',
+        createdAt: serverTimestamp(), 
+        status: 'pending'
       })
       setDone(true)
     } catch(e) {}
@@ -561,21 +569,36 @@ export function ReportModal({ lang, otherUser, onClose }) {
 
   return (
     <div onClick={onClose} style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.6)', zIndex:9999, display:'flex', alignItems:'center', justifyContent:'center', padding:20 }}>
-      <div onClick={e=>e.stopPropagation()} style={{ background:'#fff', borderRadius:24, padding:32, width:'100%', maxWidth:360, boxShadow:'0 20px 40px rgba(0,0,0,0.2)' }}>
+      <div onClick={e=>e.stopPropagation()} style={{ background:'#fff', borderRadius:24, padding:32, width:'100%', maxWidth:360, boxShadow:'0 20px 40px rgba(0,0,0,0.2)', maxHeight:'90vh', overflowY:'auto' }}>
         {done ? (
           <div style={{ textAlign:'center' }}>
             <div style={{ fontSize:48, marginBottom:16 }}>🛡️</div>
-            <h3 style={{ margin:'0 0 16px', color:'#1A1A2E' }}>Reporte enviado</h3>
+            <h3 style={{ margin:'0 0 16px', color:'#1A1A2E' }}>Queja Registrada</h3>
+            <p style={{ fontSize:14, color:'#64748B', marginBottom:20 }}>Nuestra Central de Mando ha recibido la notificación y auditará al perfil inmediatamente.</p>
             <button onClick={onClose} style={{ width:'100%', padding:14, borderRadius:16, border:'none', background:'#F1F5F9', fontWeight:'bold', cursor:'pointer' }}>Cerrar</button>
           </div>
         ) : (
           <>
-            <div style={{ width:48, height:48, borderRadius:'50%', background:'#FEE2E2', display:'flex', alignItems:'center', justifyContent:'center', fontSize:24, margin:'0 auto 16px' }}>⚠️</div>
-            <h3 style={{ textAlign:'center', margin:'0 0 8px', color:'#1A1A2E' }}>Reportar o Bloquear</h3>
-            <p style={{ textAlign:'center', margin:'0 0 20px', fontSize:14, color:'#64748B' }}>¿Problemas con {otherUser?.name}?</p>
-            <textarea value={reason} onChange={e=>setReason(e.target.value)} placeholder="Motivo (spam, acoso)..." style={{ width:'100%', height:80, padding:14, borderRadius:12, border:'2px solid #E2E8F0', resize:'none', marginBottom:16, fontFamily:'inherit' }} />
+            <div style={{ width:48, height:48, borderRadius:'50%', background:'#FEE2E2', display:'flex', alignItems:'center', justifyContent:'center', fontSize:24, margin:'0 auto 16px' }}>🚨</div>
+            <h3 style={{ textAlign:'center', margin:'0 0 8px', color:'#1A1A2E' }}>Reportar Problema</h3>
+            <p style={{ textAlign:'center', margin:'0 0 20px', fontSize:14, color:'#64748B' }}>¿Qué sucedió con {otherUser?.name}?</p>
+            
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 8, marginBottom: 16 }}>
+              {[
+                { id: 'leve', label: '🟡 Leve (Tardanza, Trato)', color: '#B45309', bg: '#FEF08A', border: '#FDE047' },
+                { id: 'moderada', label: '🟠 Moderada (Mal trabajo)', color: '#C2410C', bg: '#FFEDD5', border: '#FDBA74' },
+                { id: 'grave', label: '🔴 Grave (Robo, Agresión)', color: '#B91C1C', bg: '#FEE2E2', border: '#FCA5A5' },
+              ].map(s => (
+                <div key={s.id} onClick={() => setSeverity(s.id)} style={{ padding: '10px 14px', borderRadius: 12, border: severity===s.id ? `2px solid ${s.border}` : '2px solid transparent', background: severity===s.id ? s.bg : '#F1F5F9', cursor: 'pointer', textAlign: 'left', fontWeight: 700, fontSize: 13, color: severity===s.id ? s.color : '#475569', transition: 'all .2s' }}>
+                  {s.label}
+                </div>
+              ))}
+            </div>
+
+            <textarea value={reason} onChange={e=>setReason(e.target.value)} placeholder="Describe qué ocurrió exactamente..." style={{ width:'100%', height:80, padding:14, borderRadius:12, border:'2px solid #E2E8F0', resize:'none', marginBottom:16, fontFamily:'inherit' }} />
+            
             <div style={{ display:'flex', gap:12, marginBottom:12 }}>
-              <button onClick={()=>submitReport(false)} disabled={submitting} style={{ flex:1, padding:14, borderRadius:12, border:'none', background:'#F59E0B', color:'#fff', fontWeight:'bold', cursor:'pointer' }}>Reportar</button>
+              <button onClick={()=>submitReport(false)} disabled={submitting} style={{ flex:1, padding:14, borderRadius:12, border:'none', background:'#1E293B', color:'#fff', fontWeight:'bold', cursor:'pointer' }}>Enviar Queja</button>
               <button onClick={()=>submitReport(true)} disabled={submitting} style={{ flex:1, padding:14, borderRadius:12, border:'none', background:'#EF4444', color:'#fff', fontWeight:'bold', cursor:'pointer' }}>Bloquear</button>
             </div>
             <button onClick={onClose} style={{ width:'100%', padding:12, borderRadius:12, border:'none', background:'transparent', color:'#64748B', fontWeight:'bold', cursor:'pointer' }}>Cancelar</button>

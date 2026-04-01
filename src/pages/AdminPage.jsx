@@ -501,6 +501,7 @@ export default function AdminPage({ navigate }) {
   const [payments, setPayments] = useState([]);
   const [users, setUsers]       = useState([]);
   const [verifications, setVerifications] = useState([]); // Nuevos postulantes
+  const [reports, setReports]   = useState([]); // Quejas y Reportes de Usuarios
   const [toast, setToast]       = useState('');
   const [confirm, setConfirm]   = useState(null); // { type, obj }
   const [viewDocs, setViewDocs] = useState(null); // Usuario a inspeccionar documentos
@@ -544,7 +545,13 @@ export default function AdminPage({ navigate }) {
       setVerifications(arr);
     });
 
-    return () => { unsubPay(); unsubUsers(); unsubVerif(); };
+    // 4. Escuchar Quejas / Reportes
+    const unsubReps = onSnapshot(query(collection(db, 'reports'), orderBy('createdAt', 'desc')), (snap) => {
+      const arr = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      setReports(arr);
+    });
+
+    return () => { unsubPay(); unsubUsers(); unsubVerif(); unsubReps(); };
   }, []);
 
   const showToast = (msg) => {
@@ -586,6 +593,11 @@ export default function AdminPage({ navigate }) {
         } else {
            showToast(`💚 Transferencia de ${obj.proName} validada`);
         }
+      }
+      
+      if (type === 'resolve_report') {
+        await updateDoc(doc(db, 'reports', obj.id), { status: 'resolved' });
+        showToast('✅ Queja resuelta y archivada');
       }
       
       if (type === 'approve_verif') {
@@ -786,6 +798,7 @@ export default function AdminPage({ navigate }) {
             { id:'pagos',      icon:'💳', label:'Historial',  count:completedPayments.length },
             { id:'comisiones', icon:'⏳', label:'Validar', count:pendienteCount },
             { id:'bloqueados', icon:'👥', label:'Directorio', count:users.length },
+            { id:'quejas',     icon:'🚨', label:'Quejas', count: reports.filter(r => r.status === 'pending').length },
             { id:'regalos',    icon:'🎁', label:'Regalos', count: '+' },
           ].map(t => (
             <button key={t.id} className={`tab-btn${tab===t.id?' active':''}`} onClick={()=>setTab(t.id)} style={{minWidth:70}}>
@@ -1259,6 +1272,86 @@ export default function AdminPage({ navigate }) {
           </div>
         )}
 
+        {/* ── TAB: QUEJAS Y REPORTES ── */}
+        {tab === 'quejas' && (
+          <div className="admin-section" style={{marginTop:16}}>
+            <div className="section-header">
+              <span className="section-title">🚨 Central de Quejas</span>
+            </div>
+
+            {/* Live Metrics */}
+            <div className="ps-grid" style={{gap:8, padding:0, marginBottom:16}}>
+              <div className="ps-metric" style={{background:'var(--surface)'}}>
+                <div className="ps-metric-val">{reports.filter(r=>r.status === 'pending').length}</div>
+                <div className="ps-metric-label">En Progreso</div>
+              </div>
+              <div className="ps-metric" style={{background:'#FEF08A', borderColor:'#FDE047'}}>
+                <div className="ps-metric-val" style={{color:'#854D0E'}}>{reports.filter(r=>r.status === 'pending' && r.severity === 'leve').length}</div>
+                <div className="ps-metric-label" style={{color:'#CA8A04'}}>Leves</div>
+              </div>
+              <div className="ps-metric" style={{background:'#FFEDD5', borderColor:'#FDBA74'}}>
+                <div className="ps-metric-val" style={{color:'#9A3412'}}>{reports.filter(r=>r.status === 'pending' && r.severity === 'moderada').length}</div>
+                <div className="ps-metric-label" style={{color:'#EA580C'}}>Moderadas</div>
+              </div>
+              <div className="ps-metric" style={{background:'#FEE2E2', borderColor:'#FCA5A5'}}>
+                <div className="ps-metric-val" style={{color:'#991B1B'}}>{reports.filter(r=>r.status === 'pending' && r.severity === 'grave').length}</div>
+                <div className="ps-metric-label" style={{color:'#DC2626'}}>Graves</div>
+              </div>
+            </div>
+
+            {reports.filter(r => r.status === 'pending').length === 0 && (
+               <div className="empty-admin">
+                 <span style={{fontSize:40, marginBottom:10}}>👮</span>
+                 <p>No hay quejas pendientes por revisar. Excelente servicio.</p>
+               </div>
+            )}
+
+            {reports.filter(r => r.status === 'pending').map(r => (
+               <div className="dash-card" key={r.id} style={{
+                   borderColor: r.severity === 'grave' ? '#FCA5A5' : r.severity === 'moderada' ? '#FDBA74' : '#FDE047',
+                   background: r.severity === 'grave' ? '#FEF2F2' : r.severity === 'moderada' ? '#FFF7ED' : '#FEFCE8',
+                   alignItems: 'flex-start'
+                 }}>
+                 <div className="dash-info" style={{width:'100%'}}>
+                   <div style={{display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:8}}>
+                     <div>
+                       <span className={`dash-pill`} style={{
+                          background: r.severity === 'grave' ? '#EF4444' : r.severity === 'moderada' ? '#F97316' : '#EAB308',
+                          color: '#fff', fontSize:11
+                       }}>
+                         {r.severity === 'grave' ? '🔴 GRAVE' : r.severity === 'moderada' ? '🟠 MODERADA' : '🟡 LEVE'}
+                       </span>
+                     </div>
+                     <span style={{fontSize:11, color:'var(--muted)'}}>{fmtDate(r.createdAt)}</span>
+                   </div>
+                   <div style={{fontSize:14, fontWeight:700, color:'var(--text)', marginBottom:4}}>
+                     Cliente <span style={{color:'var(--brand)'}}>{r.reporterName}</span> reportó a <span style={{color:'var(--brand)'}}>{r.reportedName}</span>
+                   </div>
+                   <div style={{fontSize:14, color:'var(--text)', fontStyle:'italic', background:'rgba(0,0,0,0.03)', padding:12, borderRadius:8, marginBottom:12, lineHeight:1.4}}>
+                     "{r.reason}"
+                   </div>
+                   
+                   <div style={{display:'flex', gap:8}}>
+                     <button className="cc-btn paid" style={{flex:1, background:'#1E293B', color:'#fff', border:'none', fontSize:12, padding:10}} onClick={() => {
+                        const userPro = users.find(u => u.id === r.reportedId);
+                        if(userPro) {
+                           setViewProStats(userPro);
+                        } else {
+                           setToast('El usuario ya no existe o fue bloqueado permanentemente.');
+                        }
+                     }}>
+                        🕵️ Auditar Profesional
+                     </button>
+                     <button className="cc-btn paid" style={{flex:1, fontSize:12, padding:10}} onClick={() => setConfirm({type:'resolve_report', obj: r})}>
+                        ✔️ Marcar Resuelta
+                     </button>
+                   </div>
+                 </div>
+               </div>
+            ))}
+          </div>
+        )}
+
         {/* TOAST */}
         <div className={`toast${toast?' show':''}`}>{toast}</div>
 
@@ -1269,7 +1362,7 @@ export default function AdminPage({ navigate }) {
               <span className="cm-icon">
                 {confirm.type==='block' ? '🔴' : confirm.type==='sub_contract' ? '➖' : confirm.type==='add_contract' ? '➕' : confirm.type==='unblock' ? '✅' : '💚'}
               </span>
-              <h3 className="cm-title">
+               <h3 className="cm-title">
                 {confirm.type==='block'   ? '¿Suspender perfil?' :
                  confirm.type==='unblock' ? '¿Activar perfil?' :
                  confirm.type==='add_contract' ? '¿Sumar contrato?' :
@@ -1279,6 +1372,7 @@ export default function AdminPage({ navigate }) {
                  confirm.type==='reject_payment' ? '¿Rechazar Pago?' :
                  confirm.type==='approve_verif' ? '¿Aprobar Profesional?' :
                  confirm.type==='reject_verif' ? '¿Rechazar Verificación?' :
+                 confirm.type==='resolve_report' ? '¿Marcar como resuelta?' :
                  '¿Aprobar transferencia?'}
               </h3>
               <p className="cm-sub">
@@ -1300,6 +1394,8 @@ export default function AdminPage({ navigate }) {
                   ? `El usuario ${confirm.obj.verificacion?.nombre || 'este perfil'} será promovido a Profesional Premium y se le recargarán contratos iniciales.`
                   : confirm.type==='reject_verif'
                   ? `Se rechazará esta verificación y el usuario tendrá que intentar de nuevo.`
+                  : confirm.type==='resolve_report'
+                  ? `La queja de ${confirm.obj.reporterName} será archivada y se quitará de la lista de pendientes.`
                   : `Se marcará el pago como verificado y se agregará el plan a la cuenta de ${confirm.obj.proName}.`}
               </p>
 
@@ -1329,6 +1425,7 @@ export default function AdminPage({ navigate }) {
                  confirm.type==='reject_payment' ? '🔴 Rechazar Pago' :
                  confirm.type==='approve_verif' ? '✅ Aprobar Profesional' :
                  confirm.type==='reject_verif' ? '❌ Sí, rechazar' :
+                 confirm.type==='resolve_report' ? '✔️ Confirmar Resolución' :
                  '💚 Confirmar validación'}
               </button>
               <button className="cm-btn ghost" onClick={() => {setConfirm(null); setBlockReason('');}}>Cancelar</button>
