@@ -1069,7 +1069,7 @@ export default function AdminPage({ navigate }) {
                       <div className="dash-card" key={u.id} style={{animationDelay:`${(i%20)*.05}s`}} onClick={() => setViewProStats(u)}>
                         <div className="dash-avatar" style={{background: u.planStatus==='inactive'?'#EF4444' : u.available?'#10B981':'var(--surface2)', color: u.available?'#fff':'var(--text)'}}>
                            {u.profilePic || u.photoURL || u.avatarId ? (
-                              <img src={u.profilePic || u.photoURL || `https://i.pravatar.cc/100?u=${u.avatarId||u.id}`} alt="pro" style={{width:'100%', height:'100%', objectFit:'cover'}}/>
+                              <img src={u.profilePic || u.photoURL || `https://i.pravatar.cc/100?u=${u.avatarId||u.id}`} alt="pro" style={{width:'100%', height:'100%', objectFit:'cover'}} onError={(e) => { e.target.onerror = null; e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name||'P')}&background=random&color=fff&size=100`; }}/>
                            ) : (
                               u.name?u.name.charAt(0).toUpperCase():'P'
                            )}
@@ -1105,7 +1105,7 @@ export default function AdminPage({ navigate }) {
                 <button className="ps-close" onClick={() => setViewProStats(null)}>✕</button>
                 <div className="ps-avatar">
                    {viewProStats.profilePic || viewProStats.photoURL || viewProStats.avatarId ? (
-                      <img src={viewProStats.profilePic || viewProStats.photoURL || `https://i.pravatar.cc/100?u=${viewProStats.avatarId||viewProStats.id}`} alt="pro" style={{width:'100%', height:'100%', objectFit:'cover'}}/>
+                      <img src={viewProStats.profilePic || viewProStats.photoURL || `https://i.pravatar.cc/100?u=${viewProStats.avatarId||viewProStats.id}`} alt="pro" style={{width:'100%', height:'100%', objectFit:'cover'}} onError={(e) => { e.target.onerror = null; e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(viewProStats.name||'P')}&background=random&color=fff&size=100`; }}/>
                    ) : (
                       viewProStats.name?viewProStats.name.charAt(0).toUpperCase():'P'
                    )}
@@ -1233,7 +1233,7 @@ export default function AdminPage({ navigate }) {
                         }}>
                           <div className="ac-avatar">
                             {u.profilePic || u.photoURL || u.avatarId ? (
-                               <img src={u.profilePic || u.photoURL || `https://i.pravatar.cc/100?u=${u.avatarId||u.id}`} alt="pro" />
+                               <img src={u.profilePic || u.photoURL || `https://i.pravatar.cc/100?u=${u.avatarId||u.id}`} alt="pro" onError={(e) => { e.target.onerror = null; e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name||'P')}&background=random&color=fff&size=100`; }} />
                             ) : (
                                (u.name ? String(u.name).charAt(0).toUpperCase() : 'P')
                             )}
