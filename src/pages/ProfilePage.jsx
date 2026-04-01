@@ -709,16 +709,22 @@ export default function ProfilePage({ lang, setLang, navigate, onLogout, initial
           .map((item, i) => {
             let btnClass = 'profile-menu-item '
             if (item.action === 'verification') {
-              btnClass += isProVerifComplete ? 'verification-item' : 'verification-item-blue'
+              if (isProVerifComplete) {
+                btnClass += (userData?.verificacion?.estado === 'verificado' || userData?.verificacion?.estado === 'aprobada') 
+                               ? 'verification-item' 
+                               : 'verification-item-yellow'
+              } else {
+                btnClass += 'verification-item-blue'
+              }
             }
             return (
               <button key={i} className={btnClass} onClick={() => handleMenu(item.action)}>
                 <span className="pmi-icon">{item.icon}</span>
                 <span className="pmi-label">{lang==='es' ? item.labelEs : item.labelEn}</span>
                 {item.action === 'verification'
-                  ? <span className={isProVerifComplete ? "verif-badge" : "verif-badge-blue"}>
+                  ? <span className={isProVerifComplete ? ((userData?.verificacion?.estado === 'verificado' || userData?.verificacion?.estado === 'aprobada') ? "verif-badge" : "verif-badge-yellow") : "verif-badge-blue"}>
                       {isProVerifComplete
-                        ? (userData?.verificacion?.estado === 'verificado' ? '✓ Verificado' : 'En revisión')
+                        ? ((userData?.verificacion?.estado === 'verificado' || userData?.verificacion?.estado === 'aprobada') ? '✓ Verificado' : 'En revisión')
                         : '¡Veríficate!'}
                     </span>
                   : <span className="pmi-arrow">›</span>

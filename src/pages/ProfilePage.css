@@ -173,6 +173,23 @@
 .terms-footer { text-align: center; padding: 16px; font-size: 12px; color: var(--gray-light); line-height: 1.8; }
 
 /* ── VERIFICACIÓN PROFESIONAL — Botón especial verde ── */
+.verification-item-yellow {
+  background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%) !important;
+  color: white !important;
+  margin-bottom: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(245, 158, 11, 0.4);
+}
+.verification-item-yellow:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(245, 158, 11, 0.5);
+}
+.verification-item-yellow .pmi-icon  { font-size: 22px !important; }
+.verification-item-yellow .pmi-label {
+  font-weight: 800;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+
 .verification-item {
   background: linear-gradient(135deg, #16a34a, #22c55e) !important;
   border-bottom: none !important;
@@ -189,6 +206,11 @@
   color: white !important;
   font-weight: 800 !important;
   font-size: 15px !important;
+}
+.verif-badge-yellow {
+  background: white; color: #D97706; padding: 4px 10px;
+  border-radius: 99px; font-size: 11px; font-weight: 800;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15); margin-left: auto;
 }
 .verif-badge {
   background: white;
