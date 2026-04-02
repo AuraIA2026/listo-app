@@ -28,6 +28,7 @@ import { ExoticOrderNotification, OrderDetailsModal } from './pages/OrdersPage'
 import LocalesPage            from './locales/LocalesPage'
 import LocalDetalle           from './locales/LocalDetalle'
 import CrearLocal             from './locales/CrearLocal'   // ✅ AGREGADO
+import NotificacionPage       from './pages/Notificacionpage'
 import './App.css'
 
 const TOUR_KEY = 'listo_tour_done'
@@ -496,6 +497,7 @@ export default function App() {
       {currentPage === 'locales'      && <LocalesPage  {...userProps} />}
       {currentPage === 'localDetalle' && <LocalDetalle {...userProps} local={selectedLocal} />}
       {currentPage === 'crearLocal'   && <CrearLocal   {...userProps} />}  {/* ✅ AGREGADO */}
+      {currentPage === 'notificaciones' && <NotificacionPage {...userProps} />}
 
       {currentPage === 'booking'       && <BookingPage             {...userProps}   professional={selectedPro} />}
       {currentPage === 'chat'          && <ChatPage                {...commonProps} professional={selectedPro} userData={userData} />}

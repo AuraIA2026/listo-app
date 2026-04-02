@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { collection, query, where, getDocs, limit, doc, updateDoc } from 'firebase/firestore'
+import { collection, query, where, getDocs, limit, doc, updateDoc, onSnapshot } from 'firebase/firestore'
 import { db } from '../firebase'
 import './HomePage.css'
 import TutorialTour, { useTour } from '../components/TutorialTour'
@@ -324,6 +324,17 @@ export default function HomePage({ lang, navigate, userRole }) {
   const [allProsRef,  allProsVisible]  = useScrollReveal(0.05)
   const [catListRef,  catListVisible]  = useScrollReveal(0.05)
 
+  const [unreadNotifs, setUnreadNotifs] = useState(0)
+
+  useEffect(() => {
+    if (!userData?.uid) return
+    const q = query(collection(db, 'notificaciones'), where('userId', '==', userData.uid), where('read', '==', false))
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      setUnreadNotifs(snapshot.docs.length)
+    }, () => {})
+    return () => unsubscribe()
+  }, [userData])
+
   const searchPlaceholders = lang === 'es' 
     ? ['¿Buscas a un plomero?', '¿Necesitas un electricista?', 'O quizás un mecánico...', 'Encuentra soluciones aquí'] 
     : ['Looking for a plumber?', 'Need an electrician?', 'Maybe a mechanic...', 'Find solutions here'];
@@ -492,14 +503,27 @@ export default function HomePage({ lang, navigate, userRole }) {
               <h1>👋 {lang === 'es' ? `Hola, ${userData?.name?.split(' ')[0] || 'Cliente'}` : `Hi, ${userData?.name?.split(' ')[0] || 'Client'}`}</h1>
               <p>{lang === 'es' ? '¿Qué necesitas solucionar hoy?' : 'What do you need to fix today?'}</p>
             </div>
-            {/* Foto de perfil del cliente arriba a la derecha */}
-            {userData?.profilePhoto || userData?.photoURL ? (
-              <img src={userData.profilePhoto || userData.photoURL} alt="Profile" style={{ width: '44px', height: '44px', borderRadius: '50%', objectFit: 'cover', border: '2px solid white', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }} onClick={() => navigate('profile')} />
-            ) : (
-              <div onClick={() => navigate('profile')} style={{ width: '44px', height: '44px', borderRadius: '50%', background: '#1A1A2E', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.15)', cursor: 'pointer' }}>
-                {(userData?.name || 'C').charAt(0).toUpperCase()}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div 
+                onClick={() => navigate('notificaciones')}
+                style={{ position:'relative', width:'40px', height:'40px', borderRadius:'50%', background:'rgba(255,255,255,0.1)', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', border:'1px solid rgba(255,255,255,0.2)' }}
+              >
+                <span style={{ fontSize:'20px' }}>🔔</span>
+                {unreadNotifs > 0 && (
+                  <span style={{ position:'absolute', top:'-2px', right:'-2px', background:'#EF4444', color:'white', fontSize:'11px', fontWeight:'900', borderRadius:'10px', padding:'2px 6px', border:'2px solid #1A1A2E' }}>
+                    {unreadNotifs > 9 ? '9+' : unreadNotifs}
+                  </span>
+                )}
               </div>
-            )}
+              {/* Foto de perfil del cliente arriba a la derecha */}
+              {userData?.profilePhoto || userData?.photoURL ? (
+                <img src={userData.profilePhoto || userData.photoURL} alt="Profile" style={{ width: '44px', height: '44px', borderRadius: '50%', objectFit: 'cover', border: '2px solid white', boxShadow: '0 2px 8px rgba(0,0,0,0.15)', cursor:'pointer' }} onClick={() => navigate('profile')} />
+              ) : (
+                <div onClick={() => navigate('profile')} style={{ width: '44px', height: '44px', borderRadius: '50%', background: '#1A1A2E', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.15)', cursor: 'pointer' }}>
+                  {(userData?.name || 'C').charAt(0).toUpperCase()}
+                </div>
+              )}
+            </div>
           </div>
         ) : (
           <div className="hp-greeting" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -507,7 +531,20 @@ export default function HomePage({ lang, navigate, userRole }) {
               <h1>👋 {lang === 'es' ? 'Panel Profesional' : 'Pro Dashboard'}</h1>
               <p>{lang === 'es' ? `Hola, ${userData?.name?.split(' ')[0] || 'Socio'}` : `Hi, ${userData?.name?.split(' ')[0] || 'Partner'}`}</p>
             </div>
-            <PostularmeBtn isPro={isPro} userData={userData} onClick={() => setShowHamburguesa(true)} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div 
+                onClick={() => navigate('notificaciones')}
+                style={{ position:'relative', width:'38px', height:'38px', borderRadius:'50%', background:'rgba(255,255,255,0.1)', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', border:'1px solid rgba(255,255,255,0.2)' }}
+              >
+                <span style={{ fontSize:'18px' }}>🔔</span>
+                {unreadNotifs > 0 && (
+                  <span style={{ position:'absolute', top:'-2px', right:'-2px', background:'#EF4444', color:'white', fontSize:'11px', fontWeight:'900', borderRadius:'10px', padding:'2px 6px', border:'2px solid #1A1A2E' }}>
+                    {unreadNotifs > 9 ? '9+' : unreadNotifs}
+                  </span>
+                )}
+              </div>
+              <PostularmeBtn isPro={isPro} userData={userData} onClick={() => setShowHamburguesa(true)} />
+            </div>
           </div>
         )}
 

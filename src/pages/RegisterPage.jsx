@@ -121,6 +121,26 @@ export default function RegisterPage({ lang, navigate }) {
       const emailKey = form.email.replace(/[^a-zA-Z0-9]/g, '_')
       await setDoc(doc(db, 'users', emailKey), { uid: userId }, { merge: true })
 
+      // Mensaje Automático de Bienvenida
+      const welcomeText = userType === 'client'
+        ? `¡Hola ${form.name.split(' ')[0]}! Bienvenido a Listo Patrón. Estamos felices de tenerte aquí. Explora nuestro directorio y contrata a los mejores profesionales de confianza para tus proyectos hoy mismo.`
+        : `¡Hola ${form.name.split(' ')[0]}! Bienvenido a Listo Patrón. Estás a un paso de generar ingresos. Entra a "Perfil", llena tus datos de Verificación y postúlate para ser un aliado oficial. ¡Mucho éxito!`;
+
+      try {
+        import('firebase/firestore').then(({ addDoc, collection }) => {
+          addDoc(collection(db, 'notificaciones'), {
+            userId: userId,
+            type: 'system',
+            title: 'Mensaje de Listo Patrón',
+            text: welcomeText,
+            date: new Date().toISOString(),
+            read: false
+          });
+        });
+      } catch (e) {
+        console.log("Error de notificacion", e);
+      }
+
       setNewUserId(userId)
       setLoading(false)
       setStep('face') // Ir al paso de registro facial
