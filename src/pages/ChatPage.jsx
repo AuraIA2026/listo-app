@@ -15,13 +15,31 @@ const quickReplies = [
   'Necesito más información',
 ]
 
+import logoBlanco from '../assets/logo listo blanco.png'
+
 // ── Genera un ID de conversación determinista entre dos usuarios ──────────────
 const getChatId = (uid1, uid2) =>
   uid1 < uid2 ? `${uid1}_${uid2}` : `${uid2}_${uid1}`
 
+const SUPPORT_EMAIL = 'listopatron.app@gmail.com'
+
 // ── Avatar con iniciales ──────────────────────────────────────────────────────
-function Avatar({ name = '?', photoURL = null, color = '#F26000', size = 44, online = false }) {
+function Avatar({ name = '?', photoURL = null, color = '#F26000', size = 44, online = false, isOfficial = false }) {
   const [err, setErr] = useState(false)
+  if (isOfficial) {
+    return (
+      <div style={{ position: 'relative', flexShrink: 0 }}>
+        <div style={{
+          width: size, height: size, borderRadius: '50%', background: 'linear-gradient(145deg, #F26000, #FF8C42)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          border: '2px solid #FFD700', boxShadow: '0 4px 10px rgba(242,96,0,0.4)', overflow: 'hidden'
+        }}>
+          <img src={logoBlanco} alt="Listo Patrón" style={{ height: size * 0.5, filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))' }} />
+        </div>
+        {online && <div style={{ position: 'absolute', bottom: 1, right: 1, width: size * 0.26, height: size * 0.26, borderRadius: '50%', background: '#10B981', border: '2px solid #fff' }} />}
+      </div>
+    )
+  }
   const initials = name.substring(0, 2).toUpperCase()
   return (
     <div style={{ position: 'relative', flexShrink: 0 }}>
@@ -124,6 +142,14 @@ export default function ChatPage({ lang = 'es', navigate, professional, userData
             if (uSnap.exists()) other = { uid: otherId, ...uSnap.data() }
           } catch (e) { }
         }
+        
+        // PROTECCIÓN DE MODO OFICIAL SOPORTE
+        if (other && typeof other.email === 'string' && other.email.toLowerCase().trim() === SUPPORT_EMAIL) {
+           other.isOfficial = true;
+           other.name = 'Listo Patrón Oficial ✅';
+           other.specialty = 'Centro de Ayuda';
+        }
+
         list.push({
           chatId: docSnap.id,
           other,
@@ -190,7 +216,15 @@ export default function ChatPage({ lang = 'es', navigate, professional, userData
         typing: { [me.uid]: false, [otherId]: false },
       })
     }
-    setOtherUser({ uid: otherId, ...otherData })
+    
+    let mappedOther = { uid: otherId, ...otherData }
+    if (mappedOther.email && String(mappedOther.email).toLowerCase().trim() === SUPPORT_EMAIL) {
+       mappedOther.isOfficial = true;
+       mappedOther.name = 'Listo Patrón Oficial ✅';
+       mappedOther.specialty = 'Centro de Ayuda';
+    }
+    
+    setOtherUser(mappedOther)
     setActiveChatId(chatId)
     setLoadingMessages(true)
   }
@@ -337,7 +371,7 @@ export default function ChatPage({ lang = 'es', navigate, professional, userData
             <div
               key={convo.chatId}
               className="chat-list-item"
-              style={{ animation: `fadeSlideUp .35s ease ${i * 0.05}s both` }}
+              style={{ animation: `fadeSlideUp .35s ease ${i * 0.05}s both`, background: convo.other?.isOfficial ? 'rgba(255,215,0,0.05)' : '#fff', border: convo.other?.isOfficial ? '1px solid rgba(242,96,0,0.2)' : 'none' }}
               onClick={() => {
                 setOtherUser(convo.other)
                 setActiveChatId(convo.chatId)
@@ -351,11 +385,12 @@ export default function ChatPage({ lang = 'es', navigate, professional, userData
                   color={convo.other?.color || '#F26000'}
                   size={52}
                   online={convo.other?.online || false}
+                  isOfficial={convo.other?.isOfficial}
                 />
               </div>
               <div className="cli-body">
                 <div className="cli-top">
-                  <span className="cli-name">{convo.other?.name || 'Usuario'}</span>
+                  <span className="cli-name" style={{ color: convo.other?.isOfficial ? '#F26000' : 'var(--text)', fontWeight: convo.other?.isOfficial ? 800 : 600 }}>{convo.other?.name || 'Usuario'}</span>
                   <span className="cli-time">{formatLastTime(convo.updatedAt)}</span>
                 </div>
                 <div className="cli-bottom">
@@ -395,9 +430,12 @@ export default function ChatPage({ lang = 'es', navigate, professional, userData
             color={otherUser?.color || '#F26000'}
             size={40}
             online={otherUser?.online || false}
+            isOfficial={otherUser?.isOfficial}
           />
           <div style={{ marginLeft: 0 }}>
-            <p className="chat-header-name">{otherUser?.name || 'Usuario'}</p>
+            <p className="chat-header-name" style={{ color: otherUser?.isOfficial ? '#F26000' : 'var(--text)' }}>
+              {otherUser?.name || 'Usuario'}
+            </p>
             <p className="chat-header-status">
               {isTyping
                 ? <span style={{ color: 'var(--mamey)', fontWeight: 700 }}>Escribiendo...</span>
@@ -458,6 +496,7 @@ export default function ChatPage({ lang = 'es', navigate, professional, userData
                       <Avatar
                         name={otherUser?.name || '?'} photoURL={otherUser?.photoURL}
                         color={otherUser?.color || '#F26000'} size={28}
+                        isOfficial={otherUser?.isOfficial}
                         style={{ marginRight: 6, marginBottom: 2 }}
                       />
                     )}
@@ -465,7 +504,12 @@ export default function ChatPage({ lang = 'es', navigate, professional, userData
                     <div 
                       className={`msg-bubble ${isMe ? 'bubble-me' : 'bubble-pro'} ${isSelected ? 'bubble-selected' : ''}`}
                       onClick={(e) => { e.stopPropagation(); setSelectedMsgId(isSelected ? null : msg.id) }}
-                      style={{ cursor: 'pointer', transition: 'all 0.2s', transform: isSelected ? 'scale(0.98)' : 'scale(1)' }}
+                      style={{ 
+                        cursor: 'pointer', transition: 'all 0.2s', transform: isSelected ? 'scale(0.98)' : 'scale(1)',
+                        background: (!isMe && otherUser?.isOfficial) ? 'linear-gradient(135deg, #1A1A2E, #2A2A4A)' : undefined,
+                        color: (!isMe && otherUser?.isOfficial) ? '#FFFFFF' : undefined,
+                        border: (!isMe && otherUser?.isOfficial) ? '1px solid rgba(255,215,0,0.5)' : undefined
+                      }}
                     >
                       <p className="msg-text">{msg.text}</p>
                       <div className="msg-meta">
