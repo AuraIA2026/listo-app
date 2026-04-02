@@ -528,6 +528,7 @@ export default function AdminPage({ navigate }) {
   const [giftMessage, setGiftMessage] = useState('¡Felicidades! Pronto serás tu propio Patrón. Te regalamos estos contratos para que sigas creciendo.');
 
   // Formulario de Notificaciones Mensajes
+  const [notifyTarget, setNotifyTarget] = useState('single'); // single, all_clients, all_pros, all_users
   const [notifyUser, setNotifyUser] = useState('');
   const [notifySearch, setNotifySearch] = useState('');
   const [showNotifyAc, setShowNotifyAc] = useState(false);
@@ -700,19 +701,38 @@ export default function AdminPage({ navigate }) {
       }
 
       if (type === 'send_notification') {
-         const u = users.find(x => x.id === notifyUser);
-         if (!u) return;
-         import('firebase/firestore').then(({ addDoc, collection }) => {
-           addDoc(collection(db, 'notificaciones'), {
-              userId: notifyUser,
-              type: 'system',
-              title: 'Mensaje de Listo Patrón',
-              text: notifyMessage,
-              date: new Date().toISOString(),
-              read: false
-           });
+         import('firebase/firestore').then(async ({ addDoc, collection }) => {
+            if (notifyTarget === 'single') {
+                 const u = users.find(x => x.id === notifyUser);
+                 if (!u) return;
+                 await addDoc(collection(db, 'notificaciones'), {
+                    userId: notifyUser,
+                    type: 'system',
+                    title: 'Mensaje de Listo Patrón',
+                    text: notifyMessage,
+                    date: new Date().toISOString(),
+                    read: false
+                 });
+                 showToast(`📨 Notificación enviada a ${u.name || 'Usuario'}`);
+            } else {
+                 let targets = [];
+                 if (notifyTarget === 'all_clients') targets = users.filter(u => u.role !== 'professional');
+                 if (notifyTarget === 'all_pros') targets = users.filter(u => u.role === 'professional');
+                 if (notifyTarget === 'all_users') targets = users;
+
+                 for (const u of targets) {
+                     await addDoc(collection(db, 'notificaciones'), {
+                        userId: u.id,
+                        type: 'system',
+                        title: 'Mensaje de Listo Patrón',
+                        text: notifyMessage,
+                        date: new Date().toISOString(),
+                        read: false
+                     });
+                 }
+                 showToast(`📨 Notificación Masiva enviada a ${targets.length} usuarios.`);
+            }
          });
-         showToast(`📨 Notificación enviada a ${u.name || 'Usuario'}`);
          setNotifyUser('');
       }
       
@@ -1413,71 +1433,108 @@ export default function AdminPage({ navigate }) {
             </div>
             
             <div className="gift-form">
-              <label className="gift-label">1. Buscar Usuario para el Mensaje</label>
-              <div className="ac-container">
-                <div className="ac-input-wrapper">
-                  <input 
-                    type="text" 
-                    className="gift-input" 
-                    placeholder="Escribe el nombre o teléfono..." 
-                    value={notifySearch} 
-                    onChange={e => {
-                      setNotifySearch(e.target.value);
-                      setNotifyUser(''); 
-                      setShowNotifyAc(true);
-                    }}
-                    onFocus={() => setShowNotifyAc(true)}
-                  />
-                  {notifyUser && <div style={{position:'absolute', right:16, top:16, color:'#10B981'}}>✅ Seleccionado</div>}
-                </div>
-                
-                {showNotifyAc && notifySearch && !notifyUser && (
-                  <div className="ac-dropdown">
-                    {users
-                      .filter(u => {
-                        const term = notifySearch.toLowerCase().trim();
-                        const userName = String(u.name || '').toLowerCase();
-                        const userPhone = String(u.phone || '').toLowerCase();
-                        return userName.includes(term) || userPhone.includes(term);
-                      })
-                      .slice(0, 10)
-                      .map(u => (
-                        <div key={u.id} className="ac-item" onClick={() => {
-                          setNotifyUser(u.id);
-                          setNotifySearch(u.name || u.phone);
-                          setShowNotifyAc(false);
-                          setNotifyMessage(`Hola ${u.name || 'usuario'}, Bienvenido a Listo Patrón. Para comenzar a generar dinero de inmediato debes completar tu perfil. ¡Te esperamos!`);
-                        }}>
-                          <div className="ac-avatar">
-                            {u.profilePic || u.photoURL || u.avatarId ? (
-                               <img src={u.profilePic || u.photoURL || `https://i.pravatar.cc/100?u=${u.avatarId||u.id}`} alt="pro" onError={(e) => { e.target.onerror = null; e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name||'P')}&background=random&color=fff&size=100`; }} />
-                            ) : (
-                               (u.name ? String(u.name).charAt(0).toUpperCase() : 'U')
-                            )}
-                          </div>
-                          <div className="ac-text">
-                            <span className="ac-name">{u.name || 'Sin nombre'}</span>
-                            <span className="ac-detail">{u.phone}</span>
-                          </div>
-                        </div>
-                      ))}
-                    {users.filter(u => String(u.name||'').toLowerCase().includes(notifySearch.toLowerCase().trim())).length === 0 && (
-                      <div className="ac-item"><div className="ac-text"><span className="ac-detail">Sin resultados</span></div></div>
-                    )}
-                  </div>
-                )}
+              <label className="gift-label">1. Seleccionar Destinatarios</label>
+              <div style={{display:'flex', gap: 8, marginBottom: 16, flexWrap:'wrap'}}>
+                <button 
+                  onClick={() => setNotifyTarget('single')}
+                  style={{flex:1, minWidth:'120px', padding:'10px', borderRadius:'8px', border: notifyTarget==='single' ? '2px solid var(--blue)' : '1px solid var(--border)', background: notifyTarget==='single' ? 'rgba(59,130,246,0.1)' : 'var(--surface2)', cursor:'pointer', fontWeight: 700, fontSize:'11px', color:'var(--text)', transition:'all 0.2s', fontFamily:'var(--display)'}}
+                >
+                  👤 Solo Un Usuario
+                </button>
+                <button 
+                  onClick={() => setNotifyTarget('all_clients')}
+                  style={{flex:1, minWidth:'120px', padding:'10px', borderRadius:'8px', border: notifyTarget==='all_clients' ? '2px solid var(--blue)' : '1px solid var(--border)', background: notifyTarget==='all_clients' ? 'rgba(59,130,246,0.1)' : 'var(--surface2)', cursor:'pointer', fontWeight: 700, fontSize:'11px', color:'var(--text)', transition:'all 0.2s', fontFamily:'var(--display)'}}
+                >
+                  👥 Todos los Clientes
+                </button>
+                <button 
+                  onClick={() => setNotifyTarget('all_pros')}
+                  style={{flex:1, minWidth:'120px', padding:'10px', borderRadius:'8px', border: notifyTarget==='all_pros' ? '2px solid var(--blue)' : '1px solid var(--border)', background: notifyTarget==='all_pros' ? 'rgba(59,130,246,0.1)' : 'var(--surface2)', cursor:'pointer', fontWeight: 700, fontSize:'11px', color:'var(--text)', transition:'all 0.2s', fontFamily:'var(--display)'}}
+                >
+                  🛠️ Todos los Profesionales
+                </button>
+                <button 
+                  onClick={() => setNotifyTarget('all_users')}
+                  style={{flex:1, minWidth:'120px', padding:'10px', borderRadius:'8px', border: notifyTarget==='all_users' ? '2px solid var(--blue)' : '1px solid var(--border)', background: notifyTarget==='all_users' ? 'rgba(59,130,246,0.1)' : 'var(--surface2)', cursor:'pointer', fontWeight: 700, fontSize:'11px', color:'var(--text)', transition:'all 0.2s', fontFamily:'var(--display)'}}
+                >
+                  🌐 Toda la Aplicación
+                </button>
               </div>
 
-              <label className="gift-label">2. Escribir Mensaje</label>
+              {notifyTarget === 'single' ? (
+                <>
+                  <label className="gift-label">2. Buscar Usuario</label>
+                  <div className="ac-container" style={{marginBottom: 16}}>
+                    <div className="ac-input-wrapper">
+                      <input 
+                        type="text" 
+                        className="gift-input" 
+                        placeholder="Escribe el nombre o teléfono..." 
+                        value={notifySearch} 
+                        onChange={e => {
+                          setNotifySearch(e.target.value);
+                          setNotifyUser(''); 
+                          setShowNotifyAc(true);
+                        }}
+                        onFocus={() => setShowNotifyAc(true)}
+                        style={{marginBottom: 0}}
+                      />
+                      {notifyUser && <div style={{position:'absolute', right:16, top:16, color:'#10B981'}}>✅ Seleccionado</div>}
+                    </div>
+                    
+                    {showNotifyAc && notifySearch && !notifyUser && (
+                      <div className="ac-dropdown">
+                        {users
+                          .filter(u => {
+                            const term = notifySearch.toLowerCase().trim();
+                            const userName = String(u.name || '').toLowerCase();
+                            const userPhone = String(u.phone || '').toLowerCase();
+                            return userName.includes(term) || userPhone.includes(term);
+                          })
+                          .slice(0, 10)
+                          .map(u => (
+                            <div key={u.id} className="ac-item" onClick={() => {
+                              setNotifyUser(u.id);
+                              setNotifySearch(u.name || u.phone);
+                              setShowNotifyAc(false);
+                              setNotifyMessage(`Hola ${u.name || 'usuario'}, Bienvenido a Listo Patrón. Para comenzar a generar dinero de inmediato debes completar tu perfil. ¡Te esperamos!`);
+                            }}>
+                              <div className="ac-avatar">
+                                {u.profilePic || u.photoURL || u.avatarId ? (
+                                   <img src={u.profilePic || u.photoURL || `https://i.pravatar.cc/100?u=${u.avatarId||u.id}`} alt="pro" onError={(e) => { e.target.onerror = null; e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name||'P')}&background=random&color=fff&size=100`; }} />
+                                ) : (
+                                   (u.name ? String(u.name).charAt(0).toUpperCase() : 'U')
+                                )}
+                              </div>
+                              <div className="ac-text">
+                                <span className="ac-name">{u.name || 'Sin nombre'}</span>
+                                <span className="ac-detail">{u.phone}</span>
+                              </div>
+                            </div>
+                          ))}
+                        {users.filter(u => String(u.name||'').toLowerCase().includes(notifySearch.toLowerCase().trim())).length === 0 && (
+                          <div className="ac-item"><div className="ac-text"><span className="ac-detail">Sin resultados</span></div></div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </>
+              ) : (
+                <div style={{padding:'16px', background:'#EFF6FF', borderRadius:'8px', marginBottom:'16px', border:'1px solid #BFDBFE', color:'#1E3A8A', fontSize:'13px', fontWeight:'600'}}>
+                  ⚠️ Atención: El mensaje masivo se enviará a {notifyTarget==='all_users' ? users.length : notifyTarget==='all_clients' ? users.filter(u=>u.role!=='professional').length : users.filter(u=>u.role==='professional').length} usuarios simulaneamente de manera inmediata.
+                </div>
+              )}
+
+              <label className="gift-label">{notifyTarget==='single' ? '3' : '2'}. Escribir Mensaje</label>
               <textarea className="gift-textarea" value={notifyMessage} onChange={e => setNotifyMessage(e.target.value)} />
 
               <button 
                 className="gift-btn" 
                 style={{background: 'linear-gradient(135deg, #3B82F6, #1E40AF)'}}
-                disabled={!notifyUser || !notifyMessage}
+                disabled={(notifyTarget === 'single' && !notifyUser) || !notifyMessage}
                 onClick={() => setConfirm({type:'send_notification'})}
               >
-                📨 Enviar Mensaje
+                {notifyTarget === 'single' ? '📨 Enviar Mensaje' : '🌐 Enviar Difusión Masiva'}
               </button>
             </div>
           </div>
@@ -1601,7 +1658,7 @@ export default function AdminPage({ navigate }) {
                   : confirm.type==='send_gift'
                   ? `Se enviarán ${giftAmount} contratos a este usuario y saltará el confeti en su app.`
                   : confirm.type==='send_notification'
-                  ? `Se enviará este mensaje directamente a la sección de notificaciones de la app del usuario.`
+                  ? (notifyTarget === 'single' ? `Se enviará este mensaje directamente a la sección de notificaciones de la app del usuario.` : `🚨 ATENCIÓN: Estás a punto de enviar una DIFUSIÓN MASIVA. Todos los usuarios en la categoría seleccionada recibirán la notificación In-App al instante.`)
                   : confirm.type==='remind'
                   ? `Se enviará una notificación In-App al celular de ${confirm.obj.name || confirm.obj.proName} recordándole que termine el proceso.`
                   : confirm.type==='reject_payment'
