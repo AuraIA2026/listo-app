@@ -1027,17 +1027,17 @@ export default function AdminPage({ navigate }) {
             
             {/* Live Metrics */}
             <div style={{display:'flex', gap:8, marginBottom: 16}}>
-              <div style={{flex:1, background:'var(--surface)', border:'1px solid var(--border)', borderRadius:12, padding:12, textAlign:'center'}}>
-                <div style={{fontSize:18, fontWeight:800, fontFamily:'var(--mono)'}}>{users.filter(u => u.role === 'professional').length}</div>
-                <div style={{fontSize:10, color:'var(--muted)', fontWeight:700, textTransform:'uppercase'}}>Total</div>
+              <div style={{flex:1, background:'var(--surface)', border:'1px solid rgba(59,130,246,0.3)', borderRadius:12, padding:12, textAlign:'center'}}>
+                <div style={{fontSize:22, fontWeight:800, color:'var(--blue)', fontFamily:'var(--mono)'}}>{users.length}</div>
+                <div style={{fontSize:10, color:'var(--muted)', fontWeight:700, textTransform:'uppercase'}}>Cuentas Totales</div>
               </div>
-              <div style={{flex:1, background:'#DCFCE7', border:'1px solid #BBF7D0', borderRadius:12, padding:12, textAlign:'center'}}>
-                <div style={{fontSize:18, fontWeight:800, color:'#166534', fontFamily:'var(--mono)'}}>{users.filter(u => u.role === 'professional' && u.available).length}</div>
-                <div style={{fontSize:10, color:'#166534', fontWeight:700, textTransform:'uppercase'}}>En Línea</div>
+              <div style={{flex:1, background:'#F1F5F9', border:'1px solid var(--border)', borderRadius:12, padding:12, textAlign:'center'}}>
+                <div style={{fontSize:22, fontWeight:800, color:'var(--text)', fontFamily:'var(--mono)'}}>{users.filter(u => u.role !== 'professional').length}</div>
+                <div style={{fontSize:10, color:'var(--muted)', fontWeight:700, textTransform:'uppercase'}}>Clientes</div>
               </div>
-              <div style={{flex:1, background:'#F1F5F9', border:'1px solid #E2E8F0', borderRadius:12, padding:12, textAlign:'center'}}>
-                <div style={{fontSize:18, fontWeight:800, color:'#475569', fontFamily:'var(--mono)'}}>{users.filter(u => u.role === 'professional' && !u.available).length}</div>
-                <div style={{fontSize:10, color:'#475569', fontWeight:700, textTransform:'uppercase'}}>Inactivos</div>
+              <div style={{flex:1, background:'#FFFBEB', border:'1px solid rgba(245,158,11,0.3)', borderRadius:12, padding:12, textAlign:'center'}}>
+                <div style={{fontSize:22, fontWeight:800, color:'var(--brand)', fontFamily:'var(--mono)'}}>{users.filter(u => u.role === 'professional').length}</div>
+                <div style={{fontSize:10, color:'var(--muted)', fontWeight:700, textTransform:'uppercase'}}>Profesionales</div>
               </div>
             </div>
 
@@ -1046,7 +1046,7 @@ export default function AdminPage({ navigate }) {
                 <input 
                   type="text" 
                   className="gift-input" 
-                  placeholder="Buscar en tiempo real..." 
+                  placeholder="Buscar usuario o profesional por nombre/teléfono..." 
                   value={dirSearch} 
                   onChange={e => setDirSearch(e.target.value)}
                   style={{marginBottom: 0, paddingLeft:40}}
@@ -1057,26 +1057,26 @@ export default function AdminPage({ navigate }) {
 
             {/* Quick Filters */}
             <div style={{display:'flex', gap:6, overflowX:'auto', paddingBottom:8, marginBottom:16}}>
-              {['all', 'online', 'pending', 'suspended'].map(f => (
+              {['all', 'clients', 'pros', 'online', 'suspended'].map(f => (
                 <button key={f} onClick={() => {setPsFilter(f); setPsLimit(20);}} style={{
                   padding:'6px 12px', borderRadius:20, border: psFilter===f?'none':'1px solid var(--border)',
                   background: psFilter===f?'var(--text)':'var(--surface)', color: psFilter===f?'#fff':'var(--muted)',
                   fontSize:11, fontWeight:700, cursor:'pointer', whiteSpace:'nowrap', transition:'all .2s'
                 }}>
-                  {f==='all' ? 'Todos' : f==='online' ? '🟢 En Línea' : f==='pending' ? '⚠️ Pendientes' : '🔴 Suspendidos'}
+                  {f==='all' ? 'Todos' : f==='clients' ? '👤 Clientes' : f==='pros' ? '🛠️ Profesionales' : f==='online' ? '🟢 En Línea' : '🔴 Suspendidos'}
                 </button>
               ))}
             </div>
 
             {(() => {
               const filteredList = users
-                .filter(u => u.role === 'professional')
                 .filter(u => !dirSearch || String(u.name||'').toLowerCase().includes(dirSearch.toLowerCase().trim()) || String(u.phone||'').includes(dirSearch.trim()))
                 .filter(u => {
                    if (psFilter === 'all') return true;
-                   if (psFilter === 'online') return u.available;
-                   if (psFilter === 'pending') return u.verificacion?.estado === 'en_revision';
-                   if (psFilter === 'suspended') return !u.approved || u.planStatus === 'inactive';
+                   if (psFilter === 'clients') return u.role !== 'professional';
+                   if (psFilter === 'pros') return u.role === 'professional';
+                   if (psFilter === 'online') return u.role === 'professional' && u.available;
+                   if (psFilter === 'suspended') return u.role === 'professional' && (!u.approved || u.planStatus === 'inactive');
                    return true;
                 })
                 .sort((a,b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0));
