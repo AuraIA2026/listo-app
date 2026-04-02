@@ -176,6 +176,84 @@ function UpdateBlocker({ lang }) {
       </button>
     </div>
   )
+function SystemAlertModal({ alert, onClose, lang }) {
+  if (!alert) return null;
+  return (
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 100000,
+      background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px',
+      animation: 'fadeIn 0.3s'
+    }}>
+      <style>{`
+        @keyframes sysAlertPop {
+          0% { transform: scale(0.8) translateY(20px); opacity: 0; }
+          100% { transform: scale(1) translateY(0); opacity: 1; }
+        }
+        @keyframes sysRing {
+          0%, 100% { transform: rotate(0deg); }
+          25% { transform: rotate(15deg); }
+          50% { transform: rotate(-15deg); }
+          75% { transform: rotate(10deg); }
+        }
+        @keyframes shineFlow {
+          0% { background-position: 200% center; }
+          100% { background-position: -200% center; }
+        }
+      `}</style>
+      <div style={{
+        width: '100%', maxWidth: '400px',
+        background: 'linear-gradient(145deg, #1A1A2E, #2A2A4A)',
+        border: '1px solid rgba(242,96,0,0.4)',
+        boxShadow: '0 24px 50px rgba(0,0,0,0.5), 0 0 20px rgba(242,96,0,0.2)',
+        borderRadius: '24px', overflow: 'hidden',
+        animation: 'sysAlertPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
+      }}>
+        <div style={{
+          background: 'linear-gradient(90deg, #F26000, #FF8C42, #F26000)',
+          backgroundSize: '200% auto',
+          color: 'white', padding: '32px 20px 24px',
+          textAlign: 'center', position: 'relative',
+          animation: 'shineFlow 3s linear infinite'
+        }}>
+          <div style={{
+            width:'72px', height:'72px', background:'rgba(255,255,255,0.25)',
+            borderRadius:'50%', display:'flex', alignItems:'center', justifyContent:'center',
+            fontSize:'36px', margin:'0 auto 16px',
+            boxShadow:'0 8px 16px rgba(0,0,0,0.2)',
+            animation: 'sysRing 2s ease-in-out infinite'
+          }}>🔔</div>
+          <h2 style={{ margin:0, fontSize:'22px', fontWeight:'900', letterSpacing:'0.5px' }}>
+            {alert.title || (lang==='es'?'Mensaje del Sistema':'System Message')}
+          </h2>
+        </div>
+        
+        <div style={{ padding: '24px 20px', textAlign: 'center' }}>
+          <p style={{
+            margin:'0 0 24px', fontSize:'15px', color:'#E2E8F0',
+            lineHeight:'1.6', fontWeight:'500'
+          }}>
+            {alert.text}
+          </p>
+          
+          <button onClick={onClose} style={{
+            width:'100%', padding:'16px', borderRadius:'14px',
+            background:'#F26000', color:'white', fontSize:'16px', fontWeight:'800',
+            border:'none', cursor:'pointer',
+            boxShadow:'0 8px 16px rgba(242,96,0,0.3)',
+            transition:'transform 0.2s, background 0.2s'
+          }}
+          onMouseEnter={e => e.currentTarget.style.background = '#FF7A1A'}
+          onMouseLeave={e => e.currentTarget.style.background = '#F26000'}
+          onMouseDown={e => e.currentTarget.style.transform = 'scale(0.97)'}
+          onMouseUp={e => e.currentTarget.style.transform = 'scale(1)'}
+          >
+            {lang === 'es' ? '¡Entendido!' : 'Got it!'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
 }
 
 export default function App() {
@@ -195,8 +273,11 @@ export default function App() {
   const [notifiedOrderIds,  setNotifiedOrderIds]  = useState(new Set())
   const [jobDoneAlert,      setJobDoneAlert]      = useState(null)
   const [chatBanner,        setChatBanner]        = useState(null)
+  const [systemAlert,       setSystemAlert]       = useState(null)
   const [isOffline,         setIsOffline]         = useState(!navigator.onLine)
   const [updateRequired,    setUpdateRequired]    = useState(false)
+
+  const systemNotifIdsRef = useRef(new Set())
 
   const CURRENT_APP_VERSION = '1.0.0'
 
@@ -378,6 +459,35 @@ export default function App() {
     })
     return () => unsub()
   }, [authReady, userData, userRole])
+
+  // ─── LISTENER SYSTEM NOTIFS ─────────────────────────────────────────────
+  useEffect(() => {
+    if (!authReady || !userData) return
+    const q = query(collection(db, 'notificaciones'), where('userId', '==', userData.uid), where('type', '==', 'system'), where('read', '==', false))
+    
+    const unsub = onSnapshot(q, (snapshot) => {
+      const unreads = []
+      snapshot.forEach(docSnap => {
+         unreads.push({ id: docSnap.id, ...docSnap.data() })
+      })
+      
+      const newUnreads = unreads.filter(u => !systemNotifIdsRef.current.has(u.id));
+      
+      if (newUnreads.length > 0) {
+        newUnreads.sort((a,b) => new Date(a.date) - new Date(b.date));
+        const toShow = newUnreads[0];
+        systemNotifIdsRef.current.add(toShow.id);
+        
+        try {
+          const audio = new Audio('/audio/notification.mp3');
+          audio.volume = 0.9; audio.play().catch(() => {});
+        } catch(e){}
+
+        setSystemAlert({ id: toShow.id, title: toShow.title, text: toShow.text });
+      }
+    })
+    return () => unsub()
+  }, [authReady, userData])
 
   // ─── LISTENER ÓRDENES ────────────────────────────────────────────────────
   useEffect(() => {
@@ -599,6 +709,18 @@ export default function App() {
               setDetailsModalOrder(null)
             })
           }}
+        />
+      )}
+
+      {systemAlert && (
+        <SystemAlertModal 
+          alert={systemAlert} 
+          lang={lang} 
+          onClose={() => {
+            const currentId = systemAlert.id;
+            setSystemAlert(null);
+            updateDoc(doc(db, 'notificaciones', currentId), { read: true }).catch(() => {});
+          }} 
         />
       )}
     </div>
