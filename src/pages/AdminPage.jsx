@@ -525,7 +525,7 @@ export default function AdminPage({ navigate }) {
   const [giftSearch, setGiftSearch] = useState(''); // Texto escrito para buscar
   const [showAc, setShowAc] = useState(false); // Mostrar dropdown de autocomplete
   const [giftAmount, setGiftAmount] = useState('5');
-  const [giftMessage, setGiftMessage] = useState('¡Felicidades! Pronto serás tu propio Patrón. Te regalamos estos contratos para que sigas creciendo.');
+  const [giftMessage, setGiftMessage] = useState('¡Bienvenido a la familia de Listo Patrón! 🚀 Recuerda que debes completar tu Perfil de Profesional al 100% y enviar tus documentos para verificar tu cuenta. Apenas lo hagas, recibirás tus contratos totalmente gratis. ¡Es hora de empezar a ganar dinero!');
 
   useEffect(() => {
     // 1. Escuchar Pagos
