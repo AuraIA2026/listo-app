@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { getAuth, createUserWithEmailAndPassword, updateProfile } from 'firebase/auth'
-import { doc, setDoc, serverTimestamp } from 'firebase/firestore'
+import { doc, setDoc, serverTimestamp, addDoc, collection } from 'firebase/firestore'
 import { db } from '../firebase'
 import { useFaceAuth } from '../useFaceAuth'
 import './AuthPage.css'
@@ -127,18 +127,16 @@ export default function RegisterPage({ lang, navigate }) {
         : `¡Hola ${form.name.split(' ')[0]}! Bienvenido a Listo Patrón. Estás a un paso de generar ingresos. Entra a "Perfil", llena tus datos de Verificación y postúlate para ser un aliado oficial. ¡Mucho éxito!`;
 
       try {
-        import('firebase/firestore').then(({ addDoc, collection }) => {
-          addDoc(collection(db, 'notificaciones'), {
-            userId: userId,
-            type: 'system',
-            title: 'Mensaje de Listo Patrón',
-            text: welcomeText,
-            date: new Date().toISOString(),
-            read: false
-          });
+        await addDoc(collection(db, 'notificaciones'), {
+          userId: userId,
+          type: 'system',
+          title: 'Mensaje de Listo Patrón',
+          text: welcomeText,
+          date: new Date().toISOString(),
+          read: false
         });
       } catch (e) {
-        console.log("Error de notificacion", e);
+        console.error("Error creating welcome notification", e);
       }
 
       setNewUserId(userId)

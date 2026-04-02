@@ -1,5 +1,5 @@
 import React, { useState, useEffect, Component } from "react";
-import { collection, query, where, onSnapshot, doc, updateDoc, orderBy } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, doc, updateDoc, orderBy, addDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 
 class ErrorBoundary extends Component {
@@ -701,23 +701,23 @@ export default function AdminPage({ navigate }) {
       }
 
       if (type === 'send_notification') {
-         import('firebase/firestore').then(async ({ addDoc, collection }) => {
             if (notifyTarget === 'single') {
                  const u = users.find(x => x.id === notifyUser);
-                 if (!u) return;
-                 await addDoc(collection(db, 'notificaciones'), {
-                    userId: notifyUser,
-                    type: 'system',
-                    title: 'Mensaje de Listo Patrón',
-                    text: notifyMessage,
-                    date: new Date().toISOString(),
-                    read: false
-                 });
-                 showToast(`📨 Notificación enviada a ${u.name || 'Usuario'}`);
+                 if (u) {
+                     await addDoc(collection(db, 'notificaciones'), {
+                        userId: notifyUser,
+                        type: 'system',
+                        title: 'Mensaje de Listo Patrón',
+                        text: notifyMessage,
+                        date: new Date().toISOString(),
+                        read: false
+                     });
+                     showToast(`📨 Notificación enviada a ${u.name || 'Usuario'}`);
+                 }
             } else {
                  let targets = [];
-                 if (notifyTarget === 'all_clients') targets = users.filter(u => u.role !== 'professional');
-                 if (notifyTarget === 'all_pros') targets = users.filter(u => u.role === 'professional');
+                 if (notifyTarget === 'all_clients') targets = users.filter(u => u.type === 'client' || (!u.type && u.role !== 'professional'));
+                 if (notifyTarget === 'all_pros') targets = users.filter(u => u.type === 'pro' || u.role === 'professional');
                  if (notifyTarget === 'all_users') targets = users;
 
                  for (const u of targets) {
@@ -732,13 +732,11 @@ export default function AdminPage({ navigate }) {
                  }
                  showToast(`📨 Notificación Masiva enviada a ${targets.length} usuarios.`);
             }
-         });
          setNotifyUser('');
       }
       
       if (type === 'remind') {
-         import('firebase/firestore').then(({ addDoc, collection }) => {
-           addDoc(collection(db, 'notificaciones'), {
+           await addDoc(collection(db, 'notificaciones'), {
               userId: obj.proId || obj.userId || obj.id,
               type: 'system',
               title: 'Recordatorio Administrativo',
@@ -746,7 +744,6 @@ export default function AdminPage({ navigate }) {
               date: new Date().toISOString(),
               read: false
            });
-         });
          showToast(`📱 Recordatorio In-App enviado a ${obj.name || obj.proName || 'Usuario'}`);
       }
       
@@ -758,8 +755,7 @@ export default function AdminPage({ navigate }) {
 
       if (type === 'reject_edit') {
          await updateDoc(doc(db, 'profile_edit_requests', obj.id), { status: 'rejected', processedAt: new Date().toISOString() });
-         import('firebase/firestore').then(({ addDoc, collection }) => {
-            addDoc(collection(db, 'notificaciones'), {
+            await addDoc(collection(db, 'notificaciones'), {
                userId: obj.userId,
                type: 'system',
                title: 'Cambio de Perfil Rechazado',
@@ -767,7 +763,6 @@ export default function AdminPage({ navigate }) {
                date: new Date().toISOString(),
                read: false
             });
-         });
          showToast(`🔴 Solicitud de cambio rechazada`);
       }
     } catch(err) {
