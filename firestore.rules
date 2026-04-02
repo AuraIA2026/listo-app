@@ -61,7 +61,8 @@ service cloud.firestore {
 
     // 5. NOTIFICACIONES (notificaciones)
     match /notificaciones/{notifId} {
-      allow read, write: if isAuth() && request.auth.uid == resource.data.userId;
+      allow create: if isAuth();
+      allow read, update, delete: if isAuth() && request.auth.uid == resource.data.userId;
     }
 
     // 6. OTRAS COLECCIONES PUBLICAS TEMPORALES (comisiones, etc)
