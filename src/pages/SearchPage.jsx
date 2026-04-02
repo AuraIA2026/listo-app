@@ -265,7 +265,13 @@ function ProDelMes({ lang, navigate, userRole }) {
           let mejor = null
           snapPros.forEach(docSnap => {
             const d = docSnap.data()
-            if (!mejor || (d.rating || 0) > (mejor.rating || 0)) mejor = { id: docSnap.id, ...d }
+            if (!d.approved && d.verificacion?.estado === 'en_revision') return // Excluir perfiles nuevos no aprobados
+
+            // Priorizar profesionales que ya tienen experiencia real en la app
+            const dScore = (d.rating || 5) * (d.reviews || 0.1)
+            const mScore = mejor ? (mejor.rating || 5) * (mejor.reviews || 0.1) : -1
+
+            if (dScore > mScore) mejor = { id: docSnap.id, ...d }
           })
           if (mejor) {
             setProDelMes({
