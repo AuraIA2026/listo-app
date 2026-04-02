@@ -1251,6 +1251,19 @@ export default function AdminPage({ navigate }) {
                 {!viewProStats.verificacion && (
                   <div style={{textAlign:'center', fontSize:12, color:'var(--muted)', marginTop:8}}>El usuario no ha subido documentos de verificación.</div>
                 )}
+                
+                {/* ── BOTÓN DEL CHAT OFICIAL ── */}
+                <div style={{marginTop: 16}}>
+                  <button className="cc-btn" style={{
+                    width:'100%', background:'linear-gradient(135deg, #1A1A2E, #2A2A4A)', color:'#FFD700', 
+                    border:'1px solid rgba(255,215,0,0.5)', padding:14, fontSize:13, fontWeight: 800, 
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'
+                  }} onClick={() => {
+                    if (navigate) navigate('chat', viewProStats);
+                  }}>
+                    💬 Entrar al Chat Seguro
+                  </button>
+                </div>
               </div>
             </div>
           </div>
