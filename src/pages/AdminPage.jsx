@@ -525,7 +525,7 @@ export default function AdminPage({ navigate }) {
   const [giftSearch, setGiftSearch] = useState(''); // Texto escrito para buscar
   const [showAc, setShowAc] = useState(false); // Mostrar dropdown de autocomplete
   const [giftAmount, setGiftAmount] = useState('5');
-  const [giftMessage, setGiftMessage] = useState('¡Bienvenido a la familia de Listo Patrón! 🚀 Recuerda que debes completar tu Perfil de Profesional al 100% y enviar tus documentos para verificar tu cuenta. Apenas lo hagas, recibirás tus contratos totalmente gratis. ¡Es hora de empezar a ganar dinero!');
+  const [giftMessage, setGiftMessage] = useState('Bienvenido a Listo Patrón. Recuerda que debes terminar tu perfil de profesional para recibir tus contratos gratis.');
 
   useEffect(() => {
     // 1. Escuchar Pagos
@@ -1373,7 +1373,19 @@ export default function AdminPage({ navigate }) {
               <label className="gift-label">2. Contratos a regalar</label>
               <input type="number" className="gift-input" value={giftAmount} onChange={e => setGiftAmount(e.target.value)} min="1" />
 
-              <label className="gift-label">3. Mensaje de Felicitación</label>
+              <label className="gift-label">3. Mensaje a enviar</label>
+              <div style={{display:'flex', gap:8, marginBottom:12}}>
+                <button 
+                  onClick={() => setGiftMessage('Bienvenido a Listo Patrón. Recuerda que debes terminar tu perfil de profesional para recibir tus contratos gratis.')}
+                  style={{flex:1, padding:'8px', fontSize:'11px', background:'var(--surface2)', border:'1px solid var(--border)', borderRadius:'8px', cursor:'pointer', fontFamily:'var(--display)', fontWeight:700, color:'var(--text)'}}>
+                  📝 Plantilla: Completar Perfil
+                </button>
+                <button 
+                  onClick={() => setGiftMessage('¡Felicidades! Pronto serás tu propio Patrón. Te regalamos estos contratos para que sigas creciendo.')}
+                   style={{flex:1, padding:'8px', fontSize:'11px', background:'var(--surface2)', border:'1px solid var(--border)', borderRadius:'8px', cursor:'pointer', fontFamily:'var(--display)', fontWeight:700, color:'var(--text)'}}>
+                  🎁 Plantilla: Regalos
+                </button>
+              </div>
               <textarea className="gift-textarea" value={giftMessage} onChange={e => setGiftMessage(e.target.value)} />
 
               <button 
