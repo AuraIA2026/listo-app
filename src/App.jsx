@@ -226,11 +226,11 @@ function SystemAlertModal({ alert, onClose, lang }) {
           padding: '30px 20px 10px',
           textAlign: 'center', position: 'relative', zIndex: 2
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '20px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', marginBottom: '20px' }}>
             <h2 style={{ margin:0, fontSize:'22px', fontWeight:'900', color: '#FFF', textShadow: '0 2px 4px rgba(0,0,0,0.2)' }}>
-              Bienvenido a
+              Bienvenido a Listo Patrón
             </h2>
-            <img src={logoBlanco} alt="Listo" style={{ height: '30px', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))' }} />
+            <img src={logoBlanco} alt="Listo" style={{ height: '32px', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))' }} />
           </div>
 
           <div style={{
