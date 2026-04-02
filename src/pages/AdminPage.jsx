@@ -525,7 +525,13 @@ export default function AdminPage({ navigate }) {
   const [giftSearch, setGiftSearch] = useState(''); // Texto escrito para buscar
   const [showAc, setShowAc] = useState(false); // Mostrar dropdown de autocomplete
   const [giftAmount, setGiftAmount] = useState('5');
-  const [giftMessage, setGiftMessage] = useState('Bienvenido a Listo Patrón. Recuerda que debes terminar tu perfil de profesional para recibir tus contratos gratis.');
+  const [giftMessage, setGiftMessage] = useState('¡Felicidades! Pronto serás tu propio Patrón. Te regalamos estos contratos para que sigas creciendo.');
+
+  // Formulario de Notificaciones Mensajes
+  const [notifyUser, setNotifyUser] = useState('');
+  const [notifySearch, setNotifySearch] = useState('');
+  const [showNotifyAc, setShowNotifyAc] = useState(false);
+  const [notifyMessage, setNotifyMessage] = useState('Hola, Bienvenido a Listo Patrón. Para comenzar a generar dinero de inmediato debes completar tu perfil. ¡Te esperamos!');
 
   useEffect(() => {
     // 1. Escuchar Pagos
@@ -691,6 +697,23 @@ export default function AdminPage({ navigate }) {
          showToast(`🎁 ¡Regalo enviado a ${u.name}!`);
          setGiftUser('');
          setGiftAmount('5');
+      }
+
+      if (type === 'send_notification') {
+         const u = users.find(x => x.id === notifyUser);
+         if (!u) return;
+         import('firebase/firestore').then(({ addDoc, collection }) => {
+           addDoc(collection(db, 'notificaciones'), {
+              userId: notifyUser,
+              type: 'system',
+              title: 'Mensaje de Listo Patrón',
+              text: notifyMessage,
+              date: new Date().toISOString(),
+              read: false
+           });
+         });
+         showToast(`📨 Notificación enviada a ${u.name || 'Usuario'}`);
+         setNotifyUser('');
       }
       
       if (type === 'remind') {
@@ -1373,19 +1396,7 @@ export default function AdminPage({ navigate }) {
               <label className="gift-label">2. Contratos a regalar</label>
               <input type="number" className="gift-input" value={giftAmount} onChange={e => setGiftAmount(e.target.value)} min="1" />
 
-              <label className="gift-label">3. Mensaje a enviar</label>
-              <div style={{display:'flex', gap:8, marginBottom:12}}>
-                <button 
-                  onClick={() => setGiftMessage('Bienvenido a Listo Patrón. Recuerda que debes terminar tu perfil de profesional para recibir tus contratos gratis.')}
-                  style={{flex:1, padding:'8px', fontSize:'11px', background:'var(--surface2)', border:'1px solid var(--border)', borderRadius:'8px', cursor:'pointer', fontFamily:'var(--display)', fontWeight:700, color:'var(--text)'}}>
-                  📝 Plantilla: Completar Perfil
-                </button>
-                <button 
-                  onClick={() => setGiftMessage('¡Felicidades! Pronto serás tu propio Patrón. Te regalamos estos contratos para que sigas creciendo.')}
-                   style={{flex:1, padding:'8px', fontSize:'11px', background:'var(--surface2)', border:'1px solid var(--border)', borderRadius:'8px', cursor:'pointer', fontFamily:'var(--display)', fontWeight:700, color:'var(--text)'}}>
-                  🎁 Plantilla: Regalos
-                </button>
-              </div>
+              <label className="gift-label">3. Mensaje de Felicitación</label>
               <textarea className="gift-textarea" value={giftMessage} onChange={e => setGiftMessage(e.target.value)} />
 
               <button 
@@ -1393,7 +1404,80 @@ export default function AdminPage({ navigate }) {
                 disabled={!giftUser || !giftAmount}
                 onClick={() => setConfirm({type:'send_gift'})}
               >
-                🎁 Enviar y Notificar
+                🎁 Enviar Regalo
+              </button>
+            </div>
+
+            <div className="section-header" style={{marginTop: 32}}>
+              <span className="section-title">📨 Enviar Mensaje a Usuarios</span>
+            </div>
+            
+            <div className="gift-form">
+              <label className="gift-label">1. Buscar Usuario para el Mensaje</label>
+              <div className="ac-container">
+                <div className="ac-input-wrapper">
+                  <input 
+                    type="text" 
+                    className="gift-input" 
+                    placeholder="Escribe el nombre o teléfono..." 
+                    value={notifySearch} 
+                    onChange={e => {
+                      setNotifySearch(e.target.value);
+                      setNotifyUser(''); 
+                      setShowNotifyAc(true);
+                    }}
+                    onFocus={() => setShowNotifyAc(true)}
+                  />
+                  {notifyUser && <div style={{position:'absolute', right:16, top:16, color:'#10B981'}}>✅ Seleccionado</div>}
+                </div>
+                
+                {showNotifyAc && notifySearch && !notifyUser && (
+                  <div className="ac-dropdown">
+                    {users
+                      .filter(u => {
+                        const term = notifySearch.toLowerCase().trim();
+                        const userName = String(u.name || '').toLowerCase();
+                        const userPhone = String(u.phone || '').toLowerCase();
+                        return userName.includes(term) || userPhone.includes(term);
+                      })
+                      .slice(0, 10)
+                      .map(u => (
+                        <div key={u.id} className="ac-item" onClick={() => {
+                          setNotifyUser(u.id);
+                          setNotifySearch(u.name || u.phone);
+                          setShowNotifyAc(false);
+                          setNotifyMessage(`Hola ${u.name || 'usuario'}, Bienvenido a Listo Patrón. Para comenzar a generar dinero de inmediato debes completar tu perfil. ¡Te esperamos!`);
+                        }}>
+                          <div className="ac-avatar">
+                            {u.profilePic || u.photoURL || u.avatarId ? (
+                               <img src={u.profilePic || u.photoURL || `https://i.pravatar.cc/100?u=${u.avatarId||u.id}`} alt="pro" onError={(e) => { e.target.onerror = null; e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name||'P')}&background=random&color=fff&size=100`; }} />
+                            ) : (
+                               (u.name ? String(u.name).charAt(0).toUpperCase() : 'U')
+                            )}
+                          </div>
+                          <div className="ac-text">
+                            <span className="ac-name">{u.name || 'Sin nombre'}</span>
+                            <span className="ac-detail">{u.phone}</span>
+                          </div>
+                        </div>
+                      ))}
+                    {users.filter(u => String(u.name||'').toLowerCase().includes(notifySearch.toLowerCase().trim())).length === 0 && (
+                      <div className="ac-item"><div className="ac-text"><span className="ac-detail">Sin resultados</span></div></div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <label className="gift-label">2. Escribir Mensaje</label>
+              <textarea className="gift-textarea" value={notifyMessage} onChange={e => setNotifyMessage(e.target.value)} />
+
+              <button 
+                className="gift-btn" 
+                style={{background: 'linear-gradient(135deg, #3B82F6, #1E40AF)'}}
+                disabled={!notifyUser || !notifyMessage}
+                onClick={() => setConfirm({type:'send_notification'})}
+              >
+                📨 Enviar Mensaje
               </button>
             </div>
           </div>
@@ -1495,6 +1579,7 @@ export default function AdminPage({ navigate }) {
                  confirm.type==='add_contract' ? '¿Sumar contrato?' :
                  confirm.type==='sub_contract' ? '¿Restar contrato?' :
                  confirm.type==='send_gift'    ? '¿Enviar regalo sorpresa?' :
+                 confirm.type==='send_notification' ? '¿Enviar Mensaje?' :
                  confirm.type==='remind'       ? '¿Enviar Recordatorio?' :
                  confirm.type==='reject_payment' ? '¿Rechazar Pago?' :
                  confirm.type==='approve_verif' ? '¿Aprobar Profesional?' :
@@ -1515,6 +1600,8 @@ export default function AdminPage({ navigate }) {
                   ? `Se quitará 1 contrato de la cuenta de ${confirm.obj.name}.`
                   : confirm.type==='send_gift'
                   ? `Se enviarán ${giftAmount} contratos a este usuario y saltará el confeti en su app.`
+                  : confirm.type==='send_notification'
+                  ? `Se enviará este mensaje directamente a la sección de notificaciones de la app del usuario.`
                   : confirm.type==='remind'
                   ? `Se enviará una notificación In-App al celular de ${confirm.obj.name || confirm.obj.proName} recordándole que termine el proceso.`
                   : confirm.type==='reject_payment'
@@ -1554,6 +1641,7 @@ export default function AdminPage({ navigate }) {
                  confirm.type==='add_contract' ? '➕ Sí, sumar' :
                  confirm.type==='sub_contract' ? '➖ Sí, restar' :
                  confirm.type==='send_gift' ? '🎁 Enviar ahora' :
+                 confirm.type==='send_notification' ? '📨 Enviar Mensaje' :
                  confirm.type==='remind' ? '📱 Enviar Recordatorio' :
                  confirm.type==='reject_payment' ? '🔴 Rechazar Pago' :
                  confirm.type==='approve_verif' ? '✅ Aprobar Profesional' :
