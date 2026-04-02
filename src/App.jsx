@@ -176,6 +176,8 @@ function UpdateBlocker({ lang }) {
       </button>
     </div>
   )
+}
+
 function SystemAlertModal({ alert, onClose, lang }) {
   if (!alert) return null;
   return (
