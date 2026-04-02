@@ -29,6 +29,7 @@ import LocalesPage            from './locales/LocalesPage'
 import LocalDetalle           from './locales/LocalDetalle'
 import CrearLocal             from './locales/CrearLocal'   // ✅ AGREGADO
 import NotificacionPage       from './pages/Notificacionpage'
+import logoBlanco             from './assets/logo listo blanco.png'
 import './App.css'
 
 const TOUR_KEY = 'listo_tour_done'
@@ -183,7 +184,7 @@ function SystemAlertModal({ alert, onClose, lang }) {
   return (
     <div style={{
       position: 'fixed', inset: 0, zIndex: 100000,
-      background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)',
+      background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(10px)',
       display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px',
       animation: 'fadeIn 0.3s'
     }}>
@@ -192,65 +193,75 @@ function SystemAlertModal({ alert, onClose, lang }) {
           0% { transform: scale(0.8) translateY(20px); opacity: 0; }
           100% { transform: scale(1) translateY(0); opacity: 1; }
         }
-        @keyframes sysRing {
-          0%, 100% { transform: rotate(0deg); }
-          25% { transform: rotate(15deg); }
-          50% { transform: rotate(-15deg); }
-          75% { transform: rotate(10deg); }
-        }
-        @keyframes shineFlow {
-          0% { background-position: 200% center; }
-          100% { background-position: -200% center; }
+        @keyframes floatStar {
+          0%, 100% { transform: translateY(0px) rotate(0deg); }
+          50% { transform: translateY(-20px) rotate(180deg); }
         }
       `}</style>
+      
       <div style={{
         width: '100%', maxWidth: '400px',
-        background: 'linear-gradient(145deg, #1A1A2E, #2A2A4A)',
-        border: '1px solid rgba(242,96,0,0.4)',
-        boxShadow: '0 24px 50px rgba(0,0,0,0.5), 0 0 20px rgba(242,96,0,0.2)',
+        background: 'linear-gradient(145deg, #F26000, #FF8C42)',
+        border: '1px solid rgba(255, 215, 0, 0.4)',
+        boxShadow: '0 24px 50px rgba(0,0,0,0.5), 0 0 30px rgba(242,96,0,0.4)',
         borderRadius: '24px', overflow: 'hidden',
+        position: 'relative',
         animation: 'sysAlertPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
       }}>
+
         <div style={{
-          background: 'linear-gradient(90deg, #F26000, #FF8C42, #F26000)',
-          backgroundSize: '200% auto',
-          color: 'white', padding: '32px 20px 24px',
-          textAlign: 'center', position: 'relative',
-          animation: 'shineFlow 3s linear infinite'
+          position: 'absolute', top: '-10%', right: '-10%',
+          fontSize: '150px', opacity: 0.15, color: '#FFD700',
+          animation: 'floatStar 8s ease-in-out infinite', pointerEvents: 'none',
+          textShadow: '0 0 20px rgba(255,215,0,0.8)'
+        }}>⭐</div>
+        
+        <div style={{
+          position: 'absolute', bottom: '-10%', left: '-5%',
+          fontSize: '80px', opacity: 0.15, color: '#FFD700',
+          animation: 'floatStar 6s ease-in-out infinite reverse', pointerEvents: 'none'
+        }}>⭐</div>
+
+        <div style={{
+          padding: '30px 20px 10px',
+          textAlign: 'center', position: 'relative', zIndex: 2
         }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '20px' }}>
+            <h2 style={{ margin:0, fontSize:'22px', fontWeight:'900', color: '#FFF', textShadow: '0 2px 4px rgba(0,0,0,0.2)' }}>
+              Bienvenido a
+            </h2>
+            <img src={logoBlanco} alt="Listo" style={{ height: '30px', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))' }} />
+          </div>
+
           <div style={{
-            width:'72px', height:'72px', background:'rgba(255,255,255,0.25)',
+            width:'72px', height:'72px', background:'rgba(255,255,255,0.2)',
             borderRadius:'50%', display:'flex', alignItems:'center', justifyContent:'center',
             fontSize:'36px', margin:'0 auto 16px',
-            boxShadow:'0 8px 16px rgba(0,0,0,0.2)',
-            animation: 'sysRing 2s ease-in-out infinite'
+            boxShadow:'0 8px 16px rgba(0,0,0,0.2)'
           }}>🔔</div>
-          <h2 style={{ margin:0, fontSize:'22px', fontWeight:'900', letterSpacing:'0.5px' }}>
-            {alert.title || (lang==='es'?'Mensaje del Sistema':'System Message')}
-          </h2>
         </div>
         
-        <div style={{ padding: '24px 20px', textAlign: 'center' }}>
+        <div style={{ padding: '10px 24px 30px', textAlign: 'center', position: 'relative', zIndex: 2 }}>
           <p style={{
-            margin:'0 0 24px', fontSize:'15px', color:'#E2E8F0',
-            lineHeight:'1.6', fontWeight:'500'
+            margin:'0 0 24px', fontSize:'17px', color:'#FFFFFF',
+            lineHeight:'1.6', fontWeight:'600', textShadow: '0 1px 2px rgba(0,0,0,0.2)'
           }}>
             {alert.text}
           </p>
           
           <button onClick={onClose} style={{
             width:'100%', padding:'16px', borderRadius:'14px',
-            background:'#F26000', color:'white', fontSize:'16px', fontWeight:'800',
+            background: '#FFFFFF', color:'#F26000', fontSize:'18px', fontWeight:'900',
             border:'none', cursor:'pointer',
-            boxShadow:'0 8px 16px rgba(242,96,0,0.3)',
+            boxShadow:'0 8px 16px rgba(0,0,0,0.2)',
             transition:'transform 0.2s, background 0.2s'
           }}
-          onMouseEnter={e => e.currentTarget.style.background = '#FF7A1A'}
-          onMouseLeave={e => e.currentTarget.style.background = '#F26000'}
+          onMouseEnter={e => e.currentTarget.style.background = '#FFF5EE'}
+          onMouseLeave={e => e.currentTarget.style.background = '#FFFFFF'}
           onMouseDown={e => e.currentTarget.style.transform = 'scale(0.97)'}
           onMouseUp={e => e.currentTarget.style.transform = 'scale(1)'}
           >
-            {lang === 'es' ? '¡Entendido!' : 'Got it!'}
+            {lang === 'es' ? '¡Entendido, gracias!' : 'Got it!'}
           </button>
         </div>
       </div>
