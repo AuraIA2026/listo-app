@@ -632,10 +632,14 @@ export default function AdminPage({ navigate }) {
            payload.pendingJobs = 0;
         }
         // También copias su nombre y teléfono principal al nivel raíz si no existen
-        if (obj.verificacion?.nombre) payload.name = obj.verificacion.nombre;
-        if (obj.verificacion?.telefono) payload.phone = obj.verificacion.telefono;
+        if (obj.verificacion?.nombre && !obj.name) payload.name = obj.verificacion.nombre;
+        if (obj.verificacion?.telefono && !obj.phone) payload.phone = obj.verificacion.telefono;
         if (obj.verificacion?.cedula) payload.cedula = obj.verificacion.cedula;
-        if (obj.verificacion?.docs?.selfie) payload.photoURL = obj.verificacion.docs.selfie;
+        
+        // CORRECCIÓN: NO sobrescribir la foto de perfil bonita con la selfie de la cédula, a menos que el usuario no tenga ninguna foto.
+        if (obj.verificacion?.docs?.selfie && !obj.photoURL) {
+            payload.photoURL = obj.verificacion.docs.selfie;
+        }
 
         await updateDoc(doc(db, 'users', obj.id), payload);
         showToast(`🎉 ¡${obj.verificacion?.nombre || 'El usuario'} ahora es Profesional!`);
