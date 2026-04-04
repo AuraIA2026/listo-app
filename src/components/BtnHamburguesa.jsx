@@ -634,7 +634,7 @@ export default function BtnHamburguesa({ onClose, navigate, initialOpenSection =
     try {
        let picUrl = ''
        if (payData.method === 'transfer' && payData.receiptFile) {
-          const imgRef = ref(storage, `receipts/${user.uid}_${Date.now()}`)
+          const imgRef = ref(storage, `locales/${user.uid}/receipt_${Date.now()}`)
           await uploadBytes(imgRef, payData.receiptFile)
           picUrl = await getDownloadURL(imgRef)
        }
