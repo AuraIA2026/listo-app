@@ -234,7 +234,7 @@ function CompletarPerfilBtn({ profileComplete, onClick }) {
         {!isComplete && <span className="pm-spark pm-spark-1">✦</span>}
         {!isComplete && <span className="pm-spark pm-spark-2">★</span>}
         {!isComplete && <span className="pm-spark pm-spark-3">✦</span>}
-        <button className="cp-btn" onClick={onClick}>
+        <button data-tour="completar-perfil" className="cp-btn" onClick={onClick}>
           {!isComplete && <span className="pm-shimmer" />}
           {label}
         </button>

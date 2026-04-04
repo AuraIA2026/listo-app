@@ -24,6 +24,7 @@ import Navbar                 from './components/Navbar'
 import BottomNav              from './components/BottomNav'
 import SplashScreen           from './components/SplashScreen'
 import TutorialTour           from './components/TutorialTour'
+import ProTutorialSystem        from './components/ProTutorialSystem'
 import { ExoticOrderNotification, OrderDetailsModal } from './pages/OrdersPage'
 import LocalesPage            from './locales/LocalesPage'
 import LocalDetalle           from './locales/LocalDetalle'
@@ -735,6 +736,16 @@ export default function App() {
             setSystemAlert(null);
             updateDoc(doc(db, 'notificaciones', currentId), { read: true }).catch(() => {});
           }} 
+        />
+      )}
+
+      {userRole === 'pro' && (
+        <ProTutorialSystem 
+           userRole={userRole} 
+           userData={userData} 
+           currentPage={currentPage} 
+           navigate={navigate} 
+           lang={lang} 
         />
       )}
     </div>

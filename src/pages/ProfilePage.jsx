@@ -743,7 +743,7 @@ export default function ProfilePage({ lang, setLang, navigate, onLogout, initial
             
             {(!hideUpgrade && (!userData?.planId || userData?.planId === 'basico' || userData?.currentPlan === 'basico' || localStorage.getItem('showUpgradeOverride_Listo_' + userData?.uid) === 'true')) && (
               <div style={{ position: 'relative', marginTop: '12px' }}>
-                <button className="perf-action" onClick={() => setScreen('planes')} style={{ margin: 0, width: '100%' }}>
+                <button data-tour="comprar-plan" className="perf-action" onClick={() => setScreen('planes')} style={{ margin: 0, width: '100%' }}>
                   <span>💎 {lang === 'es' ? 'Sube de Nivel (Gana más)' : 'Upgrade Level (Earn more)'}</span>
                   <span style={{ fontSize: '18px' }}>›</span>
                 </button>

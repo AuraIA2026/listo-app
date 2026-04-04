@@ -163,6 +163,7 @@ export default function BottomNav({ currentPage, navigate, lang = 'es', userRole
             return (
               <button
                 key={tab.id}
+                data-tour={`nav-${tab.id}`}
                 className={`nav-tab ${isActive ? 'active' : ''}`}
                 onClick={() => navigate(tab.id)}
               >
