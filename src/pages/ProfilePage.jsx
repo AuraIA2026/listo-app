@@ -877,7 +877,7 @@ export default function ProfilePage({ lang, setLang, navigate, onLogout, initial
       <div className="profile-brand">
         <img src="/src/assets/logo_listo.png" alt="Listo" />
         <p>Listo, patrón.</p>
-        <span onClick={handleSecretTap} style={{ cursor:'default', userSelect:'none' }}>v1.0.0</span>
+        <span style={{ cursor:'default', userSelect:'none' }}>v1.0.0</span>
       </div>
 
       <div style={{ height: 80 }} />
