@@ -258,7 +258,9 @@ function TestimonialsCarousel({ lang }) {
         topReviews.sort((a,b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0))
         const formatted = topReviews.slice(0, 10).map(d => ({
           nameEs: d.reviewerName || d.clientName || 'Cliente',
-          photo: d.reviewerPhoto || d.clientPhoto || null,
+          clientPhoto: d.reviewerPhoto || d.clientPhoto || null,
+          proPhoto: d.proPhoto || d.professionalPhoto || d.proPhotoURL || null,
+          proName: d.proName || d.professionalName || 'Profesional',
           rating: d.ratingScore || 5,
           dateEs: d.dateToken || 'Reciente',
           dateEn: d.dateToken || 'Recent',
@@ -308,21 +310,34 @@ function TestimonialsCarousel({ lang }) {
       <div className="testimonial-card" onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
         <button className="testi-arrow testi-arrow-left" onClick={prev}>‹</button>
         <div className="testi-body" key={idx}>
-          <div className="testi-header">
-            <div className="testi-photo-wrap">
-              {t.photo
-                ? <img src={t.photo} alt={t.nameEs} className="testi-photo" />
-                : <div className="testi-photo" style={{background:'#FF8533',display:'flex',alignItems:'center',justifyContent:'center',color:'white',fontSize:'22px',fontWeight:'700'}}>{t.nameEs?.charAt(0) || '👤'}</div>
+          <div className="testi-header" style={{ position: 'relative' }}>
+            <div className="testi-photo-wrap" style={{ position: 'relative' }}>
+              {(t.proPhoto || t.photo)
+                ? <img src={t.proPhoto || t.photo} alt={t.proName || t.nameEs} className="testi-photo" style={{ border: '3px solid #fff', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
+                : <div className="testi-photo" style={{background:'linear-gradient(135deg, #FF7A1A, #F26000)',display:'flex',alignItems:'center',justifyContent:'center',color:'white',fontSize:'28px',fontWeight:'800', border: '3px solid #fff', boxShadow: '0 4px 12px rgba(0,0,0,0.1)'}}>{(t.proName?.charAt(0) || t.nameEs?.charAt(0) || '👤').toUpperCase()}</div>
               }
+              <div style={{ position: 'absolute', bottom: -2, right: -2, background: '#10B981', color: 'white', borderRadius: '50%', width: 22, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, border: '2px solid white' }}>✓</div>
             </div>
-            <div className="testi-meta">
-              <p className="testi-name">{t.nameEs}</p>
-              <p className="testi-spec">{lang === 'es' ? t.specEs : t.specEn}</p>
+            <div className="testi-meta" style={{ flex: 1, paddingLeft: 6 }}>
+              <p className="testi-name" style={{ fontSize: '15px' }}>{t.proName || 'Profesional'}</p>
+              <p className="testi-spec" style={{ fontSize: '12px', color: '#ffd700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{lang === 'es' ? t.specEs : t.specEn}</p>
+              <div className="testi-stars" style={{ marginTop: '2px', fontSize: '13px' }}>{'★'.repeat(t.rating)}{'☆'.repeat(5 - t.rating)}</div>
             </div>
-            <span className="testi-date">{lang === 'es' ? t.dateEs : t.dateEn}</span>
+            <span className="testi-date" style={{ position: 'absolute', top: 0, right: 0 }}>{lang === 'es' ? t.dateEs : t.dateEn}</span>
           </div>
-          <div className="testi-stars">{'★'.repeat(t.rating)}{'☆'.repeat(5 - t.rating)}</div>
-          <p className="testi-text">"{lang === 'es' ? t.textEs : t.textEn}"</p>
+          
+          <div style={{ padding: '16px', background: 'rgba(255,255,255,0.95)', borderRadius: 12, marginTop: 12, position: 'relative', boxShadow: '0 4px 15px rgba(0,0,0,0.05)' }}>
+             <span style={{ position: 'absolute', top: -8, left: 16, fontSize: 28, opacity: 0.15, color: '#f26000' }}>❝</span>
+             <p className="testi-text" style={{ fontStyle: 'italic', fontSize: 13, color: '#444', margin: '0 0 10px', lineHeight: 1.5, position: 'relative', zIndex: 2 }}>"{lang === 'es' ? t.textEs : t.textEn}"</p>
+             
+             <div style={{ display: 'flex', alignItems: 'center', gap: 6, borderTop: '1px solid rgba(0,0,0,0.08)', paddingTop: 10 }}>
+               {t.clientPhoto ? 
+                 <img src={t.clientPhoto} alt={t.nameEs} style={{ width: 22, height: 22, borderRadius: '50%', objectFit: 'cover', border: '1px solid #ffd700' }} /> :
+                 <div style={{ width: 22, height: 22, borderRadius: '50%', background: '#1a1a2e', color: '#FFD700', fontSize: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>{t.nameEs?.charAt(0).toUpperCase() || 'C'}</div>
+               }
+               <span style={{ fontSize: 11, fontWeight: 700, color: '#666' }}>{lang === 'es' ? 'Reseña de:' : 'Review from:'} <strong style={{color: '#1a1a2e'}}>{t.nameEs}</strong></span>
+             </div>
+          </div>
         </div>
         <button className="testi-arrow testi-arrow-right" onClick={next}>›</button>
       </div>
