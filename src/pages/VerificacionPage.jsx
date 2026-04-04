@@ -3,6 +3,7 @@ import { doc, updateDoc } from "firebase/firestore";
 import { ref, uploadString, getDownloadURL } from "firebase/storage";
 import { db, auth, storage } from "../firebase";
 import { useUserData } from "../useUserData";
+import { CATEGORIES } from "../categories";
 
 const COLORS = {
   mamey: "#F26000", mameyDark: "#C24E00", mameyLight: "#FF8534",
@@ -382,9 +383,13 @@ export default function VerificacionPage({ onBack }) {
                     <Field label="Especialidad" req>
                       <select style={styles.input} name="especialidad" value={form.especialidad} onChange={handleForm}>
                         <option value="">Seleccionar especialidad</option>
-                        <option>Electricista</option><option>Plomero</option><option>Pintor</option>
-                        <option>Carpintero</option><option>Técnico A/C</option><option>Limpieza</option>
-                        <option>Jardinería</option><option>Otro</option>
+                        {CATEGORIES.map(cat => (
+                          <optgroup key={cat.id} label={cat.labelEs}>
+                            {cat.subcategories.map(sub => (
+                              <option key={sub.id} value={sub.labelEs}>{sub.labelEs}</option>
+                            ))}
+                          </optgroup>
+                        ))}
                       </select>
                     </Field>
                     <Field label="Años de experiencia" req>
