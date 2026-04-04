@@ -669,7 +669,7 @@ export default function BtnHamburguesa({ onClose, navigate, initialOpenSection =
        // ── Notificación para el Admin ──
        await addDoc(collection(db, 'notificaciones'), {
          userId: 'admin',
-         type: 'plan_purchase',
+         type: 'system',
          title: 'NUEVO PAGO DE PLAN 👑',
          text: `El profesional ${userData?.name || 'Un profesional'} ha solicitado el plan ${planDetalle.nombre}.`,
          read: false,

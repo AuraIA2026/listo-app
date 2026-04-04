@@ -14,9 +14,10 @@ export default function NotificacionPage({ lang, navigate, userData }) {
       return;
     }
 
+    const targetIds = userData.email === 'listopatron.app@gmail.com' ? [userData.uid, 'admin'] : [userData.uid];
     const q = query(
       collection(db, 'notificaciones'),
-      where('userId', '==', userData.uid)
+      where('userId', 'in', targetIds)
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {

@@ -124,7 +124,8 @@ export default function BottomNav({ currentPage, navigate, lang = 'es', userRole
     }, () => {})
 
     // Unread Notifs Logic
-    const qNotifs = query(collection(db, 'notificaciones'), where('userId', '==', uid), where('read', '==', false))
+    const targetIds = userData?.email === 'listopatron.app@gmail.com' ? [uid, 'admin'] : [uid]
+    const qNotifs = query(collection(db, 'notificaciones'), where('userId', 'in', targetIds), where('read', '==', false))
     const unsubNotifs = onSnapshot(qNotifs, snap => {
       let tempOrders = 0
       let tempMsgs = 0

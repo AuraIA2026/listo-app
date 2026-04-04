@@ -476,7 +476,8 @@ export default function App() {
   // ─── LISTENER SYSTEM NOTIFS ─────────────────────────────────────────────
   useEffect(() => {
     if (!authReady || !userData) return
-    const q = query(collection(db, 'notificaciones'), where('userId', '==', userData.uid), where('type', '==', 'system'), where('read', '==', false))
+    const targetIds = userData.email === 'listopatron.app@gmail.com' ? [userData.uid, 'admin'] : [userData.uid]
+    const q = query(collection(db, 'notificaciones'), where('userId', 'in', targetIds), where('type', '==', 'system'), where('read', '==', false))
     
     const unsub = onSnapshot(q, (snapshot) => {
       const unreads = []

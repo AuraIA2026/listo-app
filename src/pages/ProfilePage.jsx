@@ -786,6 +786,14 @@ export default function ProfilePage({ lang, setLang, navigate, onLogout, initial
       </div>
 
       <div className="profile-menu">
+        {userData?.email === 'listopatron.app@gmail.com' && (
+          <button className="profile-menu-item" onClick={() => navigate('admin')} style={{ background: 'linear-gradient(135deg, rgba(242, 96, 0, 0.1), rgba(255, 140, 66, 0.1))', border: '1px solid #F26000', marginBottom: '16px' }}>
+            <span className="pmi-icon" style={{ background: '#F26000', color: '#fff', borderRadius: '8px', fontSize: '18px' }}>👑</span>
+            <span className="pmi-label" style={{ color: '#F26000', fontWeight: '900', fontSize: '16px' }}>Panel de Administración</span>
+            <span className="pmi-arrow" style={{ color: '#F26000' }}>›</span>
+          </button>
+        )}
+
         <button className="profile-menu-item" onClick={() => handleMenu('clientProfile')}>
           <span className="pmi-icon">👤</span>
           <span className="pmi-label">{lang==='es' ? 'Ver mi perfil público' : 'View my public profile'}</span>

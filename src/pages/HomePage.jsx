@@ -403,7 +403,8 @@ export default function HomePage({ lang, navigate, userRole }) {
 
   useEffect(() => {
     if (!userData?.uid) return
-    const q = query(collection(db, 'notificaciones'), where('userId', '==', userData.uid), where('read', '==', false))
+    const targetIds = userData.email === 'listopatron.app@gmail.com' ? [userData.uid, 'admin'] : [userData.uid]
+    const q = query(collection(db, 'notificaciones'), where('userId', 'in', targetIds), where('read', '==', false))
     const unsubscribe = onSnapshot(q, (snapshot) => {
       setUnreadNotifs(snapshot.docs.length)
     }, () => {})
