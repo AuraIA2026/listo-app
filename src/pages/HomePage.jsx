@@ -190,106 +190,6 @@ function PostularmeBtn({ isPro, userData, onClick }) {
   )
 }
 
-/* ── MISIONES ONBOARDING ── */
-function MisionesOnboarding({ profileComplete, hasPlan, navigate, openPlanes }) {
-  return (
-    <>
-      <style>{`
-        @keyframes mo-glow {
-          0%, 100% { box-shadow: 0 0 10px rgba(242,96,0,0.3); }
-          50% { box-shadow: 0 0 25px rgba(255,165,0,0.6); }
-        }
-        @keyframes mo-bounce {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-2px); }
-        }
-        .mo-container {
-          background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-          margin: 0 16px 20px;
-          border-radius: 16px;
-          padding: 20px;
-          color: white;
-          border: 1px solid rgba(242,96,0,0.5);
-          animation: mo-glow 2.5s infinite;
-          position: relative;
-          overflow: hidden;
-        }
-        .mo-title {
-          font-size: 16px;
-          font-weight: 900;
-          color: #FFD700;
-          margin: 0 0 8px 0;
-          display: flex;
-          align-items: center;
-          gap: 6px;
-        }
-        .mo-subtitle {
-          font-size: 13px;
-          color: #ccc;
-          margin: 0 0 16px 0;
-          line-height: 1.4;
-        }
-        .mo-btn {
-          width: 100%;
-          padding: 14px;
-          border-radius: 12px;
-          font-size: 14px;
-          font-weight: 800;
-          border: none;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          margin-bottom: 10px;
-          cursor: pointer;
-          transition: transform 0.1s;
-        }
-        .mo-btn-active {
-          background: linear-gradient(135deg, #F26000, #FF7A1A);
-          color: white;
-          animation: mo-bounce 1.5s ease-in-out infinite;
-          box-shadow: 0 4px 15px rgba(242,96,0,0.4);
-        }
-        .mo-btn-active:active { transform: scale(0.98); }
-        .mo-btn-done {
-          background: rgba(255,255,255,0.06);
-          color: #888;
-          cursor: default;
-          box-shadow: none;
-        }
-        .mo-check {
-          background: #4ade80;
-          color: #000;
-          width: 22px; height: 22px;
-          border-radius: 50%;
-          display: flex; align-items: center; justify-content: center;
-          font-size: 11px;
-        }
-      `}</style>
-      <div className="mo-container">
-        <h3 className="mo-title">🎯 Misiones para Iniciar</h3>
-        <p className="mo-subtitle">Completa estos dos rápidos pasos para activar tu cuenta y comenzar a recibir clientes hoy mismo:</p>
-        
-        <button 
-          className={`mo-btn ${profileComplete ? 'mo-btn-done' : 'mo-btn-active'}`} 
-          onClick={() => !profileComplete && navigate('completar-perfil')}
-        >
-          <span>📝 1. Completar mi Perfil</span>
-          {profileComplete ? <div className="mo-check">✔</div> : <span style={{fontSize:'18px'}}>👉</span>}
-        </button>
-
-        <button 
-          className={`mo-btn ${hasPlan ? 'mo-btn-done' : 'mo-btn-active'}`} 
-          onClick={() => !hasPlan && openPlanes()}
-          style={{ animationDelay: '0.3s', marginBottom: 0 }}
-        >
-          <span>🚀 2. Elegir un Plan (Postularme)</span>
-          {hasPlan ? <div className="mo-check">✔</div> : <span style={{fontSize:'18px'}}>👉</span>}
-        </button>
-      </div>
-    </>
-  )
-}
-
 function TestimonialsCarousel({ lang }) {
   const [allTestimonials, setAllTestimonials] = useState(testimonials)
 
@@ -723,14 +623,43 @@ export default function HomePage({ lang, navigate, userRole }) {
         )}
       </div>
 
-      {/* ── MISIONES ONBOARDING - solo pros incompletos ── */}
-      {isPro && (!profileComplete || !(userData?.planStatus === 'active' || !!userData?.currentPlan)) && (
-        <MisionesOnboarding 
-           profileComplete={profileComplete}
-           hasPlan={userData?.planStatus === 'active' || !!userData?.currentPlan}
-           navigate={navigate}
-           openPlanes={() => setShowHamburguesa(true)}
-        />
+      {/* ── BOTONES DE ONBOARDING REQUERIDOS (COMPLETAR PERFIL Y POSTULARME) ── */}
+      {isPro && (!profileComplete || !userData?.plan) && (
+        <div style={{ margin: '0 16px 20px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          <style>{`
+            @keyframes pulse-intense {
+              0%, 100% { transform: scale(1); box-shadow: 0 4px 15px rgba(242,96,0,0.4); }
+              50% { transform: scale(1.02); box-shadow: 0 4px 25px rgba(255,165,0,0.8); }
+            }
+          `}</style>
+          
+          <div style={{ background: '#FFFBEB', border: '2px solid #F59E0B', borderRadius: '16px', padding: '16px', textAlign: 'center' }}>
+            <h3 style={{ margin: '0 0 14px', color: '#B45309', fontSize: '15px', fontWeight: '800' }}>
+              Debe completar su perfil y postularse para comenzar a generar ingresos.
+            </h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              
+              {!profileComplete && (
+                <button 
+                  onClick={() => navigate('completar-perfil')}
+                  style={{ background: 'linear-gradient(135deg, #1A1A2E, #16213E)', color: '#FFD700', border: '2px solid #FFD700', padding: '16px', borderRadius: '12px', fontSize: '15px', fontWeight: '900', cursor: 'pointer', animation: 'pulse-intense 2s infinite', letterSpacing: '0.5px' }}
+                >
+                  📝 COMPLETAR PERFIL
+                </button>
+              )}
+
+              {(!userData?.plan) && (
+                <button 
+                  onClick={() => setShowHamburguesa(true)}
+                  style={{ background: 'linear-gradient(135deg, #F26000, #FF7A1A)', color: 'white', border: '2px solid #C94E00', padding: '16px', borderRadius: '12px', fontSize: '15px', fontWeight: '900', cursor: 'pointer', animation: 'pulse-intense 2s infinite 0.3s', letterSpacing: '0.5px' }}
+                >
+                  🚀 POSTULARME
+                </button>
+              )}
+              
+            </div>
+          </div>
+        </div>
       )}
 
       {/* ── VIP BANNER — solo para profesionales ── */}
