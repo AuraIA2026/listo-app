@@ -634,7 +634,7 @@ export default function BtnHamburguesa({ onClose, navigate, initialOpenSection =
     try {
        let picUrl = ''
        if (payData.method === 'transfer' && payData.receiptFile) {
-          const imgRef = ref(storage, `locales/${user.uid}/receipt_${Date.now()}`)
+          const imgRef = ref(storage, `locales/${userData.uid}/receipt_${Date.now()}`)
           const metadata = { contentType: payData.receiptFile.type || 'image/jpeg' }
           await uploadBytes(imgRef, payData.receiptFile, metadata)
           picUrl = await getDownloadURL(imgRef)
@@ -644,7 +644,7 @@ export default function BtnHamburguesa({ onClose, navigate, initialOpenSection =
        const contractsParsed = planDetalle.contratos.includes('∞') ? 999 : (parseInt(planDetalle.contratos.replace(/\D/g, '')) || 0)
 
        const newPayment = {
-         proId: user.uid,
+         proId: userData.uid,
          proName: userData?.name || 'Profesional',
          proPhone: userData?.phone || '',
          proCity: userData?.city || '',
@@ -678,13 +678,13 @@ export default function BtnHamburguesa({ onClose, navigate, initialOpenSection =
 
        if (payData.method === 'card') {
           const finalContracts = (userData?.contracts || 0) + contractsParsed + 3
-          await updateDoc(doc(db, 'users', user.uid), {
+          await updateDoc(doc(db, 'users', userData.uid), {
              contracts: finalContracts,
              planStatus: 'active',
              currentPlan: planDetalle.id
           })
        } else {
-          await updateDoc(doc(db, 'users', user.uid), { planStatus: 'review' })
+          await updateDoc(doc(db, 'users', userData.uid), { planStatus: 'review' })
        }
 
        setConfirmed(planDetalle)
