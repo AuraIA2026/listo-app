@@ -635,7 +635,8 @@ export default function BtnHamburguesa({ onClose, navigate, initialOpenSection =
        let picUrl = ''
        if (payData.method === 'transfer' && payData.receiptFile) {
           const imgRef = ref(storage, `locales/${user.uid}/receipt_${Date.now()}`)
-          await uploadBytes(imgRef, payData.receiptFile)
+          const metadata = { contentType: payData.receiptFile.type || 'image/jpeg' }
+          await uploadBytes(imgRef, payData.receiptFile, metadata)
           picUrl = await getDownloadURL(imgRef)
        }
 
@@ -689,7 +690,7 @@ export default function BtnHamburguesa({ onClose, navigate, initialOpenSection =
        setConfirmed(planDetalle)
     } catch(err) {
        console.error("Error creating payment", err)
-       alert("Error procesando pago. Intenta de nuevo.")
+       alert("Error procesando pago: " + (err.message || err.toString()))
     }
   }
 
