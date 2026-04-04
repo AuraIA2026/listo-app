@@ -23,7 +23,11 @@ export default function ProTutorialSystem({ userRole, userData, currentPage, nav
       return;
     }
 
-    if (localStorage.getItem(TOUR_DONE_KEY)) {
+    const tourKey = `${TOUR_DONE_KEY}_${userData.uid}`;
+    const welcomeKey = `${WELCOME_DONE_KEY}_${userData.uid}`;
+    const navKey = `${NAV_TOUR_DONE_KEY}_${userData.uid}`;
+
+    if (localStorage.getItem(tourKey)) {
       setMission(null);
       return;
     }
@@ -31,8 +35,8 @@ export default function ProTutorialSystem({ userRole, userData, currentPage, nav
     // Delay mission evaluation slightly to allow DOM to render
     const timer = setTimeout(() => {
       // Mission 1: Welcome
-      if (!localStorage.getItem(WELCOME_DONE_KEY)) {
-        setMission({ id: 'welcome', type: 'modal' });
+      if (!localStorage.getItem(welcomeKey)) {
+        setMission({ id: 'welcome', type: 'modal', welcomeKey, tourKey, navKey });
         return;
       }
 
@@ -60,13 +64,13 @@ export default function ProTutorialSystem({ userRole, userData, currentPage, nav
       }
 
       // Mission 4: Nav Tour
-      if (!localStorage.getItem(NAV_TOUR_DONE_KEY)) {
-        setMission({ id: 'nav-tour-1', type: 'tooltip', targetSelector: '[data-tour="nav-orders"]', text: '📋 Aquí te caerán los trabajos para que los cotices y aceptes.' });
+      if (!localStorage.getItem(navKey)) {
+        setMission({ id: 'nav-tour-1', type: 'tooltip', targetSelector: '[data-tour="nav-orders"]', text: '📋 Aquí te caerán los trabajos para que los cotices y aceptes.', navKey, tourKey });
         return;
       }
 
       // Completed everything
-      localStorage.setItem(TOUR_DONE_KEY, 'true');
+      localStorage.setItem(tourKey, 'true');
       setMission(null);
 
     }, 300);
@@ -114,7 +118,7 @@ export default function ProTutorialSystem({ userRole, userData, currentPage, nav
             Felicidades por unirte a la red de profesionales de Listo Patrón. Vamos a poner tu cuenta a producir dinero juntos. Sígueme en estos rápidos pasos.
           </p>
           <button 
-            onClick={() => { localStorage.setItem(WELCOME_DONE_KEY, 'true'); setMission({id: 'recalc'}); }}
+            onClick={() => { localStorage.setItem(mission.welcomeKey, 'true'); setMission({id: 'recalc'}); }}
             style={{ background: '#F26000', color: '#fff', border: 'none', padding: '14px 28px', borderRadius: 100, fontSize: 16, fontWeight: 800, width: '100%', cursor: 'pointer', boxShadow: '0 4px 14px rgba(242,96,0,0.4)' }}
           >
             Poner mi cuenta en rojo 🔥
@@ -132,7 +136,7 @@ export default function ProTutorialSystem({ userRole, userData, currentPage, nav
      return <TooltipOverlay rect={targetRect} text={mission.text} onNext={() => setMission({ id: 'nav-tour-3', type: 'tooltip', targetSelector: '[data-tour="nav-profile"]', text: '👤 Y aquí en tu Perfil configuras todo tu sistema.' })} btnText="Siguiente 👉" />;
   }
   if (mission.id === 'nav-tour-3' && targetRect) {
-     return <TooltipOverlay rect={targetRect} text={mission.text} onNext={() => { localStorage.setItem(NAV_TOUR_DONE_KEY, 'true'); setMission(null); alert("¡YA ESTÁS LISTO, PATRÓN! Tu cuenta está blindada. A trabajar se ha dicho."); }} btnText="¡A trabajar! 🚀" />;
+     return <TooltipOverlay rect={targetRect} text={mission.text} onNext={() => { localStorage.setItem(mission.navKey, 'true'); localStorage.setItem(mission.tourKey, 'true'); setMission(null); alert("¡YA ESTÁS LISTO, PATRÓN! Tu cuenta está blindada. A trabajar se ha dicho."); }} btnText="¡A trabajar! 🚀" />;
   }
 
   if (targetRect) {

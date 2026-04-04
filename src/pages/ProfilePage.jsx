@@ -710,7 +710,7 @@ export default function ProfilePage({ lang, setLang, navigate, onLogout, initial
           </div>
           <div className="stat-divider" />
           <div className="stat-item">
-            <span className="stat-num">{userRole === 'pro' ? Number(userData?.rating || 5).toFixed(1) : '—'}</span>
+            <span className="stat-num">{userRole === 'pro' ? Number(userData?.rating || 0).toFixed(1) : '—'}</span>
             <span className="stat-label">{T.rating}</span>
           </div>
           {userRole === 'pro' && (
