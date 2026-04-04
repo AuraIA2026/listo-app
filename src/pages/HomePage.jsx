@@ -531,7 +531,7 @@ export default function HomePage({ lang, navigate, userRole }) {
               <h1>👋 {lang === 'es' ? 'Panel Profesional' : 'Pro Dashboard'}</h1>
               <p>{lang === 'es' ? `Hola, ${userData?.name?.split(' ')[0] || 'Socio'}` : `Hi, ${userData?.name?.split(' ')[0] || 'Partner'}`}</p>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <div 
                 onClick={() => navigate('notificaciones')}
                 style={{ position:'relative', width:'38px', height:'38px', borderRadius:'50%', background:'rgba(255,255,255,0.1)', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', border:'1px solid rgba(255,255,255,0.2)' }}
@@ -543,7 +543,23 @@ export default function HomePage({ lang, navigate, userRole }) {
                   </span>
                 )}
               </div>
-              <PostularmeBtn isPro={isPro} userData={userData} onClick={() => setShowHamburguesa(true)} />
+              
+              {!profileComplete && (
+                <button 
+                  onClick={() => navigate('profile', { screen: 'verification' })}
+                  style={{ background: 'rgba(26, 26, 46, 0.6)', color: '#FFD700', border: '1px solid #FFD700', borderRadius: '18px', padding: '6px 10px', fontSize: '11px', fontWeight: '800', cursor: 'pointer', whiteSpace: 'nowrap' }}
+                >
+                  📝 Completar perfil
+                </button>
+              )}
+
+              <PostularmeBtn isPro={isPro} userData={userData} onClick={() => {
+                if (!profileComplete) {
+                  alert("⚠️ Debes completar tu perfil para postularte en un plan.");
+                  return;
+                }
+                setShowHamburguesa(true);
+              }} />
             </div>
           </div>
         )}
@@ -623,44 +639,7 @@ export default function HomePage({ lang, navigate, userRole }) {
         )}
       </div>
 
-      {/* ── BOTONES DE ONBOARDING REQUERIDOS (COMPLETAR PERFIL Y POSTULARME) ── */}
-      {isPro && (!profileComplete || !userData?.plan) && (
-        <div style={{ margin: '0 16px 20px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          <style>{`
-            @keyframes pulse-intense {
-              0%, 100% { transform: scale(1); box-shadow: 0 4px 15px rgba(242,96,0,0.4); }
-              50% { transform: scale(1.02); box-shadow: 0 4px 25px rgba(255,165,0,0.8); }
-            }
-          `}</style>
-          
-          <div style={{ background: '#FFFBEB', border: '2px solid #F59E0B', borderRadius: '16px', padding: '16px', textAlign: 'center' }}>
-            <h3 style={{ margin: '0 0 14px', color: '#B45309', fontSize: '15px', fontWeight: '800' }}>
-              Debe completar su perfil y postularse para comenzar a generar ingresos.
-            </h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              
-              {!profileComplete && (
-                <button 
-                  onClick={() => navigate('completar-perfil')}
-                  style={{ background: 'linear-gradient(135deg, #1A1A2E, #16213E)', color: '#FFD700', border: '2px solid #FFD700', padding: '16px', borderRadius: '12px', fontSize: '15px', fontWeight: '900', cursor: 'pointer', animation: 'pulse-intense 2s infinite', letterSpacing: '0.5px' }}
-                >
-                  📝 COMPLETAR PERFIL
-                </button>
-              )}
-
-              {(!userData?.plan) && (
-                <button 
-                  onClick={() => setShowHamburguesa(true)}
-                  style={{ background: 'linear-gradient(135deg, #F26000, #FF7A1A)', color: 'white', border: '2px solid #C94E00', padding: '16px', borderRadius: '12px', fontSize: '15px', fontWeight: '900', cursor: 'pointer', animation: 'pulse-intense 2s infinite 0.3s', letterSpacing: '0.5px' }}
-                >
-                  🚀 POSTULARME
-                </button>
-              )}
-              
-            </div>
-          </div>
-        </div>
-      )}
+      {/* ── BOTONES DE ONBOARDING ELIMINADOS POR PETICIÓN ── */}
 
       {/* ── VIP BANNER — solo para profesionales ── */}
       {isPro && <VIPBanner onOpenPlanes={() => setShowHamburguesa(true)} />}

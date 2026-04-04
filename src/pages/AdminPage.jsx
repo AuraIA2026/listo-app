@@ -642,6 +642,18 @@ export default function AdminPage({ navigate }) {
         }
 
         await updateDoc(doc(db, 'users', obj.id), payload);
+
+        // Notificar al usuario sobre su éxito en verificación
+        await addDoc(collection(db, 'notificaciones'), {
+          userId: obj.id,
+          type: 'system',
+          title: '🚨 ¡Perfil Aprobado! 🎉',
+          text: 'Tu perfil ha sido aprobado por el administrador. ¡Ahora puedes postularte a un plan para recibir clientes!',
+          date: new Date().toISOString(),
+          createdAt: new Date().toISOString(), // o serverTimestamp()
+          read: false
+        });
+
         showToast(`🎉 ¡${obj.verificacion?.nombre || 'El usuario'} ahora es Profesional!`);
         setViewDocs(null); // Cerrar modal
       }
