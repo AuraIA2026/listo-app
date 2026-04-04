@@ -1216,7 +1216,7 @@ export default function AdminPage({ navigate }) {
                   <div className="ps-metric-label">Contratos Libres</div>
                 </div>
                 <div className="ps-metric">
-                  <div className="ps-metric-val">⭐ {Number(viewProStats.rating || 5).toFixed(1)}</div>
+                  <div className="ps-metric-val">⭐ {Number(viewProStats.rating || 0).toFixed(1)}</div>
                   <div className="ps-metric-label">Calificación ({viewProStats.reviews||0})</div>
                 </div>
                 <div className="ps-metric">

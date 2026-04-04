@@ -35,8 +35,8 @@ function LocalGridCard({ local, onPress }) {
         <p className="local-grid-nombre">{local.nombre}</p>
         <p className="local-grid-cat">🔧 {local.categoria || 'Servicios'}</p>
         <div style={{ display:'flex', alignItems:'center', gap:4, marginBottom:6 }}>
-          <span style={{ color:'#FFD700', fontSize:10 }}>{'★'.repeat(Math.round(local.rating || 5))}</span>
-          <span style={{ fontSize:10, fontWeight:800, color:'#F26000' }}>{Number(local.rating||5).toFixed(1)}</span>
+          <span style={{ color:'#FFD700', fontSize:10 }}>{'★'.repeat(Math.round(local.rating || 0))}</span>
+          <span style={{ fontSize:10, fontWeight:800, color:'#F26000' }}>{Number(local.rating||0).toFixed(1)}</span>
         </div>
         <button className="local-grid-btn">🏪 Ver Local</button>
       </div>

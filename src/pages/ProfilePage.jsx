@@ -734,10 +734,10 @@ export default function ProfilePage({ lang, setLang, navigate, onLogout, initial
           <div className="pro-performance-dash">
             <div className="perf-header">
               <span className="perf-title">📈 {lang==='es' ? 'Rendimiento' : 'Performance'}</span>
-              <span className="perf-badge">🚀 TOP {Math.max(1, Math.floor((6 - (userData?.rating || 5)) * 10))}%</span>
+              <span className="perf-badge">🚀 TOP {Math.max(1, Math.floor((6 - (userData?.rating || 0)) * 10))}%</span>
             </div>
             <div className="perf-bar-bg">
-              <div className="perf-bar-fill" style={{ width: `${Math.min(((userData?.rating || 5.0) / 5) * 100, 100)}%` }} />
+              <div className="perf-bar-fill" style={{ width: `${Math.min(((userData?.rating || 0.0) / 5) * 100, 100)}%` }} />
             </div>
             <p className="perf-sub">{lang==='es' ? '¡Tu perfil destaca sobre los demás!' : 'Your profile stands out!'} {lang==='es' ? 'Mantén el buen servicio.' : 'Keep up the good work.'}</p>
             

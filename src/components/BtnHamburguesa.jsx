@@ -713,7 +713,7 @@ export default function BtnHamburguesa({ onClose, navigate, initialOpenSection =
         {[
           { icon: '📦', label: 'Contratos disponibles', val: userData?.contracts || 0 },
           { icon: '📈', label: 'Trabajos completados', val: computedStats.completed },
-          { icon: '⭐', label: 'Calificación promedio', val: Number(userData?.rating || 5).toFixed(1) },
+          { icon: '⭐', label: 'Calificación promedio', val: Number(userData?.rating || 0).toFixed(1) },
           { icon: '📩', label: 'Solicitudes recibidas', val: computedStats.requests },
           { icon: '📌', label: 'Trabajos pendientes', val: computedStats.pending },
         ].map((s, i) => (
@@ -823,7 +823,7 @@ export default function BtnHamburguesa({ onClose, navigate, initialOpenSection =
                         {[
                           { icon: '📦', label: 'Contratos', val: userData?.contracts || 0 },
                           { icon: '📈', label: 'Completados', val: computedStats.completed },
-                          { icon: '⭐', label: 'Calificación', val: Number(userData?.rating || 5).toFixed(1) },
+                          { icon: '⭐', label: 'Calificación', val: Number(userData?.rating || 0).toFixed(1) },
                           { icon: '📩', label: 'Solicitudes', val: computedStats.requests },
                           { icon: '📌', label: 'Pendientes', val: computedStats.pending },
                         ].map((s, i) => (

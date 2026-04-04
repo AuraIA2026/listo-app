@@ -717,20 +717,22 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
                 </div>
 
                 <div className="premium-rating-row">
-                  <span className="premium-stars">{'★'.repeat(Math.round(pro.rating || 5))}{'☆'.repeat(5 - Math.round(pro.rating || 5))}</span>
-                  <span className="premium-rating-text">{Number(pro.rating || 5).toFixed(1)} ({pro.reviews > 0 ? pro.reviews : '24'} {lang==='es'?'valoraciones':'ratings'})</span>
+                  <span className="premium-stars">{'★'.repeat(Math.round(pro.rating || 0))}{'☆'.repeat(5 - Math.round(pro.rating || 0))}</span>
+                  <span className="premium-rating-text">{Number(pro.rating || 0).toFixed(1)} ({pro.reviews || 0} {lang==='es'?'valoraciones':'ratings'})</span>
                 </div>
 
                 <div className="premium-stats">
-                  <p>🔥 +{pro.reviews > 10 ? pro.reviews * 3 : 50} <span>{lang==='es'?'contratados el mes pasado':'hired last month'}</span></p>
+                  <p>🔥 {pro.contracts || 0} <span>{lang==='es'?'contratados el mes pasado':'hired last month'}</span></p>
                 </div>
 
-                <div className="premium-review-box">
-                  <span className="premium-quote-icon">💬</span>
-                  <p className="premium-review-text">
-                    <strong>¡Excelente trabajo!</strong> "El mejor {lang==='es' ? (subCat?.labelEs || mainCat?.labelEs || pro.category) : 'profesional'} que he contratado. Muy dedicado, súper puntual y dejó todo limpio. Vale cada centavo."
-                  </p>
-                </div>
+                {pro.reviews > 0 && (
+                  <div className="premium-review-box">
+                    <span className="premium-quote-icon">💬</span>
+                    <p className="premium-review-text">
+                      <strong>¡Excelente trabajo!</strong> "El mejor {lang==='es' ? (subCat?.labelEs || mainCat?.labelEs || pro.category) : 'profesional'} que he contratado."
+                    </p>
+                  </div>
+                )}
 
                 <div className="premium-actions">
                   <button className="premium-btn-profile" onClick={(e) => { e.stopPropagation(); navigate('proProfile', pro); }}>
@@ -770,8 +772,8 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
                 </p>
                 <p className="pro-location">📍 {pro.location}</p>
                 <div className="pro-meta">
-                  <span className="pro-rating">★ {Number(pro.rating || 5).toFixed(1)} <em>({pro.reviews} {T.reviews})</em></span>
-                  <span className="pro-exp">⏱ {pro.experience}</span>
+                  <span className="pro-rating">★ {Number(pro.rating || 0).toFixed(1)} <em>({pro.reviews || 0} {T.reviews})</em></span>
+                  <span className="pro-exp">⏱ {pro.experience || 'Nuevo'}</span>
                 </div>
               </div>
               <div className="card-footer">

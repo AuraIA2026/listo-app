@@ -89,7 +89,7 @@ function StarRating({ rating }) {
   return (
     <span className="star-rating">
       {'★'.repeat(Math.floor(rating))}{'☆'.repeat(5 - Math.floor(rating))}
-      <span className="star-num">{Number(rating || 5).toFixed(1)}</span>
+      <span className="star-num">{Number(rating || 0).toFixed(1)}</span>
     </span>
   )
 }
@@ -502,10 +502,10 @@ export default function HomePage({ lang, navigate, userRole }) {
             specEs: catObj ? catObj.labelEs : 'Servicios Integrales',
             specEn: catObj ? catObj.labelEn : 'General services',
             category: data.category || 'unknown',
-            rating: data.rating || 5.0,
+            rating: data.rating || 0.0,
             reviews: data.reviewCount || data.reviews || 0,
             location: data.location || 'RD',
-            experience: data.experience || '1 año',
+            experience: data.experience || 'Nuevo',
             avatar: (data.name || 'P').substring(0, 2).toUpperCase(),
             avail: data.profileComplete && data.available !== false,
             img: data.photoURL || null
