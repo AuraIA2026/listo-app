@@ -188,11 +188,14 @@ function TooltipOverlay({ rect, text, onNext, btnText, hideBtn, isCenter }) {
         }
         .pt-hand.pointing-up { animation: pointUpAnim 1s infinite alternate; }
         .pt-hand.pointing-down { transform: rotate(180deg); animation: pointDownAnim 1s infinite alternate; }
-        .pt-hand.pointing-center { animation: pointCenterAnim 1s infinite alternate; }
+        .pt-hand.pointing-center { animation: pointTeacherAnim 1.5s infinite ease-in-out alternate; }
         
         @keyframes pointUpAnim { 0% { transform: translateY(0); } 100% { transform: translateY(15px); } }
         @keyframes pointDownAnim { 0% { transform: rotate(180deg) translateY(0); } 100% { transform: rotate(180deg) translateY(-15px); } }
-        @keyframes pointCenterAnim { 0% { transform: translateY(0); } 100% { transform: translateY(15px); } }
+        @keyframes pointTeacherAnim { 
+           0% { transform: translateX(-30px) translateY(0) rotate(-10deg); } 
+           100% { transform: translateX(30px) translateY(5px) rotate(10deg); } 
+        }
         
         .pt-star { position: absolute; pointer-events: none; font-size: 20px; animation: starTwinkle 1.5s infinite alternate; z-index: 100001; }
         @keyframes starTwinkle { 0% { transform: scale(0.8) rotate(-10deg); opacity: 0.5; } 100% { transform: scale(1.2) rotate(10deg); opacity: 1; } }
@@ -213,7 +216,7 @@ function TooltipOverlay({ rect, text, onNext, btnText, hideBtn, isCenter }) {
       )}
 
       {/* Hand Switcher */}
-      <img src="/assets/mano.png" onError={(e) => { e.target.style.display='none'; e.target.nextSibling.style.display='block'; }} className={`pt-hand ${isCenter ? 'pointing-center' : (isBottom ? 'pointing-down' : 'pointing-up')}`} style={{ top: isCenter ? 'calc(50% - 120px)' : (isBottom ? rect.top - 90 : rect.top + rect.height + 10), left: isCenter ? 'calc(50% - 40px)' : (rect.left + rect.width/2 - 40), opacity: 0.75 }} />
+      <img src="/assets/mano.png" onError={(e) => { e.target.style.display='none'; e.target.nextSibling.style.display='block'; }} className={`pt-hand ${isCenter ? 'pointing-center' : (isBottom ? 'pointing-down' : 'pointing-up')}`} style={{ top: isCenter ? 'calc(50% + 15px)' : (isBottom ? rect.top - 90 : rect.top + rect.height + 10), left: isCenter ? '50%' : (rect.left + rect.width/2 - 40), opacity: 0.75 }} />
 
       {isCenter ? (
         <>
