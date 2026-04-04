@@ -8,6 +8,7 @@ export default function ProTutorialSystem({ userRole, userData, currentPage, nav
   const [mission, setMission] = useState(null);
   const [targetRect, setTargetRect] = useState(null);
   const [windowDimensions, setWindowDimensions] = useState({ w: window.innerWidth, h: window.innerHeight });
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   // Update window dimensions
   useEffect(() => {
@@ -76,7 +77,7 @@ export default function ProTutorialSystem({ userRole, userData, currentPage, nav
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [userRole, userData, currentPage, windowDimensions]);
+  }, [userRole, userData, currentPage, windowDimensions, refreshTrigger]);
 
   // Element tracker using requestAnimationFrame for smooth precision
   useEffect(() => {
@@ -118,7 +119,7 @@ export default function ProTutorialSystem({ userRole, userData, currentPage, nav
             Felicidades por unirte a la red de profesionales de Listo Patrón. Vamos a poner tu cuenta a producir dinero juntos. Sígueme en estos rápidos pasos.
           </p>
           <button 
-            onClick={() => { localStorage.setItem(mission.welcomeKey, 'true'); setMission({id: 'recalc'}); }}
+            onClick={() => { localStorage.setItem(mission.welcomeKey, 'true'); setRefreshTrigger(prev => prev + 1); }}
             style={{ background: '#F26000', color: '#fff', border: 'none', padding: '14px 28px', borderRadius: 100, fontSize: 16, fontWeight: 800, width: '100%', cursor: 'pointer', boxShadow: '0 4px 14px rgba(242,96,0,0.4)' }}
           >
             Poner mi cuenta en rojo 🔥
