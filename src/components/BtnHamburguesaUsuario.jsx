@@ -2,18 +2,18 @@ import { useState } from 'react'
 import { useUserData } from '../useUserData'
 
 /* ─── ACCORDION ─── */
-function Accordion({ title, open, onToggle, children }) {
+function Accordion({ title, open, onToggle, children, disabled }) {
   return (
-    <div style={{ background: '#fff', borderRadius: '16px', marginBottom: '10px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)', overflow: 'hidden' }}>
-      <button onClick={onToggle} style={{
+    <div style={{ background: '#fff', borderRadius: '16px', marginBottom: '10px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)', overflow: 'hidden', opacity: disabled ? 0.5 : 1 }}>
+      <button onClick={disabled ? undefined : onToggle} style={{
         width: '100%', background: 'none', border: 'none', padding: '16px',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        fontSize: '14px', fontWeight: '700', color: '#1A1A2E', cursor: 'pointer', textAlign: 'left',
+        fontSize: '14px', fontWeight: '700', color: '#1A1A2E', cursor: disabled ? 'not-allowed' : 'pointer', textAlign: 'left',
       }}>
         <span>{title}</span>
-        <span style={{ fontSize: '11px', color: '#F26000' }}>{open ? '▲' : '▼'}</span>
+        <span style={{ fontSize: '11px', color: disabled ? '#999' : '#F26000' }}>{open && !disabled ? '▲' : '▼'}</span>
       </button>
-      {open && <div style={{ padding: '0 16px 16px' }}>{children}</div>}
+      {open && !disabled && <div style={{ padding: '0 16px 16px' }}>{children}</div>}
     </div>
   )
 }
@@ -227,7 +227,7 @@ export default function BtnHamburguesaUsuario({ onClose, navigate, lang = 'es' }
             </Accordion>
 
             {/* ── 7. POSTULARSE COMO PROFESIONAL ── */}
-            <Accordion title="💼 Postularse (Ver Planes)" open={open === 'postularse'} onToggle={() => toggle('postularse')}>
+            <Accordion title="💼 Postularse (Ver Planes)" open={open === 'postularse'} onToggle={() => toggle('postularse')} disabled={!profileComplete}>
               <p style={{ fontSize: '13px', color: '#666', marginBottom: '16px', lineHeight: 1.5 }}>
                 {lang === 'es' 
                   ? 'Selecciona un plan para iniciar tu postulación. Te guiaremos en la verificación de tus documentos para comenzar a ganar dinero.' 

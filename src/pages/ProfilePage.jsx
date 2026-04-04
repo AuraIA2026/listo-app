@@ -635,7 +635,7 @@ export default function ProfilePage({ lang, setLang, navigate, onLogout, initial
       case 'terms':            return <TermsScreen lang={lang} onBack={back} userRole={userRole} />
       case 'privacyDoc':       return <PrivacyDocScreen lang={lang} onBack={back} />
       case 'verification':     return <VerificacionPage lang={lang} onBack={back} />
-      case 'completar-perfil': return <RegistroClientePage onBack={back} onSuccess={() => back()} />
+      case 'completar-perfil': return <RegistroClientePage userRole={userRole} onBack={back} onSuccess={(target) => { if(target) setScreen(target); else back(); }} />
       case 'planes':           return <PlanesPage onBack={back} navigate={navigate} />
       case 'edit-request':     return <EditRequestScreen lang={lang} user={userData} onBack={back} />
       default: return null

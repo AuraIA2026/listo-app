@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "43690567000",
+    "project_id": "listoapp-52b46",
+    "storage_bucket": "listoapp-52b46.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:43690567000:android:05a10a244b386555f6b12d",
+        "android_client_info": {
+          "package_name": "com.listopatron.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBYmL87Lgahs9GrXUnq9y6cWdgorfZpjy0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

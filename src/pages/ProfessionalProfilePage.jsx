@@ -477,9 +477,6 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
             </button>
           )
         })()}
-        <button className="pro-btn-chat" onClick={() => navigate('chat', pro)}>
-          💬
-        </button>
       </div>
 
     </div>

@@ -116,6 +116,8 @@ function PostularmeBtn({ isPro, userData, onClick }) {
     ? (userData?.planStatus === 'active' ? '👑 Mis Planes' : '🚀 Postularme')
     : '💼 Postularme'
 
+  const disabled = isPro && !userData?.profileComplete;
+
   return (
     <>
       <style>{`
@@ -176,13 +178,21 @@ function PostularmeBtn({ isPro, userData, onClick }) {
           animation: pm-shimmer 2.4s ease-in-out infinite;
           pointer-events: none;
         }
+        .pm-btn:disabled {
+          opacity: 0.4;
+          cursor: not-allowed;
+          animation: none !important;
+          box-shadow: none !important;
+          background: #A0AEC0 !important;
+          color: white !important;
+        }
       `}</style>
       <div className="pm-btn-wrap">
-        <span className="pm-spark pm-spark-1">✦</span>
-        <span className="pm-spark pm-spark-2">★</span>
-        <span className="pm-spark pm-spark-3">✦</span>
-        <button className="pm-btn" onClick={onClick}>
-          <span className="pm-shimmer" />
+        {!disabled && <span className="pm-spark pm-spark-1">✦</span>}
+        {!disabled && <span className="pm-spark pm-spark-2">★</span>}
+        {!disabled && <span className="pm-spark pm-spark-3">✦</span>}
+        <button className="pm-btn" disabled={disabled} onClick={disabled ? undefined : onClick}>
+          {!disabled && <span className="pm-shimmer" />}
           {label}
         </button>
       </div>

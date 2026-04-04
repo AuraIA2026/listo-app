@@ -38,7 +38,7 @@ const TERMS = [
 ];
 
 /* ══════════════════════════════════════════════════════════════ */
-export default function RegistroClientePage({ onBack, onSuccess }) {
+export default function RegistroClientePage({ userRole, onBack, onSuccess }) {
   const [open,      setOpen]      = useState({ 1: true });
   const [checks,    setChecks]    = useState({ c1: false, c2: false, c3: false });
   const [termExp,   setTermExp]   = useState(null);
@@ -83,10 +83,9 @@ export default function RegistroClientePage({ onBack, onSuccess }) {
     }
 
     setSubmitted(true);
-    setTimeout(() => onSuccess?.(), 2000);
   };
 
-  if (submitted) return <SuccessScreen onBack={onBack} isVerified={isVerified} />;
+  if (submitted) return <SuccessScreen onBack={onBack} isVerified={isVerified} userRole={userRole} onSuccess={onSuccess} />;
 
   return (
     <div style={s.page}>
@@ -412,7 +411,9 @@ export default function RegistroClientePage({ onBack, onSuccess }) {
 }
 
 /* ─── PANTALLA DE ÉXITO ──────────────────────────────────────── */
-function SuccessScreen({ onBack, isVerified }) {
+function SuccessScreen({ onBack, isVerified, userRole, onSuccess }) {
+  const isPro = userRole === 'pro';
+
   return (
     <div style={{ ...s.page, justifyContent:"center", alignItems:"center", padding:32 }}>
       <style>{css}</style>
@@ -420,16 +421,30 @@ function SuccessScreen({ onBack, isVerified }) {
         <div style={{ fontSize:64, marginBottom:12 }}>🎉</div>
         <div style={{ fontSize:22, fontWeight:800, color:C.black, marginBottom:6 }}>¡Cuenta creada!</div>
         <div style={{ fontSize:14, color:C.gray, textAlign:"center", lineHeight:1.6, marginBottom:20 }}>
-          Bienvenido a Listo Patrón. Ya puedes solicitar servicios profesionales a domicilio.
+          {isPro 
+            ? "Tu perfil ha sido guardado exitosamente. Ahora puedes postularte para comenzar a recibir solicitudes."
+            : "Bienvenido a Listo Patrón. Ya puedes solicitar servicios profesionales a domicilio."}
         </div>
         {isVerified && (
           <div style={s.successBadge}>
             ✅ Usuario Verificado
           </div>
         )}
-        <button style={{ ...s.submitBtn, marginTop:20 }} onClick={onBack}>
-          Ir al inicio →
-        </button>
+        
+        {isPro ? (
+          <>
+            <button style={{ ...s.submitBtn, marginTop: 20 }} onClick={() => onSuccess && onSuccess('planes')}>
+              🚀 Ver Planes de Postulación
+            </button>
+            <button style={{ background: "transparent", color: C.gray, border: "none", fontSize: 13, fontWeight: 700, padding: 10, marginTop: 10, cursor: "pointer" }} onClick={onBack}>
+              Hacerlo en otro momento
+            </button>
+          </>
+        ) : (
+          <button style={{ ...s.submitBtn, marginTop:20 }} onClick={() => onSuccess ? onSuccess() : onBack()}>
+            Ir al inicio →
+          </button>
+        )}
       </div>
     </div>
   );
