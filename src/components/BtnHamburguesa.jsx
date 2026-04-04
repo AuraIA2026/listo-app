@@ -281,7 +281,7 @@ function PaymentSection({ plan, onBack, onConfirm }) {
         <p className="pp-pay-sub" style={{ color: '#666', fontSize: '14px', margin: '4px 0 0' }}>📦 Total inicial: <strong>{plan.contratos}</strong> + 🎁 3 gratis</p>
       </div>
 
-      <div style={{ padding: '0 10px 120px', marginBottom: '40px' }}>
+      <div style={{ padding: '0 10px' }}>
         <div className="pay-section fade-up" style={{ animationDelay: '0.1s' }}>
           <h3 className="pay-section-title">Método de pago</h3>
           <div className="pay-methods">
@@ -478,21 +478,20 @@ function PaymentSection({ plan, onBack, onConfirm }) {
         </div>
       )}
 
-      {/* FIXED BOTTOM BAR */}
-      <div className="payment-fixed-bottom" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: 'white', padding: '20px', borderTop: '1px solid #eee', boxShadow: '0 -4px 16px rgba(0,0,0,0.05)', zIndex: 100 }}>
-        <button
-          className={`pay-confirm-btn fade-up ${canConfirm ? 'ready' : ''}`}
-          disabled={!canConfirm || isUploading}
-          onClick={handleConfirmPay}
-          style={{ width: '100%', padding: '16px', background: canConfirm ? pal.primary : '#E0E0E0', color: canConfirm ? 'white' : '#999', border: 'none', borderRadius: '16px', fontSize: '16px', fontWeight: '900', cursor: canConfirm ? 'pointer' : 'not-allowed', transition: 'all 0.3s' }}
-        >
-          {isUploading ? 'Procesando pago...' : canConfirm
-            ? `Enviar Solicitud de ${plan.nombre}`
-            : 'Completa los pasos para continuar'}
-        </button>
+        {/* BOTÓN ENVIAR INLINE (MÁS VISIBLE Y SEGURO CONTRA CORTES) */}
+        <div style={{ marginTop: '24px', paddingBottom: '140px' }}>
+          <button
+            className={`pay-confirm-btn fade-up ${canConfirm ? 'ready' : ''}`}
+            disabled={!canConfirm || isUploading}
+            onClick={handleConfirmPay}
+            style={{ width: '100%', padding: '16px', background: canConfirm ? pal.primary : '#E0E0E0', color: canConfirm ? 'white' : '#999', border: 'none', borderRadius: '16px', fontSize: '16px', fontWeight: '900', cursor: canConfirm ? 'pointer' : 'not-allowed', transition: 'all 0.3s', boxShadow: canConfirm ? `0 4px 12px ${pal.primary}66` : 'none' }}
+          >
+            {isUploading ? 'Procesando pago...' : canConfirm
+              ? `Enviar Solicitud de ${plan.nombre}`
+              : 'Completa los pasos para continuar'}
+          </button>
+        </div>
       </div>
-
-    </div>
   )
 }
 
@@ -665,6 +664,16 @@ export default function BtnHamburguesa({ onClose, navigate, initialOpenSection =
        }
 
        await addDoc(collection(db, 'payments'), newPayment)
+
+       // ── Notificación para el Admin ──
+       await addDoc(collection(db, 'notificaciones'), {
+         userId: 'admin',
+         type: 'plan_purchase',
+         title: 'NUEVO PAGO DE PLAN 👑',
+         text: `El profesional ${userData?.name || 'Un profesional'} ha solicitado el plan ${planDetalle.nombre}.`,
+         read: false,
+         createdAt: serverTimestamp()
+       })
 
        if (payData.method === 'card') {
           const finalContracts = (userData?.contracts || 0) + contractsParsed + 3
