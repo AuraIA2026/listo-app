@@ -10,6 +10,7 @@ export default function PlanesPage({ onBack, navigate }) {
   const [successMsg, setSuccessMsg] = useState('')
 
   const currentPlanId = userData?.plan || 'gold'
+  const [purchasedPlan, setPurchasedPlan] = useState(null)
 
   const planes = [
     {
@@ -101,13 +102,64 @@ export default function PlanesPage({ onBack, navigate }) {
           plan: planId,
           planUpdatedAt: new Date().toISOString()
         })
-        setSuccessMsg(`¡Felicidades! Ahora eres nivel ${planId.toUpperCase()}`)
-        setTimeout(() => setSuccessMsg(''), 3000)
+        setPurchasedPlan(planId)
       }
     } catch (e) {
       console.error(e)
     }
     setLoading(false)
+  }
+
+  if (purchasedPlan) {
+    const isProfileIncomplete = !userData?.profileComplete;
+    return (
+      <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: '#fff', zIndex: 9999, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '32px' }}>
+        <style>{`
+          @keyframes big-bounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+          }
+          @keyframes fire-glow {
+            0%, 100% { box-shadow: 0 4px 15px rgba(242,96,0,0.5); }
+            50% { box-shadow: 0 4px 30px rgba(255,165,0,0.8); }
+          }
+        `}</style>
+        <div style={{ fontSize: '80px', marginBottom: '16px', animation: 'big-bounce 2s infinite' }}>🎉</div>
+        <h2 style={{ fontSize: '24px', fontWeight: '900', color: '#1a1a2e', textAlign: 'center', marginBottom: '16px' }}>¡Plan Solicitado!</h2>
+        
+        {isProfileIncomplete ? (
+          <>
+            <p style={{ fontSize: '15px', color: '#666', textAlign: 'center', lineHeight: '1.6', marginBottom: '32px' }}>
+              Has dado el primer paso. <b style={{color: '#1a1a2e'}}>Ahora debes completar tu perfil para comenzar a generar ingresos.</b> Necesitamos tus datos para mostrarte a los clientes.
+            </p>
+            <button 
+              style={{ background: 'linear-gradient(135deg, #F26000, #FF7A1A)', color: 'white', border: 'none', padding: '16px 24px', fontSize: '16px', fontWeight: '900', borderRadius: '12px', cursor: 'pointer', width: '100%', maxWidth: '300px', animation: 'fire-glow 1.5s infinite' }}
+              onClick={() => {
+                setPurchasedPlan(null);
+                navigate('completar-perfil');
+              }}
+            >
+              📝 Completar Perfil Ahora
+            </button>
+          </>
+        ) : (
+          <>
+            <p style={{ fontSize: '15px', color: '#666', textAlign: 'center', lineHeight: '1.6', marginBottom: '32px' }}>
+              Tu plan ha sido actualizado correctamente. Ya estás listo para destacar y conseguir más contratos en la plataforma.
+            </p>
+            <button 
+              style={{ background: '#1a1a2e', color: 'white', border: 'none', padding: '16px 24px', fontSize: '16px', fontWeight: '900', borderRadius: '12px', cursor: 'pointer', width: '100%', maxWidth: '300px' }}
+              onClick={() => {
+                setPurchasedPlan(null);
+                onBack(); // Volver al inicio o a donde estaba
+              }}
+            >
+              🚀 Volver al Inicio
+            </button>
+          </>
+        )}
+      </div>
+    )
   }
 
   return (

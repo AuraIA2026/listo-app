@@ -422,7 +422,7 @@ function SuccessScreen({ onBack, isVerified, userRole, onSuccess }) {
         <div style={{ fontSize:22, fontWeight:800, color:C.black, marginBottom:6 }}>¡Cuenta creada!</div>
         <div style={{ fontSize:14, color:C.gray, textAlign:"center", lineHeight:1.6, marginBottom:20 }}>
           {isPro 
-            ? "Tu perfil ha sido guardado exitosamente. Ahora puedes postularte para comenzar a recibir solicitudes."
+            ? "Tu perfil ha sido guardado exitosamente. Ahora debes postularte para comenzar a generar ingresos."
             : "Bienvenido a Listo Patrón. Ya puedes solicitar servicios profesionales a domicilio."}
         </div>
         {isVerified && (
@@ -433,8 +433,17 @@ function SuccessScreen({ onBack, isVerified, userRole, onSuccess }) {
         
         {isPro ? (
           <>
-            <button style={{ ...s.submitBtn, marginTop: 20 }} onClick={() => onSuccess && onSuccess('planes')}>
-              🚀 Ver Planes de Postulación
+            <style>{`
+              @keyframes boom-glow {
+                0%, 100% { box-shadow: 0 4px 15px rgba(242,96,0,0.5); transform: scale(1); }
+                50% { box-shadow: 0 4px 30px rgba(255,165,0,0.8); transform: scale(1.05); }
+              }
+            `}</style>
+            <button 
+              style={{ ...s.submitBtn, marginTop: 20, background: 'linear-gradient(135deg, #F26000, #FF7A1A)', border: '2px solid #FFD700', animation: 'boom-glow 1.5s infinite', fontSize: '15px' }} 
+              onClick={() => onSuccess && onSuccess('planes')}
+            >
+              🚀 Elegir Plan (Postularme)
             </button>
             <button style={{ background: "transparent", color: C.gray, border: "none", fontSize: 13, fontWeight: 700, padding: 10, marginTop: 10, cursor: "pointer" }} onClick={onBack}>
               Hacerlo en otro momento
