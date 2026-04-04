@@ -61,7 +61,7 @@ export default function ProTutorialSystem({ userRole, userData, currentPage, nav
 
       // Mission 4: Nav Tour
       if (!localStorage.getItem(NAV_TOUR_DONE_KEY)) {
-        setMission({ id: 'nav-tour-1', type: 'tooltip', targetSelector: '[data-tour="nav-notifications"]', text: '🔔 Aquí escucharás el sonido del dinero (Notificaciones y aprobaciones).' });
+        setMission({ id: 'nav-tour-1', type: 'tooltip', targetSelector: '[data-tour="nav-orders"]', text: '📋 Aquí te caerán los trabajos para que los cotices y aceptes.' });
         return;
       }
 
@@ -126,10 +126,10 @@ export default function ProTutorialSystem({ userRole, userData, currentPage, nav
   }
 
   if (mission.id === 'nav-tour-1' && targetRect) {
-     return <TooltipOverlay rect={targetRect} text={mission.text} onNext={() => setMission({ id: 'nav-tour-2', type: 'tooltip', targetSelector: '[data-tour="nav-orders"]', text: '📋 Aquí te caerán los trabajos para que los cotices y aceptes.' })} btnText="Siguiente 👉" />;
+     return <TooltipOverlay rect={targetRect} text={mission.text} onNext={() => setMission({ id: 'nav-tour-2', type: 'tooltip', targetSelector: '[data-tour="nav-chat"]', text: '💬 Aquí negociarás los precios y detalles con el cliente.' })} btnText="Siguiente 👉" />;
   }
   if (mission.id === 'nav-tour-2' && targetRect) {
-     return <TooltipOverlay rect={targetRect} text={mission.text} onNext={() => setMission({ id: 'nav-tour-3', type: 'tooltip', targetSelector: '[data-tour="nav-chat"]', text: '💬 Aquí negociarás los precios y detalles con el cliente.' })} btnText="Siguiente 👉" />;
+     return <TooltipOverlay rect={targetRect} text={mission.text} onNext={() => setMission({ id: 'nav-tour-3', type: 'tooltip', targetSelector: '[data-tour="nav-profile"]', text: '👤 Y aquí en tu Perfil configuras todo tu sistema.' })} btnText="Siguiente 👉" />;
   }
   if (mission.id === 'nav-tour-3' && targetRect) {
      return <TooltipOverlay rect={targetRect} text={mission.text} onNext={() => { localStorage.setItem(NAV_TOUR_DONE_KEY, 'true'); setMission(null); alert("¡YA ESTÁS LISTO, PATRÓN! Tu cuenta está blindada. A trabajar se ha dicho."); }} btnText="¡A trabajar! 🚀" />;
