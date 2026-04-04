@@ -210,15 +210,22 @@ function ProDelMes({ lang, navigate, userRole }) {
 
   const [mes] = useState(() => {
     const now = new Date()
-    return new Intl.DateTimeFormat(lang === 'es' ? 'es-DO' : 'en-US', { month: 'long', year: 'numeric' }).format(now)
+    // El "Profesional del Mes" corresponde al mes anterior al actual
+    const prevMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1)
+    return new Intl.DateTimeFormat(lang === 'es' ? 'es-DO' : 'en-US', { month: 'long', year: 'numeric' }).format(prevMonthDate)
   })
 
   useEffect(() => {
     const calcularProDelMes = async () => {
       try {
         const now = new Date()
-        const inicioMes = new Date(now.getFullYear(), now.getMonth(), 1)
-        const inicioMesTs = Math.floor(inicioMes.getTime() / 1000)
+        
+        // Rango de fechas del mes anterior completo
+        const inicioMesAnterior = new Date(now.getFullYear(), now.getMonth() - 1, 1)
+        const finMesAnterior = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999)
+
+        const inicioTs = Math.floor(inicioMesAnterior.getTime() / 1000)
+        const finTs = Math.floor(finMesAnterior.getTime() / 1000)
 
         const q = query(collection(db, 'orders'), where('rated', '==', true))
         const snapshot = await getDocs(q)
@@ -228,7 +235,9 @@ function ProDelMes({ lang, navigate, userRole }) {
         snapshot.forEach(docSnap => {
           const d = docSnap.data()
           const createdTs = d.createdAt?.seconds || 0
-          if (createdTs < inicioMesTs) return
+          
+          // Filtrar estrictamente solo las reseñas dejadas el mes anterior
+          if (createdTs < inicioTs || createdTs > finTs) return
 
           const proId = d.proId || d.professionalId
           if (!proId) return
@@ -260,32 +269,10 @@ function ProDelMes({ lang, navigate, userRole }) {
         const lista = Object.values(conteo)
 
         if (lista.length === 0) {
-          const qPros = query(collection(db, 'users'), where('type', '==', 'pro'))
-          const snapPros = await getDocs(qPros)
-          let mejor = null
-          snapPros.forEach(docSnap => {
-            const d = docSnap.data()
-            if (!d.approved && d.verificacion?.estado === 'en_revision') return // Excluir perfiles nuevos no aprobados
-
-            // Priorizar profesionales que ya tienen experiencia real en la app
-            const dScore = (d.rating || 5) * (d.reviews || 0.1)
-            const mScore = mejor ? (mejor.rating || 5) * (mejor.reviews || 0.1) : -1
-
-            if (dScore > mScore) mejor = { id: docSnap.id, ...d }
-          })
-          if (mejor) {
-            setProDelMes({
-              id:           mejor.id,
-              nombre:       mejor.name || 'Profesional',
-              foto:         mejor.photoURL || mejor.photo || mejor.profilePhoto || mejor.avatar || null,
-              especialidad: mejor.category || 'Servicios',
-              estrellas:    Math.round((mejor.rating || 5) * (mejor.reviews || 1)),
-              contratos:    mejor.reviews || 0,
-              avatar:       (mejor.name || 'P').substring(0, 2).toUpperCase(),
-            })
-            setTotalEstrellas(Math.round((mejor.rating || 5) * (mejor.reviews || 1)))
-            setResenas([])
-          }
+          // Si NADIE en toda la plataforma recibió reseñas el mes pasado,
+          // no mostramos el cuadro de Profesional del Mes (es un lujo real).
+          setProDelMes(null)
+          return
         } else {
           lista.sort((a, b) => b.estrellas - a.estrellas)
           const ganador = lista[0]
