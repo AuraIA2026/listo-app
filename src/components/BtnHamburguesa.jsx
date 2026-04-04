@@ -197,7 +197,7 @@ function ConfirmModal({ plan, onClose }) {
         <div style={{ fontSize: '64px', marginBottom: '14px' }}>✅</div>
         <h3 style={{ fontSize: '24px', fontWeight: '900', color: '#1C1C1C', margin: '0 0 10px' }}>¡Solicitud enviada!</h3>
         <p style={{ fontSize: '14px', color: '#666', lineHeight: 1.7, margin: '0 0 28px' }}>
-          Un asesor de <strong>Listo</strong> te contactará pronto para activar tu <strong style={{ color: pal.primary }}>{plan.nombre}</strong>.
+          Un asesor de <strong>Listo Patrón</strong> te contactará pronto para activar tu <strong style={{ color: pal.primary }}>{plan.nombre}</strong>.
         </p>
         <Btn3D onClick={onClose} bg={pal.gradient} shadow={pal.btn3d}>Entendido 👍</Btn3D>
       </div>
