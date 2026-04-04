@@ -244,7 +244,7 @@ function CompletarPerfilBtn({ profileComplete, onClick }) {
 }
 
 
-function TestimonialsCarousel({ lang }) {
+function TestimonialsCarousel({ lang, navigate }) {
   const [allTestimonials, setAllTestimonials] = useState(testimonials)
 
   useEffect(() => {
@@ -257,6 +257,7 @@ function TestimonialsCarousel({ lang }) {
         const topReviews = docs.filter(d => (d.ratingScore >= 4 || d.moderated))
         topReviews.sort((a,b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0))
         const formatted = topReviews.slice(0, 10).map(d => ({
+          id: d.proId || d.professionalId || null,
           nameEs: d.reviewerName || d.clientName || 'Cliente',
           clientPhoto: d.reviewerPhoto || d.clientPhoto || null,
           proPhoto: d.proPhoto || d.professionalPhoto || d.proPhotoURL || null,
@@ -310,7 +311,12 @@ function TestimonialsCarousel({ lang }) {
       <div className="testimonial-card" onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
         <button className="testi-arrow testi-arrow-left" onClick={prev}>‹</button>
         <div className="testi-body" key={idx}>
-          <div className="testi-header" style={{ position: 'relative' }}>
+          <div className="testi-header" style={{ position: 'relative', cursor: t.id ? 'pointer' : 'default' }} onClick={() => { 
+            if(t.id && navigate) {
+              const proToBook = { id: t.id, name: t.proName, nameEs: t.proName, img: t.proPhoto || t.photo, photoURL: t.proPhoto || t.photo, avatar: t.proName?.charAt(0)?.toUpperCase(), rating: t.rating, category: t.specEs, specEs: t.specEs };
+              navigate('booking', { professional: proToBook });
+            }
+          }}>
             <div className="testi-photo-wrap" style={{ position: 'relative' }}>
               {(t.proPhoto || t.photo)
                 ? <img src={t.proPhoto || t.photo} alt={t.proName || t.nameEs} className="testi-photo" style={{ border: '3px solid #fff', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
@@ -850,7 +856,7 @@ export default function HomePage({ lang, navigate, userRole }) {
         </div>
       )}
 
-      <TestimonialsCarousel lang={lang} />
+      <TestimonialsCarousel lang={lang} navigate={navigate} />
 
       <section ref={featuredRef} className={`featured-section${featuredVisible ? ' reveal' : ''}`}>
         <div className="hp-sec-header">
