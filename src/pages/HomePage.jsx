@@ -308,9 +308,22 @@ function TestimonialsCarousel({ lang, navigate }) {
       <div className="hp-sec-header">
         <h2 className="hp-sec-title">💬 {lang === 'es' ? 'Lo que dicen nuestros clientes' : 'What our clients say'}</h2>
       </div>
-      <div className="testimonial-card" onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
-        <button className="testi-arrow testi-arrow-left" onClick={prev}>‹</button>
-        <div className="testi-body" key={idx}>
+      <style>{`
+        .testi-star { position: absolute; pointer-events: none; z-index: 1; filter: drop-shadow(0 0 8px rgba(255,215,0,0.5)); }
+        @keyframes floatStarAnim {
+          0% { transform: translateY(0) scale(0.9) rotate(-5deg); opacity: 0.2; }
+          50% { transform: translateY(-15px) scale(1.1) rotate(5deg); opacity: 0.6; }
+          100% { transform: translateY(0) scale(0.9) rotate(-5deg); opacity: 0.2; }
+        }
+      `}</style>
+      <div className="testimonial-card" onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd} style={{ position: 'relative', overflow: 'hidden' }}>
+        <span className="testi-star" style={{ top: '10%', left: '8%', fontSize: '28px', animation: 'floatStarAnim 5s ease-in-out infinite' }}>⭐</span>
+        <span className="testi-star" style={{ bottom: '15%', left: '15%', fontSize: '16px', animation: 'floatStarAnim 4s ease-in-out infinite 1s' }}>✨</span>
+        <span className="testi-star" style={{ top: '15%', right: '8%', fontSize: '38px', animation: 'floatStarAnim 7s ease-in-out infinite 2s' }}>⭐</span>
+        <span className="testi-star" style={{ bottom: '20%', right: '12%', fontSize: '22px', animation: 'floatStarAnim 6s ease-in-out infinite 0.5s' }}>✨</span>
+        
+        <button className="testi-arrow testi-arrow-left" onClick={prev} style={{ zIndex: 10 }}>‹</button>
+        <div className="testi-body" key={idx} style={{ position: 'relative', zIndex: 10 }}>
           <div className="testi-header" style={{ position: 'relative', cursor: t.id ? 'pointer' : 'default' }} onClick={() => { 
             if(t.id && navigate) {
               const proToBook = { id: t.id, name: t.proName, nameEs: t.proName, img: t.proPhoto || t.photo, photoURL: t.proPhoto || t.photo, avatar: t.proName?.charAt(0)?.toUpperCase(), rating: t.rating, category: t.specEs, specEs: t.specEs };
@@ -345,7 +358,7 @@ function TestimonialsCarousel({ lang, navigate }) {
              </div>
           </div>
         </div>
-        <button className="testi-arrow testi-arrow-right" onClick={next}>›</button>
+        <button className="testi-arrow testi-arrow-right" onClick={next} style={{ zIndex: 10 }}>›</button>
       </div>
       <div className="testi-dots">
         {allTestimonials.map((_, i) => (
