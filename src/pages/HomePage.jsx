@@ -190,6 +190,60 @@ function PostularmeBtn({ isPro, userData, onClick }) {
   )
 }
 
+/* ── BOTÓN COMPLETAR PERFIL ── */
+function CompletarPerfilBtn({ profileComplete, onClick }) {
+  const isComplete = profileComplete;
+  const label = isComplete ? '✅ Perfil completo' : '📝 Completar perfil';
+  
+  // Si está completo usa colores verdes, si no, usa colores azules
+  const color1 = isComplete ? '#10B981' : '#3B82F6';
+  const color2 = isComplete ? '#059669' : '#2563EB';
+  const color3 = isComplete ? '#047857' : '#1D4ED8';
+  const shadowBase = isComplete ? '#064E3B' : '#1E3A8A';
+  const glow1 = isComplete ? 'rgba(16,185,129,0.4)' : 'rgba(59,130,246,0.4)';
+  const glow2 = isComplete ? 'rgba(5,150,105,0.8)' : 'rgba(37,99,235,0.8)';
+
+  return (
+    <>
+      <style>{`
+        @keyframes cp-glow {
+          0%,100% { box-shadow: 0 4px 0 ${shadowBase}, 0 0 12px ${glow1}; }
+          50%      { box-shadow: 0 4px 0 ${shadowBase}, 0 0 28px ${glow2}; }
+        }
+        .cp-btn-wrap { position: relative; flex-shrink: 0; }
+        .cp-btn {
+          position: relative;
+          overflow: hidden;
+          background: linear-gradient(135deg, ${color1}, ${color2}, ${color3});
+          color: #fff;
+          border: none;
+          border-radius: 22px;
+          padding: 9px 16px;
+          font-size: 13px;
+          font-weight: 900;
+          letter-spacing: 0.3px;
+          cursor: pointer;
+          white-space: nowrap;
+          animation: cp-glow 2s ease-in-out infinite;
+          transition: transform 0.08s, box-shadow 0.08s;
+          text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+        .cp-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 ${shadowBase} !important; }
+      `}</style>
+      <div className="cp-btn-wrap">
+        {!isComplete && <span className="pm-spark pm-spark-1">✦</span>}
+        {!isComplete && <span className="pm-spark pm-spark-2">★</span>}
+        {!isComplete && <span className="pm-spark pm-spark-3">✦</span>}
+        <button className="cp-btn" onClick={onClick}>
+          {!isComplete && <span className="pm-shimmer" />}
+          {label}
+        </button>
+      </div>
+    </>
+  )
+}
+
+
 function TestimonialsCarousel({ lang }) {
   const [allTestimonials, setAllTestimonials] = useState(testimonials)
 
@@ -544,14 +598,12 @@ export default function HomePage({ lang, navigate, userRole }) {
                 )}
               </div>
               
-              {!profileComplete && (
-                <button 
-                  onClick={() => navigate('profile', { screen: 'verification' })}
-                  style={{ background: 'rgba(26, 26, 46, 0.6)', color: '#FFD700', border: '1px solid #FFD700', borderRadius: '18px', padding: '6px 10px', fontSize: '11px', fontWeight: '800', cursor: 'pointer', whiteSpace: 'nowrap' }}
-                >
-                  📝 Completar perfil
-                </button>
-              )}
+              <CompletarPerfilBtn 
+                profileComplete={profileComplete}
+                onClick={() => {
+                  if (!profileComplete) navigate('profile', { screen: 'verification' })
+                }}
+              />
 
               <PostularmeBtn isPro={isPro} userData={userData} onClick={() => {
                 if (!profileComplete) {
