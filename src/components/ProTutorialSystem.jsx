@@ -47,9 +47,11 @@ export default function ProTutorialSystem({ userRole, userData, currentPage, nav
       // Mission 2: Complete Profile
       if (!isProfileComplete) {
         if (currentPage === 'home') {
-          setMission({ id: 'completar-perfil', type: 'tooltip', targetSelector: '[data-tour="completar-perfil"]', text: '📝 Misión 1: ¡Los clientes no confían en fantasmas! Toca aquí para llenar tus datos básicos y subir tu cédula. Obligatorio.' });
+          setMission({ id: 'completar-perfil', type: 'tooltip', targetSelector: '[data-tour="completar-perfil"]', text: '📝 Primero lo primero: Completa tu perfil para que los clientes confíen en ti. Haz clic aquí.' });
+        } else if (currentPage === 'profile') {
+          setMission({ id: 'btn-guardar-verif', type: 'tooltip', targetSelector: '[data-tour="btn-guardar-verif"]', text: '📝 Llena todos tus datos reales y sube tus documentos. Al finalizar, presiona Enviar.' });
         } else {
-          setMission({ id: 'nav-home', type: 'tooltip', targetSelector: '[data-tour="nav-home"]', text: '🏠 Debemos volver a la pantalla de Inicio para la misión.' });
+          setMission({ id: 'nav-home', type: 'tooltip', targetSelector: '[data-tour="nav-home"]', text: '🏠 Debemos ir al panel principal para configurar tu cuenta.' });
         }
         return;
       }
@@ -57,9 +59,11 @@ export default function ProTutorialSystem({ userRole, userData, currentPage, nav
       // Mission 3: Buy Plan
       if (!isPlanActive) {
         if (currentPage === 'profile') {
-          setMission({ id: 'comprar-plan', type: 'tooltip', targetSelector: '[data-tour="comprar-plan"]', text: '💎 Ya casi terminas. Para salir en el buscador y empezar a recibir trabajos, recarga tus contratos aquí.' });
+          setMission({ id: 'comprar-plan', type: 'tooltip', targetSelector: '[data-tour="comprar-plan"]', text: '💎 ¡Genial! Ahora postúlate o activa un plan para aparecer en el buscador de la app y recibir clientes.' });
+        } else if (currentPage === 'home') {
+          setMission({ id: 'comprar-plan-home', type: 'tooltip', targetSelector: '[data-tour="completar-perfil"]', text: '💎 Estás validado. Ahora presiona Postularme o elige un plan para activarte.' });
         } else {
-          setMission({ id: 'nav-profile', type: 'tooltip', targetSelector: '[data-tour="nav-profile"]', text: '👤 Ve a tu Perfil para activar tu plan vip.' });
+          setMission({ id: 'nav-profile', type: 'tooltip', targetSelector: '[data-tour="nav-profile"]', text: '👤 Ve a tu Perfil para activar tu plan.' });
         }
         return;
       }
@@ -209,7 +213,7 @@ function TooltipOverlay({ rect, text, onNext, btnText, hideBtn }) {
       <div style={{ position: 'absolute', top: rect.top - 4, left: rect.left - 4, width: rect.width + 8, height: rect.height + 8, borderRadius: 12, border: '3px solid #F26000', animation: 'starTwinkle 1s infinite alternate', pointerEvents: 'none' }} />
 
       {/* Hand Switcher */}
-      <img src="/assets/mano.png" onError={(e) => { e.target.style.display='none'; e.target.nextSibling.style.display='block'; }} className={`pt-hand ${isBottom ? 'pointing-down' : 'pointing-up'}`} style={{ top: isBottom ? rect.top - 90 : rect.top + rect.height + 10, left: rect.left + rect.width/2 - 40 }} />
+      <img src="/assets/mano.png" onError={(e) => { e.target.style.display='none'; e.target.nextSibling.style.display='block'; }} className={`pt-hand ${isBottom ? 'pointing-down' : 'pointing-up'}`} style={{ top: isBottom ? rect.top - 90 : rect.top + rect.height + 10, left: rect.left + rect.width/2 - 40, opacity: 0.75 }} />
       <div className={`pt-hand ${isBottom ? 'pointing-down' : 'pointing-up'}`} style={{ top: isBottom ? rect.top - 80 : rect.top + rect.height + 10, left: rect.left + rect.width/2 - 20, fontSize: 60, display: 'none', filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.4))' }}>👆</div>
 
       <div className="pt-star" style={{ top: isBottom ? rect.top - 120 : rect.top + rect.height + 80, left: rect.left + rect.width/2 - 60 }}>✨</div>

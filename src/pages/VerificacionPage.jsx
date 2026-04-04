@@ -504,6 +504,7 @@ export default function VerificacionPage({ onBack }) {
         {/* BOTÓN ENVIAR */}
         <div style={{ padding:"8px 16px 16px" }}>
           <button
+            data-tour="btn-guardar-verif"
             style={{ ...styles.submitBtn, background: submitted ? "linear-gradient(135deg,#22C55E,#16A34A)" : "linear-gradient(135deg,#F26000,#C24E00)", boxShadow: submitted ? "0 6px 24px rgba(34,197,94,0.4)" : "0 6px 24px rgba(242,96,0,0.4)", opacity: saving ? 0.7 : 1 }}
             onClick={handleSubmit}
             disabled={saving}
