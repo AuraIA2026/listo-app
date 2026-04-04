@@ -90,7 +90,12 @@ export default function ServicesPage({ lang = 'es', navigate }) {
         const pros = []
         querySnapshot.forEach((doc) => {
           const data = doc.data()
-          // Filtramos perfiles incompletos si es necesario, pero mostramos todos los 'professional'
+          // Filtro estricto: Solo mostrar si completó el perfil y tiene plan activo o contratos
+          const isComplete = Boolean(data.profileComplete || data.verificacion?.estado === 'aprobada')
+          const hasPlan = Boolean(data.planStatus === 'active')
+          const hasContracts = Boolean(data.contracts && data.contracts > 0)
+          if (!isComplete || (!hasPlan && !hasContracts)) return;
+          
           pros.push({
             id: doc.id,
             name: data.name || data.displayName || 'Profesional',
@@ -113,6 +118,12 @@ export default function ServicesPage({ lang = 'es', navigate }) {
         const querySnapshot2 = await getDocs(q2)
         querySnapshot2.forEach((doc) => {
           const data = doc.data()
+          
+          const isComplete = Boolean(data.profileComplete || data.verificacion?.estado === 'aprobada')
+          const hasPlan = Boolean(data.planStatus === 'active')
+          const hasContracts = Boolean(data.contracts && data.contracts > 0)
+          if (!isComplete || (!hasPlan && !hasContracts)) return;
+
           if (!pros.find(p => p.id === doc.id)) {
             pros.push({
               id: doc.id,
