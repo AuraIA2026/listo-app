@@ -101,6 +101,8 @@ export default function BottomNav({ currentPage, navigate, lang = 'es', userRole
 
   const [unreadChats, setUnreadChats]     = useState(0)
   const [pendingOrders, setPendingOrders] = useState(0)
+  const [unreadOrderNotifs, setUnreadOrderNotifs] = useState(0)
+  const [unreadMsgNotifs, setUnreadMsgNotifs] = useState(0)
 
   useEffect(() => {
     if (!auth.currentUser) return
@@ -121,7 +123,21 @@ export default function BottomNav({ currentPage, navigate, lang = 'es', userRole
       setPendingOrders(snap.size)
     }, () => {})
 
-    return () => { unsubChats(); unsubOrders() }
+    // Unread Notifs Logic
+    const qNotifs = query(collection(db, 'notificaciones'), where('userId', '==', uid), where('read', '==', false))
+    const unsubNotifs = onSnapshot(qNotifs, snap => {
+      let tempOrders = 0
+      let tempMsgs = 0
+      snap.forEach(d => {
+        const t = d.data().type
+        if (['new_order', 'job_done', 'order_status', 'system'].includes(t)) tempOrders++
+        else if (t === 'message') tempMsgs++
+      })
+      setUnreadOrderNotifs(tempOrders)
+      setUnreadMsgNotifs(tempMsgs)
+    }, () => {})
+
+    return () => { unsubChats(); unsubOrders(); unsubNotifs() }
   }, [resolvedRole, userData?.type])
 
   const activeTab =
@@ -160,11 +176,11 @@ export default function BottomNav({ currentPage, navigate, lang = 'es', userRole
                 )}
 
                 {/* Badges de Notificaciones */}
-                {tab.id === 'chat' && unreadChats > 0 && (
-                  <span className="nav-badge">{unreadChats > 99 ? '99+' : unreadChats}</span>
+                {tab.id === 'chat' && (unreadChats + unreadMsgNotifs) > 0 && (
+                  <span className="nav-badge">{(unreadChats + unreadMsgNotifs) > 99 ? '99+' : (unreadChats + unreadMsgNotifs)}</span>
                 )}
-                {tab.id === 'orders' && pendingOrders > 0 && (
-                  <span className="nav-badge">{pendingOrders > 99 ? '99+' : pendingOrders}</span>
+                {tab.id === 'orders' && (pendingOrders + unreadOrderNotifs) > 0 && (
+                  <span className="nav-badge">{(pendingOrders + unreadOrderNotifs) > 99 ? '99+' : (pendingOrders + unreadOrderNotifs)}</span>
                 )}
                 
                 <span className="nav-icon" style={{ animation: isActive ? 'popIcon 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)' : 'none' }}>

@@ -609,22 +609,24 @@ export default function HomePage({ lang, navigate, userRole }) {
           </div>
         ) : (
           <div className="hp-greeting" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px', textAlign: 'center' }}>
-            <div>
-              <h1>👋 {lang === 'es' ? 'Panel Profesional' : 'Pro Dashboard'}</h1>
-              <p>{lang === 'es' ? `Hola, ${userData?.name?.split(' ')[0] || 'Socio'}` : `Hi, ${userData?.name?.split(' ')[0] || 'Partner'}`}</p>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', flexWrap: 'wrap', width: '100%' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px' }}>
               <div 
                 onClick={() => navigate('notificaciones')}
-                style={{ position:'relative', width:'38px', height:'38px', borderRadius:'50%', background:'rgba(255,255,255,0.1)', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', border:'1px solid rgba(255,255,255,0.2)' }}
+                style={{ position:'relative', width:'42px', height:'42px', borderRadius:'50%', background:'rgba(255,255,255,0.1)', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', border:'1px solid rgba(255,255,255,0.2)', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
               >
-                <span style={{ fontSize:'18px' }}>🔔</span>
+                <span style={{ fontSize:'20px' }}>🔔</span>
                 {unreadNotifs > 0 && (
-                  <span style={{ position:'absolute', top:'-2px', right:'-2px', background:'#EF4444', color:'white', fontSize:'11px', fontWeight:'900', borderRadius:'10px', padding:'2px 6px', border:'2px solid #1A1A2E' }}>
+                  <span style={{ position:'absolute', top:'-4px', right:'-4px', background:'#EF4444', color:'white', fontSize:'11px', fontWeight:'900', borderRadius:'10px', padding:'3px 7px', border:'2px solid #1A1A2E' }}>
                     {unreadNotifs > 9 ? '9+' : unreadNotifs}
                   </span>
                 )}
               </div>
+              <div style={{ textAlign: 'left' }}>
+                <h1 style={{ margin: 0, fontSize: '20px' }}>👋 {lang === 'es' ? 'Panel Profesional' : 'Pro Dashboard'}</h1>
+                <p style={{ margin: '4px 0 0 0', fontSize: '14px', color: '#ccc' }}>{lang === 'es' ? `Hola, ${userData?.name?.split(' ')[0] || 'Socio'}` : `Hi, ${userData?.name?.split(' ')[0] || 'Partner'}`}</p>
+              </div>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', flexWrap: 'wrap', width: '100%' }}>
               
               <CompletarPerfilBtn 
                 profileComplete={profileComplete}
