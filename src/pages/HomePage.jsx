@@ -608,12 +608,12 @@ export default function HomePage({ lang, navigate, userRole }) {
             </div>
           </div>
         ) : (
-          <div className="hp-greeting" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div className="hp-greeting" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px', textAlign: 'center' }}>
             <div>
               <h1>👋 {lang === 'es' ? 'Panel Profesional' : 'Pro Dashboard'}</h1>
               <p>{lang === 'es' ? `Hola, ${userData?.name?.split(' ')[0] || 'Socio'}` : `Hi, ${userData?.name?.split(' ')[0] || 'Partner'}`}</p>
             </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', flexWrap: 'wrap', width: '100%' }}>
               <div 
                 onClick={() => navigate('notificaciones')}
                 style={{ position:'relative', width:'38px', height:'38px', borderRadius:'50%', background:'rgba(255,255,255,0.1)', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', border:'1px solid rgba(255,255,255,0.2)' }}
