@@ -35,10 +35,21 @@ export default function ProTutorialSystem({ userRole, userData, currentPage, nav
 
     // Delay mission evaluation slightly to allow DOM to render
     const timer = setTimeout(() => {
-      // Mission 1: Welcome
+      // Mission 1: Welcome Sequential Tooltips
       if (!localStorage.getItem(welcomeKey)) {
-        setMission({ id: 'welcome', type: 'modal', welcomeKey, tourKey, navKey });
-        return;
+        if (currentPage !== 'home') {
+          setMission({ id: 'nav-home', type: 'tooltip', targetSelector: '[data-tour="nav-home"]', text: '🏠 Vamos a Inicio para darte la bienvenida oficial.' });
+          return;
+        }
+        if (!localStorage.getItem(welcomeKey + '_s1')) {
+          setMission({ id: 'welcome-1', type: 'tooltip', targetSelector: '[data-tour="completar-perfil"]', text: '🎉 Bienvenido a Listo Patrón.', welcomeKey });
+          return;
+        }
+        if (!localStorage.getItem(welcomeKey + '_s2')) {
+          setMission({ id: 'welcome-2', type: 'tooltip', targetSelector: '[data-tour="completar-perfil"]', text: 'Te guiaré paso a paso para que configures tu perfil y te postules.', welcomeKey });
+          return;
+        }
+        localStorage.setItem(welcomeKey, 'true');
       }
 
       const isProfileComplete = userData.profileComplete || userData.verificacion;
@@ -113,31 +124,12 @@ export default function ProTutorialSystem({ userRole, userData, currentPage, nav
 
   if (!mission) return null;
 
-  if (mission.type === 'modal' && mission.id === 'welcome') {
-    return (
-      <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 99999, background: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, flexDirection: 'column' }}>
-        
-        <img src="/assets/mano.png" onError={(e) => { e.target.style.display='none'; e.target.nextSibling.style.display='block'; }} style={{ width: 120, height: 120, objectFit: 'contain', filter: 'drop-shadow(0 4px 10px rgba(0,0,0,0.5))', opacity: 0.75, animation: 'pointDownModal 1s infinite alternate', zIndex: 100000, marginBottom: -20 }} />
-        <div style={{ fontSize: 60, display: 'none', filter: 'drop-shadow(0 4px 10px rgba(0,0,0,0.5))', animation: 'pointDownModal 1s infinite alternate', zIndex: 100000, marginBottom: -20, transform: 'rotate(180deg)' }}>👇</div>
+  if (mission.id === 'welcome-1' && targetRect) {
+     return <TooltipOverlay rect={targetRect} text={mission.text} onNext={() => { localStorage.setItem(mission.welcomeKey + '_s1', 'true'); setRefreshTrigger(p=>p+1); }} btnText="Siguiente 👉" />;
+  }
 
-        <div style={{ background: '#fff', borderRadius: 24, padding: '30px 20px', textAlign: 'center', maxWidth: 400, boxShadow: '0 10px 40px rgba(0,0,0,0.5)', animation: 'popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)', position: 'relative', zIndex: 99999 }}>
-          <h2 style={{ fontSize: 24, fontWeight: 900, color: '#1a1a2e', marginBottom: 12 }}>Bienvenido a Listo Patrón</h2>
-          <p style={{ fontSize: 16, color: '#444', lineHeight: 1.5, marginBottom: 24, fontWeight: 600 }}>
-            Te guiaré paso a paso para que configures tu perfil.
-          </p>
-          <button 
-            onClick={() => { localStorage.setItem(mission.welcomeKey, 'true'); setRefreshTrigger(prev => prev + 1); }}
-            style={{ background: '#10B981', color: '#fff', border: 'none', padding: '14px 28px', borderRadius: 100, fontSize: 16, fontWeight: 800, width: '100%', cursor: 'pointer', boxShadow: '0 4px 14px rgba(16,185,129,0.4)' }}
-          >
-            Comenzar 👉
-          </button>
-        </div>
-        <style>{`
-          @keyframes popIn { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
-          @keyframes pointDownModal { 0% { transform: translateY(-10px); } 100% { transform: translateY(0px); } }
-        `}</style>
-      </div>
-    );
+  if (mission.id === 'welcome-2' && targetRect) {
+     return <TooltipOverlay rect={targetRect} text={mission.text} onNext={() => { localStorage.setItem(mission.welcomeKey + '_s2', 'true'); localStorage.setItem(mission.welcomeKey, 'true'); setRefreshTrigger(p=>p+1); }} btnText="Entendido 👍" />;
   }
 
   if (mission.id === 'nav-tour-1' && targetRect) {
