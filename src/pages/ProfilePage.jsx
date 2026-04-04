@@ -515,7 +515,6 @@ export default function ProfilePage({ lang, setLang, navigate, onLogout, initial
   const [showDelete,  setShowDelete]  = useState(false)
   const [showPhoto,   setShowPhoto]   = useState(false)
   const [photoStatus, setPhotoStatus] = useState(null)
-  const [tapCount,    setTapCount]    = useState(0)
   const [ordersCount, setOrdersCount] = useState(0)
   const [hideUpgrade, setHideUpgrade] = useState(() => localStorage.getItem('hideUpgrade_Listo_' + (userData?.uid || 'guest')) === 'true')
 
@@ -604,12 +603,6 @@ export default function ProfilePage({ lang, setLang, navigate, onLogout, initial
     }
     if (onLogout) onLogout()
     else navigate('login')
-  }
-
-  const handleSecretTap = () => {
-    const next = tapCount + 1
-    setTapCount(next)
-    if (next >= 5) { setTapCount(0); navigate('admin') }
   }
 
   const toggleAvailability = async () => {
@@ -785,15 +778,30 @@ export default function ProfilePage({ lang, setLang, navigate, onLogout, initial
         )}
       </div>
 
-      <div className="profile-menu">
-        {userData?.email === 'listopatron.app@gmail.com' && (
-          <button className="profile-menu-item" onClick={() => navigate('admin')} style={{ background: 'linear-gradient(135deg, rgba(242, 96, 0, 0.1), rgba(255, 140, 66, 0.1))', border: '1px solid #F26000', marginBottom: '16px' }}>
-            <span className="pmi-icon" style={{ background: '#F26000', color: '#fff', borderRadius: '8px', fontSize: '18px' }}>👑</span>
-            <span className="pmi-label" style={{ color: '#F26000', fontWeight: '900', fontSize: '16px' }}>Panel de Administración</span>
-            <span className="pmi-arrow" style={{ color: '#F26000' }}>›</span>
+      {userData?.email === 'listopatron.app@gmail.com' && (
+        <div style={{ padding: '0 20px', marginBottom: '8px', display: 'flex', justifyContent: 'center' }}>
+          <button 
+            onClick={() => navigate('admin')}
+            style={{
+              background: 'linear-gradient(135deg, #1A1A2E, #2A2A4A)',
+              color: '#FFD700', border: '1px solid rgba(242, 96, 0, 0.5)',
+              padding: '10px 24px', borderRadius: '100px',
+              fontSize: '14px', fontWeight: '900', cursor: 'pointer',
+              display: 'flex', alignItems: 'center', gap: '8px',
+              boxShadow: '0 4px 16px rgba(242, 96, 0, 0.25)',
+              transition: 'transform 0.2s', letterSpacing: '0.5px'
+            }}
+            onMouseDown={e=>e.currentTarget.style.transform='scale(0.95)'}
+            onMouseUp={e=>e.currentTarget.style.transform='scale(1)'}
+            onMouseLeave={e=>e.currentTarget.style.transform='scale(1)'}
+          >
+            <span style={{ fontSize: '18px', filter: 'drop-shadow(0 2px 4px rgba(255, 215, 0, 0.4))' }}>👑</span>
+            PANEL DE ADMINISTRACIÓN
           </button>
-        )}
+        </div>
+      )}
 
+      <div className="profile-menu">
         <button className="profile-menu-item" onClick={() => handleMenu('clientProfile')}>
           <span className="pmi-icon">👤</span>
           <span className="pmi-label">{lang==='es' ? 'Ver mi perfil público' : 'View my public profile'}</span>
