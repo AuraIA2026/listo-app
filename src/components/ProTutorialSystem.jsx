@@ -216,7 +216,8 @@ function TooltipOverlay({ rect, text, onNext, btnText, hideBtn, isCenter }) {
       )}
 
       {/* Hand Switcher */}
-      <img src="/assets/mano.png" onError={(e) => { e.target.style.display='none'; e.target.nextSibling.style.display='block'; }} className={`pt-hand ${isCenter ? 'pointing-center' : (isBottom ? 'pointing-down' : 'pointing-up')}`} style={{ top: isCenter ? 'calc(50% + 15px)' : (isBottom ? rect.top - 90 : rect.top + rect.height + 10), left: isCenter ? '50%' : (rect.left + rect.width/2 - 40), opacity: 0.75 }} />
+      <img src="/mano.png" onError={(e) => { e.target.style.display='none'; e.target.nextSibling.style.display='block'; }} className={`pt-hand ${isCenter ? 'pointing-center' : (isBottom ? 'pointing-down' : 'pointing-up')}`} style={{ top: isCenter ? 'calc(50% + 50px)' : (isBottom ? rect.top - 90 : rect.top + rect.height + 10), left: isCenter ? 'calc(50% - 40px)' : (rect.left + rect.width/2 - 40), opacity: 0.75 }} />
+      <div className={`pt-hand ${isCenter ? 'pointing-center' : (isBottom ? 'pointing-down' : 'pointing-up')}`} style={{ top: isCenter ? 'calc(50% + 50px)' : (isBottom ? rect.top - 80 : rect.top + rect.height + 10), left: isCenter ? 'calc(50% - 20px)' : (rect.left + rect.width/2 - 20), fontSize: 60, display: 'none', filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.4))', zIndex: 100001 }}>👆</div>
 
       {isCenter ? (
         <>
