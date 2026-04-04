@@ -115,21 +115,27 @@ export default function ProTutorialSystem({ userRole, userData, currentPage, nav
 
   if (mission.type === 'modal' && mission.id === 'welcome') {
     return (
-      <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 99999, background: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
-        <div style={{ background: '#fff', borderRadius: 24, padding: 30, textAlign: 'center', maxWidth: 400, boxShadow: '0 10px 40px rgba(0,0,0,0.5)', animation: 'popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)' }}>
-          <div style={{ fontSize: 60, marginBottom: 10 }}>🎉</div>
-          <h2 style={{ fontSize: 22, fontWeight: 900, color: '#1a1a2e', marginBottom: 16 }}>¡Bienvenido a la Élite!</h2>
-          <p style={{ fontSize: 16, color: '#444', lineHeight: 1.5, marginBottom: 24 }}>
-            Felicidades por unirte a la red de profesionales de Listo Patrón. Vamos a poner tu cuenta a producir dinero juntos. Sígueme en estos rápidos pasos.
+      <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 99999, background: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, flexDirection: 'column' }}>
+        
+        <img src="/assets/mano.png" onError={(e) => { e.target.style.display='none'; e.target.nextSibling.style.display='block'; }} style={{ width: 120, height: 120, objectFit: 'contain', filter: 'drop-shadow(0 4px 10px rgba(0,0,0,0.5))', opacity: 0.75, animation: 'pointDownModal 1s infinite alternate', zIndex: 100000, marginBottom: -20 }} />
+        <div style={{ fontSize: 60, display: 'none', filter: 'drop-shadow(0 4px 10px rgba(0,0,0,0.5))', animation: 'pointDownModal 1s infinite alternate', zIndex: 100000, marginBottom: -20, transform: 'rotate(180deg)' }}>👇</div>
+
+        <div style={{ background: '#fff', borderRadius: 24, padding: '30px 20px', textAlign: 'center', maxWidth: 400, boxShadow: '0 10px 40px rgba(0,0,0,0.5)', animation: 'popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)', position: 'relative', zIndex: 99999 }}>
+          <h2 style={{ fontSize: 24, fontWeight: 900, color: '#1a1a2e', marginBottom: 12 }}>Bienvenido a Listo Patrón</h2>
+          <p style={{ fontSize: 16, color: '#444', lineHeight: 1.5, marginBottom: 24, fontWeight: 600 }}>
+            Te guiaré paso a paso para que configures tu perfil.
           </p>
           <button 
             onClick={() => { localStorage.setItem(mission.welcomeKey, 'true'); setRefreshTrigger(prev => prev + 1); }}
-            style={{ background: '#F26000', color: '#fff', border: 'none', padding: '14px 28px', borderRadius: 100, fontSize: 16, fontWeight: 800, width: '100%', cursor: 'pointer', boxShadow: '0 4px 14px rgba(242,96,0,0.4)' }}
+            style={{ background: '#10B981', color: '#fff', border: 'none', padding: '14px 28px', borderRadius: 100, fontSize: 16, fontWeight: 800, width: '100%', cursor: 'pointer', boxShadow: '0 4px 14px rgba(16,185,129,0.4)' }}
           >
-            Poner mi cuenta en rojo 🔥
+            Comenzar 👉
           </button>
         </div>
-        <style>{`@keyframes popIn { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }`}</style>
+        <style>{`
+          @keyframes popIn { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+          @keyframes pointDownModal { 0% { transform: translateY(-10px); } 100% { transform: translateY(0px); } }
+        `}</style>
       </div>
     );
   }
