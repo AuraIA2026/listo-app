@@ -510,6 +510,13 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
         const prosList = []
         querySnapshot.forEach((docSnap) => {
           const data = docSnap.data()
+
+          // ─ Filtro estricto: Solo mostrar si completó el perfil y tiene plan activo o contratos
+          const isComplete = Boolean(data.profileComplete || data.verificacion?.estado === 'aprobada')
+          const hasPlan = Boolean(data.planStatus === 'active')
+          const hasContracts = Boolean(data.contracts && data.contracts > 0)
+          if (!isComplete || (!hasPlan && !hasContracts)) return;
+
           prosList.push({
             id:         docSnap.id,
             name:       data.name       || 'Sin nombre',

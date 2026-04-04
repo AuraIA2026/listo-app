@@ -452,6 +452,13 @@ export default function HomePage({ lang, navigate, userRole }) {
         }
         querySnapshot.forEach((doc) => {
           const data = doc.data()
+
+          // ─ Filtro estricto: Solo mostrar si completó el perfil y tiene plan activo o contratos
+          const isComplete = Boolean(data.profileComplete || data.verificacion?.estado === 'aprobada')
+          const hasPlan = Boolean(data.planStatus === 'active')
+          const hasContracts = Boolean(data.contracts && data.contracts > 0)
+          if (!isComplete || (!hasPlan && !hasContracts)) return;
+
           const catObj = getMappedProCatId(data.category)
           prosList.push({
             id: doc.id,
