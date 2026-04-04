@@ -60,7 +60,11 @@ export default function ProTutorialSystem({ userRole, userData, currentPage, nav
         if (currentPage === 'home') {
           setMission({ id: 'completar-perfil', type: 'tooltip', targetSelector: '[data-tour="completar-perfil"]', text: '📝 Primero lo primero: Completa tu perfil para que los clientes confíen en ti. Haz clic aquí.' });
         } else if (currentPage === 'profile') {
-          setMission({ id: 'btn-guardar-verif', type: 'tooltip', targetSelector: '[data-tour="btn-guardar-verif"]', text: '📝 Llena todos tus datos reales y sube tus documentos. Al finalizar, presiona Enviar.' });
+          if (!localStorage.getItem(welcomeKey + '_verif')) {
+            setMission({ id: 'verif-start', type: 'tooltip', targetSelector: 'body', text: '✍️ Llena todos tus datos reales, sube tus documentos y al terminar presiona el botón "Enviar" al final de la página.', welcomeKey });
+          } else {
+            setMission(null); // Let them manually fill out the form
+          }
         } else {
           setMission({ id: 'nav-home', type: 'tooltip', targetSelector: '[data-tour="nav-home"]', text: '🏠 Debemos ir al panel principal para configurar tu cuenta.' });
         }
@@ -130,6 +134,10 @@ export default function ProTutorialSystem({ userRole, userData, currentPage, nav
 
   if (mission.id === 'welcome-2') {
      return <TooltipOverlay text={mission.text} isCenter={true} onNext={() => { localStorage.setItem(mission.welcomeKey + '_s2', 'true'); localStorage.setItem(mission.welcomeKey, 'true'); setRefreshTrigger(p=>p+1); }} btnText="Entendido 👍" />;
+  }
+
+  if (mission.id === 'verif-start') {
+     return <TooltipOverlay text={mission.text} isCenter={true} onNext={() => { localStorage.setItem(mission.welcomeKey + '_verif', 'true'); setRefreshTrigger(p=>p+1); }} btnText="¡A llenar mis datos! 📝" />;
   }
 
   if (mission.id === 'nav-tour-1' && targetRect) {
