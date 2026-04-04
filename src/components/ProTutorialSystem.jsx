@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 
 const TOUR_DONE_KEY = 'listo_pro_tour_fully_done';
-const WELCOME_DONE_KEY = 'listo_pro_welcome_v4';
+const WELCOME_DONE_KEY = 'listo_pro_welcome_v5';
 const NAV_TOUR_DONE_KEY = 'listo_pro_nav_tour_done';
 
 export default function ProTutorialSystem({ userRole, userData, currentPage, navigate, lang }) {
