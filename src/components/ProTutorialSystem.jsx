@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 
 const TOUR_DONE_KEY = 'listo_pro_tour_fully_done';
-const WELCOME_DONE_KEY = 'listo_pro_welcome_v5';
+const WELCOME_DONE_KEY = 'listo_pro_welcome_v6';
 const NAV_TOUR_DONE_KEY = 'listo_pro_nav_tour_done';
 
 export default function ProTutorialSystem({ userRole, userData, currentPage, navigate, lang }) {
@@ -47,6 +47,10 @@ export default function ProTutorialSystem({ userRole, userData, currentPage, nav
         }
         if (!localStorage.getItem(welcomeKey + '_s2')) {
           setMission({ id: 'welcome-2', type: 'tooltip', targetSelector: '[data-tour="completar-perfil"]', text: 'Te guiaré paso a paso para que configures tu perfil y te postules.', welcomeKey });
+          return;
+        }
+        if (!localStorage.getItem(welcomeKey + '_s3')) {
+          setMission({ id: 'welcome-3', type: 'tooltip', targetSelector: '[data-tour="btn-postularme"]', text: '💼 En este botón podrás postularte a ofertas y enviar cotizaciones a los clientes.', welcomeKey });
           return;
         }
         localStorage.setItem(welcomeKey, 'true');
@@ -133,7 +137,11 @@ export default function ProTutorialSystem({ userRole, userData, currentPage, nav
   }
 
   if (mission.id === 'welcome-2') {
-     return <TooltipOverlay text={mission.text} isCenter={true} onNext={() => { localStorage.setItem(mission.welcomeKey + '_s2', 'true'); localStorage.setItem(mission.welcomeKey, 'true'); setRefreshTrigger(p=>p+1); }} btnText="Entendido 👍" />;
+     return <TooltipOverlay text={mission.text} isCenter={true} onNext={() => { localStorage.setItem(mission.welcomeKey + '_s2', 'true'); setRefreshTrigger(p=>p+1); }} btnText="Entendido 👍" />;
+  }
+
+  if (mission.id === 'welcome-3' && targetRect) {
+     return <TooltipOverlay rect={targetRect} text={mission.text} onNext={() => { localStorage.setItem(mission.welcomeKey + '_s3', 'true'); localStorage.setItem(mission.welcomeKey, 'true'); setRefreshTrigger(p=>p+1); }} btnText="¡Genial! 🚀" />;
   }
 
   if (mission.id === 'verif-start') {

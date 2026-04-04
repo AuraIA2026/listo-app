@@ -181,7 +181,7 @@ function PostularmeBtn({ isPro, userData, onClick }) {
         <span className="pm-spark pm-spark-1">✦</span>
         <span className="pm-spark pm-spark-2">★</span>
         <span className="pm-spark pm-spark-3">✦</span>
-        <button className="pm-btn" onClick={onClick}>
+        <button data-tour="btn-postularme" className="pm-btn" onClick={onClick}>
           <span className="pm-shimmer" />
           {label}
         </button>
