@@ -124,12 +124,12 @@ export default function ProTutorialSystem({ userRole, userData, currentPage, nav
 
   if (!mission) return null;
 
-  if (mission.id === 'welcome-1' && targetRect) {
-     return <TooltipOverlay rect={targetRect} text={mission.text} onNext={() => { localStorage.setItem(mission.welcomeKey + '_s1', 'true'); setRefreshTrigger(p=>p+1); }} btnText="Siguiente 👉" />;
+  if (mission.id === 'welcome-1') {
+     return <TooltipOverlay text={mission.text} isCenter={true} onNext={() => { localStorage.setItem(mission.welcomeKey + '_s1', 'true'); setRefreshTrigger(p=>p+1); }} btnText="Siguiente 👉" />;
   }
 
-  if (mission.id === 'welcome-2' && targetRect) {
-     return <TooltipOverlay rect={targetRect} text={mission.text} onNext={() => { localStorage.setItem(mission.welcomeKey + '_s2', 'true'); localStorage.setItem(mission.welcomeKey, 'true'); setRefreshTrigger(p=>p+1); }} btnText="Entendido 👍" />;
+  if (mission.id === 'welcome-2') {
+     return <TooltipOverlay text={mission.text} isCenter={true} onNext={() => { localStorage.setItem(mission.welcomeKey + '_s2', 'true'); localStorage.setItem(mission.welcomeKey, 'true'); setRefreshTrigger(p=>p+1); }} btnText="Entendido 👍" />;
   }
 
   if (mission.id === 'nav-tour-1' && targetRect) {
@@ -149,13 +149,12 @@ export default function ProTutorialSystem({ userRole, userData, currentPage, nav
   return null;
 }
 
-function TooltipOverlay({ rect, text, onNext, btnText, hideBtn }) {
-  const isBottom = rect.top > window.innerHeight / 2;
+function TooltipOverlay({ rect, text, onNext, btnText, hideBtn, isCenter }) {
+  const isBottom = rect ? rect.top > window.innerHeight / 2 : false;
 
   const tooltipStyle = {
     position: 'absolute',
     left: '50%',
-    transform: 'translateX(-50%)',
     backgroundColor: '#fff',
     padding: '16px 20px',
     borderRadius: '16px',
@@ -166,10 +165,15 @@ function TooltipOverlay({ rect, text, onNext, btnText, hideBtn }) {
     textAlign: 'center'
   };
 
-  if (isBottom) {
+  if (isCenter) {
+    tooltipStyle.top = '50%';
+    tooltipStyle.transform = 'translate(-50%, -50%)';
+  } else if (isBottom) {
     tooltipStyle.bottom = window.innerHeight - rect.top + 20;
+    tooltipStyle.transform = 'translateX(-50%)';
   } else {
     tooltipStyle.top = rect.top + rect.height + 20;
+    tooltipStyle.transform = 'translateX(-50%)';
   }
 
   return (
@@ -182,41 +186,48 @@ function TooltipOverlay({ rect, text, onNext, btnText, hideBtn }) {
           z-index: 100001;
           filter: drop-shadow(0 8px 12px rgba(242,96,0,0.5));
         }
-        .pt-hand.pointing-up {
-          animation: pointUpAnim 1s infinite alternate;
-        }
-        .pt-hand.pointing-down {
-          transform: rotate(180deg);
-          animation: pointDownAnim 1s infinite alternate;
-        }
+        .pt-hand.pointing-up { animation: pointUpAnim 1s infinite alternate; }
+        .pt-hand.pointing-down { transform: rotate(180deg); animation: pointDownAnim 1s infinite alternate; }
+        .pt-hand.pointing-center { animation: pointCenterAnim 1s infinite alternate; }
+        
         @keyframes pointUpAnim { 0% { transform: translateY(0); } 100% { transform: translateY(15px); } }
         @keyframes pointDownAnim { 0% { transform: rotate(180deg) translateY(0); } 100% { transform: rotate(180deg) translateY(-15px); } }
+        @keyframes pointCenterAnim { 0% { transform: translateY(0); } 100% { transform: translateY(15px); } }
+        
         .pt-star { position: absolute; pointer-events: none; font-size: 20px; animation: starTwinkle 1.5s infinite alternate; z-index: 100001; }
         @keyframes starTwinkle { 0% { transform: scale(0.8) rotate(-10deg); opacity: 0.5; } 100% { transform: scale(1.2) rotate(10deg); opacity: 1; } }
       `}</style>
       
-      <div style={{
-          position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', 
-          clipPath: `polygon(
-              0% 0%, 0% 100%, ${rect.left}px 100%, 
-              ${rect.left}px ${rect.top}px, 
-              ${rect.left + rect.width}px ${rect.top}px, 
-              ${rect.left + rect.width}px ${rect.top + rect.height}px, 
-              ${rect.left}px ${rect.top + rect.height}px, 
-              ${rect.left}px 100%, 100% 100%, 100% 0%
-          )`,
-          background: 'rgba(0,0,0,0.85)', pointerEvents: hideBtn ? 'auto' : 'none', backdropFilter: 'blur(3px)'
-      }} />
+      {isCenter ? (
+        <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.85)', pointerEvents: hideBtn ? 'auto' : 'none', backdropFilter: 'blur(3px)' }} />
+      ) : (
+        <div style={{
+            position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', 
+            clipPath: `polygon(0% 0%, 0% 100%, ${rect.left}px 100%, ${rect.left}px ${rect.top}px, ${rect.left + rect.width}px ${rect.top}px, ${rect.left + rect.width}px ${rect.top + rect.height}px, ${rect.left}px ${rect.top + rect.height}px, ${rect.left}px 100%, 100% 100%, 100% 0%)`,
+            background: 'rgba(0,0,0,0.85)', pointerEvents: hideBtn ? 'auto' : 'none', backdropFilter: 'blur(3px)'
+        }} />
+      )}
 
-      <div style={{ position: 'absolute', top: rect.top - 4, left: rect.left - 4, width: rect.width + 8, height: rect.height + 8, borderRadius: 12, border: '3px solid #F26000', animation: 'starTwinkle 1s infinite alternate', pointerEvents: 'none' }} />
+      {!isCenter && rect && (
+         <div style={{ position: 'absolute', top: rect.top - 4, left: rect.left - 4, width: rect.width + 8, height: rect.height + 8, borderRadius: 12, border: '3px solid #F26000', animation: 'starTwinkle 1s infinite alternate', pointerEvents: 'none' }} />
+      )}
 
       {/* Hand Switcher */}
-      <img src="/assets/mano.png" onError={(e) => { e.target.style.display='none'; e.target.nextSibling.style.display='block'; }} className={`pt-hand ${isBottom ? 'pointing-down' : 'pointing-up'}`} style={{ top: isBottom ? rect.top - 90 : rect.top + rect.height + 10, left: rect.left + rect.width/2 - 40, opacity: 0.75 }} />
-      <div className={`pt-hand ${isBottom ? 'pointing-down' : 'pointing-up'}`} style={{ top: isBottom ? rect.top - 80 : rect.top + rect.height + 10, left: rect.left + rect.width/2 - 20, fontSize: 60, display: 'none', filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.4))' }}>👆</div>
+      <img src="/assets/mano.png" onError={(e) => { e.target.style.display='none'; e.target.nextSibling.style.display='block'; }} className={`pt-hand ${isCenter ? 'pointing-center' : (isBottom ? 'pointing-down' : 'pointing-up')}`} style={{ top: isCenter ? 'calc(50% - 120px)' : (isBottom ? rect.top - 90 : rect.top + rect.height + 10), left: isCenter ? 'calc(50% - 40px)' : (rect.left + rect.width/2 - 40), opacity: 0.75 }} />
 
-      <div className="pt-star" style={{ top: isBottom ? rect.top - 120 : rect.top + rect.height + 80, left: rect.left + rect.width/2 - 60 }}>✨</div>
-      <div className="pt-star" style={{ top: isBottom ? rect.top - 60 : rect.top + rect.height + 20, left: rect.left + rect.width/2 + 40, fontSize: 26 }}>⭐</div>
-      <div className="pt-star" style={{ top: isBottom ? rect.top - 90 : rect.top + rect.height + 50, left: rect.left + rect.width/2 + 60, fontSize: 16 }}>✨</div>
+      {isCenter ? (
+        <>
+          <div className="pt-star" style={{ top: 'calc(50% - 150px)', left: '30%' }}>✨</div>
+          <div className="pt-star" style={{ top: 'calc(50% + 50px)', left: '70%', fontSize: 26 }}>⭐</div>
+          <div className="pt-star" style={{ top: 'calc(50% - 50px)', left: '60%', fontSize: 16 }}>✨</div>
+        </>
+      ) : (
+        <>
+          <div className="pt-star" style={{ top: isBottom ? rect.top - 120 : rect.top + rect.height + 80, left: rect.left + rect.width/2 - 60 }}>✨</div>
+          <div className="pt-star" style={{ top: isBottom ? rect.top - 60 : rect.top + rect.height + 20, left: rect.left + rect.width/2 + 40, fontSize: 26 }}>⭐</div>
+          <div className="pt-star" style={{ top: isBottom ? rect.top - 90 : rect.top + rect.height + 50, left: rect.left + rect.width/2 + 60, fontSize: 16 }}>✨</div>
+        </>
+      )}
 
       <div style={tooltipStyle}>
         <p style={{ margin: 0, padding: hideBtn ? '0' : '0 0 16px 0', fontSize: 14, fontWeight: 700, color: '#1a1a2e', lineHeight: 1.4, pointerEvents: 'auto' }}>
