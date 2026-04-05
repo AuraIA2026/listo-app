@@ -13,14 +13,8 @@ export default function ProTutorialSystem({ userRole, userData, currentPage, nav
   const tourKey = `${TOUR_DONE_KEY}_${userData?.uid}`;
 
   const handleSkip = () => {
-    const skipCountKey = `${TOUR_DONE_KEY}_skips_${userData?.uid}`;
-    let skips = parseInt(localStorage.getItem(skipCountKey) || '0', 10);
-    skips++;
-    localStorage.setItem(skipCountKey, skips.toString());
-
-    if (skips >= 2) {
-      localStorage.setItem(tourKey, 'true');
-    }
+    localStorage.setItem(tourKey, 'true');
+    sessionStorage.setItem('listo_tutorial_session_counted', 'true');
     setMission(null);
   };
   useEffect(() => {
@@ -244,12 +238,12 @@ function TooltipOverlay({ rect, text, onNext, btnText, hideBtn, isCenter, onSkip
       `}</style>
       
       {isCenter ? (
-        <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.85)', pointerEvents: hideBtn ? 'auto' : 'none', backdropFilter: 'blur(3px)' }} />
+        <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.85)', pointerEvents: 'none', backdropFilter: 'blur(3px)' }} />
       ) : (
         <div style={{
             position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', 
             clipPath: `polygon(0% 0%, 0% 100%, ${rect.left}px 100%, ${rect.left}px ${rect.top}px, ${rect.left + rect.width}px ${rect.top}px, ${rect.left + rect.width}px ${rect.top + rect.height}px, ${rect.left}px ${rect.top + rect.height}px, ${rect.left}px 100%, 100% 100%, 100% 0%)`,
-            background: 'rgba(0,0,0,0.85)', pointerEvents: hideBtn ? 'auto' : 'none', backdropFilter: 'blur(3px)'
+            background: 'rgba(0,0,0,0.85)', pointerEvents: 'none', backdropFilter: 'blur(3px)'
         }} />
       )}
 
