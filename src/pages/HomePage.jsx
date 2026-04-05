@@ -540,8 +540,8 @@ export default function HomePage({ lang, navigate, userRole }) {
     fetchPros()
   }, [])
 
-  const allProsToUse = allProsReal.length > 0 ? allProsReal : featuredStatic
-  const featuredProsToUse = featuredReal.length > 0 ? featuredReal : featuredStatic
+  const allProsToUse = allProsReal
+  const featuredProsToUse = featuredReal
   const specs = ['todos', ...new Set(allProsToUse.filter(p=>p.specEs).map(p => p.specEs))]
   const filteredPros = proFilter === 'todos' ? allProsToUse : allProsToUse.filter(p => p.specEs === proFilter)
 
