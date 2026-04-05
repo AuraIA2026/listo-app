@@ -27,6 +27,20 @@ export default function ProTutorialSystem({ userRole, userData, currentPage, nav
     const tourKey = `${TOUR_DONE_KEY}_${userData.uid}`;
     const welcomeKey = `${WELCOME_DONE_KEY}_${userData.uid}`;
     const navKey = `${NAV_TOUR_DONE_KEY}_${userData.uid}`;
+    const sessionCountKey = `${TOUR_DONE_KEY}_sessions_${userData.uid}`;
+
+    // Session counting logic to abort tutorial after 2 sessions
+    if (!sessionStorage.getItem('listo_tutorial_session_counted')) {
+      let count = parseInt(localStorage.getItem(sessionCountKey) || '0', 10);
+      count++;
+      localStorage.setItem(sessionCountKey, count.toString());
+      sessionStorage.setItem('listo_tutorial_session_counted', 'true');
+      
+      // If this is their 3rd session or more, cancel the tutorial entirely
+      if (count > 2) {
+        localStorage.setItem(tourKey, 'true');
+      }
+    }
 
     if (localStorage.getItem(tourKey)) {
       setMission(null);
