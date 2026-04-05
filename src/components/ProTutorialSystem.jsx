@@ -10,7 +10,19 @@ export default function ProTutorialSystem({ userRole, userData, currentPage, nav
   const [windowDimensions, setWindowDimensions] = useState({ w: window.innerWidth, h: window.innerHeight });
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
-  // Update window dimensions
+  const tourKey = `${TOUR_DONE_KEY}_${userData?.uid}`;
+
+  const handleSkip = () => {
+    const skipCountKey = `${TOUR_DONE_KEY}_skips_${userData?.uid}`;
+    let skips = parseInt(localStorage.getItem(skipCountKey) || '0', 10);
+    skips++;
+    localStorage.setItem(skipCountKey, skips.toString());
+
+    if (skips >= 2) {
+      localStorage.setItem(tourKey, 'true');
+    }
+    setMission(null);
+  };
   useEffect(() => {
     const handleResize = () => setWindowDimensions({ w: window.innerWidth, h: window.innerHeight });
     window.addEventListener('resize', handleResize);
@@ -147,19 +159,19 @@ export default function ProTutorialSystem({ userRole, userData, currentPage, nav
   if (!mission) return null;
 
   if (mission.id === 'welcome-1') {
-     return <TooltipOverlay text={mission.text} isCenter={true} onNext={() => { localStorage.setItem(mission.welcomeKey + '_s1', 'true'); setRefreshTrigger(p=>p+1); }} btnText="Siguiente 👉" />;
+     return <TooltipOverlay text={mission.text} isCenter={true} onNext={() => { localStorage.setItem(mission.welcomeKey + '_s1', 'true'); setRefreshTrigger(p=>p+1); }} btnText="Siguiente 👉" onSkip={handleSkip} />;
   }
 
   if (mission.id === 'welcome-2') {
-     return <TooltipOverlay text={mission.text} isCenter={true} onNext={() => { localStorage.setItem(mission.welcomeKey + '_s2', 'true'); setRefreshTrigger(p=>p+1); }} btnText="Entendido 👍" />;
+     return <TooltipOverlay text={mission.text} isCenter={true} onNext={() => { localStorage.setItem(mission.welcomeKey + '_s2', 'true'); setRefreshTrigger(p=>p+1); }} btnText="Entendido 👍" onSkip={handleSkip} />;
   }
 
   if (mission.id === 'welcome-3' && targetRect) {
-     return <TooltipOverlay rect={targetRect} text={mission.text} onNext={() => { localStorage.setItem(mission.welcomeKey + '_s3', 'true'); localStorage.setItem(mission.welcomeKey, 'true'); setRefreshTrigger(p=>p+1); }} btnText="¡Genial! 🚀" />;
+     return <TooltipOverlay rect={targetRect} text={mission.text} onNext={() => { localStorage.setItem(mission.welcomeKey + '_s3', 'true'); localStorage.setItem(mission.welcomeKey, 'true'); setRefreshTrigger(p=>p+1); }} btnText="¡Genial! 🚀" onSkip={handleSkip} />;
   }
 
   if (mission.id === 'verif-start') {
-     return <TooltipOverlay text={mission.text} isCenter={true} onNext={() => { localStorage.setItem(mission.welcomeKey + '_verif', 'true'); setRefreshTrigger(p=>p+1); }} btnText="¡A llenar mis datos! 📝" />;
+     return <TooltipOverlay text={mission.text} isCenter={true} onNext={() => { localStorage.setItem(mission.welcomeKey + '_verif', 'true'); setRefreshTrigger(p=>p+1); }} btnText="¡A llenar mis datos! 📝" onSkip={handleSkip} />;
   }
 
   if (mission.id === 'nav-tour-1' && targetRect) {
@@ -179,7 +191,7 @@ export default function ProTutorialSystem({ userRole, userData, currentPage, nav
   return null;
 }
 
-function TooltipOverlay({ rect, text, onNext, btnText, hideBtn, isCenter }) {
+function TooltipOverlay({ rect, text, onNext, btnText, hideBtn, isCenter, onSkip }) {
   const isBottom = rect ? rect.top > window.innerHeight / 2 : false;
 
   const tooltipStyle = {
@@ -264,6 +276,14 @@ function TooltipOverlay({ rect, text, onNext, btnText, hideBtn, isCenter }) {
       )}
 
       <div style={tooltipStyle}>
+        {onSkip && (
+          <button 
+            onClick={onSkip} 
+            style={{ position: 'absolute', top: -12, right: -12, width: 30, height: 30, borderRadius: '50%', background: '#EF4444', color: 'white', border: '2px solid white', fontSize: 16, fontWeight: 'bold', cursor: 'pointer', pointerEvents: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.3)' }}
+          >
+            ✕
+          </button>
+        )}
         <p style={{ margin: 0, padding: hideBtn ? '0' : '0 0 16px 0', fontSize: 14, fontWeight: 700, color: '#1a1a2e', lineHeight: 1.4, pointerEvents: 'auto' }}>
           {text}
         </p>
