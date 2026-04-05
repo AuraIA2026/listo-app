@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { doc, updateDoc } from 'firebase/firestore';
+import { db } from '../firebase';
 
 const TOUR_DONE_KEY = 'listo_pro_tour_fully_done';
 const WELCOME_DONE_KEY = 'listo_pro_welcome_v6';
@@ -15,6 +17,11 @@ export default function ProTutorialSystem({ userRole, userData, currentPage, nav
   const handleSkip = () => {
     localStorage.setItem(tourKey, 'true');
     sessionStorage.setItem('listo_tutorial_session_counted', 'true');
+    try {
+      if (userData?.uid) {
+        updateDoc(doc(db, 'users', userData.uid), { tutorialHits: 2 }).catch(()=>{});
+      }
+    } catch(e) {}
     setMission(null);
   };
   useEffect(() => {
@@ -33,22 +40,20 @@ export default function ProTutorialSystem({ userRole, userData, currentPage, nav
     const tourKey = `${TOUR_DONE_KEY}_${userData.uid}`;
     const welcomeKey = `${WELCOME_DONE_KEY}_${userData.uid}`;
     const navKey = `${NAV_TOUR_DONE_KEY}_${userData.uid}`;
-    const sessionCountKey = `${TOUR_DONE_KEY}_sessions_${userData.uid}`;
 
-    // Session counting logic to abort tutorial after 2 sessions
+    // Session counting via FIREBASE for absolute precision
+    const currentHits = userData.tutorialHits || 0;
     if (!sessionStorage.getItem('listo_tutorial_session_counted')) {
-      let count = parseInt(localStorage.getItem(sessionCountKey) || '0', 10);
-      count++;
-      localStorage.setItem(sessionCountKey, count.toString());
       sessionStorage.setItem('listo_tutorial_session_counted', 'true');
       
-      // If this is their 3rd session or more, cancel the tutorial entirely
-      if (count > 2) {
-        localStorage.setItem(tourKey, 'true');
-      }
+      try {
+        if (currentHits < 2) {
+          updateDoc(doc(db, 'users', userData.uid), { tutorialHits: currentHits + 1 }).catch(()=>{});
+        }
+      } catch(e) {}
     }
 
-    if (localStorage.getItem(tourKey)) {
+    if (currentHits >= 2 || localStorage.getItem(tourKey)) {
       setMission(null);
       return;
     }
@@ -115,6 +120,9 @@ export default function ProTutorialSystem({ userRole, userData, currentPage, nav
 
       // Completed everything
       localStorage.setItem(tourKey, 'true');
+      try {
+        updateDoc(doc(db, 'users', userData.uid), { tutorialHits: 2 }).catch(()=>{});
+      } catch(e) {}
       setMission(null);
 
     }, 300);
@@ -175,7 +183,7 @@ export default function ProTutorialSystem({ userRole, userData, currentPage, nav
      return <TooltipOverlay rect={targetRect} text={mission.text} onNext={() => setMission({ id: 'nav-tour-3', type: 'tooltip', targetSelector: '[data-tour="nav-profile"]', text: '👤 Y aquí en tu Perfil configuras todo tu sistema.' })} btnText="Siguiente 👉" />;
   }
   if (mission.id === 'nav-tour-3' && targetRect) {
-     return <TooltipOverlay rect={targetRect} text={mission.text} onNext={() => { localStorage.setItem(mission.navKey, 'true'); localStorage.setItem(mission.tourKey, 'true'); setMission(null); alert("¡YA ESTÁS LISTO, PATRÓN! Tu cuenta está blindada. A trabajar se ha dicho."); }} btnText="¡A trabajar! 🚀" />;
+     return <TooltipOverlay rect={targetRect} text={mission.text} onNext={() => { localStorage.setItem(mission.navKey, 'true'); localStorage.setItem(mission.tourKey, 'true'); try { updateDoc(doc(db, 'users', userData.uid), { tutorialHits: 2 }).catch(()=>{}); } catch(e){} setMission(null); alert("¡YA ESTÁS LISTO, PATRÓN! Tu cuenta está blindada. A trabajar se ha dicho."); }} btnText="¡A trabajar! 🚀" onSkip={handleSkip} />;
   }
 
   if (targetRect) {
