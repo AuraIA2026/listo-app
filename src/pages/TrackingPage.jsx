@@ -21,13 +21,13 @@ L.Icon.Default.mergeOptions({
 
 const clientIcon = L.divIcon({
   className: '',
-  html: `<div class="map-marker client-marker"><div class="marker-pulse"></div><div class="marker-icon">🏠</div></div>`,
-  iconSize: [48, 48], iconAnchor: [24, 48],
+  html: `<div class="map-marker client-marker"><div class="marker-pulse" style="inset:-6px"></div><div class="marker-icon">🏠</div></div>`,
+  iconSize: [40, 40], iconAnchor: [20, 20],
 })
 const createVanIcon = (imgSrc) => L.divIcon({
   className: 'leaflet-van-icon',
-  html: `<img src="${imgSrc}" alt="van" style="width:64px;height:64px;object-fit:contain;display:block;background-color:transparent;filter:drop-shadow(0 4px 8px rgba(242,96,0,0.5));" />`,
-  iconSize: [64, 64], iconAnchor: [32, 32], popupAnchor: [0, -32],
+  html: `<img src="${imgSrc}" alt="van" style="width:38px;height:38px;object-fit:contain;display:block;background-color:transparent;filter:drop-shadow(0 2px 5px rgba(242,96,0,0.6));" />`,
+  iconSize: [38, 38], iconAnchor: [19, 19], popupAnchor: [0, -19],
 })
 const createWorkerIcon = () => L.divIcon({
   className: 'leaflet-worker-icon',
@@ -379,6 +379,21 @@ function MapResizer() {
   return null
 }
 
+/* ── Efecto de Cámara Inteligente Estilo Uber ─────────────── */
+function MapBoundsFitter({ pos1, pos2 }) {
+  const map = useMap()
+  useEffect(() => {
+    if (pos1 && pos2) {
+      if (pos1[0] === pos2[0] && pos1[1] === pos2[1]) return
+      try {
+        const bounds = L.latLngBounds([pos1, pos2])
+        map.fitBounds(bounds, { padding: [60, 60], maxZoom: 16, animate: true, duration: 1 })
+      } catch (e) {}
+    }
+  }, [map, pos1[0], pos1[1], pos2[0], pos2[1]])
+  return null
+}
+
 /* ── Página principal ──────────────────────────────────────────────────────── */
 export default function TrackingPage({ lang = 'es', navigate, professional, userRole }) {
   const targetName = professional?.clientName || professional?.pro || professional?.proName || professional?.name || 'Cliente/Profesional'
@@ -635,6 +650,7 @@ export default function TrackingPage({ lang = 'es', navigate, professional, user
       <div className="tracking-map-wrap">
         <MapContainer center={mapCenter} zoom={14} className="tracking-map" zoomControl={false} attributionControl={false}>
           <MapResizer />
+          <MapBoundsFitter pos1={clientLoc} pos2={proPos} />
           <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
           <Marker position={clientLoc} icon={clientIcon}><Popup>{lang==='es'?'Tu ubicación':'Your location'}</Popup></Marker>
           {vanVisible && <SmoothMarker targetPos={proPos} icon={workStatus==='working'?workerIcon.current:vanIcon.current} visible={vanVisible} isVan={workStatus!=='working'}><Popup>{pro.name}</Popup></SmoothMarker>}

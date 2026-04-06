@@ -72,9 +72,9 @@
 .map-marker { display: flex; align-items: center; justify-content: center; border-radius: 50%; position: relative; }
 
 .client-marker {
-  width: 52px; height: 52px;
-  background: white; border: 4px solid #F26000;
-  box-shadow: 0 8px 24px rgba(242,96,0,0.4);
+  width: 40px; height: 40px;
+  background: white; border: 3px solid #F26000;
+  box-shadow: 0 4px 12px rgba(242,96,0,0.4);
 }
 
 .marker-pulse {
@@ -90,7 +90,7 @@
 .leaflet-van-icon { background: none !important; background-color: transparent !important; border: none !important; box-shadow: none !important; }
 img.leaflet-marker-shadow { display: none !important; }
 
-.marker-icon { font-size: 24px; line-height: 1; position: relative; z-index: 1; }
+.marker-icon { font-size: 20px; line-height: 1; position: relative; z-index: 1; }
 
 .map-eta-pill {
   position: absolute; top: 20px; left: 50%; transform: translateX(-50%); z-index: 1000;
