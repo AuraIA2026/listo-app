@@ -91,6 +91,7 @@ export const CATEGORIES = [
     subcategories: [
       { id: 'limpieza_hogar',   icon: '🏠', image: '/icons/limpieza.webp', labelEs: 'Limpieza del hogar',   labelEn: 'Home cleaning' },
       { id: 'limpieza_oficina', icon: '🏢', labelEs: 'Limpieza de oficina',  labelEn: 'Office cleaning' },
+      { id: 'airbnb',           icon: '🏨', image: '/icons/limpieza.webp', labelEs: 'Limpieza Airbnb',      labelEn: 'Airbnb Cleaning' },
       { id: 'limpieza_auto',    icon: '🧽', labelEs: 'Car Wash a Domicilio', labelEn: 'Mobile Car Wash' },
       { id: 'limpieza_muebles', icon: '🛋️', labelEs: 'Limpieza de muebles', labelEn: 'Furniture cleaning' },
       { id: 'lavanderia',       icon: '👕', labelEs: 'Lavandería / Planchado', labelEn: 'Laundry & Ironing' },
@@ -108,6 +109,7 @@ export const CATEGORIES = [
     subcategories: [
       { id: 'ninera',     icon: '👶', image: '/icons/ninera.webp', labelEs: 'Niñera',           labelEn: 'Nanny' },
       { id: 'ancianos',   icon: '👵', labelEs: 'Cuidado de Mayores', labelEn: 'Elder Care' },
+      { id: 'enfermera',  icon: '🩺', labelEs: 'Enfermera a domicilio', labelEn: 'In-home Nurse' },
       { id: 'educativo',  icon: '📚', labelEs: 'Tutorías / Clases',  labelEn: 'Tutoring / Classes' },
       { id: 'jardinero',  icon: '🌿', image: '/icons/jardinero.webp', labelEs: 'Jardinero',        labelEn: 'Gardener' },
       { id: 'mensajero',  icon: '🛵', labelEs: 'Mensajero',        labelEn: 'Messenger' },

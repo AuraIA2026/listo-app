@@ -654,6 +654,9 @@ function ReceiptModal({ order, lang, onClose, onApprove }) {
 
 export function OrderDetailsModal({ order, lang, onClose, onAccept, onDecline }) {
   const isEs = lang==='es'
+  const isSameDayOrUrgent = order.date?.includes('Hoy') || order.date?.includes('Today') || order.date?.includes('ASAP') || order.urgencyToken > 0;
+  const [eta, setEta] = useState(isSameDayOrUrgent ? 15 : 0)
+
   return (
     <div className="review-overlay" onClick={onClose} style={{ zIndex:3000 }}>
       <div className="review-modal order-details-modal" onClick={e => e.stopPropagation()}>
@@ -676,9 +679,30 @@ export function OrderDetailsModal({ order, lang, onClose, onAccept, onDecline })
           )}
           {(order.serviceDesc || order.notes) && <div style={{ marginTop:12 }}><span style={{ fontSize:13, color:'#666', fontWeight:600, display:'block', marginBottom:4 }}>{isEs?'Descripción':'Description'}</span><p style={{ fontSize:13, color:'#1A1A2E', margin:0, lineHeight:1.5, background:'#FFF3EC', padding:10, borderRadius:8, borderLeft:'3px solid #F26000' }}>{order.serviceDesc || order.notes}</p></div>}
         </div>
+        {isSameDayOrUrgent && (
+          <div style={{ marginBottom: 20, padding: '0 10px' }}>
+            <p style={{ fontSize: 13, color: '#666', fontWeight: 600, margin: '0 0 10px', textAlign: 'center' }}>
+              {isEs ? '¿En qué tiempo llegarías al lugar?' : 'Estimated Arrival Time'}
+            </p>
+            <input 
+              type="range" 
+              min="5" 
+              max="120" 
+              step="5" 
+              value={eta} 
+              onChange={(e) => setEta(parseInt(e.target.value))}
+              style={{ width: '100%', accentColor: 'var(--mamey)', height: 6 }}
+            />
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 8 }}>
+              <span style={{ fontSize: 12, color: '#999', fontWeight: 600 }}>5m</span>
+              <span style={{ fontSize: 22, color: 'var(--mamey)', fontWeight: 900, fontFamily: 'var(--font-display)' }}>{eta} <span style={{ fontSize: 14 }}>min</span></span>
+              <span style={{ fontSize: 12, color: '#999', fontWeight: 600 }}>2h</span>
+            </div>
+          </div>
+        )}
         <div style={{ display:'flex', gap:12 }}>
           <button onClick={()=>onDecline(order.id)} style={{ flex:1, padding:16, borderRadius:14, background:'#FFF0F0', color:'#E31837', border:'none', fontWeight:800, fontSize:15, cursor:'pointer', fontFamily:'var(--font-display)' }} onMouseEnter={e=>e.currentTarget.style.background='#FEE2E2'} onMouseLeave={e=>e.currentTarget.style.background='#FFF0F0'}>{isEs?'✖ Rechazar':'✖ Decline'}</button>
-          <button onClick={()=>onAccept(order.id)} style={{ flex:1, padding:16, borderRadius:14, background:'var(--mamey)', color:'white', border:'none', fontWeight:800, fontSize:15, cursor:'pointer', boxShadow:'0 4px 16px rgba(242,96,0,0.3)', fontFamily:'var(--font-display)' }} onMouseEnter={e=>e.currentTarget.style.transform='translateY(-2px)'} onMouseLeave={e=>e.currentTarget.style.transform='translateY(0)'}>{isEs?'✅ Aceptar Pedido':'✅ Accept Order'}</button>
+          <button onClick={()=>onAccept(order.id, eta)} style={{ flex:1, padding:16, borderRadius:14, background:'var(--mamey)', color:'white', border:'none', fontWeight:800, fontSize:15, cursor:'pointer', boxShadow:'0 4px 16px rgba(242,96,0,0.3)', fontFamily:'var(--font-display)' }} onMouseEnter={e=>e.currentTarget.style.transform='translateY(-2px)'} onMouseLeave={e=>e.currentTarget.style.transform='translateY(0)'}>{isEs?'✅ Aceptar Pedido':'✅ Accept Order'}</button>
         </div>
       </div>
     </div>
@@ -788,11 +812,11 @@ export default function OrdersPage({ lang = 'es', navigate, userData, userRole }
     await updateDoc(doc(db, 'orders', id), { status:next, ...extraFields }).catch(e => console.error(e))
   }
 
-  const handleAccept = async (id) => {
-    await updateDoc(doc(db, 'orders', id), { status:'accepted' }).catch(()=>{})
+  const handleAccept = async (id, eta) => {
+    await updateDoc(doc(db, 'orders', id), { status:'accepted', estimatedTime: eta || 15 }).catch(()=>{})
     await deleteNotifsByOrderId(id, notifs)
     setDetailsOrder(null)
-    if (detailsOrder) navigate('tracking', { ...detailsOrder, status:'accepted' })
+    if (detailsOrder) navigate('tracking', { ...detailsOrder, status:'accepted', estimatedTime: eta || 15 })
   }
 
   const handleDecline = async (id) => {
@@ -853,30 +877,36 @@ export default function OrdersPage({ lang = 'es', navigate, userData, userRole }
 
   const renderActions = (o) => (
     <div className="oc-actions">
+      {['accepted', 'onway', 'arrived', 'trato'].includes(o.status) && (
+        <button className="oc-btn track" onClick={()=>navigate('tracking',o)} style={{ width: '100%', marginBottom: 8 }}>📍 {T.track}</button>
+      )}
       {o.status==='onway'   && userRole==='pro'  && <button className="oc-btn trato" onClick={()=>advanceStatus(o.id,o.status)}>{T.status.arrived}</button>}
-      {['accepted', 'onway', 'arrived', 'trato', 'working'].includes(o.status) && userRole!=='pro' && <button className="oc-btn track" onClick={()=>navigate('tracking',o)}>📍 {T.track}</button>}
       {o.status==='arrived' && userRole==='pro'  && <button className="oc-btn trato" onClick={()=>advanceStatus(o.id,o.status)}>{T.tratoHecho}</button>}
       {o.status==='trato'   && userRole==='pro'  && <button className="oc-btn track" onClick={()=>advanceStatus(o.id,o.status)}>{T.status.working}</button>}
-      {o.status==='working' && userRole==='pro'  && (
-        <WorkingTimer
-          startedAt={o.workingStartedAt || o.updatedAt || o.createdAt}
-          lang={lang}
-          isPro={true}
-          onFinish={() => setWorkDoneOrder(o)}
-        />
-      )}
-      {o.status==='working' && userRole!=='pro'  && (
-        <WorkingTimer
-          startedAt={o.workingStartedAt || o.updatedAt || o.createdAt}
-          lang={lang}
-          isPro={false}
-          onFinish={null}
-        />
+      {o.status==='working' && (
+        <>
+          <button className="oc-btn track" onClick={()=>navigate('tracking',o)} style={{ width: '100%', marginBottom: 8, background: '#FFF3EC', color: '#F26000', border: '1px solid currentColor' }}>📍 {T.track}</button>
+          {userRole === 'pro' ? (
+            <WorkingTimer
+              startedAt={o.workingStartedAt || o.updatedAt || o.createdAt}
+              lang={lang}
+              isPro={true}
+              onFinish={() => setWorkDoneOrder(o)}
+            />
+          ) : (
+            <WorkingTimer
+              startedAt={o.workingStartedAt || o.updatedAt || o.createdAt}
+              lang={lang}
+              isPro={false}
+              onFinish={null}
+            />
+          )}
+        </>
       )}
       {o.status==='pending' && userRole==='pro' && (
         <div style={{ display:'flex', gap:8, width:'100%' }}>
           <button className="oc-btn decline" onClick={()=>advanceStatus(o.id,o.status,'cancelled')} style={{ flex:1, background:'#FFF0F0', color:'#E31837', border:'1px solid currentColor' }}>{T.decline}</button>
-          <button className="oc-btn listo"   onClick={()=>advanceStatus(o.id,o.status)} style={{ flex:1 }}>Aceptar Servicio</button>
+          <button className="oc-btn listo"   onClick={() => setDetailsOrder(o)} style={{ flex:1 }}>Aceptar Servicio</button>
         </div>
       )}
       {!['done', 'cancelled', 'working'].includes(o.status) && userRole!=='pro' && (

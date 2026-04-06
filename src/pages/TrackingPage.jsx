@@ -26,7 +26,7 @@ const clientIcon = L.divIcon({
 })
 const createVanIcon = (imgSrc) => L.divIcon({
   className: 'leaflet-van-icon',
-  html: `<img src="${imgSrc}" alt="van" style="width:64px;height:64px;object-fit:contain;display:block;filter:drop-shadow(0 4px 8px rgba(242,96,0,0.5));" />`,
+  html: `<img src="${imgSrc}" alt="van" style="width:64px;height:64px;object-fit:contain;display:block;background-color:transparent;filter:drop-shadow(0 4px 8px rgba(242,96,0,0.5));" />`,
   iconSize: [64, 64], iconAnchor: [32, 32], popupAnchor: [0, -32],
 })
 const createWorkerIcon = () => L.divIcon({
@@ -59,11 +59,24 @@ const playChatMsgSound = () => {
 
 function lerp(a, b, t) { return a + (b - a) * t }
 
-function SmoothMarker({ targetPos, icon, children, visible = true }) {
+function SmoothMarker({ targetPos, icon, children, visible = true, isVan = false }) {
   const markerRef = useRef(null), currentPos = useRef(targetPos)
   const animFrameRef = useRef(null), startTimeRef = useRef(null), fromPos = useRef(targetPos)
+  const rotationRef = useRef(0)
+
+  const getBearing = (lat1, lng1, lat2, lng2) => {
+    const y = Math.sin((lng2 - lng1)*Math.PI/180) * Math.cos(lat2*Math.PI/180)
+    const x = Math.cos(lat1*Math.PI/180) * Math.sin(lat2*Math.PI/180) -
+              Math.sin(lat1*Math.PI/180) * Math.cos(lat2*Math.PI/180) * Math.cos((lng2 - lng1)*Math.PI/180)
+    return (Math.atan2(y, x) * 180 / Math.PI + 360) % 360
+  }
+
   useEffect(() => {
     fromPos.current = [...currentPos.current]; startTimeRef.current = null
+    if (fromPos.current[0] !== targetPos[0] || fromPos.current[1] !== targetPos[1]) {
+      rotationRef.current = getBearing(fromPos.current[0], fromPos.current[1], targetPos[0], targetPos[1])
+    }
+    
     if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current)
     const animate = (ts) => {
       if (!startTimeRef.current) startTimeRef.current = ts
@@ -72,12 +85,25 @@ function SmoothMarker({ targetPos, icon, children, visible = true }) {
       const lat = lerp(fromPos.current[0], targetPos[0], e)
       const lng = lerp(fromPos.current[1], targetPos[1], e)
       currentPos.current = [lat, lng]
-      if (markerRef.current) markerRef.current.setLatLng([lat, lng])
+      
+      if (markerRef.current) {
+        markerRef.current.setLatLng([lat, lng])
+        if (isVan && markerRef.current.getElement()) {
+          const img = markerRef.current.getElement().querySelector('img')
+          if (img) {
+            let rot = rotationRef.current - 90
+            let flip = (rotationRef.current > 180 && rotationRef.current < 360) ? ' scaleY(-1)' : ''
+            img.style.transform = `rotate(${rot}deg)${flip}`
+            img.style.transition = 'transform 0.4s ease'
+          }
+        }
+      }
       if (t < 1) animFrameRef.current = requestAnimationFrame(animate)
     }
     animFrameRef.current = requestAnimationFrame(animate)
     return () => { if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current) }
   }, [targetPos[0], targetPos[1]]) // eslint-disable-line
+  
   if (!visible) return null
   return <Marker ref={markerRef} position={currentPos.current} icon={icon}>{children}</Marker>
 }
@@ -377,7 +403,7 @@ export default function TrackingPage({ lang = 'es', navigate, professional, user
   const [proPos,         setProPos]         = useState(pPos)
   const [mapCenter,      setMapCenter]      = useState(cPos)
 
-  const [eta,            setEta]            = useState(18)
+  const [eta,            setEta]            = useState(professional?.estimatedTime || 15)
   const [status,         setStatus]         = useState('on_way')
   const [workStatus,     setWorkStatus]     = useState('tracking')
   const [vanVisible,     setVanVisible]     = useState(true)
@@ -419,6 +445,7 @@ export default function TrackingPage({ lang = 'es', navigate, professional, user
         if (d.status === 'done') setWorkStatus('done')
         if (d.status === 'cancelled') setWorkStatus('declined_done')
         if (d.status === 'arrived') { setStatus('arrived'); setWorkStatus('awaiting_deal'); stopArrivingSound() }
+        if (d.estimatedTime !== undefined) setEta(d.estimatedTime)
         
         // Use real GPS coordinates if available
         if (d.proCoords) setProPos([d.proCoords.lat, d.proCoords.lng])
@@ -610,7 +637,7 @@ export default function TrackingPage({ lang = 'es', navigate, professional, user
           <MapResizer />
           <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
           <Marker position={clientLoc} icon={clientIcon}><Popup>{lang==='es'?'Tu ubicación':'Your location'}</Popup></Marker>
-          {vanVisible && <SmoothMarker targetPos={proPos} icon={workStatus==='working'?workerIcon.current:vanIcon.current} visible={vanVisible}><Popup>{pro.name}</Popup></SmoothMarker>}
+          {vanVisible && <SmoothMarker targetPos={proPos} icon={workStatus==='working'?workerIcon.current:vanIcon.current} visible={vanVisible} isVan={workStatus!=='working'}><Popup>{pro.name}</Popup></SmoothMarker>}
         </MapContainer>
         {workStatus==='tracking' && (
           <div className="map-eta-pill" style={{ background:getStatusColor()+'22', borderColor:getStatusColor()+'44' }}>
@@ -682,11 +709,18 @@ export default function TrackingPage({ lang = 'es', navigate, professional, user
 
             {/* ── Acciones de tracking para el Pro ── */}
             {workStatus==='tracking' && userRole==='pro' && status !== 'arrived' && (
-              <div style={{ marginTop: 16 }}>
+              <div style={{ marginTop: 16, display: 'flex', gap: 10 }}>
+                <button onClick={async () => {
+                   let nextEta = eta + 10;
+                   if (nextEta > 90) nextEta = 10;
+                   setEta(nextEta);
+                   try { await updateDoc(doc(db, 'orders', professional.id), { estimatedTime: nextEta }) } catch(e) {}
+                }} style={{ padding:'14px 10px', borderRadius:14, border:'2px solid #F26000', background:'transparent', color:'#F26000', fontWeight:800, fontSize:14, cursor:'pointer', transition:'all 0.2s', minWidth: 90 }}>⏱️ {lang==='es'?'+10m':'+10m'}</button>
+                
                 <button onClick={async () => {
                   try { await updateDoc(doc(db, 'orders', professional.id), { status: 'arrived' }) } catch(e) {}
                   setStatus('arrived'); setWorkStatus('awaiting_deal'); stopArrivingSound()
-                }} style={{ width:'100%', padding:16, borderRadius:16, border:'none', background:'#F26000', color:'#fff', fontWeight:900, fontSize:16, boxShadow:'0 8px 30px rgba(242,96,0,0.4)', cursor:'pointer', animation: 'timerPulse 2s infinite' }}>✅ {lang==='es'?'Llegué a la ubicación':'I arrived'}</button>
+                }} style={{ flex:1, padding:14, borderRadius:14, border:'none', background:'#F26000', color:'#fff', fontWeight:900, fontSize:15, boxShadow:'0 8px 30px rgba(242,96,0,0.4)', cursor:'pointer', animation: 'timerPulse 2s infinite' }}>✅ {lang==='es'?'¡Llegué a la ubicación!':'I arrived!'}</button>
               </div>
             )}
 
