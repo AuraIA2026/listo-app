@@ -88,15 +88,6 @@ function SmoothMarker({ targetPos, icon, children, visible = true, isVan = false
       
       if (markerRef.current) {
         markerRef.current.setLatLng([lat, lng])
-        if (isVan && markerRef.current.getElement()) {
-          const img = markerRef.current.getElement().querySelector('img')
-          if (img) {
-            let rot = rotationRef.current - 90
-            let flip = (rotationRef.current > 180 && rotationRef.current < 360) ? ' scaleY(-1)' : ''
-            img.style.transform = `rotate(${rot}deg)${flip}`
-            img.style.transition = 'transform 0.4s ease'
-          }
-        }
       }
       if (t < 1) animFrameRef.current = requestAnimationFrame(animate)
     }
