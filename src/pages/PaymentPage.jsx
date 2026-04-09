@@ -437,6 +437,14 @@ export default function PaymentPage({ lang = 'es', navigate, professional }) {
             <div className="security-badge" style={{ background: 'white', border: '1px solid #CBD5E1', padding: '6px 10px', borderRadius: '8px', fontSize: '11px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}>
               <span>🛡️</span> PCI DSS
             </div>
+            {/* Basic Logos */}
+            <div className="security-badge" style={{ background: 'white', border: '1px solid #CBD5E1', padding: '6px 10px', borderRadius: '8px', color: '#1A1F71', fontWeight: '900', fontStyle: 'italic', fontSize: '13px' }}>
+              VISA
+            </div>
+            <div className="security-badge" style={{ background: 'white', border: '1px solid #CBD5E1', padding: '6px 10px', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '2px' }}>
+               <div style={{ width: '14px', height: '14px', borderRadius: '50%', background: '#EB001B', marginRight: '-6px', mixBlendMode: 'multiply' }}></div>
+               <div style={{ width: '14px', height: '14px', borderRadius: '50%', background: '#F79E1B', mixBlendMode: 'multiply' }}></div>
+            </div>
             {/* 3D Secure Logos */}
             <div className="security-badge" style={{ background: 'white', border: '1px solid #CBD5E1', padding: '6px 10px', borderRadius: '8px', color: '#1A1F71', fontWeight: 'bold', fontSize: '11px' }}>
               Verified by VISA

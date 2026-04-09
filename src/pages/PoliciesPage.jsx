@@ -52,18 +52,22 @@ export default function PoliciesPage({ lang, navigate }) {
         {activeTab === 'security' && (
           <div>
             <h2 style={{ fontSize: '22px', color: '#0F172A', marginBottom: '16px' }}>Política de Seguridad para la Transmisión de Datos</h2>
+            
+            <h3 style={{ fontSize: '16px', color: '#1A1A2E', marginTop: '20px', marginBottom: '8px' }}>WEBSITE</h3>
             <p style={{ lineHeight: '1.6', marginBottom: '12px' }}>
-              En <strong>Listo Patrón</strong>, la seguridad de sus datos financieros y personales es nuestra máxima prioridad. Todas las transacciones con tarjeta de crédito o débito se procesan en un entorno seguro.
+              Tomamos todas las medidas y precauciones razonables para proteger tu información personal y seguimos las mejores prácticas de la industria para asegurar que tu información no sea utilizada de manera inapropiada, alterada o destruida.
             </p>
-            <ul style={{ lineHeight: '1.6', paddingLeft: '20px', marginBottom: '20px' }}>
-              <li>Toda la información viaja encriptada utilizando certificados de seguridad SSL de 256 bits.</li>
-              <li>Nuestros procesos cumplen con el estándar internacional PCI-DSS (Payment Card Industry Data Security Standard).</li>
-              <li>Utilizamos tecnología <strong>3D Secure</strong> para validar su identidad directamente con su banco antes de cualquier débito.</li>
-              <li>Los datos de su tarjeta no se almacenan en los servidores de Listo Patrón, son procesados directamente por la pasarela de pagos segura autorizada (AZUL/CardNET).</li>
-            </ul>
+            <p style={{ lineHeight: '1.6', marginBottom: '20px' }}>
+              Ciframos la información de tu tarjeta de crédito utilizando la tecnología de capa de puertos seguros o Secur Sockets Layer (SSL), y la almacenamos con el cifrado AES-256. También, seguimos todos los requerimientos del PCI-DSS.
+            </p>
+
+            <h3 style={{ fontSize: '16px', color: '#1A1A2E', marginTop: '20px', marginBottom: '8px' }}>PAGOS</h3>
+            <p style={{ lineHeight: '1.6', marginBottom: '20px' }}>
+              Los métodos de pago utilizados por LA EMPRESA son servicios de terceros. Estos servicios de terceros (AZUL), cumplen con todos los estándares de seguridad y cifrado para mantener tu información segura. Solo utilizarán la información necesaria para completar el proceso requerido. También recomendamos leer las Políticas de Privacidad de estos proveedores, para entender mejor cómo manejan la información suministrada.
+            </p>
 
             <div style={{ padding: '20px', background: '#F1F5F9', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '20px', flexWrap: 'wrap' }}>
-               {/* Logo Verified By Visa (SVG Approximation / Clean text) */}
+               {/* Logo Verified By Visa */}
                <div style={{ background: 'white', padding: '10px 15px', borderRadius: '8px', border: '1px solid #CBD5E1', display: 'flex', alignItems: 'center', fontWeight: 'bold', color: '#1434CB', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
                   Verified by <strong style={{ fontSize: '18px', marginLeft: '6px', fontStyle: 'italic' }}>VISA</strong>
                </div>
