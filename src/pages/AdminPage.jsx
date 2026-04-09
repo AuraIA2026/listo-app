@@ -1,5 +1,5 @@
 import React, { useState, useEffect, Component } from "react";
-import { collection, query, where, onSnapshot, doc, updateDoc, orderBy, addDoc } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, doc, updateDoc, orderBy, addDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 
 class ErrorBoundary extends Component {
@@ -781,6 +781,12 @@ export default function AdminPage({ navigate }) {
             });
          showToast(`🔴 Solicitud de cambio rechazada`);
       }
+
+      if (type === 'delete_account') {
+         await deleteDoc(doc(db, 'users', obj.id));
+         showToast(`💀 Cuenta de ${obj.name || 'usuario'} eliminada permanentemente.`);
+         setViewProStats(null);
+      }
     } catch(err) {
       console.error(err);
       showToast('❌ Ocurrió un error en la base de datos');
@@ -1256,6 +1262,13 @@ export default function AdminPage({ navigate }) {
                   )}
                 </div>
 
+                {/* Eliminar Definitivamente */}
+                <div style={{display:'flex', gap:8, marginBottom:12}}>
+                  <button className="cc-btn block" style={{background:'#450a0a', color:'#fca5a5', borderColor:'#7f1d1d', flex:1, padding: 12}} onClick={() => setConfirm({type:'delete_account', obj:viewProStats})}>
+                    💀 Eliminar Cuenta Definitivamente
+                  </button>
+                </div>
+
                 {/* Expediente Limitado */}
                 {viewProStats.verificacion && (
                   <button className="cc-btn remind" style={{width:'100%', background:'#3B82F6', color:'#fff', border:'none', padding:14, fontSize:13}} onClick={() => {
@@ -1652,10 +1665,11 @@ export default function AdminPage({ navigate }) {
           <div className="confirm-overlay" onClick={() => {setConfirm(null); setBlockReason('');}}>
             <div className="confirm-modal" onClick={e => e.stopPropagation()}>
               <span className="cm-icon">
-                {confirm.type==='block' ? '🔴' : confirm.type==='sub_contract' ? '➖' : confirm.type==='add_contract' ? '➕' : confirm.type==='unblock' ? '✅' : '💚'}
+                {confirm.type==='block' ? '🔴' : confirm.type==='delete_account' ? '💀' : confirm.type==='sub_contract' ? '➖' : confirm.type==='add_contract' ? '➕' : confirm.type==='unblock' ? '✅' : '💚'}
               </span>
                <h3 className="cm-title">
                 {confirm.type==='block'   ? '¿Suspender perfil?' :
+                 confirm.type==='delete_account' ? '¿Eliminar perfil para siempre?' :
                  confirm.type==='unblock' ? '¿Activar perfil?' :
                  confirm.type==='add_contract' ? '¿Sumar contrato?' :
                  confirm.type==='sub_contract' ? '¿Restar contrato?' :
@@ -1673,6 +1687,8 @@ export default function AdminPage({ navigate }) {
               <p className="cm-sub">
                 {confirm.type==='block'
                   ? `Estás a punto de suspender a ${confirm.obj.name} (${confirm.obj.service || 'Profesional'}). Quedará inactivo.`
+                  : confirm.type==='delete_account'
+                  ? `ATENCIÓN: Vas a borrar el perfil de ${confirm.obj.name} de manera definitiva e irreversible. Se eliminará de la base de datos de usuarios completamente.`
                   : confirm.type==='unblock'
                   ? `Se activará el perfil de ${confirm.obj.name} en el sistema.`
                   : confirm.type==='add_contract'
@@ -1714,10 +1730,11 @@ export default function AdminPage({ navigate }) {
               )}
 
               <button
-                className={`cm-btn ${confirm.type==='block'||confirm.type==='sub_contract'||confirm.type==='reject_payment'||confirm.type==='reject_verif'?'danger':'success'}`}
+                className={`cm-btn ${confirm.type==='block'||confirm.type==='delete_account'||confirm.type==='sub_contract'||confirm.type==='reject_payment'||confirm.type==='reject_verif'?'danger':'success'}`}
                 disabled={confirm.type === 'block' && !blockReason.trim()}
                 onClick={ejecutarConfirm}>
                 {confirm.type==='block'   ? '🔴 Sí, suspender'    :
+                 confirm.type==='delete_account' ? '💀 Sí, ELIMINAR' :
                  confirm.type==='unblock' ? '✅ Sí, activar' :
                  confirm.type==='add_contract' ? '➕ Sí, sumar' :
                  confirm.type==='sub_contract' ? '➖ Sí, restar' :
