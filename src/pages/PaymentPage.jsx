@@ -429,18 +429,30 @@ export default function PaymentPage({ lang = 'es', navigate, professional }) {
         )}
 
         {/* ESCUDOS DE SEGURIDAD BANCARIA */}
-        <div className="payment-security-footer fade-up" style={{ animationDelay: '0.2s' }}>
-          <div className="security-logos">
-            <div className="security-badge">
+        <div className="payment-security-footer fade-up" style={{ animationDelay: '0.2s', padding: '16px', borderRadius: '12px', background: '#F8FAFC', border: '1px solid #E2E8F0', marginTop: '24px', marginBottom: '24px' }}>
+          <div className="security-logos" style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'center', marginBottom: '12px' }}>
+            <div className="security-badge" style={{ background: 'white', border: '1px solid #CBD5E1', padding: '6px 10px', borderRadius: '8px', fontSize: '11px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}>
               <span>🔒</span> 256-bit SSL
             </div>
-            <div className="security-badge">
-              <span>🛡️</span> PCI DSS Compliant
+            <div className="security-badge" style={{ background: 'white', border: '1px solid #CBD5E1', padding: '6px 10px', borderRadius: '8px', fontSize: '11px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <span>🛡️</span> PCI DSS
+            </div>
+            {/* 3D Secure Logos */}
+            <div className="security-badge" style={{ background: 'white', border: '1px solid #CBD5E1', padding: '6px 10px', borderRadius: '8px', color: '#1A1F71', fontWeight: 'bold', fontSize: '11px' }}>
+              Verified by VISA
+            </div>
+            <div className="security-badge" style={{ background: 'white', border: '1px solid #CBD5E1', padding: '6px 10px', borderRadius: '8px', color: '#EB001B', fontWeight: 'bold', fontSize: '11px' }}>
+              MasterCard ID Check
             </div>
           </div>
-          <p className="security-text">
-            {lang === 'es' ? 'Tus pagos están encriptados y protegidos por estándares globales de seguridad.' : 'Your payments are encrypted and protected by global security standards.'}
+          <p className="security-text" style={{ fontSize: '12px', marginBottom: '8px', textAlign: 'center', color: '#64748B' }}>
+            {lang === 'es' ? 'Tus pagos están encriptados y comprobados con tecnología 3D Secure de autenticación biométrica.' : 'Your payments are encrypted and protected with 3D Secure.'}
           </p>
+          <div style={{ background: '#ECFDF5', border: '1px dashed #10B981', padding: '8px', borderRadius: '8px', textAlign: 'center', color: '#065F46' }}>
+            <p style={{ fontSize: '11.5px', fontWeight: 'bold', margin: 0 }}>
+              {lang === 'es' ? '✓ Un recibo/comprobante electrónico de pago te será enviado por correo al completar.' : '✓ An electronic receipt will be sent to your email.'}
+            </p>
+          </div>
         </div>
 
         <button

@@ -30,6 +30,7 @@ import LocalesPage            from './locales/LocalesPage'
 import LocalDetalle           from './locales/LocalDetalle'
 import CrearLocal             from './locales/CrearLocal'   // ✅ AGREGADO
 import NotificacionPage       from './pages/Notificacionpage'
+import PoliciesPage           from './pages/PoliciesPage'
 import logoBlanco             from './assets/logo listo blanco.png'
 import './App.css'
 
@@ -623,6 +624,7 @@ export default function App() {
       {currentPage === 'localDetalle' && <LocalDetalle {...userProps} local={selectedLocal} />}
       {currentPage === 'crearLocal'   && <CrearLocal   {...userProps} />}  {/* ✅ AGREGADO */}
       {currentPage === 'notificaciones' && <NotificacionPage {...userProps} />}
+      {currentPage === 'policies'     && <PoliciesPage {...commonProps} />}
 
       {currentPage === 'booking'       && <BookingPage             {...userProps}   professional={selectedPro} />}
       {currentPage === 'chat'          && <ChatPage                {...commonProps} professional={selectedPro} userData={userData} />}
