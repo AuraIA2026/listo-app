@@ -69,8 +69,8 @@ service cloud.firestore {
     // Para simplificar cualquier otra cosa no cubierta por estas prioridades:
     match /{document=**} {
       // Temporalmente permitimos que usuarios autenticados pasen si no coinciden arriba
-      // (En producción futura debes cerrarlo poniendo allow read, write: if false;)
-      allow read, write: if isAuth();
+      // (Cerrado por motivos de seguridad en producción)
+      allow read, write: if false;
     }
   }
 }

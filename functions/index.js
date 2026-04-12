@@ -1,5 +1,6 @@
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
+const crypto = require("crypto"); // Requerido para la firma de AZUL
 
 admin.initializeApp();
 const db = admin.firestore();
@@ -72,6 +73,45 @@ exports.webhookCardnet = functions.https.onRequest(async (req, res) => {
     console.error("❌ Error en webhookCardnet:", error);
     return res.status(500).json({ error: error.message });
   }
+});
+
+/* ═══════════════════════════════════════════════════════════
+   FUNCIÓN NUEVA: generarFirmaAzul
+   Llamada desde el frontend, genera el AuthHash SHA-512 requerido 
+   por el Hosted Payment Page de AZUL asegurando que la llave 
+   nunca se expone al cliente.
+═══════════════════════════════════════════════════════════ */
+exports.generarFirmaAzul = functions.https.onCall((data, context) => {
+  // TODO: Reemplazar estas variables con TUS llaves secretas de AZUL
+  const MERCHANT_ID = "1234567"; // Merchant ID provisto por Azul
+  const AUTH_KEY = "pon_tu_auth_key_1_aqui_adentro"; // Llave secreta
+
+  const {
+    MerchantName,
+    MerchantType,
+    CurrencyCode,
+    OrderNumber,
+    Amount,
+    ITBIS,
+    ApprovedUrl,
+    DeclinedUrl,
+    CancelUrl,
+    UseCustomField1,
+    CustomField1Value,
+    UseCustomField2,
+    CustomField2Value
+  } = data;
+
+  // AZUL requiere la concatenación EXACATA de estos valores en este orden
+  const cadena = `${MERCHANT_ID}${MerchantName}${MerchantType}${CurrencyCode}${OrderNumber}${Amount}${ITBIS}${ApprovedUrl}${DeclinedUrl}${CancelUrl}${UseCustomField1}${CustomField1Value}${UseCustomField2}${CustomField2Value}`;
+  
+  // Genera el hash en HMAC-SHA512
+  const authHash = crypto.createHmac('sha512', AUTH_KEY).update(cadena).digest('hex');
+
+  return {
+    AuthHash: authHash,
+    MerchantId: MERCHANT_ID
+  };
 });
 
 

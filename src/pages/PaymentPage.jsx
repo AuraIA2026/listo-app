@@ -105,20 +105,58 @@ export default function PaymentPage({ lang = 'es', navigate, professional }) {
   const [depositorName, setDepositorName]   = useState('')
   const receiptInputRef                   = useRef(null)
 
-  // -- ESTADO TARJETA AZUL --
-  const [cardName, setCardName]           = useState('')
-  const [cardNumber, setCardNumber]       = useState('')
-  const [cardExp, setCardExp]             = useState('')
-  const [cardCvv, setCardCvv]             = useState('')
-  const [showWebview, setShowWebview]     = useState(false)
-  const [webviewLoading, setWebviewLoading] = useState(false)
+  // -- INTEGRACIÓN REAL AZUL --
+  const formRef = useRef(null);
+  const [pagoAzulData, setPagoAzulData] = useState(null);
+  const [isProcessingAzul, setIsProcessingAzul] = useState(false);
+  const URL_AZUL = "https://pruebas.azul.com.do/payment/checkout"; // TODO: Cambiar a pagos.azul.com.do en producción
 
-  const handleBankPay = async () => {
-    setWebviewLoading(true)
-    await new Promise(res => setTimeout(res, 1500))
-    setWebviewLoading(false)
-    setShowWebview(false)
-    setReceiptUploaded(true) // Simula aprobación AZUL
+  const handleBankPayReal = async () => {
+    if (!total || total <= 0) {
+      alert("Por favor ingresa un monto válido a pagar.");
+      return;
+    }
+    setIsProcessingAzul(true);
+    try {
+      const { httpsCallable } = await import("firebase/functions");
+      const { functions } = await import("../firebase");
+      
+      const generarFirma = httpsCallable(functions, "generarFirmaAzul");
+      
+      // Monto en formato AZUL (multiplicar x 100 para no enviar punto)
+      const totalAzul = String(Math.round(total * 100)); 
+
+      const payload = {
+        MerchantName: "Listo App",
+        MerchantType: "E-Commerce",
+        CurrencyCode: "$", // $ = DOP
+        OrderNumber: pro?.orderId || `ORD-${Date.now()}`,
+        Amount: totalAzul,
+        ITBIS: "000",
+        ApprovedUrl: window.location.origin + "/listo", // o una ruta de /exito
+        DeclinedUrl: window.location.origin,
+        CancelUrl: window.location.origin,
+        UseCustomField1: "1",
+        CustomField1Value: "pago_tarjeta",
+        UseCustomField2: "1",
+        CustomField2Value: pro?.orderId || "NA"
+      };
+
+      const res = await generarFirma(payload);
+      const { AuthHash, MerchantId } = res.data;
+
+      setPagoAzulData({ ...payload, MerchantId, AuthHash });
+      
+      // Autoenviar form
+      setTimeout(() => {
+        if (formRef.current) formRef.current.submit();
+      }, 500);
+
+    } catch (err) {
+      console.error("Error generando Hash AZUL: ", err);
+      alert("Error al conectar con el servidor de pagos. Revisa que las IPs y credenciales estén bien.");
+      setIsProcessingAzul(false);
+    }
   }
 
   const handleReceiptUpload = (e) => {
@@ -316,10 +354,11 @@ export default function PaymentPage({ lang = 'es', navigate, professional }) {
             {!receiptUploaded ? (
               <button
                 className="upload-receipt-btn"
-                onClick={() => setShowWebview(true)}
-                style={{ background: '#002E6D', color: 'white', border: 'none', marginTop: '16px', boxShadow: '0 4px 12px rgba(0,46,109,0.3)' }}
+                onClick={handleBankPayReal}
+                disabled={isProcessingAzul}
+                style={{ background: '#002E6D', color: 'white', border: 'none', marginTop: '16px', boxShadow: '0 4px 12px rgba(0,46,109,0.3)', opacity: isProcessingAzul ? 0.7 : 1 }}
               >
-                💳 Introducir Tarjeta (Vía AZUL)
+                {isProcessingAzul ? 'Conectando con Servidor Seguro AZUL...' : '💳 Pagar en Entorno Seguro (AZUL)'}
               </button>
             ) : (
               <button className="upload-receipt-btn uploaded" style={{ marginTop: '16px' }} disabled>
@@ -329,86 +368,30 @@ export default function PaymentPage({ lang = 'es', navigate, professional }) {
           </div>
         )}
 
-        {/* WEBVIEW MODAL DE BANCO SIMULADO (ESTILO AZUL) */}
-        {showWebview && method === 'card' && (
-          <div className="payment-webview-overlay">
-            <div className="payment-webview-modal">
-              <div className="webview-header">
-                <span className="webview-lock">🔒</span>
-                <div className="webview-url-bar">
-                  https://pagos.azul.com.do/payment/checkout
-                </div>
-                <button className="webview-close" onClick={() => setShowWebview(false)}>×</button>
-              </div>
-              
-              <div className="webview-content azul-content">
-                <div className="azul-header-brand">
-                  <h1 className="azul-logo-text">AZUL</h1>
-                </div>
-                
-                <h3 style={{ marginBottom: '6px', fontFamily: 'var(--font-display)', color: '#002E6D' }}>Pago Seguro</h3>
-                <p style={{ marginBottom: '20px', fontSize: '14px', color: '#666' }}>Monto a debitar: <strong>RD${total.toLocaleString()}</strong></p>
-                
-                <div className="webview-form azul-form">
-                  <div className="webview-input-group">
-                    <label>Titular de la tarjeta</label>
-                    <input 
-                      type="text" 
-                      placeholder="Nombre como aparece en la tarjeta" 
-                      value={cardName}
-                      onChange={e => setCardName(e.target.value)}
-                    />
-                  </div>
-
-                  <div className="webview-input-group">
-                    <label>Número de Tarjeta</label>
-                    <input 
-                      type="text" 
-                      placeholder="0000 0000 0000 0000" 
-                      maxLength={19}
-                      value={cardNumber}
-                      onChange={e => setCardNumber(e.target.value)}
-                    />
-                  </div>
-
-                  <div style={{ display: 'flex', gap: '12px' }}>
-                    <div className="webview-input-group" style={{ flex: 1 }}>
-                      <label>Expiración (MM/AA)</label>
-                      <input 
-                        type="text" 
-                        placeholder="MM/AA" 
-                        maxLength={5}
-                        value={cardExp}
-                        onChange={e => setCardExp(e.target.value)}
-                      />
-                    </div>
-                    <div className="webview-input-group" style={{ width: '100px' }}>
-                      <label>CVV</label>
-                      <input 
-                        type="text" 
-                        placeholder="123" 
-                        maxLength={4}
-                        value={cardCvv}
-                        onChange={e => setCardCvv(e.target.value)}
-                      />
-                    </div>
-                  </div>
-
-                  <button 
-                    className="webview-pay-btn azul-pay-btn" 
-                    disabled={webviewLoading || !cardName || !cardNumber || !cardExp || !cardCvv}
-                    onClick={handleBankPay}
-                  >
-                    {webviewLoading ? <span className="webview-spinner" /> : 'Procesar Pago'}
-                  </button>
-                </div>
-                
-                <p style={{ marginTop: '24px', fontSize: '11px', color: '#888', textAlign: 'center', maxWidth: '300px' }}>
-                  Este es un entorno seguro provisto por Servicios Digitales Popular para el procesamiento de pagos de Listo App.
-                </p>
-              </div>
-            </div>
-          </div>
+        {/* FORMULARIO INVISIBLE AZUL - SE AUTOENVÍA CON REDIRECCION POST */}
+        {pagoAzulData && (
+          <form 
+            ref={formRef} 
+            action={URL_AZUL} 
+            method="post" 
+            style={{ display: 'none' }}
+          >
+            <input name="MerchantId" type="hidden" value={pagoAzulData.MerchantId} />
+            <input name="MerchantName" type="hidden" value={pagoAzulData.MerchantName} />
+            <input name="MerchantType" type="hidden" value={pagoAzulData.MerchantType} />
+            <input name="CurrencyCode" type="hidden" value={pagoAzulData.CurrencyCode} />
+            <input name="OrderNumber" type="hidden" value={pagoAzulData.OrderNumber} />
+            <input name="Amount" type="hidden" value={pagoAzulData.Amount} />
+            <input name="ITBIS" type="hidden" value={pagoAzulData.ITBIS} />
+            <input name="ApprovedUrl" type="hidden" value={pagoAzulData.ApprovedUrl} />
+            <input name="DeclinedUrl" type="hidden" value={pagoAzulData.DeclinedUrl} />
+            <input name="CancelUrl" type="hidden" value={pagoAzulData.CancelUrl} />
+            <input name="UseCustomField1" type="hidden" value={pagoAzulData.UseCustomField1} />
+            <input name="CustomField1Value" type="hidden" value={pagoAzulData.CustomField1Value} />
+            <input name="UseCustomField2" type="hidden" value={pagoAzulData.UseCustomField2} />
+            <input name="CustomField2Value" type="hidden" value={pagoAzulData.CustomField2Value} />
+            <input name="AuthHash" type="hidden" value={pagoAzulData.AuthHash} />
+          </form>
         )}
 
         {method === 'transfer' && (
