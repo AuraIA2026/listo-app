@@ -57,32 +57,32 @@ const featuredStatic = [
 
 const sections = [
   { id:'mecanico',     image: '/icons/mecanico.webp', icon:'🔧', titleEs:'Mecánico',     titleEn:'Mechanic',    services:[
-    { img:mecanico1,  nameEs:'Diagnóstico vehicular', nameEn:'Vehicle diagnostic',  price:'RD$800',   tag:'Popular' },
-    { img:mecanico,   nameEs:'Cambio de aceite',      nameEn:'Oil change',          price:'RD$650',   tag:null },
+    { img:mecanico1,  nameEs:'Diagnóstico vehicular', nameEn:'Vehicle diagnostic',  price:'A convenir',   tag:'Popular' },
+    { img:mecanico,   nameEs:'Cambio de aceite',      nameEn:'Oil change',          price:'A convenir',   tag:null },
   ]},
   { id:'electricista', image: '/icons/electricista.webp', icon:'⚡', titleEs:'Electricista', titleEn:'Electrician', services:[
-    { img:electrica1, nameEs:'Instalación eléctrica',  nameEn:'Electrical install', price:'RD$950',   tag:'Popular' },
-    { img:electrica,  nameEs:'Reparación de circuito', nameEn:'Circuit repair',     price:'RD$750',   tag:null },
+    { img:electrica1, nameEs:'Instalación eléctrica',  nameEn:'Electrical install', price:'A convenir',   tag:'Popular' },
+    { img:electrica,  nameEs:'Reparación de circuito', nameEn:'Circuit repair',     price:'A convenir',   tag:null },
   ]},
   { id:'plomero',      image: '/icons/plomero.webp', icon:'🔩', titleEs:'Plomero',      titleEn:'Plumber',     services:[
-    { img:plomero,    nameEs:'Reparación de tubería', nameEn:'Pipe repair',          price:'RD$700',   tag:'Popular' },
-    { img:refrig,     nameEs:'Refrigeración y A/C',   nameEn:'A/C & Refrigeration', price:'RD$1,200', tag:'24/7' },
+    { img:plomero,    nameEs:'Reparación de tubería', nameEn:'Pipe repair',          price:'A convenir',   tag:'Popular' },
+    { img:refrig,     nameEs:'Refrigeración y A/C',   nameEn:'A/C & Refrigeration', price:'A convenir', tag:'24/7' },
   ]},
   { id:'cerrajero',    image: '/icons/cerrajero.webp', icon:'🔑', titleEs:'Cerrajero',    titleEn:'Locksmith',   services:[
-    { img:cerrajero,  nameEs:'Apertura de puertas',  nameEn:'Door opening',    price:'RD$500',   tag:'Urgente' },
-    { img:cerrajero1, nameEs:'Cambio de cerraduras', nameEn:'Lock replacement', price:'RD$650',   tag:null },
+    { img:cerrajero,  nameEs:'Apertura de puertas',  nameEn:'Door opening',    price:'A convenir',   tag:'Urgente' },
+    { img:cerrajero1, nameEs:'Cambio de cerraduras', nameEn:'Lock replacement', price:'A convenir',   tag:null },
   ]},
   { id:'pintor',       image: '/icons/pintor.webp', icon:'🎨', titleEs:'Pintor',       titleEn:'Painter',     services:[
-    { img:pintor,     nameEs:'Pintura interior',   nameEn:'Interior painting', price:'RD$2,500', tag:'Popular' },
-    { img:pintor1,    nameEs:'Pintura de fachada', nameEn:'Exterior painting', price:'RD$3,500', tag:null },
+    { img:pintor,     nameEs:'Pintura interior',   nameEn:'Interior painting', price:'A convenir', tag:'Popular' },
+    { img:pintor1,    nameEs:'Pintura de fachada', nameEn:'Exterior painting', price:'A convenir', tag:null },
   ]},
   { id:'jardinero',    image: '/icons/jardinero.webp', icon:'🌿', titleEs:'Jardinero',    titleEn:'Gardener',    services:[
-    { img:jardinero,  nameEs:'Poda y mantenimiento', nameEn:'Pruning & maintenance', price:'RD$600',   tag:'Popular' },
-    { img:ninera,     nameEs:'Diseño de jardín',     nameEn:'Garden design',         price:'RD$1,800', tag:null },
+    { img:jardinero,  nameEs:'Poda y mantenimiento', nameEn:'Pruning & maintenance', price:'A convenir',   tag:'Popular' },
+    { img:ninera,     nameEs:'Diseño de jardín',     nameEn:'Garden design',         price:'A convenir', tag:null },
   ]},
   { id:'ninera',       image: '/icons/ninera.webp', icon:'👶', titleEs:'Niñera',       titleEn:'Nanny',       services:[
-    { img:ninera,     nameEs:'Cuidado de niños', nameEn:'Child care',          price:'RD$400/hr', tag:'Popular' },
-    { img:ninera1,    nameEs:'Apoyo educativo',  nameEn:'Educational support', price:'RD$500/hr', tag:null },
+    { img:ninera,     nameEs:'Cuidado de niños', nameEn:'Child care',          price:'A convenir', tag:'Popular' },
+    { img:ninera1,    nameEs:'Apoyo educativo',  nameEn:'Educational support', price:'A convenir', tag:null },
   ]},
 ]
 

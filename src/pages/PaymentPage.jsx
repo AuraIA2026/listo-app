@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { doc, updateDoc } from 'firebase/firestore'
 import { db } from '../firebase'
 import './PaymentPage.css'
@@ -82,14 +82,12 @@ const txt = {
 export default function PaymentPage({ lang = 'es', navigate, professional }) {
   const T = txt[lang]
 
-  const pro = professional || {
-    name: 'Carlos Méndez',
-    category: '🔧 Mecánico',
-    avatar: 'CM',
-    color: '#F26000',
-    price: 'RD$800',
-    id: 'test_profesional_001'
-  }
+  const pro = professional;
+  useEffect(() => {
+    if (!pro) navigate('/');
+  }, [pro, navigate]);
+
+  if (!pro) return null;
 
   // Se elimina el precio quemado. El usuario decide el precio final
   const [customPrice, setCustomPrice] = useState('')
