@@ -1054,10 +1054,16 @@ export default function HomePage({ lang, navigate, userRole }) {
                <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#F79E1B', mixBlendMode: 'multiply' }}></div>
             </div>
             <div style={{ background: 'white', padding: '4px 8px', borderRadius: '4px', display: 'flex', alignItems: 'center' }}>
-              <img src="https://upload.wikimedia.org/wikipedia/commons/1/16/Visa_Secure_logo.svg" alt="Visa Secure" style={{ height: '20px', objectFit: 'contain' }} />
+              <svg viewBox="0 0 160 50" style={{ height: '20px' }}>
+                <text x="0" y="38" fontFamily="sans-serif" fontSize="40" fontWeight="900" fontStyle="italic" fill="#1A1F71" letterSpacing="-2">VISA</text>
+                <text x="95" y="38" fontFamily="sans-serif" fontSize="20" fontWeight="600" fill="#1A1F71">Secure</text>
+              </svg>
             </div>
-            <div style={{ background: 'white', padding: '4px 8px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <img src="https://upload.wikimedia.org/wikipedia/commons/a/a4/Mastercard_2019_logo.svg" alt="Mastercard" style={{ height: '18px', objectFit: 'contain' }} />
+            <div style={{ background: 'white', padding: '4px 8px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <svg viewBox="0 0 100 60" style={{ height: '22px' }}>
+                <circle cx="35" cy="30" r="25" fill="#EB001B" />
+                <circle cx="65" cy="30" r="25" fill="#F79E1B" opacity="0.8" />
+              </svg>
               <span style={{ color: '#1A1A2E', fontSize: '11px', fontWeight: '900', fontFamily: 'sans-serif' }}>ID Check&trade;</span>
             </div>
           </div>

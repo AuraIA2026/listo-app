@@ -69,11 +69,17 @@ export default function PoliciesPage({ lang, navigate }) {
             <div style={{ padding: '20px', background: '#F1F5F9', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '20px', flexWrap: 'wrap' }}>
                {/* Logo Verified By Visa */}
                <div style={{ background: 'white', padding: '10px 15px', borderRadius: '8px', border: '1px solid #CBD5E1', display: 'flex', alignItems: 'center', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
-                 <img src="https://upload.wikimedia.org/wikipedia/commons/1/16/Visa_Secure_logo.svg" alt="Visa Secure" style={{ height: '24px', objectFit: 'contain' }} />
+                 <svg viewBox="0 0 160 50" style={{ height: '24px' }}>
+                   <text x="0" y="38" fontFamily="sans-serif" fontSize="40" fontWeight="900" fontStyle="italic" fill="#1A1F71" letterSpacing="-2">VISA</text>
+                   <text x="95" y="38" fontFamily="sans-serif" fontSize="20" fontWeight="600" fill="#1A1F71">Secure</text>
+                 </svg>
                </div>
                {/* Logo MasterCard ID Check */}
                <div style={{ background: 'white', padding: '10px 15px', borderRadius: '8px', border: '1px solid #CBD5E1', display: 'flex', alignItems: 'center', gap: '6px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
-                 <img src="https://upload.wikimedia.org/wikipedia/commons/a/a4/Mastercard_2019_logo.svg" alt="Mastercard" style={{ height: '22px', objectFit: 'contain' }} />
+                 <svg viewBox="0 0 100 60" style={{ height: '24px' }}>
+                   <circle cx="35" cy="30" r="25" fill="#EB001B" />
+                   <circle cx="65" cy="30" r="25" fill="#F79E1B" opacity="0.8" />
+                 </svg>
                  <span style={{ color: '#1A1A2E', fontSize: '13px', fontWeight: '900', fontFamily: 'sans-serif' }}>ID Check&trade;</span>
                </div>
             </div>

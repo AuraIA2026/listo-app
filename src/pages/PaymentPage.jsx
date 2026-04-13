@@ -428,11 +428,17 @@ export default function PaymentPage({ lang = 'es', navigate, professional }) {
             </div>
             {/* 3D Secure Logos */}
             <div className="security-badge" style={{ background: 'white', border: '1px solid #CBD5E1', padding: '6px 10px', borderRadius: '8px', display: 'flex', alignItems: 'center' }}>
-              <img src="https://upload.wikimedia.org/wikipedia/commons/1/16/Visa_Secure_logo.svg" alt="Visa Secure" style={{ height: '22px', objectFit: 'contain' }} />
+              <svg viewBox="0 0 160 50" style={{ height: '22px' }}>
+                <text x="0" y="38" fontFamily="sans-serif" fontSize="40" fontWeight="900" fontStyle="italic" fill="#1A1F71" letterSpacing="-2">VISA</text>
+                <text x="95" y="38" fontFamily="sans-serif" fontSize="20" fontWeight="600" fill="#1A1F71">Secure</text>
+              </svg>
             </div>
-            <div className="security-badge" style={{ background: 'white', border: '1px solid #CBD5E1', padding: '6px 10px', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <img src="https://upload.wikimedia.org/wikipedia/commons/a/a4/Mastercard_2019_logo.svg" alt="Mastercard" style={{ height: '20px', objectFit: 'contain' }} />
-              <span style={{ color: '#1A1A2E', fontSize: '12px', fontWeight: '900', fontFamily: 'sans-serif' }}>ID Check&trade;</span>
+            <div className="security-badge" style={{ background: 'white', border: '1px solid #CBD5E1', padding: '6px 10px', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <svg viewBox="0 0 100 60" style={{ height: '24px' }}>
+                <circle cx="35" cy="30" r="25" fill="#EB001B" />
+                <circle cx="65" cy="30" r="25" fill="#F79E1B" opacity="0.8" />
+              </svg>
+              <span style={{ color: '#1A1A2E', fontSize: '13px', fontWeight: '900', fontFamily: 'sans-serif' }}>ID Check&trade;</span>
             </div>
           </div>
           <p className="security-text" style={{ fontSize: '12px', marginBottom: '8px', textAlign: 'center', color: '#64748B' }}>
