@@ -107,7 +107,7 @@ export default function PaymentPage({ lang = 'es', navigate, professional }) {
   const formRef = useRef(null);
   const [pagoAzulData, setPagoAzulData] = useState(null);
   const [isProcessingAzul, setIsProcessingAzul] = useState(false);
-  const URL_AZUL = "https://pruebas.azul.com.do/payment/checkout"; // TODO: Cambiar a pagos.azul.com.do en producción
+  const URL_AZUL = "https://pruebas.azul.com.do/paymentpage/Default.aspx"; // TODO: Cambiar a pagos.azul.com.do/paymentpage/Default.aspx en producción
 
   const handleBankPayReal = async () => {
     if (!total || total <= 0) {

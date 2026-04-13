@@ -83,8 +83,8 @@ exports.webhookCardnet = functions.https.onRequest(async (req, res) => {
 ═══════════════════════════════════════════════════════════ */
 exports.generarFirmaAzul = functions.https.onCall((data, context) => {
   // TODO: Reemplazar estas variables con TUS llaves secretas de AZUL
-  const MERCHANT_ID = "1234567"; // Merchant ID provisto por Azul
-  const AUTH_KEY = "pon_tu_auth_key_1_aqui_adentro"; // Llave secreta
+  const MERCHANT_ID = "39038540035"; // Merchant ID provisto por Azul
+  const AUTH_KEY = "asdhakjshdkjasdasmndajksdkjaskldga8odya9d8yoasyd98asdyaisdhoaisyd0a8sydoashd8oasydoiahdpiashd09ayusidhaos8dy0a8dya08syd0a8ssdsax"; // Llave secreta
 
   const {
     MerchantName,
