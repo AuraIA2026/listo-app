@@ -1,4 +1,4 @@
-const functions = require("firebase-functions");
+const functions = require("firebase-functions/v1");
 const admin = require("firebase-admin");
 const crypto = require("crypto"); // Requerido para la firma de AZUL
 
@@ -97,13 +97,15 @@ exports.generarFirmaAzul = functions.https.onCall((data, context) => {
     DeclinedUrl,
     CancelUrl,
     UseCustomField1,
+    CustomField1Label,
     CustomField1Value,
     UseCustomField2,
+    CustomField2Label,
     CustomField2Value
   } = data;
 
   // AZUL requiere la concatenación EXACATA de estos valores en este orden
-  const cadena = `${MERCHANT_ID}${MerchantName}${MerchantType}${CurrencyCode}${OrderNumber}${Amount}${ITBIS}${ApprovedUrl}${DeclinedUrl}${CancelUrl}${UseCustomField1}${CustomField1Value}${UseCustomField2}${CustomField2Value}`;
+  const cadena = `${MERCHANT_ID}${MerchantName}${MerchantType}${CurrencyCode}${OrderNumber}${Amount}${ITBIS}${ApprovedUrl}${DeclinedUrl}${CancelUrl}${UseCustomField1}${CustomField1Label}${CustomField1Value}${UseCustomField2}${CustomField2Label}${CustomField2Value}`;
   
   // Genera el hash en HMAC-SHA512
   const authHash = crypto.createHmac('sha512', AUTH_KEY).update(cadena).digest('hex');
