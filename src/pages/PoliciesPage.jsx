@@ -68,16 +68,13 @@ export default function PoliciesPage({ lang, navigate }) {
 
             <div style={{ padding: '20px', background: '#F1F5F9', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '20px', flexWrap: 'wrap' }}>
                {/* Logo Verified By Visa */}
-               <div style={{ background: 'white', padding: '10px 15px', borderRadius: '8px', border: '1px solid #CBD5E1', display: 'flex', alignItems: 'center', fontWeight: 'bold', color: '#1434CB', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
-                  Verified by <strong style={{ fontSize: '18px', marginLeft: '6px', fontStyle: 'italic' }}>VISA</strong>
+               <div style={{ background: 'white', padding: '10px 15px', borderRadius: '8px', border: '1px solid #CBD5E1', display: 'flex', alignItems: 'center', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
+                 <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/16/Visa_Secure_logo.svg/256px-Visa_Secure_logo.svg.png" alt="Visa Secure" style={{ height: '24px', objectFit: 'contain' }} />
                </div>
                {/* Logo MasterCard ID Check */}
-               <div style={{ background: 'white', padding: '10px 15px', borderRadius: '8px', border: '1px solid #CBD5E1', display: 'flex', alignItems: 'center', fontWeight: 'bold', color: '#EB001B', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
-                  <div style={{ marginRight: '8px', display: 'flex' }}>
-                    <div style={{ width: '16px', height: '16px', borderRadius: '50%', background: '#EB001B', marginRight: '-6px', zIndex: 1, mixBlendMode: 'multiply' }}></div>
-                    <div style={{ width: '16px', height: '16px', borderRadius: '50%', background: '#F79E1B', mixBlendMode: 'multiply' }}></div>
-                  </div>
-                  mastercard. <br/> ID Check
+               <div style={{ background: 'white', padding: '10px 15px', borderRadius: '8px', border: '1px solid #CBD5E1', display: 'flex', alignItems: 'center', gap: '6px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
+                 <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a4/Mastercard_2019_logo.svg/100px-Mastercard_2019_logo.svg.png" alt="Mastercard" style={{ height: '22px', objectFit: 'contain' }} />
+                 <span style={{ color: '#1A1A2E', fontSize: '13px', fontWeight: '900', fontFamily: 'sans-serif' }}>ID Check&trade;</span>
                </div>
             </div>
           </div>

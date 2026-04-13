@@ -1040,7 +1040,7 @@ export default function HomePage({ lang, navigate, userRole }) {
       {!Capacitor.isNativePlatform() && (
         <footer style={{ background: '#1A1A2E', color: '#94A3B8', padding: '32px 20px', marginTop: '20px', borderTopLeftRadius: '24px', borderTopRightRadius: '24px', textAlign: 'center', fontSize: '12px' }}>
           <p style={{ margin: '0 0 16px 0', fontSize: '14px', fontWeight: 'bold', color: 'white' }}>Listo Patrón SRL</p>
-          <p style={{ margin: '0 0 8px 0', lineHeight: '1.4' }}>Santo Domingo, Distrito Nacional<br/>República Dominicana</p>
+          <p style={{ margin: '0 0 8px 0', lineHeight: '1.4' }}>[CALLE Y NÚMERO DE DIRECCIÓN], Santo Domingo<br/>Distrito Nacional, República Dominicana</p>
           <div style={{ display: 'flex', justifyContent: 'center', gap: '16px', flexWrap: 'wrap', margin: '20px 0' }}>
               <span onClick={() => navigate('policies')} style={{ cursor: 'pointer', textDecoration: 'underline' }}>Privacidad</span>
               <span onClick={() => navigate('policies')} style={{ cursor: 'pointer', textDecoration: 'underline' }}>Devoluciones</span>
@@ -1053,8 +1053,13 @@ export default function HomePage({ lang, navigate, userRole }) {
                <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#EB001B', marginRight: '-4px', mixBlendMode: 'multiply' }}></div>
                <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#F79E1B', mixBlendMode: 'multiply' }}></div>
             </div>
-            <div style={{ padding: '4px 8px', border: '1px solid #475569', borderRadius: '4px', color: '#E2E8F0', fontSize: '11px', fontWeight: 'bold' }}>Verified by VISA</div>
-            <div style={{ padding: '4px 8px', border: '1px solid #475569', borderRadius: '4px', color: '#E2E8F0', fontSize: '11px', fontWeight: 'bold' }}>Mastercard ID Check</div>
+            <div style={{ background: 'white', padding: '4px 8px', borderRadius: '4px', display: 'flex', alignItems: 'center' }}>
+              <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/16/Visa_Secure_logo.svg/256px-Visa_Secure_logo.svg.png" alt="Visa Secure" style={{ height: '20px', objectFit: 'contain' }} />
+            </div>
+            <div style={{ background: 'white', padding: '4px 8px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a4/Mastercard_2019_logo.svg/100px-Mastercard_2019_logo.svg.png" alt="Mastercard" style={{ height: '18px', objectFit: 'contain' }} />
+              <span style={{ color: '#1A1A2E', fontSize: '11px', fontWeight: '900', fontFamily: 'sans-serif' }}>ID Check&trade;</span>
+            </div>
           </div>
           <p style={{ margin: '24px 0 0 0' }}>© {new Date().getFullYear()} Listo Patrón. Todos los derechos reservados.</p>
         </footer>
