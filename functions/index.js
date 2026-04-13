@@ -483,3 +483,90 @@ exports.actualizarRatingProfesional = functions.firestore
     }
     return null;
   });
+
+/* ═══════════════════════════════════════════════════════════
+   FUNCIÓN 8: enviarCorreoNuevoPlan
+   Se dispara automáticamente cada vez que un profesional adquiere o cambia de plan.
+   Le envía un correo de bienvenida/agradecimiento.
+═══════════════════════════════════════════════════════════ */
+exports.enviarCorreoNuevoPlan = functions.firestore
+  .document("users/{userId}")
+  .onUpdate(async (change, context) => {
+    try {
+      const before = change.before.data();
+      const after = change.after.data();
+
+      // Detectamos si el campo "plan" o "currentPlan" fue modificado
+      const oldPlan = before.plan || before.currentPlan || 'basico';
+      const newPlan = after.plan || after.currentPlan || 'basico';
+
+      // Si el plan no cambió, o si la cuenta pasó a plan básico gratuito, ignoramos
+      if (oldPlan === newPlan) return null;
+      if (newPlan === 'basico') return null;
+
+      const destinoEmail = after.email;
+      if (!destinoEmail) return null;
+
+      const nombre = after.name ? after.name.split(' ')[0] : 'Profesional';
+
+      // Detectar colores e insignias según el plan
+      let planDisplay = newPlan.toUpperCase();
+      let colorPlan = "#F26000";
+      if (planDisplay.includes("VIP")) colorPlan = "#FF3D00";
+      if (planDisplay.includes("GOLD")) colorPlan = "#FFBA00";
+      if (planDisplay.includes("PLATINUM") || planDisplay.includes("PLATINO")) {
+        planDisplay = "PLATINUM"; 
+        colorPlan = "#78909C";
+      }
+
+      // 1. Construir el correo en HTML
+      const mailOptions = {
+        from: '"Listo Patrón" <listopatron.app@gmail.com>',
+        to: destinoEmail,
+        subject: `🎉 ¡Bienvenido al Plan ${planDisplay}! - Listo Patrón`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-top: 5px solid ${colorPlan}; border-radius: 10px;">
+            <h2 style="color: #1A1A2E; text-align: center;">¡Gracias por postularte y creer en tu talento, ${nombre}! 🚀</h2>
+            
+            <p style="font-size: 16px; color: #333; text-align: center;">Nos emociona muchísimo informarte que acabas de adquirir tu nuevo paquete y tu cuenta ha sido actualizada exitosamente.</p>
+            
+            <div style="background: #FAFAFA; padding: 20px; border-radius: 10px; margin: 25px 0; text-align: center; border: 1px solid #eee;">
+              <p style="margin: 0; font-size: 14px; color: #666;">Tu nuevo plan asignado es:</p>
+              <p style="margin: 10px 0; font-size: 26px; font-weight: 900; color: ${colorPlan};">${planDisplay}</p>
+            </div>
+
+            <p style="font-size: 15px; color: #444; line-height: 1.6;">Con esta membresía activa, tu perfil ha desbloqueado una mayor visibilidad frente a la competencia, dándote la máxima prioridad en los resultados de búsqueda de los clientes. ¡Prepárate para recibir más trabajos!</p>
+            
+            <p style="font-size: 15px; color: #444; line-height: 1.6;"><strong>💡 Siguiente Paso:</strong> Dale ese toque personal y único a tu perfil. Asegúrate de tener una excelente foto, escribir una descripción atractiva de lo que haces, y mostrar lo mejor de ti.</p>
+            
+            <div style="text-align: center; margin-top: 35px; margin-bottom: 25px;">
+              <a href="https://listo-app.vercel.app/profile" style="background: #1A1A2E; color: white; text-decoration: none; padding: 14px 28px; border-radius: 6px; font-weight: bold; font-size: 16px;">Entrar a mi Perfil</a>
+            </div>
+            
+            <hr style="border: none; border-top: 1px solid #eee; margin-top: 30px;">
+            <p style="font-size: 12px; color: #aaa; text-align: center;">Este es un mensaje automático del equipo de éxito de Listo Patrón. ¡Estamos para apoyarte a crecer!</p>
+          </div>
+        `
+      };
+
+      // 2. Enviar el correo usando NodeMailer
+      await transporter.sendMail(mailOptions);
+      console.log(`✅ Correo de Nuevo Plan (${planDisplay}) enviado exitosamente a ${destinoEmail}`);
+      
+      // 3. Disparar notificación push interna para el campana en la app
+      await db.collection("notificaciones").add({
+        userId: change.after.id,
+        type: 'plan_update',
+        title: '⭐ ¡NUEVO PLAN ACTIVADO!',
+        text: `¡Felicidades ${nombre}! Ya estás disfrutando de todos los beneficios del Plan ${planDisplay}.`,
+        date: new Date().toISOString(),
+        read: false
+      });
+
+      return { success: true };
+
+    } catch (error) {
+      console.error("❌ Error enviando correo de cambio de plan:", error);
+      return null;
+    }
+  });
