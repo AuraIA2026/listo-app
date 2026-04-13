@@ -1047,20 +1047,23 @@ export default function HomePage({ lang, navigate, userRole }) {
               <span onClick={() => navigate('policies')} style={{ cursor: 'pointer', textDecoration: 'underline' }}>Entregas</span>
               <span onClick={() => navigate('policies')} style={{ cursor: 'pointer', textDecoration: 'underline' }}>Seguridad</span>
           </div>
-          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginTop: '24px', background: 'rgba(255,255,255,0.05)', padding: '16px', borderRadius: '12px' }}>
-            <div style={{ background: 'white', padding: '4px 8px', borderRadius: '4px', fontWeight: '900', color: '#1A1F71', fontStyle: 'italic', fontSize: '14px' }}>VISA</div>
-            <div style={{ background: 'white', padding: '6px 8px', borderRadius: '4px', display: 'flex', alignItems: 'center' }}>
-               <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#EB001B', marginRight: '-4px', mixBlendMode: 'multiply' }}></div>
-               <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#F79E1B', mixBlendMode: 'multiply' }}></div>
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px', flexWrap: 'wrap', marginTop: '20px' }}>
+            {/* Network Logos */}
+            <div className="security-badge" style={{ background: 'white', border: '1px solid #CBD5E1', padding: '6px 10px', borderRadius: '8px', fontWeight: '900', color: '#1A1F71', fontStyle: 'italic', fontSize: '15px' }}>VISA</div>
+            <div className="security-badge" style={{ background: 'white', border: '1px solid #CBD5E1', padding: '8px 12px', borderRadius: '8px', display: 'flex', alignItems: 'center' }}>
+               <div style={{ width: '16px', height: '16px', borderRadius: '50%', background: '#EB001B', marginRight: '-6px', mixBlendMode: 'multiply' }}></div>
+               <div style={{ width: '16px', height: '16px', borderRadius: '50%', background: '#F79E1B', mixBlendMode: 'multiply' }}></div>
             </div>
-            <div style={{ background: 'white', padding: '4px 8px', borderRadius: '4px', display: 'flex', alignItems: 'center' }}>
-              <svg viewBox="0 0 190 50" style={{ height: '20px' }}>
+            
+            {/* 3D Secure Logos */}
+            <div className="security-badge" style={{ background: 'white', border: '1px solid #CBD5E1', padding: '6px 10px', borderRadius: '8px', display: 'flex', alignItems: 'center' }}>
+              <svg viewBox="0 0 190 50" style={{ height: '22px' }}>
                 <text x="0" y="38" fontFamily="sans-serif" fontSize="40" fontWeight="900" fontStyle="italic" fill="#1A1F71" letterSpacing="-2">VISA</text>
                 <text x="115" y="38" fontFamily="sans-serif" fontSize="20" fontWeight="600" fill="#1A1F71">Secure</text>
               </svg>
             </div>
-            <div style={{ background: 'white', padding: '4px 8px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <svg viewBox="0 0 100 60" style={{ height: '22px' }}>
+            <div className="security-badge" style={{ background: 'white', border: '1px solid #CBD5E1', padding: '6px 10px', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <svg viewBox="0 0 100 60" style={{ height: '24px' }}>
                 <circle cx="35" cy="30" r="25" fill="#EB001B" />
                 <circle cx="65" cy="30" r="25" fill="#F79E1B" opacity="0.8" />
               </svg>

@@ -67,6 +67,13 @@ export default function PoliciesPage({ lang, navigate }) {
             </p>
 
             <div style={{ padding: '20px', background: '#F1F5F9', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '20px', flexWrap: 'wrap' }}>
+               {/* Network Acceptance Logos */}
+               <div style={{ background: 'white', padding: '10px 15px', borderRadius: '8px', border: '1px solid #CBD5E1', fontWeight: '900', color: '#1A1F71', fontStyle: 'italic', fontSize: '18px', display: 'flex', alignItems: 'center', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>VISA</div>
+               <div style={{ background: 'white', padding: '10px 15px', borderRadius: '8px', border: '1px solid #CBD5E1', display: 'flex', alignItems: 'center', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
+                  <div style={{ width: '20px', height: '20px', borderRadius: '50%', background: '#EB001B', marginRight: '-8px', mixBlendMode: 'multiply' }}></div>
+                  <div style={{ width: '20px', height: '20px', borderRadius: '50%', background: '#F79E1B', mixBlendMode: 'multiply' }}></div>
+               </div>
+
                {/* Logo Verified By Visa */}
                <div style={{ background: 'white', padding: '10px 15px', borderRadius: '8px', border: '1px solid #CBD5E1', display: 'flex', alignItems: 'center', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
                  <svg viewBox="0 0 190 50" style={{ height: '24px' }}>
