@@ -428,10 +428,10 @@ export default function PaymentPage({ lang = 'es', navigate, professional }) {
             </div>
             {/* 3D Secure Logos */}
             <div className="security-badge" style={{ background: 'white', border: '1px solid #CBD5E1', padding: '6px 10px', borderRadius: '8px', display: 'flex', alignItems: 'center' }}>
-              <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/16/Visa_Secure_logo.svg/256px-Visa_Secure_logo.svg.png" alt="Visa Secure" style={{ height: '22px', objectFit: 'contain' }} />
+              <img src="https://upload.wikimedia.org/wikipedia/commons/1/16/Visa_Secure_logo.svg" alt="Visa Secure" style={{ height: '22px', objectFit: 'contain' }} />
             </div>
             <div className="security-badge" style={{ background: 'white', border: '1px solid #CBD5E1', padding: '6px 10px', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a4/Mastercard_2019_logo.svg/100px-Mastercard_2019_logo.svg.png" alt="Mastercard" style={{ height: '20px', objectFit: 'contain' }} />
+              <img src="https://upload.wikimedia.org/wikipedia/commons/a/a4/Mastercard_2019_logo.svg" alt="Mastercard" style={{ height: '20px', objectFit: 'contain' }} />
               <span style={{ color: '#1A1A2E', fontSize: '12px', fontWeight: '900', fontFamily: 'sans-serif' }}>ID Check&trade;</span>
             </div>
           </div>

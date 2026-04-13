@@ -1054,10 +1054,10 @@ export default function HomePage({ lang, navigate, userRole }) {
                <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#F79E1B', mixBlendMode: 'multiply' }}></div>
             </div>
             <div style={{ background: 'white', padding: '4px 8px', borderRadius: '4px', display: 'flex', alignItems: 'center' }}>
-              <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/16/Visa_Secure_logo.svg/256px-Visa_Secure_logo.svg.png" alt="Visa Secure" style={{ height: '20px', objectFit: 'contain' }} />
+              <img src="https://upload.wikimedia.org/wikipedia/commons/1/16/Visa_Secure_logo.svg" alt="Visa Secure" style={{ height: '20px', objectFit: 'contain' }} />
             </div>
             <div style={{ background: 'white', padding: '4px 8px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a4/Mastercard_2019_logo.svg/100px-Mastercard_2019_logo.svg.png" alt="Mastercard" style={{ height: '18px', objectFit: 'contain' }} />
+              <img src="https://upload.wikimedia.org/wikipedia/commons/a/a4/Mastercard_2019_logo.svg" alt="Mastercard" style={{ height: '18px', objectFit: 'contain' }} />
               <span style={{ color: '#1A1A2E', fontSize: '11px', fontWeight: '900', fontFamily: 'sans-serif' }}>ID Check&trade;</span>
             </div>
           </div>
