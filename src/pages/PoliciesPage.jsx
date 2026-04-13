@@ -69,9 +69,9 @@ export default function PoliciesPage({ lang, navigate }) {
             <div style={{ padding: '20px', background: '#F1F5F9', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '20px', flexWrap: 'wrap' }}>
                {/* Logo Verified By Visa */}
                <div style={{ background: 'white', padding: '10px 15px', borderRadius: '8px', border: '1px solid #CBD5E1', display: 'flex', alignItems: 'center', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
-                 <svg viewBox="0 0 160 50" style={{ height: '24px' }}>
+                 <svg viewBox="0 0 190 50" style={{ height: '24px' }}>
                    <text x="0" y="38" fontFamily="sans-serif" fontSize="40" fontWeight="900" fontStyle="italic" fill="#1A1F71" letterSpacing="-2">VISA</text>
-                   <text x="95" y="38" fontFamily="sans-serif" fontSize="20" fontWeight="600" fill="#1A1F71">Secure</text>
+                   <text x="115" y="38" fontFamily="sans-serif" fontSize="20" fontWeight="600" fill="#1A1F71">Secure</text>
                  </svg>
                </div>
                {/* Logo MasterCard ID Check */}
