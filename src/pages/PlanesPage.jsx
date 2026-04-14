@@ -125,7 +125,8 @@ export default function PlanesPage({ onBack, navigate }) {
           ITBIS: "000",
           ApprovedUrl: cloudFunctionEndpoint,
           DeclinedUrl: window.location.origin + "/profile?planError=declined",
-          CancelUrl: window.location.origin + "/profile?planError=cancelled"
+          CancelUrl: window.location.origin + "/profile?planError=cancelled",
+          ResponsePostUrl: cloudFunctionEndpoint
         };
 
         const res = await generarFirma(payload);
@@ -292,6 +293,7 @@ export default function PlanesPage({ onBack, navigate }) {
             <input name="ApprovedUrl" type="hidden" value={pagoAzulData.ApprovedUrl} />
             <input name="DeclinedUrl" type="hidden" value={pagoAzulData.DeclinedUrl} />
             <input name="CancelUrl" type="hidden" value={pagoAzulData.CancelUrl} />
+            <input name="ResponsePostUrl" type="hidden" value={pagoAzulData.ResponsePostUrl} />
             <input name="UseCustomField1" type="hidden" value="0" />
             <input name="CustomField1Label" type="hidden" value="" />
             <input name="CustomField1Value" type="hidden" value="" />
