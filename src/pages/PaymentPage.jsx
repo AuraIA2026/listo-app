@@ -125,10 +125,10 @@ export default function PaymentPage({ lang = 'es', navigate, professional }) {
       const totalAzul = String(Math.round(total * 100)); 
 
       const payload = {
-        MerchantName: "Listo App",
+        MerchantName: "Listo App - Planes",
         MerchantType: "E-Commerce",
         CurrencyCode: "$", // $ = DOP
-        OrderNumber: pro?.orderId || `ORD-${Date.now()}`,
+        OrderNumber: `ORD-${Date.now()}`,
         Amount: totalAzul,
         ITBIS: "000",
         ApprovedUrl: window.location.origin + "/orders?payment=success",
