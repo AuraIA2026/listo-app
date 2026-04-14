@@ -131,10 +131,10 @@ export default function PaymentPage({ lang = 'es', navigate, professional }) {
         OrderNumber: pro?.orderId || `ORD-${Date.now()}`,
         Amount: totalAzul,
         ITBIS: "000",
-        ApprovedUrl: window.location.origin + "/listo", // o una ruta de /exito
-        DeclinedUrl: window.location.origin,
-        CancelUrl: window.location.origin,
-        ResponsePostUrl: window.location.origin + "/listo"
+        ApprovedUrl: window.location.origin + "/orders?payment=success",
+        DeclinedUrl: window.location.origin + "/orders?payment=declined",
+        CancelUrl: window.location.origin + "/orders?payment=cancelled",
+        ResponsePostUrl: "https://us-central1-listoapp-52b46.cloudfunctions.net/webhookCardnet"
       };
 
       const res = await generarFirma(payload);
