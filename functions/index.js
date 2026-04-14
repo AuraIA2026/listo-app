@@ -102,7 +102,7 @@ exports.generarFirmaAzul = functions.https.onCall((data, context) => {
   // AZUL requiere ResponsePostUrl
   const finalResponsePostUrl = ResponsePostUrl || ApprovedUrl;
 
-  // AZUL requiere la concatenación EXACATA de estos valores en este orden, incluyendo Custom Fields
+  // AZUL requiere la concatenación EXACATA de estos valores en este orden, incluyendo Custom Fields y seguido del AuthKey
   const UseCustomField1 = "0";
   const CustomField1Label = "";
   const CustomField1Value = "";
@@ -110,10 +110,10 @@ exports.generarFirmaAzul = functions.https.onCall((data, context) => {
   const CustomField2Label = "";
   const CustomField2Value = "";
 
-  const cadena = `${MERCHANT_ID}${MerchantName}${MerchantType}${CurrencyCode}${OrderNumber}${Amount}${ITBIS}${ApprovedUrl}${DeclinedUrl}${CancelUrl}${finalResponsePostUrl}${UseCustomField1}${CustomField1Label}${CustomField1Value}${UseCustomField2}${CustomField2Label}${CustomField2Value}`;
+  const cadena = `${MERCHANT_ID}${MerchantName}${MerchantType}${CurrencyCode}${OrderNumber}${Amount}${ITBIS}${ApprovedUrl}${DeclinedUrl}${CancelUrl}${finalResponsePostUrl}${UseCustomField1}${CustomField1Label}${CustomField1Value}${UseCustomField2}${CustomField2Label}${CustomField2Value}${AUTH_KEY}`;
   
-  // Genera el hash en HMAC-SHA512
-  const authHash = crypto.createHmac('sha512', AUTH_KEY).update(cadena).digest('hex');
+  // Genera el hash en SHA-512 (No HMAC)
+  const authHash = crypto.createHash('sha512').update(cadena).digest('hex');
 
   return {
     AuthHash: authHash,
