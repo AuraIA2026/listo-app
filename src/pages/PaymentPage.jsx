@@ -132,8 +132,8 @@ export default function PaymentPage({ lang = 'es', navigate, professional }) {
         Amount: totalAzul,
         Tax: "000",
         ApprovedUrl: "https://us-central1-listoapp-52b46.cloudfunctions.net/azulWebHook",
-        DeclinedUrl: window.location.origin + "/orders?payment=declined",
-        CancelUrl: window.location.origin + "/orders?payment=cancelled",
+        DeclinedUrl: "https://listo-app.vercel.app/orders?payment=declined",
+        CancelUrl: "https://listo-app.vercel.app/orders?payment=cancelled",
         ResponsePostUrl: "https://us-central1-listoapp-52b46.cloudfunctions.net/azulWebHook"
       };
 

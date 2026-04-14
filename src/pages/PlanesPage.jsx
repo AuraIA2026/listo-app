@@ -124,8 +124,8 @@ export default function PlanesPage({ onBack, navigate }) {
           Amount: totalAzul,
           Tax: "000",
           ApprovedUrl: cloudFunctionEndpoint,
-          DeclinedUrl: window.location.origin + "/profile?planError=declined",
-          CancelUrl: window.location.origin + "/profile?planError=cancelled",
+          DeclinedUrl: "https://listo-app.vercel.app/profile?planError=declined",
+          CancelUrl: "https://listo-app.vercel.app/profile?planError=cancelled",
           ResponsePostUrl: cloudFunctionEndpoint
         };
 
