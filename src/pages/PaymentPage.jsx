@@ -121,21 +121,18 @@ export default function PaymentPage({ lang = 'es', navigate, professional }) {
       
       const generarFirma = httpsCallable(functions, "generarFirmaAzul");
       
-      // Monto en formato AZUL (multiplicar x 100 para no enviar punto)
-      const totalAzul = String(Math.round(total * 100)); 
-
       const cloudFunctionEndpoint = "https://us-central1-listoapp-52b46.cloudfunctions.net/azulWebHook"; 
       
       const payload = {
         MerchantName: "Listo App - Planes",
         MerchantType: "E-Commerce",
-        CurrencyCode: "$", // $ = DOP
-        OrderNumber: `ORD_${pro.orderId || Date.now()}`.substring(0, 30),
-        Amount: totalAzul,
+        CurrencyCode: "$",
+        OrderNumber: "ORD_STATIC_12345",
+        Amount: "150000",
         Tax: "000",
         ApprovedUrl: cloudFunctionEndpoint,
-        DeclinedUrl: "https://listo-app.vercel.app/orders-declined",
-        CancelUrl: "https://listo-app.vercel.app/orders-cancelled",
+        DeclinedUrl: "https://listo-app.vercel.app/profile?planError=declined",
+        CancelUrl: "https://listo-app.vercel.app/profile?planError=cancelled",
         ResponsePostUrl: cloudFunctionEndpoint
       };
 
