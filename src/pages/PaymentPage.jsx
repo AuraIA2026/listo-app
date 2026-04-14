@@ -128,7 +128,7 @@ export default function PaymentPage({ lang = 'es', navigate, professional }) {
         MerchantName: "Listo App - Planes",
         MerchantType: "E-Commerce",
         CurrencyCode: "$", // $ = DOP
-        OrderNumber: `ORD-${Date.now()}`,
+        OrderNumber: `ORD${Date.now()}`,
         Amount: totalAzul,
         Tax: "000",
         ApprovedUrl: "https://us-central1-listoapp-52b46.cloudfunctions.net/azulWebHook",
