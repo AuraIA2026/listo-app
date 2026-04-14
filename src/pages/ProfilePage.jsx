@@ -717,7 +717,17 @@ export default function ProfilePage({ lang, setLang, navigate, onLogout, initial
             <>
               <div className="stat-divider" />
               <div className="stat-item">
-                <span className="stat-num" style={{ color: '#FFD700' }}>{userData?.contracts || 0}</span>
+                <span 
+                  className="stat-num" 
+                  style={{ 
+                    color: '#FFD700', 
+                    fontSize: (userData?.planId === 'vip' || userData?.planId === 'platinum' || (userData?.currentPlan||'').toLowerCase().includes('vip') || (userData?.plan||'').toLowerCase().includes('vip')) ? '12px' : undefined,
+                    fontWeight: '900',
+                    letterSpacing: '0.5px'
+                  }}
+                >
+                  {(userData?.planId === 'vip' || userData?.planId === 'platinum' || (userData?.currentPlan||'').toLowerCase().includes('vip') || (userData?.plan||'').toLowerCase().includes('vip')) ? 'ILIMITADO' : (userData?.contracts || 0)}
+                </span>
                 <span className="stat-label">{T.contracts}</span>
               </div>
             </>
