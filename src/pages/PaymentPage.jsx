@@ -125,7 +125,7 @@ export default function PaymentPage({ lang = 'es', navigate, professional }) {
       const totalAzul = String(Math.round(total * 100)); 
 
       const payload = {
-        MerchantName: "Listo App - Servicios",
+        MerchantName: "Listo App - Planes",
         MerchantType: "E-Commerce",
         CurrencyCode: "$", // $ = DOP
         OrderNumber: `ORD-${Date.now()}`,
