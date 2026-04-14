@@ -133,13 +133,7 @@ export default function PaymentPage({ lang = 'es', navigate, professional }) {
         ITBIS: "000",
         ApprovedUrl: window.location.origin + "/listo", // o una ruta de /exito
         DeclinedUrl: window.location.origin,
-        CancelUrl: window.location.origin,
-        UseCustomField1: "1",
-        CustomField1Label: "Tipo",
-        CustomField1Value: "pago_tarjeta",
-        UseCustomField2: "1",
-        CustomField2Label: "Orden",
-        CustomField2Value: pro?.orderId || "NA"
+        CancelUrl: window.location.origin
       };
 
       const res = await generarFirma(payload);
@@ -386,12 +380,6 @@ export default function PaymentPage({ lang = 'es', navigate, professional }) {
             <input name="ApprovedUrl" type="hidden" value={pagoAzulData.ApprovedUrl} />
             <input name="DeclinedUrl" type="hidden" value={pagoAzulData.DeclinedUrl} />
             <input name="CancelUrl" type="hidden" value={pagoAzulData.CancelUrl} />
-            <input name="UseCustomField1" type="hidden" value={pagoAzulData.UseCustomField1} />
-            <input name="CustomField1Label" type="hidden" value={pagoAzulData.CustomField1Label} />
-            <input name="CustomField1Value" type="hidden" value={pagoAzulData.CustomField1Value} />
-            <input name="UseCustomField2" type="hidden" value={pagoAzulData.UseCustomField2} />
-            <input name="CustomField2Label" type="hidden" value={pagoAzulData.CustomField2Label} />
-            <input name="CustomField2Value" type="hidden" value={pagoAzulData.CustomField2Value} />
             <input name="AuthHash" type="hidden" value={pagoAzulData.AuthHash} />
           </form>
         )}
