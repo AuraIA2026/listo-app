@@ -92,7 +92,7 @@ exports.generarFirmaAzul = functions.https.onCall((data, context) => {
     CurrencyCode,
     OrderNumber,
     Amount,
-    ITBIS,
+    Tax,
     ApprovedUrl,
     DeclinedUrl,
     CancelUrl,
@@ -110,7 +110,7 @@ exports.generarFirmaAzul = functions.https.onCall((data, context) => {
   const CustomField2Label = "";
   const CustomField2Value = "";
 
-  const cadena = `${MERCHANT_ID}${MerchantName}${MerchantType}${CurrencyCode}${OrderNumber}${Amount}${ITBIS}${ApprovedUrl}${DeclinedUrl}${CancelUrl}${finalResponsePostUrl}${UseCustomField1}${CustomField1Label}${CustomField1Value}${UseCustomField2}${CustomField2Label}${CustomField2Value}`;
+  const cadena = `${MERCHANT_ID}${MerchantName}${MerchantType}${CurrencyCode}${OrderNumber}${Amount}${Tax}${ApprovedUrl}${DeclinedUrl}${CancelUrl}${finalResponsePostUrl}${UseCustomField1}${CustomField1Label}${CustomField1Value}${UseCustomField2}${CustomField2Label}${CustomField2Value}`;
   
   // Genera el hash en HMAC-SHA512 (Algoritmo actual de la pasarela)
   const authHash = crypto.createHmac('sha512', AUTH_KEY).update(cadena).digest('hex');

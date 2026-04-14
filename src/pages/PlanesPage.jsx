@@ -122,7 +122,7 @@ export default function PlanesPage({ onBack, navigate }) {
           CurrencyCode: "$", // DOP
           OrderNumber: orderIdUnique,
           Amount: totalAzul,
-          ITBIS: "000",
+          Tax: "000",
           ApprovedUrl: cloudFunctionEndpoint,
           DeclinedUrl: window.location.origin + "/profile?planError=declined",
           CancelUrl: window.location.origin + "/profile?planError=cancelled",
@@ -289,7 +289,7 @@ export default function PlanesPage({ onBack, navigate }) {
             <input name="CurrencyCode" type="hidden" value={pagoAzulData.CurrencyCode} />
             <input name="OrderNumber" type="hidden" value={pagoAzulData.OrderNumber} />
             <input name="Amount" type="hidden" value={pagoAzulData.Amount} />
-            <input name="ITBIS" type="hidden" value={pagoAzulData.ITBIS} />
+            <input name="Tax" type="hidden" value={pagoAzulData.Tax} />
             <input name="ApprovedUrl" type="hidden" value={pagoAzulData.ApprovedUrl} />
             <input name="DeclinedUrl" type="hidden" value={pagoAzulData.DeclinedUrl} />
             <input name="CancelUrl" type="hidden" value={pagoAzulData.CancelUrl} />

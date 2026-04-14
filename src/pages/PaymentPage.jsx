@@ -125,16 +125,16 @@ export default function PaymentPage({ lang = 'es', navigate, professional }) {
       const totalAzul = String(Math.round(total * 100)); 
 
       const payload = {
-        MerchantName: "Listo App - Planes",
+        MerchantName: "Listo App - Servicios",
         MerchantType: "E-Commerce",
         CurrencyCode: "$", // $ = DOP
         OrderNumber: `ORD-${Date.now()}`,
         Amount: totalAzul,
-        ITBIS: "000",
-        ApprovedUrl: window.location.origin + "/orders?payment=success",
+        Tax: "000",
+        ApprovedUrl: "https://us-central1-listoapp-52b46.cloudfunctions.net/azulWebHook",
         DeclinedUrl: window.location.origin + "/orders?payment=declined",
         CancelUrl: window.location.origin + "/orders?payment=cancelled",
-        ResponsePostUrl: "https://us-central1-listoapp-52b46.cloudfunctions.net/webhookCardnet"
+        ResponsePostUrl: "https://us-central1-listoapp-52b46.cloudfunctions.net/azulWebHook"
       };
 
       const res = await generarFirma(payload);
@@ -377,7 +377,7 @@ export default function PaymentPage({ lang = 'es', navigate, professional }) {
             <input name="CurrencyCode" type="hidden" value={pagoAzulData.CurrencyCode} />
             <input name="OrderNumber" type="hidden" value={pagoAzulData.OrderNumber} />
             <input name="Amount" type="hidden" value={pagoAzulData.Amount} />
-            <input name="ITBIS" type="hidden" value={pagoAzulData.ITBIS} />
+            <input name="Tax" type="hidden" value={pagoAzulData.Tax} />
             <input name="ApprovedUrl" type="hidden" value={pagoAzulData.ApprovedUrl} />
             <input name="DeclinedUrl" type="hidden" value={pagoAzulData.DeclinedUrl} />
             <input name="CancelUrl" type="hidden" value={pagoAzulData.CancelUrl} />
