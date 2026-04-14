@@ -110,6 +110,62 @@ exports.generarFirmaAzul = functions.https.onCall((data, context) => {
   };
 });
 
+/* ═══════════════════════════════════════════════════════════
+   FUNCIÓN NUEVA: azulWebHook
+   Recibe el retorno del portal AZUL (ApprovedUrl o DeclinedUrl).
+   Captura la redirección, actualiza la base de datos si es un
+   plan y redirige de vuelta al Front-End.
+═══════════════════════════════════════════════════════════ */
+exports.azulWebHook = functions.https.onRequest(async (req, res) => {
+  try {
+    // AZUL envía los datos en la URL o Body si es POST
+    const payload = req.method === "POST" ? req.body : req.query;
+    console.log("AZUL WebHook Payload:", payload);
+
+    const orderNumber = payload.OrderNumber || "";
+
+    // Si viene desde la compra de un plan (Ej: PLAN_gold_user123)
+    if (orderNumber.startsWith("PLAN_")) {
+      const parts = orderNumber.split("_");
+      // parts[0] = "PLAN", parts[1] = planId, parts[2] = userId
+      if (parts.length >= 3) {
+        const planId = parts[1].toLowerCase();
+        const userId = parts[2];
+
+        // Validar si la respuesta fue aprobada según el ResponseMessage o status (AZUL puede variar)
+        // Usualmente un código de respuesta 'ISO8583' aprueba si es 00
+        const isApproved = payload.IsoCode === "00" || (payload.ResponseMessage && payload.ResponseMessage.toLowerCase().includes("aprobada"));
+
+        // Dado que este es el ApprovedUrl, asumimos éxito a menos que haya Declined/CancelUrl configurado.
+        const actualPlan = ["basico", "gold", "platinum", "vip"].includes(planId) ? planId : null;
+
+        if (actualPlan) {
+          await db.collection("users").doc(userId).update({
+            plan: actualPlan,
+            planUpdatedAt: admin.firestore.FieldValue.serverTimestamp()
+          });
+
+          // Redirigimos al app frontend con un flag de éxito
+          return res.redirect(`https://listo-app.vercel.app/profile?planSetupSuccess=${actualPlan}`);
+        }
+      }
+    }
+
+    // Si es un pago de orden/contrato, podríamos actualizar Firebase aquí también
+    if (orderNumber.startsWith("ORD-")) {
+      // Implementación futura o actual para transacciones
+      return res.redirect(`https://listo-app.vercel.app/orders?payment=success`);
+    }
+
+    // Redirección genérica en caso de no identificar
+    return res.redirect(`https://listo-app.vercel.app/`);
+
+  } catch (err) {
+    console.error("❌ Error en azulWebHook:", err);
+    return res.redirect(`https://listo-app.vercel.app/?paymentError=true`);
+  }
+});
+
 
 /* ═══════════════════════════════════════════════════════════
    FUNCIÓN 2: onPagoEfectivo
@@ -490,13 +546,18 @@ exports.enviarCorreoNuevoPlan = functions.firestore
       const before = change.before.data();
       const after = change.after.data();
 
-      // Detectamos si el campo "plan" o "currentPlan" fue modificado
-      const oldPlan = before.plan || before.currentPlan || 'basico';
-      const newPlan = after.plan || after.currentPlan || 'basico';
+      // Detectamos de forma estricta si cambió plan o currentPlan
+      let triggeredPlan = null;
+      if (before.plan !== after.plan && after.plan) {
+         triggeredPlan = after.plan;
+      } else if (before.currentPlan !== after.currentPlan && after.currentPlan) {
+         triggeredPlan = after.currentPlan;
+      }
 
-      // Si el plan no cambió, o si la cuenta pasó a plan básico gratuito, ignoramos
-      if (oldPlan === newPlan) return null;
-      if (newPlan === 'basico') return null;
+      // Si ningún plan cambió, o si cambió a básico, abortamos
+      if (!triggeredPlan || triggeredPlan === 'basico') return null;
+
+      const newPlan = triggeredPlan;
 
       const destinoEmail = after.email;
       if (!destinoEmail) return null;

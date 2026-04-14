@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { db, auth } from '../firebase'
 import { doc, updateDoc } from 'firebase/firestore'
 import { useUserData } from '../useUserData'
@@ -11,6 +11,11 @@ export default function PlanesPage({ onBack, navigate }) {
 
   const currentPlanId = userData?.plan || 'gold'
   const [purchasedPlan, setPurchasedPlan] = useState(null)
+
+  const URL_AZUL = "https://pruebas.azul.com.do/paymentpage/Default.aspx"; // TODO: prod url
+  const formRef = useRef(null);
+  const [pagoAzulData, setPagoAzulData] = useState(null);
+  const [isProcessingAzul, setIsProcessingAzul] = useState(false);
 
   const planes = [
     {
@@ -91,23 +96,54 @@ export default function PlanesPage({ onBack, navigate }) {
     return ['3 - 5 años', '5 - 10 años', 'Más de 10 años'].includes(exp)
   })()
 
-  const handleSelectPlan = async (planId) => {
+  const handleSelectPlan = async (planId, planPriceText) => {
     if (planId === currentPlanId) return
     setLoading(true)
+    setIsProcessingAzul(true)
     try {
       if (auth.currentUser?.uid) {
-        // En una app real esto llevaría a una pasarela de pago.
-        // Aquí simulamos el cambio de plan
-        await updateDoc(doc(db, 'users', auth.currentUser.uid), {
-          plan: planId,
-          planUpdatedAt: new Date().toISOString()
-        })
-        setPurchasedPlan(planId)
+        const { httpsCallable } = await import("firebase/functions");
+        const { functions } = await import("../firebase");
+        
+        const generarFirma = httpsCallable(functions, "generarFirmaAzul");
+        
+        // Parsear "RD$1,500" a entero 1500 y multiplicarlo x100 para AZUL
+        const priceNumber = parseInt(planPriceText.replace(/\D/g, ''), 10);
+        const totalAzul = String(Math.round(priceNumber * 100)); 
+        const userId = auth.currentUser.uid;
+        const orderIdUnique = `PLAN_${planId}_${userId}`; // Formato identificable por el Webhook
+        
+        // Configurar webhook backend (Cloud Function)
+        const cloudFunctionEndpoint = "https://us-central1-listoapp-52b46.cloudfunctions.net/azulWebHook"; 
+        
+        const payload = {
+          MerchantName: "Listo App - Planes",
+          MerchantType: "E-Commerce",
+          CurrencyCode: "$", // DOP
+          OrderNumber: orderIdUnique,
+          Amount: totalAzul,
+          ITBIS: "000",
+          ApprovedUrl: cloudFunctionEndpoint,
+          DeclinedUrl: window.location.origin + "/profile?planError=declined",
+          CancelUrl: window.location.origin + "/profile?planError=cancelled"
+        };
+
+        const res = await generarFirma(payload);
+        const { AuthHash, MerchantId } = res.data;
+
+        setPagoAzulData({ ...payload, MerchantId, AuthHash });
+        
+        // Autoenviar a AZUL tras un breve timeout para parseo react
+        setTimeout(() => {
+          if (formRef.current) formRef.current.submit();
+        }, 600);
       }
     } catch (e) {
       console.error(e)
+      alert("Error comunicándose de manera segura con el Procesador AZUL.")
+      setIsProcessingAzul(false)
+      setLoading(false)
     }
-    setLoading(false)
   }
 
   if (purchasedPlan) {
@@ -226,17 +262,39 @@ export default function PlanesPage({ onBack, navigate }) {
                             alert('El plan VIP requiere más de 3 años de experiencia en tu perfil verificado.');
                             return;
                         }
-                        handleSelectPlan(plan.id)
+                        handleSelectPlan(plan.id, plan.price)
                     }}
-                    disabled={isCurrent || loading || (plan.id === 'vip' && !isVipEligible)}
+                    disabled={isCurrent || isProcessingAzul || (plan.id === 'vip' && !isVipEligible)}
                   >
-                    {isCurrent ? 'Plan Actual' : (plan.id === 'vip' && !isVipEligible) ? 'Requiere +3 años exp.' : loading ? 'Procesando...' : 'Adquirir Plan'}
+                    {isCurrent ? 'Plan Actual' : (plan.id === 'vip' && !isVipEligible) ? 'Requiere +3 años exp.' : isProcessingAzul ? 'Conectando...' : 'Adquirir Plan'}
                   </button>
                 </div>
               </div>
             )
           })}
         </div>
+
+        {/* INVISIBLE AZUL FORM */}
+        {pagoAzulData && (
+          <form 
+            ref={formRef} 
+            action={URL_AZUL} 
+            method="post" 
+            style={{ display: 'none' }}
+          >
+            <input name="MerchantId" type="hidden" value={pagoAzulData.MerchantId} />
+            <input name="MerchantName" type="hidden" value={pagoAzulData.MerchantName} />
+            <input name="MerchantType" type="hidden" value={pagoAzulData.MerchantType} />
+            <input name="CurrencyCode" type="hidden" value={pagoAzulData.CurrencyCode} />
+            <input name="OrderNumber" type="hidden" value={pagoAzulData.OrderNumber} />
+            <input name="Amount" type="hidden" value={pagoAzulData.Amount} />
+            <input name="ITBIS" type="hidden" value={pagoAzulData.ITBIS} />
+            <input name="ApprovedUrl" type="hidden" value={pagoAzulData.ApprovedUrl} />
+            <input name="DeclinedUrl" type="hidden" value={pagoAzulData.DeclinedUrl} />
+            <input name="CancelUrl" type="hidden" value={pagoAzulData.CancelUrl} />
+            <input name="AuthHash" type="hidden" value={pagoAzulData.AuthHash} />
+          </form>
+        )}
 
         <div className="planes-promo fade-up">
           <h3>🎁 Bienvenido a Listo Patrón</h3>
