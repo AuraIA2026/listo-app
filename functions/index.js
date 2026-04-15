@@ -1,22 +1,19 @@
 const functions = require("firebase-functions/v1");
 const admin = require("firebase-admin");
-const crypto = require("crypto"); // Requerido para la firma de AZUL
+const crypto = require("crypto");
 
 admin.initializeApp();
 const db = admin.firestore();
 
 /* ═══════════════════════════════════════════════════════════
-   FUNCIÓN 1: onPagoTarjeta
+   FUNCIÓN 1: webhookCardnet
    Se dispara cuando Cardnet/Azul confirma un pago online.
    Hace el split 10/90 automáticamente.
-   URL: https://TU_REGION-TU_PROYECTO.cloudfunctions.net/webhookCardnet
 ═══════════════════════════════════════════════════════════ */
 exports.webhookCardnet = functions.https.onRequest(async (req, res) => {
   try {
-    // Cardnet envía un POST con los datos del pago
     const { pedidoId, monto, estado, transaccionId } = req.body;
 
-    // Solo procesamos pagos aprobados
     if (estado !== "APROBADO") {
       return res.status(200).json({ ok: true, msg: "Pago no aprobado, ignorado" });
     }
@@ -30,13 +27,11 @@ exports.webhookCardnet = functions.https.onRequest(async (req, res) => {
 
     const pedido = pedidoSnap.data();
 
-    // Calcular split
-    const tuComision    = Math.round(monto * 0.10); // 10% para ti
-    const pagoProf      = Math.round(monto * 0.90); // 90% para el profesional
+    const tuComision = Math.round(monto * 0.10);
+    const pagoProf   = Math.round(monto * 0.90);
 
     const batch = db.batch();
 
-    // 1. Actualizar pedido
     batch.update(pedidoRef, {
       status: "pagado",
       metodoPago: "tarjeta",
@@ -45,13 +40,11 @@ exports.webhookCardnet = functions.https.onRequest(async (req, res) => {
       fechaPago: admin.firestore.FieldValue.serverTimestamp(),
     });
 
-    // 2. Sumar balance al profesional
     const proRef = db.collection("users").doc(pedido.profesionalId);
     batch.update(proRef, {
       balance: admin.firestore.FieldValue.increment(pagoProf),
     });
 
-    // 3. Registrar transacción
     const txRef = db.collection("transacciones").doc();
     batch.set(txRef, {
       pedidoId,
@@ -76,15 +69,16 @@ exports.webhookCardnet = functions.https.onRequest(async (req, res) => {
 });
 
 /* ═══════════════════════════════════════════════════════════
-   FUNCIÓN NUEVA: generarFirmaAzul
-   Llamada desde el frontend, genera el AuthHash SHA-512 requerido 
-   por el Hosted Payment Page de AZUL asegurando que la llave 
-   nunca se expone al cliente.
+   FUNCIÓN: generarFirmaAzul ✅ CORREGIDA
+   
+   CORRECCIONES APLICADAS:
+   1. Eliminado Tax del payload — AZUL usa ITBIS (fijo "000")
+   2. Eliminado ResponsePostUrl de la cadena del hash
+   3. La cadena sigue el orden EXACTO que valida AZUL
 ═══════════════════════════════════════════════════════════ */
 exports.generarFirmaAzul = functions.https.onCall((data, context) => {
-  // TODO: Reemplazar estas variables con TUS llaves secretas de AZUL
-  const MERCHANT_ID = "39038540035"; // Merchant ID provisto por Azul
-  const AUTH_KEY = "asdhakjshdkjasdasmndajksdkjaskldga8odya9d8yoasyd98asdyaisdhoaisyd0a8sydoashd8oasydoiahdpiashd09ayusidhaos8dy0a8dya08syd0a8ssdsax"; // Llave secreta
+  const MERCHANT_ID = "39038540035";
+  const AUTH_KEY    = "asdhakjshdkjasdasmndajksdkjaskldga8odya9d8yoasyd98asdyaisdhoaisyd0a8sydoashd8oasydoiahdpiashd09ayusidhaos8dy0a8dya08syd0a8ssdsax";
 
   const {
     MerchantName,
@@ -92,62 +86,71 @@ exports.generarFirmaAzul = functions.https.onCall((data, context) => {
     CurrencyCode,
     OrderNumber,
     Amount,
-    Tax,
     ApprovedUrl,
     DeclinedUrl,
     CancelUrl,
-    ResponsePostUrl
   } = data;
 
-  // AZUL requiere ResponsePostUrl
-  const finalResponsePostUrl = ResponsePostUrl || ApprovedUrl;
+  // ✅ ITBIS fijo "000" — nombre correcto que usa AZUL (no "Tax")
+  const ITBIS = "000";
 
-  // AZUL requiere la concatenación EXACATA de estos valores en este orden, incluyendo Custom Fields
-  const UseCustomField1 = "0";
+  // Custom Fields vacíos cuando no se usan
+  const UseCustomField1   = "0";
   const CustomField1Label = "";
   const CustomField1Value = "";
-  const UseCustomField2 = "0";
+  const UseCustomField2   = "0";
   const CustomField2Label = "";
   const CustomField2Value = "";
 
-  const cadena = `${MERCHANT_ID}${MerchantName}${MerchantType}${CurrencyCode}${OrderNumber}${Amount}${Tax}${ApprovedUrl}${DeclinedUrl}${CancelUrl}${finalResponsePostUrl}${UseCustomField1}${CustomField1Label}${CustomField1Value}${UseCustomField2}${CustomField2Label}${CustomField2Value}`;
-  
-  // Genera el hash en HMAC-SHA512 (Algoritmo actual de la pasarela)
-  const authHash = crypto.createHmac('sha512', AUTH_KEY).update(cadena).digest('hex');
+  // ✅ Orden EXACTO requerido por AZUL para el AuthHash
+  // ResponsePostUrl NO se incluye en la cadena del hash
+  const cadena =
+    MERCHANT_ID +
+    MerchantName +
+    MerchantType +
+    CurrencyCode +
+    OrderNumber +
+    Amount +
+    ITBIS +
+    ApprovedUrl +
+    DeclinedUrl +
+    CancelUrl +
+    UseCustomField1 +
+    CustomField1Label +
+    CustomField1Value +
+    UseCustomField2 +
+    CustomField2Label +
+    CustomField2Value;
+
+  const authHash = crypto.createHmac('sha512', AUTH_KEY)
+    .update(cadena)
+    .digest('hex');
 
   return {
-    AuthHash: authHash,
-    MerchantId: MERCHANT_ID
+    AuthHash:   authHash,
+    MerchantId: MERCHANT_ID,
+    ITBIS,
   };
 });
 
 /* ═══════════════════════════════════════════════════════════
-   FUNCIÓN NUEVA: azulWebHook
+   FUNCIÓN: azulWebHook
    Recibe el retorno del portal AZUL (ApprovedUrl o DeclinedUrl).
-   Captura la redirección, actualiza la base de datos si es un
-   plan y redirige de vuelta al Front-End.
+   Actualiza la base de datos y redirige al Front-End.
 ═══════════════════════════════════════════════════════════ */
 exports.azulWebHook = functions.https.onRequest(async (req, res) => {
   try {
-    // AZUL envía los datos en la URL o Body si es POST
     const payload = req.method === "POST" ? req.body : req.query;
     console.log("AZUL WebHook Payload:", payload);
 
     const orderNumber = payload.OrderNumber || "";
 
-    // Si viene desde la compra de un plan (Ej: PLAN_gold_user123)
     if (orderNumber.startsWith("PLAN_")) {
       const parts = orderNumber.split("_");
-      // parts[0] = "PLAN", parts[1] = planId, parts[2] = userId
       if (parts.length >= 3) {
         const planId = parts[1].toLowerCase();
         const userId = parts[2];
 
-        // Validar si la respuesta fue aprobada según el ResponseMessage o status (AZUL puede variar)
-        // Usualmente un código de respuesta 'ISO8583' aprueba si es 00
-        const isApproved = payload.IsoCode === "00" || (payload.ResponseMessage && payload.ResponseMessage.toLowerCase().includes("aprobada"));
-
-        // Dado que este es el ApprovedUrl, asumimos éxito a menos que haya Declined/CancelUrl configurado.
         const actualPlan = ["basico", "gold", "platinum", "vip"].includes(planId) ? planId : null;
 
         if (actualPlan) {
@@ -156,19 +159,15 @@ exports.azulWebHook = functions.https.onRequest(async (req, res) => {
             planUpdatedAt: admin.firestore.FieldValue.serverTimestamp()
           });
 
-          // Redirigimos al app frontend con un flag de éxito
           return res.redirect(`https://listo-app.vercel.app/profile?planSetupSuccess=${actualPlan}`);
         }
       }
     }
 
-    // Si es un pago de orden/contrato, podríamos actualizar Firebase aquí también
     if (orderNumber.startsWith("ORD-")) {
-      // Implementación futura o actual para transacciones
       return res.redirect(`https://listo-app.vercel.app/orders?payment=success`);
     }
 
-    // Redirección genérica en caso de no identificar
     return res.redirect(`https://listo-app.vercel.app/`);
 
   } catch (err) {
@@ -177,15 +176,12 @@ exports.azulWebHook = functions.https.onRequest(async (req, res) => {
   }
 });
 
-
 /* ═══════════════════════════════════════════════════════════
-   FUNCIÓN 2: onPagoEfectivo
-   El usuario marca que pagó en efectivo desde la app.
+   FUNCIÓN 2: confirmarPagoEfectivo
+   El usuario marca que pagó en efectivo.
    Crea una comisión pendiente con 24h de límite.
-   Llama desde tu app React cuando el usuario confirma pago en efectivo.
 ═══════════════════════════════════════════════════════════ */
 exports.confirmarPagoEfectivo = functions.https.onCall(async (data, context) => {
-  // Verificar que el usuario está autenticado
   if (!context.auth) {
     throw new functions.https.HttpsError("unauthenticated", "Debes estar autenticado");
   }
@@ -201,23 +197,19 @@ exports.confirmarPagoEfectivo = functions.https.onCall(async (data, context) => 
 
   const pedido = pedidoSnap.data();
 
-  // Calcular comisión que debe pagar el profesional
   const comisionMonto = Math.round(pedido.montoTotal * 0.10);
 
-  // Fecha límite = ahora + 24 horas
   const fechaLimite = new Date();
   fechaLimite.setHours(fechaLimite.getHours() + 24);
 
   const batch = db.batch();
 
-  // 1. Actualizar pedido
   batch.update(pedidoRef, {
     status: "pendiente_comision",
     metodoPago: "efectivo",
     fechaConfirmacionEfectivo: admin.firestore.FieldValue.serverTimestamp(),
   });
 
-  // 2. Crear documento de comisión pendiente
   const comisionRef = db.collection("comisiones").doc();
   batch.set(comisionRef, {
     pedidoId,
@@ -237,7 +229,6 @@ exports.confirmarPagoEfectivo = functions.https.onCall(async (data, context) => 
   return { ok: true, comisionMonto, fechaLimite };
 });
 
-
 /* ═══════════════════════════════════════════════════════════
    FUNCIÓN 3: checkComisionesPendientes
    Corre automáticamente cada hora.
@@ -248,7 +239,6 @@ exports.checkComisionesPendientes = functions.pubsub
   .onRun(async (context) => {
     const ahora = admin.firestore.Timestamp.now();
 
-    // Buscar comisiones vencidas no pagadas
     const vencidasSnap = await db.collection("comisiones")
       .where("pagado", "==", false)
       .where("bloqueado", "==", false)
@@ -266,10 +256,8 @@ exports.checkComisionesPendientes = functions.pubsub
     for (const doc of vencidasSnap.docs) {
       const comision = doc.data();
 
-      // 1. Marcar comisión como bloqueada
       batch.update(doc.ref, { bloqueado: true });
 
-      // 2. Bloquear perfil del profesional
       const proRef = db.collection("users").doc(comision.profesionalId);
       batch.update(proRef, {
         bloqueado: true,
@@ -278,7 +266,6 @@ exports.checkComisionesPendientes = functions.pubsub
         comisionPendienteId: doc.id,
       });
 
-      // 3. Actualizar pedido
       const pedidoRef = db.collection("pedidos").doc(comision.pedidoId);
       batch.update(pedidoRef, { status: "comision_vencida" });
 
@@ -290,7 +277,6 @@ exports.checkComisionesPendientes = functions.pubsub
     console.log(`🔴 Total bloqueados: ${bloqueados}`);
     return null;
   });
-
 
 /* ═══════════════════════════════════════════════════════════
    FUNCIÓN 4: pagarComision
@@ -314,20 +300,17 @@ exports.pagarComision = functions.https.onCall(async (data, context) => {
 
   const comision = comisionSnap.data();
 
-  // Verificar que es el profesional correcto
   if (comision.profesionalId !== profesionalId) {
     throw new functions.https.HttpsError("permission-denied", "No autorizado");
   }
 
   const batch = db.batch();
 
-  // 1. Marcar comisión como pagada
   batch.update(comisionRef, {
     pagado: true,
     fechaPago: admin.firestore.FieldValue.serverTimestamp(),
   });
 
-  // 2. Desbloquear perfil
   const proRef = db.collection("users").doc(profesionalId);
   batch.update(proRef, {
     bloqueado: false,
@@ -335,7 +318,6 @@ exports.pagarComision = functions.https.onCall(async (data, context) => {
     fechaDesbloqueo: admin.firestore.FieldValue.serverTimestamp(),
   });
 
-  // 3. Actualizar pedido
   const pedidoRef = db.collection("pedidos").doc(comision.pedidoId);
   batch.update(pedidoRef, { status: "completado" });
 
@@ -347,17 +329,16 @@ exports.pagarComision = functions.https.onCall(async (data, context) => {
 
 /* ═══════════════════════════════════════════════════════════
    FUNCIÓN 5: enviarAlertaNuevoPedido
-   Se dispara automáticamente cada vez que un usuario crea un nuevo
-   pedido/contrato. Encuentra el correo del profesional y le avisa.
+   Se dispara cuando se crea un nuevo pedido.
+   Encuentra el correo del profesional y le avisa.
 ═══════════════════════════════════════════════════════════ */
 const nodemailer = require("nodemailer");
 
-// Configurar el transportador de correo (requiere App Password de Gmail)
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
     user: "listopatron.app@gmail.com",
-    pass: "TU_APP_PASSWORD_AQUI" // El usuario deberá reemplazar esto o usar secrets
+    pass: "TU_APP_PASSWORD_AQUI"
   }
 });
 
@@ -369,7 +350,6 @@ exports.enviarAlertaNuevoPedido = functions.firestore
       const proId = order.proId;
       if (!proId) return null;
 
-      // 1. Buscar el email del profesional en la colección users
       const proDoc = await db.collection("users").doc(proId).get();
       if (!proDoc.exists) return null;
       
@@ -377,7 +357,6 @@ exports.enviarAlertaNuevoPedido = functions.firestore
       const destinoEmail = proData.email;
       if (!destinoEmail) return null;
 
-      // 2. Construir el correo
       const mailOptions = {
         from: '"Listo Patrón" <listopatron.app@gmail.com>',
         to: destinoEmail,
@@ -386,7 +365,6 @@ exports.enviarAlertaNuevoPedido = functions.firestore
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-top: 5px solid #F26000; border-radius: 10px;">
             <h2 style="color: #1A1A2E; text-align: center;">¡Felicidades, ${proData.name.split(' ')[0]}! 🎉</h2>
             <p style="font-size: 16px; color: #333;">Tienes una nueva solicitud de servicio esperándote en la plataforma.</p>
-            
             <div style="background: #FAFAFA; padding: 15px; border-radius: 8px; margin: 20px 0;">
               <p style="margin: 5px 0;"><strong>👤 Cliente:</strong> ${order.clientName || 'Usuario'}</p>
               <p style="margin: 5px 0;"><strong>🛠️ Servicio:</strong> ${order.proSpecialty || 'Solicitud general'}</p>
@@ -394,29 +372,24 @@ exports.enviarAlertaNuevoPedido = functions.firestore
               <p style="margin: 5px 0;"><strong>💰 Precio:</strong> ${order.price || 'A convenir'}</p>
               <p style="margin: 5px 0;"><strong>🕒 Fecha:</strong> ${order.dateToken} - ${order.timeToken}</p>
             </div>
-
-            <p style="font-size: 14px; color: #666; text-align: center;">Por favor, abre la aplicación <b>Listo Patrón</b> de inmediato para aceptar o rechazar este trabajo antes de que el cliente busque a otra persona.</p>
-            
+            <p style="font-size: 14px; color: #666; text-align: center;">Por favor, abre la aplicación <b>Listo Patrón</b> de inmediato para aceptar o rechazar este trabajo.</p>
             <div style="text-align: center; margin-top: 25px;">
               <a href="https://listo-app.vercel.app/orders" style="background: #F26000; color: white; text-decoration: none; padding: 12px 25px; border-radius: 5px; font-weight: bold; font-size: 16px;">Ir a mis pedidos</a>
             </div>
-            
             <hr style="border: none; border-top: 1px solid #eee; margin-top: 30px;">
             <p style="font-size: 12px; color: #999; text-align: center;">Este es un mensaje automático de Listo Patrón. Por favor no respondas a este correo.</p>
           </div>
         `
       };
 
-      // 3. Enviar el correo
       await transporter.sendMail(mailOptions);
-      console.log(`✅ Alerta enviada exitosamente a ${destinoEmail} para la orden ${context.params.orderId}`);
+      console.log(`✅ Alerta enviada a ${destinoEmail} para la orden ${context.params.orderId}`);
       
-      // 4. DISPARAR PUSH NOTIFICATION EN PANTALLA BLOQUEADA
       await db.collection("notificaciones").add({
         userId: proId,
         type: 'new_order',
         title: '🔔 ¡NUEVA SOLICITUD DE SERVICIO!',
-        text: `¡Felicidades ${proData.name.split(' ')[0]}! Un cliente te necesita. ¡Abre la app para ver los detalles del trabajo!`,
+        text: `¡Felicidades ${proData.name.split(' ')[0]}! Un cliente te necesita. ¡Abre la app para ver los detalles!`,
         orderId: context.params.orderId,
         date: new Date().toISOString(),
         read: false
@@ -425,17 +398,15 @@ exports.enviarAlertaNuevoPedido = functions.firestore
       return { success: true };
 
     } catch (error) {
-      console.error("❌ Error enviando la alerta Mágica o Push Notification:", error);
+      console.error("❌ Error enviando alerta:", error);
       return null;
     }
   });
 
 /* ═══════════════════════════════════════════════════════════
-   FUNCIÓN 6: enviarNotificacionPush
-   Esta función captura cualquier documento creado en la 
-   colección "notificaciones" y envía una alerta física nativa
-   al celular a través de Firebase Cloud Messaging (FCM).
-   ¡Esto hace que suene aunque la app esté cerrada!
+   FUNCIÓN 6: enviarNotificacionPushBackground
+   Captura documentos creados en "notificaciones" y envía
+   push notification vía Firebase Cloud Messaging (FCM).
 ═══════════════════════════════════════════════════════════ */
 exports.enviarNotificacionPushBackground = functions.firestore
   .document("notificaciones/{notifId}")
@@ -445,19 +416,16 @@ exports.enviarNotificacionPushBackground = functions.firestore
       const userId = notifData.userId;
       if (!userId) return null;
 
-      // 1. Obtener el FCM Token del usuario
       const userDoc = await db.collection("users").doc(userId).get();
       if (!userDoc.exists) return null;
 
       const fcmToken = userDoc.data().fcmToken;
       
-      // Si el usuario no tiene token guardado (no ha dado permisos o está en web) no hacemos nada
       if (!fcmToken) {
         console.log(`Usuario ${userId} no tiene FCM Token guardado.`);
         return null; 
       }
 
-      // 2. Construir el paquete Push nativo
       const payload = {
         token: fcmToken,
         notification: {
@@ -467,7 +435,7 @@ exports.enviarNotificacionPushBackground = functions.firestore
         android: {
           notification: {
             sound: "default",
-            clickAction: "FLUTTER_NOTIFICATION_CLICK" // Comportamiento estándar Capacitor/Flutter
+            clickAction: "FLUTTER_NOTIFICATION_CLICK"
           }
         },
         apns: {
@@ -479,9 +447,8 @@ exports.enviarNotificacionPushBackground = functions.firestore
         }
       };
 
-      // 3. Disparar a los servidores de Google/Apple
       const response = await admin.messaging().send(payload);
-      console.log(`📲 Push Notification enviada exitosamente: ${response}`);
+      console.log(`📲 Push Notification enviada: ${response}`);
       return { success: true, response };
 
     } catch (error) {
@@ -492,9 +459,8 @@ exports.enviarNotificacionPushBackground = functions.firestore
 
 /* ═══════════════════════════════════════════════════════════
    FUNCIÓN 7: actualizarRatingProfesional
-   Se ejecuta cuando un usuario califica al profesional en un pedido.
-   Calcula el nuevo promedio de estrellas y lo guarda en el perfil
-   del profesional en la colección 'users'.
+   Se ejecuta cuando un usuario califica al profesional.
+   Calcula el nuevo promedio de estrellas.
 ═══════════════════════════════════════════════════════════ */
 exports.actualizarRatingProfesional = functions.firestore
   .document("orders/{orderId}")
@@ -502,12 +468,10 @@ exports.actualizarRatingProfesional = functions.firestore
     const before = change.before.data();
     const after = change.after.data();
 
-    // Solo nos importa si acaba de ser calificado
     if (!before.rated && after.rated && after.proId) {
       const proId = after.proId;
 
       try {
-        // Consultar todos los pedidos calificados de este profesional
         const ordersSnap = await db.collection("orders")
           .where("proId", "==", proId)
           .where("rated", "==", true)
@@ -527,9 +491,7 @@ exports.actualizarRatingProfesional = functions.firestore
         });
 
         if (count > 0) {
-          const prom = sum / count;
-          // Redondear a 1 decimal (ej: 4.8)
-          const newRating = Math.round(prom * 10) / 10;
+          const newRating = Math.round((sum / count) * 10) / 10;
 
           await db.collection("users").doc(proId).update({
             rating: newRating,
@@ -547,8 +509,7 @@ exports.actualizarRatingProfesional = functions.firestore
 
 /* ═══════════════════════════════════════════════════════════
    FUNCIÓN 8: enviarCorreoNuevoPlan
-   Se dispara automáticamente cada vez que un profesional adquiere o cambia de plan.
-   Le envía un correo de bienvenida/agradecimiento.
+   Se dispara cuando un profesional adquiere o cambia de plan.
 ═══════════════════════════════════════════════════════════ */
 exports.enviarCorreoNuevoPlan = functions.firestore
   .document("users/{userId}")
@@ -557,35 +518,29 @@ exports.enviarCorreoNuevoPlan = functions.firestore
       const before = change.before.data();
       const after = change.after.data();
 
-      // Detectamos de forma estricta si cambió plan o currentPlan
       let triggeredPlan = null;
       if (before.plan !== after.plan && after.plan) {
-         triggeredPlan = after.plan;
+        triggeredPlan = after.plan;
       } else if (before.currentPlan !== after.currentPlan && after.currentPlan) {
-         triggeredPlan = after.currentPlan;
+        triggeredPlan = after.currentPlan;
       }
 
-      // Si ningún plan cambió, o si cambió a básico, abortamos
       if (!triggeredPlan || triggeredPlan === 'basico') return null;
-
-      const newPlan = triggeredPlan;
 
       const destinoEmail = after.email;
       if (!destinoEmail) return null;
 
       const nombre = after.name ? after.name.split(' ')[0] : 'Profesional';
 
-      // Detectar colores e insignias según el plan
-      let planDisplay = newPlan.toUpperCase();
+      let planDisplay = triggeredPlan.toUpperCase();
       let colorPlan = "#F26000";
-      if (planDisplay.includes("VIP")) colorPlan = "#FF3D00";
-      if (planDisplay.includes("GOLD")) colorPlan = "#FFBA00";
+      if (planDisplay.includes("VIP"))      colorPlan = "#FF3D00";
+      if (planDisplay.includes("GOLD"))     colorPlan = "#FFBA00";
       if (planDisplay.includes("PLATINUM") || planDisplay.includes("PLATINO")) {
-        planDisplay = "PLATINUM"; 
+        planDisplay = "PLATINUM";
         colorPlan = "#78909C";
       }
 
-      // 1. Construir el correo en HTML
       const mailOptions = {
         from: '"Listo Patrón" <listopatron.app@gmail.com>',
         to: destinoEmail,
@@ -593,38 +548,29 @@ exports.enviarCorreoNuevoPlan = functions.firestore
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-top: 5px solid ${colorPlan}; border-radius: 10px;">
             <h2 style="color: #1A1A2E; text-align: center;">¡Gracias por postularte y creer en tu talento, ${nombre}! 🚀</h2>
-            
-            <p style="font-size: 16px; color: #333; text-align: center;">Nos emociona muchísimo informarte que acabas de adquirir tu nuevo paquete y tu cuenta ha sido actualizada exitosamente.</p>
-            
+            <p style="font-size: 16px; color: #333; text-align: center;">Tu cuenta ha sido actualizada exitosamente.</p>
             <div style="background: #FAFAFA; padding: 20px; border-radius: 10px; margin: 25px 0; text-align: center; border: 1px solid #eee;">
               <p style="margin: 0; font-size: 14px; color: #666;">Tu nuevo plan asignado es:</p>
               <p style="margin: 10px 0; font-size: 26px; font-weight: 900; color: ${colorPlan};">${planDisplay}</p>
             </div>
-
-            <p style="font-size: 15px; color: #444; line-height: 1.6;">Con esta membresía activa, tu perfil ha desbloqueado una mayor visibilidad frente a la competencia, dándote la máxima prioridad en los resultados de búsqueda de los clientes. ¡Prepárate para recibir más trabajos!</p>
-            
-            <p style="font-size: 15px; color: #444; line-height: 1.6;"><strong>💡 Siguiente Paso:</strong> Dale ese toque personal y único a tu perfil. Asegúrate de tener una excelente foto, escribir una descripción atractiva de lo que haces, y mostrar lo mejor de ti.</p>
-            
+            <p style="font-size: 15px; color: #444; line-height: 1.6;">Con esta membresía activa, tu perfil tiene máxima prioridad en los resultados de búsqueda. ¡Prepárate para recibir más trabajos!</p>
             <div style="text-align: center; margin-top: 35px; margin-bottom: 25px;">
               <a href="https://listo-app.vercel.app/profile" style="background: #1A1A2E; color: white; text-decoration: none; padding: 14px 28px; border-radius: 6px; font-weight: bold; font-size: 16px;">Entrar a mi Perfil</a>
             </div>
-            
             <hr style="border: none; border-top: 1px solid #eee; margin-top: 30px;">
-            <p style="font-size: 12px; color: #aaa; text-align: center;">Este es un mensaje automático del equipo de éxito de Listo Patrón. ¡Estamos para apoyarte a crecer!</p>
+            <p style="font-size: 12px; color: #aaa; text-align: center;">Mensaje automático del equipo de Listo Patrón.</p>
           </div>
         `
       };
 
-      // 2. Enviar el correo usando NodeMailer
       await transporter.sendMail(mailOptions);
-      console.log(`✅ Correo de Nuevo Plan (${planDisplay}) enviado exitosamente a ${destinoEmail}`);
+      console.log(`✅ Correo Plan ${planDisplay} enviado a ${destinoEmail}`);
       
-      // 3. Disparar notificación push interna para el campana en la app
       await db.collection("notificaciones").add({
         userId: change.after.id,
         type: 'plan_update',
         title: '⭐ ¡NUEVO PLAN ACTIVADO!',
-        text: `¡Felicidades ${nombre}! Ya estás disfrutando de todos los beneficios del Plan ${planDisplay}.`,
+        text: `¡Felicidades ${nombre}! Ya disfrutas de los beneficios del Plan ${planDisplay}.`,
         date: new Date().toISOString(),
         read: false
       });
@@ -632,7 +578,7 @@ exports.enviarCorreoNuevoPlan = functions.firestore
       return { success: true };
 
     } catch (error) {
-      console.error("❌ Error enviando correo de cambio de plan:", error);
+      console.error("❌ Error enviando correo de plan:", error);
       return null;
     }
   });
