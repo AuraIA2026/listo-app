@@ -139,17 +139,15 @@ export default function PaymentPage({ lang = 'es', navigate, professional }) {
         CurrencyCode: "$", // $ = DOP
         OrderNumber: `ORD-${Date.now()}`,
         Amount: totalAzul,
-        Tax: "000",
         ApprovedUrl: cloudFunctionEndpoint,
         DeclinedUrl: "https://listo-app.vercel.app/orders-declined",
-        CancelUrl: "https://listo-app.vercel.app/orders-cancelled",
-        ResponsePostUrl: cloudFunctionEndpoint
+        CancelUrl: "https://listo-app.vercel.app/orders-cancelled"
       };
 
       const res = await generarFirma(payload);
-      const { AuthHash, MerchantId } = res.data;
+      const { AuthHash, MerchantId, ITBIS } = res.data;
 
-      setPagoAzulData({ ...payload, MerchantId, AuthHash });
+      setPagoAzulData({ ...payload, MerchantId, AuthHash, ITBIS });
       
       // Autoenviar form
       setTimeout(() => {
@@ -386,11 +384,10 @@ export default function PaymentPage({ lang = 'es', navigate, professional }) {
             <input name="CurrencyCode" type="hidden" value={pagoAzulData.CurrencyCode} />
             <input name="OrderNumber" type="hidden" value={pagoAzulData.OrderNumber} />
             <input name="Amount" type="hidden" value={pagoAzulData.Amount} />
-            <input name="Tax" type="hidden" value={pagoAzulData.Tax} />
+            <input name="ITBIS" type="hidden" value={pagoAzulData.ITBIS} />
             <input name="ApprovedUrl" type="hidden" value={pagoAzulData.ApprovedUrl} />
             <input name="DeclinedUrl" type="hidden" value={pagoAzulData.DeclinedUrl} />
             <input name="CancelUrl" type="hidden" value={pagoAzulData.CancelUrl} />
-            <input name="ResponsePostUrl" type="hidden" value={pagoAzulData.ResponsePostUrl} />
             <input name="UseCustomField1" type="hidden" value="0" />
             <input name="CustomField1Label" type="hidden" value="" />
             <input name="CustomField1Value" type="hidden" value="" />
