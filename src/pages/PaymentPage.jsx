@@ -134,10 +134,10 @@ export default function PaymentPage({ lang = 'es', navigate, professional }) {
       const cloudFunctionEndpoint = "https://us-central1-listoapp-52b46.cloudfunctions.net/azulWebHook"; 
       
       const payload = {
-        MerchantName: "Listo App",
+        MerchantName: "Listo App - Planes",
         MerchantType: "E-Commerce",
         CurrencyCode: "$", // $ = DOP
-        OrderNumber: `ORD${Date.now()}`,
+        OrderNumber: `ORD-${Date.now()}`,
         Amount: totalAzul,
         Tax: "000",
         ApprovedUrl: cloudFunctionEndpoint,
