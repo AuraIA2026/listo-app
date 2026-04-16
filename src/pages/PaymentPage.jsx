@@ -138,6 +138,11 @@ export default function PaymentPage({ lang = 'es', navigate, professional }) {
       const userIdCorto = pro.orderId.slice(-6); 
       const orderIdUnique = `ORD_${String(Date.now()).slice(-6)}_${userIdCorto}`;
 
+      // Guardarlo en la orden para que el webhook de Azure pueda encontrarlo luego
+      await updateDoc(doc(db, 'orders', pro.orderId), {
+        orderNumber: orderIdUnique
+      });
+
       const cloudFunctionEndpoint = "https://us-central1-listoapp-52b46.cloudfunctions.net/azulWebHook"; 
       
       // 4. Copiamos exactamente la estructura que FUNCIONA en PlanesPage
@@ -393,7 +398,7 @@ export default function PaymentPage({ lang = 'es', navigate, professional }) {
             <input name="CurrencyCode" type="hidden" value={pagoAzulData.CurrencyCode} />
             <input name="OrderNumber" type="hidden" value={pagoAzulData.OrderNumber} />
             <input name="Amount" type="hidden" value={pagoAzulData.Amount} />
-            <input name="Itbis" type="hidden" value={pagoAzulData.ITBIS} />
+            <input name="ITBIS" type="hidden" value={pagoAzulData.ITBIS} />
             <input name="ApprovedUrl" type="hidden" value={pagoAzulData.ApprovedUrl} />
             <input name="DeclinedUrl" type="hidden" value={pagoAzulData.DeclinedUrl} />
             <input name="CancelUrl" type="hidden" value={pagoAzulData.CancelUrl} />
