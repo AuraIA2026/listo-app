@@ -110,34 +110,42 @@ export default function PaymentPage({ lang = 'es', navigate, professional }) {
   const URL_AZUL = "https://pruebas.azul.com.do/paymentpage/Default.aspx"; // TODO: Cambiar a pagos.azul.com.do/paymentpage/Default.aspx en producción
 
   const handleBankPayReal = async () => {
-    if (!total || total <= 0) {
-      alert("Por favor ingresa un monto válido a pagar.");
+    // 1. Limpiar el precio y asegurar formato numérico exacto
+    const cleanPrice = customPrice.toString().replace(/[^0-9.]/g, '');
+    const finalAmount = parseFloat(cleanPrice);
+
+    if (!finalAmount || finalAmount < 10) {
+      alert("Por favor ingresa un monto válido a pagar (mínimo RD$10).");
       return;
     }
+    
     setIsProcessingAzul(true);
     try {
+      if (!pro.orderId) {
+          alert('Error: No se ha encontrado el ID del pedido.');
+          setIsProcessingAzul(false);
+          return;
+      }
+      
       const { httpsCallable } = await import("firebase/functions");
       const { functions } = await import("../firebase");
-      
       const generarFirma = httpsCallable(functions, "generarFirmaAzul");
       
-      // Azul requires a minimum transaction amount (e.g. 50 DOP) to avoid generic rejection errors.
-      if (total < 10) {
-        alert("El monto mínimo para la tarjeta es RD$10");
-        setIsProcessingAzul(false);
-        return;
-      }
-
-      // Monto en formato AZUL (multiplicar x 100 para no enviar punto)
-      const totalAzul = String(Math.round(total * 100)); 
+      // 2. Monto exacto (formato AZUL multiplicando x 100)
+      const totalAzul = String(Math.round(finalAmount * 100)); 
+      
+      // 3. ID único estilo PlanesPage para evitar problemas
+      const userIdCorto = pro.orderId.slice(-6); 
+      const orderIdUnique = `ORD_${String(Date.now()).slice(-6)}_${userIdCorto}`;
 
       const cloudFunctionEndpoint = "https://us-central1-listoapp-52b46.cloudfunctions.net/azulWebHook"; 
       
+      // 4. Copiamos exactamente la estructura que FUNCIONA en PlanesPage
       const payload = {
-        MerchantName: "Listo App - Pedidos",
+        MerchantName: "Listo App", // Simplificado para evitar caracteres extraños que rompan el hash
         MerchantType: "E-Commerce",
-        CurrencyCode: "$", // $ = DOP
-        OrderNumber: `ORD_${String(Date.now()).slice(-8)}`,
+        CurrencyCode: "$", // DOP
+        OrderNumber: orderIdUnique,
         Amount: totalAzul,
         ApprovedUrl: cloudFunctionEndpoint,
         DeclinedUrl: "https://listo-app.vercel.app/orders?error=declined",
@@ -145,18 +153,19 @@ export default function PaymentPage({ lang = 'es', navigate, professional }) {
       };
 
       const res = await generarFirma(payload);
+      
+      // 5. Asignar todos los campos del hash que devuelve el backend
       const { AuthHash, MerchantId, ITBIS, ResponsePostUrl } = res.data;
-
       setPagoAzulData({ ...payload, MerchantId, AuthHash, ITBIS, ResponsePostUrl });
       
-      // Autoenviar form
+      // Autoenviar form igual que en PlanesPage
       setTimeout(() => {
         if (formRef.current) formRef.current.submit();
-      }, 500);
+      }, 600);
 
     } catch (err) {
-      console.error("Error generando Hash AZUL: ", err);
-      alert("Error al conectar con el servidor de pagos. Revisa que las IPs y credenciales estén bien.");
+      console.error("Error conectando con AZUL: ", err);
+      alert("Error al conectar con el servidor de pagos. Revisa tu conexión y vuelve a intentarlo.");
       setIsProcessingAzul(false);
     }
   }
