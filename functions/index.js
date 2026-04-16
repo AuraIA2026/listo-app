@@ -121,10 +121,12 @@ exports.generarFirmaAzul = functions.https.onCall((data, context) => {
     UseCustomField1 +
     CustomField1Label +
     CustomField1Value +
-    UseCustomField2;
+    UseCustomField2 +
+    CustomField2Label +
+    CustomField2Value;
 
-  const authHash = crypto.createHash('sha512')
-    .update(cadena + AUTH_KEY)
+  const authHash = crypto.createHmac('sha512', AUTH_KEY)
+    .update(cadena)
     .digest('hex');
 
   return {

@@ -137,7 +137,7 @@ export default function PaymentPage({ lang = 'es', navigate, professional }) {
         MerchantName: "Listo App - Pedidos",
         MerchantType: "E-Commerce",
         CurrencyCode: "$", // $ = DOP
-        OrderNumber: `ORD_${Date.now()}`,
+        OrderNumber: `ORD_${String(Date.now()).slice(-8)}`,
         Amount: totalAzul,
         ApprovedUrl: cloudFunctionEndpoint,
         DeclinedUrl: "https://listo-app.vercel.app/orders?error=declined",
@@ -393,6 +393,8 @@ export default function PaymentPage({ lang = 'es', navigate, professional }) {
             <input name="CustomField1Label" type="hidden" value="" />
             <input name="CustomField1Value" type="hidden" value="" />
             <input name="UseCustomField2" type="hidden" value="0" />
+            <input name="CustomField2Label" type="hidden" value="" />
+            <input name="CustomField2Value" type="hidden" value="" />
             <input name="AuthHash" type="hidden" value={pagoAzulData.AuthHash} />
           </form>
         )}

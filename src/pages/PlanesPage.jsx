@@ -296,6 +296,8 @@ export default function PlanesPage({ onBack, navigate }) {
             <input name="CustomField1Label" type="hidden" value="" />
             <input name="CustomField1Value" type="hidden" value="" />
             <input name="UseCustomField2" type="hidden" value="0" />
+            <input name="CustomField2Label" type="hidden" value="" />
+            <input name="CustomField2Value" type="hidden" value="" />
             <input name="AuthHash" type="hidden" value={pagoAzulData.AuthHash} />
           </form>
         )}
