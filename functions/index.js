@@ -102,8 +102,10 @@ exports.generarFirmaAzul = functions.https.onCall((data, context) => {
   const CustomField2Label = "";
   const CustomField2Value = "";
 
+  const ResponsePostUrl = "";
+
   // ✅ Orden EXACTO requerido por AZUL para el AuthHash
-  // ResponsePostUrl NO se incluye en la cadena del hash
+  // Se DEBE incluir el ResponsePostUrl (incluso si está vacío) para que cuadre el hash
   const cadena =
     MERCHANT_ID +
     MerchantName +
@@ -115,6 +117,7 @@ exports.generarFirmaAzul = functions.https.onCall((data, context) => {
     ApprovedUrl +
     DeclinedUrl +
     CancelUrl +
+    ResponsePostUrl +
     UseCustomField1 +
     CustomField1Label +
     CustomField1Value +
@@ -130,6 +133,7 @@ exports.generarFirmaAzul = functions.https.onCall((data, context) => {
     AuthHash:   authHash,
     MerchantId: MERCHANT_ID,
     ITBIS,
+    ResponsePostUrl
   };
 });
 

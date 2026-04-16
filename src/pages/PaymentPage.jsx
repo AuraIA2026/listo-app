@@ -145,9 +145,9 @@ export default function PaymentPage({ lang = 'es', navigate, professional }) {
       };
 
       const res = await generarFirma(payload);
-      const { AuthHash, MerchantId, ITBIS } = res.data;
+      const { AuthHash, MerchantId, ITBIS, ResponsePostUrl } = res.data;
 
-      setPagoAzulData({ ...payload, MerchantId, AuthHash, ITBIS });
+      setPagoAzulData({ ...payload, MerchantId, AuthHash, ITBIS, ResponsePostUrl });
       
       // Autoenviar form
       setTimeout(() => {
@@ -388,6 +388,7 @@ export default function PaymentPage({ lang = 'es', navigate, professional }) {
             <input name="ApprovedUrl" type="hidden" value={pagoAzulData.ApprovedUrl} />
             <input name="DeclinedUrl" type="hidden" value={pagoAzulData.DeclinedUrl} />
             <input name="CancelUrl" type="hidden" value={pagoAzulData.CancelUrl} />
+            <input name="ResponsePostUrl" type="hidden" value={pagoAzulData.ResponsePostUrl} />
             <input name="UseCustomField1" type="hidden" value="0" />
             <input name="CustomField1Label" type="hidden" value="" />
             <input name="CustomField1Value" type="hidden" value="" />
