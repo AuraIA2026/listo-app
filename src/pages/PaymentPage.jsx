@@ -135,8 +135,9 @@ export default function PaymentPage({ lang = 'es', navigate, professional }) {
       const totalAzul = String(Math.round(finalAmount * 100)); 
       
       // 3. ID único estilo PlanesPage para evitar problemas
-      const userIdCorto = pro.orderId.slice(-6); 
-      const orderIdUnique = `ORD_${String(Date.now()).slice(-6)}_${userIdCorto}`;
+      const userIdCorto = pro.orderId ? pro.orderId.substring(0, 6) : "user"; 
+      // Imitamos estructura de Planes para evitar bloqueos
+      const orderIdUnique = `PLAN_${String(Date.now()).slice(-6)}_${userIdCorto}`;
 
       // Guardarlo en la orden para que el webhook de Azure pueda encontrarlo luego
       await updateDoc(doc(db, 'orders', pro.orderId), {
@@ -145,16 +146,16 @@ export default function PaymentPage({ lang = 'es', navigate, professional }) {
 
       const cloudFunctionEndpoint = "https://us-central1-listoapp-52b46.cloudfunctions.net/azulWebHook"; 
       
-      // 4. Copiamos exactamente la estructura que FUNCIONA en PlanesPage
+      // 4. Copiamos exactamente la estructura que FUNCIONA en PlanesPage (incluyendo dominios)
       const payload = {
-        MerchantName: "Listo App", // Simplificado para evitar caracteres extraños que rompan el hash
+        MerchantName: "Listo App - Planes", // Usamos el nombre que sabemos que funciona en Azul
         MerchantType: "E-Commerce",
         CurrencyCode: "$", // DOP
         OrderNumber: orderIdUnique,
         Amount: totalAzul,
         ApprovedUrl: cloudFunctionEndpoint,
-        DeclinedUrl: "https://listopatron.vercel.app/orders?error=declined",
-        CancelUrl: "https://listopatron.vercel.app/orders?error=cancelled"
+        DeclinedUrl: "https://listopatron.vercel.app/profile?planError=declined",
+        CancelUrl: "https://listopatron.vercel.app/profile?planError=cancelled"
       };
 
       const res = await generarFirma(payload);
