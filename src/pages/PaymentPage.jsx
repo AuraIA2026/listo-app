@@ -154,8 +154,8 @@ export default function PaymentPage({ lang = 'es', navigate, professional }) {
         OrderNumber: orderIdUnique,
         Amount: totalAzul,
         ApprovedUrl: cloudFunctionEndpoint,
-        DeclinedUrl: "https://listopatron.vercel.app/profile?planError=declined",
-        CancelUrl: "https://listopatron.vercel.app/profile?planError=cancelled"
+        DeclinedUrl: "https://listo-app.vercel.app/profile?planError=declined",
+        CancelUrl: "https://listo-app.vercel.app/profile?planError=cancelled"
       };
 
       const res = await generarFirma(payload);
