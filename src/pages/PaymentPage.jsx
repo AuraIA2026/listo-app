@@ -161,12 +161,44 @@ export default function PaymentPage({ lang = 'es', navigate, professional }) {
       
       // 5. Asignar todos los campos del hash que devuelve el backend
       const { AuthHash, MerchantId, ITBIS, ResponsePostUrl } = res.data;
-      setPagoAzulData({ ...payload, MerchantId, AuthHash, ITBIS, ResponsePostUrl });
       
-      // Autoenviar form igual que en PlanesPage
-      setTimeout(() => {
-        if (formRef.current) formRef.current.submit();
-      }, 600);
+      // CREADO DESDE CERO: Inyección del formulario de manera directa y nativa para saltar errores de render en React
+      const form = document.createElement('form');
+      form.method = 'post';
+      form.action = URL_AZUL;
+      
+      const fields = {
+        MerchantId: MerchantId,
+        MerchantName: payload.MerchantName,
+        MerchantType: payload.MerchantType,
+        CurrencyCode: payload.CurrencyCode,
+        OrderNumber: payload.OrderNumber,
+        Amount: payload.Amount,
+        ITBIS: ITBIS,
+        ApprovedUrl: payload.ApprovedUrl,
+        DeclinedUrl: payload.DeclinedUrl,
+        CancelUrl: payload.CancelUrl,
+        ResponsePostUrl: ResponsePostUrl,
+        UseCustomField1: "0",
+        CustomField1Label: "",
+        CustomField1Value: "",
+        UseCustomField2: "0",
+        CustomField2Label: "",
+        CustomField2Value: "",
+        AuthHash: AuthHash
+      };
+
+      Object.keys(fields).forEach(key => {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = key;
+        input.value = fields[key];
+        form.appendChild(input);
+      });
+
+      document.body.appendChild(form);
+      form.submit();
+
 
     } catch (err) {
       console.error("Error conectando con AZUL: ", err);
@@ -384,34 +416,7 @@ export default function PaymentPage({ lang = 'es', navigate, professional }) {
           </div>
         )}
 
-        {/* FORMULARIO INVISIBLE AZUL - SE AUTOENVÍA CON REDIRECCION POST */}
-        {pagoAzulData && (
-          <form 
-            ref={formRef} 
-            action={URL_AZUL} 
-            method="post" 
-            style={{ display: 'none' }}
-          >
-            <input name="MerchantId" type="hidden" value={pagoAzulData.MerchantId} />
-            <input name="MerchantName" type="hidden" value={pagoAzulData.MerchantName} />
-            <input name="MerchantType" type="hidden" value={pagoAzulData.MerchantType} />
-            <input name="CurrencyCode" type="hidden" value={pagoAzulData.CurrencyCode} />
-            <input name="OrderNumber" type="hidden" value={pagoAzulData.OrderNumber} />
-            <input name="Amount" type="hidden" value={pagoAzulData.Amount} />
-            <input name="ITBIS" type="hidden" value={pagoAzulData.ITBIS} />
-            <input name="ApprovedUrl" type="hidden" value={pagoAzulData.ApprovedUrl} />
-            <input name="DeclinedUrl" type="hidden" value={pagoAzulData.DeclinedUrl} />
-            <input name="CancelUrl" type="hidden" value={pagoAzulData.CancelUrl} />
-            <input name="ResponsePostUrl" type="hidden" value={pagoAzulData.ResponsePostUrl} />
-            <input name="UseCustomField1" type="hidden" value="0" />
-            <input name="CustomField1Label" type="hidden" value="" />
-            <input name="CustomField1Value" type="hidden" value="" />
-            <input name="UseCustomField2" type="hidden" value="0" />
-            <input name="CustomField2Label" type="hidden" value="" />
-            <input name="CustomField2Value" type="hidden" value="" />
-            <input name="AuthHash" type="hidden" value={pagoAzulData.AuthHash} />
-          </form>
-        )}
+        {/* El formulario de Azul se inyecta desde cero mediante código nativo (form.submit()) */}
 
         {method === 'transfer' && (
           <div className="pay-section pay-summary fade-up">
