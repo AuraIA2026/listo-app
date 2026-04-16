@@ -102,10 +102,10 @@ exports.generarFirmaAzul = functions.https.onCall((data, context) => {
   const CustomField2Label = "";
   const CustomField2Value = "";
 
-  const ResponsePostUrl = "";
+  // Azul requiere que ResponsePostUrl tenga contenido, usaremos el mismo webhook
+  const ResponsePostUrl = ApprovedUrl;
 
   // ✅ Orden EXACTO requerido por AZUL para el AuthHash
-  // Se DEBE incluir el ResponsePostUrl (incluso si está vacío) para que cuadre el hash
   const cadena =
     MERCHANT_ID +
     MerchantName +
@@ -121,12 +121,10 @@ exports.generarFirmaAzul = functions.https.onCall((data, context) => {
     UseCustomField1 +
     CustomField1Label +
     CustomField1Value +
-    UseCustomField2 +
-    CustomField2Label +
-    CustomField2Value;
+    UseCustomField2;
 
-  const authHash = crypto.createHmac('sha512', AUTH_KEY)
-    .update(cadena)
+  const authHash = crypto.createHash('sha512')
+    .update(cadena + AUTH_KEY)
     .digest('hex');
 
   return {

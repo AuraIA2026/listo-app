@@ -384,7 +384,7 @@ export default function PaymentPage({ lang = 'es', navigate, professional }) {
             <input name="CurrencyCode" type="hidden" value={pagoAzulData.CurrencyCode} />
             <input name="OrderNumber" type="hidden" value={pagoAzulData.OrderNumber} />
             <input name="Amount" type="hidden" value={pagoAzulData.Amount} />
-            <input name="ITBIS" type="hidden" value={pagoAzulData.ITBIS} />
+            <input name="Itbis" type="hidden" value={pagoAzulData.ITBIS} />
             <input name="ApprovedUrl" type="hidden" value={pagoAzulData.ApprovedUrl} />
             <input name="DeclinedUrl" type="hidden" value={pagoAzulData.DeclinedUrl} />
             <input name="CancelUrl" type="hidden" value={pagoAzulData.CancelUrl} />
@@ -393,8 +393,6 @@ export default function PaymentPage({ lang = 'es', navigate, professional }) {
             <input name="CustomField1Label" type="hidden" value="" />
             <input name="CustomField1Value" type="hidden" value="" />
             <input name="UseCustomField2" type="hidden" value="0" />
-            <input name="CustomField2Label" type="hidden" value="" />
-            <input name="CustomField2Value" type="hidden" value="" />
             <input name="AuthHash" type="hidden" value={pagoAzulData.AuthHash} />
           </form>
         )}
