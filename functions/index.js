@@ -164,7 +164,7 @@ exports.azulWebHook = functions.https.onRequest(async (req, res) => {
       }
     }
 
-    if (orderNumber.startsWith("ORD-")) {
+    if (orderNumber.startsWith("ORD_")) {
       return res.redirect(`https://listo-app.vercel.app/orders?payment=success`);
     }
 

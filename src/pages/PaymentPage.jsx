@@ -134,14 +134,14 @@ export default function PaymentPage({ lang = 'es', navigate, professional }) {
       const cloudFunctionEndpoint = "https://us-central1-listoapp-52b46.cloudfunctions.net/azulWebHook"; 
       
       const payload = {
-        MerchantName: "Listo App - Planes",
+        MerchantName: "Listo App - Pedidos",
         MerchantType: "E-Commerce",
         CurrencyCode: "$", // $ = DOP
-        OrderNumber: `ORD-${Date.now()}`,
+        OrderNumber: `ORD_${Date.now()}`,
         Amount: totalAzul,
         ApprovedUrl: cloudFunctionEndpoint,
-        DeclinedUrl: "https://listo-app.vercel.app/orders-declined",
-        CancelUrl: "https://listo-app.vercel.app/orders-cancelled"
+        DeclinedUrl: "https://listo-app.vercel.app/orders?error=declined",
+        CancelUrl: "https://listo-app.vercel.app/orders?error=cancelled"
       };
 
       const res = await generarFirma(payload);
