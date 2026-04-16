@@ -273,7 +273,7 @@ export default function PlanesPage({ onBack, navigate }) {
           })}
         </div>
 
-        {/* INVISIBLE AZUL FORM */}
+        {/* INVISIBLE AZUL FORM — CORRECCIONES APLICADAS */}
         {pagoAzulData && (
           <form 
             ref={formRef} 
@@ -281,24 +281,26 @@ export default function PlanesPage({ onBack, navigate }) {
             method="post" 
             style={{ display: 'none' }}
           >
-            <input name="MerchantId" type="hidden" value={pagoAzulData.MerchantId} />
-            <input name="MerchantName" type="hidden" value={pagoAzulData.MerchantName} />
-            <input name="MerchantType" type="hidden" value={pagoAzulData.MerchantType} />
-            <input name="CurrencyCode" type="hidden" value={pagoAzulData.CurrencyCode} />
-            <input name="OrderNumber" type="hidden" value={pagoAzulData.OrderNumber} />
-            <input name="Amount" type="hidden" value={pagoAzulData.Amount} />
-            <input name="Itbis" type="hidden" value={pagoAzulData.ITBIS} />
-            <input name="ApprovedUrl" type="hidden" value={pagoAzulData.ApprovedUrl} />
-            <input name="DeclinedUrl" type="hidden" value={pagoAzulData.DeclinedUrl} />
-            <input name="CancelUrl" type="hidden" value={pagoAzulData.CancelUrl} />
-            <input name="ResponsePostUrl" type="hidden" value={pagoAzulData.ResponsePostUrl} />
-            <input name="UseCustomField1" type="hidden" value="0" />
+            <input name="MerchantId"        type="hidden" value={pagoAzulData.MerchantId} />
+            <input name="MerchantName"      type="hidden" value={pagoAzulData.MerchantName} />
+            <input name="MerchantType"      type="hidden" value={pagoAzulData.MerchantType} />
+            <input name="CurrencyCode"      type="hidden" value={pagoAzulData.CurrencyCode} />
+            <input name="OrderNumber"       type="hidden" value={pagoAzulData.OrderNumber} />
+            <input name="Amount"            type="hidden" value={pagoAzulData.Amount} />
+            {/* ✅ FIX 1: Corregido "Itbis" → "ITBIS" (mayúsculas correctas) */}
+            <input name="ITBIS"             type="hidden" value={pagoAzulData.ITBIS} />
+            <input name="ApprovedUrl"       type="hidden" value={pagoAzulData.ApprovedUrl} />
+            <input name="DeclinedUrl"       type="hidden" value={pagoAzulData.DeclinedUrl} />
+            <input name="CancelUrl"         type="hidden" value={pagoAzulData.CancelUrl} />
+            {/* ✅ FIX 2: Agregado ResponsePostUrl — el backend lo incluye en el hash */}
+            <input name="ResponsePostUrl"   type="hidden" value={pagoAzulData.ResponsePostUrl} />
+            <input name="UseCustomField1"   type="hidden" value="0" />
             <input name="CustomField1Label" type="hidden" value="" />
             <input name="CustomField1Value" type="hidden" value="" />
-            <input name="UseCustomField2" type="hidden" value="0" />
+            <input name="UseCustomField2"   type="hidden" value="0" />
             <input name="CustomField2Label" type="hidden" value="" />
             <input name="CustomField2Value" type="hidden" value="" />
-            <input name="AuthHash" type="hidden" value={pagoAzulData.AuthHash} />
+            <input name="AuthHash"          type="hidden" value={pagoAzulData.AuthHash} />
           </form>
         )}
 
