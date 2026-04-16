@@ -69,12 +69,9 @@ exports.webhookCardnet = functions.https.onRequest(async (req, res) => {
 });
 
 /* ═══════════════════════════════════════════════════════════
-   FUNCIÓN: generarFirmaAzul ✅ CORREGIDA
-   
-   CORRECCIONES APLICADAS:
-   1. Eliminado Tax del payload — AZUL usa ITBIS (fijo "000")
-   2. Eliminado ResponsePostUrl de la cadena del hash
-   3. La cadena sigue el orden EXACTO que valida AZUL
+   FUNCIÓN: generarFirmaAzul
+   Genera el AuthHash requerido por AZUL para cualquier pago.
+   Funciona para planes Y para pagos de servicios.
 ═══════════════════════════════════════════════════════════ */
 exports.generarFirmaAzul = functions.https.onCall((data, context) => {
   const MERCHANT_ID = "39038540035";
@@ -91,10 +88,8 @@ exports.generarFirmaAzul = functions.https.onCall((data, context) => {
     CancelUrl,
   } = data;
 
-  // ✅ ITBIS fijo "000" — nombre correcto que usa AZUL (no "Tax")
   const ITBIS = "000";
 
-  // Custom Fields vacíos cuando no se usan
   const UseCustomField1   = "0";
   const CustomField1Label = "";
   const CustomField1Value = "";
@@ -102,10 +97,9 @@ exports.generarFirmaAzul = functions.https.onCall((data, context) => {
   const CustomField2Label = "";
   const CustomField2Value = "";
 
-  // Azul requiere que ResponsePostUrl tenga contenido, usaremos el mismo webhook
   const ResponsePostUrl = ApprovedUrl;
 
-  // ✅ Orden EXACTO requerido por AZUL para el AuthHash
+  // Orden EXACTO requerido por AZUL para el AuthHash
   const cadena =
     MERCHANT_ID +
     MerchantName +
@@ -130,17 +124,19 @@ exports.generarFirmaAzul = functions.https.onCall((data, context) => {
     .digest('hex');
 
   return {
-    AuthHash:   authHash,
-    MerchantId: MERCHANT_ID,
+    AuthHash:        authHash,
+    MerchantId:      MERCHANT_ID,
     ITBIS,
-    ResponsePostUrl
+    ResponsePostUrl,
   };
 });
 
 /* ═══════════════════════════════════════════════════════════
-   FUNCIÓN: azulWebHook
-   Recibe el retorno del portal AZUL (ApprovedUrl o DeclinedUrl).
-   Actualiza la base de datos y redirige al Front-End.
+   FUNCIÓN: azulWebHook  ✅ UNIFICADO
+   Recibe el retorno de AZUL para CUALQUIER tipo de pago:
+     - PLAN_  → activa plan del profesional
+     - ORD-   → procesa pago de servicio (split 10/90)
+   El monto siempre viene de AZUL en centavos (Amount).
 ═══════════════════════════════════════════════════════════ */
 exports.azulWebHook = functions.https.onRequest(async (req, res) => {
   try {
@@ -149,29 +145,109 @@ exports.azulWebHook = functions.https.onRequest(async (req, res) => {
 
     const orderNumber = payload.OrderNumber || "";
 
+    // AZUL envía el Amount en centavos → convertir a pesos reales
+    const montoAzul = parseInt(payload.Amount || "0", 10);
+    const monto = Math.round(montoAzul / 100);
+
+    // ── PLANES: formato PLAN_{planId}_{userId} ───────────────
     if (orderNumber.startsWith("PLAN_")) {
       const parts = orderNumber.split("_");
       if (parts.length >= 3) {
         const planId = parts[1].toLowerCase();
         const userId = parts[2];
-
-        const actualPlan = ["basico", "gold", "platinum", "vip"].includes(planId) ? planId : null;
+        const validPlans = ["basico", "gold", "platinum", "vip"];
+        const actualPlan = validPlans.includes(planId) ? planId : null;
 
         if (actualPlan) {
           await db.collection("users").doc(userId).update({
             plan: actualPlan,
-            planUpdatedAt: admin.firestore.FieldValue.serverTimestamp()
+            planUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
           });
-
+          console.log(`✅ Plan ${actualPlan} activado para usuario ${userId}`);
           return res.redirect(`https://listo-app.vercel.app/profile?planSetupSuccess=${actualPlan}`);
         }
       }
+
+      // Plan inválido — redirigir con error
+      return res.redirect(`https://listo-app.vercel.app/profile?planError=invalid`);
     }
 
-    if (orderNumber.startsWith("ORD_")) {
+    // ── SERVICIOS: formato ORD-{timestamp} ───────────────────
+    if (orderNumber.startsWith("ORD-") || orderNumber.startsWith("ORD_")) {
+      if (monto <= 0) {
+        console.warn("⚠️ Monto inválido recibido de AZUL:", payload.Amount);
+        return res.redirect(`https://listo-app.vercel.app/orders?payment=error`);
+      }
+
+      const tuComision = Math.round(monto * 0.10);
+      const pagoProf   = Math.round(monto * 0.90);
+
+      // Buscar la orden en Firestore por el orderNumber guardado antes de ir a AZUL
+      const ordersSnap = await db.collection("orders")
+        .where("orderNumber", "==", orderNumber)
+        .limit(1)
+        .get();
+
+      if (!ordersSnap.empty) {
+        const orderDoc = ordersSnap.docs[0];
+        const order    = orderDoc.data();
+
+        const batch = db.batch();
+
+        // Actualizar la orden
+        batch.update(orderDoc.ref, {
+          status:        "pagado",
+          paymentStatus: "pagado",
+          metodoPago:    "tarjeta",
+          montoTotal:    monto,
+          transaccionId: payload.RRN || payload.AzulOrderId || orderNumber,
+          fechaPago:     admin.firestore.FieldValue.serverTimestamp(),
+        });
+
+        // Acreditar 90% al profesional
+        const proId = order.proId || order.profesionalId;
+        if (proId) {
+          const proRef = db.collection("users").doc(proId);
+          batch.update(proRef, {
+            balance: admin.firestore.FieldValue.increment(pagoProf),
+          });
+        }
+
+        // Registrar transacción
+        const txRef = db.collection("transacciones").doc();
+        batch.set(txRef, {
+          orderNumber,
+          orderId:       orderDoc.id,
+          profesionalId: order.proId || order.profesionalId || null,
+          clienteId:     order.clientId || order.clienteId  || null,
+          montoTotal:    monto,
+          tuComision,
+          pagoProf,
+          tipo:          "tarjeta",
+          fecha:         admin.firestore.FieldValue.serverTimestamp(),
+        });
+
+        await batch.commit();
+        console.log(`✅ Servicio pagado | Order: ${orderNumber} | Monto: RD$${monto} | Prof: RD$${pagoProf} | Comisión: RD$${tuComision}`);
+      } else {
+        // La orden no existe en Firestore — igual registrar la transacción para auditoría
+        console.warn(`⚠️ Orden no encontrada en Firestore para OrderNumber: ${orderNumber}. Registrando transacción de auditoría.`);
+        await db.collection("transacciones").add({
+          orderNumber,
+          montoTotal:  monto,
+          tuComision,
+          pagoProf,
+          tipo:        "tarjeta",
+          nota:        "orden_no_encontrada",
+          fecha:       admin.firestore.FieldValue.serverTimestamp(),
+        });
+      }
+
       return res.redirect(`https://listo-app.vercel.app/orders?payment=success`);
     }
 
+    // OrderNumber no reconocido
+    console.warn("⚠️ OrderNumber no reconocido:", orderNumber);
     return res.redirect(`https://listo-app.vercel.app/`);
 
   } catch (err) {
