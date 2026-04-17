@@ -130,32 +130,30 @@ export default function PaymentPage({ lang = 'es', navigate, professional }) {
       const { httpsCallable } = await import("firebase/functions");
       const { functions } = await import("../firebase");
       const generarFirma = httpsCallable(functions, "generarFirmaAzul");
+      const FinalAmountInt = Math.round(finalAmount * 100);
+      const totalAzul = String(FinalAmountInt); 
       
-      // 2. Monto exacto (formato AZUL multiplicando x 100)
-      const totalAzul = String(Math.round(finalAmount * 100)); 
-      
-      // 3. ID único estilo PlanesPage para evitar problemas
+      // 3. ID único para órdenes
       const userIdCorto = pro.orderId ? pro.orderId.substring(0, 6) : "user"; 
-      // Imitamos estructura de Planes para evitar bloqueos
-      const orderIdUnique = `PLAN_${String(Date.now()).slice(-6)}_${userIdCorto}`;
+      const orderIdUnique = `ORD_${String(Date.now()).slice(-6)}_${userIdCorto}`;
 
       // Guardarlo en la orden para que el webhook de Azure pueda encontrarlo luego
       await updateDoc(doc(db, 'orders', pro.orderId), {
-        orderNumber: orderIdUnique
+        azulOrderId: orderIdUnique
       });
 
       const cloudFunctionEndpoint = "https://us-central1-listoapp-52b46.cloudfunctions.net/azulWebHook"; 
       
-      // 4. Copiamos exactamente la estructura que FUNCIONA en PlanesPage (incluyendo dominios)
+      // 4. Estructura Limpia Universal para Pagos Variables
       const payload = {
-        MerchantName: "Listo App - Planes", // Usamos el nombre que sabemos que funciona en Azul
+        MerchantName: "Listo App",
         MerchantType: "E-Commerce",
-        CurrencyCode: "$", // DOP
+        CurrencyCode: "$",
         OrderNumber: orderIdUnique,
         Amount: totalAzul,
         ApprovedUrl: cloudFunctionEndpoint,
-        DeclinedUrl: "https://listo-app.vercel.app/profile?planError=declined",
-        CancelUrl: "https://listo-app.vercel.app/profile?planError=cancelled"
+        DeclinedUrl: "https://listopatron.vercel.app/orders?error=declined",
+        CancelUrl: "https://listopatron.vercel.app/orders?error=cancelled"
       };
 
       const res = await generarFirma(payload);
@@ -163,7 +161,26 @@ export default function PaymentPage({ lang = 'es', navigate, professional }) {
       // 5. Asignar todos los campos del hash que devuelve el backend
       const { AuthHash, MerchantId, ITBIS, ResponsePostUrl } = res.data;
       
-      setPagoAzulData({ ...payload, MerchantId, AuthHash, ITBIS, ResponsePostUrl });
+      setPagoAzulData({
+        MerchantId: MerchantId,
+        MerchantName: payload.MerchantName,
+        MerchantType: payload.MerchantType,
+        CurrencyCode: payload.CurrencyCode,
+        OrderNumber: payload.OrderNumber,
+        Amount: payload.Amount,
+        ITBIS: ITBIS,
+        ApprovedUrl: payload.ApprovedUrl,
+        DeclinedUrl: payload.DeclinedUrl,
+        CancelUrl: payload.CancelUrl,
+        ResponsePostUrl: ResponsePostUrl,
+        UseCustomField1: "0",
+        CustomField1Label: "",
+        CustomField1Value: "",
+        UseCustomField2: "0",
+        CustomField2Label: "",
+        CustomField2Value: "",
+        AuthHash: AuthHash
+      });
         
       // Autoenviar a AZUL tras un breve timeout para parseo react
       setTimeout(() => {
