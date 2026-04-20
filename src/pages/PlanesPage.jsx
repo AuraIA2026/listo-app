@@ -123,8 +123,8 @@ export default function PlanesPage({ onBack, navigate }) {
           OrderNumber: orderIdUnique,
           Amount: totalAzul,
           ApprovedUrl: cloudFunctionEndpoint,
-          DeclinedUrl: "https://listo-app.vercel.app/profile?planError=declined",
-          CancelUrl: "https://listo-app.vercel.app/profile?planError=cancelled"
+          DeclinedUrl: cloudFunctionEndpoint,
+          CancelUrl: cloudFunctionEndpoint
         };
 
         const res = await generarFirma(payload);
@@ -292,8 +292,6 @@ export default function PlanesPage({ onBack, navigate }) {
             <input name="ApprovedUrl"       type="hidden" value={pagoAzulData.ApprovedUrl} />
             <input name="DeclinedUrl"       type="hidden" value={pagoAzulData.DeclinedUrl} />
             <input name="CancelUrl"         type="hidden" value={pagoAzulData.CancelUrl} />
-            {/* ✅ FIX 2: Agregado ResponsePostUrl — el backend lo incluye en el hash */}
-            <input name="ResponsePostUrl"   type="hidden" value={pagoAzulData.ResponsePostUrl} />
             <input name="UseCustomField1"   type="hidden" value="0" />
             <input name="CustomField1Label" type="hidden" value="" />
             <input name="CustomField1Value" type="hidden" value="" />

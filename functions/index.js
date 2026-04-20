@@ -111,13 +111,13 @@ exports.generarFirmaAzul = functions.https.onCall((data, context) => {
     ApprovedUrl +
     DeclinedUrl +
     CancelUrl +
-    ResponsePostUrl +
     UseCustomField1 +
     CustomField1Label +
     CustomField1Value +
     UseCustomField2 +
     CustomField2Label +
-    CustomField2Value;
+    CustomField2Value +
+    AUTH_KEY;
 
   const authHash = crypto.createHmac('sha512', AUTH_KEY)
     .update(cadena)
@@ -148,6 +148,22 @@ exports.azulWebHook = functions.https.onRequest(async (req, res) => {
     // AZUL envía el Amount en centavos → convertir a pesos reales
     const montoAzul = parseInt(payload.Amount || "0", 10);
     const monto = Math.round(montoAzul / 100);
+
+    const isoCode = payload.IsoCode || "";
+    const responseMessage = (payload.ResponseMessage || "").toUpperCase();
+
+    // Verificar si el pago fue realmente aprobado
+    // Azul generalmente responde con IsoCode "00" o ResponseMessage "APROBADA"
+    const isApproved = isoCode === "00" || responseMessage.includes("APROBADA") || payload.AuthorizationCode;
+
+    if (!isApproved) {
+      console.warn(`⚠️ Pago NO aprobado. IsoCode: ${isoCode}, Mensaje: ${responseMessage}`);
+      if (orderNumber.startsWith("PLAN_")) {
+        return res.redirect(`https://listo-app.vercel.app/profile?planError=declined`);
+      } else {
+        return res.redirect(`https://listo-app.vercel.app/orders?payment=error`);
+      }
+    }
 
     // ── PLANES: formato PLAN_{planId}_{userId} ───────────────
     if (orderNumber.startsWith("PLAN_")) {
