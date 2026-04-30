@@ -31,6 +31,7 @@ import LocalDetalle           from './locales/LocalDetalle'
 import CrearLocal             from './locales/CrearLocal'   // ✅ AGREGADO
 import NotificacionPage       from './pages/Notificacionpage'
 import PoliciesPage           from './pages/PoliciesPage'
+import LandingPage            from './pages/LandingPage'
 import logoBlanco             from './assets/logo listo blanco.png'
 import './App.css'
 
@@ -612,6 +613,7 @@ export default function App() {
 
       {showTop && <Navbar navigate={navigate} currentPage={currentPage} lang={lang} setLang={setLang} />}
 
+      {currentPage === 'landing'      && <LandingPage  {...commonProps} />}
       {currentPage === 'home'         && <HomePage     {...userProps} />}
       {currentPage === 'services'     && <ServicesPage {...commonProps} />}
       {currentPage === 'search'       && <SearchPage   {...userProps} initialCategory={selectedPro?.catToSelect || 'all'} />}

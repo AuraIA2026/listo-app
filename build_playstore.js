@@ -13,9 +13,13 @@ try {
   console.log('\n[2/3] Sincronizando plataforma Android...');
   execSync('npx cap sync android', opts);
   
+  console.log('\n[2.5/3] Optimizando imágenes para reducir el peso del AAB...');
+  execSync('node compress_imgs_android.cjs', opts);
+  
   console.log('\n[3/3] Generando formato .AAB (Android App Bundle)...');
   const gradleCmd = os.platform() === 'win32' ? '.\\gradlew.bat clean bundleRelease' : './gradlew clean bundleRelease';
-  execSync(gradleCmd, { cwd: `${rootDir}\\android`, stdio: 'inherit' });
+  const gradleEnv = { ...process.env, JAVA_HOME: 'C:\\Program Files\\Android\\Android Studio\\jbr' };
+  execSync(gradleCmd, { cwd: `${rootDir}\\android`, stdio: 'inherit', env: gradleEnv });
   
   console.log('\n✨ ¡COMPILACIÓN ÉXITOSA! ✨');
   console.log('Tu archivo de producción para subir a la consola de Google Play está en:');
