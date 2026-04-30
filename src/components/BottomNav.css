@@ -19,8 +19,9 @@
 .bottom-nav-inner {
   display: flex;
   align-items: center;
-  justify-content: space-around;
+  justify-content: space-between;
   height: 100%;
+  width: 100%;
   padding: 0 10px;
 }
 
