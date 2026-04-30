@@ -273,8 +273,9 @@ function SystemAlertModal({ alert, onClose, lang }) {
 }
 
 export default function App() {
-  const [showSplash,      setShowSplash]      = useState(true)
-  const [currentPage,     setCurrentPage]     = useState('login')
+  const isNative = Capacitor.isNativePlatform()
+  const [showSplash,      setShowSplash]      = useState(isNative)
+  const [currentPage,     setCurrentPage]     = useState(isNative ? 'login' : 'landing')
   const [lang,            setLang]            = useState('es')
   const [selectedPro,     setSelectedPro]     = useState(null)
   const [selectedLocal,   setSelectedLocal]   = useState(null)
@@ -396,15 +397,23 @@ export default function App() {
             }
           }
           setAuthReady(true)
+          setCurrentPage(prev => {
+            if (!isNative && (prev === 'landing' || prev === 'login')) return 'home'
+            return prev
+          })
         }, () => setAuthReady(true))
       } else {
         setUserData(null); setUserRole('user'); setProfileComplete(false)
         setAuthReady(true)
-        if (!showSplash) setCurrentPage('login')
+        setCurrentPage(prev => {
+          if (isNative && !showSplash) return 'login'
+          if (!isNative && prev !== 'landing') return 'landing'
+          return prev
+        })
       }
     })
     return () => { unsubAuth(); if (unsubSnap) unsubSnap() }
-  }, []) // eslint-disable-line
+  }, [isNative, showSplash]) // eslint-disable-line
 
   // ─── LISTENER MENSAJES NUEVOS ─────────────────────────────────────────────
   useEffect(() => {
