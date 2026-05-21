@@ -24,7 +24,7 @@ export default function LandingPage({ navigate, lang }) {
   const switchTab = (t) => { if (window.switchTab) window.switchTab(t); };
 
   return (
-    <>
+    <div className="landing-page-container">
 
   {/*  INTRO VIDEO SPLASH MOVED TO PORTADA HEADER  */}
 
@@ -1614,7 +1614,7 @@ export default function LandingPage({ navigate, lang }) {
     </div>
   </footer>
 
-    </>
+    </div>
   );
 }
 

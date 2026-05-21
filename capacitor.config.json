@@ -1,5 +1,11 @@
 {
   "appId": "com.listopatron.app",
   "appName": "Listo Patrón",
-  "webDir": "dist"
+  "webDir": "dist",
+  "server": {
+    "allowNavigation": [
+      "pruebas.azul.com.do",
+      "pagos.azul.com.do"
+    ]
+  }
 }

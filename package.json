@@ -17,6 +17,7 @@
     "@capacitor/push-notifications": "^8.0.2",
     "firebase": "^12.10.0",
     "leaflet": "^1.9.4",
+    "playwright": "^1.60.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-icons": "^5.5.0",

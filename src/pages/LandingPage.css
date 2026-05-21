@@ -13,7 +13,7 @@
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
-body{font-family:'Nunito',sans-serif;background:var(--white);color:var(--black);overflow-x:hidden;overflow-y:auto}
+.landing-page-container{font-family:'Nunito',sans-serif;background:var(--white);color:var(--black);overflow-x:hidden;overflow-y:auto}
 
 /* ===== NAV ===== */
 nav{
