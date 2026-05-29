@@ -175,10 +175,26 @@ exports.azulWebHook = functions.https.onRequest(async (req, res) => {
         const actualPlan = validPlans.includes(planId) ? planId : null;
 
         if (actualPlan) {
+          const userDoc = await db.collection("users").doc(userId).get();
+          const userData = userDoc.exists ? userDoc.data() : null;
+          const userName = userData ? (userData.name || 'Profesional') : 'Profesional';
+
           await db.collection("users").doc(userId).update({
             plan: actualPlan,
             planUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
           });
+
+          // Notificación al admin
+          await db.collection("notificaciones").add({
+            userId: 'admin',
+            type: 'admin_plan_purchased',
+            title: '👑 PLAN ACTIVADO AUTOMÁTICAMENTE',
+            text: `El profesional ${userName} ha comprado y activado el plan ${actualPlan.toUpperCase()} de forma exitosa usando tarjeta (AZUL).`,
+            read: false,
+            date: new Date().toISOString(),
+            createdAt: admin.firestore.FieldValue.serverTimestamp()
+          });
+
           console.log(`✅ Plan ${actualPlan} activado para usuario ${userId}`);
           return res.redirect(`https://listo-app.vercel.app/profile?planSetupSuccess=${actualPlan}`);
         }

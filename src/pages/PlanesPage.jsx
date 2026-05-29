@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { db, auth } from '../firebase'
-import { doc, updateDoc } from 'firebase/firestore'
+import { doc, updateDoc, collection, addDoc, serverTimestamp } from 'firebase/firestore'
 import { useUserData } from '../useUserData'
 import './PlanesPage.css'
 
@@ -132,6 +132,20 @@ export default function PlanesPage({ onBack, navigate }) {
 
         setPagoAzulData({ ...payload, MerchantId, AuthHash, ITBIS, ResponsePostUrl });
         
+        // Registrar intento de cambio de plan para el administrador
+        try {
+          await addDoc(collection(db, 'notificaciones'), {
+            userId: 'admin',
+            type: 'plan_intent',
+            title: '🔄 INTENTO DE CAMBIO DE PLAN',
+            text: `El profesional ${userData?.name || 'Un profesional'} (${userData?.email || 'Sin email'}) ha iniciado el proceso para adquirir el plan ${planId.toUpperCase()} (${planPriceText}) vía tarjeta (AZUL).`,
+            read: false,
+            createdAt: serverTimestamp()
+          });
+        } catch (errNotif) {
+          console.error("Error guardando notificación de intento:", errNotif);
+        }
+
         // Autoenviar a AZUL tras un breve timeout para parseo react
         setTimeout(() => {
           if (formRef.current) formRef.current.submit();

@@ -467,6 +467,10 @@ export default function PaymentPage({ lang = 'es', navigate, professional }) {
                <div style={{ width: '14px', height: '14px', borderRadius: '50%', background: '#EB001B', marginRight: '-6px', mixBlendMode: 'multiply' }}></div>
                <div style={{ width: '14px', height: '14px', borderRadius: '50%', background: '#F79E1B', mixBlendMode: 'multiply' }}></div>
             </div>
+            {/* AZUL secure payment badge */}
+            <div className="security-badge" style={{ background: 'white', border: '1px solid #CBD5E1', padding: '6px 10px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <span style={{ color: '#002E6D', fontFamily: 'sans-serif', fontSize: '12px', fontWeight: '900', fontStyle: 'italic', letterSpacing: '1px', lineHeight: '1' }}>AZUL</span>
+            </div>
             {/* 3D Secure Logos */}
             <div className="security-badge" style={{ background: 'white', border: '1px solid #CBD5E1', padding: '6px 10px', borderRadius: '8px', display: 'flex', alignItems: 'center' }}>
               <svg viewBox="0 0 190 50" style={{ height: '22px' }}>

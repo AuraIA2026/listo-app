@@ -1037,42 +1037,45 @@ export default function HomePage({ lang, navigate, userRole }) {
       )}
 
       {/* ── FOOTER LEGAL & 3D SECURE AZUL ── */}
-      {!Capacitor.isNativePlatform() && (
-        <footer style={{ background: '#1A1A2E', color: '#94A3B8', padding: '32px 20px', marginTop: '20px', borderTopLeftRadius: '24px', borderTopRightRadius: '24px', textAlign: 'center', fontSize: '12px' }}>
-          <p style={{ margin: '0 0 16px 0', fontSize: '14px', fontWeight: 'bold', color: 'white' }}>Listo Patrón SRL</p>
-          <p style={{ margin: '0 0 8px 0', lineHeight: '1.4' }}>Barrio La Terrazita, Peatón 3 No. 18, Edificio de Arte<br/>Detrás Urb. La Terraza, Santiago de los Caballeros, Rep. Dom.</p>
-          <div style={{ display: 'flex', justifyContent: 'center', gap: '16px', flexWrap: 'wrap', margin: '20px 0' }}>
-              <span onClick={() => navigate('policies')} style={{ cursor: 'pointer', textDecoration: 'underline' }}>Privacidad</span>
-              <span onClick={() => navigate('policies')} style={{ cursor: 'pointer', textDecoration: 'underline' }}>Devoluciones</span>
-              <span onClick={() => navigate('policies')} style={{ cursor: 'pointer', textDecoration: 'underline' }}>Entregas</span>
-              <span onClick={() => navigate('policies')} style={{ cursor: 'pointer', textDecoration: 'underline' }}>Seguridad</span>
+      <footer style={{ background: '#1A1A2E', color: '#94A3B8', padding: '32px 20px 120px', marginTop: '20px', borderTopLeftRadius: '24px', borderTopRightRadius: '24px', textAlign: 'center', fontSize: '12px' }}>
+        <p style={{ margin: '0 0 16px 0', fontSize: '14px', fontWeight: 'bold', color: 'white' }}>Listo Patrón SRL</p>
+        <p style={{ margin: '0 0 8px 0', lineHeight: '1.4' }}>Barrio La Terrazita, Peatón 3 No. 18, Edificio de Arte<br/>Detrás Urb. La Terraza, Santiago de los Caballeros, Rep. Dom.</p>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '16px', flexWrap: 'wrap', margin: '20px 0' }}>
+            <span onClick={() => navigate('policies')} style={{ cursor: 'pointer', textDecoration: 'underline' }}>Privacidad</span>
+            <span onClick={() => navigate('policies')} style={{ cursor: 'pointer', textDecoration: 'underline' }}>Devoluciones</span>
+            <span onClick={() => navigate('policies')} style={{ cursor: 'pointer', textDecoration: 'underline' }}>Entregas</span>
+            <span onClick={() => navigate('policies')} style={{ cursor: 'pointer', textDecoration: 'underline' }}>Seguridad</span>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px', flexWrap: 'wrap', marginTop: '20px' }}>
+          {/* Network Logos */}
+          <div className="security-badge" style={{ background: 'white', border: '1px solid #CBD5E1', padding: '6px 10px', borderRadius: '8px', fontWeight: '900', color: '#1A1F71', fontStyle: 'italic', fontSize: '15px' }}>VISA</div>
+          <div className="security-badge" style={{ background: 'white', border: '1px solid #CBD5E1', padding: '8px 12px', borderRadius: '8px', display: 'flex', alignItems: 'center' }}>
+             <div style={{ width: '16px', height: '16px', borderRadius: '50%', background: '#EB001B', marginRight: '-6px', mixBlendMode: 'multiply' }}></div>
+             <div style={{ width: '16px', height: '16px', borderRadius: '50%', background: '#F79E1B', mixBlendMode: 'multiply' }}></div>
           </div>
-          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px', flexWrap: 'wrap', marginTop: '20px' }}>
-            {/* Network Logos */}
-            <div className="security-badge" style={{ background: 'white', border: '1px solid #CBD5E1', padding: '6px 10px', borderRadius: '8px', fontWeight: '900', color: '#1A1F71', fontStyle: 'italic', fontSize: '15px' }}>VISA</div>
-            <div className="security-badge" style={{ background: 'white', border: '1px solid #CBD5E1', padding: '8px 12px', borderRadius: '8px', display: 'flex', alignItems: 'center' }}>
-               <div style={{ width: '16px', height: '16px', borderRadius: '50%', background: '#EB001B', marginRight: '-6px', mixBlendMode: 'multiply' }}></div>
-               <div style={{ width: '16px', height: '16px', borderRadius: '50%', background: '#F79E1B', mixBlendMode: 'multiply' }}></div>
-            </div>
-            
-            {/* 3D Secure Logos */}
-            <div className="security-badge" style={{ background: 'white', border: '1px solid #CBD5E1', padding: '6px 10px', borderRadius: '8px', display: 'flex', alignItems: 'center' }}>
-              <svg viewBox="0 0 190 50" style={{ height: '22px' }}>
-                <text x="0" y="38" fontFamily="sans-serif" fontSize="40" fontWeight="900" fontStyle="italic" fill="#1A1F71" letterSpacing="-2">VISA</text>
-                <text x="115" y="38" fontFamily="sans-serif" fontSize="20" fontWeight="600" fill="#1A1F71">Secure</text>
-              </svg>
-            </div>
-            <div className="security-badge" style={{ background: 'white', border: '1px solid #CBD5E1', padding: '6px 10px', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <svg viewBox="0 0 100 60" style={{ height: '24px' }}>
-                <circle cx="35" cy="30" r="25" fill="#EB001B" />
-                <circle cx="65" cy="30" r="25" fill="#F79E1B" opacity="0.8" />
-              </svg>
-              <span style={{ color: '#1A1A2E', fontSize: '11px', fontWeight: '900', fontFamily: 'sans-serif' }}>ID Check&trade;</span>
-            </div>
+          
+          {/* AZUL secure payment badge */}
+          <div className="security-badge" style={{ background: 'white', border: '1px solid #CBD5E1', padding: '6px 10px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <span style={{ color: '#002E6D', fontFamily: 'sans-serif', fontSize: '14px', fontWeight: '900', fontStyle: 'italic', letterSpacing: '1px', lineHeight: '1' }}>AZUL</span>
           </div>
-          <p style={{ margin: '24px 0 0 0' }}>© {new Date().getFullYear()} Listo Patrón. Todos los derechos reservados.</p>
-        </footer>
-      )}
+
+          {/* 3D Secure Logos */}
+          <div className="security-badge" style={{ background: 'white', border: '1px solid #CBD5E1', padding: '6px 10px', borderRadius: '8px', display: 'flex', alignItems: 'center' }}>
+            <svg viewBox="0 0 190 50" style={{ height: '22px' }}>
+              <text x="0" y="38" fontFamily="sans-serif" fontSize="40" fontWeight="900" fontStyle="italic" fill="#1A1F71" letterSpacing="-2">VISA</text>
+              <text x="115" y="38" fontFamily="sans-serif" fontSize="20" fontWeight="600" fill="#1A1F71">Secure</text>
+            </svg>
+          </div>
+          <div className="security-badge" style={{ background: 'white', border: '1px solid #CBD5E1', padding: '6px 10px', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <svg viewBox="0 0 100 60" style={{ height: '24px' }}>
+              <circle cx="35" cy="30" r="25" fill="#EB001B" />
+              <circle cx="65" cy="30" r="25" fill="#F79E1B" opacity="0.8" />
+            </svg>
+            <span style={{ color: '#1A1A2E', fontSize: '11px', fontWeight: '900', fontFamily: 'sans-serif' }}>ID Check&trade;</span>
+          </div>
+        </div>
+        <p style={{ margin: '24px 0 0 0' }}>© {new Date().getFullYear()} Listo Patrón. Todos los derechos reservados.</p>
+      </footer>
 
       <div style={{ height: 90 }} />
 

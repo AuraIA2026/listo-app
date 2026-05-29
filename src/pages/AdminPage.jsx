@@ -1,5 +1,5 @@
-import React, { useState, useEffect, Component } from "react";
-import { collection, query, where, onSnapshot, doc, updateDoc, orderBy, addDoc, deleteDoc } from 'firebase/firestore';
+import React, { useState, useEffect, Component, useRef } from "react";
+import { collection, query, where, onSnapshot, doc, updateDoc, orderBy, addDoc, deleteDoc, writeBatch } from 'firebase/firestore';
 import { db } from '../firebase';
 
 class ErrorBoundary extends Component {
@@ -503,6 +503,7 @@ export default function AdminPage({ navigate }) {
   const [verifications, setVerifications] = useState([]); // Nuevos postulantes
   const [reports, setReports]   = useState([]); // Quejas y Reportes de Usuarios
   const [editRequests, setEditRequests] = useState([]); // Solicitudes de Edición
+  const [alerts, setAlerts]     = useState([]); // Alertas de plan
   const [toast, setToast]       = useState('');
   const [confirm, setConfirm]   = useState(null); // { type, obj }
   const [viewDocs, setViewDocs] = useState(null); // Usuario a inspeccionar documentos
@@ -565,8 +566,45 @@ export default function AdminPage({ navigate }) {
       setEditRequests(arr);
     });
 
-    return () => { unsubPay(); unsubUsers(); unsubVerif(); unsubReps(); unsubEdits(); };
+    // 6. Escuchar Alertas/Notificaciones de Admin
+    const unsubAlerts = onSnapshot(query(collection(db, 'notificaciones'), where('userId', '==', 'admin')), (snap) => {
+      const arr = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      arr.sort((a, b) => {
+        const dateA = a.createdAt?.seconds ? a.createdAt.seconds * 1000 : new Date(a.date || a.createdAt || 0).getTime();
+        const dateB = b.createdAt?.seconds ? b.createdAt.seconds * 1000 : new Date(b.date || b.createdAt || 0).getTime();
+        return dateB - dateA;
+      });
+      setAlerts(arr);
+    });
+
+    return () => { unsubPay(); unsubUsers(); unsubVerif(); unsubReps(); unsubEdits(); unsubAlerts(); };
   }, []);
+
+  const prevUnreadCount = useRef(0);
+  const isFirstLoad = useRef(true);
+
+  useEffect(() => {
+    const unreadAlerts = alerts.filter(a => !a.read);
+    const unreadCount = unreadAlerts.length;
+
+    if (isFirstLoad.current) {
+      prevUnreadCount.current = unreadCount;
+      isFirstLoad.current = false;
+      return;
+    }
+
+    if (unreadCount > prevUnreadCount.current) {
+      try {
+        const audio = new Audio('/audio/notification.mp3');
+        audio.volume = 0.8;
+        audio.play().catch(() => {});
+      } catch (e) {
+        console.error("Error playing audio:", e);
+      }
+      showToast('🔔 Nueva alerta de plan recibida');
+    }
+    prevUnreadCount.current = unreadCount;
+  }, [alerts]);
 
   const showToast = (msg) => {
     setToast(msg);
@@ -787,6 +825,26 @@ export default function AdminPage({ navigate }) {
          showToast(`💀 Cuenta de ${obj.name || 'usuario'} eliminada permanentemente.`);
          setViewProStats(null);
       }
+
+      if (type === 'mark_read') {
+         await updateDoc(doc(db, 'notificaciones', obj.id), { read: true });
+         showToast('✅ Alerta marcada como leída');
+      }
+
+      if (type === 'delete_alert') {
+         await deleteDoc(doc(db, 'notificaciones', obj.id));
+         showToast('🗑️ Alerta eliminada');
+      }
+
+      if (type === 'mark_all_read') {
+         const batch = writeBatch(db);
+         const unreads = alerts.filter(a => !a.read);
+         unreads.forEach(item => {
+            batch.update(doc(db, 'notificaciones', item.id), { read: true });
+         });
+         await batch.commit();
+         showToast('✅ Todas las alertas marcadas como leídas');
+      }
     } catch(err) {
       console.error(err);
       showToast('❌ Ocurrió un error en la base de datos');
@@ -846,8 +904,8 @@ export default function AdminPage({ navigate }) {
           <div className="topbar-left">
             <button className="admin-back" onClick={() => navigate && navigate('profile')}>‹</button>
             <span className="admin-title">🛡️ Admin</span>
-            {(pendienteCount + bloqueadoCount) > 0 && (
-              <span className="admin-badge">{pendienteCount + bloqueadoCount} alertas</span>
+            {(pendienteCount + bloqueadoCount + alerts.filter(a => !a.read).length) > 0 && (
+              <span className="admin-badge">{pendienteCount + bloqueadoCount + alerts.filter(a => !a.read).length} alertas</span>
             )}
           </div>
           <div className="topbar-right">
@@ -883,6 +941,7 @@ export default function AdminPage({ navigate }) {
         <div className="admin-tabs" style={{overflowX:'auto', paddingBottom:4}}>
           {[
             { id:'postulaciones', icon:'🛡️', label:'Nuevos', count:verifications.length },
+            { id:'alertas',      icon:'🔔', label:'Alertas', count: alerts.filter(a => !a.read).length },
             { id:'pagos',      icon:'💳', label:'Historial',  count:completedPayments.length },
             { id:'comisiones', icon:'⏳', label:'Validar', count:pendienteCount },
             { id:'bloqueados', icon:'👥', label:'Directorio', count:users.length },
@@ -1069,6 +1128,72 @@ export default function AdminPage({ navigate }) {
                       onClick={() => setConfirm({type:'reject_payment', obj:c})}>
                       🔴 Rechazar
                     </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* ── TAB: ALERTAS DE PLANES (Admin notifications) ── */}
+        {tab === 'alertas' && (
+          <div className="admin-section" style={{marginTop:16}}>
+            <div className="section-header">
+              <span className="section-title">Alertas de Planes ({alerts.filter(a => !a.read).length} sin leer)</span>
+              {alerts.filter(a => !a.read).length > 0 && (
+                <button className="section-action" onClick={() => setConfirm({type:'mark_all_read', obj:null})}>
+                  Marcar todas leídas ✓
+                </button>
+              )}
+            </div>
+            {alerts.length === 0 && (
+              <div className="empty-admin">
+                <span>🔔</span>
+                <p>Sin alertas</p>
+                <small>No se han registrado eventos o solicitudes de planes.</small>
+              </div>
+            )}
+            {alerts.map((a, i) => {
+              const isUnread = !a.read;
+              const emoji = a.type === 'admin_plan_purchased' || a.type === 'system' ? '👑' : '🔄';
+              return (
+                <div 
+                  className="payment-card" 
+                  key={a.id} 
+                  style={{
+                    animationDelay: `${i * 0.05}s`, 
+                    borderLeft: isUnread ? '4px solid var(--brand)' : '1px solid var(--border)',
+                    background: isUnread ? 'rgba(242, 96, 0, 0.03)' : 'var(--surface)',
+                    marginBottom: 10
+                  }}
+                >
+                  <div className="pc-top" style={{alignItems: 'center'}}>
+                    <div className="pc-avatar" style={{background: isUnread ? 'var(--brand)' : 'var(--muted)', fontSize: 20}}>
+                      {emoji}
+                    </div>
+                    <div className="pc-info" style={{marginLeft: 10}}>
+                      <div className="pc-name" style={{fontWeight: isUnread ? 800 : 600, fontSize: 15}}>{a.title || 'Alerta de Plan'}</div>
+                      <div className="pc-detail" style={{color: 'var(--text)', fontSize: 13.5, marginTop: 4, lineHeight: 1.4}}>{a.text}</div>
+                      <div style={{fontSize: 11, color: 'var(--muted)', marginTop: 6}}>{fmtDate(a.createdAt || a.date)}</div>
+                    </div>
+                    <div className="pc-right" style={{display: 'flex', gap: 6, flexDirection: 'column'}}>
+                      {isUnread && (
+                        <button 
+                          className="cc-btn paid" 
+                          style={{padding: '6px 10px', fontSize: 11, background: 'var(--green-dim)', color: 'var(--green)', border: '1px solid rgba(16,185,129,0.25)'}}
+                          onClick={() => setConfirm({type: 'mark_read', obj: a})}
+                        >
+                          Leído
+                        </button>
+                      )}
+                      <button 
+                        className="cc-btn block" 
+                        style={{padding: '6px 10px', fontSize: 11}}
+                        onClick={() => setConfirm({type: 'delete_alert', obj: a})}
+                      >
+                        Eliminar
+                      </button>
+                    </div>
                   </div>
                 </div>
               );
@@ -1665,7 +1790,7 @@ export default function AdminPage({ navigate }) {
           <div className="confirm-overlay" onClick={() => {setConfirm(null); setBlockReason('');}}>
             <div className="confirm-modal" onClick={e => e.stopPropagation()}>
               <span className="cm-icon">
-                {confirm.type==='block' ? '🔴' : confirm.type==='delete_account' ? '💀' : confirm.type==='sub_contract' ? '➖' : confirm.type==='add_contract' ? '➕' : confirm.type==='unblock' ? '✅' : '💚'}
+                {confirm.type==='block' ? '🔴' : confirm.type==='delete_account' ? '💀' : confirm.type==='sub_contract' ? '➖' : confirm.type==='add_contract' ? '➕' : confirm.type==='unblock' ? '✅' : confirm.type==='delete_alert' ? '🗑️' : '💚'}
               </span>
                <h3 className="cm-title">
                 {confirm.type==='block'   ? '¿Suspender perfil?' :
@@ -1682,6 +1807,9 @@ export default function AdminPage({ navigate }) {
                  confirm.type==='resolve_report' ? '¿Marcar como resuelta?' :
                  confirm.type==='approve_edit' ? '¿Aprobar cambios?' :
                  confirm.type==='reject_edit' ? '¿Rechazar solicitud de edición?' :
+                 confirm.type==='mark_read' ? '¿Marcar alerta como leída?' :
+                 confirm.type==='delete_alert' ? '¿Eliminar alerta?' :
+                 confirm.type==='mark_all_read' ? '¿Marcar todas las alertas como leídas?' :
                  '¿Aprobar transferencia?'}
               </h3>
               <p className="cm-sub">
@@ -1713,6 +1841,12 @@ export default function AdminPage({ navigate }) {
                   ? `Los nuevos datos o foto sobrescribirán el perfil de ${confirm.obj.userName}.`
                   : confirm.type==='reject_edit'
                   ? `La solicitud será descartada y se enviará una notificación In-App al usuario.`
+                  : confirm.type==='mark_read'
+                  ? `Se marcará esta alerta como leída para limpiar tu bandeja.`
+                  : confirm.type==='delete_alert'
+                  ? `Esta alerta será borrada definitivamente del historial.`
+                  : confirm.type==='mark_all_read'
+                  ? `Todas las alertas no leídas actualmente se marcarán como leídas de una sola vez.`
                   : `Se marcará el pago como verificado y se agregará el plan a la cuenta de ${confirm.obj.proName}.`}
               </p>
 
@@ -1730,7 +1864,7 @@ export default function AdminPage({ navigate }) {
               )}
 
               <button
-                className={`cm-btn ${confirm.type==='block'||confirm.type==='delete_account'||confirm.type==='sub_contract'||confirm.type==='reject_payment'||confirm.type==='reject_verif'?'danger':'success'}`}
+                className={`cm-btn ${confirm.type==='block'||confirm.type==='delete_account'||confirm.type==='sub_contract'||confirm.type==='reject_payment'||confirm.type==='reject_verif'||confirm.type==='delete_alert'?'danger':'success'}`}
                 disabled={confirm.type === 'block' && !blockReason.trim()}
                 onClick={ejecutarConfirm}>
                 {confirm.type==='block'   ? '🔴 Sí, suspender'    :
@@ -1747,6 +1881,9 @@ export default function AdminPage({ navigate }) {
                  confirm.type==='resolve_report' ? '✔️ Confirmar Resolución' :
                  confirm.type==='approve_edit' ? '✅ Aplicar Cambios' :
                  confirm.type==='reject_edit' ? '❌ Rechazar Cambios' :
+                 confirm.type==='mark_read' ? '✅ Marcar Leída' :
+                 confirm.type==='delete_alert' ? '🗑️ Eliminar' :
+                 confirm.type==='mark_all_read' ? '✅ Marcar todas' :
                  '💚 Confirmar validación'}
               </button>
               <button className="cm-btn ghost" onClick={() => {setConfirm(null); setBlockReason('');}}>Cancelar</button>
