@@ -1155,7 +1155,11 @@ export default function AdminPage({ navigate }) {
             )}
             {alerts.map((a, i) => {
               const isUnread = !a.read;
-              const emoji = a.type === 'admin_plan_purchased' || a.type === 'system' ? '👑' : '🔄';
+              let emoji = '🔄';
+              if (a.type === 'admin_plan_purchased' || a.type === 'system') emoji = '👑';
+              else if (a.type === 'new_verification_request') emoji = '🛡️';
+              else if (a.type === 'new_edit_request') emoji = '✏️';
+              else if (a.type === 'new_edit_request_photo') emoji = '🖼️';
               return (
                 <div 
                   className="payment-card" 

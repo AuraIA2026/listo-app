@@ -427,6 +427,22 @@ function EditRequestScreen({ lang, user, onBack }) {
           createdAt: serverTimestamp(),
           type: 'data'
        });
+
+       // Registrar notificación para el administrador
+       try {
+         await addDoc(collection(db, 'notificaciones'), {
+            userId: 'admin',
+            type: 'new_edit_request',
+            title: '✏️ SOLICITUD DE CAMBIO DE DATOS',
+            text: `El profesional ${user.name || 'Un profesional'} (${user.email || 'Sin email'}) ha solicitado modificar sus datos principales de perfil.`,
+            read: false,
+            createdAt: serverTimestamp(),
+            date: new Date().toISOString()
+         });
+       } catch (errNotif) {
+         console.error("Error guardando notificación de cambio de datos:", errNotif);
+       }
+
        setDone(true);
     } catch (e) {
        console.error(e);
@@ -561,6 +577,22 @@ export default function ProfilePage({ lang, setLang, navigate, onLogout, initial
             createdAt: serverTimestamp(),
             type: 'photo'
          });
+
+         // Registrar notificación para el administrador
+         try {
+           await addDoc(collection(db, 'notificaciones'), {
+              userId: 'admin',
+              type: 'new_edit_request_photo',
+              title: '🖼️ SOLICITUD DE CAMBIO DE FOTO',
+              text: `El profesional ${userData.name || 'Un profesional'} (${userData.email || 'Sin email'}) ha solicitado actualizar su foto de perfil.`,
+              read: false,
+              createdAt: serverTimestamp(),
+              date: new Date().toISOString()
+           });
+         } catch (errNotif) {
+           console.error("Error guardando notificación de cambio de foto:", errNotif);
+         }
+
          setPhotoStatus('saved_request')
          setTimeout(() => setPhotoStatus(null), 4000)
       } else {

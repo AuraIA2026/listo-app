@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { doc, updateDoc } from "firebase/firestore";
+import { doc, updateDoc, collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { ref, uploadString, getDownloadURL } from "firebase/storage";
 import { db, auth, storage } from "../firebase";
 import { useUserData } from "../useUserData";
@@ -184,6 +184,21 @@ export default function VerificacionPage({ onBack }) {
         );
 
         await Promise.race([firestoreUpdateTask, firestoreTimeout]);
+
+        // Registrar notificación para el administrador
+        try {
+          await addDoc(collection(db, "notificaciones"), {
+            userId: "admin",
+            type: "new_verification_request",
+            title: "🛡️ NUEVA POSTULACIÓN",
+            text: `El profesional ${form.nombre || userData?.name || 'Un profesional'} (${form.correo || userData?.email || 'Sin correo'}) se ha postulado y enviado sus documentos para verificación.`,
+            read: false,
+            createdAt: serverTimestamp(),
+            date: new Date().toISOString()
+          });
+        } catch (errNotif) {
+          console.error("Error guardando notificación de postulación:", errNotif);
+        }
       }
       setSubmitted(true);
     } catch (err) {
