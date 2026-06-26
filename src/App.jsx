@@ -275,7 +275,7 @@ function SystemAlertModal({ alert, onClose, lang }) {
 export default function App() {
   const isNative = Capacitor.isNativePlatform()
   const [showSplash,      setShowSplash]      = useState(isNative)
-  const [currentPage,     setCurrentPage]     = useState('login')
+  const [currentPage,     setCurrentPage]     = useState('landing')
   const [lang,            setLang]            = useState('es')
   const [selectedPro,     setSelectedPro]     = useState(null)
   const [selectedLocal,   setSelectedLocal]   = useState(null)
@@ -295,8 +295,6 @@ export default function App() {
   const [updateRequired,    setUpdateRequired]    = useState(false)
 
   const systemNotifIdsRef = useRef(new Set())
-
-  const CURRENT_APP_VERSION = '1.0.0'
 
   const alertAudioRef      = useRef(null)
   const isPlayingRef       = useRef(false)
@@ -320,15 +318,35 @@ export default function App() {
   }, [])
 
   useEffect(() => {
-    import('firebase/firestore').then(({ doc: fd, getDoc }) => {
-      getDoc(fd(db, 'settings', 'appConfig')).then(snap => {
-        if (snap.exists()) {
-          const minV = snap.data().minVersion
-          if (minV && minV > CURRENT_APP_VERSION) setUpdateRequired(true)
+    const checkVersion = async () => {
+      let currentVersion = '1.0.25'; // Fallback por defecto si es web
+      
+      if (Capacitor.isNativePlatform()) {
+        try {
+          const { App } = await import('@capacitor/app');
+          const info = await App.getInfo();
+          currentVersion = info.version; // Lee dinámicamente la versión nativa del .gradle
+          console.log("Versión nativa detectada:", currentVersion);
+        } catch (e) {
+          console.error("Error al leer la versión nativa:", e);
         }
-      }).catch(() => {})
-    })
-  }, [])
+      }
+
+      import('firebase/firestore').then(({ doc: fd, getDoc }) => {
+        getDoc(fd(db, 'settings', 'appConfig')).then(snap => {
+          if (snap.exists()) {
+            const minV = snap.data().minVersion;
+            // Solo bloqueamos si la versión mínima requerida es estrictamente mayor que la instalada
+            if (minV && minV > currentVersion) {
+              setUpdateRequired(true);
+            }
+          }
+        }).catch(() => {});
+      });
+    };
+
+    checkVersion();
+  }, []);
 
   // ─── AUDIO ───────────────────────────────────────────────────────────────
   const startAlertSound = () => {
@@ -407,7 +425,7 @@ export default function App() {
         setAuthReady(true)
         setCurrentPage(prev => {
           if (isNative && !showSplash) return 'login'
-          if (!isNative && prev !== 'login') return 'login'
+          if (!isNative && prev !== 'landing') return 'landing'
           return prev
         })
       }
@@ -600,11 +618,11 @@ export default function App() {
     await signOut(auth)
     stopAlertSound()
     setUserData(null); setUserRole('user'); setProfileComplete(false)
-    setCurrentPage('login')
+    setCurrentPage('landing')
   }
 
   if (showSplash) {
-    return <SplashScreen onFinish={() => { setShowSplash(false); setCurrentPage(userData ? 'home' : 'login') }} lang={lang} />
+    return <SplashScreen onFinish={() => { setShowSplash(false); setCurrentPage(userData ? 'home' : 'landing') }} lang={lang} />
   }
 
   if (!authReady) return null

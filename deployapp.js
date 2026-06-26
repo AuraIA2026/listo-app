@@ -1,7 +1,7 @@
 import { execSync } from 'child_process';
 
 try {
-  const opts = { cwd: 'E:\\Listo', stdio: 'inherit' };
+  const opts = { cwd: '.', stdio: 'inherit' };
   console.log('Pushing to GitHub...');
   execSync('git add .', opts);
   execSync('git commit -m "UI Updates y mejoras (Search Page y Home Page)"', opts);

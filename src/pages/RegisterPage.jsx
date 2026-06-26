@@ -321,6 +321,116 @@ export default function RegisterPage({ lang, navigate }) {
             {T.hasAccount}{' '}
             <span onClick={() => navigate('login')}>{T.login}</span>
           </p>
+
+          {/* ── FOOTER DE MÉTODOS DE PAGO SEGUROS ── */}
+          <div className="auth-payment-footer" style={{
+            marginTop: '32px',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '12px',
+            width: '100%',
+            borderTop: '1px solid #E2E8F0',
+            paddingTop: '20px'
+          }}>
+            <p style={{
+              margin: 0,
+              fontSize: '11px',
+              color: '#64748B',
+              fontWeight: '800',
+              textTransform: 'uppercase',
+              letterSpacing: '1px'
+            }}>
+              {lang === 'es' ? 'Pagos 100% Seguros' : '100% Secure Payments'}
+            </p>
+            <div style={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              gap: '8px',
+              flexWrap: 'wrap'
+            }}>
+              {/* Visa Logo */}
+              <div style={{
+                background: 'white',
+                border: '1px solid #CBD5E1',
+                padding: '4px 8px',
+                borderRadius: '6px',
+                fontWeight: '900',
+                color: '#1A1F71',
+                fontStyle: 'italic',
+                fontSize: '13px',
+                boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+                userSelect: 'none'
+              }}>VISA</div>
+
+              {/* Mastercard Circles */}
+              <div style={{
+                background: 'white',
+                border: '1px solid #CBD5E1',
+                padding: '5px 8px',
+                borderRadius: '6px',
+                display: 'flex',
+                alignItems: 'center',
+                boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+                userSelect: 'none'
+              }}>
+                 <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#EB001B', marginRight: '-4px', mixBlendMode: 'multiply' }}></div>
+                 <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#F79E1B', mixBlendMode: 'multiply' }}></div>
+              </div>
+
+              {/* AZUL secure payment badge */}
+              <div style={{
+                background: 'white',
+                border: '1px solid #CBD5E1',
+                padding: '4px 8px',
+                borderRadius: '6px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+                userSelect: 'none'
+              }}>
+                <span style={{ color: '#002E6D', fontFamily: 'sans-serif', fontSize: '12px', fontWeight: '900', fontStyle: 'italic', letterSpacing: '0.5px', lineHeight: '1' }}>AZUL</span>
+              </div>
+
+              {/* 3D Secure Visa */}
+              <div style={{
+                background: 'white',
+                border: '1px solid #CBD5E1',
+                padding: '4px 8px',
+                borderRadius: '6px',
+                display: 'flex',
+                alignItems: 'center',
+                boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+                userSelect: 'none'
+              }}>
+                <svg viewBox="0 0 190 50" style={{ height: '16px' }}>
+                  <text x="0" y="38" fontFamily="sans-serif" fontSize="40" fontWeight="900" fontStyle="italic" fill="#1A1F71" letterSpacing="-2">VISA</text>
+                  <text x="115" y="38" fontFamily="sans-serif" fontSize="20" fontWeight="600" fill="#1A1F71">Secure</text>
+                </svg>
+              </div>
+
+              {/* ID Check Mastercard */}
+              <div style={{
+                background: 'white',
+                border: '1px solid #CBD5E1',
+                padding: '4px 8px',
+                borderRadius: '6px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+                boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+                userSelect: 'none'
+              }}>
+                <svg viewBox="0 0 100 60" style={{ height: '16px' }}>
+                  <circle cx="35" cy="30" r="25" fill="#EB001B" />
+                  <circle cx="65" cy="30" r="25" fill="#F79E1B" opacity="0.8" />
+                </svg>
+                <span style={{ color: '#1A1A2E', fontSize: '9px', fontWeight: '900', fontFamily: 'sans-serif' }}>ID Check</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

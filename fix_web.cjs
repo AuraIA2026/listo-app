@@ -1,8 +1,8 @@
 const fs = require('fs');
 const path = require('path');
 
-const srcAssets = 'C:/Users/13900K/Documents/GitHub/listopatron/src/assets';
-const publicAssets = 'C:/Users/13900K/Documents/GitHub/listopatron/public/assets';
+const srcAssets = path.join(__dirname, 'src', 'assets');
+const publicAssets = path.join(__dirname, 'public', 'assets');
 
 // Copy all files
 const files = fs.readdirSync(srcAssets);
@@ -15,7 +15,7 @@ for (const file of files) {
 }
 
 // Replace in HomePage.jsx
-const homePageFile = 'C:/Users/13900K/Documents/GitHub/listopatron/src/pages/HomePage.jsx';
+const homePageFile = path.join(__dirname, 'src', 'pages', 'HomePage.jsx');
 let content = fs.readFileSync(homePageFile, 'utf8');
 content = content.replace(/\.\.\/src\/assets\//g, './assets/');
 fs.writeFileSync(homePageFile, content);
