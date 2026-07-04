@@ -320,11 +320,11 @@ function CallModal({ name, phone, lang, onClose }) {
   return (
     <>
       <style>{`@keyframes callModalIn{from{transform:translateX(-50%) translateY(30px);opacity:0}to{transform:translateX(-50%) translateY(0);opacity:1}}`}</style>
-      <div onClick={onClose} style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.1)', zIndex:5000 }} />
+      <div onClick={onClose} style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.1)', zIndex:1000000 }} />
       <div style={{
         position:'fixed', bottom:40, left:'50%', transform:'translateX(-50%)',
         width:'calc(100% - 48px)', maxWidth:360, background:'#fff', borderRadius:24,
-        padding:'28px 24px 20px', zIndex:5001, boxShadow:'0 20px 60px rgba(0,0,0,0.2)',
+        padding:'28px 24px 20px', zIndex:1000001, boxShadow:'0 20px 60px rgba(0,0,0,0.2)',
         animation:'callModalIn .3s cubic-bezier(.32,1.2,.5,1)', textAlign:'center',
       }}>
         <div style={{ width:64, height:64, borderRadius:'50%', background:'#F26000', display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontWeight:800, fontSize:24, margin:'0 auto 12px', boxShadow:'0 4px 16px rgba(242,96,0,0.3)' }}>
@@ -474,8 +474,8 @@ function FloatingChat({ otherUid, otherName, otherColor = '#F26000', otherPhone 
         @keyframes chatSlideUp { from{transform:translateY(100%);opacity:0} to{transform:translateY(0);opacity:1} }
         @keyframes typingDot { 0%,80%,100%{transform:translateY(0)} 40%{transform:translateY(-5px)} }
       `}</style>
-      <div onClick={onClose} style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.1)', zIndex:4000 }} />
-      <div style={{ position:'fixed', bottom:0, left:'50%', transform:'translateX(-50%)', width:'100%', maxWidth:480, height:'50vh', background:'#fff', borderRadius:'24px 24px 0 0', boxShadow:'0 -8px 40px rgba(0,0,0,0.25)', zIndex:4001, display:'flex', flexDirection:'column', animation:'chatSlideUp .35s cubic-bezier(.32,1.2,.5,1)' }}>
+      <div onClick={onClose} style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.1)', zIndex:1000000 }} />
+      <div style={{ position:'fixed', bottom:0, left:'50%', transform:'translateX(-50%)', width:'100%', maxWidth:480, height:'50vh', background:'#fff', borderRadius:'24px 24px 0 0', boxShadow:'0 -8px 40px rgba(0,0,0,0.25)', zIndex:1000001, display:'flex', flexDirection:'column', animation:'chatSlideUp .35s cubic-bezier(.32,1.2,.5,1)' }}>
         <div style={{ width:40, height:4, background:'#ddd', borderRadius:2, margin:'12px auto 0', flexShrink:0 }} />
         {/* Header */}
         <div style={{ display:'flex', alignItems:'center', gap:12, padding:'12px 16px', borderBottom:'1px solid #f0f0f0', flexShrink:0 }}>
@@ -546,7 +546,7 @@ function FloatingChat({ otherUid, otherName, otherColor = '#F26000', otherPhone 
 ───────────────────────────────────────────── */
 function NotificacionesModal({ onClose, notifs, lang, onMarkAllRead, navigate, orders, onOpenOrder }) {
   return (
-    <div onClick={onClose} style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.5)', zIndex:2000, display:'flex', alignItems:'flex-end', justifyContent:'center' }}>
+    <div onClick={onClose} style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.5)', zIndex:1000000, display:'flex', alignItems:'flex-end', justifyContent:'center' }}>
       <div onClick={e => e.stopPropagation()} style={{ width:'100%', maxWidth:'480px', background:'#fff', borderRadius:'24px 24px 0 0', padding:'16px 20px 40px', animation:'slideUp .3s cubic-bezier(.32,1.2,.5,1)', maxHeight:'75vh', display:'flex', flexDirection:'column' }}>
         <style>{`@keyframes slideUp{from{transform:translateY(100%);opacity:0}to{transform:translateY(0);opacity:1}}`}</style>
         <div style={{ width:40, height:4, background:'#ddd', borderRadius:2, margin:'0 auto 16px', flexShrink:0 }} />
@@ -658,7 +658,7 @@ export function OrderDetailsModal({ order, lang, onClose, onAccept, onDecline })
   const [eta, setEta] = useState(isSameDayOrUrgent ? 15 : 0)
 
   return (
-    <div className="review-overlay" onClick={onClose} style={{ zIndex:3000 }}>
+    <div className="review-overlay" onClick={onClose} style={{ zIndex:1000000 }}>
       <div className="review-modal order-details-modal" onClick={e => e.stopPropagation()}>
         <button className="review-close" onClick={onClose}>✕</button>
         <div style={{ textAlign:'center', marginBottom:20 }}>
@@ -1040,7 +1040,7 @@ export default function OrdersPage({ lang = 'es', navigate, userData, userRole }
 
       {/* ── Modal Listo Patrón (pro) ── */}
       {workDoneOrder && (
-        <div className="review-overlay" onClick={()=>setWorkDoneOrder(null)} style={{ zIndex:3000 }}>
+        <div className="review-overlay" onClick={()=>setWorkDoneOrder(null)} style={{ zIndex:1000000 }}>
           <div className="review-modal" onClick={e=>e.stopPropagation()} style={{ textAlign:'center' }}>
             <button className="review-close" onClick={()=>setWorkDoneOrder(null)}>✕</button>
             <div style={{ fontSize:56, margin:'0 0 12px' }}>🔧</div>
