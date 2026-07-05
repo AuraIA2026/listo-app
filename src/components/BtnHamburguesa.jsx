@@ -218,8 +218,7 @@ function PaymentSection({ plan, onBack, onConfirm }) {
   const [receiptFile, setReceiptFile] = useState(null)
   const receiptInputRef = useRef(null)
 
-  // States para Modal Webview AZUL
-  const [showWebview, setShowWebview] = useState(false)
+  // States para Tarjeta
   const [cardName, setCardName] = useState('')
   const [cardNumber, setCardNumber] = useState('')
   const [cardExp, setCardExp] = useState('')
@@ -244,26 +243,18 @@ function PaymentSection({ plan, onBack, onConfirm }) {
     }
   }
 
-  const handleProcessAzul = () => {
-    if (!cardName || cardNumber.length < 15 || !cardExp || !cardCvv) {
-      alert("Por favor completa los datos de la tarjeta.")
-      return
-    }
-    setIsProcessingAzul(true)
-    setTimeout(() => {
-      setIsProcessingAzul(false)
-      setShowWebview(false)
-      setReceiptUploaded(true)
-    }, 2000)
-  }
-
   const canConfirmTransfer = method === 'transfer' && selectedBank && transferAmount > 0 && depositorName.trim() !== '' && receiptUploaded
-  const canConfirmCard = method === 'card' && receiptUploaded
+  const canConfirmCard = method === 'card' && cardName.trim() !== '' && cardNumber.replace(/\s/g, '').length >= 15 && cardExp.trim().length === 5 && cardCvv.trim().length >= 3
   const canConfirm = canConfirmTransfer || canConfirmCard
   const [isUploading, setIsUploading] = useState(false)
 
   const handleConfirmPay = async () => {
     setIsUploading(true)
+    if (method === 'card') {
+      setIsProcessingAzul(true)
+      await new Promise(resolve => setTimeout(resolve, 2000))
+      setIsProcessingAzul(false)
+    }
     await onConfirm({ method, selectedBank, transferAmount, depositorName, receiptFile })
     setIsUploading(false)
   }
@@ -371,112 +362,91 @@ function PaymentSection({ plan, onBack, onConfirm }) {
 
         {method === 'card' && (
           <div className="pay-section fade-up">
-            <div className="pay-note transfer-note">
-              <p>El cargo se procesará de forma segura a través de AZUL.</p>
+            <div className="pay-note transfer-note" style={{ marginBottom: '16px' }}>
+              <p>Introduce los datos de tu tarjeta para procesar el pago de forma segura.</p>
             </div>
+            
+            <div className="card-manual-box" style={{ background: 'white', borderRadius: '18px', padding: '20px', border: '1.5px solid rgba(0,0,0,0.06)', boxShadow: '0 4px 16px rgba(0,0,0,0.04)', textAlign: 'left' }}>
+              <label style={{ display: 'block', fontFamily: 'var(--font-display)', fontSize: '13.5px', fontWeight: 700, color: 'var(--black)', marginBottom: '8px' }}>Nombre en la Tarjeta</label>
+              <input 
+                type="text" 
+                style={{ width: '100%', padding: '14px 16px', borderRadius: '12px', border: '1.5px solid #eee', background: '#FAFAFA', fontFamily: 'var(--font-body)', fontSize: '15px', color: 'var(--black)', boxSizing: 'border-box', marginBottom: '16px', outline: 'none' }}
+                placeholder="Nombre como aparece en la tarjeta"
+                value={cardName}
+                onChange={e => setCardName(e.target.value)}
+              />
 
-            {!receiptUploaded ? (
-              <button
-                className="upload-receipt-btn"
-                onClick={() => setShowWebview(true)}
-                style={{ background: '#002E6D', color: 'white', border: 'none', marginTop: '16px', boxShadow: '0 4px 12px rgba(0,46,109,0.3)' }}
-              >
-                💳 Introducir Tarjeta (Vía AZUL)
-              </button>
-            ) : (
-              <button className="upload-receipt-btn uploaded" style={{ marginTop: '16px' }} disabled>
-                ✅ Pago Aprobado por AZUL
-              </button>
-            )}
-          </div>
-        )}
-      </div>
+              <label style={{ display: 'block', fontFamily: 'var(--font-display)', fontSize: '13.5px', fontWeight: 700, color: 'var(--black)', marginBottom: '8px' }}>Número de Tarjeta</label>
+              <input 
+                type="tel" 
+                inputMode="numeric"
+                pattern="[0-9]*"
+                style={{ width: '100%', padding: '14px 16px', borderRadius: '12px', border: '1.5px solid #eee', background: '#FAFAFA', fontFamily: 'var(--font-body)', fontSize: '15px', color: 'var(--black)', boxSizing: 'border-box', marginBottom: '16px', outline: 'none' }}
+                placeholder="0000 0000 0000 0000"
+                maxLength={19}
+                value={cardNumber}
+                onChange={e => {
+                  let v = e.target.value.replace(/\s+/g, '').replace(/[^0-9]/gi, '')
+                  let parts = []
+                  for (let i = 0; i < v.length; i += 4) {
+                    parts.push(v.substring(i, i + 4))
+                  }
+                  setCardNumber(parts.join(' '))
+                }}
+              />
 
-      {/* WEBVIEW MODAL DE BANCO SIMULADO (ESTILO AZUL) */}
-      {showWebview && method === 'card' && (
-        <div className="payment-webview-overlay" style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div className="payment-webview-modal" style={{ background: '#fff', width: '100%', height: '100%', display: 'flex', flexDirection: 'column', animation: 'slideUp 0.3s ease' }}>
-            <div className="webview-header" style={{ display: 'flex', alignItems: 'center', padding: '10px 16px', background: '#F8F9FA', borderBottom: '1px solid #ddd' }}>
-              <span style={{ color: '#4CAF50', marginRight: '8px' }}>🔒</span>
-              <div style={{ flex: 1, background: '#E9ECEF', borderRadius: '20px', padding: '6px 16px', fontSize: '12px', color: '#495057', textAlign: 'center' }}>
-                https://pagos.azul.com.do/payment/checkout
-              </div>
-              <button onClick={() => setShowWebview(false)} style={{ background: 'none', border: 'none', fontSize: '24px', marginLeft: '12px', padding: '4px', cursor: 'pointer' }}>×</button>
-            </div>
-
-            <div className="webview-content azul-content" style={{ flex: 1, padding: '24px', overflowY: 'auto' }}>
-              <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-                <h1 style={{ color: '#002E6D', fontSize: '36px', fontWeight: '900', fontStyle: 'italic', margin: 0, letterSpacing: '2px' }}>AZUL</h1>
-              </div>
-
-              <h3 style={{ marginBottom: '6px', fontFamily: 'var(--font-display)', color: '#002E6D' }}>Pago Seguro</h3>
-              <p style={{ marginBottom: '20px', fontSize: '14px', color: '#666' }}>Monto a debitar: <strong>{plan.precio}</strong></p>
-
-              <div className="webview-form azul-form">
-                <div style={{ marginBottom: '16px' }}>
-                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', marginBottom: '8px', color: '#555' }}>Titular de la tarjeta</label>
-                  <input
-                    type="text"
-                    placeholder="Nombre como aparece en la tarjeta"
-                    value={cardName}
-                    onChange={e => setCardName(e.target.value)}
-                    style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ccc', boxSizing: 'border-box', outline: 'none' }}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <div>
+                  <label style={{ display: 'block', fontFamily: 'var(--font-display)', fontSize: '13.5px', fontWeight: 700, color: 'var(--black)', marginBottom: '8px' }}>Fecha de Vencimiento</label>
+                  <input 
+                    type="tel" 
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    style={{ width: '100%', padding: '14px 16px', borderRadius: '12px', border: '1.5px solid #eee', background: '#FAFAFA', fontFamily: 'var(--font-body)', fontSize: '15px', color: 'var(--black)', boxSizing: 'border-box', outline: 'none' }}
+                    placeholder="MM/AA"
+                    maxLength={5}
+                    value={cardExp}
+                    onChange={e => {
+                      let val = e.target.value
+                      let clean = val.replace(/\D/g, '')
+                      
+                      if (clean.length === 1 && clean > '1') {
+                        clean = '0' + clean
+                      }
+                      
+                      if (clean.length >= 2) {
+                        let month = parseInt(clean.substring(0, 2), 10)
+                        if (month < 1) month = 1
+                        if (month > 12) month = 12
+                        let monthStr = month < 10 ? '0' + month : String(month)
+                        clean = monthStr + clean.substring(2)
+                      }
+                      
+                      if (clean.length > 2) {
+                        setCardExp(clean.substring(0, 2) + '/' + clean.substring(2, 4))
+                      } else {
+                        setCardExp(clean)
+                      }
+                    }}
                   />
                 </div>
-
-                <div style={{ marginBottom: '16px' }}>
-                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', marginBottom: '8px', color: '#555' }}>Número de Tarjeta</label>
-                  <input
-                    type="text"
-                    placeholder="0000 0000 0000 0000"
-                    value={cardNumber}
-                    onChange={e => setCardNumber(e.target.value)}
-                    style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ccc', boxSizing: 'border-box', outline: 'none' }}
+                <div>
+                  <label style={{ display: 'block', fontFamily: 'var(--font-display)', fontSize: '13.5px', fontWeight: 700, color: 'var(--black)', marginBottom: '8px' }}>Código CVV</label>
+                  <input 
+                    type="tel" 
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    style={{ width: '100%', padding: '14px 16px', borderRadius: '12px', border: '1.5px solid #eee', background: '#FAFAFA', fontFamily: 'var(--font-body)', fontSize: '15px', color: 'var(--black)', boxSizing: 'border-box', outline: 'none' }}
+                    placeholder="123"
+                    maxLength={4}
+                    value={cardCvv}
+                    onChange={e => setCardCvv(e.target.value.replace(/[^0-9]/g, ''))}
                   />
-                </div>
-
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '24px' }}>
-                  <div>
-                    <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', marginBottom: '8px', color: '#555' }}>Vencimiento</label>
-                    <input
-                      type="text"
-                      placeholder="MM/AA"
-                      value={cardExp}
-                      onChange={e => setCardExp(e.target.value)}
-                      style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ccc', boxSizing: 'border-box', outline: 'none' }}
-                    />
-                  </div>
-                  <div>
-                    <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', marginBottom: '8px', color: '#555' }}>CVC/CVV</label>
-                    <input
-                      type="password"
-                      placeholder="•••"
-                      maxLength={4}
-                      value={cardCvv}
-                      onChange={e => setCardCvv(e.target.value)}
-                      style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ccc', boxSizing: 'border-box', outline: 'none' }}
-                    />
-                  </div>
-                </div>
-
-                <button
-                  className={`azul-submit-btn ${isProcessingAzul ? 'processing' : ''}`}
-                  onClick={handleProcessAzul}
-                  disabled={isProcessingAzul}
-                  style={{ width: '100%', background: '#002E6D', color: 'white', border: 'none', padding: '16px', borderRadius: '8px', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer' }}
-                >
-                  {isProcessingAzul ? <span className="loader-azul"></span> : `Pagar ${plan.precio}`}
-                </button>
-
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginTop: '20px' }}>
-                  <span style={{ fontSize: '12px', color: '#999' }}>Procesado localmente por</span>
-                  <strong style={{ color: '#0055A5', fontSize: '12px' }}>Banco Popular</strong>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
         {/* BOTÓN ENVIAR INLINE (MÁS VISIBLE Y SEGURO CONTRA CORTES) */}
         <div style={{ marginTop: '24px', paddingBottom: '140px' }}>
@@ -486,12 +456,13 @@ function PaymentSection({ plan, onBack, onConfirm }) {
             onClick={handleConfirmPay}
             style={{ width: '100%', padding: '16px', background: canConfirm ? pal.primary : '#E0E0E0', color: canConfirm ? 'white' : '#999', border: 'none', borderRadius: '16px', fontSize: '16px', fontWeight: '900', cursor: canConfirm ? 'pointer' : 'not-allowed', transition: 'all 0.3s', boxShadow: canConfirm ? `0 4px 12px ${pal.primary}66` : 'none' }}
           >
-            {isUploading ? 'Procesando pago...' : canConfirm
+            {isProcessingAzul ? 'Procesando pago seguro...' : (isUploading ? 'Procesando pago...' : canConfirm
               ? `Enviar Solicitud de ${plan.nombre}`
-              : 'Completa los pasos para continuar'}
+              : 'Completa los pasos para continuar')}
           </button>
         </div>
       </div>
+    </div>
   )
 }
 
