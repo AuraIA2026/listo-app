@@ -275,7 +275,7 @@ function SystemAlertModal({ alert, onClose, lang }) {
 export default function App() {
   const isNative = Capacitor.isNativePlatform()
   const [showSplash,      setShowSplash]      = useState(isNative)
-  const [currentPage,     setCurrentPage]     = useState('landing')
+  const [currentPage,     setCurrentPage]     = useState(isNative ? 'login' : 'landing')
   const [lang,            setLang]            = useState('es')
   const [selectedPro,     setSelectedPro]     = useState(null)
   const [selectedLocal,   setSelectedLocal]   = useState(null)
@@ -618,11 +618,11 @@ export default function App() {
     await signOut(auth)
     stopAlertSound()
     setUserData(null); setUserRole('user'); setProfileComplete(false)
-    setCurrentPage('landing')
+    setCurrentPage(isNative ? 'login' : 'landing')
   }
 
   if (showSplash) {
-    return <SplashScreen onFinish={() => { setShowSplash(false); setCurrentPage(userData ? 'home' : 'landing') }} lang={lang} />
+    return <SplashScreen onFinish={() => { setShowSplash(false); setCurrentPage(userData ? 'home' : (isNative ? 'login' : 'landing')) }} lang={lang} />
   }
 
   if (!authReady) return null
