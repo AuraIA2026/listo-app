@@ -162,6 +162,7 @@ img.leaflet-marker-shadow { display: none !important; }
   display: flex; align-items: center; gap: 16px; padding: 16px 20px;
   border-radius: 20px; border: 1.5px solid; background: #FFF !important;
   box-shadow: 0 6px 20px rgba(0,0,0,0.04);
+  flex-shrink: 0;
 }
 .status-icon { font-size: 28px; flex-shrink: 0; }
 .status-label { font-size: 16px; font-weight: 900; letter-spacing: -0.3px; margin: 0; }
@@ -175,6 +176,7 @@ img.leaflet-marker-shadow { display: none !important; }
   display: flex; align-items: center; justify-content: space-between; padding: 16px 20px;
   background: linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 100%);
   border-radius: 20px; border: 1px solid #E2E8F0; box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+  flex-shrink: 0;
 }
 .tracking-pro-left { display: flex; align-items: center; gap: 14px; }
 
@@ -198,7 +200,7 @@ img.leaflet-marker-shadow { display: none !important; }
 .track-action-btn:hover { transform: translateY(-4px); filter: brightness(1.05); }
 
 /* ── TRACKING STEPS ── */
-.tracking-steps { display: flex; align-items: flex-start; justify-content: space-between; padding: 0 10px; margin-top: 4px; }
+.tracking-steps { display: flex; align-items: flex-start; justify-content: space-between; padding: 0 10px; margin-top: 4px; flex-shrink: 0; }
 .track-step { display: flex; flex-direction: column; align-items: center; gap: 8px; flex: 1; position: relative; }
 .track-step-dot {
   width: 16px; height: 16px; border-radius: 50%; background: #E2E8F0; border: 3px solid white;
@@ -244,6 +246,7 @@ img.leaflet-marker-shadow { display: none !important; }
   background: linear-gradient(135deg, #F26000 0%, #FF3D00 100%);
   box-shadow: 0 16px 48px rgba(242,96,0,0.3); position: relative; overflow: hidden;
   animation: popIn 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+  flex-shrink: 0;
 }
 @keyframes popIn { 0% { opacity: 0; transform: scale(0.95); } 100% { opacity: 1; transform: scale(1); } }
 .working-anim-wrap::after {

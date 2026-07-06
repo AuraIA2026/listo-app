@@ -327,6 +327,9 @@ function FloatingChat({ pro, lang, onClose }) {
 
 /* ── Componentes de estado ─────────────────────────────────────────────────── */
 function WorkingAnimation({ lang }) {
+  const marqueeText = lang === 'es' ? 'TRABAJANDO • ' : 'WORKING • '
+  const repeatedMarquee = Array(8).fill(marqueeText).join('')
+
   return (
     <>
       <style>{`
@@ -334,8 +337,36 @@ function WorkingAnimation({ lang }) {
           0% { transform: scale(0.96); opacity: 0.85; text-shadow: 0 0 4px rgba(255,255,255,0.4); }
           100% { transform: scale(1.04); opacity: 1; text-shadow: 0 0 16px rgba(255,255,255,0.8), 0 0 24px rgba(255,255,255,0.4); }
         }
+        @keyframes marqueeScroll {
+          0% { transform: translate3d(0, 0, 0); }
+          100% { transform: translate3d(-50%, 0, 0); }
+        }
+        .working-marquee-track {
+          position: absolute;
+          top: 35%;
+          left: 0;
+          width: 200%;
+          display: flex;
+          overflow: hidden;
+          white-space: nowrap;
+          pointer-events: none;
+          z-index: 1;
+          opacity: 0.12;
+        }
+        .working-marquee-content {
+          display: flex;
+          flex-shrink: 0;
+          font-size: 48px;
+          font-weight: 900;
+          color: #fff;
+          letter-spacing: 4px;
+          animation: marqueeScroll 15s linear infinite;
+        }
       `}</style>
       <div className="working-anim-wrap">
+        <div className="working-marquee-track">
+          <div className="working-marquee-content">{repeatedMarquee}{repeatedMarquee}</div>
+        </div>
         <div className="working-scene professional-scene" style={{ width:'auto', height:'140px' }}>
           <div className="professional-worker-emoji" style={{ fontSize:'90px', animation:'workerFloat 2.5s ease-in-out infinite alternate' }}>👨‍🔧</div>
           <div className="sparks"><span className="spark s1">✦</span><span className="spark s2">★</span><span className="spark s3">✦</span></div>
@@ -353,7 +384,7 @@ function WorkingAnimation({ lang }) {
           alignItems: 'center',
           gap: '8px'
         }}>
-          🔧 {lang === 'es' ? 'Trabajando...' : 'Working...'}
+          🔧 {lang === 'es' ? 'TRABAJANDO' : 'WORKING'}
         </div>
       </div>
     </>
@@ -460,10 +491,11 @@ export default function TrackingPage({ lang = 'es', navigate, professional, user
   const [showArrivingAlert, setShowArrivingAlert] = useState(false)
   const [alertDismissed, setAlertDismissed] = useState(false)
 
-  // Audio llegada
+  // Audio llegada y notificación
   const arrivingAudioRef    = useRef(null)
   const arrivingSoundPlayed = useRef(false)
   const arrivingTimerRef    = useRef(null)
+  const notificationSent    = useRef(false)
 
   const playArrivingSound = () => {
     if (arrivingSoundPlayed.current) return
@@ -505,13 +537,31 @@ export default function TrackingPage({ lang = 'es', navigate, professional, user
     return () => unsub()
   }, [professional?.id])
 
-  // Alerta cuando el profesional está a menos de 50 metros (entre 30 y 50 metros)
+  // Alerta y notificación cuando el profesional está a menos de 30 metros del cliente
   useEffect(() => {
     if (userRole !== 'pro' && workStatus === 'tracking' && status !== 'arrived') {
       const distance = getDistanceInMeters(clientLoc, proPos)
-      if (distance > 0 && distance <= 50) {
+      if (distance > 0 && distance <= 30) {
         if (!alertDismissed) {
           setShowArrivingAlert(true)
+          playArrivingSound()
+          
+          // Guardar notificación en la base de datos (solo una vez)
+          if (!notificationSent.current && professional?.id) {
+            notificationSent.current = true
+            addDoc(collection(db, 'notificaciones'), {
+              userId: auth.currentUser?.uid || 'unknown',
+              orderId: professional.id,
+              type: 'pro_arriving',
+              title: lang === 'es' ? '🚐 ¡Tu profesional está muy cerca!' : '🚐 Your professional is very close!',
+              text: lang === 'es' 
+                ? `${pro.name} está a menos de 30 metros de tu ubicación.` 
+                : `${pro.name} is less than 30 meters away from your location.`,
+              read: false,
+              icon: '🚐',
+              createdAt: serverTimestamp(),
+            }).catch(() => {})
+          }
         }
       } else {
         setShowArrivingAlert(false)
@@ -520,7 +570,7 @@ export default function TrackingPage({ lang = 'es', navigate, professional, user
     } else {
       setShowArrivingAlert(false)
     }
-  }, [clientLoc, proPos, userRole, workStatus, status, alertDismissed])
+  }, [clientLoc, proPos, userRole, workStatus, status, alertDismissed, professional, lang, pro.name])
 
   // GPS Tracking Real para el Profesional (Soporta Segundo Plano en Native)
   useEffect(() => {
@@ -731,7 +781,7 @@ export default function TrackingPage({ lang = 'es', navigate, professional, user
               </p>
             </div>
             <button 
-              onClick={() => setAlertDismissed(true)} 
+              onClick={() => { setAlertDismissed(true); stopArrivingSound(); }} 
               style={{
                 background: 'rgba(255,255,255,0.2)',
                 border: 'none',
