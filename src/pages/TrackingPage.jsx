@@ -26,8 +26,13 @@ const clientIcon = L.divIcon({
 })
 const createVanIcon = (imgSrc) => L.divIcon({
   className: 'leaflet-van-icon',
-  html: `<img src="${imgSrc}" alt="van" style="width:38px;height:38px;object-fit:contain;display:block;background-color:transparent;filter:drop-shadow(0 2px 5px rgba(242,96,0,0.6));" />`,
-  iconSize: [38, 38], iconAnchor: [19, 19], popupAnchor: [0, -19],
+  html: `
+    <div class="van-marker-container">
+      <div class="van-marker-pulse"></div>
+      <img src="${imgSrc}" alt="van" class="van-marker-img" />
+    </div>
+  `,
+  iconSize: [44, 44], iconAnchor: [22, 22], popupAnchor: [0, -22],
 })
 const createWorkerIcon = () => L.divIcon({
   className: 'leaflet-worker-icon',
@@ -645,6 +650,16 @@ export default function TrackingPage({ lang = 'es', navigate, professional, user
           <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
           <Marker position={clientLoc} icon={clientIcon}><Popup>{lang==='es'?'Tu ubicación':'Your location'}</Popup></Marker>
           {vanVisible && <SmoothMarker targetPos={proPos} icon={workStatus==='working'?workerIcon.current:vanIcon.current} visible={vanVisible} isVan={workStatus!=='working'}><Popup>{pro.name}</Popup></SmoothMarker>}
+          {workStatus === 'tracking' && (
+            <Polyline 
+              positions={[proPos, clientLoc]} 
+              color="#F26000" 
+              weight={4} 
+              opacity={0.85} 
+              dashArray="8, 12" 
+              lineCap="round"
+            />
+          )}
         </MapContainer>
         {workStatus==='tracking' && (
           <div className="map-eta-pill" style={{ background:getStatusColor()+'22', borderColor:getStatusColor()+'44' }}>

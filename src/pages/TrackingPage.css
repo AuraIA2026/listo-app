@@ -67,7 +67,7 @@
 }
 
 .tracking-map-wrap { flex: 1; position: relative; min-height: 0; }
-.tracking-map { width: 100%; height: 100%; }
+.tracking-map { width: 100%; height: 100%; filter: grayscale(0.8) contrast(1.1) brightness(0.95); }
 
 .map-marker { display: flex; align-items: center; justify-content: center; border-radius: 50%; position: relative; }
 
@@ -88,6 +88,48 @@
 }
 
 .leaflet-van-icon { background: none !important; background-color: transparent !important; border: none !important; box-shadow: none !important; }
+
+/* Custom Van Marker with Active Pulse Radar */
+.van-marker-container {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.van-marker-pulse {
+  position: absolute;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(242, 96, 0, 0.2);
+  border: 2px solid rgba(242, 96, 0, 0.6);
+  animation: vanPulse 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+  z-index: 1;
+}
+
+.van-marker-img {
+  width: 38px;
+  height: 38px;
+  object-fit: contain;
+  position: relative;
+  z-index: 2;
+  filter: drop-shadow(0 4px 8px rgba(242,96,0,0.5));
+}
+
+@keyframes vanPulse {
+  0% {
+    transform: scale(0.6);
+    opacity: 0.9;
+  }
+  100% {
+    transform: scale(2.0);
+    opacity: 0;
+  }
+}
+
 img.leaflet-marker-shadow { display: none !important; }
 
 .marker-icon { font-size: 20px; line-height: 1; position: relative; z-index: 1; }

@@ -108,6 +108,9 @@ export default function PaymentPage({ lang = 'es', navigate, professional }) {
   const [cardNumber, setCardNumber] = useState('')
   const [cardExp, setCardExp] = useState('')
   const [cardCvv, setCardCvv] = useState('')
+  const [showReceipt, setShowReceipt] = useState(false)
+  const [authCode] = useState(() => Math.floor(10000 + Math.random() * 90000))
+
 
   // -- INTEGRACIÓN REAL AZUL --
   const formRef = useRef(null);
@@ -240,7 +243,11 @@ export default function PaymentPage({ lang = 'es', navigate, professional }) {
       console.error("Error actualizando pago de orden:", e)
     }
     setLoading(false)
-    navigate('workdone', pro)
+    if (method === 'card') {
+      setShowReceipt(true)
+    } else {
+      navigate('workdone', pro)
+    }
   }
 
   // Validaciones
@@ -577,6 +584,56 @@ export default function PaymentPage({ lang = 'es', navigate, professional }) {
 
         <div style={{ height: 40 }} />
       </div>
+
+      {showReceipt && (
+        <div className="receipt-overlay">
+          <div className="receipt-modal">
+            <div className="receipt-logo">LISTO <span>PATRÓN</span></div>
+            <div className="receipt-success-icon">✓</div>
+            <div className="receipt-title">¡Pago Completado!</div>
+            <div className="receipt-subtitle">Su recibo electrónico fue generado.</div>
+            
+            <div className="receipt-amount">RD$ {total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+            
+            <div className="receipt-details-box">
+              <div className="receipt-detail-row">
+                <span className="receipt-detail-label">Concepto:</span>
+                <span className="receipt-detail-value">Servicio de {pro.category}</span>
+              </div>
+              <div className="receipt-detail-row">
+                <span className="receipt-detail-label">Fecha:</span>
+                <span className="receipt-detail-value">
+                  {(() => {
+                    const date = new Date();
+                    const months = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+                    return `${date.getDate()} de ${months[date.getMonth()]} del ${date.getFullYear()}`;
+                  })()}
+                </span>
+              </div>
+              <div className="receipt-detail-row">
+                <span className="receipt-detail-label">Método de pago:</span>
+                <span className="receipt-detail-value">VISA •••• {cardNumber.replace(/\s/g, '').slice(-4) || '••••'}</span>
+              </div>
+              <div className="receipt-detail-row">
+                <span className="receipt-detail-label">Autorización AZUL:</span>
+                <span className="receipt-detail-value" style={{ color: '#00b050' }}>Aprobado #{authCode}</span>
+              </div>
+            </div>
+
+            <p style={{ fontSize: '11px', color: '#F26000', fontWeight: '700', margin: '10px 0' }}>
+              📸 Toma una captura de pantalla de este recibo.
+            </p>
+
+            <div className="receipt-footer-text">
+              Este es un recibo automático generado por Listo Patrón SRL. Gracias por confiar en nosotros. Si tiene algún reclamo sobre su pago, por favor contáctenos a través de la aplicación.
+            </div>
+
+            <button className="receipt-close-btn" onClick={() => { setShowReceipt(false); navigate('workdone', pro); }}>
+              Continuar a Valoración
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
