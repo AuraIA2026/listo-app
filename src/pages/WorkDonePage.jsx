@@ -21,6 +21,10 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
   
   const proName = professional?.name || professional?.nombre || ''
 
+  const [hasMoreUnrated, setHasMoreUnrated] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [fetchTrigger, setFetchTrigger] = useState(0)
+
   const [formData, setFormData] = useState({
     nombreProfesional: proName,
     fechaFinalizacion: '',
@@ -40,18 +44,36 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
   const [isUploading, setIsUploading] = useState(false)
 
   useEffect(() => {
-    if (!finalUserData?.uid) return
+    if (!finalUserData?.uid) {
+      setLoading(false)
+      return
+    }
     const fetchLatestOrder = async () => {
+      setLoading(true)
       try {
         // 1. Si venimos directamente desde el proceso de pago con el ID exacto del pedido:
         if (professional?.orderId) {
           const snap = await getDoc(doc(db, 'orders', professional.orderId))
           if (snap.exists()) {
-            setLatestOrder({ id: snap.id, ...snap.data() })
+            const currentOrder = { id: snap.id, ...snap.data() }
+            setLatestOrder(currentOrder)
             if (!isPro) {
               setFormData(prev => ({ ...prev, nombreProfesional: snap.data().proName || snap.data().pro || proName }))
             }
-            return // Terminamos aquí sin buscar el "último pedido genérico"
+            
+            // Buscar si hay otros pedidos pendientes de calificar
+            let q = query(collection(db, 'orders'), where('clientId', '==', finalUserData.uid))
+            const snapAll = await getDocs(q)
+            const allDocs = []
+            snapAll.forEach(d => {
+              if (d.id !== professional.orderId) {
+                allDocs.push({ id: d.id, ...d.data() })
+              }
+            })
+            const otherUnrated = allDocs.filter(d => d.status === 'done' && !d.rated)
+            setHasMoreUnrated(otherUnrated.length > 0)
+            setLoading(false)
+            return
           }
         }
         
@@ -68,21 +90,35 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
         snap.forEach(d => docs.push({ id: d.id, ...d.data() }))
         docs.sort((a,b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0))
         
-        if (docs.length > 0) {
-          setLatestOrder(docs[0])
-          if (!isPro) {
+        if (isPro) {
+          if (docs.length > 0) {
+            setLatestOrder(docs[0])
+          } else {
+            setLatestOrder(null)
+          }
+          setHasMoreUnrated(false)
+        } else {
+          const unratedOrders = docs.filter(d => d.status === 'done' && !d.rated)
+          if (unratedOrders.length > 0) {
+            setLatestOrder(unratedOrders[0])
+            setHasMoreUnrated(unratedOrders.length > 1)
             setFormData(prev => ({
               ...prev,
-              nombreProfesional: docs[0].proName || docs[0].pro || ''
+              nombreProfesional: unratedOrders[0].proName || unratedOrders[0].pro || ''
             }))
+          } else {
+            setLatestOrder(null)
+            setHasMoreUnrated(false)
           }
         }
       } catch (err) {
         console.error("Error fetching latest order:", err)
+      } finally {
+        setLoading(false)
       }
     }
     fetchLatestOrder()
-  }, [isPro, finalUserData])
+  }, [isPro, finalUserData, fetchTrigger])
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
@@ -109,6 +145,7 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
     setSubmitted(false)
     setFotos([])
     setFormData({ nombreProfesional: proName, fechaFinalizacion:'', calificacion:0, completado:'', puntualidad:'', recomendaria:'', montoAcordado:'', montoFinal:'', formaPago:'', gastosAdicionales:'', experiencia:'' })
+    setFetchTrigger(prev => prev + 1)
   }
 
   const handleSubmit = async (e) => {
@@ -206,6 +243,16 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
     }
   }
 
+  if (loading) {
+    return (
+      <div style={s.page}>
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+          <div style={{ color: '#F26000', fontSize: '18px', fontWeight: 'bold' }}>Cargando...</div>
+        </div>
+      </div>
+    )
+  }
+
   if (submitted) {
     return (
       <div style={s.page}>
@@ -213,8 +260,38 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
           <div style={s.successIcon}>✓</div>
           <h2 style={s.successTitle}>¡Trabajo registrado!</h2>
           <p style={s.successSub}>Tu evaluación fue enviada correctamente.</p>
-          <button style={s.btnPrimary} onClick={resetForm}>
-            Registrar otro
+          {!isPro && hasMoreUnrated ? (
+            <button style={s.btnPrimary} onClick={resetForm}>
+              Registrar otro
+            </button>
+          ) : (
+            <button style={{ ...s.btnPrimary, background: '#1A1A2E' }} onClick={() => navigate('home')}>
+              Ir al inicio
+            </button>
+          )}
+        </div>
+      </div>
+    )
+  }
+
+  if (!isPro && !latestOrder) {
+    return (
+      <div style={s.page}>
+        <div style={s.header}>
+          <div style={s.headerIcon}>
+            <img src={listoLogo} alt="Listo" style={{ width: '88px', height: '88px', objectFit: 'contain', marginLeft: '-12px', marginTop: '-10px' }} />
+          </div>
+          <div>
+            <h1 style={s.headerTitle}>Trabajo Listo</h1>
+            <p style={s.headerSub}>Registra el cierre del servicio</p>
+          </div>
+        </div>
+        <div style={{ ...s.successBox, minHeight: 'calc(100vh - 164px)' }}>
+          <div style={{ ...s.successIcon, background: 'linear-gradient(135deg, #10B981, #059669)', boxShadow: '0 8px 32px rgba(16,185,129,0.35)' }}>✓</div>
+          <h2 style={s.successTitle}>¡Todo al día!</h2>
+          <p style={s.successSub}>No tienes trabajos recientes pendientes por evaluar.</p>
+          <button style={{ ...s.btnPrimary, background: '#1A1A2E' }} onClick={() => navigate('home')}>
+            Volver al inicio
           </button>
         </div>
       </div>
