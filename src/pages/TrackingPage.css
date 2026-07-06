@@ -314,3 +314,111 @@ img.leaflet-marker-shadow { display: none !important; }
 @keyframes dustFade { 0% { opacity: 1; transform: translateX(0) scale(1); } 100% { opacity: 0; transform: translateX(-16px) scale(0.5); } }
 @keyframes bounceIn { 0% { transform: scale(0.5); opacity: 0; } 60% { transform: scale(1.1); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
 @keyframes workerFloat { 0% { transform: translateY(0px) scale(1) rotate(-2deg); } 100% { transform: translateY(-8px) scale(1.05) rotate(2deg); } }
+
+/* ── ARRIVING ALERT (NEON PULSE & FLASH) ── */
+.arriving-alert-box {
+  position: absolute;
+  top: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1001;
+  width: calc(100% - 32px);
+  max-width: 360px;
+  color: #fff;
+  border-radius: 24px;
+  padding: 18px 22px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  background: linear-gradient(135deg, #F26000 0%, #FF3D00 50%, #FF8533 100%);
+  background-size: 200% 200%;
+  animation: fadeDown 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
+             alertPulseBg 3s ease infinite,
+             alertBorderGlow 1.5s ease-in-out infinite alternate;
+}
+
+.arriving-alert-bell {
+  font-size: 32px;
+  animation: alertBellRing 1s ease-in-out infinite alternate;
+  filter: drop-shadow(0 2px 8px rgba(0,0,0,0.2));
+}
+
+.arriving-alert-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: #EF4444;
+  display: inline-block;
+  margin-right: 8px;
+  animation: alertDotFlash 0.8s ease-in-out infinite alternate;
+  box-shadow: 0 0 8px #EF4444;
+}
+
+.arriving-alert-title {
+  margin: 0;
+  font-weight: 900;
+  font-size: 15px;
+  letter-spacing: -0.3px;
+  text-transform: uppercase;
+  animation: alertTextPulse 1.2s ease-in-out infinite alternate;
+}
+
+.arriving-alert-desc {
+  margin: 4px 0 0;
+  font-size: 13px;
+  font-weight: 700;
+  opacity: 0.95;
+}
+
+.arriving-alert-close {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: #fff;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: bold;
+  transition: all 0.2s ease;
+}
+.arriving-alert-close:hover {
+  background: rgba(255, 255, 255, 0.4);
+  transform: scale(1.1);
+}
+
+@keyframes alertPulseBg {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes alertBorderGlow {
+  0% {
+    box-shadow: 0 0 10px rgba(242,96,0,0.6), 0 12px 30px rgba(0,0,0,0.15);
+    border-color: rgba(255,255,255,0.4);
+  }
+  100% {
+    box-shadow: 0 0 25px rgba(242,96,0,0.9), 0 12px 40px rgba(242,96,0,0.4);
+    border-color: rgba(255,255,255,0.9);
+  }
+}
+
+@keyframes alertBellRing {
+  0% { transform: rotate(-15deg) scale(0.95); }
+  100% { transform: rotate(15deg) scale(1.1); }
+}
+
+@keyframes alertDotFlash {
+  0% { background-color: #EF4444; box-shadow: 0 0 2px #EF4444; transform: scale(0.8); }
+  100% { background-color: #FBBF24; box-shadow: 0 0 14px #FBBF24; transform: scale(1.2); }
+}
+
+@keyframes alertTextPulse {
+  0% { opacity: 0.85; transform: scale(0.98); }
+  100% { opacity: 1; transform: scale(1.02); }
+}

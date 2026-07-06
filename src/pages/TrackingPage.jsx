@@ -752,51 +752,20 @@ export default function TrackingPage({ lang = 'es', navigate, professional, user
 
       <div className="tracking-map-wrap">
         {showArrivingAlert && (
-          <div style={{
-            position: 'absolute',
-            top: '80px',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            zIndex: 1001,
-            width: 'calc(100% - 32px)',
-            maxWidth: '360px',
-            background: 'linear-gradient(135deg, #FF8533 0%, #F26000 100%)',
-            color: '#fff',
-            borderRadius: '20px',
-            padding: '16px 20px',
-            boxShadow: '0 12px 30px rgba(242,96,0,0.3)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '14px',
-            border: '1px solid rgba(255,255,255,0.2)',
-            animation: 'fadeDown 0.4s cubic-bezier(0.2, 0.8, 0.2, 1)'
-          }}>
-            <span style={{ fontSize: '28px', animation: 'bounceEta 2s infinite alternate ease-in-out' }}>🔔</span>
+          <div className="arriving-alert-box">
+            <span className="arriving-alert-bell">🔔</span>
             <div style={{ flex: 1 }}>
-              <p style={{ margin: 0, fontWeight: 900, fontSize: '15px', letterSpacing: '-0.3px' }}>
-                {lang === 'es' ? '¡Prepárese!' : 'Prepare yourself!'}
+              <p className="arriving-alert-title">
+                <span className="arriving-alert-dot" />
+                {lang === 'es' ? '¡PROFESIONAL CERCA!' : 'PROFESSIONAL NEARBY!'}
               </p>
-              <p style={{ margin: '2px 0 0', fontSize: '13px', fontWeight: 600, opacity: 0.95 }}>
-                {lang === 'es' ? 'El profesional está llegando.' : 'The professional is arriving.'}
+              <p className="arriving-alert-desc">
+                {lang === 'es' ? 'El profesional está a menos de 30 metros de tu ubicación.' : 'The professional is less than 30 meters away.'}
               </p>
             </div>
             <button 
-              onClick={() => { setAlertDismissed(true); stopArrivingSound(); }} 
-              style={{
-                background: 'rgba(255,255,255,0.2)',
-                border: 'none',
-                color: '#fff',
-                width: '28px',
-                height: '28px',
-                borderRadius: '50%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                cursor: 'pointer',
-                fontSize: '12px',
-                fontWeight: 'bold',
-                transition: 'background 0.2s'
-              }}
+              className="arriving-alert-close"
+              onClick={() => { setAlertDismissed(true); stopArrivingSound(); }}
             >
               ✕
             </button>
