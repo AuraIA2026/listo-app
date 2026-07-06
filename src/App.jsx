@@ -274,9 +274,8 @@ function SystemAlertModal({ alert, onClose, lang }) {
 
 export default function App() {
   const isNative = Capacitor.isNativePlatform()
-  const isMobile = isNative || window.innerWidth <= 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
   const [showSplash,      setShowSplash]      = useState(isNative)
-  const [currentPage,     setCurrentPage]     = useState(isMobile ? 'login' : 'landing')
+  const [currentPage,     setCurrentPage]     = useState('login')
   const [lang,            setLang]            = useState('es')
   const [selectedPro,     setSelectedPro]     = useState(null)
   const [selectedLocal,   setSelectedLocal]   = useState(null)
@@ -425,8 +424,7 @@ export default function App() {
         setUserData(null); setUserRole('user'); setProfileComplete(false)
         setAuthReady(true)
         setCurrentPage(prev => {
-          if (isMobile && !showSplash) return 'login'
-          if (!isMobile && prev !== 'landing') return 'landing'
+          if (!showSplash) return 'login'
           return prev
         })
       }
@@ -619,11 +617,11 @@ export default function App() {
     await signOut(auth)
     stopAlertSound()
     setUserData(null); setUserRole('user'); setProfileComplete(false)
-    setCurrentPage(isMobile ? 'login' : 'landing')
+    setCurrentPage('login')
   }
 
   if (showSplash) {
-    return <SplashScreen onFinish={() => { setShowSplash(false); setCurrentPage(userData ? 'home' : (isMobile ? 'login' : 'landing')) }} lang={lang} />
+    return <SplashScreen onFinish={() => { setShowSplash(false); setCurrentPage(userData ? 'home' : 'login') }} lang={lang} />
   }
 
   if (!authReady) return null
