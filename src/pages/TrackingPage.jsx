@@ -326,14 +326,37 @@ function FloatingChat({ pro, lang, onClose }) {
 }
 
 /* ── Componentes de estado ─────────────────────────────────────────────────── */
-function WorkingAnimation() {
+function WorkingAnimation({ lang }) {
   return (
-    <div className="working-anim-wrap">
-      <div className="working-scene professional-scene" style={{ width:'auto', height:'140px' }}>
-        <div className="professional-worker-emoji" style={{ fontSize:'90px', animation:'workerFloat 2.5s ease-in-out infinite alternate' }}>👨‍🔧</div>
-        <div className="sparks"><span className="spark s1">✦</span><span className="spark s2">★</span><span className="spark s3">✦</span></div>
+    <>
+      <style>{`
+        @keyframes workingPulse {
+          0% { transform: scale(0.96); opacity: 0.85; text-shadow: 0 0 4px rgba(255,255,255,0.4); }
+          100% { transform: scale(1.04); opacity: 1; text-shadow: 0 0 16px rgba(255,255,255,0.8), 0 0 24px rgba(255,255,255,0.4); }
+        }
+      `}</style>
+      <div className="working-anim-wrap">
+        <div className="working-scene professional-scene" style={{ width:'auto', height:'140px' }}>
+          <div className="professional-worker-emoji" style={{ fontSize:'90px', animation:'workerFloat 2.5s ease-in-out infinite alternate' }}>👨‍🔧</div>
+          <div className="sparks"><span className="spark s1">✦</span><span className="spark s2">★</span><span className="spark s3">✦</span></div>
+        </div>
+        <div style={{
+          marginTop: '12px',
+          color: '#fff',
+          fontWeight: 900,
+          fontSize: '22px',
+          letterSpacing: '1.5px',
+          textTransform: 'uppercase',
+          animation: 'workingPulse 1.5s ease-in-out infinite alternate',
+          zIndex: 2,
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px'
+        }}>
+          🔧 {lang === 'es' ? 'Trabajando...' : 'Working...'}
+        </div>
       </div>
-    </div>
+    </>
   )
 }
 function VanRetreatAnimation({ lang }) {
@@ -755,17 +778,19 @@ export default function TrackingPage({ lang = 'es', navigate, professional, user
       </div>
 
       <div className="tracking-card">
-        <div className={`tracking-status-bar ${workStatus==='working'?'status-bar-working':''}`}
-          style={workStatus==='working'?{}:{ background:getStatusColor()+'15', borderColor:getStatusColor()+'30' }}>
-          <span className="status-icon">{getStatusIcon()}</span>
-          <div style={{ flex:1 }}>
-            <p className="status-label" style={{ color:getStatusColor() }}>{getStatusLabel()}</p>
-            <p className="status-desc">{getStatusDesc()}</p>
+        {workStatus !== 'working' && (
+          <div className="tracking-status-bar"
+            style={{ background:getStatusColor()+'15', borderColor:getStatusColor()+'30' }}>
+            <span className="status-icon">{getStatusIcon()}</span>
+            <div style={{ flex:1 }}>
+              <p className="status-label" style={{ color:getStatusColor() }}>{getStatusLabel()}</p>
+              <p className="status-desc">{getStatusDesc()}</p>
+            </div>
+            {workStatus==='tracking' && status!=='arrived' && (
+              <div className="eta-countdown"><span className="eta-number">{eta}</span><span className="eta-unit">min</span></div>
+            )}
           </div>
-          {workStatus==='tracking' && status!=='arrived' && (
-            <div className="eta-countdown"><span className="eta-number">{eta}</span><span className="eta-unit">min</span></div>
-          )}
-        </div>
+        )}
 
         {/* ── Trato: PRO ve botones, CLIENTE solo mensaje ── */}
         {(workStatus==='awaiting_deal' || tratoConfirming) && userRole==='pro' && (
