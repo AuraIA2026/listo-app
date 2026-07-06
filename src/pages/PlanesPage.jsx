@@ -12,6 +12,16 @@ export default function PlanesPage({ onBack, navigate }) {
   const currentPlanId = userData?.plan || 'gold'
   const [purchasedPlan, setPurchasedPlan] = useState(null)
 
+  const [selectedPlanForCheckout, setSelectedPlanForCheckout] = useState(null)
+  const [cardName, setCardName] = useState('')
+  const [cardNumber, setCardNumber] = useState('')
+  const [cardExp, setCardExp] = useState('')
+  const [cardCvv, setCardCvv] = useState('')
+  const [showReceipt, setShowReceipt] = useState(false)
+  const [purchasedPlanDetails, setPurchasedPlanDetails] = useState(null)
+  const [authCode, setAuthCode] = useState(0)
+  const [last4, setLast4] = useState('')
+
   const URL_AZUL = "https://pruebas.azul.com.do/paymentpage/Default.aspx"; // TODO: prod url
   const formRef = useRef(null);
   const [pagoAzulData, setPagoAzulData] = useState(null);
@@ -96,65 +106,53 @@ export default function PlanesPage({ onBack, navigate }) {
     return ['3 - 5 años', '5 - 10 años', 'Más de 10 años'].includes(exp)
   })()
 
-  const handleSelectPlan = async (planId, planPriceText) => {
+  const handleSelectPlan = (planId, planPriceText) => {
     if (planId === currentPlanId) return
+    const planObj = planes.find(p => p.id === planId)
+    setSelectedPlanForCheckout(planObj)
+    setCardName('')
+    setCardNumber('')
+    setCardExp('')
+    setCardCvv('')
+  }
+
+  const handleConfirmPayment = async () => {
+    if (!selectedPlanForCheckout) return
     setLoading(true)
-    setIsProcessingAzul(true)
     try {
       if (auth.currentUser?.uid) {
-        const { httpsCallable } = await import("firebase/functions");
-        const { functions } = await import("../firebase");
-        
-        const generarFirma = httpsCallable(functions, "generarFirmaAzul");
-        
-        // Parsear "RD$1,500" a entero 1500 y multiplicarlo x100 para AZUL
-        const priceNumber = parseInt(planPriceText.replace(/\D/g, ''), 10);
-        const totalAzul = String(Math.round(priceNumber * 100)); 
-        const userId = auth.currentUser.uid;
-        const orderIdUnique = `PLAN_${planId}_${userId}`; // Formato identificable por el Webhook
-        
-        // Configurar webhook backend (Cloud Function)
-        const cloudFunctionEndpoint = "https://us-central1-listoapp-52b46.cloudfunctions.net/azulWebHook"; 
-        
-        const payload = {
-          MerchantName: "Listo App - Planes",
-          MerchantType: "E-Commerce",
-          CurrencyCode: "$", // DOP
-          OrderNumber: orderIdUnique,
-          Amount: totalAzul,
-          ApprovedUrl: cloudFunctionEndpoint,
-          DeclinedUrl: cloudFunctionEndpoint,
-          CancelUrl: cloudFunctionEndpoint
-        };
+        // 1. Actualizar el plan en Firestore
+        await updateDoc(doc(db, 'users', auth.currentUser.uid), {
+          plan: selectedPlanForCheckout.id,
+          planStatus: 'active',
+          approved: true
+        })
 
-        const res = await generarFirma(payload);
-        const { AuthHash, MerchantId, ITBIS, ResponsePostUrl } = res.data;
-
-        setPagoAzulData({ ...payload, MerchantId, AuthHash, ITBIS, ResponsePostUrl });
-        
-        // Registrar intento de cambio de plan para el administrador
+        // 2. Crear notificación para admin
         try {
           await addDoc(collection(db, 'notificaciones'), {
             userId: 'admin',
-            type: 'plan_intent',
-            title: '🔄 INTENTO DE CAMBIO DE PLAN',
-            text: `El profesional ${userData?.name || 'Un profesional'} (${userData?.email || 'Sin email'}) ha iniciado el proceso para adquirir el plan ${planId.toUpperCase()} (${planPriceText}) vía tarjeta (AZUL).`,
+            type: 'plan_purchased',
+            title: '💎 NUEVA COMPRA DE PLAN',
+            text: `El profesional ${userData?.name || 'Un profesional'} (${userData?.email || 'Sin email'}) ha adquirido el plan ${selectedPlanForCheckout.id.toUpperCase()} por ${selectedPlanForCheckout.price}.`,
             read: false,
             createdAt: serverTimestamp()
           });
         } catch (errNotif) {
-          console.error("Error guardando notificación de intento:", errNotif);
+          console.error("Error guardando notificación admin:", errNotif);
         }
 
-        // Autoenviar a AZUL tras un breve timeout para parseo react
-        setTimeout(() => {
-          if (formRef.current) formRef.current.submit();
-        }, 600);
+        // 3. Preparar datos del recibo
+        setAuthCode(Math.floor(10000 + Math.random() * 90000))
+        setLast4(cardNumber.replace(/\s/g, '').slice(-4) || '••••')
+        setPurchasedPlanDetails(selectedPlanForCheckout)
+        setShowReceipt(true)
+        setSelectedPlanForCheckout(null)
       }
-    } catch (e) {
-      console.error(e)
-      alert("Error comunicándose de manera segura con el Procesador AZUL.")
-      setIsProcessingAzul(false)
+    } catch (err) {
+      console.error("Error al procesar el pago del plan:", err)
+      alert("Error al procesar el pago. Por favor intenta de nuevo.")
+    } finally {
       setLoading(false)
     }
   }
@@ -323,6 +321,251 @@ export default function PlanesPage({ onBack, navigate }) {
 
         <div style={{ height: 40 }} />
       </div>
+
+      {/* Checkout Modal */}
+      {selectedPlanForCheckout && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 10000,
+          background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px'
+        }}>
+          <div style={{
+            background: '#FFFFFF', backgroundColor: '#FFFFFF',
+            borderRadius: '24px', padding: '28px 24px', width: '100%', maxWidth: '420px',
+            boxShadow: '0 20px 40px rgba(0,0,0,0.3)', position: 'relative',
+            display: 'flex', flexDirection: 'column', gap: '16px', color: '#1A1A2E',
+            textAlign: 'left'
+          }}>
+            <button 
+              onClick={() => setSelectedPlanForCheckout(null)}
+              style={{
+                position: 'absolute', top: '20px', right: '20px', border: 'none',
+                background: 'none', fontSize: '18px', cursor: 'pointer', color: '#64748B'
+              }}
+            >✕</button>
+
+            <h2 style={{ fontSize: '20px', fontWeight: '800', margin: 0, fontFamily: "'Syne', sans-serif" }}>
+              Detalles del Pago
+            </h2>
+            <p style={{ fontSize: '14px', color: '#64748B', margin: 0, marginTop: '-8px' }}>
+              Completa tu tarjeta para adquirir el plan {selectedPlanForCheckout.name}
+            </p>
+
+            <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '12px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: '14px', fontWeight: '600' }}>Plan seleccionado:</span>
+              <span style={{ fontSize: '15px', fontWeight: '800', color: selectedPlanForCheckout.color }}>{selectedPlanForCheckout.name} ({selectedPlanForCheckout.price})</span>
+            </div>
+
+            {/* Card Inputs */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div>
+                <label style={{ fontSize: '12px', fontWeight: '700', color: '#475569', display: 'block', marginBottom: '6px' }}>Nombre en la Tarjeta</label>
+                <input 
+                  type="text" 
+                  placeholder="Nombre completo"
+                  value={cardName}
+                  onChange={e => setCardName(e.target.value)}
+                  style={{ width: '100%', padding: '12px 14px', borderRadius: '10px', border: '1.5px solid #E2E8F0', background: '#FAFAFA', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }}
+                />
+              </div>
+
+              <div>
+                <label style={{ fontSize: '12px', fontWeight: '700', color: '#475569', display: 'block', marginBottom: '6px' }}>Número de Tarjeta</label>
+                <input 
+                  type="tel" 
+                  placeholder="0000 0000 0000 0000"
+                  maxLength={19}
+                  value={cardNumber}
+                  onChange={e => {
+                    let v = e.target.value.replace(/\s+/g, '').replace(/[^0-9]/gi, '')
+                    let parts = []
+                    for (let i = 0; i < v.length; i += 4) {
+                      parts.push(v.substring(i, i + 4))
+                    }
+                    setCardNumber(parts.join(' '))
+                  }}
+                  style={{ width: '100%', padding: '12px 14px', borderRadius: '10px', border: '1.5px solid #E2E8F0', background: '#FAFAFA', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }}
+                />
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div>
+                  <label style={{ fontSize: '12px', fontWeight: '700', color: '#475569', display: 'block', marginBottom: '6px' }}>Vencimiento</label>
+                  <input 
+                    type="tel" 
+                    placeholder="MM/AA"
+                    maxLength={5}
+                    value={cardExp}
+                    onChange={e => {
+                      let val = e.target.value
+                      let clean = val.replace(/\D/g, '')
+                      if (clean.length === 1 && clean > '1') clean = '0' + clean
+                      if (clean.length >= 2) {
+                        let m = parseInt(clean.substring(0,2), 10)
+                        if (m < 1) m = 1
+                        if (m > 12) m = 12
+                        clean = (m < 10 ? '0' + m : String(m)) + clean.substring(2)
+                      }
+                      if (clean.length > 2) setCardExp(clean.substring(0,2) + '/' + clean.substring(2,4))
+                      else setCardExp(clean)
+                    }}
+                    style={{ width: '100%', padding: '12px 14px', borderRadius: '10px', border: '1.5px solid #E2E8F0', background: '#FAFAFA', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }}
+                  />
+                </div>
+                <div>
+                  <label style={{ fontSize: '12px', fontWeight: '700', color: '#475569', display: 'block', marginBottom: '6px' }}>CVV</label>
+                  <input 
+                    type="tel" 
+                    placeholder="123"
+                    maxLength={4}
+                    value={cardCvv}
+                    onChange={e => setCardCvv(e.target.value.replace(/[^0-9]/g, ''))}
+                    style={{ width: '100%', padding: '12px 14px', borderRadius: '10px', border: '1.5px solid #E2E8F0', background: '#FAFAFA', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Security Logos */}
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', opacity: 0.8, fontSize: '12px', color: '#64748B', margin: '4px 0' }}>
+              <span>🔒 Pago seguro 256-bit SSL</span>
+            </div>
+
+            {/* Action Buttons */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '8px' }}>
+              <button
+                disabled={loading || cardName.trim() === '' || cardNumber.replace(/\s/g, '').length < 15 || cardExp.length < 5 || cardCvv.length < 3}
+                onClick={handleConfirmPayment}
+                style={{
+                  background: 'linear-gradient(135deg, #F26000, #FF8533)',
+                  color: 'white', border: 'none', borderRadius: '14px', padding: '14px',
+                  fontSize: '16px', fontWeight: '700', cursor: 'pointer',
+                  boxShadow: '0 4px 16px rgba(242,96,0,0.3)', outline: 'none',
+                  opacity: (cardName.trim() === '' || cardNumber.replace(/\s/g, '').length < 15 || cardExp.length < 5 || cardCvv.length < 3) ? 0.6 : 1
+                }}
+              >
+                {loading ? 'Procesando Pago...' : `Confirmar y Pagar ${selectedPlanForCheckout.price}`}
+              </button>
+              <button
+                onClick={() => setSelectedPlanForCheckout(null)}
+                style={{
+                  background: 'none', border: 'none', color: '#64748B', padding: '8px',
+                  fontSize: '14px', fontWeight: '600', cursor: 'pointer', outline: 'none'
+                }}
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Receipt Modal */}
+      {showReceipt && purchasedPlanDetails && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 10001,
+          background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(10px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px'
+        }}>
+          <div style={{
+            width: '100%', maxWidth: '380px', background: '#FFFFFF',
+            borderRadius: '24px', overflow: 'hidden',
+            boxShadow: '0 24px 50px rgba(0,0,0,0.3)',
+            borderTop: '8px solid #F26000',
+            display: 'flex', flexDirection: 'column', alignItems: 'center',
+            padding: '30px 24px', boxSizing: 'border-box', color: '#1a1a2e',
+            fontFamily: "'DM Sans', sans-serif"
+          }}>
+            
+            {/* Logo */}
+            <div style={{ fontSize: '20px', fontWeight: '900', letterSpacing: '0.5px', marginBottom: '16px' }}>
+              LISTO <span style={{ color: '#F26000' }}>PATRÓN</span>
+            </div>
+
+            {/* Success Check */}
+            <div style={{
+              width: '56px', height: '56px', borderRadius: '50%',
+              background: '#ECFDF5', border: '2px solid #10B981',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: '24px', color: '#10B981', marginBottom: '16px',
+              boxShadow: '0 4px 12px rgba(16,185,129,0.2)'
+            }}>✓</div>
+
+            {/* Title / Subtitle */}
+            <h2 style={{ fontSize: '22px', fontWeight: '800', margin: '0 0 4px', textAlign: 'center' }}>¡Pago Completado!</h2>
+            <p style={{ fontSize: '13px', color: '#64748B', margin: '0 0 20px', textAlign: 'center' }}>Su recibo electrónico fue generado.</p>
+
+            {/* Amount */}
+            <div style={{ fontSize: '28px', fontWeight: '900', color: '#1A1A2E', marginBottom: '24px', letterSpacing: '-0.5px' }}>
+              RD$ {parseFloat(purchasedPlanDetails.price.replace(/\D/g, '')).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </div>
+
+            {/* Details Box */}
+            <div style={{
+              width: '100%', background: '#F8FAFC', border: '1px solid #E2E8F0',
+              borderRadius: '16px', padding: '16px', display: 'flex', flexDirection: 'column',
+              gap: '12px', boxSizing: 'border-box', marginBottom: '16px'
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
+                <span style={{ color: '#64748B', fontWeight: '500' }}>Concepto:</span>
+                <span style={{ color: '#1A1A2E', fontWeight: '700', textAlign: 'right' }}>Plan {purchasedPlanDetails.name}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
+                <span style={{ color: '#64748B', fontWeight: '500' }}>Fecha:</span>
+                <span style={{ color: '#1A1A2E', fontWeight: '700', textAlign: 'right' }}>
+                  {(() => {
+                    const date = new Date();
+                    const months = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+                    return `${date.getDate()} de ${months[date.getMonth()]} del ${date.getFullYear()}`;
+                  })()}
+                </span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
+                <span style={{ color: '#64748B', fontWeight: '500' }}>Método de pago:</span>
+                <span style={{ color: '#1A1A2E', fontWeight: '700', textAlign: 'right' }}>VISA •••• {last4}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
+                <span style={{ color: '#64748B', fontWeight: '500' }}>Autorización AZUL:</span>
+                <span style={{ color: '#00b050', fontWeight: '800', textAlign: 'right' }}>Aprobado #{authCode}</span>
+              </div>
+            </div>
+
+            {/* Screenshot capture text */}
+            <p style={{ fontSize: '11px', color: '#F26000', fontWeight: '700', margin: '0 0 16px', textAlign: 'center' }}>
+              📸 Toma una captura de pantalla de este recibo.
+            </p>
+
+            {/* Footer text */}
+            <div style={{ fontSize: '10.5px', color: '#94A3B8', textAlign: 'center', lineHeight: '1.4', marginBottom: '24px' }}>
+              Este es un recibo automático generado por Listo Patrón SRL. Gracias por confiar en nosotros. Si tiene algún reclamo sobre su pago, por favor contáctenos a través de la aplicación.
+            </div>
+
+            {/* Main Button with dynamic plan text */}
+            <button 
+              onClick={() => {
+                setShowReceipt(false);
+                setPurchasedPlanDetails(null);
+                onBack();
+              }}
+              style={{
+                width: '100%', background: 'linear-gradient(135deg, #F26000, #FF8533)',
+                color: 'white', border: 'none', borderRadius: '14px', padding: '16px',
+                fontSize: '15px', fontWeight: '700', cursor: 'pointer', outline: 'none',
+                boxShadow: '0 4px 16px rgba(242,96,0,0.3)', fontFamily: "'Syne', sans-serif"
+              }}
+            >
+              {(() => {
+                const planId = purchasedPlanDetails.id.toLowerCase();
+                if (planId === 'basico') return 'Has comprado un plan Básico';
+                if (planId === 'gold') return 'Has comprado un plan Gold';
+                if (planId === 'platinum') return 'Has comprado un plan Platinum';
+                if (planId === 'vip') return 'Has comprado un plan VIP';
+                return `Has comprado un plan ${purchasedPlanDetails.id.toUpperCase()}`;
+              })()}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
