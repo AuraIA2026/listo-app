@@ -8,7 +8,7 @@ const BackgroundGeolocation = registerPlugin('BackgroundGeolocation')
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import './TrackingPage.css'
-import vanImg from '../assets/van.png'
+import vanImg from '../assets/van_topdown.png'
 import { ReportModal } from './ChatPage'
 
 delete L.Icon.Default.prototype._getIconUrl
@@ -63,6 +63,21 @@ const playChatMsgSound = () => {
 }
 
 function lerp(a, b, t) { return a + (b - a) * t }
+
+function getDistanceInMeters(coord1, coord2) {
+  if (!coord1 || !coord2) return Infinity
+  const [lat1, lon1] = coord1
+  const [lat2, lon2] = coord2
+  const R = 6371e3 // Earth radius in meters
+  const dLat = (lat2 - lat1) * Math.PI / 180
+  const dLon = (lon2 - lon1) * Math.PI / 180
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2)
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+  return R * c
+}
 
 function SmoothMarker({ targetPos, icon, children, visible = true, isVan = false }) {
   const markerRef = useRef(null), currentPos = useRef(targetPos)
@@ -419,6 +434,8 @@ export default function TrackingPage({ lang = 'es', navigate, professional, user
   const [workStatus,     setWorkStatus]     = useState('tracking')
   const [vanVisible,     setVanVisible]     = useState(true)
   const [showChat,       setShowChat]       = useState(false)
+  const [showArrivingAlert, setShowArrivingAlert] = useState(false)
+  const [alertDismissed, setAlertDismissed] = useState(false)
 
   // Audio llegada
   const arrivingAudioRef    = useRef(null)
@@ -464,6 +481,23 @@ export default function TrackingPage({ lang = 'es', navigate, professional, user
     })
     return () => unsub()
   }, [professional?.id])
+
+  // Alerta cuando el profesional está a menos de 50 metros (entre 30 y 50 metros)
+  useEffect(() => {
+    if (userRole !== 'pro' && workStatus === 'tracking' && status !== 'arrived') {
+      const distance = getDistanceInMeters(clientLoc, proPos)
+      if (distance > 0 && distance <= 50) {
+        if (!alertDismissed) {
+          setShowArrivingAlert(true)
+        }
+      } else {
+        setShowArrivingAlert(false)
+        setAlertDismissed(false) // Reiniciar cuando el profesional se aleje
+      }
+    } else {
+      setShowArrivingAlert(false)
+    }
+  }, [clientLoc, proPos, userRole, workStatus, status, alertDismissed])
 
   // GPS Tracking Real para el Profesional (Soporta Segundo Plano en Native)
   useEffect(() => {
@@ -644,6 +678,57 @@ export default function TrackingPage({ lang = 'es', navigate, professional, user
       </div>
 
       <div className="tracking-map-wrap">
+        {showArrivingAlert && (
+          <div style={{
+            position: 'absolute',
+            top: '80px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 1001,
+            width: 'calc(100% - 32px)',
+            maxWidth: '360px',
+            background: 'linear-gradient(135deg, #FF8533 0%, #F26000 100%)',
+            color: '#fff',
+            borderRadius: '20px',
+            padding: '16px 20px',
+            boxShadow: '0 12px 30px rgba(242,96,0,0.3)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '14px',
+            border: '1px solid rgba(255,255,255,0.2)',
+            animation: 'fadeDown 0.4s cubic-bezier(0.2, 0.8, 0.2, 1)'
+          }}>
+            <span style={{ fontSize: '28px', animation: 'bounceEta 2s infinite alternate ease-in-out' }}>🔔</span>
+            <div style={{ flex: 1 }}>
+              <p style={{ margin: 0, fontWeight: 900, fontSize: '15px', letterSpacing: '-0.3px' }}>
+                {lang === 'es' ? '¡Prepárese!' : 'Prepare yourself!'}
+              </p>
+              <p style={{ margin: '2px 0 0', fontSize: '13px', fontWeight: 600, opacity: 0.95 }}>
+                {lang === 'es' ? 'El profesional está llegando.' : 'The professional is arriving.'}
+              </p>
+            </div>
+            <button 
+              onClick={() => setAlertDismissed(true)} 
+              style={{
+                background: 'rgba(255,255,255,0.2)',
+                border: 'none',
+                color: '#fff',
+                width: '28px',
+                height: '28px',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                fontSize: '12px',
+                fontWeight: 'bold',
+                transition: 'background 0.2s'
+              }}
+            >
+              ✕
+            </button>
+          </div>
+        )}
         <MapContainer center={mapCenter} zoom={14} className="tracking-map" zoomControl={false} attributionControl={false}>
           <MapResizer />
           <MapBoundsFitter pos1={clientLoc} pos2={proPos} />

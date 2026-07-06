@@ -18,11 +18,13 @@
     "@capacitor/push-notifications": "^8.0.2",
     "firebase": "^12.10.0",
     "leaflet": "^1.9.4",
+    "maplibre-gl": "^5.24.0",
     "playwright": "^1.60.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-icons": "^5.5.0",
     "react-leaflet": "^5.0.0",
+    "react-map-gl": "^8.1.1",
     "react-router-dom": "^7.13.1"
   },
   "devDependencies": {

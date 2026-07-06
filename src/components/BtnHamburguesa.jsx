@@ -255,7 +255,7 @@ function PaymentSection({ plan, onBack, onConfirm }) {
       await new Promise(resolve => setTimeout(resolve, 2000))
       setIsProcessingAzul(false)
     }
-    await onConfirm({ method, selectedBank, transferAmount, depositorName, receiptFile })
+    await onConfirm({ method, selectedBank, transferAmount, depositorName, receiptFile, cardName, cardNumber })
     setIsUploading(false)
   }
 
@@ -477,6 +477,71 @@ function StatusBadge({ status }) {
   return <span className={`status-badge ${s.cls}`}>{s.label}</span>
 }
 
+/* ─── MODAL RECIBO PRO ─── */
+function ReceiptModalPro({ details, onClose }) {
+  return (
+    <div className="receipt-overlay" onClick={onClose}>
+      <div className="receipt-modal" onClick={e => e.stopPropagation()}>
+        <div className="receipt-logo">LISTO <span>PATRÓN</span></div>
+        <div className="receipt-success-icon">✓</div>
+        <div className="receipt-title">
+          {details.status === 'paid' ? '¡Pago Completado!' : '¡Solicitud Registrada!'}
+        </div>
+        <div className="receipt-subtitle">
+          {details.status === 'paid' 
+            ? 'Su recibo electrónico fue generado.' 
+            : 'Su comprobante está en revisión.'}
+        </div>
+        
+        <div className="receipt-amount">{details.amountText}</div>
+        
+        <div className="receipt-details-box">
+          <div className="receipt-detail-row">
+            <span className="receipt-detail-label">Concepto:</span>
+            <span className="receipt-detail-value">{details.concept}</span>
+          </div>
+          <div className="receipt-detail-row">
+            <span className="receipt-detail-label">Fecha:</span>
+            <span className="receipt-detail-value">
+              {(() => {
+                const date = new Date();
+                const months = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+                return `${date.getDate()} de ${months[date.getMonth()]} del ${date.getFullYear()}`;
+              })()}
+            </span>
+          </div>
+          <div className="receipt-detail-row">
+            <span className="receipt-detail-label">Método de pago:</span>
+            <span className="receipt-detail-value">
+              {details.method === 'card' 
+                ? `Tarjeta •••• ${details.cardNum.replace(/\s/g, '').slice(-4) || '••••'}`
+                : `Transferencia - ${details.bankName}`}
+            </span>
+          </div>
+          <div className="receipt-detail-row">
+            <span className="receipt-detail-label">Estado:</span>
+            <span className="receipt-detail-value" style={{ color: details.status === 'paid' ? '#00b050' : '#d4940a' }}>
+              {details.status === 'paid' ? `Aprobado #${details.authCode}` : 'Pendiente de aprobación'}
+            </span>
+          </div>
+        </div>
+
+        <p style={{ fontSize: '11px', color: '#F26000', fontWeight: '700', margin: '10px 0' }}>
+          📸 Toma una captura de pantalla de este recibo.
+        </p>
+
+        <div className="receipt-footer-text">
+          Este es un recibo automático generado por Listo Patrón SRL. Gracias por confiar en nosotros. Si tiene algún reclamo sobre su pago, por favor contáctenos a través de la aplicación.
+        </div>
+
+        <button className="receipt-close-btn" onClick={onClose}>
+          Continuar
+        </button>
+      </div>
+    </div>
+  )
+}
+
 /* ─── MODAL EDITAR PERFIL ─── */
 function EditModal({ userData, onSave, onCancel }) {
   const [form, setForm] = useState({
@@ -570,6 +635,8 @@ export default function BtnHamburguesa({ onClose, navigate, initialOpenSection =
   const [available, setAvailable] = useState(true)
   const [openSection, setOpenSection] = useState(initialOpenSection)
   const [showEditModal, setShowEditModal] = useState(false)
+  const [showReceipt, setShowReceipt] = useState(false)
+  const [receiptDetails, setReceiptDetails] = useState(null)
 
   const scrollRef = useRef(null)
   const planesRef = useRef(null)
@@ -658,7 +725,19 @@ export default function BtnHamburguesa({ onClose, navigate, initialOpenSection =
           await updateDoc(doc(db, 'users', userData.uid), { planStatus: 'review' })
        }
 
-       setConfirmed(planDetalle)
+        // Preparar detalles del recibo
+        const receiptInfo = {
+          amountText: planDetalle.precio,
+          concept: `Plan Profesional: ${planDetalle.nombre}`,
+          method: payData.method === 'card' ? 'card' : 'transfer',
+          cardNum: payData.cardNumber || '',
+          bankName: payData.selectedBank?.name || '',
+          authCode: Math.floor(10000 + Math.random() * 90000),
+          status: payData.method === 'card' ? 'paid' : 'pending',
+        }
+        setReceiptDetails(receiptInfo)
+
+        setConfirmed(planDetalle)
     } catch(err) {
        console.error("Error creating payment", err)
        alert("Error procesando pago: " + (err.message || err.toString()))
@@ -834,6 +913,18 @@ export default function BtnHamburguesa({ onClose, navigate, initialOpenSection =
           plan={confirmed}
           onClose={() => {
             setConfirmed(null)
+            setShowReceipt(true)
+          }}
+        />
+      )}
+
+      {/* ── MODAL RECIBO PRO ── */}
+      {showReceipt && receiptDetails && (
+        <ReceiptModalPro
+          details={receiptDetails}
+          onClose={() => {
+            setShowReceipt(false)
+            setReceiptDetails(null)
             setPlanDetalle(null)
             setSection('main')
             setOpenSection('plans')
