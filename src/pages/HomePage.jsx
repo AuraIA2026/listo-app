@@ -573,7 +573,7 @@ export default function HomePage({ lang, navigate, userRole }) {
   let isExpired = false;
   let daysRemaining = null;
   
-  if (isPro && userData?.planExpirationDate) {
+  if (isPro && userData?.planStatus !== 'active' && userData?.planStatus !== 'review' && userData?.planExpirationDate) {
     const expDate = new Date(userData.planExpirationDate);
     const now = new Date();
     const diffTime = expDate - now;
