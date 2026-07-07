@@ -2,6 +2,7 @@ import React, { StrictMode, Component } from 'react'
 import { createRoot } from 'react-dom/client'
 import './App.css'
 import App from './App.jsx'
+import { UserProvider } from './useUserData'
 
 class GlobalErrorBoundary extends Component {
   constructor(props) {
@@ -35,7 +36,9 @@ class GlobalErrorBoundary extends Component {
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <GlobalErrorBoundary>
-      <App />
+      <UserProvider>
+        <App />
+      </UserProvider>
     </GlobalErrorBoundary>
   </StrictMode>,
 )

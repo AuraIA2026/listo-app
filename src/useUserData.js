@@ -2,12 +2,14 @@
 // Conecta directamente con Firestore en tiempo real
 // Úsalo en ProfilePage, BottomNav, HomePage, o cualquier componente que necesite datos del usuario
 
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect, createContext, useContext } from 'react'
 import { onAuthStateChanged } from 'firebase/auth'
 import { doc, onSnapshot } from 'firebase/firestore'
 import { auth, db } from './firebase'
 
-export function useUserData() {
+const UserContext = createContext(null)
+
+export function UserProvider({ children }) {
   const [userData,  setUserData]  = useState(null)
   const [loading,   setLoading]   = useState(true)
   const [authUser,  setAuthUser]  = useState(null)
@@ -35,7 +37,7 @@ export function useUserData() {
             setLoading(false)
           },
           (err) => {
-            console.error('useUserData error:', err)
+            console.error('useUserData Context error:', err)
             setLoading(false)
           }
         )
@@ -72,7 +74,7 @@ export function useUserData() {
   const userRole     = (userData?.type === 'pro' || userData?.role === 'professional' || userData?.verificacion?.estado === 'aprobada') ? 'pro' : 'user'
   const profileComplete = userData?.profileComplete || userData?.verificacion?.estado === 'aprobada' || false
 
-  return {
+  const value = {
     userData,
     loading,
     authUser,
@@ -81,4 +83,14 @@ export function useUserData() {
     getInitials,
     getMemberSince,
   }
+
+  return React.createElement(UserContext.Provider, { value }, children)
+}
+
+export function useUserData() {
+  const context = useContext(UserContext)
+  if (context === undefined || context === null) {
+    throw new Error('useUserData must be used within a UserProvider')
+  }
+  return context
 }

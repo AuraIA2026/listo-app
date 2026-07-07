@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
-import { onAuthStateChanged, signOut } from 'firebase/auth'
+import { signOut } from 'firebase/auth'
 import { doc, onSnapshot, getDocs, collection, query, where, updateDoc } from 'firebase/firestore'
 import { auth, db } from './firebase'
+import { useUserData } from './useUserData'
 import { Capacitor } from '@capacitor/core'
 import { PushNotifications } from '@capacitor/push-notifications'
 
@@ -274,17 +275,16 @@ function SystemAlertModal({ alert, onClose, lang }) {
 
 export default function App() {
   const isNative = Capacitor.isNativePlatform()
+  const { userData, loading: authLoading, authUser, userRole, profileComplete } = useUserData()
+  const authReady = !authLoading
+
   const [showSplash,      setShowSplash]      = useState(isNative)
   const [currentPage,     setCurrentPage]     = useState('login')
   const [lang,            setLang]            = useState('es')
   const [selectedPro,     setSelectedPro]     = useState(null)
   const [selectedLocal,   setSelectedLocal]   = useState(null)
   const [showTour,        setShowTour]        = useState(false)
-  const [authReady,       setAuthReady]       = useState(false)
-  const [userData,        setUserData]        = useState(null)
-  const [userRole,        setUserRole]        = useState('user')
   const [profileInitScreen, setProfileInitScreen] = useState(null)
-  const [profileComplete, setProfileComplete] = useState(false)
   const [alertOrder,        setAlertOrder]        = useState(null)
   const [detailsModalOrder, setDetailsModalOrder] = useState(null)
   const [notifiedOrderIds,  setNotifiedOrderIds]  = useState(new Set())
@@ -385,52 +385,41 @@ export default function App() {
     } catch (e) {}
   }
 
-  // ─── AUTH ─────────────────────────────────────────────────────────────────
+  // ─── AUTH REDIRECTION & CAPACITOR NATIVE EFFECTS ──────────────────────────
   useEffect(() => {
-    let unsubSnap = null
-    const unsubAuth = onAuthStateChanged(auth, (firebaseUser) => {
-      if (unsubSnap) { unsubSnap(); unsubSnap = null }
-      if (firebaseUser) {
-        unsubSnap = onSnapshot(doc(db, 'users', firebaseUser.uid), (snap) => {
-          if (snap.exists()) {
-            const data = snap.data()
-            const fullData = { ...data, uid: firebaseUser.uid, email: firebaseUser.email }
-            setUserData(fullData)
-            setUserRole(data.type === 'pro' ? 'pro' : 'user')
-            localStorage.setItem('listoUserData', JSON.stringify(fullData))
-            setProfileComplete(data.profileComplete || false)
+    if (authLoading) return
 
-            if (Capacitor.isNativePlatform()) {
-              PushNotifications.requestPermissions().then(result => {
-                if (result.receive === 'granted') PushNotifications.register()
-              })
-              PushNotifications.removeAllListeners().then(() => {
-                PushNotifications.addListener('registration', token => {
-                  updateDoc(doc(db, 'users', firebaseUser.uid), { fcmToken: token.value }).catch(()=>{})
-                })
-                PushNotifications.addListener('pushNotificationActionPerformed', () => {
-                  setCurrentPage('orders')
-                })
-              })
-            }
-          }
-          setAuthReady(true)
-          setCurrentPage(prev => {
-            if (prev === 'landing' || prev === 'login') return 'home'
-            return prev
-          })
-        }, () => setAuthReady(true))
-      } else {
-        setUserData(null); setUserRole('user'); setProfileComplete(false)
-        setAuthReady(true)
-        setCurrentPage(prev => {
-          if (prev === 'register' || prev === 'policies') return prev
-          return 'login'
-        })
+    if (authUser) {
+      if (userData) {
+        localStorage.setItem('listoUserData', JSON.stringify(userData))
       }
-    })
-    return () => { unsubAuth(); if (unsubSnap) unsubSnap() }
-  }, [isNative, showSplash]) // eslint-disable-line
+      setCurrentPage(prev => {
+        if (prev === 'landing' || prev === 'login') return 'home'
+        return prev
+      })
+    } else {
+      setCurrentPage(prev => {
+        if (prev === 'register' || prev === 'policies') return prev
+        return 'login'
+      })
+    }
+  }, [authUser, authLoading, userData])
+
+  useEffect(() => {
+    if (userData && userData.uid && Capacitor.isNativePlatform()) {
+      PushNotifications.requestPermissions().then(result => {
+        if (result.receive === 'granted') PushNotifications.register()
+      })
+      PushNotifications.removeAllListeners().then(() => {
+        PushNotifications.addListener('registration', token => {
+          updateDoc(doc(db, 'users', userData.uid), { fcmToken: token.value }).catch(()=>{})
+        })
+        PushNotifications.addListener('pushNotificationActionPerformed', () => {
+          setCurrentPage('orders')
+        })
+      })
+    }
+  }, [userData])
 
   // ─── LISTENER MENSAJES NUEVOS ─────────────────────────────────────────────
   useEffect(() => {
@@ -616,7 +605,6 @@ export default function App() {
   const handleLogout = async () => {
     await signOut(auth)
     stopAlertSound()
-    setUserData(null); setUserRole('user'); setProfileComplete(false)
     setCurrentPage('login')
   }
 
