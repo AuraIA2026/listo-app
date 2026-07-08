@@ -501,6 +501,22 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
 
   const T = txt[lang]
 
+  const searchPlaceholders = lang === 'es' 
+    ? ['¿Buscas a un plomero?', '¿Necesitas un electricista?', 'O quizás un mecánico...', 'Encuentra soluciones aquí'] 
+    : ['Looking for a plumber?', 'Need an electrician?', 'Maybe a mechanic...', 'Find solutions here'];
+  const [phIdx, setPhIdx] = useState(0);
+  const [prevPhIdx, setPrevPhIdx] = useState(null);
+
+  useEffect(() => {
+    const t = setInterval(() => {
+      setPhIdx(curr => {
+        setPrevPhIdx(curr);
+        return (curr + 1) % searchPlaceholders.length;
+      });
+    }, 3500);
+    return () => clearInterval(t);
+  }, [lang, searchPlaceholders.length]);
+
   useEffect(() => {
     const fetchProfessionals = async () => {
       setLoading(true)
@@ -590,10 +606,22 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
 
       <div className="search-header">
         <h1 className="search-title">{T.title}</h1>
-        <div className="search-bar">
+        <div className="search-bar" style={{ position: 'relative' }}>
           <span className="search-icon">🔍</span>
-          <input type="text" placeholder={T.search} value={search} onChange={e => setSearch(e.target.value)} />
-          {search && <button className="search-clear" onClick={() => setSearch('')}>✕</button>}
+          {search.length === 0 && (
+            <div className="search-placeholder-container">
+              {prevPhIdx !== null && prevPhIdx !== phIdx && (
+                <span className="search-placeholder-text slide-out" key={`out-${prevPhIdx}`}>
+                  {searchPlaceholders[prevPhIdx]}
+                </span>
+              )}
+              <span className="search-placeholder-text slide-in" key={`in-${phIdx}`}>
+                {searchPlaceholders[phIdx]}
+              </span>
+            </div>
+          )}
+          <input type="text" value={search} onChange={e => setSearch(e.target.value)} style={{ zIndex: 2 }} />
+          {search && <button className="search-clear" onClick={() => setSearch('')} style={{ zIndex: 3 }}>✕</button>}
         </div>
       </div>
 

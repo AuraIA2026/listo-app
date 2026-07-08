@@ -429,6 +429,7 @@ export default function HomePage({ lang, navigate, userRole }) {
     ? ['¿Buscas a un plomero?', '¿Necesitas un electricista?', 'O quizás un mecánico...', 'Encuentra soluciones aquí'] 
     : ['Looking for a plumber?', 'Need an electrician?', 'Maybe a mechanic...', 'Find solutions here'];
   const [phIdx, setPhIdx] = useState(0);
+  const [prevPhIdx, setPrevPhIdx] = useState(null);
 
   const clientTips = lang === 'es' ? [
     { icon: '⭐', text: 'Al finalizar un trabajo, valora a tu profesional. Tu opinión garantiza la mejor calidad.' },
@@ -446,11 +447,16 @@ export default function HomePage({ lang, navigate, userRole }) {
   const [blueBannerMsg, setBlueBannerMsg] = useState(null);
 
   useEffect(() => {
-    const t = setInterval(() => setPhIdx(i => (i + 1) % searchPlaceholders.length), 3500);
+    const t = setInterval(() => {
+      setPhIdx(curr => {
+        setPrevPhIdx(curr);
+        return (curr + 1) % searchPlaceholders.length;
+      });
+    }, 3500);
     const t2 = setInterval(() => setTipIdx(i => (i + 1) % clientTips.length), 4500);
     const tipsTimer = setTimeout(() => setShowBlackTips(false), 60000);
     return () => { clearInterval(t); clearInterval(t2); clearTimeout(tipsTimer); };
-  }, [lang]);
+  }, [lang, searchPlaceholders.length]);
 
   const handleBlueBannerClick = () => {
     setBlueBannerMsg(lang === 'es' 
@@ -667,8 +673,13 @@ export default function HomePage({ lang, navigate, userRole }) {
             <div className="hp-hero-search-btn" style={{ padding: '0 6px 0 16px', display: 'flex', alignItems: 'center', cursor: 'text' }} onClick={() => document.getElementById('hp-search-input').focus()}>
               <span className="hp-hero-icon">🔍</span>
               {homeSearch.length === 0 && (
-                <div className="hp-search-placeholder-wrap" style={{ position: 'absolute', left: '46px', pointerEvents: 'none' }}>
-                  <span className="hp-search-placeholder text-slide-anim" key={phIdx}>
+                <div className="hp-placeholder-container">
+                  {prevPhIdx !== null && prevPhIdx !== phIdx && (
+                    <span className="hp-placeholder-text slide-out" key={`out-${prevPhIdx}`}>
+                      {searchPlaceholders[prevPhIdx]}
+                    </span>
+                  )}
+                  <span className="hp-placeholder-text slide-in" key={`in-${phIdx}`}>
                     {searchPlaceholders[phIdx]}
                   </span>
                 </div>

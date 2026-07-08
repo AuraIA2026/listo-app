@@ -115,6 +115,7 @@
   padding: 4px 16px 8px;
   overflow-x: auto;
   scroll-snap-type: x mandatory;
+  scroll-padding: 0 16px;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
 }
@@ -122,10 +123,10 @@
 
 /* ══════════════════════════════════════════════
    LOCAL CARD — tarjeta del carrusel
-══════════════════════════════════════════════ */
+   ══════════════════════════════════════════════ */
 .local-card {
   flex-shrink: 0;
-  width: 200px;
+  width: 280px;
   border-radius: var(--vip-radius);
   overflow: hidden;
   background: #fff;
@@ -136,6 +137,12 @@
   position: relative;
 }
 .local-card:active { transform: scale(0.97); }
+
+@media (max-width: 480px) {
+  .local-card {
+    width: 82vw;
+  }
+}
 
 .local-card-portada {
   width: 100%;
