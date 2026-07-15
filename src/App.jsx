@@ -407,6 +407,19 @@ export default function App() {
 
   useEffect(() => {
     if (userData && userData.uid && Capacitor.isNativePlatform()) {
+      // Crear canal de alta importancia para Android
+      PushNotifications.createChannel({
+        id: 'listo_notifications',
+        name: 'Notificaciones Listo',
+        description: 'Canal para notificaciones de servicios y chat',
+        importance: 5, // IMPORTANCE_HIGH (banner flotante y sonido)
+        visibility: 1, // VISIBILITY_PUBLIC
+        sound: 'default',
+        vibration: true
+      }).catch(err => {
+        console.error("Error al crear canal de notificaciones:", err)
+      })
+
       PushNotifications.requestPermissions().then(result => {
         if (result.receive === 'granted') PushNotifications.register()
       })
@@ -414,7 +427,8 @@ export default function App() {
         PushNotifications.addListener('registration', token => {
           updateDoc(doc(db, 'users', userData.uid), { fcmToken: token.value }).catch(()=>{})
         })
-        PushNotifications.addListener('pushNotificationActionPerformed', () => {
+        PushNotifications.addListener('pushNotificationActionPerformed', notification => {
+          console.log("Notificación push pulsada:", notification)
           setCurrentPage('orders')
         })
       })

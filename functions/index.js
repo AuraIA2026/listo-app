@@ -544,16 +544,25 @@ exports.enviarNotificacionPushBackground = functions.firestore
           title: notifData.title || "🔔 Nueva Notificación",
           body: notifData.text || "Tienes un mensaje nuevo en Listo Patrón.",
         },
+        data: {
+          type: notifData.type || "",
+          orderId: notifData.orderId || "",
+          chatId: notifData.chatId || "",
+          title: notifData.title || "",
+          body: notifData.text || ""
+        },
         android: {
+          priority: "high",
           notification: {
             sound: "default",
-            clickAction: "FLUTTER_NOTIFICATION_CLICK"
+            channelId: "listo_notifications"
           }
         },
         apns: {
           payload: {
             aps: {
-              sound: "default"
+              sound: "default",
+              contentAvailable: true
             }
           }
         }

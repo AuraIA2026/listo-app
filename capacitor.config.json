@@ -7,5 +7,10 @@
       "pruebas.azul.com.do",
       "pagos.azul.com.do"
     ]
+  },
+  "plugins": {
+    "PushNotifications": {
+      "presentationOptions": ["badge", "sound", "alert"]
+    }
   }
 }
