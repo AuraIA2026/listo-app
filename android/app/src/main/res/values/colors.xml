@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Brand colors -->
+    <color name="colorPrimary">#F26000</color>
+    <color name="colorPrimaryDark">#C24D00</color>
+    <color name="colorAccent">#F26000</color>
+    <color name="notification_color">#F26000</color>
+</resources>

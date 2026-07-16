@@ -555,7 +555,9 @@ exports.enviarNotificacionPushBackground = functions.firestore
           priority: "high",
           notification: {
             sound: "default",
-            channelId: "listo_notifications"
+            channelId: "listo_notifications",
+            icon: "ic_notification",
+            color: "#F26000"
           }
         },
         apns: {
