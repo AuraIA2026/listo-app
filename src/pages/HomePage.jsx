@@ -425,6 +425,35 @@ export default function HomePage({ lang, navigate, userRole }) {
     return () => unsubscribe()
   }, [userData])
 
+  const [unreadChats, setUnreadChats] = useState(0)
+  const [unreadMsgNotifs, setUnreadMsgNotifs] = useState(0)
+
+  useEffect(() => {
+    if (!userData?.uid) return
+    const uid = userData.uid
+
+    const qChats = query(collection(db, 'chats'), where('members', 'array-contains', uid))
+    const unsubChats = onSnapshot(qChats, snap => {
+      let count = 0
+      snap.forEach(d => { count += (d.data().unreadCount?.[uid] || 0) })
+      setUnreadChats(count)
+    }, () => {})
+
+    const targetIds = userData?.email === 'listopatron.app@gmail.com' ? [uid, 'admin'] : [uid]
+    const qNotifs = query(collection(db, 'notificaciones'), where('userId', 'in', targetIds), where('read', '==', false))
+    const unsubNotifs = onSnapshot(qNotifs, snap => {
+      let tempMsgs = 0
+      snap.forEach(d => {
+        if (d.data().type === 'message') tempMsgs++
+      })
+      setUnreadMsgNotifs(tempMsgs)
+    }, () => {})
+
+    return () => { unsubChats(); unsubNotifs() }
+  }, [userData])
+
+  const totalUnreadMessages = unreadChats + unreadMsgNotifs
+
   const searchPlaceholders = lang === 'es' 
     ? ['¿Buscas a un plomero?', '¿Necesitas un electricista?', 'O quizás un mecánico...', 'Encuentra soluciones aquí'] 
     : ['Looking for a plumber?', 'Need an electrician?', 'Maybe a mechanic...', 'Find solutions here'];
@@ -752,41 +781,142 @@ export default function HomePage({ lang, navigate, userRole }) {
       {/* ── VIP BANNER — solo para profesionales ── */}
       {isPro && <VIPBanner onOpenPlanes={() => setShowHamburguesa(true)} />}
 
-      <div className="hp-banner-container" style={{ margin: '0 16px 20px', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 6px 16px rgba(0,0,0,0.12)', height: '220px', position: 'relative' }}>
-        <img src={bannerPros} alt="Un profesional siempre cerca de ti" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 15%', display: 'block' }} />
-        
-        {/* Animated Tip Overlay */}
-        {!isPro && showBlackTips && (
-          <div className="hp-tip-overlay" style={{ transition: 'opacity 0.8s' }}>
-            <div className="hp-tip-card" key={tipIdx}>
-              <span className="hp-tip-icon">{clientTips[tipIdx].icon}</span>
-              <p className="hp-tip-text">{clientTips[tipIdx].text}</p>
+      <div style={{ position: 'relative', margin: '0 16px 50px' }}>
+        <div className="hp-banner-container" style={{ margin: 0, borderRadius: '16px', overflow: 'hidden', boxShadow: '0 6px 16px rgba(0,0,0,0.12)', height: '220px', position: 'relative' }}>
+          <img src={bannerPros} alt="Un profesional siempre cerca de ti" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 15%', display: 'block' }} />
+          
+          {/* Animated Tip Overlay */}
+          {!isPro && showBlackTips && (
+            <div className="hp-tip-overlay" style={{ transition: 'opacity 0.8s' }}>
+              <div className="hp-tip-card" key={tipIdx}>
+                <span className="hp-tip-icon">{clientTips[tipIdx].icon}</span>
+                <p className="hp-tip-text">{clientTips[tipIdx].text}</p>
+              </div>
+            </div>
+          )}
+
+          {/* Recruitment Banner (Only for Clients) */}
+          {!isPro && showBlueBanner && (
+            <div className="hp-recruitment-banner" onClick={handleBlueBannerClick} style={{ transition: 'all 0.5s ease-out' }}>
+              <div className="shimmer-effect"></div>
+              {blueBannerMsg ? (
+                <div className="recruitment-text" style={{ flex: 1, textAlign: 'center', animation: 'tip-fade-slide 0.4s ease' }}>
+                  <strong style={{ fontSize: '13.5px', color: '#FFF' }}>{blueBannerMsg}</strong>
+                </div>
+              ) : (
+                <>
+                  <span className="recruitment-icon">🚀</span>
+                  <div className="recruitment-text">
+                    <strong>{lang === 'es' ? '¿Quieres generar ingresos?' : 'Want to generate income?'}</strong>
+                    <span>{lang === 'es' ? '¡Postúlate como profesional!' : 'Apply as a professional!'} ›</span>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Foto de perfil flotante con botón de chat integrado en la esquina inferior derecha */}
+        <div 
+          style={{ 
+            position: 'absolute', 
+            bottom: '-35px', 
+            left: '20px', 
+            zIndex: 10,
+            display: 'flex',
+            alignItems: 'center'
+          }}
+        >
+          <div style={{ position: 'relative' }}>
+            {userData?.profilePhoto || userData?.photoURL ? (
+              <img 
+                src={userData.profilePhoto || userData.photoURL} 
+                alt="Profile" 
+                onClick={() => navigate('profile')}
+                style={{ 
+                  width: '84px', 
+                  height: '84px', 
+                  borderRadius: '50%', 
+                  objectFit: 'cover', 
+                  border: '4px solid white', 
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                  cursor: 'pointer',
+                  background: '#FFF'
+                }} 
+              />
+            ) : (
+              <div 
+                onClick={() => navigate('profile')} 
+                style={{ 
+                  width: '84px', 
+                  height: '84px', 
+                  borderRadius: '50%', 
+                  background: 'linear-gradient(135deg, #1A1A2E, #2A2A4A)', 
+                  color: 'white', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justify: 'center', 
+                  fontWeight: 'bold', 
+                  fontSize: '28px', 
+                  border: '4px solid white',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.15)', 
+                  cursor: 'pointer' 
+                }}
+              >
+                {(userData?.name || '👤').charAt(0).toUpperCase()}
+              </div>
+            )}
+
+            {/* Icono de Mensajes Flotante */}
+            <div 
+              onClick={() => navigate('chat')}
+              style={{
+                position: 'absolute',
+                bottom: '-2px',
+                right: '-4px',
+                width: '32px',
+                height: '32px',
+                borderRadius: '50%',
+                background: 'linear-gradient(135deg, #FF7A1A, #F26000)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 2px 8px rgba(242,96,0,0.4)',
+                cursor: 'pointer',
+                border: '2px solid white',
+                zIndex: 11
+              }}
+            >
+              <span style={{ fontSize: '15px', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z"/>
+                </svg>
+              </span>
+
+              {/* Badge de mensajes no leídos */}
+              {totalUnreadMessages > 0 && (
+                <span 
+                  style={{ 
+                    position: 'absolute', 
+                    top: '-8px', 
+                    right: '-8px', 
+                    background: '#EF4444', 
+                    color: 'white', 
+                    fontSize: '9px', 
+                    fontWeight: '900', 
+                    borderRadius: '10px', 
+                    padding: '2px 5px', 
+                    border: '1.5px solid white',
+                    boxShadow: '0 2px 6px rgba(239,68,68,0.4)'
+                  }}
+                >
+                  {totalUnreadMessages > 9 ? '9+' : totalUnreadMessages}
+                </span>
+              )}
             </div>
           </div>
-        )}
-
-        {/* Recruitment Banner (Only for Clients) */}
-        {!isPro && showBlueBanner && (
-          <div className="hp-recruitment-banner" onClick={handleBlueBannerClick} style={{ transition: 'all 0.5s ease-out' }}>
-            <div className="shimmer-effect"></div>
-            {blueBannerMsg ? (
-              <div className="recruitment-text" style={{ flex: 1, textAlign: 'center', animation: 'tip-fade-slide 0.4s ease' }}>
-                <strong style={{ fontSize: '13.5px', color: '#FFF' }}>{blueBannerMsg}</strong>
-              </div>
-            ) : (
-              <>
-                <span className="recruitment-icon">🚀</span>
-                <div className="recruitment-text">
-                  <strong>{lang === 'es' ? '¿Quieres generar ingresos?' : 'Want to generate income?'}</strong>
-                  <span>{lang === 'es' ? '¡Postúlate como profesional!' : 'Apply as a professional!'} ›</span>
-                </div>
-              </>
-            )}
-          </div>
-        )}
+        </div>
       </div>
-
-      <SocialLinks />
 
       {isPro ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', margin: '0 16px 20px' }}>
@@ -1046,6 +1176,8 @@ export default function HomePage({ lang, navigate, userRole }) {
           </section>
         </>
       )}
+
+      <SocialLinks />
 
       {/* ── FOOTER LEGAL & 3D SECURE AZUL ── */}
       <footer style={{ background: '#1A1A2E', color: '#94A3B8', padding: '32px 20px 120px', marginTop: '20px', borderTopLeftRadius: '24px', borderTopRightRadius: '24px', textAlign: 'center', fontSize: '12px' }}>
