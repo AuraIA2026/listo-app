@@ -41,10 +41,24 @@ const compressImage = (file) => new Promise((resolve, reject) => {
   reader.readAsDataURL(file);
 });
 
+const TERMS_PRO = [
+  { title: '1. Naturaleza del Servicio', body: 'Listo Patrón es una plataforma tecnológica de intermediación digital que conecta usuarios con profesionales independientes.\n\nLa plataforma no participa en la ejecución de los servicios ofrecidos ni en los acuerdos comerciales entre las partes.\n\nEl profesional reconoce que actúa de manera independiente, sin que exista relación laboral, sociedad o representación con la plataforma.\n\nEl acuerdo de servicio, precios y condiciones son responsabilidad exclusiva entre el profesional y el usuario.\n\nEste acuerdo se rige por las leyes de la República Dominicana.' },
+  { title: '2. Modelo de Uso y Planes', body: 'Para utilizar la plataforma, el profesional deberá adquirir uno de los planes disponibles dentro de la aplicación.\n\nCada plan otorga una cantidad específica de servicios, contactos o contratos que el profesional podrá gestionar dentro de la plataforma.\n\nUna vez consumidos los beneficios del plan, el profesional deberá adquirir uno nuevo para continuar utilizando la plataforma.\n\nLos pagos de los planes deberán realizarse exclusivamente mediante métodos digitales habilitados por la plataforma (transferencia o tarjeta). No se aceptan pagos en efectivo para la compra de planes.\n\nLa plataforma podrá modificar los planes, precios y beneficios notificando previamente dentro de la aplicación.' },
+  { title: '3. Pagos por Servicios', body: 'Los pagos por los servicios realizados podrán efectuarse mediante:\n\n- Efectivo\n- Transferencia bancaria\n- Tarjeta (a través de la plataforma)\n\nCuando el pago se realice con tarjeta dentro de la aplicación, la plataforma actuará como facilitador del procesamiento del pago y podrá gestionar temporalmente los fondos antes de transferirlos al profesional.\n\nEn pagos realizados fuera de la plataforma (efectivo o transferencia directa), la plataforma no interviene en la transacción.' },
+  { title: '4. Responsabilidad del Profesional', body: 'El profesional es el único responsable por:\n- La calidad del servicio prestado\n- El cumplimiento de los acuerdos con el usuario\n- La veracidad de la información proporcionada\n- Su comportamiento dentro y fuera de la plataforma' },
+  { title: '5. Sistema Disciplinario', body: 'Se consideran faltas graves:\n- Proporcionar información falsa\n- Conducta inapropiada hacia usuarios\n- Uso indebido de la plataforma\n- Actividades ilegales o fraudulentas\n\nPenalizaciones:\n- Primer strike: Advertencia formal\n- Segundo strike: Suspensión temporal\n- Tercer strike: Cancelación permanente e irreversible\n\nEn casos graves, la cancelación podrá ser inmediata sin previo aviso.' },
+  { title: '6. Protección de Datos', body: 'El profesional autoriza el tratamiento de sus datos conforme a la Ley 172-13 sobre Protección de Datos de la República Dominicana.' },
+  { title: '7. Limitación de Responsabilidad', body: 'Listo Patrón no garantiza ingresos, cantidad de clientes ni volumen de trabajo.\n\nLa plataforma no es responsable por:\n- Disputas entre usuario y profesional\n- Incumplimientos de acuerdos\n- Resultados del servicio prestado' },
+  { title: '8. Resolución de Conflictos', body: 'Cualquier conflicto entre el profesional y el usuario deberá resolverse directamente entre ambas partes.\n\nLa plataforma podrá facilitar canales de comunicación sin asumir responsabilidad en la resolución.' },
+  { title: '9. Fuerza Mayor', body: 'La plataforma no será responsable por interrupciones causadas por fallos técnicos, desastres naturales, decisiones gubernamentales o situaciones fuera de su control.' },
+  { title: '10. Aceptación', body: 'El uso de la plataforma implica la aceptación total de estos términos y condiciones.' },
+];
+
 export default function VerificacionPage({ onBack }) {
   const { userData } = useUserData()
   const [openSections, setOpenSections] = useState({ 1: true });
   const [checks,    setChecks]    = useState({ c1: false, c2: false, c3: false });
+  const [termExp,   setTermExp]   = useState(null);
   const [submitted, setSubmitted] = useState(false);
   const [saving,    setSaving]    = useState(false);
 
@@ -446,6 +460,21 @@ export default function VerificacionPage({ onBack }) {
                 {/* SECCIÓN 6 — Términos */}
                 {n === 6 && (
                   <div style={styles.fieldsWrap}>
+                    {/* Acordeón de términos */}
+                    <div style={styles.termsList}>
+                      {TERMS_PRO.map((t, i) => (
+                        <div key={i} style={styles.termItem}>
+                          <button style={styles.termHead} onClick={() => setTermExp(termExp === i ? null : i)}>
+                            <span style={{ fontSize: 13, fontWeight: 700, color: COLORS.black, flex: 1, textAlign: "left" }}>{t.title}</span>
+                            <span style={{ color: COLORS.mamey, fontSize: 18, transform: termExp === i ? "rotate(90deg)" : "rotate(0)", transition: "transform 0.2s" }}>›</span>
+                          </button>
+                          {termExp === i && (
+                            <p style={styles.termBody}>{t.body}</p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+
                     {[
                       { key:"c1", icon:"✅", text:"Confirmo que toda la información es real y verídica" },
                       { key:"c2", icon:"🔍", text:"Acepto la revisión de mis antecedentes por ListoPatrón" },
@@ -606,6 +635,10 @@ const styles = {
   statusTitle:    { fontSize:11, fontWeight:800, color:"#6B7280", marginBottom:8, textTransform:"uppercase", letterSpacing:"0.4px" },
   statusPill:     { padding:"6px 13px", borderRadius:99, fontSize:11, fontWeight:700 },
   submitBtn:      { width:"100%", padding:"16px", color:"white", border:"none", borderRadius:16, fontSize:16, fontWeight:800, cursor:"pointer", transition:"all 0.3s", letterSpacing:"0.2px" },
+  termsList:      { background:"white", border:`1.5px solid #E5E7EB`, borderRadius:14, overflow:"hidden", marginBottom:12 },
+  termItem:       { borderBottom:`1px solid #F3F4F6` },
+  termHead:       { width:"100%", display:"flex", alignItems:"center", gap:10, padding:"13px 14px", background:"none", border:"none", cursor:"pointer" },
+  termBody:       { padding:"0 14px 12px", fontSize:12, color:"#6B7280", lineHeight:1.7, background:"#FFF8F3", borderTop:`1px solid rgba(242,96,0,0.08)`, whiteSpace: "pre-line" },
 };
 
 const css = `
