@@ -42,6 +42,7 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
   const [submitted, setSubmitted] = useState(false)
   const [latestOrder, setLatestOrder] = useState(null)
   const [isUploading, setIsUploading] = useState(false)
+  const [quejaTexto, setQuejaTexto] = useState('')
 
   useEffect(() => {
     if (!finalUserData?.uid) {
@@ -144,6 +145,7 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
   const resetForm = () => {
     setSubmitted(false)
     setFotos([])
+    setQuejaTexto('')
     setFormData({ nombreProfesional: proName, fechaFinalizacion:'', calificacion:0, completado:'', puntualidad:'', recomendaria:'', montoAcordado:'', montoFinal:'', formaPago:'', gastosAdicionales:'', experiencia:'' })
     setFetchTrigger(prev => prev + 1)
   }
@@ -155,48 +157,67 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
       return
     }
 
-    if (formData.calificacion >= 4 || formData.calificacion > 0) {
-      setIsUploading(true)
-      try {
-        // Auto-completar reseñas vacías para que no sean invisibles en el Home
-        let finalComment = formData.experiencia?.trim() || ''
-        if (!finalComment && formData.calificacion >= 4) {
-          finalComment = "¡Excelente servicio! Muy recomendado."
-        } else if (!finalComment && formData.calificacion > 0) {
-          finalComment = "Servicio completado."
-        }
+    if (formData.calificacion <= 0) {
+      alert("Por favor selecciona una calificación de estrellas para finalizar.")
+      return
+    }
 
-        // Actualizar Firestore orders
-        await updateDoc(doc(db, 'orders', latestOrder.id), {
-          rated: true,
-          ratingScore: formData.calificacion,
-          ratingComment: finalComment,
-          reviewerName: finalUserData?.name || 'Cliente',
-          checkoutMontoAcordado: formData.montoAcordado || '',
-          checkoutMontoFinal: formData.montoFinal || '',
-          checkoutFormaPago: formData.formaPago || ''
-        })
-
-        // Notificar al profesional con push nativo
-        if (latestOrder.proId) {
-          await addDoc(collection(db, 'notificaciones'), {
-            userId:    latestOrder.proId,
-            orderId:   latestOrder.id,
-            type:      'new_review',
-            title:     lang==='es' ? '⭐ ¡Nueva Reseña!' : '⭐ New Review!',
-            text:      lang==='es' ? `Recibiste ${formData.calificacion} estrellas por Trabajo Listo.` : `You received a ${formData.calificacion} star rating.`,
-            read:      false,
-            icon:      '⭐',
-            createdAt: serverTimestamp()
-          })
-        }
-        setSubmitted(true)
-      } catch (err) {
-        console.error("Error submitting review:", err)
-        alert("Error al enviar evaluación. Revisa tu conexión.")
-      } finally {
-        setIsUploading(false)
+    setIsUploading(true)
+    try {
+      // Auto-completar reseñas vacías para que no sean invisibles en el Home
+      let finalComment = formData.experiencia?.trim() || ''
+      if (!finalComment && formData.calificacion >= 4) {
+        finalComment = "¡Excelente servicio! Muy recomendado."
+      } else if (!finalComment && formData.calificacion > 0) {
+        finalComment = "Servicio completado."
       }
+
+      // Actualizar Firestore orders
+      await updateDoc(doc(db, 'orders', latestOrder.id), {
+        rated: true,
+        ratingScore: formData.calificacion,
+        ratingComment: finalComment,
+        reviewerName: finalUserData?.name || 'Cliente',
+        checkoutMontoAcordado: formData.montoAcordado || '',
+        checkoutMontoFinal: formData.montoFinal || '',
+        checkoutFormaPago: formData.formaPago || ''
+      })
+
+      // Notificar al profesional con push nativo
+      if (latestOrder.proId) {
+        await addDoc(collection(db, 'notificaciones'), {
+          userId:    latestOrder.proId,
+          orderId:   latestOrder.id,
+          type:      'new_review',
+          title:     lang==='es' ? '⭐ ¡Nueva Reseña!' : '⭐ New Review!',
+          text:      lang==='es' ? `Recibiste ${formData.calificacion} estrellas por Trabajo Listo.` : `You received a ${formData.calificacion} star rating.`,
+          read:      false,
+          icon:      '⭐',
+          createdAt: serverTimestamp()
+        })
+      }
+
+      // AGREGAR REPORTE A ADMIN SI TIENE QUEJA
+      if (quejaTexto.trim()) {
+        await addDoc(collection(db, 'reports'), {
+          reporterId: finalUserData.uid || 'unknown',
+          reporterName: finalUserData.name || 'Cliente',
+          reportedId: latestOrder.proId || 'unknown',
+          reportedName: latestOrder.proName || 'Profesional',
+          reason: quejaTexto.trim(),
+          severity: 'moderada',
+          action: 'reported',
+          createdAt: serverTimestamp(),
+          status: 'pending'
+        })
+      }
+
+      setSubmitted(true)
+    } catch (err) {
+      console.error("Error submitting review:", err)
+      alert("Error al enviar evaluación. Revisa tu conexión.")
+    } finally {
+      setIsUploading(false)
     }
   }
 
@@ -580,6 +601,23 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
                  formData.calificacion === 3 ? 'Bueno' :
                  formData.calificacion === 4 ? 'Muy bueno' : 'Excelente ✨'}
               </p>
+            </div>
+
+            {/* ¿Alguna queja? (Opcional) */}
+            <div style={s.card}>
+              <p style={{ ...s.sectionLabel, display: 'flex', alignItems: 'center', gap: '8px', color: '#B91C1C', marginBottom: '8px' }}>
+                <span style={{ fontSize: '18px' }}>🚨</span> ¿Alguna queja? (Opcional)
+              </p>
+              <label style={{ ...s.label, marginBottom: '10px', lineHeight: 1.4 }}>
+                Si el profesional tuvo un comportamiento extraño, inusual o sospechoso, escribe tu reporte aquí para que la Central de Mando lo audite de inmediato:
+              </label>
+              <textarea
+                value={quejaTexto}
+                onChange={(e) => setQuejaTexto(e.target.value)}
+                placeholder="Escribe aquí tu reporte o queja..."
+                rows={3}
+                style={s.textarea}
+              />
             </div>
           </>
         )}
