@@ -920,10 +920,16 @@ export default function OrdersPage({ lang = 'es', navigate, userData, userRole }
       {o.paymentStatus==='verifying' && userRole==='pro' && (
         <button className="oc-btn trato" onClick={()=>setVerifyingOrder(o)} style={{ background:'#ECFDF5', color:'#10B981', borderColor:'#A7F3D0', fontWeight:'bold' }}>👁️ Ver Recibo (Pago)</button>
       )}
-      {o.status==='done' && userRole!=='pro' && o.paymentStatus!=='approved' && o.paymentStatus!=='pending_cash' && (
-        <button className="oc-btn listo" style={{ background:'#10B981', boxShadow:'0 4px 14px rgba(16,185,129,0.35)', marginBottom:8 }} onClick={()=>navigate('payment', { ...o, orderId:o.id })}>
-          💳 {lang==='es'?'Proceder al Pago':'Proceed to Payment'}
-        </button>
+      {o.status==='done' && userRole!=='pro' && (
+        ['approved', 'pending_cash', 'paid', 'verifying'].includes(o.paymentStatus) ? (
+          <button className="oc-btn listo" style={{ background:'#94A3B8', cursor:'not-allowed', marginBottom:8 }} disabled>
+            💳 {lang==='es'?'Trabajo Pago':'Work Paid'}
+          </button>
+        ) : (
+          <button className="oc-btn listo" style={{ background:'#10B981', boxShadow:'0 4px 14px rgba(16,185,129,0.35)', marginBottom:8 }} onClick={()=>navigate('payment', { ...o, orderId:o.id })}>
+            💳 {lang==='es'?'Proceder al Pago':'Proceed to Payment'}
+          </button>
+        )
       )}
       {o.status==='done' && !o.rated && userRole!=='pro' && (o.paymentStatus==='approved'||o.paymentStatus==='pending_cash') && <button className="oc-btn review" onClick={()=>setReviewOrder(o)}>{T.review}</button>}
       {o.status==='done' && o.rated && <span className="oc-rated">⭐ {T.rated}</span>}
@@ -1001,10 +1007,16 @@ export default function OrdersPage({ lang = 'es', navigate, userData, userRole }
               <div className="oc-right"><span className="oc-status" style={{ color:statusColor(o.status),background:statusColor(o.status)+'18' }}>{T.status[o.status]}</span><p className="oc-price">{o.price}</p></div>
             </div>
             <div className="oc-actions">
-              {o.status==='done' && userRole!=='pro' && o.paymentStatus!=='approved' && o.paymentStatus!=='pending_cash' && (
-                <button className="oc-btn listo" style={{ background:'#10B981',boxShadow:'0 4px 14px rgba(16,185,129,0.35)',marginBottom:8 }} onClick={()=>navigate('payment', { ...o, orderId:o.id })}>
-                  💳 {lang==='es'?'Proceder al Pago':'Proceed to Payment'}
-                </button>
+              {o.status==='done' && userRole!=='pro' && (
+                ['approved', 'pending_cash', 'paid', 'verifying'].includes(o.paymentStatus) ? (
+                  <button className="oc-btn listo" style={{ background:'#94A3B8', cursor:'not-allowed', marginBottom:8 }} disabled>
+                    💳 {lang==='es'?'Trabajo Pago':'Work Paid'}
+                  </button>
+                ) : (
+                  <button className="oc-btn listo" style={{ background:'#10B981',boxShadow:'0 4px 14px rgba(16,185,129,0.35)',marginBottom:8 }} onClick={()=>navigate('payment', { ...o, orderId:o.id })}>
+                    💳 {lang==='es'?'Proceder al Pago':'Proceed to Payment'}
+                  </button>
+                )
               )}
               {o.status==='done' && !o.rated && userRole!=='pro' && (o.paymentStatus==='approved'||o.paymentStatus==='pending_cash') && <button className="oc-btn review" onClick={()=>setReviewOrder(o)}>{T.review}</button>}
               {o.status==='done' && o.rated && <span className="oc-rated">⭐ {T.rated}</span>}

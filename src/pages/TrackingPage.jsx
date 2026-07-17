@@ -490,6 +490,7 @@ export default function TrackingPage({ lang = 'es', navigate, professional, user
   const [showChat,       setShowChat]       = useState(false)
   const [showArrivingAlert, setShowArrivingAlert] = useState(false)
   const [alertDismissed, setAlertDismissed] = useState(false)
+  const [paymentStatus, setPaymentStatus] = useState(professional?.paymentStatus || null)
 
   // Audio llegada y notificación
   const arrivingAudioRef    = useRef(null)
@@ -529,6 +530,7 @@ export default function TrackingPage({ lang = 'es', navigate, professional, user
         if (d.status === 'cancelled') setWorkStatus('declined_done')
         if (d.status === 'arrived') { setStatus('arrived'); setWorkStatus('awaiting_deal'); stopArrivingSound() }
         if (d.estimatedTime !== undefined) setEta(d.estimatedTime)
+        if (d.paymentStatus !== undefined) setPaymentStatus(d.paymentStatus)
         
         // Use real GPS coordinates if available
         if (d.proCoords) setProPos([d.proCoords.lat, d.proCoords.lng])
@@ -889,9 +891,15 @@ export default function TrackingPage({ lang = 'es', navigate, professional, user
 
             {workStatus==='done' && userRole==='user' && (
               <div className="tracking-done-actions">
-                <button className="tracking-flow-btn pay-btn" onClick={() => navigate('payment', professional)}>
-                  💳 {lang==='es'?'Pagar ahora':'Pay now'}
-                </button>
+                {['approved', 'pending_cash', 'paid', 'verifying'].includes(paymentStatus) ? (
+                  <button className="tracking-flow-btn pay-btn" style={{ background: '#94A3B8', cursor: 'not-allowed' }} disabled>
+                    💳 {lang==='es'?'Trabajo Pago':'Work Paid'}
+                  </button>
+                ) : (
+                  <button className="tracking-flow-btn pay-btn" onClick={() => navigate('payment', professional)}>
+                    💳 {lang==='es'?'Pagar ahora':'Pay now'}
+                  </button>
+                )}
               </div>
             )}
 

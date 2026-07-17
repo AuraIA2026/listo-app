@@ -257,7 +257,7 @@ function TestimonialsCarousel({ lang, navigate }) {
         snapshot.forEach(doc => docs.push({ id: doc.id, ...doc.data() }))
         const topReviews = docs.filter(d => (d.ratingScore >= 4 || d.moderated))
         topReviews.sort((a,b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0))
-        const formatted = topReviews.slice(0, 10).map(d => ({
+        const formatted = topReviews.slice(0, 14).map(d => ({
           id: d.proId || d.professionalId || null,
           nameEs: d.reviewerName || d.clientName || 'Cliente',
           clientPhoto: d.reviewerPhoto || d.clientPhoto || null,

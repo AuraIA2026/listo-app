@@ -141,6 +141,8 @@
 .chat-action-btn:hover { background: var(--mamey-pale); color: var(--mamey); transform: scale(1.05); }
 .call-btn { background: #ECFDF5; color: #10B981; }
 .call-btn:hover { background: #D1FAE5; color: #059669; }
+.report-btn { background: #FEE2E2; color: #EF4444; }
+.report-btn:hover { background: #FCA5A5; color: #B91C1C; }
 
 /* Pro card / Quick Book */
 .chat-pro-card {
