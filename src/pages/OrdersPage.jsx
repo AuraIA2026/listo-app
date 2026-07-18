@@ -565,7 +565,15 @@ function NotificacionesModal({ onClose, notifs, lang, onMarkAllRead, navigate, o
             const isReview = n.type === 'new_review' || (n.text || '').toLowerCase().includes('estrella')
             // Buscar relatedOrder relajando el filtro para incluir cualquier orden válida que coincida con orderId
             const relatedOrder = n.orderId ? orders.find(o => o.id===n.orderId) : null
+            const isPaid = relatedOrder && ['approved', 'pending_cash', 'paid', 'verifying'].includes(relatedOrder.paymentStatus)
             
+            let displayText = n.text
+            if (isPago && isPaid) {
+              displayText = lang === 'es'
+                ? `${relatedOrder.proName || relatedOrder.pro || 'El profesional'} ha terminado el trabajo. ¡Pago realizado!`
+                : `${relatedOrder.proName || relatedOrder.pro || 'The professional'} finished the job. Payment completed!`
+            }
+
             const isClickable = isPago || isNuevoPedido || isReview || relatedOrder
             const handleClick = async () => {
               try { await updateDoc(doc(db,'notificaciones',n.id), { read:true }) } catch(e) {}
@@ -577,11 +585,20 @@ function NotificacionesModal({ onClose, notifs, lang, onMarkAllRead, navigate, o
                 onClose(); navigate('profile') 
               }
               else if (isPago && relatedOrder) { 
-                onClose(); navigate('payment', { ...relatedOrder, orderId:relatedOrder.id }) 
+                onClose(); 
+                if (isPaid) {
+                  if (!relatedOrder.rated) {
+                    navigate('workdone', { ...relatedOrder, orderId:relatedOrder.id })
+                  } else {
+                    navigate('orders')
+                  }
+                } else {
+                  navigate('payment', { ...relatedOrder, orderId:relatedOrder.id }) 
+                }
               }
               else if (relatedOrder) {
                 onClose(); 
-                if (relatedOrder.status === 'done' && relatedOrder.paymentStatus !== 'approved' && relatedOrder.paymentStatus !== 'pending_cash') {
+                if (relatedOrder.status === 'done' && !['approved', 'pending_cash', 'paid', 'verifying'].includes(relatedOrder.paymentStatus)) {
                   navigate('payment', { ...relatedOrder, orderId:relatedOrder.id })
                 } else {
                   navigate('tracking', { ...relatedOrder })
@@ -594,10 +611,20 @@ function NotificacionesModal({ onClose, notifs, lang, onMarkAllRead, navigate, o
                 onMouseLeave={e => { e.currentTarget.style.transform='scale(1)' }}>
                 <span style={{ fontSize:22, flexShrink:0 }}>{n.icon||'🔔'}</span>
                 <div style={{ flex:1 }}>
-                  <p style={{ margin:'0 0 2px', fontSize:13, fontWeight:n.read?600:800, color:'#1A1A2E' }}>{n.text}</p>
+                  <p style={{ margin:'0 0 2px', fontSize:13, fontWeight:n.read?600:800, color:'#1A1A2E' }}>{displayText}</p>
                   <p style={{ margin:0, fontSize:11, color:'#999' }}>{n.time}</p>
                   {isNuevoPedido&&n.orderId && <div style={{ marginTop:8, display:'inline-flex', alignItems:'center', gap:6, background:'#F26000', color:'white', borderRadius:8, padding:'6px 12px', fontSize:12, fontWeight:700 }}>📋 {lang==='es'?'Ver pedido →':'View order →'}</div>}
-                  {isPago&&relatedOrder && <div style={{ marginTop:8, display:'inline-flex', alignItems:'center', gap:6, background:'#10B981', color:'white', borderRadius:8, padding:'6px 12px', fontSize:12, fontWeight:700 }}>💳 {lang==='es'?'Ir al Pago →':'Go to Payment →'}</div>}
+                  {isPago && relatedOrder && (
+                    isPaid ? (
+                      <div style={{ marginTop:8, display:'inline-flex', alignItems:'center', gap:6, background:'#94A3B8', color:'white', borderRadius:8, padding:'6px 12px', fontSize:12, fontWeight:700 }}>
+                        ✓ {lang==='es'?'Pago realizado':'Payment completed'}
+                      </div>
+                    ) : (
+                      <div style={{ marginTop:8, display:'inline-flex', alignItems:'center', gap:6, background:'#10B981', color:'white', borderRadius:8, padding:'6px 12px', fontSize:12, fontWeight:700 }}>
+                        💳 {lang==='es'?'Ir al Pago →':'Go to Payment →'}
+                      </div>
+                    )
+                  )}
                 </div>
                 {!n.read && <div style={{ width:8, height:8, borderRadius:'50%', background:'#F26000', flexShrink:0, marginTop:4 }} />}
               </div>

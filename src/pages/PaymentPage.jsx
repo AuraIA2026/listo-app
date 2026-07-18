@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { doc, updateDoc } from 'firebase/firestore'
-import { db } from '../firebase'
+import { db, auth } from '../firebase'
 import './PaymentPage.css'
 
 import banreservas    from '../assets/banks/banreservas.png'
@@ -224,7 +224,7 @@ export default function PaymentPage({ lang = 'es', navigate, professional }) {
         })
 
         // Enviar notificación al profesional
-        import('firebase/firestore').then(({ addDoc, collection, serverTimestamp }) => {
+        import('firebase/firestore').then(async ({ addDoc, getDocs, query, where, collection, serverTimestamp }) => {
           addDoc(collection(db, 'notificaciones'), {
             userId: pro.proId || pro.uid || pro.id,
             orderId: pro.orderId,
@@ -237,6 +237,30 @@ export default function PaymentPage({ lang = 'es', navigate, professional }) {
             icon: '💸',
             createdAt: serverTimestamp()
           }).catch(console.error);
+
+          // Buscar la notificación de trabajo terminado para el cliente y cambiar su texto
+          try {
+            const notifQ = query(
+              collection(db, 'notificaciones'),
+              where('orderId', '==', pro.orderId),
+              where('userId', '==', auth.currentUser?.uid || '')
+            );
+            const notifSnap = await getDocs(notifQ);
+            notifSnap.forEach(async (docSnap) => {
+              const data = docSnap.data();
+              if (data.text && (data.text.toLowerCase().includes('pago') || data.text.toLowerCase().includes('payment') || data.text.toLowerCase().includes('procede') || data.text.toLowerCase().includes('proceed') || data.type === 'job_done')) {
+                await updateDoc(doc(db, 'notificaciones', docSnap.id), {
+                  text: lang === 'es' 
+                    ? `${pro.name || 'El profesional'} ha terminado el trabajo. ¡Pago realizado!` 
+                    : `${pro.name || 'The professional'} finished the job. Payment completed!`,
+                  title: lang === 'es' ? '🎉 ¡Pago Realizado!' : '🎉 Payment Done!',
+                  icon: '✅'
+                });
+              }
+            });
+          } catch (errNotif) {
+            console.error("Error al actualizar la notificación de pago del cliente:", errNotif);
+          }
         });
       }
     } catch (e) {
