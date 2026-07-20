@@ -743,12 +743,6 @@ export default function OrdersPage({ lang = 'es', navigate, userData, userRole }
           <h1 className="orders-title" style={{ margin:0 }}>{T.title}</h1>
           {pendingReview.length>0 && userRole!=='pro' && <span className="orders-badge">{pendingReview.length}</span>}
         </div>
-        {(notifs.length>0||unread>0) && (
-          <button onClick={()=>setShowNotifs(true)} style={{ position:'relative', background:'none', border:'none', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', padding:6 }}>
-            <span style={{ fontSize:26 }}>🔔</span>
-            {unread>0 && <div style={{ position:'absolute', top:2, right:0, background:'#F26000', color:'#fff', fontSize:10, fontWeight:900, width:18, height:18, borderRadius:'50%', display:'flex', alignItems:'center', justifyContent:'center', border:'2px solid #fff' }}>{unread>9?'9+':unread}</div>}
-          </button>
-        )}
       </div>
       {loading && <p style={{ textAlign:'center', marginTop:30, color:'#666' }}>Cargando pedidos...</p>}
       {!loading && orders.length===0 && history.length===0 && (
@@ -848,7 +842,7 @@ export default function OrdersPage({ lang = 'es', navigate, userData, userRole }
       {reviewOrder    && <ReviewModal    order={reviewOrder}    lang={lang} onClose={()=>setReviewOrder(null)}    onSubmit={handleReviewSubmit} />}
       {verifyingOrder && <ReceiptModal   order={verifyingOrder} lang={lang} onClose={()=>setVerifyingOrder(null)} onApprove={handlePaymentApprove} />}
       {detailsOrder   && <OrderDetailsModal order={detailsOrder} lang={lang} onClose={()=>setDetailsOrder(null)} onAccept={handleAccept} onDecline={handleDecline} />}
-      {showNotifs     && <NotificacionesModal onClose={()=>setShowNotifs(false)} notifs={notifs} lang={lang} onMarkAllRead={handleMarkAllRead} navigate={navigate} orders={allOrders} onOpenOrder={handleOpenOrderFromNotif} /> }
+
 
       {/* ── Modal Listo Patrón (pro) ── */}
       {workDoneOrder && (

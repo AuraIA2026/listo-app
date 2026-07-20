@@ -420,7 +420,11 @@ export default function HomePage({ lang, navigate, userRole }) {
     const targetIds = userData.email === 'listopatron.app@gmail.com' ? [userData.uid, 'admin'] : [userData.uid]
     const q = query(collection(db, 'notificaciones'), where('userId', 'in', targetIds), where('read', '==', false))
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      setUnreadNotifs(snapshot.docs.length)
+      const promoNotifs = snapshot.docs.filter(docSnap => {
+        const t = docSnap.data().type;
+        return t === 'promo' || t === 'offer';
+      });
+      setUnreadNotifs(promoNotifs.length)
     }, () => {})
     return () => unsubscribe()
   }, [userData])

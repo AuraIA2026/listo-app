@@ -534,6 +534,7 @@ export default function AdminPage({ navigate }) {
   const [notifySearch, setNotifySearch] = useState('');
   const [showNotifyAc, setShowNotifyAc] = useState(false);
   const [notifyMessage, setNotifyMessage] = useState('Hola, Bienvenido a Listo Patrón. Para comenzar a generar dinero de inmediato debes completar tu perfil. ¡Te esperamos!');
+  const [notifyType, setNotifyType] = useState('system');
 
   useEffect(() => {
     // 1. Escuchar Pagos
@@ -760,8 +761,8 @@ export default function AdminPage({ navigate }) {
                  if (u) {
                      await addDoc(collection(db, 'notificaciones'), {
                         userId: notifyUser,
-                        type: 'system',
-                        title: 'Mensaje de Listo Patrón',
+                        type: notifyType,
+                        title: notifyType === 'promo' ? '🏷️ ¡Nueva Oferta!' : 'Mensaje de Listo Patrón',
                         text: notifyMessage,
                         date: new Date().toISOString(),
                         read: false
@@ -777,8 +778,8 @@ export default function AdminPage({ navigate }) {
                  for (const u of targets) {
                      await addDoc(collection(db, 'notificaciones'), {
                         userId: u.id,
-                        type: 'system',
-                        title: 'Mensaje de Listo Patrón',
+                        type: notifyType,
+                        title: notifyType === 'promo' ? '🏷️ ¡Nueva Oferta!' : 'Mensaje de Listo Patrón',
                         text: notifyMessage,
                         date: new Date().toISOString(),
                         read: false
@@ -1691,7 +1692,13 @@ export default function AdminPage({ navigate }) {
                 </div>
               )}
 
-              <label className="gift-label">{notifyTarget==='single' ? '3' : '2'}. Escribir Mensaje</label>
+              <label className="gift-label">{notifyTarget==='single' ? '3' : '2'}. Tipo de Notificación</label>
+              <select className="gift-input" value={notifyType} onChange={e => setNotifyType(e.target.value)} style={{marginBottom: '20px'}}>
+                <option value="system">🔔 Informativo / Sistema</option>
+                <option value="promo">🏷️ Oferta / Promoción</option>
+              </select>
+
+              <label className="gift-label">{notifyTarget==='single' ? '4' : '3'}. Escribir Mensaje</label>
               <textarea className="gift-textarea" value={notifyMessage} onChange={e => setNotifyMessage(e.target.value)} />
 
               <button 

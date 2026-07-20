@@ -23,7 +23,10 @@ export default function NotificacionPage({ lang, navigate, userData }) {
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const items = [];
       snapshot.forEach(docSnap => {
-        items.push({ id: docSnap.id, ...docSnap.data() });
+        const data = docSnap.data();
+        if (data.type === 'promo' || data.type === 'offer') {
+          items.push({ id: docSnap.id, ...data });
+        }
       });
       // Sort newer first
       items.sort((a, b) => new Date(b.date) - new Date(a.date));
@@ -126,7 +129,7 @@ export default function NotificacionPage({ lang, navigate, userData }) {
               <div className="notification-content">
                 <div className="notification-header">
                   <span className="notification-icon">
-                     {notif.type === 'system' ? '🔔' : notif.type === 'job_done' ? '🎉' : '📬'}
+                     🏷️
                   </span>
                   <div className="notification-text-wrapper">
                     <p className="notification-text">{notif.text}</p>

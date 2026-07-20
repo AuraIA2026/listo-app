@@ -3,6 +3,9 @@ import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firesto
 import { db } from '../firebase'
 import { CATEGORIES, FILTERS, ALL_SUBCATEGORIES } from '../categories'
 import LocalesCarrusel from '../locales/LocalesCarrusel'  // ✅ importado
+import recomendarIcon from '../assets/icons/recomendar.png'
+import opinionesIcon from '../assets/icons/opiniones.png'
+import compartirIcon from '../assets/icons/compartir.png'
 import './SearchPage.css'
 
 const txt = {
@@ -498,6 +501,32 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
   const [sortBy,            setSortBy]            = useState('all')
   const [professionals,     setProfessionals]     = useState([])
   const [loading,           setLoading]           = useState(true)
+
+  const [likedPros, setLikedPros] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('listo_liked_pros') || '{}')
+    } catch {
+      return {}
+    }
+  })
+  const [sharingPro, setSharingPro] = useState(null)
+  const [showCopyAlert, setShowCopyAlert] = useState(false)
+
+  const toggleLike = (proId, e) => {
+    e.stopPropagation()
+    setLikedPros(prev => {
+      const next = { ...prev, [proId]: !prev[proId] }
+      localStorage.setItem('listo_liked_pros', JSON.stringify(next))
+      return next
+    })
+  }
+
+  const getLikeCount = (pro) => {
+    const proId = pro.id || pro.uid || ''
+    const seed = Array.from(proId).reduce((acc, char) => acc + char.charCodeAt(0), 0)
+    const baseLikes = ((seed % 40) + 12) + (pro.reviews || 0) * 8
+    return likedPros[proId] ? baseLikes + 1 : baseLikes
+  }
 
   const T = txt[lang]
 
