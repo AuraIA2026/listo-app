@@ -511,6 +511,55 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
   })
   const [sharingPro, setSharingPro] = useState(null)
   const [showCopyAlert, setShowCopyAlert] = useState(false)
+  const [toastMessage, setToastMessage] = useState('')
+  const [showToast, setShowToast] = useState(false)
+
+  const handleShare = async (pro, e) => {
+    e.stopPropagation()
+    const shareText = lang === 'es'
+      ? `¡Te recomiendo a ${pro.name} (${pro.category}) en Listo!`
+      : `I recommend ${pro.name} (${pro.category}) on Listo!`
+    const shareUrl = `${window.location.origin}/proProfile/${pro.id}`
+    
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'Listo App',
+          text: `${shareText}\n`,
+          url: shareUrl
+        })
+      } catch (err) {
+        console.log('Share failed or cancelled:', err)
+      }
+    } else {
+      const fullText = `${shareText} Contrátalo aquí: ${shareUrl}`
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(fullText)
+          .then(() => {
+            setToastMessage(lang === 'es' ? '¡Enlace de perfil copiado!' : 'Profile link copied!')
+            setShowToast(true)
+            setTimeout(() => setShowToast(false), 3000)
+          })
+          .catch(err => {
+            console.error('Could not copy text: ', err)
+          })
+      } else {
+        const textArea = document.createElement("textarea")
+        textArea.value = fullText
+        document.body.appendChild(textArea)
+        textArea.select()
+        try {
+          document.execCommand('copy')
+          setToastMessage(lang === 'es' ? '¡Enlace de perfil copiado!' : 'Profile link copied!')
+          setShowToast(true)
+          setTimeout(() => setShowToast(false), 3000)
+        } catch (err) {
+          console.error('Fallback copy failed: ', err)
+        }
+        document.body.removeChild(textArea)
+      }
+    }
+  }
 
   const toggleLike = (proId, e) => {
     e.stopPropagation()
@@ -758,6 +807,20 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
                     {pro.available ? T.available : T.busy}
                   </span>
                 </div>
+                <div className="card-interaction-row" onClick={(e) => e.stopPropagation()}>
+                  <button className={`interaction-btn ${likedPros[pro.id] ? 'active' : ''}`} onClick={(e) => toggleLike(pro.id, e)}>
+                    <img src={recomendarIcon} alt="Recomendar" className="interaction-icon" />
+                    <span className="interaction-label">{lang === 'es' ? 'Recomendar' : 'Recommend'} {getLikeCount(pro) > 0 && `(${getLikeCount(pro)})`}</span>
+                  </button>
+                  <button className="interaction-btn" onClick={(e) => { e.stopPropagation(); navigate('proProfile', { ...pro, autoWriteReview: true }); }}>
+                    <img src={opinionesIcon} alt="Opiniones" className="interaction-icon" />
+                    <span className="interaction-label">{lang === 'es' ? 'Opiniones' : 'Reviews'}</span>
+                  </button>
+                  <button className="interaction-btn" onClick={(e) => handleShare(pro, e)}>
+                    <img src={compartirIcon} alt="Compartir" className="interaction-icon" />
+                    <span className="interaction-label">{lang === 'es' ? 'Compartir' : 'Share'}</span>
+                  </button>
+                </div>
                 
                 <div className="premium-title-row">
                   <div>
@@ -813,6 +876,20 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
                 <span className={`status-badge ${pro.available ? 'avail' : 'busy'}`}>
                   {pro.available ? T.available : T.busy}
                 </span>
+              </div>
+              <div className="card-interaction-row" onClick={(e) => e.stopPropagation()}>
+                <button className={`interaction-btn ${likedPros[pro.id] ? 'active' : ''}`} onClick={(e) => toggleLike(pro.id, e)}>
+                  <img src={recomendarIcon} alt="Recomendar" className="interaction-icon" />
+                  <span className="interaction-label">{lang === 'es' ? 'Recomendar' : 'Recommend'} {getLikeCount(pro) > 0 && `(${getLikeCount(pro)})`}</span>
+                </button>
+                <button className="interaction-btn" onClick={(e) => { e.stopPropagation(); navigate('proProfile', { ...pro, autoWriteReview: true }); }}>
+                  <img src={opinionesIcon} alt="Opiniones" className="interaction-icon" />
+                  <span className="interaction-label">{lang === 'es' ? 'Opiniones' : 'Reviews'}</span>
+                </button>
+                <button className="interaction-btn" onClick={(e) => handleShare(pro, e)}>
+                  <img src={compartirIcon} alt="Compartir" className="interaction-icon" />
+                  <span className="interaction-label">{lang === 'es' ? 'Compartir' : 'Share'}</span>
+                </button>
               </div>
               <div className="card-body">
                 <h3 className="pro-name">{pro.name}</h3>
@@ -875,6 +952,12 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
 
       {!loading && filtered.length === 0 && (
         <div className="empty-state"><span>🔍</span><p>{T.empty}</p></div>
+      )}
+
+      {showToast && (
+        <div className="toast-notification">
+          <span>📋</span> {toastMessage}
+        </div>
       )}
 
       <div style={{ height: 80 }} />

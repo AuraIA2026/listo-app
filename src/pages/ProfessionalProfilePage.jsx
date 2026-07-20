@@ -212,11 +212,11 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
     location: 'Santo Domingo', avatar: 'CM', available: true, id: 1
   }
 
-  const [activeTab, setActiveTab] = useState('photos')
+  const [activeTab, setActiveTab] = useState(pro.autoWriteReview ? 'reviews' : 'photos')
   const [reviews, setReviews] = useState([])
   const [proPhotos, setProPhotos] = useState([])
   const [loadingReviews, setLoadingReviews] = useState(true)
-  const [showWriteReview, setShowWriteReview] = useState(false)
+  const [showWriteReview, setShowWriteReview] = useState(pro.autoWriteReview || false)
   const avatarColors = ['#F26000','#C24D00','#FF8533','#7A3000','#FFB380']
   const proColor = avatarColors[pro.id % avatarColors.length] || '#F26000'
 
