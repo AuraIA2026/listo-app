@@ -371,7 +371,14 @@ function ProDelMes({ lang, navigate, userRole }) {
         .pdm-photo { width: 78px; height: 78px; border-radius: 50%; object-fit: cover; border: 3px solid #FFD700; box-shadow: 0 0 0 4px rgba(255,215,0,0.2), 0 4px 16px rgba(255,150,0,0.25); }
         .pdm-avatar { width: 78px; height: 78px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 26px; font-weight: 800; color: #fff; border: 3px solid #FFD700; box-shadow: 0 0 0 4px rgba(255,215,0,0.2), 0 4px 16px rgba(255,150,0,0.25); }
         .pdm-badge { position: absolute; bottom: -2px; right: -2px; background: linear-gradient(135deg, #FFD700, #FFA500); border-radius: 50%; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; font-size: 13px; border: 2px solid #fff; animation: pdm-badge-pop 0.5s ease-out forwards, pdm-star-spin 3s ease-in-out 0.5s infinite; }
-        .pdm-nombre { font-size: 14px; font-weight: 800; color: #1a1a2e; margin: 0; }
+        .pdm-nombre {
+          font-size: 14px;
+          font-weight: 800;
+          color: #1a1a2e;
+          margin: 0;
+          white-space: normal;
+          word-break: break-word;
+        }
         .pdm-spec { font-size: 11px; color: #999; margin: 0; }
         .pdm-stars-row { display: flex; align-items: center; gap: 4px; justify-content: center; }
         .pdm-stars { color: #FFD700; font-size: 12px; letter-spacing: 1px; }
@@ -385,7 +392,19 @@ function ProDelMes({ lang, navigate, userRole }) {
         .pdm-client-photo { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; flex-shrink: 0; border: 2px solid #FFD700; }
         .pdm-client-avatar { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; color: #fff; flex-shrink: 0; border: 2px solid #FFD700; }
         .pdm-resena-content { flex: 1; min-width: 0; }
-        .pdm-client-name { font-size: 11px; font-weight: 800; color: #1a1a2e; margin: 0 0 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .pdm-client-name {
+          font-size: 11px;
+          font-weight: 800;
+          color: #1a1a2e;
+          margin: 0 0 1px;
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: normal;
+          word-break: break-word;
+        }
         .pdm-resena-stars { color: #FFD700; font-size: 9px; letter-spacing: 0.5px; }
         .pdm-resena-text { font-size: 10px; color: #666; margin: 2px 0 0; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
         .pdm-resena-empty { font-size: 11px; color: #bbb; text-align: center; padding: 16px 4px; }

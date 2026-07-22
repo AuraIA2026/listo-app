@@ -526,7 +526,7 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
           </div>
 
           <div className="pro-name-row">
-            <h1 className="pro-name">{displayPro.name}</h1>
+            <h1 className="pro-profile-name">{displayPro.name}</h1>
             <span className="pro-verified">✓</span>
           </div>
           
