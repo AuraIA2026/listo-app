@@ -1,13 +1,15 @@
 import { useState, useEffect } from 'react'
-import { collection, query, where, getDocs, orderBy } from 'firebase/firestore'
+import { collection, query, where, getDocs, doc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore'
 import { db } from '../firebase'
 import { CATEGORIES, ALL_SUBCATEGORIES } from '../categories'
+import { useUserData } from '../useUserData'
+import logoListo from '../assets/logo_listo.png'
 import './ProfessionalProfilePage.css'
 
 const txt = {
   es: {
     reviews: 'Reseñas',
-    photos: 'Fotos de trabajos',
+    photos: 'Trabajos Realizados',
     book: 'Reservar servicio',
     chat: 'Enviar mensaje',
     available: 'Disponible ahora',
@@ -33,7 +35,7 @@ const txt = {
   },
   en: {
     reviews: 'Reviews',
-    photos: 'Work photos',
+    photos: 'Work Completed',
     book: 'Book service',
     chat: 'Send message',
     available: 'Available now',
@@ -66,6 +68,72 @@ const mockReviews = [
   { id: 4, user: 'Luis García', avatar: 'LG', color: '#7A3000', rating: 3, comment: 'Buen trabajo pero llegó un poco tarde.', date: '5 Feb 2026', service: 'Reparación general' },
 ]
 
+const compressImage = (file) => new Promise((resolve, reject) => {
+  const reader = new FileReader()
+  reader.onload = (e) => {
+    const img = new Image()
+    img.onload = () => {
+      const MAX = 600
+      let { width, height } = img
+      if (width > height) { if (width > MAX) { height = Math.round(height * MAX / width); width = MAX } }
+      else { if (height > MAX) { width = Math.round(width * MAX / height); height = MAX } }
+      const canvas = document.createElement('canvas')
+      canvas.width = width; canvas.height = height
+      canvas.getContext('2d').drawImage(img, 0, 0, width, height)
+      resolve(canvas.toDataURL('image/jpeg', 0.75))
+    }
+    img.onerror = reject; img.src = e.target.result
+  }
+  reader.onerror = reject; reader.readAsDataURL(file)
+})
+
+const categoryMockPhotos = {
+  electricista: [
+    'https://images.unsplash.com/photo-1621905252507-b354bc25edac?w=600&q=80',
+    'https://images.unsplash.com/photo-1558224494-ef8b24494494?w=600&q=80',
+    'https://images.unsplash.com/photo-1544725176-7c40e5a71c5e?w=600&q=80',
+    'https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=600&q=80'
+  ],
+  mecanico: [
+    'https://images.unsplash.com/photo-1486006920555-c77dce18193b?w=600&q=80',
+    'https://images.unsplash.com/photo-1507541904319-4720e9209701?w=600&q=80',
+    'https://images.unsplash.com/photo-1517524206127-48bbd363f3d7?w=600&q=80',
+    'https://images.unsplash.com/photo-1530047676767-17726af8bb55?w=600&q=80'
+  ],
+  'mecanico / asistencia vial': [
+    'https://images.unsplash.com/photo-1486006920555-c77dce18193b?w=600&q=80',
+    'https://images.unsplash.com/photo-1507541904319-4720e9209701?w=600&q=80',
+    'https://images.unsplash.com/photo-1517524206127-48bbd363f3d7?w=600&q=80'
+  ],
+  plomero: [
+    'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=600&q=80',
+    'https://images.unsplash.com/photo-1508962914676-134849a727f0?w=600&q=80',
+    'https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?w=600&q=80',
+    'https://images.unsplash.com/photo-1542013936693-8848e5740476?w=600&q=80'
+  ],
+  limpieza: [
+    'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=600&q=80',
+    'https://images.unsplash.com/photo-1527515637462-cff0e9c3e92c?w=600&q=80',
+    'https://images.unsplash.com/photo-1584824486509-112e4181ff6b?w=600&q=80',
+    'https://images.unsplash.com/photo-1563453392212-326f5e854473?w=600&q=80'
+  ],
+  'limpieza del hogar': [
+    'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=600&q=80',
+    'https://images.unsplash.com/photo-1527515637462-cff0e9c3e92c?w=600&q=80'
+  ],
+  jardinero: [
+    'https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?w=600&q=80',
+    'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=600&q=80',
+    'https://images.unsplash.com/photo-1592417817098-8f3d6eb19675?w=600&q=80',
+    'https://images.unsplash.com/photo-1598902108854-10e335adac99?w=600&q=80'
+  ],
+  default: [
+    'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=600&q=80',
+    'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=600&q=80',
+    'https://images.unsplash.com/photo-1621905252507-b354bc25edac?w=600&q=80',
+    'https://images.unsplash.com/photo-1486006920555-c77dce18193b?w=600&q=80'
+  ]
+}
 
 function Stars({ rating, interactive = false, onRate }) {
   const [hovered, setHovered] = useState(0)
@@ -103,42 +171,59 @@ function ReviewCard({ review }) {
   )
 }
 
-function PhotoGrid({ photos, lang }) {
+function PhotoGrid({ photos, lang, isOwnProfile, onUploadPhoto, onDeletePhoto }) {
   const T = txt[lang]
   const [lightbox, setLightbox] = useState(null)
-  const [localPhotos, setLocalPhotos] = useState(photos)
-  const [uploading, setUploading] = useState(false)
-  const [uploaded, setUploaded] = useState(false)
 
-  const handleUpload = () => {
-    setUploading(true)
-    setTimeout(() => {
-      setUploading(false)
-      setUploaded(true)
-      setLocalPhotos(prev => [...prev, {
-        id: prev.length + 1,
-        url: 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=400&q=80',
-        caption: 'Nuevo trabajo'
-      }])
-      setTimeout(() => setUploaded(false), 2000)
-    }, 1500)
+  const handleFileChange = (e) => {
+    const files = e.target.files
+    if (!files || files.length === 0) return
+    onUploadPhoto(files)
+    e.target.value = ''
   }
 
   return (
     <div className="photo-section">
-      {localPhotos.length === 0 && (
+      <input id="pro-work-upload" type="file" accept="image/*" multiple style={{ display: 'none' }} onChange={handleFileChange} />
+      
+      {photos.length === 0 && !isOwnProfile && (
          <div style={{ textAlign: 'center', padding: '40px 20px' }}>
             <span style={{ fontSize: 40, display: 'block', marginBottom: 12 }}>📸</span>
             <p style={{ fontWeight: 'bold', margin: 0, color: '#333' }}>{T.noPhotos}</p>
          </div>
       )}
+
+      <div className="photos-grid-title-wrap">
+        <h2 className="photos-grid-title">{T.photos}</h2>
+      </div>
+
       <div className="photos-grid">
-        {localPhotos.map(photo => (
-          <button key={photo.id} className="photo-thumb" onClick={() => setLightbox(photo)}>
-            <img src={photo.url} alt={photo.caption} />
-            <div className="photo-overlay"><span>{photo.caption}</span></div>
+        {isOwnProfile && (
+          <button className="photo-upload-btn-new" onClick={() => document.getElementById('pro-work-upload').click()}>
+            <span className="upload-icon">➕</span>
+            <span className="upload-text">Subir Trabajo</span>
           </button>
-        ))}
+        )}
+        {photos.map((photo, index) => {
+          const photoUrl = typeof photo === 'string' ? photo : photo.url
+          const caption = typeof photo === 'string' ? 'Trabajo realizado' : (photo.caption || 'Trabajo realizado')
+          const photoId = typeof photo === 'string' ? `img-${index}` : (photo.id || index)
+          const isPortfolioPhoto = typeof photoId === 'string' && photoId.startsWith('port-')
+
+          return (
+            <div key={photoId} className="photo-thumb-wrapper">
+              <button className="photo-thumb" onClick={() => setLightbox({ url: photoUrl, caption })}>
+                <img src={photoUrl} alt={caption} />
+                <div className="photo-overlay"><span>{caption}</span></div>
+              </button>
+              {isOwnProfile && isPortfolioPhoto && (
+                <button className="delete-photo-btn" onClick={(e) => { e.stopPropagation(); onDeletePhoto(photoUrl) }} title="Eliminar foto">
+                  ✕
+                </button>
+              )}
+            </div>
+          )
+        })}
       </div>
 
       {lightbox && (
@@ -206,11 +291,16 @@ function WriteReview({ lang, proName, onSubmit }) {
 
 export default function ProfessionalProfilePage({ lang = 'es', navigate, professional }) {
   const T = txt[lang]
+  const { userData } = useUserData()
+
   const pro = professional || {
     name: 'Carlos Méndez', categoryEs: 'Mecánico', categoryEn: 'Mechanic',
     icon: '🔧', rating: 4.9, reviews: 128, price: 'RD$800/hr',
     location: 'Santo Domingo', avatar: 'CM', available: true, id: 1
   }
+
+  const isOwnProfile = userData && (userData.uid === pro.id || userData.uid === pro.uid)
+  const displayPro = isOwnProfile ? userData : pro
 
   const [activeTab, setActiveTab] = useState(pro.autoWriteReview ? 'reviews' : 'photos')
   const [reviews, setReviews] = useState([])
@@ -218,14 +308,14 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
   const [loadingReviews, setLoadingReviews] = useState(true)
   const [showWriteReview, setShowWriteReview] = useState(pro.autoWriteReview || false)
   const avatarColors = ['#F26000','#C24D00','#FF8533','#7A3000','#FFB380']
-  const proColor = avatarColors[pro.id % avatarColors.length] || '#F26000'
+  const proColor = avatarColors[displayPro.id % avatarColors.length] || '#F26000'
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const q = query(
           collection(db, 'orders'),
-          where('proId', '==', pro.id || pro.uid)
+          where('proId', '==', displayPro.id || displayPro.uid)
         )
         const snapshot = await getDocs(q)
         const fetchedReviews = []
@@ -234,7 +324,6 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
 
         snapshot.forEach(doc => {
           const d = doc.data()
-          // 1. Extraer reseñas si están calificadas
           if (d.rated === true || typeof d.ratingScore === 'number') {
             fetchedReviews.push({
               id: doc.id,
@@ -248,7 +337,6 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
               createdAt: d.createdAt?.seconds || 0
             })
           }
-          // 2. Extraer evidencias visuales subidas en "Trabajo Listo"
           if (d.evidences && Array.isArray(d.evidences) && d.evidences.length > 0) {
             d.evidences.forEach(url => {
               fetchedEvidences.push({
@@ -261,11 +349,9 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
           }
         })
         
-        // Setup fotos final
         fetchedEvidences.sort((a,b) => b.createdAt - a.createdAt)
-        setProPhotos(fetchedEvidences.length > 0 ? fetchedEvidences : (pro.photos || []).map((url, i) => ({ id: `p${i}`, url, caption: 'Foto de perfil' })))
-        
-        // Replicar comportamiento de prueba para reseñas si no hay (o usar siempre reales si prefieres)
+        setProPhotos(fetchedEvidences)
+
         if (fetchedReviews.length === 0) {
           setReviews(mockReviews)
         } else {
@@ -280,7 +366,7 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
       }
     }
     fetchData()
-  }, [pro.id, pro.uid])
+  }, [displayPro.id, displayPro.uid])
 
   const avgRating = reviews.length > 0 ? (reviews.reduce((s, r) => s + r.rating, 0) / reviews.length).toFixed(1) : '5.0'
   const ratingDist = [5,4,3,2,1].map(n => ({
@@ -303,52 +389,155 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
     setShowWriteReview(false)
   }
 
+  const handleCoverUpload = async (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    try {
+      const base64 = await compressImage(file)
+      await updateDoc(doc(db, 'users', userData.uid), { coverURL: base64 })
+    } catch (err) {
+      console.error("Error uploading cover:", err)
+    }
+  }
+
+  const handleAvatarUpload = async (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    try {
+      const base64 = await compressImage(file)
+      await updateDoc(doc(db, 'users', userData.uid), { photoURL: base64 })
+    } catch (err) {
+      console.error("Error uploading avatar:", err)
+    }
+  }
+
+  const handleWorkUpload = async (files) => {
+    try {
+      const uploadPromises = Array.from(files).map(file => compressImage(file))
+      const base64Images = await Promise.all(uploadPromises)
+      await updateDoc(doc(db, 'users', userData.uid), {
+        photos: arrayUnion(...base64Images)
+      })
+    } catch (err) {
+      console.error("Error uploading work photos:", err)
+    }
+  }
+
+  const handleDeleteWorkPhoto = async (photoUrl) => {
+    try {
+      await updateDoc(doc(db, 'users', userData.uid), {
+        photos: arrayRemove(photoUrl)
+      })
+    } catch (err) {
+      console.error("Error deleting work photo:", err)
+    }
+  }
+
+  // Combine manual photos and evidences
+  const portfolioPhotos = displayPro.photos || []
+  const allPhotos = [
+    ...portfolioPhotos.map((url, i) => ({ id: `port-${i}`, url, caption: 'Portafolio' })),
+    ...proPhotos.filter(ph => !portfolioPhotos.includes(ph.url))
+  ]
+
+  const finalPhotos = allPhotos.length > 0 ? allPhotos : (
+    (categoryMockPhotos[String(displayPro.category || displayPro.categoryEs || '').toLowerCase()] || categoryMockPhotos.default).map((url, i) => ({
+      id: `mock-${i}`,
+      url,
+      caption: 'Demo - Trabajo'
+    }))
+  )
+
+  const getPlanDetails = (planId) => {
+    const p = (planId || '').toLowerCase()
+    if (p.includes('vip') || p.includes('elite') || p.includes('ilimitado')) {
+      return { label: 'PLAN VIP', medal: '👑', grad: 'linear-gradient(135deg, #F97316, #EF4444)' }
+    } else if (p.includes('platinum') || p.includes('platino')) {
+      return { label: 'PLAN PLATINUM', medal: '💎', grad: 'linear-gradient(135deg, #B0BEC5, #78909C)' }
+    } else if (p.includes('gold')) {
+      return { label: 'PLAN GOLD', medal: '⭐', grad: 'linear-gradient(135deg, #FDE047, #EAB308)' }
+    }
+    return { label: 'PLAN BÁSICO', medal: '🛠️', grad: 'linear-gradient(135deg, #94A3B8, #64748B)' }
+  }
+
+  const planInfo = getPlanDetails(displayPro.currentPlan || displayPro.planId || displayPro.plan)
+
   return (
     <div className="pro-profile-page">
-      {/* Header con cover */}
-      <div className="pro-cover">
-        <button className="pro-back-btn" onClick={() => navigate('search')}>←</button>
-        <div className="pro-cover-gradient" />
+      {/* Ocultos inputs de archivos */}
+      <input id="pro-cover-upload" type="file" accept="image/*" style={{ display: 'none' }} onChange={handleCoverUpload} />
+      <input id="pro-avatar-upload" type="file" accept="image/*" style={{ display: 'none' }} onChange={handleAvatarUpload} />
+
+      {/* Header naranja superior de 25.png */}
+      <div className="pro-header-bar">
+        <button className="pro-back-btn-new" onClick={() => navigate('search')}>←</button>
+        <span className="pro-header-title">PERFIL PROFESIONAL</span>
+        <div className="pro-bell-wrap">
+          <span className="pro-bell-icon">🔔</span>
+          <span className="pro-bell-badge">1</span>
+        </div>
+      </div>
+
+      {/* Portada Cover */}
+      <div 
+        className="pro-cover"
+        style={displayPro.coverURL ? { backgroundImage: `linear-gradient(135deg, rgba(255,140,66,0.1) 0%, rgba(242,96,0,0.2) 100%), url(${displayPro.coverURL})` } : {}}
+      >
+        <div className="pro-logo-overlay">
+          <img src={logoListo} alt="Listo Patrón Logo" className="pro-logo-img" />
+        </div>
+        {isOwnProfile && (
+          <button className="edit-cover-btn" onClick={() => document.getElementById('pro-cover-upload').click()} title="Cambiar Portada">
+            📷 Cambiar Portada
+          </button>
+        )}
       </div>
 
       {/* Info del profesional */}
       <div className="pro-info-section">
-        {pro.photoURL ? (
-          <img src={pro.photoURL} alt={pro.name} className="pro-avatar-large" style={{ objectFit: 'cover' }} />
-        ) : (
-          <div className="pro-avatar-large" style={{ background: proColor }}>
-            {pro.avatar}
-          </div>
-        )}
+        <div className="pro-avatar-wrap">
+          {displayPro.photoURL ? (
+            <img src={displayPro.photoURL} alt={displayPro.name} className="pro-avatar-large" style={{ objectFit: 'cover' }} />
+          ) : (
+            <div className="pro-avatar-large" style={{ background: proColor }}>
+              {displayPro.avatar || pro.avatar}
+            </div>
+          )}
+          
+          {isOwnProfile ? (
+            <button className="edit-avatar-btn" onClick={() => document.getElementById('pro-avatar-upload').click()} title="Cambiar Foto de Perfil">
+              ✏️
+            </button>
+          ) : (
+            <button className="pro-chat-floating-btn" onClick={() => navigate('chat', displayPro)} title="Enviar mensaje">
+              💬
+            </button>
+          )}
+        </div>
+
         <div className="pro-info-main">
+          {/* Placa de Plan */}
+          <div className="pro-plan-badge" style={{ background: planInfo.grad }}>
+            <div className="plan-badge-left">
+              <span className="plan-badge-title">PLAN</span>
+              <span className="plan-badge-type">{planInfo.label.replace('PLAN ', '')}</span>
+            </div>
+            <span className="plan-badge-medal">{planInfo.medal}</span>
+          </div>
+
           <div className="pro-name-row">
-            <h1 className="pro-name">{pro.name}</h1>
+            <h1 className="pro-name">{displayPro.name}</h1>
             <span className="pro-verified">✓</span>
           </div>
-          <p className="pro-cat">
-            {(() => {
-              const catStr = pro.categoryId || pro.category || pro.specEs || pro.categoryEs || '';
-              const lower = catStr.toLowerCase();
-              const subCat = ALL_SUBCATEGORIES.find(s => s.id === lower || s.labelEs?.toLowerCase() === lower);
-              const mainCat = CATEGORIES.find(c => c.id === lower || c.labelEs?.toLowerCase() === lower);
-              if (subCat?.image || mainCat?.image) {
-                return <img src={subCat?.image || mainCat?.image} alt="" style={{ width: '22px', height: '22px', objectFit: 'contain', verticalAlign: 'middle', marginRight: '6px' }} />;
-              }
-              return (subCat?.icon || mainCat?.icon || pro.icon || '🔧') + ' ';
-            })()} 
-            {pro.category || pro.categoryEs || pro.specEs || 'Profesional'}
-            {(() => {
-              const planStr = (pro.currentPlan || '').toLowerCase();
-              if (planStr.includes('vip') || planStr.includes('elite') || planStr.includes('ilimitado')) return <span style={{marginLeft: '6px', fontSize: '10px', textTransform: 'uppercase', background: 'linear-gradient(135deg, #FF6B00, #FF3D00)', color: '#fff', padding: '2px 8px', borderRadius: '100px', fontWeight: '900', boxShadow: '0 2px 8px rgba(255,107,0,0.4)', textShadow: '0 1px 2px rgba(0,0,0,0.3)'}}>✨ VIP</span>;
-              if (planStr.includes('gold')) return <span style={{marginLeft: '6px', fontSize: '10px', textTransform: 'uppercase', background: 'linear-gradient(135deg, #FFD700, #FFA500)', color: '#1a1a2e', padding: '2px 8px', borderRadius: '100px', fontWeight: '900', boxShadow: '0 2px 8px rgba(255,215,0,0.4)'}}>⭐ GOLD</span>;
-              if (planStr.includes('platinum') || planStr.includes('platino')) return <span style={{marginLeft: '6px', fontSize: '10px', textTransform: 'uppercase', background: 'linear-gradient(135deg, #B0BEC5, #78909C)', color: '#fff', padding: '2px 8px', borderRadius: '100px', fontWeight: '900', boxShadow: '0 2px 8px rgba(120,144,156,0.4)'}}>💎 PLATINUM</span>;
-              return null;
-            })()}
-          </p>
-          <p className="pro-location">📍 {pro.location}</p>
+          
+          <h2 className="pro-spec-bold">
+            {displayPro.category || displayPro.categoryEs || displayPro.specEs || 'PROFESIONAL'}
+          </h2>
+          
+          <p className="pro-location">📍 {displayPro.location}</p>
           <div className="pro-badges">
-            <span className={`pro-status-badge ${pro.available ? 'avail' : 'busy'}`}>
-              {pro.available ? T.available : T.busy}
+            <span className={`pro-status-badge ${displayPro.available ? 'avail' : 'busy'}`}>
+              {displayPro.available ? T.available : T.busy}
             </span>
             <span className="pro-verified-badge">✓ {T.verifiedPro}</span>
           </div>
@@ -368,7 +557,7 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
         </div>
         <div className="pro-stat-divider" />
         <div className="pro-stat">
-          <span className="pro-stat-num">{pro.price}</span>
+          <span className="pro-stat-num">{displayPro.price || pro.price}</span>
           <span className="pro-stat-label">Tarifa</span>
         </div>
         <div className="pro-stat-divider" />
@@ -377,8 +566,6 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
           <span className="pro-stat-label">{T.years}</span>
         </div>
       </div>
-
-
 
       {/* Tabs */}
       <div className="pro-tabs">
@@ -393,7 +580,13 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
       <div className="pro-tab-content">
         {/* FOTOS Y EVIDENCIAS */}
         {activeTab === 'photos' && (
-          <PhotoGrid photos={proPhotos} lang={lang} />
+          <PhotoGrid 
+            photos={finalPhotos} 
+            lang={lang} 
+            isOwnProfile={isOwnProfile}
+            onUploadPhoto={handleWorkUpload}
+            onDeletePhoto={handleDeleteWorkPhoto}
+          />
         )}
 
         {/* RESEÑAS */}
@@ -420,12 +613,14 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
             </div>
 
             {/* Botón escribir reseña */}
-            <button className="write-review-toggle" onClick={() => setShowWriteReview(v => !v)}>
-              ✏️ {T.writeReview}
-            </button>
+            {!isOwnProfile && (
+              <button className="write-review-toggle" onClick={() => setShowWriteReview(v => !v)}>
+                ✏️ {T.writeReview}
+              </button>
+            )}
 
-            {showWriteReview && (
-              <WriteReview lang={lang} proName={pro.name} onSubmit={handleNewReview} />
+            {showWriteReview && !isOwnProfile && (
+              <WriteReview lang={lang} proName={displayPro.name} onSubmit={handleNewReview} />
             )}
 
             {/* Lista de reseñas */}
@@ -448,37 +643,43 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
       <div style={{ height: 110 }} />
 
       {/* Sticky Bottom Actions */}
-      <div className="pro-actions-sticky slide-up-anim">
-        {(() => {
-          let btnStyle = { flex: 1, padding: '16px', borderRadius: '100px', border: 'none', color: '#fff', fontSize: '16px', fontWeight: '800', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)' };
-          const planStr = (pro.currentPlan || '').toLowerCase();
-          const isVip = planStr.includes('vip') || planStr.includes('elite') || planStr.includes('ilimitado');
-          const isGold = planStr.includes('gold');
-          const isPlatinum = planStr.includes('platinum') || planStr.includes('platino');
-          
-          if (isVip) { btnStyle.background = 'linear-gradient(135deg, #FF6B00, #FF3D00)'; btnStyle.boxShadow = '0 8px 20px rgba(255, 107, 0, 0.35)'; }
-          else if (isPlatinum) { btnStyle.background = 'linear-gradient(135deg, #B0BEC5, #78909C)'; btnStyle.boxShadow = '0 8px 20px rgba(176, 190, 197, 0.35)'; }
-          else if (isGold) { btnStyle.background = 'linear-gradient(135deg, #FFD700, #FFA500)'; btnStyle.color = '#1a1a2e'; btnStyle.boxShadow = '0 8px 20px rgba(255, 215, 0, 0.35)'; }
-          else { btnStyle.background = 'linear-gradient(135deg, #F26000, #E65C00)'; btnStyle.boxShadow = '0 8px 20px rgba(242, 96, 0, 0.3)'; }
-          
-          let icon = '📅';
-          if(isVip) icon = '✨'; else if(isPlatinum) icon = '💎'; else if(isGold) icon = '⭐';
+      {!isOwnProfile && (
+        <div className="pro-actions-sticky slide-up-anim">
+          {(() => {
+            let btnStyle = { flex: 1, padding: '16px', borderRadius: '100px', border: 'none', color: '#fff', fontSize: '16px', fontWeight: '800', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)' };
+            
+            if (planInfo.label.includes('VIP')) { 
+              btnStyle.background = 'linear-gradient(135deg, #FF6B00, #FF3D00)'; 
+              btnStyle.boxShadow = '0 8px 20px rgba(255, 107, 0, 0.35)'; 
+            } else if (planInfo.label.includes('PLATINUM')) { 
+              btnStyle.background = 'linear-gradient(135deg, #B0BEC5, #78909C)'; 
+              btnStyle.boxShadow = '0 8px 20px rgba(176, 190, 197, 0.35)'; 
+            } else if (planInfo.label.includes('GOLD')) { 
+              btnStyle.background = 'linear-gradient(135deg, #FDE047, #EAB308)'; 
+              btnStyle.color = '#1a1a2e'; 
+              btnStyle.boxShadow = '0 8px 20px rgba(255, 215, 0, 0.35)'; 
+            } else { 
+              btnStyle.background = 'linear-gradient(135deg, #F26000, #E65C00)'; 
+              btnStyle.boxShadow = '0 8px 20px rgba(242, 96, 0, 0.3)'; 
+            }
+            
+            let icon = planInfo.medal;
 
-          if (typeof pro.contracts !== 'undefined' && pro.contracts <= 0) {
+            if (typeof displayPro.contracts !== 'undefined' && displayPro.contracts <= 0) {
+              return (
+                <button style={{ ...btnStyle, background: '#E0E0E0', color: '#888', boxShadow: 'none', cursor: 'not-allowed' }} disabled>
+                  🚫 {lang === 'es' ? 'Sin turnos disponibles' : 'No available slots'}
+                </button>
+              )
+            }
             return (
-              <button style={{ ...btnStyle, background: '#E0E0E0', color: '#888', boxShadow: 'none', cursor: 'not-allowed' }} disabled>
-                🚫 {lang === 'es' ? 'Sin turnos disponibles' : 'No available slots'}
+              <button className="book-btn-squish" style={btnStyle} onClick={() => navigate('booking', displayPro)}>
+                {icon} {T.book}
               </button>
             )
-          }
-          return (
-            <button className="book-btn-squish" style={btnStyle} onClick={() => navigate('booking', pro)}>
-              {icon} {T.book}
-            </button>
-          )
-        })()}
-      </div>
-
+          })()}
+        </div>
+      )}
     </div>
   )
 }
