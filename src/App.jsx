@@ -353,7 +353,7 @@ export default function App() {
     if (isPlayingRef.current) return
     try {
       // Un sonido original, positivo y muy suave (campana de cristal/burbuja mágica)
-      const audio = new Audio('/audio/notification.mp3?v=3')
+      const audio = new Audio('/audio/new_contract.mp3?v=3')
       audio.volume = 0.7; audio.loop = true
       audio.play().catch(() => {})
       alertAudioRef.current = audio; isPlayingRef.current = true
