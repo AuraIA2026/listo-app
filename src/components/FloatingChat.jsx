@@ -6,7 +6,7 @@ import CallModal from './CallModal'
 
 const playChatMsgSound = () => {
   try {
-    const audio = new Audio('/audio/notification.mp3?v=3')
+    const audio = new Audio('/audio/notification_v3.mp3')
     audio.volume = 0.5
     audio.loop   = false
     audio.play().catch(() => {})

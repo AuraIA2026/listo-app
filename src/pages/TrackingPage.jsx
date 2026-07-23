@@ -57,7 +57,7 @@ const getChatId = (uid1, uid2) => uid1 < uid2 ? `${uid1}_${uid2}` : `${uid2}_${u
 
 const playChatMsgSound = () => {
   try {
-    const audio = new Audio('/audio/notification.mp3?v=3')
+    const audio = new Audio('/audio/notification_v3.mp3')
     audio.volume = 0.5; audio.loop = false
     audio.play().catch(() => {})
     setTimeout(() => { try { audio.pause(); audio.currentTime = 0 } catch(e) {} }, 1500)
@@ -298,7 +298,7 @@ export default function TrackingPage({ lang = 'es', navigate, professional, user
     if (arrivingSoundPlayed.current) return
     arrivingSoundPlayed.current = true
     try {
-      const audio = new Audio('/audio/notification.mp3?v=3')
+      const audio = new Audio('/audio/notification_v3.mp3')
       audio.volume = 0.7; audio.loop = true
       audio.play().catch(() => {})
       arrivingAudioRef.current = audio

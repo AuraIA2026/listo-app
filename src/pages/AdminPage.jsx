@@ -596,7 +596,7 @@ export default function AdminPage({ navigate }) {
 
     if (unreadCount > prevUnreadCount.current) {
       try {
-        const audio = new Audio('/audio/notification.mp3?v=3');
+        const audio = new Audio('/audio/notification_v3.mp3');
         audio.volume = 0.8;
         audio.play().catch(() => {});
       } catch (e) {
