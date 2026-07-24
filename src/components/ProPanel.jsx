@@ -150,7 +150,7 @@ export default function ProPanel({ onClose, pro = mockPro }) {
   }
 
   /* ── FORMULARIO POSTULACIÓN ── */
-  const ApplyForm = () => (
+  const renderApplyForm = () => (
     <div className="pp-apply">
       <h3 className="pp-sec-title">📝 Postularse como Profesional</h3>
       {['Nombre completo','Especialidad','Teléfono','Ciudad','Años de experiencia'].map((f,i) => (
@@ -170,7 +170,7 @@ export default function ProPanel({ onClose, pro = mockPro }) {
   )
 
   /* ── ESTADÍSTICAS COMPLETAS ── */
-  const Stats = () => (
+  const renderStats = () => (
     <div className="pp-stats">
       <h3 className="pp-sec-title">📊 Mi Rendimiento</h3>
       <div className="pp-stats-grid">
@@ -207,12 +207,12 @@ export default function ProPanel({ onClose, pro = mockPro }) {
             <PaymentSection plan={selectedPlan} onBack={() => setSection('main')} />
           ) : section === 'apply' ? (
             <>
-              <ApplyForm />
+              {renderApplyForm()}
               <button className="pp-back-btn" onClick={() => setSection('main')}>← Volver</button>
             </>
           ) : section === 'stats' ? (
             <>
-              <Stats />
+              {renderStats()}
               <button className="pp-back-btn" onClick={() => setSection('main')}>← Volver</button>
             </>
           ) : (

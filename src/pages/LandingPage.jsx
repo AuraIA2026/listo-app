@@ -22,6 +22,8 @@ export default function LandingPage({ navigate, lang }) {
   const adSlide = (d) => { if (window.adSlide) window.adSlide(d); };
   const goAd = (i) => { if (window.goAd) window.goAd(i); };
   const switchTab = (t) => { if (window.switchTab) window.switchTab(t); };
+  const toggleFaq = (el) => { if (window.toggleFaq) window.toggleFaq(el); };
+  const trackAppDownload = (platform) => { if (window.trackAppDownload) window.trackAppDownload(platform); };
 
   return (
     <div className="landing-page-container">

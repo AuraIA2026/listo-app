@@ -334,7 +334,7 @@ function PersonalizarScreen({ lang, onBack }) {
   const [soundOrder, setSoundOrder] = useState(
     localStorage.getItem('listo_sound_order') || 'new_contract_v3'
   )
-  const [playingAudio, setPlayingAudio] = useState(null)
+  const playingAudioRef = useRef(null)
 
   const notifOptions = [
     { value: 'notification_v3', label: lang === 'es' ? 'Burbuja Pop (Por defecto)' : 'Bubble Pop (Default)' },
@@ -352,13 +352,13 @@ function PersonalizarScreen({ lang, onBack }) {
   ]
 
   const playPreview = (fileName) => {
-    if (playingAudio) {
-      playingAudio.pause();
-      playingAudio.currentTime = 0;
+    if (playingAudioRef.current) {
+      playingAudioRef.current.pause();
+      playingAudioRef.current.currentTime = 0;
     }
     const audio = new Audio(`/audio/${fileName}.mp3`)
     audio.play().catch(err => console.error("Error playing audio preview:", err))
-    setPlayingAudio(audio)
+    playingAudioRef.current = audio
   }
 
   const handleSelectNotif = (val) => {
@@ -375,9 +375,9 @@ function PersonalizarScreen({ lang, onBack }) {
 
   useEffect(() => {
     return () => {
-      if (playingAudio) playingAudio.pause()
+      if (playingAudioRef.current) playingAudioRef.current.pause()
     }
-  }, [playingAudio])
+  }, [])
 
   return (
     <div className="sub-screen" style={{ display: 'flex', flexDirection: 'column', height: '100%', background: '#FFF3EC' }}>

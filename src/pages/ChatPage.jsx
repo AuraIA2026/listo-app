@@ -112,14 +112,6 @@ export default function ChatPage({ lang = 'es', navigate, professional, userData
   const inputRef = useRef(null)
   const typingTimer = useRef(null)
 
-  // ── Abrir chat directo desde otro componente (professional prop) ──────────
-  useEffect(() => {
-    if (!professional || !me) return
-    const otherId = professional.uid || professional.proId || professional.clientId || professional.id
-    if (!otherId || otherId === me.uid) return
-    openOrCreateChat(otherId, professional)
-  }, [professional]) // eslint-disable-line
-
   // ── Cargar lista de conversaciones del usuario actual ─────────────────────
   useEffect(() => {
     if (!me) return
@@ -228,6 +220,14 @@ export default function ChatPage({ lang = 'es', navigate, professional, userData
     setActiveChatId(chatId)
     setLoadingMessages(true)
   }
+
+  // ── Abrir chat directo desde otro componente (professional prop) ──────────
+  useEffect(() => {
+    if (!professional || !me) return
+    const otherId = professional.uid || professional.proId || professional.clientId || professional.id
+    if (!otherId || otherId === me.uid) return
+    openOrCreateChat(otherId, professional)
+  }, [professional]) // eslint-disable-line
 
   // ── Enviar mensaje ────────────────────────────────────────────────────────
   const sendMessage = async (text) => {

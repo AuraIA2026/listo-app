@@ -87,8 +87,6 @@ export default function PaymentPage({ lang = 'es', navigate, professional }) {
     if (!pro) navigate('/');
   }, [pro, navigate]);
 
-  if (!pro) return null;
-
   // Se elimina el precio quemado. El usuario decide el precio final
   const [customPrice, setCustomPrice] = useState('')
   const total = Number(customPrice) || 0
@@ -111,11 +109,13 @@ export default function PaymentPage({ lang = 'es', navigate, professional }) {
   const [showReceipt, setShowReceipt] = useState(false)
   const [authCode] = useState(() => Math.floor(10000 + Math.random() * 90000))
 
-
   // -- INTEGRACIÓN REAL AZUL --
   const formRef = useRef(null);
   const [pagoAzulData, setPagoAzulData] = useState(null);
   const [isProcessingAzul, setIsProcessingAzul] = useState(false);
+
+  if (!pro) return null;
+
   const URL_AZUL = "https://pruebas.azul.com.do/paymentpage/Default.aspx"; // TODO: Cambiar a pagos.azul.com.do/paymentpage/Default.aspx en producción
 
   const handleBankPayReal = async () => {

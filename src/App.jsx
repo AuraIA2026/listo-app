@@ -665,8 +665,7 @@ export default function App() {
       {currentPage === 'clientProfile' && <ClientProfilePage       {...commonProps} userData={userData} onEditProfile={() => navigate('profile')} />}
 
       {currentPage === 'profile' && (
-        <ProfilePage lang={lang} setLang={setLang} navigate={navigate} userData={userData} userRole={userRole}
-          profileComplete={profileComplete} onProfileCompleted={() => setProfileComplete(true)} onLogout={handleLogout} initialScreen={profileInitScreen} />
+        <ProfilePage lang={lang} setLang={setLang} navigate={navigate} onLogout={handleLogout} initialScreen={profileInitScreen} />
       )}
 
       {showBottom && <BottomNav currentPage={currentPage} navigate={navigate} lang={lang} userData={userData} />}

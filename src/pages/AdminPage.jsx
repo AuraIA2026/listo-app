@@ -584,6 +584,11 @@ export default function AdminPage({ navigate }) {
   const prevUnreadCount = useRef(0);
   const isFirstLoad = useRef(true);
 
+  const showToast = (msg) => {
+    setToast(msg);
+    setTimeout(() => setToast(''), 2800);
+  };
+
   useEffect(() => {
     const unreadAlerts = alerts.filter(a => !a.read);
     const unreadCount = unreadAlerts.length;
@@ -607,11 +612,6 @@ export default function AdminPage({ navigate }) {
     }
     prevUnreadCount.current = unreadCount;
   }, [alerts]);
-
-  const showToast = (msg) => {
-    setToast(msg);
-    setTimeout(() => setToast(''), 2800);
-  };
 
   const handleLogin = (e) => {
     e.preventDefault();

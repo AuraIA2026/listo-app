@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet'
 import { collection, addDoc, serverTimestamp, doc, updateDoc, onSnapshot, orderBy, query, setDoc, getDoc, deleteDoc } from 'firebase/firestore'
 import { db, auth } from '../firebase'
@@ -119,6 +119,7 @@ function SmoothMarker({ targetPos, icon, children, visible = true, isVan = false
   }, [targetPos[0], targetPos[1]]) // eslint-disable-line
   
   if (!visible) return null
+  // eslint-disable-next-line react-hooks/refs
   return <Marker ref={markerRef} position={currentPos.current} icon={icon}>{children}</Marker>
 }
 
@@ -313,8 +314,8 @@ export default function TrackingPage({ lang = 'es', navigate, professional, user
   }
   useEffect(() => { return () => stopArrivingSound() }, [])
 
-  const vanIcon    = useRef(null); if (!vanIcon.current)    vanIcon.current    = createVanIcon(vanImg)
-  const workerIcon = useRef(null); if (!workerIcon.current) workerIcon.current = createWorkerIcon()
+  const vanIcon    = useMemo(() => createVanIcon(vanImg), [])
+  const workerIcon = useMemo(() => createWorkerIcon(), [])
   const intervalRef = useRef(null)
 
   // Sincronizar con el documento de la orden en Firestore
@@ -493,7 +494,6 @@ export default function TrackingPage({ lang = 'es', navigate, professional, user
     stopArrivingSound()
     setWorkStatus('retreating')
     setProPos(RETREAT_WAYPOINTS[0])
-    setRemainingRoute(RETREAT_WAYPOINTS)
   }
 
   const statusInfo = {
@@ -576,7 +576,7 @@ export default function TrackingPage({ lang = 'es', navigate, professional, user
           <MapBoundsFitter pos1={clientLoc} pos2={proPos} />
           <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
           <Marker position={clientLoc} icon={clientIcon}><Popup>{lang==='es'?'Tu ubicación':'Your location'}</Popup></Marker>
-          {vanVisible && <SmoothMarker targetPos={proPos} icon={workStatus==='working'?workerIcon.current:vanIcon.current} visible={vanVisible} isVan={workStatus!=='working'}><Popup>{pro.name}</Popup></SmoothMarker>}
+          {vanVisible && <SmoothMarker targetPos={proPos} icon={workStatus==='working'?workerIcon:vanIcon} visible={vanVisible} isVan={workStatus!=='working'}><Popup>{pro.name}</Popup></SmoothMarker>}
           {workStatus === 'tracking' && (
             <Polyline 
               positions={[proPos, clientLoc]} 
@@ -665,12 +665,12 @@ export default function TrackingPage({ lang = 'es', navigate, professional, user
                    let nextEta = eta + 10;
                    if (nextEta > 90) nextEta = 10;
                    setEta(nextEta);
-                   try { await updateDoc(doc(db, 'orders', professional.id), { estimatedTime: nextEta }) } catch(e) {}
+                   try { await updateDoc(doc(db, 'orders', professional.id), { estimatedTime: nextEta }) } catch {}
                 }} style={{ padding:'14px 10px', borderRadius:14, border:'2px solid #F26000', background:'transparent', color:'#F26000', fontWeight:800, fontSize:14, cursor:'pointer', transition:'all 0.2s', minWidth: 90 }}>⏱️ {lang==='es'?'+10m':'+10m'}</button>
                 
                 <button onClick={async () => {
-                  try { await updateDoc(doc(db, 'orders', professional.id), { status: 'arrived' }) } catch(e) {}
-                  setStatus('arrived'); setWorkStatus('awaiting_deal'); stopArrivingSound()
+                   try { await updateDoc(doc(db, 'orders', professional.id), { status: 'arrived' }) } catch {}
+                   setStatus('arrived'); setWorkStatus('awaiting_deal'); stopArrivingSound()
                 }} style={{ flex:1, padding:14, borderRadius:14, border:'none', background:'#F26000', color:'#fff', fontWeight:900, fontSize:15, boxShadow:'0 8px 30px rgba(242,96,0,0.4)', cursor:'pointer', animation: 'timerPulse 2s infinite' }}>✅ {lang==='es'?'¡Llegué a la ubicación!':'I arrived!'}</button>
               </div>
             )}
