@@ -92,6 +92,7 @@ const menuItems = [
   { icon: '📋', labelEs: 'Mis pedidos',                labelEn: 'My orders',                 action: 'orders' },
   { icon: '❤️', labelEs: 'Favoritos',                  labelEn: 'Favorites',                 action: 'favorites' },
   { icon: '🔔', labelEs: 'Notificaciones',             labelEn: 'Notifications',             action: 'notifications' },
+  { icon: '🎨', labelEs: 'Personalizar',               labelEn: 'Customize',                 action: 'customize' },
   { icon: '🌐', labelEs: 'Idioma',                     labelEn: 'Language',                  action: 'language' },
   { icon: '🔒', labelEs: 'Privacidad',                 labelEn: 'Privacy',                   action: 'privacy' },
   { icon: '❓', labelEs: 'Ayuda y soporte',            labelEn: 'Help & support',            action: 'help' },
@@ -321,6 +322,145 @@ function CalificarScreen({ lang, onBack }) {
         </div>
         <textarea className="rate-comment" placeholder={T.rateComment} value={comment} onChange={e=>setComment(e.target.value)} rows={3} />
         <button className="rate-submit" disabled={stars===0} onClick={()=>setSent(true)}>{T.rateSubmit}</button>
+      </div>
+    </div>
+  )
+}
+
+function PersonalizarScreen({ lang, onBack }) {
+  const [soundNotif, setSoundNotif] = useState(
+    localStorage.getItem('listo_sound_notif') || 'notification_v3'
+  )
+  const [soundOrder, setSoundOrder] = useState(
+    localStorage.getItem('listo_sound_order') || 'new_contract_v3'
+  )
+  const [playingAudio, setPlayingAudio] = useState(null)
+
+  const notifOptions = [
+    { value: 'notification_v3', label: lang === 'es' ? 'Burbuja Pop (Por defecto)' : 'Bubble Pop (Default)' },
+    { value: 'notification', label: lang === 'es' ? 'Tono Corto' : 'Short Tone' },
+    { value: 'nuevo_contrato_custom2', label: lang === 'es' ? 'Mensajes y Ofertas Custom (Extraído)' : 'Custom Messages & Offers (Extracted)' },
+    { value: 'Untitled (1)', label: lang === 'es' ? 'Campana de Cristal' : 'Crystal Bell' }
+  ]
+
+  const orderOptions = [
+    { value: 'new_contract_v3', label: lang === 'es' ? 'Burbuja Mágica (Por defecto)' : 'Magic Bubble (Default)' },
+    { value: 'new_contract', label: lang === 'es' ? 'Contrato Clásico' : 'Classic Contract' },
+    { value: 'nuevo_contrato_custom', label: lang === 'es' ? 'Tono Pedidos Custom (Extraído)' : 'Custom Orders Tone (Extracted)' },
+    { value: 'Untitled', label: lang === 'es' ? 'Alerta Campana' : 'Bell Alert' },
+    { value: 'intro_app2', label: lang === 'es' ? 'Melodía Corta' : 'Short Melody' }
+  ]
+
+  const playPreview = (fileName) => {
+    if (playingAudio) {
+      playingAudio.pause();
+      playingAudio.currentTime = 0;
+    }
+    const audio = new Audio(`/audio/${fileName}.mp3`)
+    audio.play().catch(err => console.error("Error playing audio preview:", err))
+    setPlayingAudio(audio)
+  }
+
+  const handleSelectNotif = (val) => {
+    setSoundNotif(val)
+    localStorage.setItem('listo_sound_notif', val)
+    playPreview(val)
+  }
+
+  const handleSelectOrder = (val) => {
+    setSoundOrder(val)
+    localStorage.setItem('listo_sound_order', val)
+    playPreview(val)
+  }
+
+  useEffect(() => {
+    return () => {
+      if (playingAudio) playingAudio.pause()
+    }
+  }, [playingAudio])
+
+  return (
+    <div className="sub-screen" style={{ display: 'flex', flexDirection: 'column', height: '100%', background: '#FFF3EC' }}>
+      <ScreenHeader title={lang === 'es' ? 'Personalizar Sonidos' : 'Customize Sounds'} onBack={onBack} />
+      
+      <div style={{ flex: 1, overflowY: 'auto', padding: '20px' }}>
+        <div style={{ background: '#FFF', border: '1.5px solid rgba(242,96,0,0.1)', borderRadius: '16px', padding: '16px', marginBottom: '24px' }}>
+          <p style={{ margin: 0, fontSize: '13px', color: '#F26000', lineHeight: 1.5, fontWeight: '600' }}>
+            🎨 Elige tus tonos preferidos para mensajes y nuevos pedidos. Se guardarán automáticamente.
+          </p>
+        </div>
+
+        {/* Sonidos de Notificaciones */}
+        <h3 style={{ fontSize: '15px', fontWeight: '800', color: '#111', margin: '0 0 12px' }}>
+          💬 Tono de Mensajes y Notificaciones
+        </h3>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '28px' }}>
+          {notifOptions.map(opt => (
+            <div 
+              key={opt.value} 
+              onClick={() => handleSelectNotif(opt.value)}
+              style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                padding: '14px 16px', borderRadius: '14px', background: '#fff',
+                border: soundNotif === opt.value ? '2px solid #F26000' : '1.5px solid rgba(0,0,0,0.06)',
+                cursor: 'pointer', transition: 'all 0.2s', boxShadow: '0 2px 6px rgba(0,0,0,0.02)'
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <span style={{ fontSize: '18px', color: '#F26000' }}>{soundNotif === opt.value ? '🔘' : '⚪'}</span>
+                <span style={{ fontSize: '13.5px', fontWeight: soundNotif === opt.value ? '750' : '500', color: '#111' }}>
+                  {opt.label}
+                </span>
+              </div>
+              <button 
+                onClick={(e) => { e.stopPropagation(); playPreview(opt.value); }}
+                style={{
+                  background: '#F2600018', color: '#F26000', border: 'none',
+                  borderRadius: '50%', width: '32px', height: '32px', cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px'
+                }}
+              >
+                ▶️
+              </button>
+            </div>
+          ))}
+        </div>
+
+        {/* Sonidos de Pedidos */}
+        <h3 style={{ fontSize: '15px', fontWeight: '800', color: '#111', margin: '0 0 12px' }}>
+          📦 Tono de Alertas de Pedidos (Contratos)
+        </h3>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '28px' }}>
+          {orderOptions.map(opt => (
+            <div 
+              key={opt.value} 
+              onClick={() => handleSelectOrder(opt.value)}
+              style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                padding: '14px 16px', borderRadius: '14px', background: '#fff',
+                border: soundOrder === opt.value ? '2px solid #F26000' : '1.5px solid rgba(0,0,0,0.06)',
+                cursor: 'pointer', transition: 'all 0.2s', boxShadow: '0 2px 6px rgba(0,0,0,0.02)'
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <span style={{ fontSize: '18px', color: '#F26000' }}>{soundOrder === opt.value ? '🔘' : '⚪'}</span>
+                <span style={{ fontSize: '13.5px', fontWeight: soundOrder === opt.value ? '750' : '500', color: '#111' }}>
+                  {opt.label}
+                </span>
+              </div>
+              <button 
+                onClick={(e) => { e.stopPropagation(); playPreview(opt.value); }}
+                style={{
+                  background: '#F2600018', color: '#F26000', border: 'none',
+                  borderRadius: '50%', width: '32px', height: '32px', cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px'
+                }}
+              >
+                ▶️
+              </button>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   )
@@ -652,6 +792,7 @@ export default function ProfilePage({ lang, setLang, navigate, onLogout, initial
     switch (screen) {
       case 'favorites':        return <FavoritosScreen lang={lang} onBack={back} />
       case 'notifications':    return <NotificacionesScreen lang={lang} onBack={back} />
+      case 'customize':        return <PersonalizarScreen lang={lang} onBack={back} />
       case 'language':         return <IdiomaScreen lang={lang} setLang={setLang} onBack={back} />
       case 'privacy':          return <PrivacidadScreen lang={lang} onBack={back} />
       case 'help':             return <AyudaScreen lang={lang} onBack={back} onFaq={() => setScreen('faq')} />

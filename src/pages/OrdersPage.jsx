@@ -113,7 +113,8 @@ const getChatId = (uid1, uid2) => uid1 < uid2 ? `${uid1}_${uid2}` : `${uid2}_${u
 // ─── Sonido de mensaje — igual al que le gusta al usuario ─────────────────
 const playChatMsgSound = () => {
   try {
-    const audio = new Audio('/audio/notification_v3.mp3')
+    const selectedSound = localStorage.getItem('listo_sound_notif') || 'notification_v3';
+    const audio = new Audio(`/audio/${selectedSound}.mp3`)
     audio.volume = 0.5
     audio.loop   = false
     audio.play().catch(() => {})

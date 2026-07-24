@@ -479,16 +479,24 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
       </div>
 
       {/* Portada Cover */}
-      <div 
-        className="pro-cover"
-        style={displayPro.coverURL ? { backgroundImage: `linear-gradient(135deg, rgba(255,140,66,0.1) 0%, rgba(242,96,0,0.2) 100%), url(${displayPro.coverURL})` } : {}}
-      >
+      <div className="pro-cover">
+        <div 
+          className={`pro-cover-bg ${!displayPro.coverURL && displayPro.photoURL ? 'use-photo-blur' : ''}`}
+          style={{
+            backgroundImage: displayPro.coverURL 
+              ? `url(${displayPro.coverURL})`
+              : displayPro.photoURL
+                ? `url(${displayPro.photoURL})`
+                : 'url("https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=800&q=80")'
+          }}
+        />
+        <div className="pro-cover-overlay" />
         <div className="pro-logo-overlay">
           <img src={logoListo} alt="Listo Patrón Logo" className="pro-logo-img" />
         </div>
         {isOwnProfile && (
           <button className="edit-cover-btn" onClick={() => document.getElementById('pro-cover-upload').click()} title="Cambiar Portada">
-            📷 Cambiar Portada
+            ✏️
           </button>
         )}
       </div>

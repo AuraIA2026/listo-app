@@ -352,8 +352,8 @@ export default function App() {
   const startAlertSound = () => {
     if (isPlayingRef.current) return
     try {
-      // Un sonido original, positivo y muy suave (campana de cristal/burbuja mágica)
-      const audio = new Audio('/audio/new_contract_v3.mp3')
+      const selectedSound = localStorage.getItem('listo_sound_order') || 'new_contract_v3'
+      const audio = new Audio(`/audio/${selectedSound}.mp3`)
       audio.volume = 0.7; audio.loop = true
       audio.play().catch(() => {})
       alertAudioRef.current = audio; isPlayingRef.current = true
@@ -369,16 +369,16 @@ export default function App() {
   }
   const playJobDoneSound = () => {
     try {
-      // Sonido positivo y alegre de tarea terminada, suena 1 sola vez
-      const audio = new Audio('/audio/notification_v3.mp3')
+      const selectedSound = localStorage.getItem('listo_sound_notif') || 'notification_v3'
+      const audio = new Audio(`/audio/${selectedSound}.mp3`)
       audio.volume = 0.8; audio.loop = false; audio.play().catch(() => {})
       setTimeout(() => { try { audio.pause(); audio.currentTime = 0 } catch(e){} }, 5000)
     } catch (e) {}
   }
   const playMsgSound = () => {
     try {
-      // Sonido muy sutil ("pop" líquido) para los mensajes del chat
-      const audio = new Audio('/audio/notification_v3.mp3')
+      const selectedSound = localStorage.getItem('listo_sound_notif') || 'notification_v3'
+      const audio = new Audio(`/audio/${selectedSound}.mp3`)
       audio.volume = 0.6; audio.loop = false
       audio.play().catch(() => {})
       setTimeout(() => { try { audio.pause(); audio.currentTime = 0 } catch(e){} }, 2000)
@@ -525,7 +525,8 @@ export default function App() {
         systemNotifIdsRef.current.add(toShow.id);
         
         try {
-          const audio = new Audio('/audio/notification_v3.mp3');
+          const selectedSound = localStorage.getItem('listo_sound_notif') || 'notification_v3';
+          const audio = new Audio(`/audio/${selectedSound}.mp3`);
           audio.volume = 0.9; audio.play().catch(() => {});
         } catch(e){}
 
