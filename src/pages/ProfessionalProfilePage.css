@@ -1041,3 +1041,106 @@
 }
 
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* Premium Reserve Button */
+.book-btn-premium {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex: 1;
+  padding: 16px;
+  border-radius: 100px;
+  border: none;
+  font-size: 16px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.book-btn-premium:active {
+  transform: scale(0.96);
+}
+
+/* Shimmer sliding effect */
+.book-btn-premium::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.25),
+    transparent
+  );
+  transform: skewX(-20deg);
+  animation: btn-shimmer 3s infinite;
+  pointer-events: none;
+}
+
+@keyframes btn-shimmer {
+  0% { left: -100%; }
+  30% { left: 200%; }
+  100% { left: 200%; }
+}
+
+/* Floating animated stars */
+.btn-star-anim {
+  position: absolute;
+  font-size: 14px;
+  pointer-events: none;
+  opacity: 0.8;
+  line-height: 1;
+}
+
+.btn-star-anim-1 {
+  left: 24px;
+  top: 13px;
+  animation: btn-float-star-1 2s ease-in-out infinite;
+}
+
+.btn-star-anim-2 {
+  right: 24px;
+  bottom: 13px;
+  animation: btn-float-star-2 2.5s ease-in-out infinite 0.5s;
+}
+
+@keyframes btn-float-star-1 {
+  0%, 100% { transform: translateY(0) scale(1) rotate(0deg); opacity: 0.6; }
+  50% { transform: translateY(-4px) scale(1.2) rotate(15deg); opacity: 1; }
+}
+
+@keyframes btn-float-star-2 {
+  0%, 100% { transform: translateY(0) scale(1) rotate(0deg); opacity: 0.6; }
+  50% { transform: translateY(-3px) scale(1.25) rotate(-15deg); opacity: 1; }
+}
+
+/* Plan Specific Styles */
+.btn-plan-vip {
+  background: linear-gradient(135deg, #FF6B00, #F97316);
+  color: #ffffff;
+  box-shadow: 0 8px 20px rgba(242, 96, 0, 0.35);
+}
+
+.btn-plan-platinum {
+  background: linear-gradient(135deg, #E2E8F0, #B0BEC5);
+  color: #1a1a2e;
+  box-shadow: 0 8px 20px rgba(176, 190, 197, 0.35);
+}
+
+.btn-plan-gold {
+  background: linear-gradient(135deg, #FDE047, #EAB308);
+  color: #1a1a2e;
+  box-shadow: 0 8px 20px rgba(234, 179, 8, 0.35);
+}
+
+.btn-plan-estandar {
+  background: linear-gradient(135deg, #10B981, #059669);
+  color: #ffffff;
+  box-shadow: 0 8px 20px rgba(16, 185, 129, 0.35);
+}

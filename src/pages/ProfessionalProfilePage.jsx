@@ -721,34 +721,28 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
       {!isOwnProfile && (
         <div className="pro-actions-sticky slide-up-anim">
           {(() => {
-            let btnStyle = { flex: 1, padding: '16px', borderRadius: '100px', border: 'none', color: '#fff', fontSize: '16px', fontWeight: '800', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)' };
-            
-            if (planInfo.label.includes('VIP')) { 
-              btnStyle.background = 'linear-gradient(135deg, #FF6B00, #FF3D00)'; 
-              btnStyle.boxShadow = '0 8px 20px rgba(255, 107, 0, 0.35)'; 
-            } else if (planInfo.label.includes('PLATINUM')) { 
-              btnStyle.background = 'linear-gradient(135deg, #B0BEC5, #78909C)'; 
-              btnStyle.boxShadow = '0 8px 20px rgba(176, 190, 197, 0.35)'; 
-            } else if (planInfo.label.includes('GOLD')) { 
-              btnStyle.background = 'linear-gradient(135deg, #FDE047, #EAB308)'; 
-              btnStyle.color = '#1a1a2e'; 
-              btnStyle.boxShadow = '0 8px 20px rgba(255, 215, 0, 0.35)'; 
-            } else { 
-              btnStyle.background = 'linear-gradient(135deg, #F26000, #E65C00)'; 
-              btnStyle.boxShadow = '0 8px 20px rgba(242, 96, 0, 0.3)'; 
+            let planClass = 'btn-plan-estandar';
+            if (planInfo.label.includes('VIP')) {
+              planClass = 'btn-plan-vip';
+            } else if (planInfo.label.includes('PLATINUM')) {
+              planClass = 'btn-plan-platinum';
+            } else if (planInfo.label.includes('GOLD')) {
+              planClass = 'btn-plan-gold';
             }
             
             let icon = planInfo.medal;
 
             if (typeof displayPro.contracts !== 'undefined' && displayPro.contracts <= 0) {
               return (
-                <button style={{ ...btnStyle, background: '#E0E0E0', color: '#888', boxShadow: 'none', cursor: 'not-allowed' }} disabled>
+                <button className="book-btn-premium" style={{ background: '#E0E0E0', color: '#888', boxShadow: 'none', cursor: 'not-allowed' }} disabled>
                   🚫 {lang === 'es' ? 'Sin turnos disponibles' : 'No available slots'}
                 </button>
               )
             }
             return (
-              <button className="book-btn-squish" style={btnStyle} onClick={() => navigate('booking', displayPro)}>
+              <button className={`book-btn-premium ${planClass}`} onClick={() => navigate('booking', displayPro)}>
+                <span className="btn-star-anim btn-star-anim-1">✦</span>
+                <span className="btn-star-anim btn-star-anim-2">★</span>
                 {icon} {T.book}
               </button>
             )
