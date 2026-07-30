@@ -563,9 +563,6 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
         </div>
 
         <div className="pro-info-main">
-          <h2 className="pro-spec-bold">
-            {displayPro.category || displayPro.categoryEs || displayPro.specEs || 'PROFESIONAL'}
-          </h2>
           <p className="pro-location">📍 {displayPro.location}</p>
           <div className="pro-badges">
             <span className={`pro-status-badge ${displayPro.available ? 'avail' : 'busy'}`}>
