@@ -481,7 +481,7 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
       {/* Portada Cover */}
       <div className="pro-cover">
         <div 
-          className={`pro-cover-bg ${!displayPro.coverURL && displayPro.photoURL ? 'use-photo-blur' : ''}`}
+          className="pro-cover-bg"
           style={{
             backgroundImage: displayPro.coverURL 
               ? `url(${displayPro.coverURL})`
@@ -495,8 +495,8 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
           <img src={logoListo} alt="Listo Patrón Logo" className="pro-logo-img" />
         </div>
         {isOwnProfile && (
-          <button className="edit-cover-btn" onClick={() => document.getElementById('pro-cover-upload').click()} title="Cambiar Portada">
-            ✏️
+          <button className="edit-cover-btn-premium" onClick={() => document.getElementById('pro-cover-upload').click()} title="Cambiar Portada">
+            📸 Cambiar Portada
           </button>
         )}
       </div>

@@ -751,7 +751,14 @@ export default function ProfilePage({ lang, setLang, navigate, onLogout, initial
 
   const handleMenu = (action) => {
     if (action === 'orders') { navigate('orders'); return }
-    if (action === 'clientProfile') { navigate('clientProfile'); return }
+    if (action === 'clientProfile') { 
+      if (userRole === 'pro') {
+        navigate('proProfile', userData)
+      } else {
+        navigate('clientProfile')
+      }
+      return 
+    }
     setScreen(action)
   }
 

@@ -142,6 +142,37 @@
   transform: scale(0.95);
 }
 
+.edit-cover-btn-premium {
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+  padding: 8px 16px;
+  border-radius: 100px;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  font-size: 12px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+  transition: all 0.2s ease;
+  z-index: 5;
+}
+.edit-cover-btn-premium:hover {
+  background: rgba(0, 0, 0, 0.8);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.35);
+}
+.edit-cover-btn-premium:active {
+  transform: translateY(0);
+}
+
+
 /* Info del profesional */
 .pro-info-section {
   display: flex;
