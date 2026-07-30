@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { collection, query, where, getDocs, doc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore'
+import { collection, query, where, getDocs, doc, updateDoc, arrayUnion, arrayRemove, addDoc, serverTimestamp } from 'firebase/firestore'
 import { db } from '../firebase'
 import { CATEGORIES, ALL_SUBCATEGORIES } from '../categories'
 import { useUserData } from '../useUserData'
@@ -209,6 +209,7 @@ function PhotoGrid({ photos, lang, isOwnProfile, onUploadPhoto, onDeletePhoto })
           const caption = typeof photo === 'string' ? 'Trabajo realizado' : (photo.caption || 'Trabajo realizado')
           const photoId = typeof photo === 'string' ? `img-${index}` : (photo.id || index)
           const isPortfolioPhoto = typeof photoId === 'string' && photoId.startsWith('port-')
+          const isMockPhoto = typeof photoId === 'string' && photoId.startsWith('mock-')
 
           return (
             <div key={photoId} className="photo-thumb-wrapper">
@@ -216,8 +217,8 @@ function PhotoGrid({ photos, lang, isOwnProfile, onUploadPhoto, onDeletePhoto })
                 <img src={photoUrl} alt={caption} />
                 <div className="photo-overlay"><span>{caption}</span></div>
               </button>
-              {isOwnProfile && isPortfolioPhoto && (
-                <button className="delete-photo-btn" onClick={(e) => { e.stopPropagation(); onDeletePhoto(photoUrl) }} title="Eliminar foto">
+              {isOwnProfile && !isMockPhoto && (
+                <button className="delete-photo-btn" onClick={(e) => { e.stopPropagation(); onDeletePhoto(photoUrl, isPortfolioPhoto) }} title="Eliminar foto">
                   ✕
                 </button>
               )}
@@ -433,9 +434,35 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
     if (!file) return
     try {
       const base64 = await compressImage(file)
-      await updateDoc(doc(db, 'users', userData.uid), { photoURL: base64 })
+      
+      // Enviar solicitud de cambio de foto al administrador
+      await addDoc(collection(db, 'profile_edit_requests'), {
+        userId: userData.uid,
+        userName: userData.name || displayPro.name,
+        requestedChanges: { photoURL: base64 },
+        status: 'pending',
+        createdAt: serverTimestamp(),
+        type: 'photo'
+      })
+
+      // Registrar notificación para el administrador
+      await addDoc(collection(db, 'notificaciones'), {
+        userId: 'admin',
+        type: 'new_edit_request_photo',
+        title: '🖼️ SOLICITUD DE CAMBIO DE FOTO',
+        text: `El profesional ${userData.name || displayPro.name || 'Un profesional'} ha solicitado actualizar su foto de perfil.`,
+        read: false,
+        createdAt: serverTimestamp(),
+        date: new Date().toISOString()
+      })
+
+      alert(lang === 'es' 
+        ? "Tu solicitud de cambio de foto de perfil ha sido enviada al administrador para su aprobación. Se actualizará una vez sea aprobada por Central de Mando."
+        : "Your profile photo change request has been sent to the administrator for approval. It will update once approved by Central de Mando."
+      )
     } catch (err) {
-      console.error("Error uploading avatar:", err)
+      console.error("Error uploading avatar request:", err)
+      alert(lang === 'es' ? "Error al enviar la solicitud de cambio de foto." : "Error sending photo change request.")
     }
   }
 
@@ -451,13 +478,32 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
     }
   }
 
-  const handleDeleteWorkPhoto = async (photoUrl) => {
+  const handleDeleteWorkPhoto = async (photoUrl, isPortfolio) => {
     try {
-      await updateDoc(doc(db, 'users', userData.uid), {
-        photos: arrayRemove(photoUrl)
-      })
+      if (isPortfolio) {
+        await updateDoc(doc(db, 'users', userData.uid), {
+          photos: arrayRemove(photoUrl)
+        })
+      } else {
+        // Buscar el pedido que tenga esta evidencia y eliminarla
+        const q = query(collection(db, 'orders'), where('proId', '==', userData.uid))
+        const snap = await getDocs(q)
+        let targetOrderDocId = null
+        snap.forEach(docSnap => {
+          const ev = docSnap.data().evidences || []
+          if (ev.includes(photoUrl)) {
+            targetOrderDocId = docSnap.id
+          }
+        })
+        if (targetOrderDocId) {
+          await updateDoc(doc(db, 'orders', targetOrderDocId), {
+            evidences: arrayRemove(photoUrl)
+          })
+          setProPhotos(prev => prev.filter(p => p.url !== photoUrl))
+        }
+      }
     } catch (err) {
-      console.error("Error deleting work photo:", err)
+      console.error("Error deleting photo:", err)
     }
   }
 
