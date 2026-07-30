@@ -166,20 +166,41 @@ export default function CrearLocal({ lang = 'es', navigate, userData }) {
         </div>
 
         <div className="crear-local-form">
-          <div className="crear-local-section" style={{ textAlign:'center', background:'linear-gradient(135deg, #fffbf0, #fff)' }}>
-            <h2 style={{ fontSize:32, color:'#F26000', margin:'0 0 8px', fontWeight:900 }}>RD$ 10,000</h2>
-            <p style={{ color:'#666', fontSize:13, margin:0, fontWeight:600 }}>/ Mensual</p>
+          <div className="crear-local-section" style={{ textAlign:'center', background:'linear-gradient(135deg, rgba(212,175,55,0.08), rgba(212,175,55,0.02))' }}>
+            <h2 style={{ fontSize:32, color:'var(--vip-gold)', margin:'0 0 8px', fontWeight:900 }}>RD$ 10,000</h2>
+            <p style={{ color:'var(--vip-text-secondary)', fontSize:13, margin:0, fontWeight:600 }}>/ Mensual</p>
           </div>
 
           <div className="crear-local-section">
             <h2 className="cls-title">Método de pago de Listo Patrón</h2>
             <div style={{ display:'flex', gap:10, marginBottom:16 }}>
-               <button onClick={() => setPaymentType('tarjeta')} style={{ flex:1, padding:12, borderRadius:12, border:paymentType==='tarjeta' ? '2px solid #F26000' : '2px solid #eee', background:paymentType==='tarjeta'?'#FFF4E6':'#fff', fontWeight:800, cursor:'pointer' }}>💳 Tarjeta</button>
-               <button onClick={() => setPaymentType('transferencia')} style={{ flex:1, padding:12, borderRadius:12, border:paymentType==='transferencia' ? '2px solid #F26000' : '2px solid #eee', background:paymentType==='transferencia'?'#FFF4E6':'#fff', fontWeight:800, cursor:'pointer' }}>🏦 Transferencia</button>
+               <button onClick={() => setPaymentType('tarjeta')} style={{ flex:1, padding:12, borderRadius:12, border:paymentType==='tarjeta' ? '2px solid var(--vip-gold)' : '1px solid rgba(255,255,255,0.08)', background:paymentType==='tarjeta'?'rgba(212,175,55,0.08)':'rgba(255,255,255,0.02)', color:paymentType==='tarjeta'?'var(--vip-gold)':'#ccc', fontWeight:800, cursor:'pointer', transition:'all 0.2s' }}>💳 Tarjeta</button>
+               <button onClick={() => setPaymentType('transferencia')} style={{ flex:1, padding:12, borderRadius:12, border:paymentType==='transferencia' ? '2px solid var(--vip-gold)' : '1px solid rgba(255,255,255,0.08)', background:paymentType==='transferencia'?'rgba(212,175,55,0.08)':'rgba(255,255,255,0.02)', color:paymentType==='transferencia'?'var(--vip-gold)':'#ccc', fontWeight:800, cursor:'pointer', transition:'all 0.2s' }}>🏦 Transferencia</button>
             </div>
 
             {paymentType === 'tarjeta' ? (
-              <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
+              <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
+                
+                {/* Credit Card Mockup */}
+                <div className="premium-card-mockup">
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div className="card-mock-chip"></div>
+                    <span className="card-mock-type">VIP MEMBER</span>
+                  </div>
+                  <div className="card-mock-number">•••• •••• •••• ••••</div>
+                  <div className="card-mock-footer">
+                    <div>
+                      <div className="card-mock-label">Titular de Tarjeta</div>
+                      <div className="card-mock-val">{nombre.trim().toUpperCase() || (userData?.name || 'VIP Member').toUpperCase()}</div>
+                    </div>
+                    <div>
+                      <div className="card-mock-label">Vence</div>
+                      <div className="card-mock-val">MM/AA</div>
+                    </div>
+                    <div className="card-mock-logo-text">👑 LISTO</div>
+                  </div>
+                </div>
+
                 <input className="crear-local-input" placeholder="Número de Tarjeta (Ej: 4111 2222 3333 4444)" />
                 <div style={{ display:'flex', gap:10 }}>
                   <input className="crear-local-input" placeholder="MM/AA" style={{ flex:1 }} />
@@ -188,14 +209,14 @@ export default function CrearLocal({ lang = 'es', navigate, userData }) {
                 <input className="crear-local-input" placeholder="Nombre en la Tarjeta" />
               </div>
             ) : (
-              <div style={{ background:'#fafafa', padding:16, borderRadius:12, border:'1px solid #eee' }}>
-                <p style={{ fontSize:13, color:'#555', margin:'0 0 12px', lineHeight:1.5 }}>
+              <div style={{ background:'rgba(255,255,255,0.02)', padding:16, borderRadius:12, border:'1px solid rgba(255,255,255,0.06)' }}>
+                <p style={{ fontSize:13, color:'var(--vip-text-secondary)', margin:'0 0 12px', lineHeight:1.5 }}>
                   Realiza el depósito de <strong>RD$ 10,000</strong> a la siguiente cuenta y envía tu comprobante a nuestro soporte. Tu tienda se publicará inmediatamente.
                 </p>
-                <div style={{ background:'#fff', padding:12, borderRadius:8, border:'1px solid #ddd' }}>
-                  <p style={{ margin:'0 0 4px', fontSize:14, fontWeight:800 }}>Banco Popular</p>
-                  <p style={{ margin:'0 0 4px', fontSize:13, color:'#666' }}>Cuenta Corriente: <strong>123456789</strong></p>
-                  <p style={{ margin:0, fontSize:13, color:'#666' }}>A nombre de: <strong>Listo Patrón SRL</strong></p>
+                <div style={{ background:'rgba(0,0,0,0.2)', padding:12, borderRadius:8, border:'1px solid rgba(212,175,55,0.15)' }}>
+                  <p style={{ margin:'0 0 6px', fontSize:14, fontWeight:800, color:'var(--vip-gold)' }}>Banco Popular</p>
+                  <p style={{ margin:'0 0 4px', fontSize:13, color:'var(--vip-text-secondary)' }}>Cuenta Corriente: <strong style={{ color:'#fff' }}>123456789</strong></p>
+                  <p style={{ margin:0, fontSize:13, color:'var(--vip-text-secondary)' }}>A nombre de: <strong style={{ color:'#fff' }}>Listo Patrón SRL</strong></p>
                 </div>
               </div>
             )}
@@ -318,15 +339,48 @@ export default function CrearLocal({ lang = 'es', navigate, userData }) {
             {servicios.map((srv, idx) => (
               <div key={idx} className="cl-servicio-card">
                 {servicios.length > 1 && <button className="cl-servicio-delete" onClick={() => removeServicio(idx)}>✕</button>}
-                <div className="cls-ico-scroll">
+                
+                <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+                  <label className="cl-service-photo-upload" style={{
+                    width: 70, height: 70, borderRadius: 10, border: '2px dashed #ccc',
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                    cursor: 'pointer', overflow: 'hidden', flexShrink: 0, background: '#fafafa', position: 'relative'
+                  }}>
+                    {srv.fotoURL ? (
+                      <img src={srv.fotoURL} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="Srv" />
+                    ) : (
+                      <div style={{ textAlign: 'center', display:'flex', flexDirection:'column', alignItems:'center' }}>
+                        <span style={{ fontSize: 16 }}>📷</span>
+                        <span style={{ fontSize: 9, fontWeight: 700, color: '#888', marginTop: 2 }}>Foto</span>
+                      </div>
+                    )}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      style={{ display: 'none' }}
+                      onChange={async (e) => {
+                        const file = e.target.files[0]
+                        if (file) {
+                          try {
+                            const base64 = await compressImage(file, 400)
+                            updateServicio(idx, 'fotoURL', base64)
+                          } catch (err) { console.error(err) }
+                        }
+                      }}
+                    />
+                  </label>
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4 }}>
+                    <input className="crear-local-input slim" placeholder="Nombre del producto/servicio" value={srv.nombre} onChange={e => updateServicio(idx, 'nombre', e.target.value)} />
+                    <input className="crear-local-input slim text-sm" placeholder="Descripción breve (opcional)" value={srv.descripcion} onChange={e => updateServicio(idx, 'descripcion', e.target.value)} />
+                  </div>
+                </div>
+
+                <div className="cls-ico-scroll" style={{ marginTop: 4 }}>
                   {ICONOS_SERVICIOS.map(ico => (
                     <button key={ico} className={`cls-ico-btn ${srv.icono === ico ? 'active' : ''}`} onClick={() => updateServicio(idx, 'icono', ico)}>{ico}</button>
                   ))}
                 </div>
-                <div className="cl-sg-row">
-                  <input className="crear-local-input slim" placeholder="Nombre del servicio" value={srv.nombre} onChange={e => updateServicio(idx, 'nombre', e.target.value)} />
-                </div>
-                <input className="crear-local-input slim text-sm" placeholder="Descripción breve (opcional)" value={srv.descripcion} onChange={e => updateServicio(idx, 'descripcion', e.target.value)} />
+                
                 <div className="cl-price-row">
                   <select className="cl-price-select" value={srv.tipoPrecio} onChange={e => updateServicio(idx, 'tipoPrecio', e.target.value)}>
                     <option value="fijo">Precio Fijo</option>

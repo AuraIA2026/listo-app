@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 import { collection, query, where, getDocs } from 'firebase/firestore'
 import { db } from '../firebase'
 import './Locales.css'
-import { FaClock, FaMoneyBillWave, FaCreditCard, FaExchangeAlt } from 'react-icons/fa'
+import { FaClock, FaMoneyBillWave, FaCreditCard, FaExchangeAlt, FaWhatsapp, FaInstagram } from 'react-icons/fa'
 
 const avatarColors = ['#F26000','#C24D00','#FF8533','#7A3000','#FFB380']
 
@@ -40,6 +40,15 @@ export default function LocalDetalle({ lang = 'es', navigate, local }) {
 
   const initials = (local?.nombre || 'L').substring(0, 2).toUpperCase()
   const avatarBg = getAvatarColor(local?.id || local?.nombre || 'L')
+
+  const handleWhatsappClick = () => {
+    if (!local?.whatsapp) return
+    let number = local.whatsapp.replace(/[^0-9]/g, '')
+    if (number.length === 10 && (number.startsWith('809') || number.startsWith('829') || number.startsWith('849'))) {
+      number = '1' + number
+    }
+    window.open(`https://wa.me/${number}`, '_blank')
+  }
 
   useEffect(() => {
     if (!local?.proId) { setLoadingResenas(false); return }
@@ -109,9 +118,14 @@ export default function LocalDetalle({ lang = 'es', navigate, local }) {
         </div>
 
         <div className="ld-actions-row">
-          <button className="ld-btn-primary glow" style={{ width: '100%' }} onClick={() => navigate('booking', { id: local.proId, name: local.proNombre || local.nombre, ...local })}>
+          <button className="ld-btn-primary glow" style={{ flex: 1 }} onClick={() => navigate('booking', { id: local.proId, name: local.proNombre || local.nombre, ...local })}>
             🤝 {lang === 'es' ? 'Contratar servicio' : 'Hire now'}
           </button>
+          {local.whatsapp && (
+            <button className="ld-btn-wa" onClick={handleWhatsappClick} title="Chat WhatsApp">
+              <FaWhatsapp style={{ fontSize: 24 }} />
+            </button>
+          )}
         </div>
       </div>
 
@@ -171,8 +185,30 @@ export default function LocalDetalle({ lang = 'es', navigate, local }) {
 
             <div className="ld-acerca-card">
               <h3>🕒 Horario de Atención</h3>
-              <p style={{ display:'flex', alignItems:'center', gap:8, fontWeight:600 }}><FaClock color="#F26000"/> {local.horario || 'No especificado'}</p>
+              <p style={{ display:'flex', alignItems:'center', gap:8, fontWeight:600 }}><FaClock color="#D4AF37"/> {local.horario || 'No especificado'}</p>
             </div>
+
+            {(local.whatsapp || local.instagram) && (
+              <div className="ld-acerca-card">
+                <h3>📱 Contacto Directo</h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  {local.whatsapp && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, cursor: 'pointer' }} onClick={handleWhatsappClick}>
+                      <span style={{ color: '#25D366', fontSize: 18, display: 'flex', alignItems: 'center' }}><FaWhatsapp /></span>
+                      <span style={{ fontWeight: 700 }}>WhatsApp:</span>
+                      <span style={{ color: '#A0AEC0' }}>{local.whatsapp}</span>
+                    </div>
+                  )}
+                  {local.instagram && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, cursor: 'pointer' }} onClick={() => window.open(`https://instagram.com/${local.instagram.replace('@', '')}`, '_blank')}>
+                      <span style={{ color: '#E1306C', fontSize: 18, display: 'flex', alignItems: 'center' }}><FaInstagram /></span>
+                      <span style={{ fontWeight: 700 }}>Instagram:</span>
+                      <span style={{ color: '#A0AEC0' }}>{local.instagram}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
 
             {pagos.length > 0 && (
               <div className="ld-acerca-card">

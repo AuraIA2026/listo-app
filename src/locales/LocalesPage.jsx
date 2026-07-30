@@ -101,22 +101,24 @@ export default function LocalesPage({ lang = 'es', navigate }) {
 
       {/* Header Estilo Marketplace */}
       <div className="locales-page-header">
-        <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:8 }}>
+        <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:10 }}>
           <button
             onClick={() => navigate('search')}
-            style={{ background:'rgba(255,255,255,0.15)', border:'none', color:'#fff', borderRadius:'50%', width:32, height:32, fontSize:16, cursor:'pointer', flexShrink:0 }}
+            style={{ background:'rgba(255,255,255,0.08)', border:'1px solid rgba(255,255,255,0.1)', color:'#fff', borderRadius:'50%', width:36, height:36, fontSize:16, cursor:'pointer', flexShrink:0, display:'flex', alignItems:'center', justifyContent:'center', transition:'all 0.2s' }}
+            onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'}
+            onMouseOut={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'}
           >←</button>
-          <h1>👑 {lang === 'es' ? 'Mercado VIP' : 'VIP Marketplace'}</h1>
+          <h1>👑 {lang === 'es' ? 'Directorio Élite VIP' : 'Elite VIP Directory'}</h1>
         </div>
-        <p>{lang === 'es' ? 'Explora y contrata los mejores servicios profesionales del país' : 'Explore and hire the best professional services'}</p>
+        <p>{lang === 'es' ? 'Explora y contrata los locales de servicios profesionales más prestigiosos' : 'Explore and hire from the most prestigious professional service shops'}</p>
       </div>
 
       {/* Búsqueda */}
       <div className="locales-page-search">
-        <span className="locales-page-search-icon">🔍</span>
+        <span className="locales-page-search-icon" style={{ color: '#D4AF37' }}>🔍</span>
         <input
           type="text"
-          placeholder={lang === 'es' ? '¿Qué servicio buscas hoy?' : 'What service are you looking for today?'}
+          placeholder={lang === 'es' ? '¿Qué servicio VIP buscas hoy?' : 'What VIP service are you looking for today?'}
           value={search}
           onChange={e => setSearch(e.target.value)}
         />

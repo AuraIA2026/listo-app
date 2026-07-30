@@ -9,9 +9,25 @@ function getAvatarColor(str) {
   ]
 }
 
+function getStartingPrice(servicios) {
+  if (!servicios || servicios.length === 0) return 'A convenir'
+  const prices = servicios
+    .map(s => {
+      if (s.tipoPrecio === 'convenir') return null
+      const num = parseFloat(String(s.precio).replace(/[^0-9.]/g, ''))
+      return isNaN(num) ? null : num
+    })
+    .filter(p => p !== null)
+  
+  if (prices.length === 0) return 'A convenir'
+  const min = Math.min(...prices)
+  return `RD$ ${min.toLocaleString()}`
+}
+
 export default function LocalCard({ local, onPress }) {
   const initials = (local.nombre || 'L').substring(0, 2).toUpperCase()
   const avatarBg = getAvatarColor(local.id || local.nombre || 'L')
+  const priceStr = getStartingPrice(local.servicios)
 
   return (
     <div className="local-card" onClick={() => onPress && onPress(local)}>
@@ -25,6 +41,9 @@ export default function LocalCard({ local, onPress }) {
 
         {/* Badge VIP */}
         <span className="local-card-vip-badge">👑 VIP</span>
+
+        {/* Price Badge */}
+        <div className="local-grid-price-badge" style={{ bottom: 6, left: 6, fontSize: 9, padding: '3px 6px' }}>{priceStr}</div>
 
         {/* Logo */}
         <div className="local-card-logo-wrap">
@@ -57,4 +76,4 @@ export default function LocalCard({ local, onPress }) {
       </div>
     </div>
   )
-}
+}
