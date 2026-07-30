@@ -71,7 +71,9 @@
 
 /* Cover (mockup 25.png) */
 .pro-cover {
-  height: 240px;
+  width: 100%;
+  aspect-ratio: 3992 / 1321;
+  height: auto;
   position: relative;
   overflow: hidden;
   box-shadow: 0 4px 16px rgba(0,0,0,0.12);
@@ -87,31 +89,43 @@
   transition: background-image 0.3s ease, filter 0.3s ease;
 }
 
-.pro-cover-bg.use-photo-blur {
-  filter: blur(12px) brightness(0.85);
-  transform: scale(1.1);
-}
-
-.pro-cover-overlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, rgba(242, 96, 0, 0.25) 0%, rgba(0, 0, 0, 0.6) 100%);
-  z-index: 1;
-}
-
 .pro-logo-overlay {
   position: absolute;
-  top: 20px;
-  left: 20px;
+  top: clamp(8px, 3.5vw, 18px);
+  left: clamp(8px, 3.5vw, 18px);
   z-index: 2;
   pointer-events: none;
+  display: flex;
+  align-items: center;
+  gap: clamp(6px, 2vw, 14px);
 }
 
 .pro-logo-img {
-  max-height: 48px;
+  max-height: clamp(24px, 7vw, 42px);
   object-fit: contain;
   filter: drop-shadow(0 2px 4px rgba(0,0,0,0.25));
 }
+
+.pro-cover-text-container {
+  display: flex;
+  align-items: center;
+  gap: clamp(4px, 1.2vw, 8px);
+  font-family: var(--font-display), sans-serif;
+  font-size: clamp(12.5px, 4.5vw, 24px);
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -0.3px;
+  margin-top: 1px;
+}
+
+.pro-cover-name {
+  color: #ffffff;
+}
+
+.pro-cover-profession {
+  color: #000000;
+}
+
 
 .edit-cover-btn {
   position: absolute;

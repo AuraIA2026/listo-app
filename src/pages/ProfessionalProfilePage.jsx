@@ -289,6 +289,34 @@ function WriteReview({ lang, proName, onSubmit }) {
   )
 }
 
+const getPlanTemplate = (planId) => {
+  const p = (planId || '').toLowerCase()
+  if (p.includes('vip') || p.includes('elite') || p.includes('ilimitado')) {
+    return '/templates/VIP.png'
+  } else if (p.includes('platinum') || p.includes('platino')) {
+    return '/templates/PLATINUM.png'
+  } else if (p.includes('gold')) {
+    return '/templates/GOLD.png'
+  }
+  return '/templates/ESTANDAR.png'
+}
+
+const formatFirstNameAndInitial = (fullName) => {
+  if (!fullName) return ''
+  const parts = fullName.trim().split(/\s+/)
+  if (parts.length === 0) return ''
+  const firstName = parts[0]
+  const formattedFirst = firstName.charAt(0).toUpperCase() + firstName.slice(1).toLowerCase()
+  if (parts.length === 1) return formattedFirst
+  const lastInitial = parts[parts.length - 1][0] || ''
+  return `${formattedFirst} ${lastInitial.toLowerCase()}.`
+}
+
+const formatProfession = (category) => {
+  if (!category) return ''
+  return category.charAt(0).toUpperCase() + category.slice(1).toLowerCase()
+}
+
 export default function ProfessionalProfilePage({ lang = 'es', navigate, professional }) {
   const T = txt[lang]
   const { userData } = useUserData()
@@ -483,22 +511,16 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
         <div 
           className="pro-cover-bg"
           style={{
-            backgroundImage: displayPro.coverURL 
-              ? `url(${displayPro.coverURL})`
-              : displayPro.photoURL
-                ? `url(${displayPro.photoURL})`
-                : 'url("https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=800&q=80")'
+            backgroundImage: `url(${getPlanTemplate(displayPro.currentPlan || displayPro.planId || displayPro.plan)})`
           }}
         />
-        <div className="pro-cover-overlay" />
         <div className="pro-logo-overlay">
           <img src={logoListo} alt="Listo Patrón Logo" className="pro-logo-img" />
+          <div className="pro-cover-text-container">
+            <span className="pro-cover-name">{formatFirstNameAndInitial(displayPro.name)}</span>
+            <span className="pro-cover-profession">{formatProfession(displayPro.category || displayPro.categoryEs || displayPro.specEs)}</span>
+          </div>
         </div>
-        {isOwnProfile && (
-          <button className="edit-cover-btn-premium" onClick={() => document.getElementById('pro-cover-upload').click()} title="Cambiar Portada">
-            📸 Cambiar Portada
-          </button>
-        )}
       </div>
 
       {/* Info del profesional */}
@@ -524,24 +546,6 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
         </div>
 
         <div className="pro-info-main">
-          {/* Placa de Plan */}
-          <div className="pro-plan-badge" style={{ background: planInfo.grad }}>
-            <div className="plan-badge-left">
-              <span className="plan-badge-title">PLAN</span>
-              <span className="plan-badge-type">{planInfo.label.replace('PLAN ', '')}</span>
-            </div>
-            <span className="plan-badge-medal">{planInfo.medal}</span>
-          </div>
-
-          <div className="pro-name-row">
-            <h1 className="pro-profile-name">{displayPro.name}</h1>
-            <span className="pro-verified">✓</span>
-          </div>
-          
-          <h2 className="pro-spec-bold">
-            {displayPro.category || displayPro.categoryEs || displayPro.specEs || 'PROFESIONAL'}
-          </h2>
-          
           <p className="pro-location">📍 {displayPro.location}</p>
           <div className="pro-badges">
             <span className={`pro-status-badge ${displayPro.available ? 'avail' : 'busy'}`}>
