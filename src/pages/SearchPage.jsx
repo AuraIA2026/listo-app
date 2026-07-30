@@ -74,9 +74,11 @@ const clientMessages = {
 }
 
 // ── Banner de Creación VIP ──────────────────────────────────────
-function VipShopEntryBanner({ navigate, userRole }) {
+function VipShopEntryBanner({ navigate, userRole, userData }) {
   const [isOpen, setIsOpen] = useState(false)
-  if (userRole !== 'pro') return null
+  
+  const planName = String(userData?.currentPlan || userData?.planId || userData?.plan || '').toLowerCase()
+  const isVipPro = userRole === 'pro' && planName.includes('vip')
 
   return (
     <div className="vip-entry-banner" style={{ margin: '0 16px 16px', background: 'linear-gradient(135deg, #1a1a2e, #16213e)', borderRadius: 14, overflow: 'hidden', color: '#fff', boxShadow: '0 8px 20px rgba(0,0,0,0.15)' }}>
@@ -84,8 +86,12 @@ function VipShopEntryBanner({ navigate, userRole }) {
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <span style={{ fontSize: 28, filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' }}>🏬</span>
           <div>
-            <h3 style={{ margin: 0, fontSize: 16, fontWeight: 900, color: '#FFD700', textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>Crea tu Local VIP</h3>
-            <p style={{ margin: 0, fontSize: 12, color: '#ccc', fontWeight: 600 }}>Destaca entre la competencia</p>
+            <h3 style={{ margin: 0, fontSize: 16, fontWeight: 900, color: '#FFD700', textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>
+              {isVipPro ? 'Configura tu Local VIP' : 'Explora las Tiendas VIP'}
+            </h3>
+            <p style={{ margin: 0, fontSize: 12, color: '#ccc', fontWeight: 600 }}>
+              {isVipPro ? 'Destaca entre la competencia' : 'Visita locales comerciales exclusivos'}
+            </p>
           </div>
         </div>
         <span style={{ transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: '0.3s', fontSize: 14, color: '#FFD700' }}>▼</span>
@@ -96,16 +102,28 @@ function VipShopEntryBanner({ navigate, userRole }) {
           <div style={{ background: 'rgba(255,255,255,0.08)', borderRadius: 10, padding: 12, marginBottom: 12 }}>
             <ul style={{ margin: '0 0 10px', paddingLeft: 20, fontSize: 13, lineHeight: 1.6, color: '#ddd' }}>
               <li>Menú de servicios detallado</li>
-              <li>Tus redes sociales y WhatsApp</li>
-              <li>Atrae mucha más clientela</li>
+              <li>Fotos reales de trabajos realizados</li>
+              <li>Atrae mucha más clientela segura</li>
             </ul>
-            <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: '#FFD700', textAlign: 'center', background: 'rgba(255,215,0,0.1)', padding: '6px', borderRadius: '6px' }}>Suscripción: RD$ 10,000 / mes</p>
+            {isVipPro ? (
+              <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: '#FFD700', textAlign: 'center', background: 'rgba(255,215,0,0.1)', padding: '6px', borderRadius: '6px' }}>Tu Suscripción VIP está Activa</p>
+            ) : (
+              <p style={{ margin: 0, fontSize: 12, color: '#ccc', textAlign: 'center', fontStyle: 'italic' }}>
+                Exclusivo para profesionales con Plan VIP
+              </p>
+            )}
           </div>
           <button 
             style={{ width: '100%', padding: 14, borderRadius: 12, border: 'none', background: 'linear-gradient(135deg, #FFD700, #FFA500)', color: '#1a1a2e', fontSize: 15, fontWeight: 900, cursor: 'pointer', boxShadow: '0 4px 15px rgba(255,165,0,0.4)' }}
-            onClick={() => navigate('crearLocal')}
+            onClick={() => {
+              if (isVipPro) {
+                navigate('crearLocal')
+              } else {
+                navigate('locales')
+              }
+            }}
           >
-            🚀 Configurar mi Tienda Ahora
+            {isVipPro ? '🚀 Configurar mi Tienda Ahora' : '🛍️ Entrar a la Tienda / Directorio VIP'}
           </button>
         </div>
       )}
@@ -511,7 +529,7 @@ function ProDelMes({ lang, navigate, userRole }) {
   )
 }
 
-export default function SearchPage({ lang = 'es', navigate, initialCategory = 'all', userRole = 'client' }) {
+export default function SearchPage({ lang = 'es', navigate, initialCategory = 'all', userRole = 'client', userData }) {
   const [activeCategory,    setActiveCategory]    = useState('all')
   const [activeSubcategory, setActiveSubcategory] = useState('all')
   const [openCategory,      setOpenCategory]      = useState(null)
@@ -722,7 +740,7 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
         </div>
       </div>
 
-      <VipShopEntryBanner navigate={navigate} userRole={userRole} />
+      <VipShopEntryBanner navigate={navigate} userRole={userRole} userData={userData} />
       <PromoBanner lang={lang} userRole={userRole} />
 
       {/* ✅ Carrusel de Locales VIP — aparece automáticamente si hay locales */}

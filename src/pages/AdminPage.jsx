@@ -504,6 +504,7 @@ export default function AdminPage({ navigate }) {
   const [reports, setReports]   = useState([]); // Quejas y Reportes de Usuarios
   const [editRequests, setEditRequests] = useState([]); // Solicitudes de Edición
   const [alerts, setAlerts]     = useState([]); // Alertas de plan
+  const [vipLocales, setVipLocales] = useState([]); // Locales VIP
   const [toast, setToast]       = useState('');
   const [confirm, setConfirm]   = useState(null); // { type, obj }
   const [viewDocs, setViewDocs] = useState(null); // Usuario a inspeccionar documentos
@@ -578,7 +579,13 @@ export default function AdminPage({ navigate }) {
       setAlerts(arr);
     });
 
-    return () => { unsubPay(); unsubUsers(); unsubVerif(); unsubReps(); unsubEdits(); unsubAlerts(); };
+    // 7. Escuchar Locales VIP
+    const unsubLocales = onSnapshot(collection(db, 'locales'), (snap) => {
+      const arr = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      setVipLocales(arr);
+    });
+
+    return () => { unsubPay(); unsubUsers(); unsubVerif(); unsubReps(); unsubEdits(); unsubAlerts(); unsubLocales(); };
   }, []);
 
   const prevUnreadCount = useRef(0);
@@ -803,6 +810,23 @@ export default function AdminPage({ navigate }) {
          showToast(`📱 Recordatorio In-App enviado a ${obj.name || obj.proName || 'Usuario'}`);
       }
       
+      if (type === 'approve_local') {
+         await updateDoc(doc(db, 'locales', obj.id), { activo: true });
+         
+         // Notificar al profesional de que su tienda VIP ha sido aprobada
+         await addDoc(collection(db, 'notificaciones'), {
+           userId: obj.proId,
+           type: 'system',
+           title: '🏬 ¡Tu Tienda VIP ha sido aprobada! 🎉',
+           text: `Tu local comercial "${obj.nombre}" ha sido aprobado por el administrador y ya es público en la plataforma.`,
+           date: new Date().toISOString(),
+           createdAt: new Date().toISOString(),
+           read: false
+         });
+         
+         showToast(`🏬 Tienda VIP "${obj.nombre}" aprobada y publicada`);
+      }
+
       if (type === 'approve_edit') {
          await updateDoc(doc(db, 'users', obj.userId), obj.requestedChanges);
          await updateDoc(doc(db, 'profile_edit_requests', obj.id), { status: 'approved', processedAt: new Date().toISOString() });
@@ -943,6 +967,7 @@ export default function AdminPage({ navigate }) {
         <div className="admin-tabs" style={{overflowX:'auto', paddingBottom:4}}>
           {[
             { id:'postulaciones', icon:'🛡️', label:'Nuevos', count:verifications.length },
+            { id:'locales',      icon:'🏬', label:'Tiendas VIP', count: vipLocales.filter(l => !l.activo).length },
             { id:'alertas',      icon:'🔔', label:'Alertas', count: alerts.filter(a => !a.read).length },
             { id:'pagos',      icon:'💳', label:'Historial',  count:completedPayments.length },
             { id:'comisiones', icon:'⏳', label:'Validar', count:pendienteCount },
@@ -995,6 +1020,46 @@ export default function AdminPage({ navigate }) {
                 </div>
               );
             })}
+          </div>
+        )}
+
+        {/* ── TAB: TIENDAS VIP (Aprobar Locales VIP) ── */}
+        {tab === 'locales' && (
+          <div className="admin-section" style={{marginTop:16}}>
+            <div className="section-header">
+              <span className="section-title">Tiendas VIP por Aprobar ({vipLocales.filter(l => !l.activo).length})</span>
+            </div>
+            {vipLocales.filter(l => !l.activo).length === 0 && (
+              <div className="empty-admin"><p>No hay tiendas VIP pendientes de aprobación.</p></div>
+            )}
+            {vipLocales.filter(l => !l.activo).map((local, i) => (
+              <div className="payment-card" key={local.id} style={{animationDelay:`${i*.06}s`, borderColor:'rgba(245,158,11,0.3)'}}>
+                <div className="pc-top" style={{alignItems:'center'}}>
+                  <div className="pc-avatar" style={{background:'#F59E0B', backgroundImage: `url(${local.logoURL})`, backgroundSize: 'cover', backgroundPosition: 'center'}}>
+                    {!local.logoURL && '🏬'}
+                  </div>
+                  <div className="pc-info">
+                    <div className="pc-name">{local.nombre || 'Local VIP'}</div>
+                    <div className="pc-detail">{local.categoria || 'Servicios VIP'} · Pro: {local.proNombre}</div>
+                  </div>
+                  <div className="pc-right">
+                    <button className="cc-btn remind" style={{background:'#F59E0B', color:'#fff', border:'none', padding:'6px 12px', fontSize:'11px'}} onClick={() => setConfirm({type:'approve_local', obj: local})}>
+                      ✅ Aprobar Tienda
+                    </button>
+                  </div>
+                </div>
+                {local.fotosTrabajos && local.fotosTrabajos.length > 0 && (
+                  <div style={{marginTop:10}}>
+                    <span style={{fontSize:11, color:'var(--muted)', display:'block', marginBottom:4}}>Fotos de trabajos cargadas ({local.fotosTrabajos.length}):</span>
+                    <div style={{display:'flex', gap:6, overflowX:'auto', paddingBottom:4}}>
+                      {local.fotosTrabajos.map((foto, idx) => (
+                        <img key={idx} src={foto} style={{width:55, height:55, borderRadius:8, objectFit:'cover', border:'1px solid #ddd'}} alt="Trabajo"/>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
         )}
 
@@ -1443,13 +1508,17 @@ export default function AdminPage({ navigate }) {
             )}
             {editRequests.filter(r => r.status === 'pending').map(req => {
                const u = users.find(x => x.id === req.userId);
-               const isPhoto = req.type === 'photo';
+               const isMedia = ['photo', 'cover', 'work_photo'].includes(req.type);
+               const reqLabel = 
+                 req.type === 'photo' ? '📸 FOTO DE PERFIL' :
+                 req.type === 'cover' ? '🖼️ FOTO DE PORTADA' :
+                 req.type === 'work_photo' ? '📷 TRABAJO REALIZADO' : '📝 CAMBIO DE DATOS';
                return (
                   <div className="dash-card" key={req.id} style={{alignItems: 'flex-start', background: '#FFFBEB', borderColor: '#FDE68A'}}>
                      <div className="dash-info" style={{width:'100%'}}>
                         <div style={{display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:8}}>
                           <span className="dash-pill" style={{background:'#F59E0B', color:'#fff', fontSize:11}}>
-                            {isPhoto ? '📸 CAMBIO DE FOTO' : '📝 CAMBIO DE DATOS'}
+                            {reqLabel}
                           </span>
                           <span style={{fontSize:11, color:'var(--muted)'}}>{fmtDate(req.createdAt)}</span>
                         </div>
@@ -1457,17 +1526,46 @@ export default function AdminPage({ navigate }) {
                           <span style={{color:'var(--brand)'}}>{u?.name || req.userName}</span> ha solicitado actualizar su perfil.
                         </div>
                         
-                        {isPhoto ? (
-                          <div style={{display:'flex', gap:10, marginBottom:12}}>
-                             <div style={{flex:1, textAlign:'center'}}>
-                               <div style={{fontSize:11, color:'var(--muted)', marginBottom:4}}>Foto Actual</div>
-                               <img src={u?.photoURL || 'https://via.placeholder.com/100?text=Vacio'} style={{width:80, height:80, borderRadius:'50%', objectFit:'cover', border:'2px solid var(--border)'}} alt="Current"/>
-                             </div>
-                             <div style={{display:'flex', alignItems:'center', fontSize:24, color:'var(--muted)'}}>➔</div>
-                             <div style={{flex:1, textAlign:'center'}}>
-                               <div style={{fontSize:11, color:'var(--brand)', fontWeight:700, marginBottom:4}}>Foto Nueva</div>
-                               <img src={req.requestedChanges.photoURL} style={{width:80, height:80, borderRadius:'50%', objectFit:'cover', border:'3px solid #10B981'}} alt="New"/>
-                             </div>
+                        {isMedia ? (
+                          <div style={{display:'flex', gap:10, marginBottom:12, justifyContent:'center'}}>
+                             {req.type === 'photo' && (
+                               <>
+                                 <div style={{flex:1, textAlign:'center'}}>
+                                   <div style={{fontSize:11, color:'var(--muted)', marginBottom:4}}>Foto Actual</div>
+                                   <img src={u?.photoURL || 'https://via.placeholder.com/100?text=Vacio'} style={{width:80, height:80, borderRadius:'50%', objectFit:'cover', border:'2px solid var(--border)'}} alt="Current"/>
+                                 </div>
+                                 <div style={{display:'flex', alignItems:'center', fontSize:24, color:'var(--muted)'}}>➔</div>
+                                 <div style={{flex:1, textAlign:'center'}}>
+                                   <div style={{fontSize:11, color:'var(--brand)', fontWeight:700, marginBottom:4}}>Foto Nueva</div>
+                                   <img src={req.requestedChanges.photoURL} style={{width:80, height:80, borderRadius:'50%', objectFit:'cover', border:'3px solid #10B981'}} alt="New"/>
+                                 </div>
+                               </>
+                             )}
+                             {req.type === 'cover' && (
+                               <>
+                                 <div style={{flex:1, textAlign:'center'}}>
+                                   <div style={{fontSize:11, color:'var(--muted)', marginBottom:4}}>Portada Actual</div>
+                                   <img src={u?.coverURL || 'https://via.placeholder.com/120?text=Sin+Portada'} style={{width:120, height:70, borderRadius:'8px', objectFit:'cover', border:'2px solid var(--border)'}} alt="Current"/>
+                                 </div>
+                                 <div style={{display:'flex', alignItems:'center', fontSize:24, color:'var(--muted)'}}>➔</div>
+                                 <div style={{flex:1, textAlign:'center'}}>
+                                   <div style={{fontSize:11, color:'var(--brand)', fontWeight:700, marginBottom:4}}>Portada Nueva</div>
+                                   <img src={req.requestedChanges.coverURL} style={{width:120, height:70, borderRadius:'8px', objectFit:'cover', border:'3px solid #10B981'}} alt="New"/>
+                                 </div>
+                               </>
+                             )}
+                             {req.type === 'work_photo' && (
+                               <div style={{textAlign:'center', width:'100%'}}>
+                                 <div style={{fontSize:11, color:'var(--brand)', fontWeight:700, marginBottom:6}}>Nueva Foto de Trabajo para Galería:</div>
+                                 {(() => {
+                                   const newPhotos = req.requestedChanges.photos || [];
+                                   const addedPhoto = newPhotos[newPhotos.length - 1];
+                                   return addedPhoto ? (
+                                     <img src={addedPhoto} style={{width:160, height:120, borderRadius:'12px', objectFit:'cover', border:'3px solid #10B981', boxShadow:'0 4px 12px rgba(0,0,0,0.1)'}} alt="New Work"/>
+                                   ) : <p>Error cargando foto</p>;
+                                 })()}
+                               </div>
+                             )}
                           </div>
                         ) : (
                           <div style={{background:'rgba(255,255,255,0.7)', padding:12, borderRadius:8, marginBottom:12, border:'1px solid #FDE68A', overflowX:'auto'}}>

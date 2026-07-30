@@ -117,7 +117,7 @@ export default function CrearLocal({ lang = 'es', navigate, userData }) {
         pagos:        pagos,
         servicios:    servicios.filter(s => s.nombre.trim()),
         fotosTrabajos: galeriaURLs,
-        activo:       true,
+        activo:       false, // Requiere aprobación del administrador
         plan:         'vip',
         suscripcionPaida: true,
         rating:       userData.rating  || 5,
@@ -125,6 +125,23 @@ export default function CrearLocal({ lang = 'es', navigate, userData }) {
         totalResenas: userData.reviews || 0,
         createdAt:    serverTimestamp(),
       })
+
+      // Enviar notificación al administrador
+      await addDoc(collection(db, 'notificaciones'), {
+        userId: 'admin',
+        type: 'new_vip_local_request',
+        title: '🏬 NUEVA TIENDA VIP REGISTRADA',
+        text: `El profesional ${userData.name || 'Un VIP'} ha registrado su tienda VIP "${nombre.trim()}". Requiere aprobación de fotos.`,
+        read: false,
+        createdAt: serverTimestamp(),
+        date: new Date().toISOString()
+      })
+
+      alert(lang === 'es'
+        ? "¡Tu tienda VIP ha sido registrada! Tu logo, portada y fotos del catálogo pasarán por una revisión de la Central de Mando antes de ser publicadas en la plataforma."
+        : "Your VIP shop has been registered! Your logo, cover, and catalog photos will undergo admin approval before being published."
+      )
+
       navigate('profile')
     } catch (e) {
       console.error('Error creando local:', e)

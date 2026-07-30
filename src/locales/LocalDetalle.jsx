@@ -98,12 +98,9 @@ export default function LocalDetalle({ lang = 'es', navigate, local }) {
         </div>
 
         <div className="ld-actions-row">
-          <button className="ld-btn-primary glow" onClick={() => navigate('booking', { id: local.proId, name: local.proNombre || local.nombre, ...local })}>
+          <button className="ld-btn-primary glow" style={{ width: '100%' }} onClick={() => navigate('booking', { id: local.proId, name: local.proNombre || local.nombre, ...local })}>
             🤝 {lang === 'es' ? 'Contratar ahora' : 'Hire now'}
           </button>
-          {local.whatsapp && (
-            <button className="ld-btn-wa" onClick={handleWhatsapp}><FaWhatsapp size={20}/></button>
-          )}
         </div>
       </div>
 
@@ -178,12 +175,7 @@ export default function LocalDetalle({ lang = 'es', navigate, local }) {
               </div>
             )}
 
-            {local.instagram && (
-              <div className="ld-acerca-card">
-                <h3>📸 Redes Sociales</h3>
-                <p style={{ display:'flex', alignItems:'center', gap:8, fontWeight:600, color:'#E1306C' }}><FaInstagram size={18}/> {local.instagram}</p>
-              </div>
-            )}
+            {/* Redes sociales ocultas por política VIP */}
           </div>
         )}
 

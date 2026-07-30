@@ -423,9 +423,35 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
     if (!file) return
     try {
       const base64 = await compressImage(file)
-      await updateDoc(doc(db, 'users', userData.uid), { coverURL: base64 })
+      
+      // Enviar solicitud de cambio de portada al administrador
+      await addDoc(collection(db, 'profile_edit_requests'), {
+        userId: userData.uid,
+        userName: userData.name || displayPro.name,
+        requestedChanges: { coverURL: base64 },
+        status: 'pending',
+        createdAt: serverTimestamp(),
+        type: 'cover'
+      })
+
+      // Registrar notificación para el administrador
+      await addDoc(collection(db, 'notificaciones'), {
+        userId: 'admin',
+        type: 'new_edit_request_cover',
+        title: '🖼️ SOLICITUD DE CAMBIO DE PORTADA',
+        text: `El profesional ${userData.name || displayPro.name || 'Un profesional'} ha solicitado actualizar su foto de portada.`,
+        read: false,
+        createdAt: serverTimestamp(),
+        date: new Date().toISOString()
+      })
+
+      alert(lang === 'es' 
+        ? "Tu solicitud de cambio de foto de portada ha sido enviada al administrador para su aprobación. Se actualizará una vez sea aprobada por Central de Mando."
+        : "Your cover photo change request has been sent to the administrator for approval. It will update once approved by Central de Mando."
+      )
     } catch (err) {
-      console.error("Error uploading cover:", err)
+      console.error("Error uploading cover request:", err)
+      alert(lang === 'es' ? "Error al enviar la solicitud de cambio de portada." : "Error sending cover change request.")
     }
   }
 
@@ -470,11 +496,38 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
     try {
       const uploadPromises = Array.from(files).map(file => compressImage(file))
       const base64Images = await Promise.all(uploadPromises)
-      await updateDoc(doc(db, 'users', userData.uid), {
-        photos: arrayUnion(...base64Images)
+      
+      const currentPhotos = displayPro.photos || []
+      const updatedPhotos = [...currentPhotos, ...base64Images]
+
+      // Enviar solicitud de nuevo trabajo al administrador
+      await addDoc(collection(db, 'profile_edit_requests'), {
+        userId: userData.uid,
+        userName: userData.name || displayPro.name,
+        requestedChanges: { photos: updatedPhotos },
+        status: 'pending',
+        createdAt: serverTimestamp(),
+        type: 'work_photo'
       })
+
+      // Registrar notificación para el administrador
+      await addDoc(collection(db, 'notificaciones'), {
+        userId: 'admin',
+        type: 'new_edit_request_work',
+        title: '📷 SOLICITUD DE NUEVO TRABAJO',
+        text: `El profesional ${userData.name || displayPro.name || 'Un profesional'} ha solicitado subir fotos de trabajos realizados a su portafolio.`,
+        read: false,
+        createdAt: serverTimestamp(),
+        date: new Date().toISOString()
+      })
+
+      alert(lang === 'es' 
+        ? "Tu solicitud para subir fotos de trabajos realizados ha sido enviada al administrador para su aprobación. Se publicará una vez sea aprobada por Central de Mando."
+        : "Your request to upload completed work photos has been sent to the administrator for approval. It will publish once approved by Central de Mando."
+      )
     } catch (err) {
-      console.error("Error uploading work photos:", err)
+      console.error("Error uploading work request:", err)
+      alert(lang === 'es' ? "Error al enviar la solicitud de trabajo." : "Error sending work upload request.")
     }
   }
 

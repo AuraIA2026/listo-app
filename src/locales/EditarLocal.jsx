@@ -1,6 +1,6 @@
 // src/locales/EditarLocal.jsx
 import { useState, useEffect } from 'react'
-import { doc, updateDoc } from 'firebase/firestore'
+import { doc, updateDoc, collection, addDoc } from 'firebase/firestore'
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
 import { db, storage } from '../firebase'
 import './Locales.css'
@@ -56,6 +56,7 @@ export default function EditarLocal({ lang = 'es', navigate, local }) {
         categoria:   categoria.trim(),
         descripcion: descripcion.trim(),
         servicios:   servicios.filter(s => s.nombre.trim()),
+        activo:      false // Requiere revisión de administración al editar
       }
 
       // Subir logo si cambió
@@ -73,8 +74,24 @@ export default function EditarLocal({ lang = 'es', navigate, local }) {
       }
 
       await updateDoc(doc(db, 'locales', local.id), updates)
+
+      // Registrar notificación para el administrador
+      await addDoc(collection(db, 'notificaciones'), {
+        userId: 'admin',
+        type: 'new_vip_local_request',
+        title: '🏬 TIENDA VIP MODIFICADA',
+        text: `El profesional ${local.proNombre || 'Un VIP'} ha actualizado los datos o fotos de su tienda VIP "${nombre.trim()}". Requiere aprobación.`,
+        read: false,
+        createdAt: new Date().toISOString(),
+        date: new Date().toISOString()
+      })
+
       setSuccess(true)
-      setTimeout(() => navigate('proPanel'), 1500)
+      alert(lang === 'es' 
+        ? "¡Tus cambios han sido guardados! Debido a políticas de seguridad, tu tienda VIP estará temporalmente en revisión de la Central de Mando hasta ser aprobada de nuevo."
+        : "Your changes have been saved! For safety, your VIP shop will be under admin review before being published again."
+      )
+      setTimeout(() => navigate('profile'), 1500)
     } catch (e) {
       console.error('Error actualizando local:', e)
       setError(lang === 'es' ? 'Error al guardar. Intenta de nuevo.' : 'Error saving. Please try again.')
@@ -90,7 +107,7 @@ export default function EditarLocal({ lang = 'es', navigate, local }) {
       <div className="crear-local-header">
         <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:4 }}>
           <button
-            onClick={() => navigate('proPanel')}
+            onClick={() => navigate('profile')}
             style={{ background:'rgba(255,255,255,0.15)', border:'none', color:'#fff', borderRadius:'50%', width:32, height:32, fontSize:16, cursor:'pointer' }}
           >←</button>
           <div className="crear-local-header-title">
