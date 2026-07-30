@@ -881,7 +881,13 @@ export default function HomePage({ lang, navigate, userRole }) {
               <img 
                 src={userData.profilePhoto || userData.photoURL} 
                 alt="Profile" 
-                onClick={() => navigate('profile')}
+                onClick={() => {
+                  if (isPro) {
+                    navigate('proProfile', userData)
+                  } else {
+                    navigate('profile')
+                  }
+                }}
                 style={{ 
                   width: '84px', 
                   height: '84px', 
@@ -895,7 +901,13 @@ export default function HomePage({ lang, navigate, userRole }) {
               />
             ) : (
               <div 
-                onClick={() => navigate('profile')} 
+                onClick={() => {
+                  if (isPro) {
+                    navigate('proProfile', userData)
+                  } else {
+                    navigate('profile')
+                  }
+                }} 
                 style={{ 
                   width: '84px', 
                   height: '84px', 
