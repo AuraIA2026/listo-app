@@ -511,16 +511,33 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
         <div 
           className="pro-cover-bg"
           style={{
-            backgroundImage: `url(${getPlanTemplate(displayPro.currentPlan || displayPro.planId || displayPro.plan)})`
+            backgroundImage: displayPro.coverURL 
+              ? `url(${displayPro.coverURL})`
+              : displayPro.photoURL
+                ? `url(${displayPro.photoURL})`
+                : 'url("https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=800&q=80")'
           }}
         />
+        <div className="pro-cover-overlay" />
         <div className="pro-logo-overlay">
           <img src={logoListo} alt="Listo Patrón Logo" className="pro-logo-img" />
-          <div className="pro-cover-text-container">
-            <span className="pro-cover-name">{formatFirstNameAndInitial(displayPro.name)}</span>
-            <span className="pro-cover-profession">{formatProfession(displayPro.category || displayPro.categoryEs || displayPro.specEs)}</span>
+        </div>
+
+        {/* Card de Plan Superpuesto */}
+        <div className="pro-plan-card-overlay" style={{
+          backgroundImage: `url(${getPlanTemplate(displayPro.currentPlan || displayPro.planId || displayPro.plan)})`
+        }}>
+          <div className="pro-card-overlay-text">
+            <span className="pro-card-overlay-name">{formatFirstNameAndInitial(displayPro.name)}</span>
+            <span className="pro-card-overlay-profession">{formatProfession(displayPro.category || displayPro.categoryEs || displayPro.specEs)}</span>
           </div>
         </div>
+
+        {isOwnProfile && (
+          <button className="edit-cover-btn-facebook" onClick={() => document.getElementById('pro-cover-upload').click()} title="Cambiar Portada">
+            📷
+          </button>
+        )}
       </div>
 
       {/* Info del profesional */}
@@ -546,6 +563,9 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
         </div>
 
         <div className="pro-info-main">
+          <h2 className="pro-spec-bold">
+            {displayPro.category || displayPro.categoryEs || displayPro.specEs || 'PROFESIONAL'}
+          </h2>
           <p className="pro-location">📍 {displayPro.location}</p>
           <div className="pro-badges">
             <span className={`pro-status-badge ${displayPro.available ? 'avail' : 'busy'}`}>

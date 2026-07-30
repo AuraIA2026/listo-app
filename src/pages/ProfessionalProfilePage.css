@@ -71,9 +71,7 @@
 
 /* Cover (mockup 25.png) */
 .pro-cover {
-  width: 100%;
-  aspect-ratio: 3992 / 1321;
-  height: auto;
+  height: 240px;
   position: relative;
   overflow: hidden;
   box-shadow: 0 4px 16px rgba(0,0,0,0.12);
@@ -89,42 +87,67 @@
   transition: background-image 0.3s ease, filter 0.3s ease;
 }
 
+.pro-cover-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(242, 96, 0, 0.25) 0%, rgba(0, 0, 0, 0.6) 100%);
+  z-index: 1;
+}
+
 .pro-logo-overlay {
   position: absolute;
-  top: clamp(8px, 3.5vw, 18px);
-  left: clamp(8px, 3.5vw, 18px);
+  top: 20px;
+  left: 20px;
   z-index: 2;
   pointer-events: none;
-  display: flex;
-  align-items: center;
-  gap: clamp(6px, 2vw, 14px);
 }
 
 .pro-logo-img {
-  max-height: clamp(24px, 7vw, 42px);
+  max-height: 48px;
   object-fit: contain;
   filter: drop-shadow(0 2px 4px rgba(0,0,0,0.25));
 }
 
-.pro-cover-text-container {
-  display: flex;
-  align-items: center;
-  gap: clamp(4px, 1.2vw, 8px);
-  font-family: var(--font-display), sans-serif;
-  font-size: clamp(12.5px, 4.5vw, 24px);
-  font-weight: 900;
-  line-height: 1;
-  letter-spacing: -0.3px;
-  margin-top: 1px;
+/* Card de Plan Superpuesto en Portada */
+.pro-plan-card-overlay {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: clamp(170px, 52vw, 230px);
+  aspect-ratio: 3992 / 1321;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  z-index: 5;
+  box-shadow: 0 -2px 12px rgba(0,0,0,0.15);
+  border-radius: 12px 0 0 0;
 }
 
-.pro-cover-name {
+.pro-card-overlay-text {
+  position: absolute;
+  top: 15%;
+  left: 12%;
+  display: flex;
+  align-items: center;
+  gap: clamp(2px, 0.8vw, 6px);
+  font-family: var(--font-display), sans-serif;
+  font-size: clamp(8.5px, 2.5vw, 13px);
+  font-weight: 900;
+  line-height: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 72%;
+}
+
+.pro-card-overlay-name {
   color: #ffffff;
 }
 
-.pro-cover-profession {
+.pro-card-overlay-profession {
   color: #000000;
 }
+
 
 
 .edit-cover-btn {
@@ -185,6 +208,37 @@
 .edit-cover-btn-premium:active {
   transform: translateY(0);
 }
+
+.edit-cover-btn-facebook {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  transition: transform 0.2s, background-color 0.2s;
+  z-index: 10;
+  padding: 0;
+}
+.edit-cover-btn-facebook:hover {
+  background: rgba(0, 0, 0, 0.75);
+  transform: scale(1.08);
+}
+.edit-cover-btn-facebook:active {
+  transform: scale(0.95);
+}
+
 
 
 /* Info del profesional */
