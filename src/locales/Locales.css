@@ -902,4 +902,243 @@
 
 /* Galeria View LocalDetalle */
 .ld-galeria-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
-.ld-galeria-img { width: 100%; aspect-ratio: 4/3; object-fit: cover; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); border: 1px solid #eee; }
+.ld-galeria-img { width: 100%; aspect-ratio: 4/3; object-fit: cover; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); border: 1px solid #eee; }
+
+/* ══════════════════════════════════════════════
+   ESTILOS MARKETPLACE DE FACEBOOK (VIP SHOPS)
+   ══════════════════════════════════════════════ */
+.locales-page.marketplace-view {
+  background: #f0f2f5;
+}
+.locales-page.marketplace-view .locales-page-header {
+  border-bottom: none;
+  padding-bottom: 16px;
+}
+.locales-page.marketplace-view .locales-page-header::after {
+  display: none;
+}
+.marketplace-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr) !important;
+  gap: 10px !important;
+  padding: 0 16px 20px !important;
+}
+.marketplace-card {
+  background: #ffffff !important;
+  border-radius: 10px !important;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s !important;
+  border: 1px solid #e4e6eb !important;
+  display: flex;
+  flex-direction: column;
+  animation: none !important;
+}
+.marketplace-card:active {
+  transform: scale(0.97) !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08) !important;
+}
+.marketplace-card .local-grid-portada-wrap {
+  width: 100%;
+  aspect-ratio: 1 / 1 !important;
+  position: relative;
+  overflow: hidden;
+  background: #f0f2f5;
+}
+.marketplace-card .local-grid-portada {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  transition: transform 0.3s;
+}
+.marketplace-card:hover .local-grid-portada {
+  transform: scale(1.03);
+}
+.local-grid-vip-crown {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(4px);
+  color: #FFD700;
+  font-size: 9px;
+  font-weight: 900;
+  padding: 3px 6px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  z-index: 2;
+  letter-spacing: 0.02em;
+}
+.local-grid-price-badge {
+  position: absolute;
+  bottom: 6px;
+  left: 6px;
+  background: #ffffff;
+  color: #f26000;
+  font-weight: 900;
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  z-index: 2;
+}
+.marketplace-card .local-grid-logo-wrap {
+  position: absolute;
+  bottom: 6px;
+  right: 6px;
+  z-index: 2;
+}
+.marketplace-card .local-grid-logo {
+  width: 26px !important;
+  height: 26px !important;
+  border-radius: 50% !important;
+  border: 1.5px solid #fff !important;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+}
+.marketplace-card .local-grid-logo-placeholder {
+  width: 26px !important;
+  height: 26px !important;
+  border-radius: 50% !important;
+  border: 1.5px solid #fff !important;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  font-weight: 800;
+  color: #fff;
+}
+.marketplace-categories-scroll {
+  display: flex;
+  gap: 8px;
+  padding: 4px 16px 12px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.marketplace-categories-scroll::-webkit-scrollbar {
+  display: none;
+}
+.marketplace-category-pill {
+  background: #e4e6eb;
+  color: #050505;
+  border: none;
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+.marketplace-category-pill.active {
+  background: #e7f3ff;
+  color: #1877f2;
+}
+.marketplace-category-pill:active {
+  transform: scale(0.96);
+}
+.marketplace-card .local-grid-body {
+  padding: 8px 10px 10px !important;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex-grow: 1;
+  justify-content: space-between;
+}
+.marketplace-card .local-grid-nombre {
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  color: #050505 !important;
+  margin: 0;
+  line-height: 1.25;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.marketplace-card .local-grid-details-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 4px;
+}
+.marketplace-card .local-grid-cat {
+  font-size: 10px !important;
+  color: #65676b !important;
+  font-weight: 600 !important;
+  margin: 0;
+}
+.marketplace-card .local-grid-rating-wrap {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+.marketplace-card .local-grid-rating-text {
+  font-size: 10px;
+  font-weight: 800;
+  color: #65676b;
+}
+
+/* Detail page refinements */
+.marketplace-detail {
+  background: #f0f2f5;
+}
+.marketplace-info-block {
+  background: #ffffff !important;
+  border: 1px solid #e4e6eb !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06) !important;
+  border-radius: 14px !important;
+  margin: -32px 16px 0 !important;
+  padding: 16px !important;
+  animation: none !important;
+}
+.local-detalle-precio-tag {
+  font-size: 20px;
+  font-weight: 900;
+  color: #2e7d32;
+  margin: 4px 0 8px;
+}
+.marketplace-services {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.marketplace-service-card {
+  background: #ffffff !important;
+  border: 1px solid #e4e6eb !important;
+  border-radius: 12px !important;
+  padding: 12px !important;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04) !important;
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+.marketplace-service-card:active {
+  transform: scale(0.98);
+  box-shadow: none !important;
+}
+.local-servicio-precio-highlight {
+  font-size: 13px;
+  font-weight: 900;
+  color: #2e7d32;
+  background: #e8f5e9;
+  padding: 4px 10px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+.marketplace-gallery {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr) !important;
+  gap: 8px !important;
+}
+.marketplace-gallery .ld-galeria-img {
+  width: 100%;
+  aspect-ratio: 4/3;
+  object-fit: cover;
+  border-radius: 10px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  border: 1px solid #e4e6eb;
+}

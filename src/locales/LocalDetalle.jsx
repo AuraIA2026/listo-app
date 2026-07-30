@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 import { collection, query, where, getDocs } from 'firebase/firestore'
 import { db } from '../firebase'
 import './Locales.css'
-import { FaWhatsapp, FaInstagram, FaMapMarkerAlt, FaClock, FaMoneyBillWave, FaCreditCard, FaExchangeAlt } from 'react-icons/fa'
+import { FaClock, FaMoneyBillWave, FaCreditCard, FaExchangeAlt } from 'react-icons/fa'
 
 const avatarColors = ['#F26000','#C24D00','#FF8533','#7A3000','#FFB380']
 
@@ -16,6 +16,21 @@ const PAGO_LABELS = {
   transferencia: { icon: <FaExchangeAlt/>, text: 'Transferencia' },
   tarjeta: { icon: <FaCreditCard/>, text: 'Tarjetas' },
   paypal: { icon: '📱', text: 'PayPal' }
+}
+
+function getStartingPrice(servicios) {
+  if (!servicios || servicios.length === 0) return 'A convenir'
+  const prices = servicios
+    .map(s => {
+      if (s.tipoPrecio === 'convenir') return null
+      const num = parseFloat(String(s.precio).replace(/[^0-9.]/g, ''))
+      return isNaN(num) ? null : num
+    })
+    .filter(p => p !== null)
+  
+  if (prices.length === 0) return 'A convenir'
+  const min = Math.min(...prices)
+  return `Desde RD$ ${min.toLocaleString()}`
 }
 
 export default function LocalDetalle({ lang = 'es', navigate, local }) {
@@ -58,16 +73,10 @@ export default function LocalDetalle({ lang = 'es', navigate, local }) {
   const contratos = local.contratos || 0
   const pagos = local.pagos || []
   const fotosTrabajos = local.fotosTrabajos || []
-
-  const handleWhatsapp = () => {
-    if (local.whatsapp) {
-      const num = local.whatsapp.replace(/\D/g, '')
-      window.open(`https://wa.me/${num}`, '_blank')
-    }
-  }
+  const startingPrice = getStartingPrice(servicios)
 
   return (
-    <div className="local-detalle-page">
+    <div className="local-detalle-page marketplace-detail">
 
       {/* PORTADA Y HEADER */}
       <div className="local-detalle-header">
@@ -77,8 +86,8 @@ export default function LocalDetalle({ lang = 'es', navigate, local }) {
         <button className="local-detalle-back" onClick={() => navigate('locales')}>←</button>
       </div>
 
-      {/* INFO CARD PRINCIPAL */}
-      <div className="local-detalle-info-card">
+      {/* INFO CARD PRINCIPAL ESTILO MARKETPLACE */}
+      <div className="local-detalle-info-card marketplace-info-block">
         <div className="local-detalle-logo-row">
           {local.logoURL
             ? <img src={local.logoURL} alt="logo" className="local-detalle-logo" />
@@ -89,27 +98,29 @@ export default function LocalDetalle({ lang = 'es', navigate, local }) {
 
         <h1 className="local-detalle-nombre">{local.nombre || 'Local VIP'}</h1>
         <p className="local-detalle-categoria">🔧 {local.categoria || 'Servicios Especializados'}</p>
+        
+        {/* Precio Prominente Estilo Facebook Marketplace */}
+        <div className="local-detalle-precio-tag">{startingPrice}</div>
 
         <div className="local-detalle-stats">
-          <div className="local-detalle-stat"><span className="ld-num">★ {Number(rating||5).toFixed(1)}</span><span className="ld-lbl">{lang==='es'?'Rating':'Rating'}</span></div>
-          <div className="local-detalle-stat"><span className="ld-num">{contratos}</span><span className="ld-lbl">{lang==='es'?'Contratos':'Jobs'}</span></div>
-          <div className="local-detalle-stat"><span className="ld-num">{servicios.length}</span><span className="ld-lbl">{lang==='es'?'Servicios':'Services'}</span></div>
-          <div className="local-detalle-stat"><span className="ld-num">{resenas.length}</span><span className="ld-lbl">{lang==='es'?'Reseñas':'Reviews'}</span></div>
+          <div className="local-detalle-stat"><span className="ld-num">★ {Number(rating||5).toFixed(1)}</span><span className="ld-lbl">Calificación</span></div>
+          <div className="local-detalle-stat"><span className="ld-num">{contratos}</span><span className="ld-lbl">Contratos</span></div>
+          <div className="local-detalle-stat"><span className="ld-num">{servicios.length}</span><span className="ld-lbl">Servicios</span></div>
         </div>
 
         <div className="ld-actions-row">
           <button className="ld-btn-primary glow" style={{ width: '100%' }} onClick={() => navigate('booking', { id: local.proId, name: local.proNombre || local.nombre, ...local })}>
-            🤝 {lang === 'es' ? 'Contratar ahora' : 'Hire now'}
+            🤝 {lang === 'es' ? 'Contratar servicio' : 'Hire now'}
           </button>
         </div>
       </div>
 
       {/* TABS DE NAVEGACIÓN */}
       <div className="ld-tabs-container">
-        <button className={`ld-tab ${activeTab==='servicios'?'active':''}`} onClick={()=>setActiveTab('servicios')}>🛠️ Servicios</button>
-        {fotosTrabajos.length > 0 && <button className={`ld-tab ${activeTab==='galeria'?'active':''}`} onClick={()=>setActiveTab('galeria')}>📷 Galería</button>}
-        <button className={`ld-tab ${activeTab==='acerca'?'active':''}`} onClick={()=>setActiveTab('acerca')}>ℹ️ Acerca de</button>
-        <button className={`ld-tab ${activeTab==='resenas'?'active':''}`} onClick={()=>setActiveTab('resenas')}>💬 Reseñas</button>
+        <button className={`ld-tab ${activeTab==='servicios'?'active':''}`} onClick={()=>setActiveTab('servicios')}>🛠️ Catálogo</button>
+        {fotosTrabajos.length > 0 && <button className={`ld-tab ${activeTab==='galeria'?'active':''}`} onClick={()=>setActiveTab('galeria')}>📷 Trabajos</button>}
+        <button className={`ld-tab ${activeTab==='acerca'?'active':''}`} onClick={()=>setActiveTab('acerca')}>ℹ️ Detalles</button>
+        <button className={`ld-tab ${activeTab==='resenas'?'active':''}`} onClick={()=>setActiveTab('resenas')}>💬 Reseñas ({resenas.length})</button>
       </div>
 
       {/* CONTENIDO DEL TAB ACTIVO */}
@@ -117,32 +128,33 @@ export default function LocalDetalle({ lang = 'es', navigate, local }) {
         
         {/* TAB 1: SERVICIOS */}
         {activeTab === 'servicios' && (
-          <div className="ld-servicios-list">
+          <div className="ld-servicios-list marketplace-services">
             {servicios.length === 0 ? (
               <p className="ld-empty-txt">No hay servicios registrados.</p>
             ) : (
-              servicios.map((srv, i) => (
-                <div key={i} className="local-servicio-card premium">
-                  <div className="local-servicio-icon glow-soft">{srv.icono || '🔧'}</div>
-                  <div className="local-servicio-info">
-                    <p className="local-servicio-nombre">{srv.nombre}</p>
-                    {srv.descripcion && <p className="local-servicio-desc">{srv.descripcion}</p>}
+              servicios.map((srv, i) => {
+                const srvPrice = srv.tipoPrecio === 'convenir' ? 'A convenir' : `RD$ ${parseFloat(srv.precio || 0).toLocaleString()}`
+                return (
+                  <div key={i} className="local-servicio-card premium marketplace-service-card">
+                    <div className="local-servicio-icon glow-soft">{srv.icono || '🔧'}</div>
+                    <div className="local-servicio-info">
+                      <p className="local-servicio-nombre">{srv.nombre}</p>
+                      {srv.descripcion && <p className="local-servicio-desc">{srv.descripcion}</p>}
+                    </div>
+                    <div className="local-servicio-price-col">
+                      {srv.tipoPrecio === 'desde' && <span className="ls-price-hint">Desde</span>}
+                      <span className="local-servicio-precio-highlight">{srvPrice}</span>
+                    </div>
                   </div>
-                  <div className="local-servicio-price-col">
-                    {srv.tipoPrecio === 'desde' && <span className="ls-price-hint">Desde</span>}
-                    <span className={`local-servicio-precio ${srv.tipoPrecio==='convenir'?'sm':''}`}>
-                      {srv.tipoPrecio === 'convenir' ? '🤝 A convenir' : `RD$${srv.precio}`}
-                    </span>
-                  </div>
-                </div>
-              ))
+                )
+              })
             )}
           </div>
         )}
 
         {/* TAB GALERIA */}
         {activeTab === 'galeria' && (
-          <div className="ld-galeria-grid">
+          <div className="ld-galeria-grid marketplace-gallery">
             {fotosTrabajos.map((foto, i) => (
               <img key={i} src={foto} alt={`Trabajo ${i+1}`} className="ld-galeria-img" />
             ))}
@@ -153,8 +165,8 @@ export default function LocalDetalle({ lang = 'es', navigate, local }) {
         {activeTab === 'acerca' && (
           <div className="ld-acerca-grid">
             <div className="ld-acerca-card">
-              <h3>📝 Descripción</h3>
-              <p>{local.descripcion || 'Sin descripción.'}</p>
+              <h3>📝 Descripción del Local</h3>
+              <p style={{ whiteSpace: 'pre-line' }}>{local.descripcion || 'Sin descripción disponible.'}</p>
             </div>
 
             <div className="ld-acerca-card">
@@ -164,7 +176,7 @@ export default function LocalDetalle({ lang = 'es', navigate, local }) {
 
             {pagos.length > 0 && (
               <div className="ld-acerca-card">
-                <h3>💳 Pagos Aceptados</h3>
+                <h3>💳 Métodos de Pago Aceptados</h3>
                 <div className="ld-pagos-list">
                   {pagos.map(p => PAGO_LABELS[p] ? (
                     <span key={p} className="ld-pago-badge">
@@ -174,8 +186,6 @@ export default function LocalDetalle({ lang = 'es', navigate, local }) {
                 </div>
               </div>
             )}
-
-            {/* Redes sociales ocultas por política VIP */}
           </div>
         )}
 
@@ -183,7 +193,7 @@ export default function LocalDetalle({ lang = 'es', navigate, local }) {
         {activeTab === 'resenas' && (
           <div className="ld-resenas-list">
             {loadingResenas ? <p className="ld-empty-txt">Cargando...</p> : resenas.length === 0 ? (
-              <p className="ld-empty-txt">Aún no hay reseñas.</p>
+              <p className="ld-empty-txt">Aún no hay reseñas de clientes.</p>
             ) : (
               resenas.map((r, i) => (
                 <div key={i} className="local-servicio-card premium" style={{ alignItems: 'flex-start' }}>
