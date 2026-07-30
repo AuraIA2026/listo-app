@@ -279,6 +279,7 @@ function TestimonialsCarousel({ lang, navigate }) {
     fetchTopReviews()
   }, [])
 
+  const testimonialsToDisplay = allTestimonials.slice(0, 20)
   const [idx, setIdx]  = useState(0)
   const touchStartX    = useRef(null)
   const touchEndX      = useRef(null)
@@ -287,13 +288,15 @@ function TestimonialsCarousel({ lang, navigate }) {
 
   const startAutoPlay = () => {
     clearInterval(timerRef.current)
-    timerRef.current = setInterval(() => setIdx(i => (i + 1) % allTestimonials.length), 5000)
+    timerRef.current = setInterval(() => {
+      setIdx(i => (i + 1) % testimonialsToDisplay.length)
+    }, 5500)
   }
-  useEffect(() => { startAutoPlay(); return () => clearInterval(timerRef.current) }, [])
+  useEffect(() => { startAutoPlay(); return () => clearInterval(timerRef.current) }, [testimonialsToDisplay.length])
 
   const goTo = (i) => { setIdx(i); startAutoPlay() }
-  const prev = () => goTo((idx - 1 + allTestimonials.length) % allTestimonials.length)
-  const next = () => goTo((idx + 1) % allTestimonials.length)
+  const prev = () => goTo((idx - 1 + testimonialsToDisplay.length) % testimonialsToDisplay.length)
+  const next = () => goTo((idx + 1) % testimonialsToDisplay.length)
   const onTouchStart = (e) => { touchStartX.current = e.touches[0].clientX; touchEndX.current = null }
   const onTouchMove  = (e) => { touchEndX.current = e.touches[0].clientX }
   const onTouchEnd   = () => {
@@ -302,71 +305,113 @@ function TestimonialsCarousel({ lang, navigate }) {
     if (Math.abs(diff) > 40) diff > 0 ? next() : prev()
     touchStartX.current = null; touchEndX.current = null
   }
-  const t = allTestimonials[idx] || allTestimonials[0]
+  const t = testimonialsToDisplay[idx] || testimonialsToDisplay[0]
+
+  if (!t) return null
 
   return (
     <section ref={ref} className={`testimonials-section${visible ? ' reveal' : ''}`}>
       <div className="hp-sec-header">
         <h2 className="hp-sec-title">💬 {lang === 'es' ? 'Lo que dicen nuestros clientes' : 'What our clients say'}</h2>
       </div>
-      <style>{`
-        .testi-star { position: absolute; pointer-events: none; z-index: 1; filter: drop-shadow(0 0 8px rgba(255,215,0,0.5)); }
-        @keyframes floatStarAnim {
-          0% { transform: translateY(0) scale(0.9) rotate(-5deg); opacity: 0.2; }
-          50% { transform: translateY(-15px) scale(1.1) rotate(5deg); opacity: 0.6; }
-          100% { transform: translateY(0) scale(0.9) rotate(-5deg); opacity: 0.2; }
-        }
-      `}</style>
-      <div className="testimonial-card" onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd} style={{ position: 'relative', overflow: 'hidden' }}>
-        <span className="testi-star" style={{ top: '10%', left: '8%', fontSize: '28px', animation: 'floatStarAnim 5s ease-in-out infinite' }}>⭐</span>
-        <span className="testi-star" style={{ bottom: '15%', left: '15%', fontSize: '16px', animation: 'floatStarAnim 4s ease-in-out infinite 1s' }}>✨</span>
-        <span className="testi-star" style={{ top: '15%', right: '8%', fontSize: '38px', animation: 'floatStarAnim 7s ease-in-out infinite 2s' }}>⭐</span>
-        <span className="testi-star" style={{ bottom: '20%', right: '12%', fontSize: '22px', animation: 'floatStarAnim 6s ease-in-out infinite 0.5s' }}>✨</span>
-        
-        <button className="testi-arrow testi-arrow-left" onClick={prev} style={{ zIndex: 10 }}>‹</button>
-        <div className="testi-body" key={idx} style={{ position: 'relative', zIndex: 10 }}>
-          <div className="testi-header" style={{ position: 'relative', cursor: t.id ? 'pointer' : 'default' }} onClick={() => { 
-            if(t.id && navigate) {
-              const proToBook = { id: t.id, name: t.proName, nameEs: t.proName, img: t.proPhoto || t.photo, photoURL: t.proPhoto || t.photo, avatar: t.proName?.charAt(0)?.toUpperCase(), rating: t.rating, category: t.specEs, specEs: t.specEs };
-              navigate('booking', { professional: proToBook });
-            }
-          }}>
-            <div className="testi-photo-wrap" style={{ position: 'relative' }}>
-              {(t.proPhoto || t.photo)
-                ? <img src={t.proPhoto || t.photo} alt={t.proName || t.nameEs} className="testi-photo" style={{ border: '3px solid #fff', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
-                : <div className="testi-photo" style={{background:'linear-gradient(135deg, #FF7A1A, #F26000)',display:'flex',alignItems:'center',justifyContent:'center',color:'white',fontSize:'28px',fontWeight:'800', border: '3px solid #fff', boxShadow: '0 4px 12px rgba(0,0,0,0.1)'}}>{(t.proName?.charAt(0) || t.nameEs?.charAt(0) || '👤').toUpperCase()}</div>
+
+      <div 
+        className="testimonial-card-new" 
+        onTouchStart={onTouchStart} 
+        onTouchMove={onTouchMove} 
+        onTouchEnd={onTouchEnd}
+      >
+        <div className="testi-new-body" key={idx}>
+          <div 
+            className="testi-new-pro-row" 
+            style={{ cursor: t.id ? 'pointer' : 'default' }}
+            onClick={() => { 
+              if(t.id && navigate) {
+                const proToBook = { id: t.id, name: t.proName, nameEs: t.proName, img: t.proPhoto || t.photo, photoURL: t.proPhoto || t.photo, avatar: t.proName?.charAt(0)?.toUpperCase(), rating: t.rating, category: t.specEs, specEs: t.specEs };
+                navigate('booking', { professional: proToBook });
               }
-              <div style={{ position: 'absolute', bottom: -2, right: -2, background: '#10B981', color: 'white', borderRadius: '50%', width: 22, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, border: '2px solid white' }}>✓</div>
+            }}
+          >
+            {/* Columna Izquierda: Imagen */}
+            <div className="testi-new-photo-wrap">
+              {(t.proPhoto || t.photo) ? (
+                <img src={t.proPhoto || t.photo} alt={t.proName || t.nameEs} className="testi-new-photo" />
+              ) : (
+                <div className="testi-new-photo-placeholder">
+                  {(t.proName?.charAt(0) || t.nameEs?.charAt(0) || '👤').toUpperCase()}
+                </div>
+              )}
+              
+              <div className="testi-new-overlap-group">
+                <span style={{ fontSize: '9px', fontWeight: 900, color: '#F26000', marginRight: '2px' }}>★</span>
+                <span style={{ fontSize: '9px', fontWeight: 800, color: '#1a1a2e' }}>Listo</span>
+              </div>
             </div>
-            <div className="testi-meta" style={{ flex: 1, paddingLeft: 6 }}>
-              <p className="testi-name" style={{ fontSize: '15px' }}>{t.proName || 'Profesional'}</p>
-              <p className="testi-spec" style={{ fontSize: '12px', color: '#ffd700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{lang === 'es' ? t.specEs : t.specEn}</p>
-              <div className="testi-stars" style={{ marginTop: '2px', fontSize: '13px' }}>{'★'.repeat(t.rating)}{'☆'.repeat(5 - t.rating)}</div>
+
+            {/* Columna Derecha: Detalles del Socio */}
+            <div className="testi-new-meta">
+              <span className="testi-new-tag-date">{lang === 'es' ? t.dateEs : t.dateEn}</span>
+              <p className="testi-new-name">{t.proName || 'Profesional'}</p>
+              <p className="testi-new-spec">{lang === 'es' ? t.specEs : t.specEn}</p>
+              
+              <div className="testi-new-plan-badge">
+                <span className="testi-new-plan-icon">💎</span>
+                <span>Listo Socio</span>
+              </div>
+
+              <div className="testi-new-stars">
+                {'★'.repeat(t.rating)}{'☆'.repeat(5 - t.rating)}
+              </div>
+              
+              <p className="testi-new-heading">{lang === 'es' ? 'Socio Verificado' : 'Verified Partner'}</p>
+              
+              <div className="testi-new-border-box">
+                {lang === 'es' ? 'Servicio 100% garantizado con soporte de Listo Patrón.' : '100% guaranteed service backed by Listo Patrón.'}
+              </div>
             </div>
-            <span className="testi-date" style={{ position: 'absolute', top: 0, right: 0 }}>{lang === 'es' ? t.dateEs : t.dateEn}</span>
           </div>
-          
-          <div style={{ padding: '16px', background: 'rgba(255,255,255,0.95)', borderRadius: 12, marginTop: 12, position: 'relative', boxShadow: '0 4px 15px rgba(0,0,0,0.05)' }}>
-             <span style={{ position: 'absolute', top: -8, left: 16, fontSize: 28, opacity: 0.15, color: '#f26000' }}>❝</span>
-             <p className="testi-text" style={{ fontStyle: 'italic', fontSize: 13, color: '#444', margin: '0 0 10px', lineHeight: 1.5, position: 'relative', zIndex: 2 }}>"{lang === 'es' ? t.textEs : t.textEn}"</p>
-             
-             <div style={{ display: 'flex', alignItems: 'center', gap: 6, borderTop: '1px solid rgba(0,0,0,0.08)', paddingTop: 10 }}>
-               {t.clientPhoto ? 
-                 <img src={t.clientPhoto} alt={t.nameEs} style={{ width: 22, height: 22, borderRadius: '50%', objectFit: 'cover', border: '1px solid #ffd700' }} /> :
-                 <div style={{ width: 22, height: 22, borderRadius: '50%', background: '#1a1a2e', color: '#FFD700', fontSize: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>{t.nameEs?.charAt(0).toUpperCase() || 'C'}</div>
-               }
-               <span style={{ fontSize: 11, fontWeight: 700, color: '#666' }}>{lang === 'es' ? 'Reseña de:' : 'Review from:'} <strong style={{color: '#1a1a2e'}}>{t.nameEs}</strong></span>
-             </div>
+
+          {/* Bloque Naranja de la Reseña (Abajo) */}
+          <div className="testi-new-review-block">
+            <div className="testi-new-quote-card">
+              <span className="quote-card-badge-top">💬 Reseña</span>
+              <p className="testi-new-quote-text">
+                "{lang === 'es' ? t.textEs : t.textEn}"
+              </p>
+            </div>
+
+            <div className="testi-new-author-row">
+              {t.clientPhoto ? (
+                <img src={t.clientPhoto} alt={t.nameEs} className="testi-new-author-photo" />
+              ) : (
+                <div className="testi-new-author-photo-placeholder">
+                  {t.nameEs?.charAt(0).toUpperCase() || 'C'}
+                </div>
+              )}
+              <span className="testi-new-author-text">
+                {lang === 'es' ? 'Cliente:' : 'Client:'} <strong className="testi-new-author-highlight">{t.nameEs}</strong>
+              </span>
+            </div>
           </div>
         </div>
-        <button className="testi-arrow testi-arrow-right" onClick={next} style={{ zIndex: 10 }}>›</button>
+
+        {/* Fila de Navegación y Dots */}
+        <div className="testi-new-nav-row">
+          <button className="testi-new-arrow-btn" onClick={prev}>‹</button>
+          <div className="testi-new-dots">
+            {testimonialsToDisplay.map((_, i) => (
+              <button 
+                key={i} 
+                className={`testi-new-dot ${i === idx ? 'active' : ''}`} 
+                onClick={() => goTo(i)} 
+              />
+            ))}
+          </div>
+          <button className="testi-new-arrow-btn" onClick={next}>›</button>
+        </div>
+
+        <p className="testi-new-counter">{idx + 1} / {testimonialsToDisplay.length}</p>
       </div>
-      <div className="testi-dots">
-        {allTestimonials.map((_, i) => (
-          <button key={i} className={`testi-dot${i === idx ? ' active' : ''}`} onClick={() => goTo(i)} />
-        ))}
-      </div>
-      <p className="testi-counter">{idx + 1} / {allTestimonials.length}</p>
     </section>
   )
 }
