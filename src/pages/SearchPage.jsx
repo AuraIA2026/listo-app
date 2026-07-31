@@ -117,7 +117,17 @@ function VipShopEntryBanner({ navigate, userRole, userData }) {
             style={{ width: '100%', padding: 14, borderRadius: 12, border: 'none', background: 'linear-gradient(135deg, #FFD700, #FFA500)', color: '#1a1a2e', fontSize: 15, fontWeight: 900, cursor: 'pointer', boxShadow: '0 4px 15px rgba(255,165,0,0.4)' }}
             onClick={() => {
               if (isVipPro) {
-                navigate('crearLocal')
+                const q = query(collection(db, 'locales'), where('proId', '==', userData.uid))
+                getDocs(q).then(snap => {
+                  if (!snap.empty) {
+                    navigate('editarLocal', { id: snap.docs[0].id, ...snap.docs[0].data() })
+                  } else {
+                    navigate('crearLocal')
+                  }
+                }).catch(err => {
+                  console.error("Error fetching local:", err)
+                  navigate('crearLocal')
+                })
               } else {
                 navigate('locales')
               }

@@ -1006,6 +1006,26 @@ export default function ProfilePage({ lang, setLang, navigate, onLogout, initial
           </button>
         )}
 
+        {userRole === 'pro' && (userData?.planId === 'vip' || (userData?.currentPlan||'').toLowerCase().includes('vip')) && (
+          <button className="profile-menu-item" onClick={() => {
+            const q = query(collection(db, 'locales'), where('proId', '==', userData.uid))
+            getDocs(q).then(snap => {
+              if (!snap.empty) {
+                navigate('editarLocal', { id: snap.docs[0].id, ...snap.docs[0].data() })
+              } else {
+                navigate('crearLocal')
+              }
+            }).catch(err => {
+              console.error("Error fetching local in profile:", err)
+              navigate('crearLocal')
+            })
+          }} style={{ border: '1px solid rgba(212, 175, 55, 0.25)', background: 'rgba(212, 175, 55, 0.04)' }}>
+            <span className="pmi-icon" style={{background:'var(--vip-gold-grad)', color:'#000', borderRadius:'8px', fontSize:'16px'}}>🏬</span>
+            <span className="pmi-label" style={{color:'var(--vip-gold)', fontWeight:'800'}}>{lang==='es' ? 'Configurar mi Tienda VIP' : 'Configure my VIP Shop'}</span>
+            <span className="pmi-arrow" style={{color:'var(--vip-gold)'}}>›</span>
+          </button>
+        )}
+
 
 
         {userRole === 'user' && (

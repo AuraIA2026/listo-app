@@ -83,6 +83,7 @@ export default function LocalDetalle({ lang = 'es', navigate, local }) {
   const pagos = local.pagos || []
   const fotosTrabajos = local.fotosTrabajos || []
   const startingPrice = getStartingPrice(servicios)
+  const profesionales = local.profesionales || []
 
   return (
     <div className="local-detalle-page marketplace-detail">
@@ -133,6 +134,7 @@ export default function LocalDetalle({ lang = 'es', navigate, local }) {
       <div className="ld-tabs-container">
         <button className={`ld-tab ${activeTab==='servicios'?'active':''}`} onClick={()=>setActiveTab('servicios')}>🛠️ Catálogo</button>
         {fotosTrabajos.length > 0 && <button className={`ld-tab ${activeTab==='galeria'?'active':''}`} onClick={()=>setActiveTab('galeria')}>📷 Trabajos</button>}
+        {profesionales.length > 0 && <button className={`ld-tab ${activeTab==='equipo'?'active':''}`} onClick={()=>setActiveTab('equipo')}>👥 Equipo</button>}
         <button className={`ld-tab ${activeTab==='acerca'?'active':''}`} onClick={()=>setActiveTab('acerca')}>ℹ️ Detalles</button>
         <button className={`ld-tab ${activeTab==='resenas'?'active':''}`} onClick={()=>setActiveTab('resenas')}>💬 Reseñas ({resenas.length})</button>
       </div>
@@ -172,6 +174,56 @@ export default function LocalDetalle({ lang = 'es', navigate, local }) {
             {fotosTrabajos.map((foto, i) => (
               <img key={i} src={foto} alt={`Trabajo ${i+1}`} className="ld-galeria-img" />
             ))}
+          </div>
+        )}
+
+        {/* TAB EQUIPO */}
+        {activeTab === 'equipo' && (
+          <div className="ld-equipo-list">
+            {profesionales.map((prof, i) => {
+              const profInitials = (prof.nombre || 'P').substring(0, 2).toUpperCase()
+              const profAvatarBg = getAvatarColor(prof.nombre || 'P')
+              return (
+                <div key={i} className="ld-profesional-card">
+                  <div className="ld-profesional-avatar-wrap">
+                    {prof.fotoURL ? (
+                      <img src={prof.fotoURL} alt={prof.nombre} className="ld-profesional-photo" />
+                    ) : (
+                      <div className="ld-profesional-avatar-placeholder" style={{ background: profAvatarBg }}>
+                        {profInitials}
+                      </div>
+                    )}
+                  </div>
+                  <div className="ld-profesional-info">
+                    <h4 className="ld-profesional-name">{prof.nombre || 'Profesional'}</h4>
+                    <p className="ld-profesional-spec">{prof.especialidad || 'Especialista'}</p>
+                  </div>
+                  <div className="ld-profesional-actions">
+                    {prof.whatsapp && (
+                      <button className="ld-prof-btn-wa" onClick={() => {
+                        let number = prof.whatsapp.replace(/[^0-9]/g, '')
+                        if (number.length === 10 && (number.startsWith('809') || number.startsWith('829') || number.startsWith('849'))) {
+                          number = '1' + number
+                        }
+                        window.open(`https://wa.me/${number}`, '_blank')
+                      }} title="Chat WhatsApp">
+                        <FaWhatsapp />
+                      </button>
+                    )}
+                    <button className="ld-prof-btn-book" onClick={() => navigate('booking', {
+                      id: local.proId,
+                      name: `${prof.nombre} (en ${local.nombre})`,
+                      category: prof.especialidad,
+                      avatar: profInitials,
+                      phone: prof.whatsapp || local.whatsapp,
+                      ...local
+                    })}>
+                      🤝 {lang === 'es' ? 'Reservar' : 'Book'}
+                    </button>
+                  </div>
+                </div>
+              )
+            })}
           </div>
         )}
 

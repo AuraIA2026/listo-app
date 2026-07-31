@@ -30,6 +30,7 @@ import { ExoticOrderNotification, OrderDetailsModal } from './pages/OrdersPage'
 import LocalesPage            from './locales/LocalesPage'
 import LocalDetalle           from './locales/LocalDetalle'
 import CrearLocal             from './locales/CrearLocal'   // ✅ AGREGADO
+import EditarLocal            from './locales/EditarLocal'
 import NotificacionPage       from './pages/Notificacionpage'
 import PoliciesPage           from './pages/PoliciesPage'
 import LandingPage            from './pages/LandingPage'
@@ -609,6 +610,11 @@ export default function App() {
       setCurrentPage('localDetalle')
       return
     }
+    if (page === 'editarLocal' && data) {
+      setSelectedLocal(data)
+      setCurrentPage('editarLocal')
+      return
+    }
     if (data?.professional) setSelectedPro(data.professional)
     if (data && !data.user && !data.professional && page !== 'profile') setSelectedPro(data)
     if (page === 'profile' && data?.screen) setProfileInitScreen(data.screen)
@@ -654,6 +660,7 @@ export default function App() {
       {currentPage === 'locales'      && <LocalesPage  {...userProps} />}
       {currentPage === 'localDetalle' && <LocalDetalle {...userProps} local={selectedLocal} />}
       {currentPage === 'crearLocal'   && <CrearLocal   {...userProps} />}  {/* ✅ AGREGADO */}
+      {currentPage === 'editarLocal'  && <EditarLocal  {...userProps} local={selectedLocal} />}
       {currentPage === 'notificaciones' && <NotificacionPage {...userProps} />}
       {currentPage === 'policies'     && <PoliciesPage {...commonProps} />}
 

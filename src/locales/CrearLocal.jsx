@@ -49,6 +49,11 @@ export default function CrearLocal({ lang = 'es', navigate, userData }) {
   const [servicios,     setServicios]     = useState([
     { nombre: '', descripcion: '', tipoPrecio: 'fijo', precio: '', icono: '🔧' }
   ])
+  const [profesionales, setProfesionales] = useState([])
+
+  const addProfesional = () => setProfesionales(prev => [...prev, { nombre: '', especialidad: '', whatsapp: '', fotoURL: '' }])
+  const removeProfesional = (idx) => setProfesionales(prev => prev.filter((_, i) => i !== idx))
+  const updateProfesional = (idx, field, value) => setProfesionales(prev => prev.map((p, i) => i === idx ? { ...p, [field]: value } : p))
   
   const [saving,  setSaving]  = useState(false)
   const [error,   setError]   = useState(null)
@@ -116,6 +121,7 @@ export default function CrearLocal({ lang = 'es', navigate, userData }) {
         horario:      horario.trim(),
         pagos:        pagos,
         servicios:    servicios.filter(s => s.nombre.trim()),
+        profesionales: profesionales.filter(p => p.nombre.trim()),
         fotosTrabajos: galeriaURLs,
         activo:       false, // Requiere aprobación del administrador
         plan:         'vip',
@@ -395,6 +401,56 @@ export default function CrearLocal({ lang = 'es', navigate, userData }) {
             ))}
           </div>
           <button className="cl-add-servicio-btn" onClick={addServicio}>+ {lang === 'es' ? 'Añadir otro servicio' : 'Add service'}</button>
+        </div>
+
+        {/* 👥 SECCIÓN: EQUIPO DE PROFESIONALES */}
+        <div className="crear-local-section">
+          <h2 className="cls-title">👥 {lang === 'es' ? 'Equipo de Profesionales' : 'Team of Professionals'}</h2>
+          <p className="cls-subtitle">{lang === 'es' ? 'Agrega a los profesionales que trabajan en tu local para permitir que los clientes reserven con ellos.' : 'Add professionals working at your shop to let clients book with them.'}</p>
+          <div className="cl-servicios-list">
+            {profesionales.map((prof, idx) => (
+              <div key={idx} className="cl-servicio-card">
+                <button className="cl-servicio-delete" onClick={() => removeProfesional(idx)}>✕</button>
+                
+                <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+                  <label className="cl-service-photo-upload" style={{
+                    width: 70, height: 70, borderRadius: '50%', border: '2px dashed #ccc',
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                    cursor: 'pointer', overflow: 'hidden', flexShrink: 0, background: '#fafafa', position: 'relative'
+                  }}>
+                    {prof.fotoURL ? (
+                      <img src={prof.fotoURL} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="Avatar" />
+                    ) : (
+                      <div style={{ textAlign: 'center', display:'flex', flexDirection:'column', alignItems:'center' }}>
+                        <span style={{ fontSize: 16 }}>📷</span>
+                        <span style={{ fontSize: 9, fontWeight: 700, color: '#888', marginTop: 2 }}>Foto</span>
+                      </div>
+                    )}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      style={{ display: 'none' }}
+                      onChange={async (e) => {
+                        const file = e.target.files[0]
+                        if (file) {
+                          try {
+                            const base64 = await compressImage(file, 400)
+                            updateProfesional(idx, 'fotoURL', base64)
+                          } catch (err) { console.error(err) }
+                        }
+                      }}
+                    />
+                  </label>
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4 }}>
+                    <input className="crear-local-input slim" placeholder={lang === 'es' ? 'Nombre del profesional' : 'Professional name'} value={prof.nombre} onChange={e => updateProfesional(idx, 'nombre', e.target.value)} />
+                    <input className="crear-local-input slim text-sm" placeholder={lang === 'es' ? 'Especialidad (Ej: Barbero, Manicurista)' : 'Specialty (e.g. Barber, Manicurist)'} value={prof.especialidad} onChange={e => updateProfesional(idx, 'especialidad', e.target.value)} />
+                    <input className="crear-local-input slim text-sm" placeholder={lang === 'es' ? 'WhatsApp (Opcional)' : 'WhatsApp (Optional)'} value={prof.whatsapp} onChange={e => updateProfesional(idx, 'whatsapp', e.target.value)} />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <button className="cl-add-servicio-btn" onClick={addProfesional}>+ {lang === 'es' ? 'Añadir profesional' : 'Add professional'}</button>
         </div>
 
         {error && <div className="cl-error-toast">⚠️ {error}</div>}
