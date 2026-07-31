@@ -673,39 +673,6 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
             currentPlan: data.currentPlan || data.planId || data.plan || 'basico',
           })
         })
-
-        // Obtener profesionales de los Locales VIP activos
-        try {
-          const localesQ = query(collection(db, 'locales'), where('activo', '==', true))
-          const localesSnapshot = await getDocs(localesQ)
-          localesSnapshot.forEach(localDoc => {
-            const data = localDoc.data()
-            if (data.profesionales && Array.isArray(data.profesionales)) {
-              data.profesionales.forEach((prof, idx) => {
-                prosList.push({
-                  id: `${localDoc.id}_prof_${idx}`,
-                  name: prof.nombre || 'Profesional VIP',
-                  category: prof.especialidad || data.categoria || 'Servicios',
-                  rating: data.rating || 5.0,
-                  reviews: data.totalResenas || data.contratos || 0,
-                  location: data.horario || 'República Dominicana',
-                  experience: '1 año',
-                  avatar: (prof.nombre || 'P').substring(0, 2).toUpperCase(),
-                  available: true,
-                  photoURL: prof.fotoURL || null,
-                  phone: data.whatsapp || '',
-                  currentPlan: 'vip',
-                  isFromLocal: true,
-                  parentLocal: { id: localDoc.id, ...data },
-                  proId: data.proId
-                })
-              })
-            }
-          })
-        } catch (eLocals) {
-          console.error("Error fetching VIP local professionals:", eLocals)
-        }
-
         setProfessionals(prosList)
       } catch (err) {
         console.error('Error fetching pros: ', err)
@@ -783,12 +750,7 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
         </div>
       </div>
 
-      <VipShopEntryBanner navigate={navigate} userRole={userRole} userData={userData} />
       <PromoBanner lang={lang} userRole={userRole} />
-
-      {/* ✅ Carrusel de Locales VIP — aparece automáticamente si hay locales */}
-      <LocalesCarrusel lang={lang} navigate={navigate} />
-
       <ProDelMes lang={lang} navigate={navigate} userRole={userRole} />
 
       <div className="pill-filters">
