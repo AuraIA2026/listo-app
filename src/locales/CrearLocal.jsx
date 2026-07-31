@@ -136,16 +136,16 @@ export default function CrearLocal({ lang = 'es', navigate, userData }) {
       await addDoc(collection(db, 'notificaciones'), {
         userId: 'admin',
         type: 'new_vip_local_request',
-        title: '🏬 NUEVA TIENDA VIP REGISTRADA',
-        text: `El profesional ${userData.name || 'Un VIP'} ha registrado su tienda VIP "${nombre.trim()}". Requiere aprobación de fotos.`,
+        title: '🏬 NUEVO LOCAL VIP REGISTRADO',
+        text: `El profesional ${userData.name || 'Un VIP'} ha registrado su Local VIP "${nombre.trim()}". Requiere aprobación de fotos.`,
         read: false,
         createdAt: serverTimestamp(),
         date: new Date().toISOString()
       })
 
       alert(lang === 'es'
-        ? "¡Tu tienda VIP ha sido registrada! Tu logo, portada y fotos del catálogo pasarán por una revisión de la Central de Mando antes de ser publicadas en la plataforma."
-        : "Your VIP shop has been registered! Your logo, cover, and catalog photos will undergo admin approval before being published."
+        ? "¡Tu Local VIP ha sido registrado! Tu logo, portada y fotos del catálogo pasarán por una revisión de la Central de Mando antes de ser publicadas en la plataforma."
+        : "Your VIP Local has been registered! Your logo, cover, and catalog photos will undergo admin approval before being published."
       )
 
       navigate('profile')
@@ -168,7 +168,7 @@ export default function CrearLocal({ lang = 'es', navigate, userData }) {
               <h1>Suscripción VIP</h1>
             </div>
           </div>
-          <p className="crear-local-header-sub">Estás a un paso de activar tu Tienda Virtual. Membresía: RD$ 10,000 / mes.</p>
+          <p className="crear-local-header-sub">Estás a un paso de activar tu Local VIP. Membresía: RD$ 10,000 / mes.</p>
         </div>
 
         <div className="crear-local-form">
@@ -217,7 +217,7 @@ export default function CrearLocal({ lang = 'es', navigate, userData }) {
             ) : (
               <div style={{ background:'rgba(255,255,255,0.02)', padding:16, borderRadius:12, border:'1px solid rgba(255,255,255,0.06)' }}>
                 <p style={{ fontSize:13, color:'var(--vip-text-secondary)', margin:'0 0 12px', lineHeight:1.5 }}>
-                  Realiza el depósito de <strong>RD$ 10,000</strong> a la siguiente cuenta y envía tu comprobante a nuestro soporte. Tu tienda se publicará inmediatamente.
+                  Realiza el depósito de <strong>RD$ 10,000</strong> a la siguiente cuenta y envía tu comprobante a nuestro soporte. Tu Local VIP se publicará inmediatamente.
                 </p>
                 <div style={{ background:'rgba(0,0,0,0.2)', padding:12, borderRadius:8, border:'1px solid rgba(212,175,55,0.15)' }}>
                   <p style={{ margin:'0 0 6px', fontSize:14, fontWeight:800, color:'var(--vip-gold)' }}>Banco Popular</p>
@@ -231,7 +231,7 @@ export default function CrearLocal({ lang = 'es', navigate, userData }) {
           {error && <div className="cl-error-toast">⚠️ {error}</div>}
 
           <button className="crear-local-save-btn glow" onClick={handleGuardar} disabled={saving}>
-            {saving ? '⏳ Procesando...' : '🚀 Pagar y Publicar Tienda'}
+            {saving ? '⏳ Procesando...' : '🚀 Pagar y Publicar Local VIP'}
           </button>
         </div>
       </div>
@@ -405,7 +405,7 @@ export default function CrearLocal({ lang = 'es', navigate, userData }) {
 
         {/* 👥 SECCIÓN: EQUIPO DE PROFESIONALES */}
         <div className="crear-local-section">
-          <h2 className="cls-title">👥 {lang === 'es' ? 'Equipo de Profesionales' : 'Team of Professionals'}</h2>
+          <h2 className="cls-title">👥 {lang === 'es' ? 'Equipo de Profesionales (Máx. 3)' : 'Team of Professionals (Max 3)'}</h2>
           <p className="cls-subtitle">{lang === 'es' ? 'Agrega a los profesionales que trabajan en tu local para permitir que los clientes reserven con ellos.' : 'Add professionals working at your shop to let clients book with them.'}</p>
           <div className="cl-servicios-list">
             {profesionales.map((prof, idx) => (
@@ -444,13 +444,14 @@ export default function CrearLocal({ lang = 'es', navigate, userData }) {
                   <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4 }}>
                     <input className="crear-local-input slim" placeholder={lang === 'es' ? 'Nombre del profesional' : 'Professional name'} value={prof.nombre} onChange={e => updateProfesional(idx, 'nombre', e.target.value)} />
                     <input className="crear-local-input slim text-sm" placeholder={lang === 'es' ? 'Especialidad (Ej: Barbero, Manicurista)' : 'Specialty (e.g. Barber, Manicurist)'} value={prof.especialidad} onChange={e => updateProfesional(idx, 'especialidad', e.target.value)} />
-                    <input className="crear-local-input slim text-sm" placeholder={lang === 'es' ? 'WhatsApp (Opcional)' : 'WhatsApp (Optional)'} value={prof.whatsapp} onChange={e => updateProfesional(idx, 'whatsapp', e.target.value)} />
                   </div>
                 </div>
               </div>
             ))}
           </div>
-          <button className="cl-add-servicio-btn" onClick={addProfesional}>+ {lang === 'es' ? 'Añadir profesional' : 'Add professional'}</button>
+          {profesionales.length < 3 && (
+            <button className="cl-add-servicio-btn" onClick={addProfesional}>+ {lang === 'es' ? 'Añadir profesional' : 'Add professional'}</button>
+          )}
         </div>
 
         {error && <div className="cl-error-toast">⚠️ {error}</div>}

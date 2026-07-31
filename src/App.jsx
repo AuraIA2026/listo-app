@@ -615,6 +615,11 @@ export default function App() {
       setCurrentPage('editarLocal')
       return
     }
+    if (page === 'proProfile' && data?.isFromLocal && data?.parentLocal) {
+      setSelectedLocal(data.parentLocal)
+      setCurrentPage('localDetalle')
+      return
+    }
     if (data?.professional) setSelectedPro(data.professional)
     if (data && !data.user && !data.professional && page !== 'profile') setSelectedPro(data)
     if (page === 'profile' && data?.screen) setProfileInitScreen(data.screen)

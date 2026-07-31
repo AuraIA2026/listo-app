@@ -1261,36 +1261,50 @@
 /* ── 👥 TEAM/EQUIPO VIP SECTION STYLES ── */
 .ld-equipo-list {
   display: flex;
-  flex-direction: column;
-  gap: 12px;
+  flex-direction: row;
+  gap: 14px;
+  overflow-x: auto;
+  padding: 16px 4px;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; /* Hide standard scrollbar for clean aesthetics */
   animation: vip-slide-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-.ld-profesional-card {
+.ld-equipo-list::-webkit-scrollbar {
+  display: none; /* Hide Chrome/Safari scrollbar */
+}
+
+.ld-profesional-card.vertical {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 14px;
-  padding: 14px;
+  text-align: center;
+  width: 160px;
+  flex-shrink: 0;
+  padding: 16px;
   background: var(--vip-dark-card);
   border: var(--vip-border);
   border-radius: var(--vip-radius);
   transition: all 0.25s ease;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+  scroll-snap-align: start;
 }
 
-.ld-profesional-card:hover {
-  border-color: rgba(212, 175, 55, 0.45);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45), var(--vip-glow);
+.ld-profesional-card.vertical:hover {
+  border-color: rgba(212, 175, 55, 0.5);
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), var(--vip-glow);
 }
 
 .ld-profesional-avatar-wrap {
   flex-shrink: 0;
+  margin-bottom: 12px;
 }
 
 .ld-profesional-photo {
-  width: 52px;
-  height: 52px;
+  width: 64px;
+  height: 64px;
   border-radius: 50%;
   object-fit: cover;
   border: 2px solid var(--vip-gold);
@@ -1298,15 +1312,15 @@
 }
 
 .ld-profesional-avatar-placeholder {
-  width: 52px;
-  height: 52px;
+  width: 64px;
+  height: 64px;
   border-radius: 50%;
   border: 2px solid var(--vip-gold);
   background: var(--vip-gold-grad);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 850;
   color: #0b0b0f;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
@@ -1314,14 +1328,15 @@
 
 .ld-profesional-info {
   flex-grow: 1;
-  min-width: 0;
+  width: 100%;
+  margin-bottom: 14px;
 }
 
 .ld-profesional-name {
-  font-size: 14px;
+  font-size: 13.5px;
   font-weight: 800;
   color: var(--vip-text-primary);
-  margin: 0 0 3px;
+  margin: 0 0 4px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1331,36 +1346,14 @@
   font-size: 11px;
   color: var(--vip-text-secondary);
   margin: 0;
-  font-weight: 600;
+  font-weight: 650;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .ld-profesional-actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-shrink: 0;
-}
-
-.ld-prof-btn-wa {
-  background: rgba(37, 211, 102, 0.12);
-  border: 1px solid rgba(37, 211, 102, 0.3);
-  color: #25D366;
-  border-radius: 50%;
-  width: 36px;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-  cursor: pointer;
-  transition: all 0.2s;
-  padding: 0;
-}
-
-.ld-prof-btn-wa:hover {
-  background: #25D366;
-  color: #fff;
-  box-shadow: 0 0 12px rgba(37, 211, 102, 0.45);
+  width: 100%;
 }
 
 .ld-prof-btn-book {
@@ -1368,21 +1361,44 @@
   border: none;
   color: #0b0b0f;
   border-radius: 20px;
+  width: 100%;
   padding: 8px 16px;
   font-size: 11px;
   font-weight: 850;
   cursor: pointer;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.2);
+  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.25);
   transition: all 0.2s;
 }
 
 .ld-prof-btn-book:hover {
-  box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);
+  box-shadow: 0 6px 16px rgba(212, 175, 55, 0.45);
   transform: scale(1.02);
 }
 
 .ld-prof-btn-book:active {
   transform: scale(0.98);
+}
+
+/* ── Banner de Acceso a Equipo en Detalles ── */
+.ld-ver-equipo-banner {
+  transition: all 0.25s ease;
+}
+.ld-ver-equipo-banner:hover {
+  background: rgba(212, 175, 55, 0.15) !important;
+  border-color: rgba(212, 175, 55, 0.4) !important;
+  transform: translateY(-1px);
+}
+.ld-ver-equipo-banner:active {
+  transform: translateY(0);
+}
+
+.ld-equipo-cta-banner {
+  transition: all 0.25s ease;
+}
+.ld-equipo-cta-banner:hover {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border-color: rgba(212, 175, 55, 0.5) !important;
+  color: #fff !important;
 }

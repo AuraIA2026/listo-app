@@ -104,16 +104,16 @@ export default function EditarLocal({ lang = 'es', navigate, local }) {
       await addDoc(collection(db, 'notificaciones'), {
         userId: 'admin',
         type: 'new_vip_local_request',
-        title: '🏬 TIENDA VIP ACTUALIZADA',
-        text: `El profesional ${local.proNombre || 'Un VIP'} ha actualizado su tienda VIP "${nombre.trim()}". Requiere aprobación.`,
+        title: '🏬 LOCAL VIP ACTUALIZADO',
+        text: `El profesional ${local.proNombre || 'Un VIP'} ha actualizado su Local VIP "${nombre.trim()}". Requiere aprobación.`,
         read: false,
         createdAt: serverTimestamp(),
         date: new Date().toISOString()
       })
 
       alert(lang === 'es'
-        ? "¡Tus cambios han sido guardados! Tu tienda VIP estará temporalmente en revisión por la Central de Mando antes de publicarse de nuevo."
-        : "Your changes have been saved! Your VIP shop will undergo admin review before being published again."
+        ? "¡Tus cambios han sido guardados! Tu Local VIP estará temporalmente en revisión por la Central de Mando antes de publicarse de nuevo."
+        : "Your changes have been saved! Your VIP Local will undergo admin review before being published again."
       )
 
       navigate('profile')
@@ -269,9 +269,9 @@ export default function EditarLocal({ lang = 'es', navigate, local }) {
           <button className="cl-add-servicio-btn" onClick={addServicio}>+ {lang === 'es' ? 'Añadir otro servicio' : 'Add service'}</button>
         </div>
 
-        {/* 👥 SECCIÓN: EQUIPO DE PROFESIONALES */}
+        {/* ── 👥 SECCIÓN: EQUIPO DE PROFESIONALES ── */}
         <div className="crear-local-section">
-          <h2 className="cls-title">👥 {lang === 'es' ? 'Equipo de Profesionales' : 'Team of Professionals'}</h2>
+          <h2 className="cls-title">👥 {lang === 'es' ? 'Equipo de Profesionales (Máx. 3)' : 'Team of Professionals (Max 3)'}</h2>
           <p className="cls-subtitle">{lang === 'es' ? 'Agrega o edita los profesionales que trabajan en tu local para permitir que los clientes reserven con ellos.' : 'Add or edit professionals working at your shop to let clients book with them.'}</p>
           <div className="cl-servicios-list">
             {profesionales.map((prof, idx) => (
@@ -310,13 +310,14 @@ export default function EditarLocal({ lang = 'es', navigate, local }) {
                   <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4 }}>
                     <input className="crear-local-input slim" placeholder={lang === 'es' ? 'Nombre del profesional' : 'Professional name'} value={prof.nombre} onChange={e => updateProfesional(idx, 'nombre', e.target.value)} />
                     <input className="crear-local-input slim text-sm" placeholder={lang === 'es' ? 'Especialidad (Ej: Barbero, Manicurista)' : 'Specialty (e.g. Barber, Manicurist)'} value={prof.especialidad} onChange={e => updateProfesional(idx, 'especialidad', e.target.value)} />
-                    <input className="crear-local-input slim text-sm" placeholder={lang === 'es' ? 'WhatsApp (Opcional)' : 'WhatsApp (Optional)'} value={prof.whatsapp} onChange={e => updateProfesional(idx, 'whatsapp', e.target.value)} />
                   </div>
                 </div>
               </div>
             ))}
           </div>
-          <button className="cl-add-servicio-btn" onClick={addProfesional}>+ {lang === 'es' ? 'Añadir profesional' : 'Add professional'}</button>
+          {profesionales.length < 3 && (
+            <button className="cl-add-servicio-btn" onClick={addProfesional}>+ {lang === 'es' ? 'Añadir profesional' : 'Add professional'}</button>
+          )}
         </div>
 
         {error && <div className="cl-error-toast">⚠️ {error}</div>}

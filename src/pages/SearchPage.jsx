@@ -87,7 +87,7 @@ function VipShopEntryBanner({ navigate, userRole, userData }) {
           <span style={{ fontSize: 28, filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' }}>🏬</span>
           <div>
             <h3 style={{ margin: 0, fontSize: 16, fontWeight: 900, color: '#FFD700', textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>
-              {isVipPro ? 'Configura tu Local VIP' : 'Explora las Tiendas VIP'}
+              {isVipPro ? 'Configura tu Local VIP' : 'Explora los Locales VIP'}
             </h3>
             <p style={{ margin: 0, fontSize: 12, color: '#ccc', fontWeight: 600 }}>
               {isVipPro ? 'Destaca entre la competencia' : 'Visita locales comerciales exclusivos'}
@@ -133,7 +133,7 @@ function VipShopEntryBanner({ navigate, userRole, userData }) {
               }
             }}
           >
-            {isVipPro ? '🚀 Configurar mi Tienda Ahora' : '🛍️ Entrar a la Tienda / Directorio VIP'}
+            {isVipPro ? '🚀 Configurar mi Local VIP Ahora' : '🛍️ Entrar al Directorio de Locales VIP'}
           </button>
         </div>
       )}
@@ -673,6 +673,39 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
             currentPlan: data.currentPlan || data.planId || data.plan || 'basico',
           })
         })
+
+        // Obtener profesionales de los Locales VIP activos
+        try {
+          const localesQ = query(collection(db, 'locales'), where('activo', '==', true))
+          const localesSnapshot = await getDocs(localesQ)
+          localesSnapshot.forEach(localDoc => {
+            const data = localDoc.data()
+            if (data.profesionales && Array.isArray(data.profesionales)) {
+              data.profesionales.forEach((prof, idx) => {
+                prosList.push({
+                  id: `${localDoc.id}_prof_${idx}`,
+                  name: prof.nombre || 'Profesional VIP',
+                  category: prof.especialidad || data.categoria || 'Servicios',
+                  rating: data.rating || 5.0,
+                  reviews: data.totalResenas || data.contratos || 0,
+                  location: data.horario || 'República Dominicana',
+                  experience: '1 año',
+                  avatar: (prof.nombre || 'P').substring(0, 2).toUpperCase(),
+                  available: true,
+                  photoURL: prof.fotoURL || null,
+                  phone: data.whatsapp || '',
+                  currentPlan: 'vip',
+                  isFromLocal: true,
+                  parentLocal: { id: localDoc.id, ...data },
+                  proId: data.proId
+                })
+              })
+            }
+          })
+        } catch (eLocals) {
+          console.error("Error fetching VIP local professionals:", eLocals)
+        }
+
         setProfessionals(prosList)
       } catch (err) {
         console.error('Error fetching pros: ', err)

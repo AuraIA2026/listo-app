@@ -813,18 +813,18 @@ export default function AdminPage({ navigate }) {
       if (type === 'approve_local') {
          await updateDoc(doc(db, 'locales', obj.id), { activo: true });
          
-         // Notificar al profesional de que su tienda VIP ha sido aprobada
+         // Notificar al profesional de que su Local VIP ha sido aprobado
          await addDoc(collection(db, 'notificaciones'), {
            userId: obj.proId,
            type: 'system',
-           title: '🏬 ¡Tu Tienda VIP ha sido aprobada! 🎉',
+           title: '🏬 ¡Tu Local VIP ha sido aprobado! 🎉',
            text: `Tu local comercial "${obj.nombre}" ha sido aprobado por el administrador y ya es público en la plataforma.`,
            date: new Date().toISOString(),
            createdAt: new Date().toISOString(),
            read: false
          });
          
-         showToast(`🏬 Tienda VIP "${obj.nombre}" aprobada y publicada`);
+         showToast(`🏬 Local VIP "${obj.nombre}" aprobado y publicado`);
       }
 
       if (type === 'approve_edit') {
@@ -967,7 +967,7 @@ export default function AdminPage({ navigate }) {
         <div className="admin-tabs" style={{overflowX:'auto', paddingBottom:4}}>
           {[
             { id:'postulaciones', icon:'🛡️', label:'Nuevos', count:verifications.length },
-            { id:'locales',      icon:'🏬', label:'Tiendas VIP', count: vipLocales.filter(l => !l.activo).length },
+            { id:'locales',      icon:'🏬', label:'Locales VIP', count: vipLocales.filter(l => !l.activo).length },
             { id:'alertas',      icon:'🔔', label:'Alertas', count: alerts.filter(a => !a.read).length },
             { id:'pagos',      icon:'💳', label:'Historial',  count:completedPayments.length },
             { id:'comisiones', icon:'⏳', label:'Validar', count:pendienteCount },
@@ -1023,14 +1023,14 @@ export default function AdminPage({ navigate }) {
           </div>
         )}
 
-        {/* ── TAB: TIENDAS VIP (Aprobar Locales VIP) ── */}
+        {/* ── TAB: LOCALES VIP (Aprobar Locales VIP) ── */}
         {tab === 'locales' && (
           <div className="admin-section" style={{marginTop:16}}>
             <div className="section-header">
-              <span className="section-title">Tiendas VIP por Aprobar ({vipLocales.filter(l => !l.activo).length})</span>
+              <span className="section-title">Locales VIP por Aprobar ({vipLocales.filter(l => !l.activo).length})</span>
             </div>
             {vipLocales.filter(l => !l.activo).length === 0 && (
-              <div className="empty-admin"><p>No hay tiendas VIP pendientes de aprobación.</p></div>
+              <div className="empty-admin"><p>No hay locales VIP pendientes de aprobación.</p></div>
             )}
             {vipLocales.filter(l => !l.activo).map((local, i) => (
               <div className="payment-card" key={local.id} style={{animationDelay:`${i*.06}s`, borderColor:'rgba(245,158,11,0.3)'}}>
@@ -1044,7 +1044,7 @@ export default function AdminPage({ navigate }) {
                   </div>
                   <div className="pc-right">
                     <button className="cc-btn remind" style={{background:'#F59E0B', color:'#fff', border:'none', padding:'6px 12px', fontSize:'11px'}} onClick={() => setConfirm({type:'approve_local', obj: local})}>
-                      ✅ Aprobar Tienda
+                      ✅ Aprobar Local VIP
                     </button>
                   </div>
                 </div>

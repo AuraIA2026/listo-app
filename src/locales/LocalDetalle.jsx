@@ -118,15 +118,16 @@ export default function LocalDetalle({ lang = 'es', navigate, local }) {
           <div className="local-detalle-stat"><span className="ld-num">{servicios.length}</span><span className="ld-lbl">Servicios</span></div>
         </div>
 
+        {profesionales.length > 0 && (
+          <div className="ld-ver-equipo-banner" onClick={() => setActiveTab('equipo')} style={{ cursor: 'pointer', background: 'rgba(212, 175, 55, 0.08)', border: '1px solid rgba(212, 175, 55, 0.2)', borderRadius: '10px', padding: '10px', display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '14px', fontSize: '13px', fontWeight: 'bold', color: 'var(--vip-gold)', textTransform: 'uppercase', letterSpacing: '0.03em' }}>
+            <span>👥 Ver Equipo y Reservar con Profesionales ({profesionales.length}) ➔</span>
+          </div>
+        )}
+
         <div className="ld-actions-row">
           <button className="ld-btn-primary glow" style={{ flex: 1 }} onClick={() => navigate('booking', { id: local.proId, name: local.proNombre || local.nombre, ...local })}>
             🤝 {lang === 'es' ? 'Contratar servicio' : 'Hire now'}
           </button>
-          {local.whatsapp && (
-            <button className="ld-btn-wa" onClick={handleWhatsappClick} title="Chat WhatsApp">
-              <FaWhatsapp style={{ fontSize: 24 }} />
-            </button>
-          )}
         </div>
       </div>
 
@@ -165,6 +166,12 @@ export default function LocalDetalle({ lang = 'es', navigate, local }) {
                 )
               })
             )}
+
+            {profesionales.length > 0 && (
+              <div className="ld-equipo-cta-banner" onClick={() => setActiveTab('equipo')} style={{ cursor: 'pointer', background: 'rgba(255,255,255,0.02)', border: '1px dashed rgba(212, 175, 55, 0.3)', borderRadius: '10px', padding: '14px', textAlign: 'center', fontSize: '13px', color: '#ccc', marginTop: '16px', fontWeight: '600', transition: 'all 0.2s' }}>
+                <span>🔎 ¿Prefieres reservar con un miembro específico de nuestro equipo? Ver Profesionales ➔</span>
+              </div>
+            )}
           </div>
         )}
 
@@ -179,45 +186,34 @@ export default function LocalDetalle({ lang = 'es', navigate, local }) {
 
         {/* TAB EQUIPO */}
         {activeTab === 'equipo' && (
-          <div className="ld-equipo-list">
+          <div className="ld-equipo-list" style={{ display: 'flex', flexDirection: 'row', gap: '14px', overflowX: 'auto', paddingBottom: '14px', scrollSnapType: 'x mandatory' }}>
             {profesionales.map((prof, i) => {
               const profInitials = (prof.nombre || 'P').substring(0, 2).toUpperCase()
               const profAvatarBg = getAvatarColor(prof.nombre || 'P')
               return (
-                <div key={i} className="ld-profesional-card">
-                  <div className="ld-profesional-avatar-wrap">
+                <div key={i} className="ld-profesional-card vertical" style={{ flexShrink: 0, width: '160px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', padding: '16px', scrollSnapAlign: 'start' }}>
+                  <div className="ld-profesional-avatar-wrap" style={{ marginBottom: '12px' }}>
                     {prof.fotoURL ? (
-                      <img src={prof.fotoURL} alt={prof.nombre} className="ld-profesional-photo" />
+                      <img src={prof.fotoURL} alt={prof.nombre} className="ld-profesional-photo" style={{ width: '64px', height: '64px', borderRadius: '50%', border: '2px solid var(--vip-gold)', objectFit: 'cover' }} />
                     ) : (
-                      <div className="ld-profesional-avatar-placeholder" style={{ background: profAvatarBg }}>
+                      <div className="ld-profesional-avatar-placeholder" style={{ width: '64px', height: '64px', borderRadius: '50%', border: '2px solid var(--vip-gold)', background: profAvatarBg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', fontWeight: '850', color: '#0b0b0f' }}>
                         {profInitials}
                       </div>
                     )}
                   </div>
-                  <div className="ld-profesional-info">
-                    <h4 className="ld-profesional-name">{prof.nombre || 'Profesional'}</h4>
-                    <p className="ld-profesional-spec">{prof.especialidad || 'Especialista'}</p>
+                  <div className="ld-profesional-info" style={{ flexGrow: 1, display: 'flex', flexDirection: 'column', gap: '4px', marginBottom: '14px', width: '100%' }}>
+                    <h4 className="ld-profesional-name" style={{ fontSize: '13.5px', fontWeight: '800', color: 'var(--vip-text-primary)', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{prof.nombre || 'Profesional'}</h4>
+                    <p className="ld-profesional-spec" style={{ fontSize: '11px', color: 'var(--vip-text-secondary)', margin: 0, fontWeight: '600', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{prof.especialidad || 'Especialista'}</p>
                   </div>
-                  <div className="ld-profesional-actions">
-                    {prof.whatsapp && (
-                      <button className="ld-prof-btn-wa" onClick={() => {
-                        let number = prof.whatsapp.replace(/[^0-9]/g, '')
-                        if (number.length === 10 && (number.startsWith('809') || number.startsWith('829') || number.startsWith('849'))) {
-                          number = '1' + number
-                        }
-                        window.open(`https://wa.me/${number}`, '_blank')
-                      }} title="Chat WhatsApp">
-                        <FaWhatsapp />
-                      </button>
-                    )}
+                  <div className="ld-profesional-actions" style={{ width: '100%' }}>
                     <button className="ld-prof-btn-book" onClick={() => navigate('booking', {
                       id: local.proId,
                       name: `${prof.nombre} (en ${local.nombre})`,
                       category: prof.especialidad,
                       avatar: profInitials,
-                      phone: prof.whatsapp || local.whatsapp,
+                      phone: local.whatsapp || '',
                       ...local
-                    })}>
+                    })} style={{ width: '100%' }}>
                       🤝 {lang === 'es' ? 'Reservar' : 'Book'}
                     </button>
                   </div>
@@ -240,27 +236,7 @@ export default function LocalDetalle({ lang = 'es', navigate, local }) {
               <p style={{ display:'flex', alignItems:'center', gap:8, fontWeight:600 }}><FaClock color="#D4AF37"/> {local.horario || 'No especificado'}</p>
             </div>
 
-            {(local.whatsapp || local.instagram) && (
-              <div className="ld-acerca-card">
-                <h3>📱 Contacto Directo</h3>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                  {local.whatsapp && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, cursor: 'pointer' }} onClick={handleWhatsappClick}>
-                      <span style={{ color: '#25D366', fontSize: 18, display: 'flex', alignItems: 'center' }}><FaWhatsapp /></span>
-                      <span style={{ fontWeight: 700 }}>WhatsApp:</span>
-                      <span style={{ color: '#A0AEC0' }}>{local.whatsapp}</span>
-                    </div>
-                  )}
-                  {local.instagram && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, cursor: 'pointer' }} onClick={() => window.open(`https://instagram.com/${local.instagram.replace('@', '')}`, '_blank')}>
-                      <span style={{ color: '#E1306C', fontSize: 18, display: 'flex', alignItems: 'center' }}><FaInstagram /></span>
-                      <span style={{ fontWeight: 700 }}>Instagram:</span>
-                      <span style={{ color: '#A0AEC0' }}>{local.instagram}</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
+            {/* Contacto Directo removido por requerimiento de contratación obligatoria */}
 
             {pagos.length > 0 && (
               <div className="ld-acerca-card">
