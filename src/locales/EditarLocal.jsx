@@ -1,6 +1,6 @@
 // src/locales/EditarLocal.jsx
 import { useState } from 'react'
-import { doc, updateDoc, collection, addDoc, serverTimestamp } from 'firebase/firestore'
+import { doc, updateDoc, deleteDoc, collection, addDoc, serverTimestamp } from 'firebase/firestore'
 import { db } from '../firebase'
 import './Locales.css'
 
@@ -120,6 +120,25 @@ export default function EditarLocal({ lang = 'es', navigate, local }) {
     } catch (e) {
       console.error('Error editando local:', e)
       setError(lang === 'es' ? 'Error al guardar. Intenta de nuevo.' : 'Error saving. Please try again.')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleEliminarLocal = async () => {
+    const confirmDel = window.confirm(lang === 'es'
+      ? '¿Estás seguro de que deseas eliminar permanentemente tu Local VIP? Esta acción no se puede deshacer.'
+      : 'Are you sure you want to permanently delete your VIP Local? This action cannot be undone.'
+    )
+    if (!confirmDel) return
+    setSaving(true)
+    try {
+      await deleteDoc(doc(db, 'locales', local.id))
+      alert(lang === 'es' ? '¡Local VIP eliminado con éxito!' : 'VIP Local deleted successfully!')
+      navigate('profile')
+    } catch (err) {
+      console.error(err)
+      alert(lang === 'es' ? 'Error al eliminar el local.' : 'Error deleting the local.')
     } finally {
       setSaving(false)
     }
@@ -324,6 +343,10 @@ export default function EditarLocal({ lang = 'es', navigate, local }) {
 
         <button className="crear-local-save-btn glow" onClick={handleGuardar} disabled={saving}>
           {saving ? '⏳ Guardando...' : '💾 Guardar cambios'}
+        </button>
+
+        <button className="crear-local-save-btn delete glow-soft" onClick={handleEliminarLocal} disabled={saving} style={{ background: 'linear-gradient(135deg, #ff4d4d, #cc0000)', marginTop: '12px', boxShadow: '0 4px 15px rgba(255, 77, 77, 0.3)' }}>
+          🗑️ {lang === 'es' ? 'Eliminar Local VIP' : 'Delete VIP Local'}
         </button>
       </div>
       <div style={{ height: 60 }} />

@@ -1,6 +1,6 @@
 // src/locales/LocalDetalle.jsx
 import { useState, useEffect } from 'react'
-import { collection, query, where, getDocs, doc, updateDoc } from 'firebase/firestore'
+import { collection, query, where, getDocs, doc, updateDoc, deleteDoc } from 'firebase/firestore'
 import { db } from '../firebase'
 import './Locales.css'
 import { FaClock, FaMoneyBillWave, FaCreditCard, FaExchangeAlt, FaWhatsapp, FaInstagram } from 'react-icons/fa'
@@ -105,6 +105,22 @@ export default function LocalDetalle({ lang = 'es', navigate, local: propLocal, 
     }
   }
 
+  const handleEliminarLocal = async () => {
+    const confirmDel = window.confirm(lang === 'es'
+      ? '¿Estás seguro de que deseas eliminar permanentemente tu Local VIP? Esta acción no se puede deshacer.'
+      : 'Are you sure you want to permanently delete your VIP Local? This action cannot be undone.'
+    )
+    if (!confirmDel) return
+    try {
+      await deleteDoc(doc(db, 'locales', local.id))
+      alert(lang === 'es' ? '¡Local VIP eliminado con éxito!' : 'VIP Local deleted successfully!')
+      navigate('profile')
+    } catch (err) {
+      console.error(err)
+      alert(lang === 'es' ? 'Error al eliminar el local.' : 'Error deleting the local.')
+    }
+  }
+
   const handleWhatsappClick = () => {
     if (!local?.whatsapp) return
     let number = local.whatsapp.replace(/[^0-9]/g, '')
@@ -168,9 +184,14 @@ export default function LocalDetalle({ lang = 'es', navigate, local: propLocal, 
             : <div className="local-detalle-logo-placeholder" style={{ background: avatarBg }}>{initials}</div>}
           <div style={{ flex: 1 }} />
           {isOwner && (
-            <button className="ld-btn-owner-edit" onClick={() => navigate('editarLocal', local)} style={{ marginRight: '8px', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', color: '#fff', padding: '6px 12px', borderRadius: '100px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', transition: 'all 0.2s' }}>
-              ✏️ Editar Local
-            </button>
+            <div style={{ display: 'flex', gap: '6px', marginRight: '8px' }}>
+              <button className="ld-btn-owner-edit" onClick={() => navigate('editarLocal', local)} style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', color: '#fff', padding: '6px 12px', borderRadius: '100px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', transition: 'all 0.2s' }}>
+                ✏️ Editar
+              </button>
+              <button className="ld-btn-owner-delete" onClick={handleEliminarLocal} style={{ background: 'rgba(255,77,77,0.12)', border: '1px solid rgba(255,77,77,0.3)', color: '#ff4d4d', padding: '6px 12px', borderRadius: '100px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', transition: 'all 0.2s' }}>
+                🗑️ Eliminar
+              </button>
+            </div>
           )}
           <span className="local-detalle-vip-badge glow">👑 Local VIP</span>
         </div>
