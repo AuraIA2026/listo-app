@@ -11,12 +11,12 @@ import '../pages/PaymentPage.css' // Importando estilos idénticos al pago de us
 const planes = [
   {
     id: 'standard', num: '1', emoji: '🔹', nombre: 'Plan Estándar', contratos: '3 contratos',
-    precio: 'RD$500', colorKey: 'standard', badge: 'BÁSICO',
+    precio: 'Gratis', colorKey: 'standard', badge: 'BÁSICO',
     titulo: 'Plan Estándar — Empieza a crecer',
     subtitulo: 'Ideal para conseguir tus primeros clientes.',
-    descripcion: 'Con 3 contratos disponibles puedes darte a conocer. Apto para quienes prueban la app.',
-    beneficios: ['✅ Perfil público en la app', '✅ Hasta 3 contratos al mes', '✅ Soporte estándar'],
-    cta: '¡El mejor punto de partida!',
+    descripcion: 'Con 3 contratos disponibles al mes gratis para conseguir clientes sin costo.',
+    beneficios: ['✅ Perfil público en la app', '✅ Hasta 3 contratos al mes gratis', '✅ Soporte estándar'],
+    cta: '¡El mejor punto de partida gratis!',
   },
   {
     id: 'gold', num: '2', emoji: '🥇', nombre: 'Pack Gold', contratos: '8 contratos',
@@ -903,7 +903,40 @@ export default function BtnHamburguesa({ onClose, navigate, initialOpenSection =
         <PlanModal
           plan={planDetalle}
           onClose={() => setPlanDetalle(null)}
-          onConfirm={() => { setSection('payment') }}
+          onConfirm={async () => {
+            if (planDetalle.id === 'standard') {
+              try {
+                await updateDoc(doc(db, 'users', userData.uid), {
+                  contracts: 3,
+                  planStatus: 'active',
+                  currentPlan: 'standard',
+                  plan: 'standard',
+                  approved: true
+                })
+                
+                try {
+                  await addDoc(collection(db, 'notificaciones'), {
+                    userId: 'admin',
+                    type: 'system',
+                    title: 'PLAN ESTÁNDAR ACTIVADO (GRATIS) 👑',
+                    text: `El profesional ${userData?.name || 'Un profesional'} ha activado el plan Estándar (Gratis).`,
+                    read: false,
+                    createdAt: serverTimestamp()
+                  })
+                } catch(e) {}
+                
+                alert("¡Plan Estándar activado con éxito! Tienes 3 contratos mensuales gratis.");
+                setPlanDetalle(null)
+                onClose()
+                if (navigate) navigate('home')
+              } catch (err) {
+                console.error("Error activating standard plan:", err)
+                alert("Error al activar el plan")
+              }
+            } else {
+              setSection('payment')
+            }
+          }}
         />
       )}
 

@@ -112,6 +112,7 @@ export default function RegisterPage({ lang, navigate }) {
         ...(userType === 'pro' && { 
           category: form.category,
           plan: 'basico',
+          contracts: 3,
           planExpirationDate: expireDate.toISOString()
         }),
         createdAt: serverTimestamp(),

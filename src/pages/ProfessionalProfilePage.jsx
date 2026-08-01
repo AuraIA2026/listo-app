@@ -785,7 +785,10 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
             
             let icon = planInfo.medal;
 
-            if (typeof displayPro.contracts !== 'undefined' && displayPro.contracts <= 0) {
+            const planStr = (displayPro.currentPlan || displayPro.planId || displayPro.plan || '').toLowerCase()
+            const isUnlimited = planStr.includes('vip') || planStr.includes('platinum') || planStr.includes('platino') || planStr.includes('elite') || planStr.includes('ilimitado')
+            
+            if (!isUnlimited && typeof displayPro.contracts !== 'undefined' && displayPro.contracts <= 0) {
               return (
                 <button className="book-btn-premium" style={{ background: '#E0E0E0', color: '#888', boxShadow: 'none', cursor: 'not-allowed' }} disabled>
                   🚫 {lang === 'es' ? 'Sin turnos disponibles' : 'No available slots'}

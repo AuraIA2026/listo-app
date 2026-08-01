@@ -136,11 +136,16 @@ export default function BookingPage({ lang = 'es', navigate, professional, userD
         proSnap = await getDoc(proRef)
         if (proSnap.exists()) {
           const proData = proSnap.data()
-          const currentContracts = proData.contracts || 0
-          if (currentContracts <= 0) {
-            setErrorMsg(lang === 'es' ? 'Este profesional ya no tiene turnos disponibles.' : 'This professional has no available slots.')
-            setLoading(false)
-            return
+          const plan = (proData.currentPlan || proData.planId || proData.plan || '').toLowerCase()
+          const isUnlimited = plan.includes('vip') || plan.includes('platinum') || plan.includes('platino') || plan.includes('elite') || plan.includes('ilimitado')
+          
+          if (!isUnlimited) {
+            const currentContracts = proData.contracts || 0
+            if (currentContracts <= 0) {
+              setErrorMsg(lang === 'es' ? 'Este profesional ya no tiene turnos disponibles.' : 'This professional has no available slots.')
+              setLoading(false)
+              return
+            }
           }
         }
       }
@@ -187,12 +192,21 @@ export default function BookingPage({ lang = 'es', navigate, professional, userD
       })
 
       if (proSnap && proSnap.exists()) {
-        const currentContracts = proSnap.data().contracts || 0
+        const proData = proSnap.data()
+        const plan = (proData.currentPlan || proData.planId || proData.plan || '').toLowerCase()
+        const isUnlimited = plan.includes('vip') || plan.includes('platinum') || plan.includes('platino') || plan.includes('elite') || plan.includes('ilimitado')
+        
         const proRef = doc(db, 'users', pro.id)
-        await updateDoc(proRef, {
-          contracts: increment(-1),
-          contractsUsed: increment(1)
-        })
+        if (isUnlimited) {
+          await updateDoc(proRef, {
+            contractsUsed: increment(1)
+          })
+        } else {
+          await updateDoc(proRef, {
+            contracts: increment(-1),
+            contractsUsed: increment(1)
+          })
+        }
       }
 
       // ── Activar Radar en Tiempo Real ──

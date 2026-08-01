@@ -32,14 +32,14 @@ export default function PlanesPage({ onBack, navigate }) {
       id: 'basico',
       name: 'BÁSICO (Entrada)',
       icon: '⚪',
-      price: 'RD$500',
-      period: '/ mes',
+      price: 'Gratis',
+      period: '',
       shortDesc: 'Ideal para conseguir tus primeros clientes',
       target: 'Plan de inicio',
       color: '#9CA3AF',
       features: [
         'Perfil público en la app',
-        'Hasta 3 contratos al mes',
+        'Hasta 3 contratos al mes gratis',
         'Soporte estándar',
       ],
       limitations: [
@@ -106,9 +106,45 @@ export default function PlanesPage({ onBack, navigate }) {
     return ['3 - 5 años', '5 - 10 años', 'Más de 10 años'].includes(exp)
   })()
 
-  const handleSelectPlan = (planId, planPriceText) => {
+  const handleSelectPlan = async (planId, planPriceText) => {
     if (planId === currentPlanId) return
     const planObj = planes.find(p => p.id === planId)
+    if (planId === 'basico') {
+      setLoading(true)
+      try {
+        if (auth.currentUser?.uid) {
+          await updateDoc(doc(db, 'users', auth.currentUser.uid), {
+            plan: 'basico',
+            currentPlan: 'basico',
+            planStatus: 'active',
+            approved: true,
+            contracts: 3
+          })
+
+          try {
+            await addDoc(collection(db, 'notificaciones'), {
+              userId: 'admin',
+              type: 'plan_purchased',
+              title: '⚪ PLAN BÁSICO ACTIVADO (GRATIS)',
+              text: `El profesional ${userData?.name || 'Un profesional'} (${userData?.email || 'Sin email'}) ha activado el plan BÁSICO (Gratis).`,
+              read: false,
+              createdAt: serverTimestamp()
+            });
+          } catch (errNotif) {
+            console.error("Error guardando notificación admin:", errNotif);
+          }
+
+          alert("¡Plan Básico activado con éxito! Tienes 3 contratos mensuales gratis.");
+          navigate('home');
+        }
+      } catch (err) {
+        console.error("Error al activar plan básico gratis:", err)
+        alert("Error al activar el plan. Por favor intenta de nuevo.")
+      } finally {
+        setLoading(false)
+      }
+      return
+    }
     setSelectedPlanForCheckout(planObj)
     setCardName('')
     setCardNumber('')
@@ -198,7 +234,7 @@ export default function PlanesPage({ onBack, navigate }) {
               style={{ background: '#1a1a2e', color: 'white', border: 'none', padding: '16px 24px', fontSize: '16px', fontWeight: '900', borderRadius: '12px', cursor: 'pointer', width: '100%', maxWidth: '300px' }}
               onClick={() => {
                 setPurchasedPlan(null);
-                onBack(); // Volver al inicio o a donde estaba
+                navigate('home');
               }}
             >
               🚀 Volver al Inicio
@@ -545,7 +581,7 @@ export default function PlanesPage({ onBack, navigate }) {
               onClick={() => {
                 setShowReceipt(false);
                 setPurchasedPlanDetails(null);
-                onBack();
+                navigate('home');
               }}
               style={{
                 width: '100%', background: 'linear-gradient(135deg, #F26000, #FF8533)',
