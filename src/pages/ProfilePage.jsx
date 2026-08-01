@@ -154,12 +154,35 @@ function FavoritosScreen({ lang, onBack }) {
 
 function NotificacionesScreen({ lang, onBack }) {
   const T = txt[lang]
+  const { userData } = useUserData()
+  const [emailNotifs, setEmailNotifs] = useState(userData?.emailNotifications !== false)
   const [notifs, setNotifs] = useState({ orders: true, promos: false, news: true, reminders: true })
+
+  useEffect(() => {
+    if (userData) {
+      setEmailNotifs(userData.emailNotifications !== false)
+    }
+  }, [userData])
+
+  const handleEmailToggle = async (val) => {
+    setEmailNotifs(val)
+    if (userData?.uid) {
+      try {
+        await updateDoc(doc(db, 'users', userData.uid), {
+          emailNotifications: val
+        })
+      } catch (err) {
+        console.error("Error updating email notifications preference:", err)
+      }
+    }
+  }
+
   const items = [
-    { key: 'orders', icon: '📦', label: T.notifOrders },
-    { key: 'promos', icon: '🎉', label: T.notifPromos },
-    { key: 'news',   icon: '📱', label: T.notifNews },
-    { key: 'reminders', icon: '⏰', label: T.notifReminders },
+    { key: 'email', icon: '✉️', label: lang === 'es' ? 'Recibir notificaciones por correo' : 'Receive email notifications', checked: emailNotifs, onChange: handleEmailToggle },
+    { key: 'orders', icon: '📦', label: T.notifOrders, checked: notifs.orders, onChange: (v) => setNotifs(p => ({ ...p, orders: v })) },
+    { key: 'promos', icon: '🎉', label: T.notifPromos, checked: notifs.promos, onChange: (v) => setNotifs(p => ({ ...p, promos: v })) },
+    { key: 'news',   icon: '📱', label: T.notifNews, checked: notifs.news, onChange: (v) => setNotifs(p => ({ ...p, news: v })) },
+    { key: 'reminders', icon: '⏰', label: T.notifReminders, checked: notifs.reminders, onChange: (v) => setNotifs(p => ({ ...p, reminders: v })) },
   ]
   return (
     <div className="sub-screen">
@@ -169,7 +192,7 @@ function NotificacionesScreen({ lang, onBack }) {
           <div key={item.key} className="settings-row">
             <span className="settings-icon">{item.icon}</span>
             <span className="settings-label">{item.label}</span>
-            <Toggle checked={notifs[item.key]} onChange={() => setNotifs(p => ({ ...p, [item.key]: !p[item.key] }))} />
+            <Toggle checked={item.checked} onChange={item.onChange} />
           </div>
         ))}
       </div>

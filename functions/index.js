@@ -469,33 +469,37 @@ exports.enviarAlertaNuevoPedido = functions.firestore
       const destinoEmail = proData.email;
       if (!destinoEmail) return null;
 
-      const mailOptions = {
-        from: '"Listo Patrón" <listopatron.app@gmail.com>',
-        to: destinoEmail,
-        subject: "🚨 ¡NUEVO CONTRATO DISPONIBLE! - Listo Patrón 🚨",
-        html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-top: 5px solid #F26000; border-radius: 10px;">
-            <h2 style="color: #1A1A2E; text-align: center;">¡Felicidades, ${proData.name.split(' ')[0]}! 🎉</h2>
-            <p style="font-size: 16px; color: #333;">Tienes una nueva solicitud de servicio esperándote en la plataforma.</p>
-            <div style="background: #FAFAFA; padding: 15px; border-radius: 8px; margin: 20px 0;">
-              <p style="margin: 5px 0;"><strong>👤 Cliente:</strong> ${order.clientName || 'Usuario'}</p>
-              <p style="margin: 5px 0;"><strong>🛠️ Servicio:</strong> ${order.proSpecialty || 'Solicitud general'}</p>
-              <p style="margin: 5px 0;"><strong>📍 Dirección:</strong> ${order.clientAddress || order.address || 'Ver en la app'}</p>
-              <p style="margin: 5px 0;"><strong>💰 Precio:</strong> ${order.price || 'A convenir'}</p>
-              <p style="margin: 5px 0;"><strong>🕒 Fecha:</strong> ${order.dateToken} - ${order.timeToken}</p>
+      if (proData.emailNotifications !== false) {
+        const mailOptions = {
+          from: '"Listo Patrón" <listopatron.app@gmail.com>',
+          to: destinoEmail,
+          subject: "🚨 ¡NUEVO CONTRATO DISPONIBLE! - Listo Patrón 🚨",
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-top: 5px solid #F26000; border-radius: 10px;">
+              <h2 style="color: #1A1A2E; text-align: center;">¡Felicidades, ${proData.name.split(' ')[0]}! 🎉</h2>
+              <p style="font-size: 16px; color: #333;">Tienes una nueva solicitud de servicio esperándote en la plataforma.</p>
+              <div style="background: #FAFAFA; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                <p style="margin: 5px 0;"><strong>👤 Cliente:</strong> ${order.clientName || 'Usuario'}</p>
+                <p style="margin: 5px 0;"><strong>🛠️ Servicio:</strong> ${order.proSpecialty || 'Solicitud general'}</p>
+                <p style="margin: 5px 0;"><strong>📍 Dirección:</strong> ${order.clientAddress || order.address || 'Ver en la app'}</p>
+                <p style="margin: 5px 0;"><strong>💰 Precio:</strong> ${order.price || 'A convenir'}</p>
+                <p style="margin: 5px 0;"><strong>🕒 Fecha:</strong> ${order.dateToken} - ${order.timeToken}</p>
+              </div>
+              <p style="font-size: 14px; color: #666; text-align: center;">Por favor, abre la aplicación <b>Listo Patrón</b> de inmediato para aceptar o rechazar este trabajo.</p>
+              <div style="text-align: center; margin-top: 25px;">
+                <a href="https://listo-app.vercel.app/orders" style="background: #F26000; color: white; text-decoration: none; padding: 12px 25px; border-radius: 5px; font-weight: bold; font-size: 16px;">Ir a mis pedidos</a>
+              </div>
+              <hr style="border: none; border-top: 1px solid #eee; margin-top: 30px;">
+              <p style="font-size: 12px; color: #999; text-align: center;">Este es un mensaje automático de Listo Patrón. Por favor no respondas a este correo.</p>
             </div>
-            <p style="font-size: 14px; color: #666; text-align: center;">Por favor, abre la aplicación <b>Listo Patrón</b> de inmediato para aceptar o rechazar este trabajo.</p>
-            <div style="text-align: center; margin-top: 25px;">
-              <a href="https://listo-app.vercel.app/orders" style="background: #F26000; color: white; text-decoration: none; padding: 12px 25px; border-radius: 5px; font-weight: bold; font-size: 16px;">Ir a mis pedidos</a>
-            </div>
-            <hr style="border: none; border-top: 1px solid #eee; margin-top: 30px;">
-            <p style="font-size: 12px; color: #999; text-align: center;">Este es un mensaje automático de Listo Patrón. Por favor no respondas a este correo.</p>
-          </div>
-        `
-      };
+          `
+        };
 
-      await transporter.sendMail(mailOptions);
-      console.log(`✅ Alerta enviada a ${destinoEmail} para la orden ${context.params.orderId}`);
+        await transporter.sendMail(mailOptions);
+        console.log(`✅ Alerta enviada a ${destinoEmail} para la orden ${context.params.orderId}`);
+      } else {
+        console.log(`Preferencia de correo desactivada para el profesional ${proId}. Alerta de correo no enviada.`);
+      }
       
       await db.collection("notificaciones").add({
         userId: proId,
@@ -664,30 +668,34 @@ exports.enviarCorreoNuevoPlan = functions.firestore
         colorPlan = "#78909C";
       }
 
-      const mailOptions = {
-        from: '"Listo Patrón" <listopatron.app@gmail.com>',
-        to: destinoEmail,
-        subject: `🎉 ¡Bienvenido al Plan ${planDisplay}! - Listo Patrón`,
-        html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-top: 5px solid ${colorPlan}; border-radius: 10px;">
-            <h2 style="color: #1A1A2E; text-align: center;">¡Gracias por postularte y creer en tu talento, ${nombre}! 🚀</h2>
-            <p style="font-size: 16px; color: #333; text-align: center;">Tu cuenta ha sido actualizada exitosamente.</p>
-            <div style="background: #FAFAFA; padding: 20px; border-radius: 10px; margin: 25px 0; text-align: center; border: 1px solid #eee;">
-              <p style="margin: 0; font-size: 14px; color: #666;">Tu nuevo plan asignado es:</p>
-              <p style="margin: 10px 0; font-size: 26px; font-weight: 900; color: ${colorPlan};">${planDisplay}</p>
+      if (after.emailNotifications !== false) {
+        const mailOptions = {
+          from: '"Listo Patrón" <listopatron.app@gmail.com>',
+          to: destinoEmail,
+          subject: `🎉 ¡Bienvenido al Plan ${planDisplay}! - Listo Patrón`,
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-top: 5px solid ${colorPlan}; border-radius: 10px;">
+              <h2 style="color: #1A1A2E; text-align: center;">¡Gracias por postularte y creer en tu talento, ${nombre}! 🚀</h2>
+              <p style="font-size: 16px; color: #333; text-align: center;">Tu cuenta ha sido actualizada exitosamente.</p>
+              <div style="background: #FAFAFA; padding: 20px; border-radius: 10px; margin: 25px 0; text-align: center; border: 1px solid #eee;">
+                <p style="margin: 0; font-size: 14px; color: #666;">Tu nuevo plan asignado es:</p>
+                <p style="margin: 10px 0; font-size: 26px; font-weight: 900; color: ${colorPlan};">${planDisplay}</p>
+              </div>
+              <p style="font-size: 15px; color: #444; line-height: 1.6;">Con esta membresía activa, tu perfil tiene máxima prioridad en los resultados de búsqueda. ¡Prepárate para recibir más trabajos!</p>
+              <div style="text-align: center; margin-top: 35px; margin-bottom: 25px;">
+                <a href="https://listo-app.vercel.app/profile" style="background: #1A1A2E; color: white; text-decoration: none; padding: 14px 28px; border-radius: 6px; font-weight: bold; font-size: 16px;">Entrar a mi Perfil</a>
+              </div>
+              <hr style="border: none; border-top: 1px solid #eee; margin-top: 30px;">
+              <p style="font-size: 12px; color: #aaa; text-align: center;">Mensaje automático del equipo de Listo Patrón.</p>
             </div>
-            <p style="font-size: 15px; color: #444; line-height: 1.6;">Con esta membresía activa, tu perfil tiene máxima prioridad en los resultados de búsqueda. ¡Prepárate para recibir más trabajos!</p>
-            <div style="text-align: center; margin-top: 35px; margin-bottom: 25px;">
-              <a href="https://listo-app.vercel.app/profile" style="background: #1A1A2E; color: white; text-decoration: none; padding: 14px 28px; border-radius: 6px; font-weight: bold; font-size: 16px;">Entrar a mi Perfil</a>
-            </div>
-            <hr style="border: none; border-top: 1px solid #eee; margin-top: 30px;">
-            <p style="font-size: 12px; color: #aaa; text-align: center;">Mensaje automático del equipo de Listo Patrón.</p>
-          </div>
-        `
-      };
+          `
+        };
 
-      await transporter.sendMail(mailOptions);
-      console.log(`✅ Correo Plan ${planDisplay} enviado a ${destinoEmail}`);
+        await transporter.sendMail(mailOptions);
+        console.log(`✅ Correo Plan ${planDisplay} enviado a ${destinoEmail}`);
+      } else {
+        console.log(`Preferencia de correo desactivada para el profesional ${change.after.id}. Correo de plan no enviado.`);
+      }
       
       await db.collection("notificaciones").add({
         userId: change.after.id,
@@ -702,6 +710,90 @@ exports.enviarCorreoNuevoPlan = functions.firestore
 
     } catch (error) {
       console.error("❌ Error enviando correo de plan:", error);
+      return null;
+    }
+  });
+
+/* ═══════════════════════════════════════════════════════════
+   FUNCIÓN 9: enviarCorreoPagoRecibido
+   Se dispara cuando se actualiza un pedido.
+   Si el estado cambia a "pagado", envía un correo al profesional.
+═══════════════════════════════════════════════════════════ */
+exports.enviarCorreoPagoRecibido = functions.firestore
+  .document("orders/{orderId}")
+  .onUpdate(async (change, context) => {
+    try {
+      const before = change.before.data();
+      const after = change.after.data();
+
+      // Verificar si el estado cambió a "pagado"
+      if (before.status !== "pagado" && after.status === "pagado") {
+        const proId = after.proId || after.profesionalId;
+        if (!proId) return null;
+
+        const proDoc = await db.collection("users").doc(proId).get();
+        if (!proDoc.exists) return null;
+
+        const proData = proDoc.data();
+        const destinoEmail = proData.email;
+        if (!destinoEmail) return null;
+
+        const nombre = proData.name ? proData.name.split(' ')[0] : 'Profesional';
+        const orderId = context.params.orderId;
+        const montoTotal = after.montoTotal || 0;
+
+        // Registrar siempre la notificación en la base de datos
+        await db.collection("notificaciones").add({
+          userId: proId,
+          type: 'payment_received',
+          title: '💵 ¡PAGO RECIBIDO EXITOSAMENTE!',
+          text: `¡Felicidades ${nombre}! Has recibido un pago de RD$${montoTotal} por tu servicio (Pedido #${orderId}).`,
+          orderId: orderId,
+          date: new Date().toISOString(),
+          read: false
+        });
+
+        // Enviar correo sólo si tiene activas las notificaciones por correo
+        if (proData.emailNotifications !== false) {
+          const comision = Math.round(montoTotal * 0.10);
+          const neto = Math.round(montoTotal * 0.90);
+
+          const mailOptions = {
+            from: '"Listo Patrón" <listopatron.app@gmail.com>',
+            to: destinoEmail,
+            subject: `💳 ¡Pago Recibido Exitosamente! - Listo Patrón`,
+            html: `
+              <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-top: 5px solid #10B981; border-radius: 10px;">
+                <h2 style="color: #1A1A2E; text-align: center;">¡Felicidades, ${nombre}! 🎉</h2>
+                <p style="font-size: 16px; color: #333; text-align: center;">Hemos confirmado el pago de tu cliente para el servicio realizado.</p>
+                <div style="background: #FAFAFA; padding: 20px; border-radius: 8px; margin: 20px 0; border: 1px solid #eee;">
+                  <p style="margin: 8px 0; font-size: 14px;"><strong>📦 ID del Pedido:</strong> ${orderId}</p>
+                  <p style="margin: 8px 0; font-size: 14px;"><strong>🔑 Transacción ID:</strong> ${after.transaccionId || 'N/A'}</p>
+                  <p style="margin: 8px 0; font-size: 14px;"><strong>🛠️ Servicio:</strong> ${after.proSpecialty || 'Servicio Profesional'}</p>
+                  <hr style="border: none; border-top: 1px solid #eee; margin: 15px 0;">
+                  <p style="margin: 8px 0; font-size: 14px;"><strong>💰 Monto Total Pagado:</strong> RD$${montoTotal}</p>
+                  <p style="margin: 8px 0; font-size: 14px; color: #666;"><strong>💼 Comisión Listo (10%):</strong> RD$${comision}</p>
+                  <p style="margin: 8px 0; font-size: 18px; color: #10B981; font-weight: bold;"><strong>💵 Neto Acreditado (90%):</strong> RD$${neto}</p>
+                </div>
+                <p style="font-size: 14px; color: #666; text-align: center;">El neto ya está disponible en tu balance dentro de la aplicación.</p>
+                <div style="text-align: center; margin-top: 25px;">
+                  <a href="https://listo-app.vercel.app/profile" style="background: #10B981; color: white; text-decoration: none; padding: 12px 25px; border-radius: 5px; font-weight: bold; font-size: 16px;">Ver mi balance</a>
+                </div>
+                <hr style="border: none; border-top: 1px solid #eee; margin-top: 30px;">
+                <p style="font-size: 12px; color: #999; text-align: center;">Este es un mensaje automático de Listo Patrón. Por favor no respondas a este correo.</p>
+              </div>
+            `
+          };
+
+          await transporter.sendMail(mailOptions);
+          console.log(`✅ Correo de pago enviado a ${destinoEmail} para la orden ${orderId}`);
+        } else {
+          console.log(`Preferencia de correo desactivada para el profesional ${proId}. Correo de pago no enviado.`);
+        }
+      }
+      return null;
+    } catch (error) {
+      console.error("❌ Error en enviarCorreoPagoRecibido:", error);
       return null;
     }
   });

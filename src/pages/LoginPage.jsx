@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { getAuth, signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth'
-import { getFirestore, doc, getDoc } from 'firebase/firestore'
+import { getFirestore, doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore'
 import { useFaceAuth } from '../useFaceAuth'
 import './AuthPage.css'
 import './FaceModal.css'
@@ -82,7 +82,13 @@ export default function LoginPage({ lang, navigate }) {
 
   const validate = () => {
     const newErrors = {}
-    if (!email.includes('@') || !email.includes('.')) newErrors.email = T.errEmail
+    const isEmail = email.includes('@') && email.includes('.')
+    const cleanPhone = email.replace(/\D/g, '')
+    const isPhone = !email.includes('@') && cleanPhone.length >= 8
+
+    if (!isEmail && !isPhone) {
+      newErrors.email = lang === 'es' ? 'Ingresa un correo válido o número de teléfono' : 'Enter a valid email or phone number'
+    }
     if (password.length < 6) newErrors.pass = T.errPass
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
@@ -93,7 +99,39 @@ export default function LoginPage({ lang, navigate }) {
     setLoading(true)
     setErrors({})
     try {
-      const result   = await signInWithEmailAndPassword(auth, email, password)
+      let loginEmail = email
+
+      // Si no contiene '@', asumimos que es número telefónico
+      if (!email.includes('@')) {
+        const cleanPhone = email.replace(/\D/g, '')
+        
+        // Buscar el usuario por su número de teléfono
+        // Construimos variantes por si se guardó con o sin formato
+        const possiblePhones = [email, cleanPhone]
+        if (cleanPhone.length === 10) {
+          possiblePhones.push(`${cleanPhone.substring(0,3)}-${cleanPhone.substring(3,6)}-${cleanPhone.substring(6)}`)
+        }
+        
+        const q = query(collection(db, 'users'), where('phone', 'in', possiblePhones))
+        const querySnapshot = await getDocs(q)
+        
+        if (querySnapshot.empty) {
+          setErrors({ general: lang === 'es' ? 'No se encontró ningún usuario con ese número de teléfono' : 'No user found with that phone number' })
+          setLoading(false)
+          return
+        }
+        
+        const userFound = querySnapshot.docs[0].data()
+        if (userFound.email) {
+          loginEmail = userFound.email
+        } else {
+          setErrors({ general: lang === 'es' ? 'El usuario asociado no tiene un correo registrado' : 'Associated user has no registered email' })
+          setLoading(false)
+          return
+        }
+      }
+
+      const result   = await signInWithEmailAndPassword(auth, loginEmail, password)
       const uid      = result.user.uid
 
       // ── Leer datos completos del usuario en Firestore ──
