@@ -92,13 +92,13 @@ const menuItems = [
   { icon: '📋', labelEs: 'Mis pedidos',                labelEn: 'My orders',                 action: 'orders' },
   { icon: '❤️', labelEs: 'Favoritos',                  labelEn: 'Favorites',                 action: 'favorites' },
   { icon: '🔔', labelEs: 'Notificaciones',             labelEn: 'Notifications',             action: 'notifications' },
-  { icon: '🎨', labelEs: 'Personalizar',               labelEn: 'Customize',                 action: 'customize' },
   { icon: '🌐', labelEs: 'Idioma',                     labelEn: 'Language',                  action: 'language' },
   { icon: '🔒', labelEs: 'Privacidad',                 labelEn: 'Privacy',                   action: 'privacy' },
   { icon: '❓', labelEs: 'Ayuda y soporte',            labelEn: 'Help & support',            action: 'help' },
   { icon: '⭐', labelEs: 'Calificar la app',           labelEn: 'Rate the app',              action: 'rate' },
   { icon: '📄', labelEs: 'Términos y Condiciones',     labelEn: 'Terms & Conditions',        action: 'terms' },
   { icon: '🛡️', labelEs: 'Política de Privacidad',     labelEn: 'Privacy Policy',            action: 'privacyDoc' },
+  { icon: '/icons/sonido_notificaciones.png', labelEs: 'Sonido notificaciones', labelEn: 'Sound notifications', action: 'customize' },
 ]
 
 const compressImage = (file) => new Promise((resolve, reject) => {
@@ -404,7 +404,7 @@ function PersonalizarScreen({ lang, onBack }) {
 
   return (
     <div className="sub-screen" style={{ display: 'flex', flexDirection: 'column', height: '100%', background: '#FFF3EC' }}>
-      <ScreenHeader title={lang === 'es' ? 'Personalizar Sonidos' : 'Customize Sounds'} onBack={onBack} />
+      <ScreenHeader title={lang === 'es' ? 'Sonido Notificaciones' : 'Sound Notifications'} onBack={onBack} />
       
       <div style={{ flex: 1, overflowY: 'auto', padding: '20px' }}>
         <div style={{ background: '#FFF', border: '1.5px solid rgba(242,96,0,0.1)', borderRadius: '16px', padding: '16px', marginBottom: '24px' }}>
@@ -1065,7 +1065,13 @@ export default function ProfilePage({ lang, setLang, navigate, onLogout, initial
             }
             return (
               <button key={i} className={btnClass} onClick={() => handleMenu(item.action)}>
-                <span className="pmi-icon">{item.icon}</span>
+                <span className="pmi-icon">
+                  {item.icon.startsWith('/') || item.icon.endsWith('.png') || item.icon.endsWith('.webp') ? (
+                    <img src={item.icon} alt="" style={{ width: '22px', height: '22px', objectFit: 'contain', verticalAlign: 'middle' }} />
+                  ) : (
+                    item.icon
+                  )}
+                </span>
                 <span className="pmi-label">{lang==='es' ? item.labelEs : item.labelEn}</span>
                 {item.action === 'verification'
                   ? <span className={isProVerifComplete ? ((userData?.verificacion?.estado === 'verificado' || userData?.verificacion?.estado === 'aprobada') ? "verif-badge" : "verif-badge-yellow") : "verif-badge-blue"}>
