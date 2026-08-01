@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { getAuth, signInWithEmailAndPassword } from 'firebase/auth'
+import { getAuth, signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth'
 import { getFirestore, doc, getDoc } from 'firebase/firestore'
 import { useFaceAuth } from '../useFaceAuth'
 import './AuthPage.css'
@@ -24,6 +24,13 @@ const txt = {
     errInvalid: 'Correo o contraseña incorrectos',
     errWrongType: 'Este correo no corresponde al tipo de cuenta seleccionado',
     faceEmailRequired: 'Ingresa tu correo primero para usar reconocimiento facial',
+    recoveryTitle: 'Recuperar contraseña',
+    recoverySub: 'Ingresa el correo de tu cuenta. Te enviaremos un enlace seguro para restablecer tu contraseña al estilo de Google.',
+    recoveryEmail: 'Correo electrónico registrado',
+    recoveryBtn: 'Enviar enlace de recuperación',
+    recoverySuccessMsg: '¡Correo enviado con éxito! Revisa tu bandeja de entrada o spam para restablecer tu contraseña.',
+    recoveryErrorMsg: 'No se pudo enviar el correo. Verifica que la dirección esté registrada.',
+    recoveryClose: 'Regresar al inicio de sesión'
   },
   en: {
     title: 'Welcome back',
@@ -43,6 +50,13 @@ const txt = {
     errInvalid: 'Incorrect email or password',
     errWrongType: 'This email does not match the selected account type',
     faceEmailRequired: 'Enter your email first to use face recognition',
+    recoveryTitle: 'Recover Password',
+    recoverySub: 'Enter your account email. We will send you a secure link to reset your password.',
+    recoveryEmail: 'Registered email address',
+    recoveryBtn: 'Send recovery link',
+    recoverySuccessMsg: 'Email sent successfully! Check your inbox or spam folder to reset your password.',
+    recoveryErrorMsg: 'Could not send email. Verify if the address is registered.',
+    recoveryClose: 'Return to login'
   }
 }
 
@@ -57,6 +71,12 @@ export default function LoginPage({ lang, navigate }) {
   const [errors,   setErrors]   = useState({})
   const [loading,  setLoading]  = useState(false)
   const [showFaceModal, setShowFaceModal] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
+  const [showRecoveryModal, setShowRecoveryModal] = useState(false)
+  const [recoveryEmail, setRecoveryEmail] = useState('')
+  const [recoveryLoading, setRecoveryLoading] = useState(false)
+  const [recoverySuccess, setRecoverySuccess] = useState(false)
+  const [recoveryError, setRecoveryError] = useState('')
 
   const { videoRef, status, message, verifyFace, stopCamera } = useFaceAuth()
 
@@ -139,6 +159,24 @@ export default function LoginPage({ lang, navigate }) {
     setShowFaceModal(false)
   }
 
+  const handleSendRecovery = async () => {
+    if (!recoveryEmail.includes('@') || !recoveryEmail.includes('.')) {
+      setRecoveryError(lang === 'es' ? 'Ingresa un correo válido' : 'Enter a valid email')
+      return
+    }
+    setRecoveryLoading(true)
+    setRecoveryError('')
+    try {
+      await sendPasswordResetEmail(auth, recoveryEmail)
+      setRecoverySuccess(true)
+    } catch (err) {
+      console.error("Error al enviar email de recuperación:", err)
+      setRecoveryError(T.recoveryErrorMsg)
+    } finally {
+      setRecoveryLoading(false)
+    }
+  }
+
   return (
     <div className="auth-page">
       <div className="auth-left">
@@ -186,16 +224,56 @@ export default function LoginPage({ lang, navigate }) {
             <div className="field">
               <div className="field-label-row">
                 <label>{T.password}</label>
-                <span className="forgot-link">{T.forgot}</span>
+                <span className="forgot-link" onClick={() => {
+                  setRecoveryEmail(email)
+                  setRecoverySuccess(false)
+                  setRecoveryError('')
+                  setShowRecoveryModal(true)
+                }}>{T.forgot}</span>
               </div>
-              <input
-                type="password"
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                placeholder="••••••••"
-                className={errors.pass ? 'input-error' : ''}
-                onKeyDown={e => e.key === 'Enter' && handleLogin()}
-              />
+              <div style={{ position: 'relative', width: '100%' }}>
+                <input
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className={errors.pass ? 'input-error' : ''}
+                  onKeyDown={e => e.key === 'Enter' && handleLogin()}
+                  style={{ paddingRight: '48px', boxSizing: 'border-box' }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  style={{
+                    position: 'absolute',
+                    right: '12px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontSize: '18px',
+                    padding: '4px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#64748B',
+                    outline: 'none'
+                  }}
+                >
+                  {showPassword ? (
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                      <line x1="1" y1="1" x2="23" y2="23"/>
+                    </svg>
+                  ) : (
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                      <circle cx="12" cy="12" r="3"/>
+                    </svg>
+                  )}
+                </button>
+              </div>
               {errors.pass && <span className="error-msg">{errors.pass}</span>}
             </div>
 
@@ -378,6 +456,105 @@ export default function LoginPage({ lang, navigate }) {
               {status === 'loading' && <span className="face-spinner" />}
               <p>{message}</p>
             </div>
+          </div>
+        </div>
+      )}
+
+      {showRecoveryModal && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 10000,
+          background: 'rgba(15, 23, 42, 0.65)', backdropFilter: 'blur(8px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px'
+        }}>
+          <div className="fade-up" style={{
+            background: '#FFFFFF', borderRadius: '24px', padding: '36px 28px',
+            width: '100%', maxWidth: '420px', boxShadow: '0 20px 40px rgba(0,0,0,0.3)',
+            position: 'relative', display: 'flex', flexDirection: 'column', gap: '16px',
+            color: '#1E293B', textAlign: 'left'
+          }}>
+            <button 
+              onClick={() => setShowRecoveryModal(false)}
+              style={{
+                position: 'absolute', top: '20px', right: '20px', border: 'none',
+                background: 'none', fontSize: '18px', cursor: 'pointer', color: '#64748B'
+              }}
+            >✕</button>
+
+            <h2 style={{ fontSize: '22px', fontWeight: '800', margin: 0, fontFamily: "var(--font-display, inherit)", color: '#0F172A' }}>
+              {T.recoveryTitle}
+            </h2>
+            <p style={{ fontSize: '14px', color: '#64748B', margin: 0, marginTop: '-4px', lineHeight: 1.5 }}>
+              {T.recoverySub}
+            </p>
+
+            {recoverySuccess ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', alignItems: 'center', textAlign: 'center', padding: '10px 0' }}>
+                <div style={{
+                  width: '56px', height: '56px', borderRadius: '50%',
+                  background: '#ECFDF5', border: '2px solid #10B981',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: '24px', color: '#10B981', boxShadow: '0 4px 12px rgba(16,185,129,0.2)'
+                }}>✓</div>
+                <p style={{ fontSize: '14px', color: '#047857', fontWeight: '600', margin: 0, lineHeight: 1.5 }}>
+                  {T.recoverySuccessMsg}
+                </p>
+                <button 
+                  onClick={() => setShowRecoveryModal(false)}
+                  style={{
+                    background: '#0F172A', color: 'white', border: 'none', borderRadius: '12px',
+                    padding: '12px 24px', fontSize: '14px', fontWeight: '700', cursor: 'pointer',
+                    width: '100%', marginTop: '8px'
+                  }}
+                >
+                  {T.recoveryClose}
+                </button>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <div className="field" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <label style={{ fontSize: '13px', fontWeight: '700', color: '#000' }}>{T.recoveryEmail}</label>
+                  <input
+                    type="email"
+                    value={recoveryEmail}
+                    onChange={e => setRecoveryEmail(e.target.value)}
+                    placeholder="correo@ejemplo.com"
+                    style={{
+                      width: '100%', padding: '14px 16px', borderRadius: '16px',
+                      border: '2px solid transparent', background: '#F1F5F9',
+                      fontSize: '15px', fontWeight: '500', outline: 'none'
+                    }}
+                    onFocus={e => e.target.style.borderColor = 'var(--mamey)'}
+                    onBlur={e => e.target.style.borderColor = 'transparent'}
+                  />
+                  {recoveryError && <span className="error-msg">{recoveryError}</span>}
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '8px' }}>
+                  <button
+                    disabled={recoveryLoading || !recoveryEmail.trim()}
+                    onClick={handleSendRecovery}
+                    style={{
+                      background: 'linear-gradient(135deg, var(--mamey), #FF3D00)',
+                      color: 'white', border: 'none', borderRadius: '14px', padding: '14px',
+                      fontSize: '15px', fontWeight: '800', cursor: 'pointer',
+                      boxShadow: '0 4px 16px rgba(242,96,0,0.3)', outline: 'none',
+                      opacity: (recoveryLoading || !recoveryEmail.trim()) ? 0.6 : 1
+                    }}
+                  >
+                    {recoveryLoading ? (lang === 'es' ? 'Enviando...' : 'Sending...') : T.recoveryBtn}
+                  </button>
+                  <button
+                    onClick={() => setShowRecoveryModal(false)}
+                    style={{
+                      background: 'none', border: 'none', color: '#64748B', padding: '8px',
+                      fontSize: '14px', fontWeight: '600', cursor: 'pointer', outline: 'none'
+                    }}
+                  >
+                    {lang === 'es' ? 'Cancelar' : 'Cancel'}
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
