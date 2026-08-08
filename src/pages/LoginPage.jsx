@@ -4,6 +4,7 @@ import { getFirestore, doc, getDoc, setDoc, collection, query, where, getDocs, a
 import { useFaceAuth } from '../useFaceAuth'
 import { SignInWithApple } from '@capacitor-community/apple-sign-in'
 import { FacebookLogin } from '@capacitor-community/facebook-login'
+import { Capacitor } from '@capacitor/core'
 import './AuthPage.css'
 import './FaceModal.css'
 
@@ -63,6 +64,7 @@ const txt = {
 }
 
 export default function LoginPage({ lang, navigate }) {
+  const isNative = Capacitor.isNativePlatform()
   const T    = txt[lang]
   const auth = getAuth()
   const db   = getFirestore()
@@ -507,8 +509,8 @@ export default function LoginPage({ lang, navigate }) {
 
             <button className="apple-login-btn" onClick={handleAppleLogin} disabled={loading}>
               <span style={{ fontSize: '18px', display: 'flex', alignItems: 'center' }}>
-                <svg viewBox="0 0 170 170" width="18" height="18" fill="currentColor">
-                  <path d="M150.37 130.25c-2.45 5.66-5.35 10.87-8.71 15.66-4.58 6.53-8.33 11.05-11.22 13.56-4.48 4.12-9.28 6.23-14.42 6.35-3.69 0-8.14-1.05-13.32-3.18-5.19-2.12-9.97-3.17-14.34-3.17-4.58 0-9.49 1.05-14.75 3.17-5.26 2.13-9.5 3.24-12.74 3.35-4.36.13-9.13-1.88-14.32-6.03-3.24-2.63-7.08-7.25-11.52-13.87-9.5-14.28-15.97-30.8-19.42-49.54-1.79-9.74-2.69-19.05-2.69-27.94 0-14.5 3.47-26.6 10.42-36.3 6.95-9.7 15.66-14.63 26.14-14.8 4.7 0 9.89 1.39 15.57 4.17 5.68 2.78 9.38 4.17 11.1 4.17 1.56 0 5.09-1.29 10.57-3.86 6.36-2.9 11.83-4.24 16.42-4.04 17.08.89 30.08 7.37 38.98 19.42-14.07 8.59-20.93 20.31-20.57 35.15.36 11.27 4.75 20.73 13.16 28.38 8.41 7.65 18.25 11.75 29.53 12.3 1.01 2.9 2.13 6.13 3.36 9.69zM119.22 30c0-7.81 2.85-15.11 8.56-21.9C133.48 1.3 140.73-1.61 149.53 1.15c-.78 9.26-4.02 17.58-9.72 24.96-5.7 7.38-12.75 11.39-21.14 12.01-1.23-.45-2.45-1.22-3.69-2.34-3.8-3.48-5.76-7.75-5.76-12.78z" />
+                <svg viewBox="0 0 18 18" width="18" height="18" fill="currentColor">
+                  <path d="M15.56 10.1c-.04-2.22 1.81-3.28 1.89-3.33-1.03-1.51-2.64-1.72-3.21-1.76-1.37-.14-2.68.81-3.38.81-.69 0-1.78-.79-2.94-.77-1.52.02-2.93.89-3.71 2.24-1.58 2.75-.41 6.81 1.12 9.02.75 1.08 1.64 2.29 2.81 2.24 1.12-.04 1.55-.72 2.91-.72 1.35 0 1.75.72 2.92.7 1.19-.02 1.97-1.1 2.71-2.19.86-1.26 1.21-2.48 1.23-2.54-.03-.01-2.37-.91-2.36-3.6zM13.25 3.03c.62-.75 1.03-1.79.92-2.83-.89.04-1.98.6-2.62 1.35-.57.65-1.07 1.71-.94 2.72.99.08 2.02-.49 2.64-1.24z" />
                 </svg>
               </span>
               {lang === 'es' ? 'Iniciar sesión con Apple' : 'Sign in with Apple'}
@@ -545,114 +547,116 @@ export default function LoginPage({ lang, navigate }) {
           </div>
 
           {/* ── FOOTER DE MÉTODOS DE PAGO SEGUROS ── */}
-          <div className="auth-payment-footer" style={{
-            marginTop: '32px',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: '12px',
-            width: '100%',
-            borderTop: '1px solid #E2E8F0',
-            paddingTop: '20px'
-          }}>
-            <p style={{
-              margin: 0,
-              fontSize: '11px',
-              color: '#64748B',
-              fontWeight: '800',
-              textTransform: 'uppercase',
-              letterSpacing: '1px'
-            }}>
-              {lang === 'es' ? 'Pagos 100% Seguros' : '100% Secure Payments'}
-            </p>
-            <div style={{
+          {!isNative && (
+            <div className="auth-payment-footer" style={{
+              marginTop: '32px',
               display: 'flex',
-              justifyContent: 'center',
+              flexDirection: 'column',
               alignItems: 'center',
-              gap: '8px',
-              flexWrap: 'wrap'
+              gap: '12px',
+              width: '100%',
+              borderTop: '1px solid #E2E8F0',
+              paddingTop: '20px'
             }}>
-              {/* Visa Logo */}
-              <div style={{
-                background: 'white',
-                border: '1px solid #CBD5E1',
-                padding: '4px 8px',
-                borderRadius: '6px',
-                fontWeight: '900',
-                color: '#1A1F71',
-                fontStyle: 'italic',
-                fontSize: '13px',
-                boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
-                userSelect: 'none'
-              }}>VISA</div>
-
-              {/* Mastercard Circles */}
-              <div style={{
-                background: 'white',
-                border: '1px solid #CBD5E1',
-                padding: '5px 8px',
-                borderRadius: '6px',
-                display: 'flex',
-                alignItems: 'center',
-                boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
-                userSelect: 'none'
+              <p style={{
+                margin: 0,
+                fontSize: '11px',
+                color: '#64748B',
+                fontWeight: '800',
+                textTransform: 'uppercase',
+                letterSpacing: '1px'
               }}>
-                 <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#EB001B', marginRight: '-4px', mixBlendMode: 'multiply' }}></div>
-                 <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#F79E1B', mixBlendMode: 'multiply' }}></div>
-              </div>
-
-              {/* AZUL secure payment badge */}
+                {lang === 'es' ? 'Pagos 100% Seguros' : '100% Secure Payments'}
+              </p>
               <div style={{
-                background: 'white',
-                border: '1px solid #CBD5E1',
-                padding: '4px 8px',
-                borderRadius: '6px',
                 display: 'flex',
-                alignItems: 'center',
                 justifyContent: 'center',
-                boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
-                userSelect: 'none'
-              }}>
-                <span style={{ color: '#002E6D', fontFamily: 'sans-serif', fontSize: '12px', fontWeight: '900', fontStyle: 'italic', letterSpacing: '0.5px', lineHeight: '1' }}>AZUL</span>
-              </div>
-
-              {/* 3D Secure Visa */}
-              <div style={{
-                background: 'white',
-                border: '1px solid #CBD5E1',
-                padding: '4px 8px',
-                borderRadius: '6px',
-                display: 'flex',
                 alignItems: 'center',
-                boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
-                userSelect: 'none'
+                gap: '8px',
+                flexWrap: 'wrap'
               }}>
-                <svg viewBox="0 0 190 50" style={{ height: '16px' }}>
-                  <text x="0" y="38" fontFamily="sans-serif" fontSize="40" fontWeight="900" fontStyle="italic" fill="#1A1F71" letterSpacing="-2">VISA</text>
-                  <text x="115" y="38" fontFamily="sans-serif" fontSize="20" fontWeight="600" fill="#1A1F71">Secure</text>
-                </svg>
-              </div>
+                {/* Visa Logo */}
+                <div style={{
+                  background: 'white',
+                  border: '1px solid #CBD5E1',
+                  padding: '4px 8px',
+                  borderRadius: '6px',
+                  fontWeight: '900',
+                  color: '#1A1F71',
+                  fontStyle: 'italic',
+                  fontSize: '13px',
+                  boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+                  userSelect: 'none'
+                }}>VISA</div>
 
-              {/* ID Check Mastercard */}
-              <div style={{
-                background: 'white',
-                border: '1px solid #CBD5E1',
-                padding: '4px 8px',
-                borderRadius: '6px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '4px',
-                boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
-                userSelect: 'none'
-              }}>
-                <svg viewBox="0 0 100 60" style={{ height: '16px' }}>
-                  <circle cx="35" cy="30" r="25" fill="#EB001B" />
-                  <circle cx="65" cy="30" r="25" fill="#F79E1B" opacity="0.8" />
-                </svg>
-                <span style={{ color: '#1A1A2E', fontSize: '9px', fontWeight: '900', fontFamily: 'sans-serif' }}>ID Check</span>
+                {/* Mastercard Circles */}
+                <div style={{
+                  background: 'white',
+                  border: '1px solid #CBD5E1',
+                  padding: '5px 8px',
+                  borderRadius: '6px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+                  userSelect: 'none'
+                }}>
+                   <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#EB001B', marginRight: '-4px', mixBlendMode: 'multiply' }}></div>
+                   <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#F79E1B', mixBlendMode: 'multiply' }}></div>
+                </div>
+
+                {/* AZUL secure payment badge */}
+                <div style={{
+                  background: 'white',
+                  border: '1px solid #CBD5E1',
+                  padding: '4px 8px',
+                  borderRadius: '6px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+                  userSelect: 'none'
+                }}>
+                  <span style={{ color: '#002E6D', fontFamily: 'sans-serif', fontSize: '12px', fontWeight: '900', fontStyle: 'italic', letterSpacing: '0.5px', lineHeight: '1' }}>AZUL</span>
+                </div>
+
+                {/* 3D Secure Visa */}
+                <div style={{
+                  background: 'white',
+                  border: '1px solid #CBD5E1',
+                  padding: '4px 8px',
+                  borderRadius: '6px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+                  userSelect: 'none'
+                }}>
+                  <svg viewBox="0 0 190 50" style={{ height: '16px' }}>
+                    <text x="0" y="38" fontFamily="sans-serif" fontSize="40" fontWeight="900" fontStyle="italic" fill="#1A1F71" letterSpacing="-2">VISA</text>
+                    <text x="115" y="38" fontFamily="sans-serif" fontSize="20" fontWeight="600" fill="#1A1F71">Secure</text>
+                  </svg>
+                </div>
+
+                {/* ID Check Mastercard */}
+                <div style={{
+                  background: 'white',
+                  border: '1px solid #CBD5E1',
+                  padding: '4px 8px',
+                  borderRadius: '6px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+                  userSelect: 'none'
+                }}>
+                  <svg viewBox="0 0 100 60" style={{ height: '16px' }}>
+                    <circle cx="35" cy="30" r="25" fill="#EB001B" />
+                    <circle cx="65" cy="30" r="25" fill="#F79E1B" opacity="0.8" />
+                  </svg>
+                  <span style={{ color: '#1A1A2E', fontSize: '9px', fontWeight: '900', fontFamily: 'sans-serif' }}>ID Check</span>
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
 
