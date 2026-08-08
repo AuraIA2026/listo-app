@@ -400,10 +400,10 @@ export default function PlanesPage({ onBack, navigate }) {
             >✕</button>
 
             <h2 style={{ fontSize: '20px', fontWeight: '800', margin: 0, fontFamily: "'Syne', sans-serif" }}>
-              Detalles del Pago
+              Activar Plan
             </h2>
             <p style={{ fontSize: '14px', color: '#64748B', margin: 0, marginTop: '-8px' }}>
-              Completa tu tarjeta para adquirir el plan {selectedPlanForCheckout.name}
+              Realiza una transferencia bancaria para adquirir el plan {selectedPlanForCheckout.name}
             </p>
 
             <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '12px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -411,104 +411,56 @@ export default function PlanesPage({ onBack, navigate }) {
               <span style={{ fontSize: '15px', fontWeight: '800', color: selectedPlanForCheckout.color }}>{selectedPlanForCheckout.name} ({selectedPlanForCheckout.price})</span>
             </div>
 
-            {/* Card Inputs */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <div>
-                <label style={{ fontSize: '12px', fontWeight: '700', color: '#475569', display: 'block', marginBottom: '6px' }}>Nombre en la Tarjeta</label>
-                <input 
-                  type="text" 
-                  placeholder="Nombre completo"
-                  value={cardName}
-                  onChange={e => setCardName(e.target.value)}
-                  style={{ width: '100%', padding: '12px 14px', borderRadius: '10px', border: '1.5px solid #E2E8F0', background: '#FAFAFA', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }}
-                />
-              </div>
-
-              <div>
-                <label style={{ fontSize: '12px', fontWeight: '700', color: '#475569', display: 'block', marginBottom: '6px' }}>Número de Tarjeta</label>
-                <input 
-                  type="tel" 
-                  placeholder="0000 0000 0000 0000"
-                  maxLength={19}
-                  value={cardNumber}
-                  onChange={e => {
-                    let v = e.target.value.replace(/\s+/g, '').replace(/[^0-9]/gi, '')
-                    let parts = []
-                    for (let i = 0; i < v.length; i += 4) {
-                      parts.push(v.substring(i, i + 4))
-                    }
-                    setCardNumber(parts.join(' '))
-                  }}
-                  style={{ width: '100%', padding: '12px 14px', borderRadius: '10px', border: '1.5px solid #E2E8F0', background: '#FAFAFA', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }}
-                />
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '13px', background: '#FFF7ED', border: '1px solid #FFEDD5', borderRadius: '12px', padding: '14px' }}>
+              <p style={{ margin: '0 0 6px 0', fontWeight: 'bold', color: '#C2410C' }}>Cuentas de Depósito:</p>
+              
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #FED7AA', paddingBottom: '6px', marginBottom: '6px' }}>
                 <div>
-                  <label style={{ fontSize: '12px', fontWeight: '700', color: '#475569', display: 'block', marginBottom: '6px' }}>Vencimiento</label>
-                  <input 
-                    type="tel" 
-                    placeholder="MM/AA"
-                    maxLength={5}
-                    value={cardExp}
-                    onChange={e => {
-                      let val = e.target.value
-                      let clean = val.replace(/\D/g, '')
-                      if (clean.length === 1 && clean > '1') clean = '0' + clean
-                      if (clean.length >= 2) {
-                        let m = parseInt(clean.substring(0,2), 10)
-                        if (m < 1) m = 1
-                        if (m > 12) m = 12
-                        clean = (m < 10 ? '0' + m : String(m)) + clean.substring(2)
-                      }
-                      if (clean.length > 2) setCardExp(clean.substring(0,2) + '/' + clean.substring(2,4))
-                      else setCardExp(clean)
-                    }}
-                    style={{ width: '100%', padding: '12px 14px', borderRadius: '10px', border: '1.5px solid #E2E8F0', background: '#FAFAFA', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }}
-                  />
+                  <strong>Banco Popular</strong><br/>
+                  Cuenta: 810-123456-1 (Corriente)<br/>
+                  A nombre de: Listo Patrón SRL
                 </div>
+              </div>
+              
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <div>
-                  <label style={{ fontSize: '12px', fontWeight: '700', color: '#475569', display: 'block', marginBottom: '6px' }}>CVV</label>
-                  <input 
-                    type="tel" 
-                    placeholder="123"
-                    maxLength={4}
-                    value={cardCvv}
-                    onChange={e => setCardCvv(e.target.value.replace(/[^0-9]/g, ''))}
-                    style={{ width: '100%', padding: '12px 14px', borderRadius: '10px', border: '1.5px solid #E2E8F0', background: '#FAFAFA', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }}
-                  />
+                  <strong>Banreservas</strong><br/>
+                  Cuenta: 210-123456-7 (Corriente)<br/>
+                  A nombre de: Listo Patrón SRL
                 </div>
               </div>
             </div>
 
-            {/* Security Logos */}
-            <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', opacity: 0.8, fontSize: '12px', color: '#64748B', margin: '4px 0' }}>
-              <span>🔒 Pago seguro 256-bit SSL</span>
-            </div>
+            <p style={{ fontSize: '12px', color: '#64748B', margin: 0 }}>
+              💡 Al realizar la transferencia, envíanos el comprobante por WhatsApp o notifica la solicitud desde aquí para activarte de inmediato.
+            </p>
 
             {/* Action Buttons */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '8px' }}>
+              <a
+                href={`https://wa.me/18099090455?text=Hola,%20acabo%20de%20realizar%20la%20transferencia%20para%20activar%20mi%20Plan%20${encodeURIComponent(selectedPlanForCheckout.name)}.%20Aquí%20tengo%20el%20comprobante.`}
+                target="_blank"
+                rel="noreferrer"
+                style={{
+                  background: '#25D366', textDecoration: 'none', textAlign: 'center',
+                  color: 'white', border: 'none', borderRadius: '14px', padding: '14px',
+                  fontSize: '15px', fontWeight: '700', cursor: 'pointer',
+                  boxShadow: '0 4px 16px rgba(37,211,102,0.3)', outline: 'none'
+                }}
+              >
+                💬 Enviar Comprobante por WhatsApp
+              </a>
               <button
-                disabled={loading || cardName.trim() === '' || cardNumber.replace(/\s/g, '').length < 15 || cardExp.length < 5 || cardCvv.length < 3}
+                disabled={loading}
                 onClick={handleConfirmPayment}
                 style={{
                   background: 'linear-gradient(135deg, #F26000, #FF8533)',
                   color: 'white', border: 'none', borderRadius: '14px', padding: '14px',
-                  fontSize: '16px', fontWeight: '700', cursor: 'pointer',
-                  boxShadow: '0 4px 16px rgba(242,96,0,0.3)', outline: 'none',
-                  opacity: (cardName.trim() === '' || cardNumber.replace(/\s/g, '').length < 15 || cardExp.length < 5 || cardCvv.length < 3) ? 0.6 : 1
+                  fontSize: '15px', fontWeight: '700', cursor: 'pointer',
+                  boxShadow: '0 4px 16px rgba(242,96,0,0.3)', outline: 'none'
                 }}
               >
-                {loading ? 'Procesando Pago...' : `Confirmar y Pagar ${selectedPlanForCheckout.price}`}
-              </button>
-              <button
-                onClick={() => setSelectedPlanForCheckout(null)}
-                style={{
-                  background: 'none', border: 'none', color: '#64748B', padding: '8px',
-                  fontSize: '14px', fontWeight: '600', cursor: 'pointer', outline: 'none'
-                }}
-              >
-                Cancelar
+                {loading ? 'Procesando...' : '✓ Notificar Solicitud en App'}
               </button>
             </div>
           </div>
@@ -577,11 +529,11 @@ export default function PlanesPage({ onBack, navigate }) {
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
                 <span style={{ color: '#64748B', fontWeight: '500' }}>Método de pago:</span>
-                <span style={{ color: '#1A1A2E', fontWeight: '700', textAlign: 'right' }}>VISA •••• {last4}</span>
+                <span style={{ color: '#1A1A2E', fontWeight: '700', textAlign: 'right' }}>Transferencia</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
-                <span style={{ color: '#64748B', fontWeight: '500' }}>Autorización AZUL:</span>
-                <span style={{ color: '#00b050', fontWeight: '800', textAlign: 'right' }}>Aprobado #{authCode}</span>
+                <span style={{ color: '#64748B', fontWeight: '500' }}>Estado:</span>
+                <span style={{ color: '#00b050', fontWeight: '800', textAlign: 'right' }}>Solicitud Recibida</span>
               </div>
             </div>
 
