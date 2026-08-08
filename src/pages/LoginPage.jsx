@@ -541,8 +541,8 @@ export default function LoginPage({ lang, navigate }) {
             </div>
             <p className="auth-social-text">
               {lang === 'es' 
-                ? <>Únete a <strong>más de 10,000 dominicanos</strong> que ya confían en Listo.</>
-                : <>Join <strong>over 10,000 customers</strong> who already trust Listo.</>}
+                ? <>Únete a <strong>más de 10,000 dominicanos</strong> que ya confían en Listo Patrón.</>
+                : <>Join <strong>over 10,000 customers</strong> who already trust Listo Patrón.</>}
             </p>
           </div>
 
