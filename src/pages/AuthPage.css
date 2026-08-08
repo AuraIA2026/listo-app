@@ -229,6 +229,28 @@
 .face-login-btn:hover { border-color: var(--black); }
 .face-icon { display: flex; align-items: center; color: var(--mamey); }
 
+.apple-login-btn {
+  width: 100%;
+  background: #000000; border: none; border-radius: 16px;
+  padding: 14px; display: flex; align-items: center; justify-content: center; gap: 10px;
+  font-size: 15px; font-weight: 700; color: white; cursor: pointer; transition: all 0.2s;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+.apple-login-btn:hover:not(:disabled) { background: #1a1a1a; transform: translateY(-1px); }
+.apple-login-btn:active:not(:disabled) { transform: scale(0.98); }
+.apple-login-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.facebook-login-btn {
+  width: 100%;
+  background: #1877F2; border: none; border-radius: 16px;
+  padding: 14px; display: flex; align-items: center; justify-content: center; gap: 10px;
+  font-size: 15px; font-weight: 700; color: white; cursor: pointer; transition: all 0.2s;
+  box-shadow: 0 4px 12px rgba(24,119,242,0.25);
+}
+.facebook-login-btn:hover:not(:disabled) { background: #166FE5; transform: translateY(-1px); }
+.facebook-login-btn:active:not(:disabled) { transform: scale(0.98); }
+.facebook-login-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
 .face-skip-btn {
   width: 100%;
   background: transparent; color: #64748B; border: 2px solid transparent;

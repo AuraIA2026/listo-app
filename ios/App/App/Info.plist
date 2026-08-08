@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CAPACITOR_DEBUG</key>
+	<string>$(CAPACITOR_DEBUG)</string>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>en</string>
+	<key>CFBundleDisplayName</key>
+        <string>Listo Patrón</string>
+	<key>CFBundleExecutable</key>
+	<string>$(EXECUTABLE_NAME)</string>
+	<key>CFBundleIdentifier</key>
+	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>$(PRODUCT_NAME)</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>$(MARKETING_VERSION)</string>
+	<key>CFBundleVersion</key>
+	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>LSRequiresIPhoneOS</key>
+	<true/>
+	<key>UILaunchStoryboardName</key>
+	<string>LaunchScreen</string>
+	<key>UIMainStoryboardFile</key>
+	<string>Main</string>
+	<key>UIRequiredDeviceCapabilities</key>
+	<array>
+		<string>armv7</string>
+	</array>
+	<key>UISupportedInterfaceOrientations</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
+	<key>UISupportedInterfaceOrientations~ipad</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationPortraitUpsideDown</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
+	<key>UIViewControllerBasedStatusBarAppearance</key>
+	<true/>
+
+	<!-- Permisos de Privacidad obligatorios para la App Store -->
+	<key>NSCameraUsageDescription</key>
+	<string>Esta aplicación requiere acceso a la cámara para la verificación biométrica de identidad por reconocimiento facial y para permitirte tomar fotos de perfil.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Esta aplicación requiere acceso a tu ubicación cuando está activa para conectar clientes con profesionales cercanos y mostrar el mapa en tiempo real.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Esta aplicación requiere acceso continuo a tu ubicación (incluso en segundo plano) para permitir el seguimiento en tiempo real del trayecto de los profesionales.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>Esta aplicación requiere acceso a tu ubicación en segundo plano para permitir el rastreo del servicio contratado.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Esta aplicación requiere acceso a tu galería de fotos para que puedas seleccionar y cambiar tu foto de perfil.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Esta aplicación requiere permisos para guardar fotos tomadas con la cámara en tu galería.</string>
+
+	<!-- Modos de ejecución en segundo plano (Background Modes) -->
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>location</string>
+		<string>remote-notification</string>
+	</array>
+
+	<!-- Configuración para inicio de sesión con Facebook -->
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<!-- REEMPLAZAR 'YOUR_FACEBOOK_APP_ID' con tu ID real de Facebook precedido por 'fb' -->
+				<string>fbYOUR_FACEBOOK_APP_ID</string>
+			</array>
+		</dict>
+	</array>
+	<key>FacebookAppID</key>
+	<!-- REEMPLAZAR con tu ID real de Facebook -->
+	<string>YOUR_FACEBOOK_APP_ID</string>
+	<key>FacebookClientToken</key>
+	<!-- REEMPLAZAR con tu Client Token de Facebook -->
+	<string>YOUR_FACEBOOK_CLIENT_TOKEN</string>
+	<key>FacebookDisplayName</key>
+	<string>Listo Patrón</string>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>fbapi</string>
+		<string>fb-messenger-api</string>
+		<string>fbauth2</string>
+		<string>fbshareextension</string>
+	</array>
+</dict>
+</plist>

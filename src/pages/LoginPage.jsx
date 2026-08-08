@@ -1,7 +1,9 @@
-import { useState } from 'react'
-import { getAuth, signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth'
-import { getFirestore, doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore'
+import { useState, useEffect } from 'react'
+import { getAuth, signInWithEmailAndPassword, sendPasswordResetEmail, signInWithCredential, OAuthProvider, FacebookAuthProvider } from 'firebase/auth'
+import { getFirestore, doc, getDoc, setDoc, collection, query, where, getDocs, addDoc, serverTimestamp } from 'firebase/firestore'
 import { useFaceAuth } from '../useFaceAuth'
+import { SignInWithApple } from '@capacitor-community/apple-sign-in'
+import { FacebookLogin } from '@capacitor-community/facebook-login'
 import './AuthPage.css'
 import './FaceModal.css'
 
@@ -79,6 +81,170 @@ export default function LoginPage({ lang, navigate }) {
   const [recoveryError, setRecoveryError] = useState('')
 
   const { videoRef, status, message, verifyFace, stopCamera } = useFaceAuth()
+
+  // Constant for Facebook App ID (user can replace this)
+  const FACEBOOK_APP_ID = '123456789012345' // REEMPLAZAR CON TU APP ID DE FACEBOOK
+
+  useEffect(() => {
+    // Inicializar Facebook Login SDK en Capacitor
+    const initFb = async () => {
+      try {
+        await FacebookLogin.initialize({ appId: FACEBOOK_APP_ID });
+      } catch (err) {
+        console.warn('Error al inicializar Facebook Login:', err);
+      }
+    };
+    initFb();
+  }, []);
+
+  const checkAndRegisterSocialUser = async (user, providerId, appleName = null) => {
+    try {
+      const userDocRef = doc(db, 'users', user.uid)
+      const userDocSnap = await getDoc(userDocRef)
+      
+      let finalUserData = {}
+      
+      if (!userDocSnap.exists()) {
+        // Es un nuevo registro social
+        const expireDate = new Date()
+        expireDate.setDate(expireDate.getDate() + 30)
+        
+        const displayName = appleName || user.displayName || 'Usuario ' + providerId
+        
+        finalUserData = {
+          name: displayName,
+          email: user.email || '',
+          phone: user.phoneNumber || '',
+          type: userType, // "client" o "pro" según el toggle activo
+          createdAt: serverTimestamp(),
+        }
+        
+        if (userType === 'pro') {
+          finalUserData.plan = 'basico'
+          finalUserData.contracts = 3
+          finalUserData.planExpirationDate = expireDate.toISOString()
+        }
+        
+        await setDoc(userDocRef, finalUserData)
+        
+        // También registrar con el correo como llave para el inicio de sesión facial si se requiere
+        if (user.email) {
+          const emailKey = user.email.replace(/[^a-zA-Z0-9]/g, '_')
+          await setDoc(doc(db, 'users', emailKey), { uid: user.uid }, { merge: true })
+        }
+        
+        // Enviar mensaje de bienvenida
+        const welcomeText = userType === 'client'
+          ? `¡Hola ${displayName.split(' ')[0]}! Bienvenido a Listo Patrón. Estamos felices de tenerte aquí. Explora nuestro directorio y contrata a los mejores profesionales de confianza para tus proyectos hoy mismo.`
+          : `¡Hola ${displayName.split(' ')[0]}! Bienvenido a Listo Patrón. Estás a un paso de generar ingresos. Entra a "Perfil", llena tus datos de Verificación y postúlate para ser un aliado oficial. ¡Mucho éxito!`;
+          
+        try {
+          await addDoc(collection(db, 'notificaciones'), {
+            userId: user.uid,
+            type: 'system',
+            title: 'Mensaje de Listo Patrón',
+            text: welcomeText,
+            date: new Date().toISOString(),
+            read: false
+          });
+        } catch (e) {
+          console.error("Error al crear notificación de bienvenida social:", e);
+        }
+      } else {
+        // El usuario ya existe en Firestore, verificamos que coincida el tipo seleccionado
+        const existingData = userDocSnap.data()
+        const existingIsPro = existingData.type === 'pro'
+        const selectedIsPro = userType === 'pro'
+        
+        if (existingIsPro !== selectedIsPro) {
+          await auth.signOut()
+          setErrors({ general: T.errWrongType })
+          setLoading(false)
+          return
+        }
+        finalUserData = existingData
+      }
+      
+      // Navegar a home con los datos correspondientes
+      navigate('home', {
+        user: {
+          uid: user.uid,
+          email: user.email,
+          name: finalUserData.name || '',
+          phone: finalUserData.phone || '',
+          type: finalUserData.type || userType,
+          category: finalUserData.category || '',
+          profileComplete: finalUserData.profileComplete || false,
+          createdAt: finalUserData.createdAt || null,
+        }
+      })
+    } catch (err) {
+      console.error('Error checking/registering social user:', err)
+      setErrors({ general: lang === 'es' ? 'Error al procesar el inicio de sesión social' : 'Error processing social login' })
+    }
+  }
+
+  const handleAppleLogin = async () => {
+    setLoading(true)
+    setErrors({})
+    try {
+      const result = await SignInWithApple.authorize({
+        clientId: 'com.listopatron.app',
+        redirectURI: 'https://listoapp-52b46.firebaseapp.com/__/auth/handler',
+        scopes: 'email name'
+      });
+      
+      if (result.response && result.response.identityToken) {
+        const credential = new OAuthProvider('apple.com').credential({
+          idToken: result.response.identityToken
+        });
+        
+        const userCredential = await signInWithCredential(auth, credential);
+        
+        let fullName = null;
+        if (result.response.givenName) {
+          fullName = result.response.givenName + (result.response.familyName ? ' ' + result.response.familyName : '');
+        }
+        
+        await checkAndRegisterSocialUser(userCredential.user, 'Apple', fullName);
+      } else {
+        throw new Error('No se recibió token de identidad de Apple');
+      }
+    } catch (err) {
+      console.error('Apple Login Error:', err)
+      if (err.message && (err.message.includes('cancel') || err.message.includes('user Canceled'))) {
+        setLoading(false)
+        return
+      }
+      setErrors({ general: lang === 'es' ? 'Error al iniciar sesión con Apple' : 'Error signing in with Apple' })
+    }
+    setLoading(false)
+  }
+
+  const handleFacebookLogin = async () => {
+    setLoading(true)
+    setErrors({})
+    try {
+      const result = await FacebookLogin.login({ permissions: ['email', 'public_profile'] });
+      
+      if (result.accessToken && result.accessToken.token) {
+        const credential = FacebookAuthProvider.credential(result.accessToken.token);
+        const userCredential = await signInWithCredential(auth, credential);
+        
+        await checkAndRegisterSocialUser(userCredential.user, 'Facebook');
+      } else {
+        throw new Error('No se recibió token de acceso de Facebook');
+      }
+    } catch (err) {
+      console.error('Facebook Login Error:', err)
+      if (err.message && (err.message.includes('cancel') || err.message.includes('user Canceled'))) {
+        setLoading(false)
+        return
+      }
+      setErrors({ general: lang === 'es' ? 'Error al iniciar sesión con Facebook' : 'Error signing in with Facebook' })
+    }
+    setLoading(false)
+  }
 
   const validate = () => {
     const newErrors = {}
@@ -337,6 +503,24 @@ export default function LoginPage({ lang, navigate }) {
                 </svg>
               </span>
               {T.faceBtn}
+            </button>
+
+            <button className="apple-login-btn" onClick={handleAppleLogin} disabled={loading}>
+              <span style={{ fontSize: '18px', display: 'flex', alignItems: 'center' }}>
+                <svg viewBox="0 0 170 170" width="18" height="18" fill="currentColor">
+                  <path d="M150.37 130.25c-2.45 5.66-5.35 10.87-8.71 15.66-4.58 6.53-8.33 11.05-11.22 13.56-4.48 4.12-9.28 6.23-14.42 6.35-3.69 0-8.14-1.05-13.32-3.18-5.19-2.12-9.97-3.17-14.34-3.17-4.58 0-9.49 1.05-14.75 3.17-5.26 2.13-9.5 3.24-12.74 3.35-4.36.13-9.13-1.88-14.32-6.03-3.24-2.63-7.08-7.25-11.52-13.87-9.5-14.28-15.97-30.8-19.42-49.54-1.79-9.74-2.69-19.05-2.69-27.94 0-14.5 3.47-26.6 10.42-36.3 6.95-9.7 15.66-14.63 26.14-14.8 4.7 0 9.89 1.39 15.57 4.17 5.68 2.78 9.38 4.17 11.1 4.17 1.56 0 5.09-1.29 10.57-3.86 6.36-2.9 11.83-4.24 16.42-4.04 17.08.89 30.08 7.37 38.98 19.42-14.07 8.59-20.93 20.31-20.57 35.15.36 11.27 4.75 20.73 13.16 28.38 8.41 7.65 18.25 11.75 29.53 12.3 1.01 2.9 2.13 6.13 3.36 9.69zM119.22 30c0-7.81 2.85-15.11 8.56-21.9C133.48 1.3 140.73-1.61 149.53 1.15c-.78 9.26-4.02 17.58-9.72 24.96-5.7 7.38-12.75 11.39-21.14 12.01-1.23-.45-2.45-1.22-3.69-2.34-3.8-3.48-5.76-7.75-5.76-12.78z" />
+                </svg>
+              </span>
+              {lang === 'es' ? 'Iniciar sesión con Apple' : 'Sign in with Apple'}
+            </button>
+
+            <button className="facebook-login-btn" onClick={handleFacebookLogin} disabled={loading}>
+              <span style={{ fontSize: '18px', display: 'flex', alignItems: 'center' }}>
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+                  <path d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.95c4.56-.93 8-4.96 8-9.75z" />
+                </svg>
+              </span>
+              {lang === 'es' ? 'Iniciar sesión con Facebook' : 'Sign in with Facebook'}
             </button>
           </div>
 
