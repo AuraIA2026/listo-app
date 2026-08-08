@@ -109,87 +109,7 @@ function useScrollReveal(threshold = 0.15) {
   return [ref, visible]
 }
 
-/* ── BOTÓN POSTULARME — solo para profesionales ── */
-function PostularmeBtn({ isPro, userData, onClick }) {
-  const [pressed, setPressed] = useState(false)
 
-  const label = isPro
-    ? (userData?.planStatus === 'active' ? '🛒 Visitar Tienda' : '🚀 Postularme')
-    : '💼 Postularme'
-
-  return (
-    <>
-      <style>{`
-        @keyframes pm-glow {
-          0%,100% { box-shadow: 0 4px 0 #a33800, 0 0 12px rgba(242,96,0,0.4); }
-          50%      { box-shadow: 0 4px 0 #a33800, 0 0 28px rgba(255,180,0,0.8); }
-        }
-        @keyframes pm-star1 {
-          0%,100% { transform: translate(0,0) scale(1);   opacity: 0.9; }
-          50%      { transform: translate(-3px,-4px) scale(1.3); opacity: 1; }
-        }
-        @keyframes pm-star2 {
-          0%,100% { transform: translate(0,0) scale(1);   opacity: 0.7; }
-          50%      { transform: translate(3px,-3px) scale(1.2); opacity: 1; }
-        }
-        @keyframes pm-star3 {
-          0%,100% { transform: translate(0,0) scale(0.8); opacity: 0.6; }
-          50%      { transform: translate(4px,2px) scale(1.1); opacity: 1; }
-        }
-        @keyframes pm-shimmer {
-          0%   { left: -60%; }
-          100% { left: 130%; }
-        }
-        .pm-btn-wrap { position: relative; flex-shrink: 0; }
-        .pm-spark {
-          position: absolute;
-          font-size: 11px;
-          pointer-events: none;
-          line-height: 1;
-        }
-        .pm-spark-1 { top: -6px; left: -4px;  animation: pm-star1 1.4s ease-in-out infinite; }
-        .pm-spark-2 { top: -4px; right: -5px; animation: pm-star2 1.8s ease-in-out infinite; }
-        .pm-spark-3 { bottom: -4px; right: 2px; animation: pm-star3 2.1s ease-in-out infinite; }
-        .pm-btn {
-          position: relative;
-          overflow: hidden;
-          background: linear-gradient(135deg, #FF7A1A, #F26000, #C94E00);
-          color: #fff;
-          border: none;
-          border-radius: 22px;
-          padding: 9px 16px;
-          font-size: 13px;
-          font-weight: 900;
-          letter-spacing: 0.3px;
-          cursor: pointer;
-          white-space: nowrap;
-          animation: pm-glow 2s ease-in-out infinite;
-          transition: transform 0.08s, box-shadow 0.08s;
-          text-shadow: 0 1px 3px rgba(0,0,0,0.3);
-        }
-        .pm-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 #a33800 !important; }
-        .pm-shimmer {
-          position: absolute;
-          top: 0; left: -60%;
-          width: 40%; height: 100%;
-          background: linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent);
-          transform: skewX(-15deg);
-          animation: pm-shimmer 2.4s ease-in-out infinite;
-          pointer-events: none;
-        }
-      `}</style>
-      <div className="pm-btn-wrap">
-        <span className="pm-spark pm-spark-1">✦</span>
-        <span className="pm-spark pm-spark-2">★</span>
-        <span className="pm-spark pm-spark-3">✦</span>
-        <button data-tour="btn-postularme" className="pm-btn" onClick={onClick}>
-          <span className="pm-shimmer" />
-          {label}
-        </button>
-      </div>
-    </>
-  )
-}
 
 /* ── BOTÓN COMPLETAR PERFIL ── */
 function CompletarPerfilBtn({ profileComplete, onClick }) {
@@ -743,17 +663,28 @@ export default function HomePage({ lang, navigate, userRole }) {
                 }}
               />
 
-              <PostularmeBtn isPro={isPro} userData={userData} onClick={() => {
-                if (userData?.planStatus === 'active') {
-                  window.open('https://listopatron.vercel.app/?page=shop', '_blank');
-                  return;
-                }
-                if (!profileComplete) {
-                  alert("⚠️ Debes completar tu perfil para postularte en un plan.");
-                  return;
-                }
-                setShowHamburguesa(true);
-              }} />
+              <button 
+                onClick={() => window.open('https://listopatron.com.do/?page=shop', '_blank')}
+                style={{
+                  background: '#F26000',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: '22px',
+                  padding: '9px 24px',
+                  fontSize: '13px',
+                  fontWeight: '900',
+                  letterSpacing: '0.5px',
+                  cursor: 'pointer',
+                  whiteSpace: 'nowrap',
+                  boxShadow: '0 4px 6px rgba(242,96,0,0.15)',
+                  transition: 'transform 0.1s',
+                  textTransform: 'uppercase'
+                }}
+                onMouseDown={e => e.currentTarget.style.transform = 'scale(0.95)'}
+                onMouseUp={e => e.currentTarget.style.transform = 'scale(1)'}
+              >
+                TIENDA
+              </button>
             </div>
           </div>
         )}
