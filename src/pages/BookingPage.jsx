@@ -206,6 +206,44 @@ export default function BookingPage({ lang = 'es', navigate, professional, userD
             contracts: increment(-1),
             contractsUsed: increment(1)
           })
+
+          const newContracts = (proData.contracts || 0) - 1
+          if (newContracts === 1 || newContracts === 0) {
+            // A. Notificación In-app en Firestore
+            try {
+              await addDoc(collection(db, 'notificaciones'), {
+                userId: pro.id,
+                type: 'account_status',
+                title: '📋 Administra tu suscripción',
+                text: newContracts === 1 
+                  ? '🔴 Solo te queda un contrato disponible. Recuerda que puedes administrar tu suscripción desde la versión web.'
+                  : '🔴 No tienes contratos disponibles. Administra tu plan desde la versión web para continuar recibiendo clientes.',
+                read: false,
+                icon: '📋',
+                createdAt: serverTimestamp()
+              })
+            } catch (errNotif) {
+              console.error("Error creating low contracts notifications: ", errNotif)
+            }
+
+            // B. Enviar correo via Firebase Extension 'mail'
+            try {
+              await addDoc(collection(db, 'mail'), {
+                to: proData.email || '',
+                message: {
+                  subject: '⚠️ Administra tu plan en Listo Patrón',
+                  text: newContracts === 1
+                    ? `Hola ${proData.name || 'Socio'},\n\nTe queda solo 1 contrato disponible en tu plan.\n\nPara administrar tu plan y seguir recibiendo clientes, ingresa a nuestra plataforma web:\nhttps://listopatron.vercel.app\n\nResumen de planes disponibles en la web:\n- Plan GOLD: 8 contratos al mes (RD$1,000/mes)\n- Plan PLATINUM: 12 contratos al mes (RD$1,500/mes)\n- Plan VIP: Contratos ilimitados (RD$2,500/mes)\n\nAtentamente,\nEl equipo de Listo Patrón`
+                    : `Hola ${proData.name || 'Socio'},\n\nTe has quedado sin contratos disponibles en tu plan.\n\nPara administrar tu plan y seguir recibiendo clientes, ingresa a nuestra plataforma web:\nhttps://listopatron.vercel.app\n\nResumen de planes disponibles en la web:\n- Plan GOLD: 8 contratos al mes (RD$1,000/mes)\n- Plan PLATINUM: 12 contratos al mes (RD$1,500/mes)\n- Plan VIP: Contratos ilimitados (RD$2,500/mes)\n\nAtentamente,\nEl equipo de Listo Patrón`,
+                  html: newContracts === 1
+                    ? `<p>Hola <strong>${proData.name || 'Socio'}</strong>,</p><p>Te queda solo 1 contrato disponible en tu plan.</p><p>Para administrar tu plan y seguir recibiendo clientes, ingresa a nuestra plataforma web:</p><p><a href="https://listopatron.vercel.app">https://listopatron.vercel.app</a></p><p><strong>Resumen de planes disponibles en la web:</strong></p><ul><li>Plan GOLD: 8 contratos al mes (RD$1,000/mes)</li><li>Plan PLATINUM: 12 contratos al mes (RD$1,500/mes)</li><li>Plan VIP: Contratos ilimitados (RD$2,500/mes)</li></ul><p>Atentamente,<br/>El equipo de Listo Patrón</p>`
+                    : `<p>Hola <strong>${proData.name || 'Socio'}</strong>,</p><p>Te has quedado sin contratos disponibles en tu plan.</p><p>Para administrar tu plan y seguir recibiendo clientes, ingresa a nuestra plataforma web:</p><p><a href="https://listopatron.vercel.app">https://listopatron.vercel.app</a></p><p><strong>Resumen de planes disponibles en la web:</strong></p><ul><li>Plan GOLD: 8 contratos al mes (RD$1,000/mes)</li><li>Plan PLATINUM: 12 contratos al mes (RD$1,500/mes)</li><li>Plan VIP: Contratos ilimitados (RD$2,500/mes)</li></ul><p>Atentamente,<br/>El equipo de Listo Patrón</p>`
+                }
+              })
+            } catch (errMail) {
+              console.error("Error creating low contracts mail triggers: ", errMail)
+            }
+          }
         }
       }
 

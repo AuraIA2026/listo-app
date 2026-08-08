@@ -26,9 +26,9 @@ export default function AdminPanelPage() {
   // Planes disponibles
   const PLANS = {
     standard: { name: 'Plan Estándar', contracts: 3, bonusContracts: 0, price: 0 },
-    gold: { name: 'Pack Gold', contracts: 10, bonusContracts: 3, price: 1000 },
-    platinum: { name: 'Pack Platinum', contracts: 15, bonusContracts: 3, price: 1500 },
-    vip: { name: 'VIP Ilimitado', contracts: Infinity, bonusContracts: 0, price: 2000 },
+    gold: { name: 'Pack Gold', contracts: 8, bonusContracts: 0, price: 1000 },
+    platinum: { name: 'Pack Platinum', contracts: 12, bonusContracts: 0, price: 1500 },
+    vip: { name: 'VIP Ilimitado', contracts: Infinity, bonusContracts: 0, price: 2500 },
   };
 
   // Verificar si es admin

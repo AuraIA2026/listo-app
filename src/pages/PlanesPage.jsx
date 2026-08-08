@@ -76,7 +76,7 @@ export default function PlanesPage({ onBack, navigate }) {
       color: '#1A1A2E',
       badge: 'Popular 🔥',
       features: [
-        'Hasta 15 contratos al mes',
+        'Hasta 12 contratos al mes',
         'Alta visibilidad en búsquedas',
         'Acceso a clientes premium',
         'Badge destacado Platinum'
@@ -93,9 +93,9 @@ export default function PlanesPage({ onBack, navigate }) {
       color: '#3B82F6',
       badge: '💎 Reservado',
       features: [
+        'Contratos ILIMITADOS al mes',
         'Requiere +3 años de experiencia comprobada',
         'Máxima visibilidad N°1 en tu categoría',
-        'Contacto directo sin importar competencia',
         'Acceso prioritario a leads VIP',
         'Soporte VIP inmediato'
       ]
