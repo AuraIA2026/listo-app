@@ -24,10 +24,7 @@ export default function PlanesPage({ onBack, navigate }) {
   const [authCode, setAuthCode] = useState(0)
   const [last4, setLast4] = useState('')
 
-  const URL_AZUL = "https://pruebas.azul.com.do/paymentpage/Default.aspx"; // TODO: prod url
-  const formRef = useRef(null);
-  const [pagoAzulData, setPagoAzulData] = useState(null);
-  const [isProcessingAzul, setIsProcessingAzul] = useState(false);
+
 
   const planes = [
     {
@@ -329,9 +326,9 @@ export default function PlanesPage({ onBack, navigate }) {
                           }
                           handleSelectPlan(plan.id, plan.price)
                       }}
-                      disabled={isCurrent || isProcessingAzul || (plan.id === 'vip' && !isVipEligible)}
+                      disabled={isCurrent || loading || (plan.id === 'vip' && !isVipEligible)}
                     >
-                      {isCurrent ? 'Plan Actual' : (plan.id === 'vip' && !isVipEligible) ? 'Requiere +3 años exp.' : isProcessingAzul ? 'Conectando...' : 'Adquirir Plan'}
+                      {isCurrent ? 'Plan Actual' : (plan.id === 'vip' && !isVipEligible) ? 'Requiere +3 años exp.' : loading ? 'Procesando...' : 'Adquirir Plan'}
                     </button>
                   )}
                 </div>
@@ -340,34 +337,7 @@ export default function PlanesPage({ onBack, navigate }) {
           })}
         </div>
 
-        {/* INVISIBLE AZUL FORM — CORRECCIONES APLICADAS */}
-        {pagoAzulData && (
-          <form 
-            ref={formRef} 
-            action={URL_AZUL} 
-            method="post" 
-            style={{ display: 'none' }}
-          >
-            <input name="MerchantId"        type="hidden" value={pagoAzulData.MerchantId} />
-            <input name="MerchantName"      type="hidden" value={pagoAzulData.MerchantName} />
-            <input name="MerchantType"      type="hidden" value={pagoAzulData.MerchantType} />
-            <input name="CurrencyCode"      type="hidden" value={pagoAzulData.CurrencyCode} />
-            <input name="OrderNumber"       type="hidden" value={pagoAzulData.OrderNumber} />
-            <input name="Amount"            type="hidden" value={pagoAzulData.Amount} />
-            {/* ✅ FIX 1: Corregido "Itbis" → "ITBIS" (mayúsculas correctas) */}
-            <input name="ITBIS"             type="hidden" value={pagoAzulData.ITBIS} />
-            <input name="ApprovedUrl"       type="hidden" value={pagoAzulData.ApprovedUrl} />
-            <input name="DeclinedUrl"       type="hidden" value={pagoAzulData.DeclinedUrl} />
-            <input name="CancelUrl"         type="hidden" value={pagoAzulData.CancelUrl} />
-            <input name="UseCustomField1"   type="hidden" value="0" />
-            <input name="CustomField1Label" type="hidden" value="" />
-            <input name="CustomField1Value" type="hidden" value="" />
-            <input name="UseCustomField2"   type="hidden" value="0" />
-            <input name="CustomField2Label" type="hidden" value="" />
-            <input name="CustomField2Value" type="hidden" value="" />
-            <input name="AuthHash"          type="hidden" value={pagoAzulData.AuthHash} />
-          </form>
-        )}
+
 
         <div className="planes-promo fade-up">
           <h3>🎁 Bienvenido a Listo Patrón</h3>

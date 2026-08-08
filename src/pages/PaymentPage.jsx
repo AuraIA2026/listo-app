@@ -109,101 +109,7 @@ export default function PaymentPage({ lang = 'es', navigate, professional }) {
   const [showReceipt, setShowReceipt] = useState(false)
   const [authCode] = useState(() => Math.floor(10000 + Math.random() * 90000))
 
-  // -- INTEGRACIÓN REAL AZUL --
-  const formRef = useRef(null);
-  const [pagoAzulData, setPagoAzulData] = useState(null);
-  const [isProcessingAzul, setIsProcessingAzul] = useState(false);
 
-  if (!pro) return null;
-
-  const URL_AZUL = "https://pruebas.azul.com.do/paymentpage/Default.aspx"; // TODO: Cambiar a pagos.azul.com.do/paymentpage/Default.aspx en producción
-
-  const handleBankPayReal = async () => {
-    // 1. Limpiar el precio y asegurar formato numérico exacto
-    const cleanPrice = customPrice.toString().replace(/[^0-9.]/g, '');
-    const finalAmount = parseFloat(cleanPrice);
-
-    if (!finalAmount || finalAmount < 10) {
-      alert("Por favor ingresa un monto válido a pagar (mínimo RD$10).");
-      return;
-    }
-    
-    setIsProcessingAzul(true);
-    try {
-      if (!pro.orderId) {
-          alert('Error: No se ha encontrado el ID del pedido.');
-          setIsProcessingAzul(false);
-          return;
-      }
-      
-      const { httpsCallable } = await import("firebase/functions");
-      const { functions } = await import("../firebase");
-      const generarFirma = httpsCallable(functions, "generarFirmaAzul");
-      const FinalAmountInt = Math.round(finalAmount * 100);
-      const totalAzul = String(FinalAmountInt); 
-      
-      // 3. ID único para órdenes
-      const userIdCorto = pro.orderId ? pro.orderId.substring(0, 6) : "user"; 
-      const orderIdUnique = `ORD_${String(Date.now()).slice(-6)}_${userIdCorto}`;
-
-      // Guardarlo en la orden para que el webhook de Azure pueda encontrarlo luego
-      await updateDoc(doc(db, 'orders', pro.orderId), {
-        azulOrderId: orderIdUnique
-      });
-
-      const cloudFunctionEndpoint = "https://us-central1-listoapp-52b46.cloudfunctions.net/azulWebHook"; 
-      
-      // 4. Estructura Limpia Universal para Pagos Variables
-      const payload = {
-        MerchantName: "Listo App",
-        MerchantType: "E-Commerce",
-        CurrencyCode: "$",
-        OrderNumber: orderIdUnique,
-        Amount: totalAzul,
-        ApprovedUrl: cloudFunctionEndpoint,
-        DeclinedUrl: cloudFunctionEndpoint,
-        CancelUrl: cloudFunctionEndpoint
-      };
-
-      const res = await generarFirma(payload);
-      
-      // 5. Asignar todos los campos del hash que devuelve el backend
-      const { AuthHash, MerchantId, ITBIS, ResponsePostUrl } = res.data;
-      
-      setPagoAzulData({
-        MerchantId: MerchantId,
-        MerchantName: payload.MerchantName,
-        MerchantType: payload.MerchantType,
-        CurrencyCode: payload.CurrencyCode,
-        OrderNumber: payload.OrderNumber,
-        Amount: payload.Amount,
-        ITBIS: ITBIS,
-        ApprovedUrl: payload.ApprovedUrl,
-        DeclinedUrl: payload.DeclinedUrl,
-        CancelUrl: payload.CancelUrl,
-        ResponsePostUrl: ResponsePostUrl,
-        UseCustomField1: "0",
-        CustomField1Label: "",
-        CustomField1Value: "",
-        UseCustomField2: "0",
-        CustomField2Label: "",
-        CustomField2Value: "",
-        AuthHash: AuthHash
-      });
-        
-      // Autoenviar a AZUL tras un breve timeout para parseo react
-      setTimeout(() => {
-        if (formRef.current) formRef.current.submit();
-      }, 600);
-
-
-
-    } catch (err) {
-      console.error("Error conectando con AZUL: ", err);
-      alert("Error al conectar con el servidor de pagos. Revisa tu conexión y vuelve a intentarlo.");
-      setIsProcessingAzul(false);
-    }
-  }
 
   const handleReceiptUpload = (e) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -496,33 +402,7 @@ export default function PaymentPage({ lang = 'es', navigate, professional }) {
           </div>
         )}
 
-        {/* FORMULARIO INVISIBLE AZUL - SE AUTOENVÍA CON REDIRECCION POST */}
-        {pagoAzulData && (
-          <form 
-            ref={formRef} 
-            action={URL_AZUL} 
-            method="post" 
-            style={{ display: 'none' }}
-          >
-            <input name="MerchantId" type="hidden" value={pagoAzulData.MerchantId} />
-            <input name="MerchantName" type="hidden" value={pagoAzulData.MerchantName} />
-            <input name="MerchantType" type="hidden" value={pagoAzulData.MerchantType} />
-            <input name="CurrencyCode" type="hidden" value={pagoAzulData.CurrencyCode} />
-            <input name="OrderNumber" type="hidden" value={pagoAzulData.OrderNumber} />
-            <input name="Amount" type="hidden" value={pagoAzulData.Amount} />
-            <input name="ITBIS" type="hidden" value={pagoAzulData.ITBIS} />
-            <input name="ApprovedUrl" type="hidden" value={pagoAzulData.ApprovedUrl} />
-            <input name="DeclinedUrl" type="hidden" value={pagoAzulData.DeclinedUrl} />
-            <input name="CancelUrl" type="hidden" value={pagoAzulData.CancelUrl} />
-            <input name="UseCustomField1" type="hidden" value="0" />
-            <input name="CustomField1Label" type="hidden" value="" />
-            <input name="CustomField1Value" type="hidden" value="" />
-            <input name="UseCustomField2" type="hidden" value="0" />
-            <input name="CustomField2Label" type="hidden" value="" />
-            <input name="CustomField2Value" type="hidden" value="" />
-            <input name="AuthHash" type="hidden" value={pagoAzulData.AuthHash} />
-          </form>
-        )}
+
 
         {method === 'transfer' && (
           <div className="pay-section pay-summary fade-up">
