@@ -1249,22 +1249,6 @@ export default function HomePage({ lang, navigate, userRole }) {
         </>
       )}
 
-      <SocialLinks />
-
-      {/* ── FOOTER LEGAL & 3D SECURE AZUL ── */}
-      <footer style={{ background: '#1A1A2E', color: '#94A3B8', padding: '32px 20px 120px', marginTop: '20px', borderTopLeftRadius: '24px', borderTopRightRadius: '24px', textAlign: 'center', fontSize: '12px' }}>
-        <p style={{ margin: '0 0 16px 0', fontSize: '14px', fontWeight: 'bold', color: 'white' }}>Listo Patrón SRL</p>
-        <p style={{ margin: '0 0 8px 0', lineHeight: '1.4' }}>Barrio La Terrazita, Peatón 3 No. 18, Edificio de Arte<br/>Detrás Urb. La Terraza, Santiago de los Caballeros, Rep. Dom.</p>
-        <div style={{ display: 'flex', justifyContent: 'center', gap: '16px', flexWrap: 'wrap', margin: '20px 0' }}>
-            <span onClick={() => navigate('policies')} style={{ cursor: 'pointer', textDecoration: 'underline' }}>Privacidad</span>
-            <span onClick={() => navigate('policies')} style={{ cursor: 'pointer', textDecoration: 'underline' }}>Devoluciones</span>
-            <span onClick={() => navigate('policies')} style={{ cursor: 'pointer', textDecoration: 'underline' }}>Entregas</span>
-            <span onClick={() => navigate('policies')} style={{ cursor: 'pointer', textDecoration: 'underline' }}>Seguridad</span>
-        </div>
-
-        <p style={{ margin: '24px 0 0 0' }}>© {new Date().getFullYear()} Listo Patrón. Todos los derechos reservados.</p>
-      </footer>
-
       <div style={{ height: 90 }} />
 
       {showTour && <TutorialTour lang={lang} onFinish={closeTour} />}

@@ -435,14 +435,14 @@ function ReceiptModal({ order, lang, onClose, onApprove }) {
       <div className="review-modal" onClick={e => e.stopPropagation()}>
         <button className="review-close" onClick={onClose}>✕</button>
         <div style={{ textAlign:'center', marginBottom:16 }}>
-          <span style={{ fontSize:40 }}>{order.paymentMethod==='card'?'💳':'🏦'}</span>
+          <span style={{ fontSize:40 }}>{order.paymentMethod==='transfer'?'🏦':'💵'}</span>
           <h3 style={{ margin:'8px 0', fontSize:18, fontWeight:900, color:'#1A1A2E' }}>{lang==='es'?'Pago Recibido':'Payment Received'}</h3>
           <p style={{ margin:0, fontSize:14, color:'#666' }}>{order.price}</p>
         </div>
         <div style={{ background:'#FAFAFA', borderRadius:12, padding:16, marginBottom:20, border:'1px solid #eee' }}>
           {order.paymentMethod==='transfer'
             ? <><p style={{ fontSize:13, color:'#555', margin:'0 0 8px' }}><strong>Depositante:</strong> {order.depositorName||'No especificado'}</p><p style={{ fontSize:13, color:'#555', margin:'0 0 8px' }}><strong>Banco:</strong> {order.depositBank||'No especificado'}</p><div style={{ width:'100%', height:140, background:'#eee', borderRadius:8, display:'flex', alignItems:'center', justifyContent:'center', color:'#999', fontSize:12, marginTop:12 }}>[Foto de Comprobante Adjunta]</div></>
-            : <><p style={{ fontSize:13, color:'#555', margin:'0 0 8px' }}><strong>Pasarela:</strong> AZUL Card Services</p><p style={{ fontSize:13, color:'#555', margin:'0 0 8px' }}><strong>Estado:</strong> Aprobado Digitalmente</p><div style={{ marginTop:12, padding:8, background:'#E3F2FD', borderRadius:6, color:'#1976D2', fontSize:12, fontWeight:'bold', textAlign:'center' }}>Transacción Segura Verificada</div></>
+            : <><p style={{ fontSize:13, color:'#555', margin:'0 0 8px' }}><strong>Método de pago:</strong> Efectivo</p><p style={{ fontSize:13, color:'#555', margin:'0 0 8px' }}><strong>Estado:</strong> Aprobado</p></>
           }
         </div>
         <button style={{ width:'100%', padding:14, borderRadius:12, background:'#10B981', color:'white', border:'none', fontWeight:700, fontSize:15, cursor:'pointer' }} onClick={()=>onApprove(order.id)}>

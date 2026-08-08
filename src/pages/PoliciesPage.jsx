@@ -63,33 +63,8 @@ export default function PoliciesPage({ lang, navigate }) {
 
             <h3 style={{ fontSize: '16px', color: '#1A1A2E', marginTop: '20px', marginBottom: '8px' }}>PAGOS</h3>
             <p style={{ lineHeight: '1.6', marginBottom: '20px' }}>
-              Los métodos de pago utilizados por LA EMPRESA son servicios de terceros. Estos servicios de terceros (AZUL), cumplen con todos los estándares de seguridad y cifrado para mantener tu información segura. Solo utilizarán la información necesaria para completar el proceso requerido. También recomendamos leer las Políticas de Privacidad de estos proveedores, para entender mejor cómo manejan la información suministrada.
+              Los métodos de pago utilizados por LA EMPRESA son transferencias bancarias directas y pago en efectivo al profesional. Solo se procesa la información necesaria para coordinar el pago entre el cliente y el profesional de forma privada y segura.
             </p>
-
-            <div style={{ padding: '20px', background: '#F1F5F9', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '20px', flexWrap: 'wrap' }}>
-               {/* Network Acceptance Logos */}
-               <div style={{ background: 'white', padding: '10px 15px', borderRadius: '8px', border: '1px solid #CBD5E1', fontWeight: '900', color: '#1A1F71', fontStyle: 'italic', fontSize: '18px', display: 'flex', alignItems: 'center', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>VISA</div>
-               <div style={{ background: 'white', padding: '10px 15px', borderRadius: '8px', border: '1px solid #CBD5E1', display: 'flex', alignItems: 'center', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
-                  <div style={{ width: '20px', height: '20px', borderRadius: '50%', background: '#EB001B', marginRight: '-8px', mixBlendMode: 'multiply' }}></div>
-                  <div style={{ width: '20px', height: '20px', borderRadius: '50%', background: '#F79E1B', mixBlendMode: 'multiply' }}></div>
-               </div>
-
-               {/* Logo Verified By Visa */}
-               <div style={{ background: 'white', padding: '10px 15px', borderRadius: '8px', border: '1px solid #CBD5E1', display: 'flex', alignItems: 'center', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
-                 <svg viewBox="0 0 190 50" style={{ height: '24px' }}>
-                   <text x="0" y="38" fontFamily="sans-serif" fontSize="40" fontWeight="900" fontStyle="italic" fill="#1A1F71" letterSpacing="-2">VISA</text>
-                   <text x="115" y="38" fontFamily="sans-serif" fontSize="20" fontWeight="600" fill="#1A1F71">Secure</text>
-                 </svg>
-               </div>
-               {/* Logo MasterCard ID Check */}
-               <div style={{ background: 'white', padding: '10px 15px', borderRadius: '8px', border: '1px solid #CBD5E1', display: 'flex', alignItems: 'center', gap: '6px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
-                 <svg viewBox="0 0 100 60" style={{ height: '24px' }}>
-                   <circle cx="35" cy="30" r="25" fill="#EB001B" />
-                   <circle cx="65" cy="30" r="25" fill="#F79E1B" opacity="0.8" />
-                 </svg>
-                 <span style={{ color: '#1A1A2E', fontSize: '13px', fontWeight: '900', fontFamily: 'sans-serif' }}>ID Check&trade;</span>
-               </div>
-            </div>
           </div>
         )}
 
@@ -101,10 +76,10 @@ export default function PoliciesPage({ lang, navigate }) {
               <strong>1. Cancelaciones de Servicios:</strong> Usted puede cancelar un servicio solicitado a un profesional en cualquier momento antes de que el profesional inicie su desplazamiento o ejecución. Una vez en sitio, podrían aplicar cargos por visita o diagnóstico, según el acuerdo con el profesional.
             </p>
             <p style={{ lineHeight: '1.6', marginBottom: '12px' }}>
-              <strong>2. Reembolsos por Pagos Electrónicos:</strong> Si usted realiza un pago a través de nuestra plataforma (AZUL) y el servicio no es completado por causas atribuibles al profesional, usted tiene derecho a solicitar la retención o devolución de los fondos. Las solicitudes de reembolso se analizan en un lapso de 24 a 48 horas hábiles mediante nuestro departamento de disputas. De ser aprobada, el reverso a su tarjeta dependerá de los tiempos de su banco emisor (típicamente 3 a 10 días hábiles).
+              <strong>2. Reembolsos por Transferencias:</strong> Si usted realiza una transferencia por un servicio y éste no es completado por causas atribuibles al profesional, usted tiene derecho a reportar el caso a soporte. Las solicitudes de reembolso se analizan en un lapso de 24 a 48 horas hábiles mediante nuestro departamento de soporte.
             </p>
             <p style={{ lineHeight: '1.6', marginBottom: '12px' }}>
-              <strong>3. Pagos Directos:</strong> Listo Patrón no es responsable de los fondos pagados en efectivo o por transferencias directas al profesional fuera de la pasarela de pagos integrada en la App.
+              <strong>3. Pagos Directos:</strong> Listo Patrón no es responsable de los fondos pagados en efectivo o por transferencias directas al profesional fuera de las solicitudes coordinadas y aprobadas en la App.
             </p>
             <p style={{ lineHeight: '1.6', marginBottom: '12px' }}>
               <strong>4. Planes y Contratos (Para Profesionales):</strong> La compra de planes promocionales VIP o Contratos Digitales dentro de la app son inversiones finales para mejorar su visibilidad y obtener leads. No se emiten reembolsos parciales por planes no utilizados si el profesional decide cerrar su cuenta.
@@ -123,7 +98,7 @@ export default function PoliciesPage({ lang, navigate }) {
               <strong>Uso de la Información:</strong> Utilizamos sus datos exclusivamente para operar la plataforma, enviar notificaciones relacionadas a sus solicitudes y mejorar nuestros servicios. No vendemos ni compartimos sus datos personales con terceros para fines de publicidad no relacionada.
             </p>
             <p style={{ lineHeight: '1.6', marginBottom: '12px' }}>
-              <strong>Información de Pago:</strong> Los datos de sus tarjetas de crédito o débito son introducidos y procesados directamente por proveedores de servicios de pago certificados (AZUL). Nosotros no visualizamos, no almacenamos ni tenemos acceso al número completo de su tarjeta o su CVV.
+              <strong>Información de Pago:</strong> Los datos de transferencias o pagos directos son coordinados directamente entre los usuarios y los profesionales. Nosotros no solicitamos, no almacenamos ni tenemos acceso a claves bancarias o números de tarjetas de crédito.
             </p>
           </div>
         )}

@@ -218,12 +218,7 @@ function PaymentSection({ plan, onBack, onConfirm }) {
   const [receiptFile, setReceiptFile] = useState(null)
   const receiptInputRef = useRef(null)
 
-  // States para Tarjeta
-  const [cardName, setCardName] = useState('')
-  const [cardNumber, setCardNumber] = useState('')
-  const [cardExp, setCardExp] = useState('')
-  const [cardCvv, setCardCvv] = useState('')
-  const [isProcessingAzul, setIsProcessingAzul] = useState(false)
+
 
   const banks = [
     { id: 'reservas', name: 'Banco de Reservas' },
@@ -243,19 +238,12 @@ function PaymentSection({ plan, onBack, onConfirm }) {
     }
   }
 
-  const canConfirmTransfer = method === 'transfer' && selectedBank && transferAmount > 0 && depositorName.trim() !== '' && receiptUploaded
-  const canConfirmCard = method === 'card' && cardName.trim() !== '' && cardNumber.replace(/\s/g, '').length >= 15 && cardExp.trim().length === 5 && cardCvv.trim().length >= 3
-  const canConfirm = canConfirmTransfer || canConfirmCard
+  const canConfirm = method === 'transfer' && selectedBank && transferAmount > 0 && depositorName.trim() !== '' && receiptUploaded
   const [isUploading, setIsUploading] = useState(false)
 
   const handleConfirmPay = async () => {
     setIsUploading(true)
-    if (method === 'card') {
-      setIsProcessingAzul(true)
-      await new Promise(resolve => setTimeout(resolve, 2000))
-      setIsProcessingAzul(false)
-    }
-    await onConfirm({ method, selectedBank, transferAmount, depositorName, receiptFile, cardName, cardNumber })
+    await onConfirm({ method, selectedBank, transferAmount, depositorName, receiptFile })
     setIsUploading(false)
   }
 

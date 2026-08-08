@@ -31,8 +31,6 @@ const txt = {
     cashDesc: 'Paga en mano al profesional o transfiere directamente al finalizar el servicio.',
     transfer: 'Transferencia bancaria / App',
     transferDesc: 'Envía el dinero y adjunta el comprobante para el profesional.',
-    card: 'Tarjeta de Crédito o Débito',
-    cardDesc: 'Paga de forma segura usando tu tarjeta vía la pasarela AZUL.',
     selectBank: 'Selecciona tu banco o billetera',
     accountName: 'A nombre de',
     accountNum: 'Cuenta/Número',
@@ -314,93 +312,7 @@ export default function PaymentPage({ lang = 'es', navigate, professional }) {
           </div>
         )}
 
-        {method === 'card' && (
-          <div className="pay-section fade-up">
-            <div className="pay-note transfer-note" style={{ marginBottom: '16px' }}>
-              <p>Introduce los datos de tu tarjeta para procesar el pago de forma segura.</p>
-            </div>
-            
-            <div className="card-manual-box" style={{ background: 'white', borderRadius: '18px', padding: '20px', border: '1.5px solid rgba(0,0,0,0.06)', boxShadow: '0 4px 16px rgba(0,0,0,0.04)', textAlign: 'left' }}>
-              <label style={{ display: 'block', fontFamily: 'var(--font-display)', fontSize: '13.5px', fontWeight: 700, color: 'var(--black)', marginBottom: '8px' }}>Nombre en la Tarjeta</label>
-              <input 
-                type="text" 
-                style={{ width: '100%', padding: '14px 16px', borderRadius: '12px', border: '1.5px solid #eee', background: '#FAFAFA', fontFamily: 'var(--font-body)', fontSize: '15px', color: 'var(--black)', boxSizing: 'border-box', marginBottom: '16px', outline: 'none' }}
-                placeholder="Nombre como aparece en la tarjeta"
-                value={cardName}
-                onChange={e => setCardName(e.target.value)}
-              />
 
-              <label style={{ display: 'block', fontFamily: 'var(--font-display)', fontSize: '13.5px', fontWeight: 700, color: 'var(--black)', marginBottom: '8px' }}>Número de Tarjeta</label>
-              <input 
-                type="tel" 
-                inputMode="numeric"
-                pattern="[0-9]*"
-                style={{ width: '100%', padding: '14px 16px', borderRadius: '12px', border: '1.5px solid #eee', background: '#FAFAFA', fontFamily: 'var(--font-body)', fontSize: '15px', color: 'var(--black)', boxSizing: 'border-box', marginBottom: '16px', outline: 'none' }}
-                placeholder="0000 0000 0000 0000"
-                maxLength={19}
-                value={cardNumber}
-                onChange={e => {
-                  let v = e.target.value.replace(/\s+/g, '').replace(/[^0-9]/gi, '')
-                  let parts = []
-                  for (let i = 0; i < v.length; i += 4) {
-                    parts.push(v.substring(i, i + 4))
-                  }
-                  setCardNumber(parts.join(' '))
-                }}
-              />
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                <div>
-                  <label style={{ display: 'block', fontFamily: 'var(--font-display)', fontSize: '13.5px', fontWeight: 700, color: 'var(--black)', marginBottom: '8px' }}>Fecha de Vencimiento</label>
-                  <input 
-                    type="tel" 
-                    inputMode="numeric"
-                    pattern="[0-9]*"
-                    style={{ width: '100%', padding: '14px 16px', borderRadius: '12px', border: '1.5px solid #eee', background: '#FAFAFA', fontFamily: 'var(--font-body)', fontSize: '15px', color: 'var(--black)', boxSizing: 'border-box', outline: 'none' }}
-                    placeholder="MM/AA"
-                    maxLength={5}
-                    value={cardExp}
-                    onChange={e => {
-                      let val = e.target.value
-                      let clean = val.replace(/\D/g, '')
-                      
-                      if (clean.length === 1 && clean > '1') {
-                        clean = '0' + clean
-                      }
-                      
-                      if (clean.length >= 2) {
-                        let month = parseInt(clean.substring(0, 2), 10)
-                        if (month < 1) month = 1
-                        if (month > 12) month = 12
-                        let monthStr = month < 10 ? '0' + month : String(month)
-                        clean = monthStr + clean.substring(2)
-                      }
-                      
-                      if (clean.length > 2) {
-                        setCardExp(clean.substring(0, 2) + '/' + clean.substring(2, 4))
-                      } else {
-                        setCardExp(clean)
-                      }
-                    }}
-                  />
-                </div>
-                <div>
-                  <label style={{ display: 'block', fontFamily: 'var(--font-display)', fontSize: '13.5px', fontWeight: 700, color: 'var(--black)', marginBottom: '8px' }}>Código CVV</label>
-                  <input 
-                    type="tel" 
-                    inputMode="numeric"
-                    pattern="[0-9]*"
-                    style={{ width: '100%', padding: '14px 16px', borderRadius: '12px', border: '1.5px solid #eee', background: '#FAFAFA', fontFamily: 'var(--font-body)', fontSize: '15px', color: 'var(--black)', boxSizing: 'border-box', outline: 'none' }}
-                    placeholder="123"
-                    maxLength={4}
-                    value={cardCvv}
-                    onChange={e => setCardCvv(e.target.value.replace(/[^0-9]/g, ''))}
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
 
 
 
@@ -461,11 +373,11 @@ export default function PaymentPage({ lang = 'es', navigate, professional }) {
               </div>
               <div className="receipt-detail-row">
                 <span className="receipt-detail-label">Método de pago:</span>
-                <span className="receipt-detail-value">VISA •••• {cardNumber.replace(/\s/g, '').slice(-4) || '••••'}</span>
+                <span className="receipt-detail-value">{method === 'cash' ? 'Efectivo' : 'Transferencia'}</span>
               </div>
               <div className="receipt-detail-row">
-                <span className="receipt-detail-label">Autorización AZUL:</span>
-                <span className="receipt-detail-value" style={{ color: '#00b050' }}>Aprobado #{authCode}</span>
+                <span className="receipt-detail-label">Estado:</span>
+                <span className="receipt-detail-value" style={{ color: '#00b050' }}>Completado</span>
               </div>
             </div>
 
