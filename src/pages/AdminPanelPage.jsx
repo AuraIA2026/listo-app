@@ -23,9 +23,9 @@ export default function AdminPanelPage() {
   const [credits, setCredits] = useState('');
   const [creditReason, setCreditReason] = useState('');
 
-  // Planes disponibles
   const PLANS = {
-    standard: { name: 'Plan Estándar', contracts: 3, bonusContracts: 0, price: 0 },
+    basico: { name: 'Plan Básico', contracts: 3, bonusContracts: 0, price: 0 },
+    standard: { name: 'Plan Estándar', contracts: 3, bonusContracts: 0, price: 500 },
     gold: { name: 'Pack Gold', contracts: 8, bonusContracts: 0, price: 1000 },
     platinum: { name: 'Pack Platinum', contracts: 12, bonusContracts: 0, price: 1500 },
     vip: { name: 'VIP Ilimitado', contracts: Infinity, bonusContracts: 0, price: 2500 },
@@ -425,7 +425,8 @@ export default function AdminPanelPage() {
             {Object.entries(PLANS).map(([key, plan]) => (
               <div key={key} className="plan-info-card">
                 <div className="plan-header">
-                  {key === 'standard' && <span className="plan-icon">📦</span>}
+                  {key === 'basico' && <span className="plan-icon">⚪</span>}
+                  {key === 'standard' && <span className="plan-icon">🔹</span>}
                   {key === 'gold' && <span className="plan-icon">🥇</span>}
                   {key === 'platinum' && <span className="plan-icon">🥈</span>}
                   {key === 'vip' && <span className="plan-icon">💎</span>}

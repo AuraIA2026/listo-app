@@ -10,16 +10,25 @@ import '../pages/PaymentPage.css' // Importando estilos idénticos al pago de us
 /* ─── PLANES ─── */
 const planes = [
   {
-    id: 'standard', num: '1', emoji: '🔹', nombre: 'Plan Estándar', contratos: '3 contratos',
-    precio: 'Gratis', colorKey: 'standard', badge: 'BÁSICO',
-    titulo: 'Plan Estándar — Empieza a crecer',
-    subtitulo: 'Ideal para conseguir tus primeros clientes.',
-    descripcion: 'Con 3 contratos disponibles al mes gratis para conseguir clientes sin costo.',
+    id: 'basico', num: '1', emoji: '⚪', nombre: 'Plan Básico', contratos: '3 contratos',
+    precio: 'Gratis', colorKey: 'basico', badge: 'GRATIS',
+    titulo: 'Plan Básico — Empieza a crecer',
+    subtitulo: 'Ideal para conseguir tus primeros clientes (3 meses gratis).',
+    descripcion: 'Disfruta de 3 contratos al mes gratis durante tus primeros 3 meses de registro.',
     beneficios: ['✅ Perfil público en la app', '✅ Hasta 3 contratos al mes gratis', '✅ Soporte estándar'],
-    cta: '¡El mejor punto de partida gratis!',
+    cta: '¡Tu punto de partida gratis!',
   },
   {
-    id: 'gold', num: '2', emoji: '🥇', nombre: 'Pack Gold', contratos: '8 contratos',
+    id: 'standard', num: '2', emoji: '🔹', nombre: 'Plan Estándar', contratos: '3 contratos',
+    precio: 'RD$500', colorKey: 'standard', badge: 'BÁSICO',
+    titulo: 'Plan Estándar — Mantente activo',
+    subtitulo: 'Plan básico mensual de pago.',
+    descripcion: 'Mantén tu cuenta activa con 3 contratos disponibles cada mes por solo RD$500.',
+    beneficios: ['✅ Perfil público en la app', '✅ Hasta 3 contratos al mes', '✅ Soporte estándar'],
+    cta: 'La opción ideal para presupuestos moderados.',
+  },
+  {
+    id: 'gold', num: '3', emoji: '🥇', nombre: 'Pack Gold', contratos: '8 contratos',
     precio: 'RD$1,000', colorKey: 'gold', badge: 'POPULAR',
     titulo: 'Pack Gold — El más pedido',
     subtitulo: 'El favorito de los profesionales que quieren crecer rápido.',
@@ -28,16 +37,16 @@ const planes = [
     cta: '¡El plan para profesionales activos!',
   },
   {
-    id: 'platinum', num: '3', emoji: '🥈', nombre: 'Pack Platinum', contratos: '15 contratos',
+    id: 'platinum', num: '4', emoji: '🥈', nombre: 'Pack Platinum', contratos: '12 contratos',
     precio: 'RD$1,500', colorKey: 'platinum', badge: 'ACTIVO',
     titulo: 'Pack Platinum — Para gente activa',
     subtitulo: 'Aumenta tu estatus y aplica con más margen.',
-    descripcion: 'Aplica a 15 trabajos directamente y accede a clientes premium con prioridad.',
-    beneficios: ['🔥 Mayor visibilidad en búsquedas', '🔥 Hasta 15 contratos al mes', '🔥 Crecimiento sostenido'],
+    descripcion: 'Aplica a 12 trabajos directamente y accede a clientes premium con prioridad.',
+    beneficios: ['🔥 Mayor visibilidad en búsquedas', '🔥 Hasta 12 contratos al mes', '🔥 Crecimiento sostenido'],
     cta: 'Para quienes no quieren perderse grandes clientes.',
   },
   {
-    id: 'vip', num: '4', emoji: '💎', nombre: 'VIP Ilimitado', contratos: '∞ contratos',
+    id: 'vip', num: '5', emoji: '💎', nombre: 'VIP Ilimitado', contratos: '∞ contratos',
     precio: 'RD$2,500/mes', colorKey: 'vip', badge: 'ÉLITE',
     titulo: 'VIP Ilimitado — Sin límites',
     subtitulo: 'Sin restricciones. Requiere +3 años de experiencia.',
@@ -49,12 +58,19 @@ const planes = [
 
 /* ─── PALETAS ─── */
 const palettes = {
+  basico: {
+    primary: '#9CA3AF',
+    gradient: 'linear-gradient(145deg, #D1D5DB 0%, #9CA3AF 40%, #4B5563 70%, #9CA3AF 100%)',
+    shadow: 'rgba(156,163,175,0.55)', shine: 'rgba(209,213,219,0.65)',
+    light: '#F3F4F6', btn3d: '#374151', badgeBg: '#374151',
+    glow: '0 0 22px rgba(156,163,175,0.65), 0 0 44px rgba(156,163,175,0.3)',
+  },
   standard: {
-    primary: '#2E7D32',
-    gradient: 'linear-gradient(145deg, #66BB6A 0%, #388E3C 40%, #2E7D32 70%, #4CAF50 100%)',
-    shadow: 'rgba(46,125,50,0.55)', shine: 'rgba(165,214,167,0.65)',
-    light: '#E8F5E9', btn3d: '#1B5E20', badgeBg: '#1B5E20',
-    glow: '0 0 22px rgba(46,125,50,0.65), 0 0 44px rgba(46,125,50,0.3)',
+    primary: '#3B82F6',
+    gradient: 'linear-gradient(145deg, #60A5FA 0%, #3B82F6 40%, #1D4ED8 70%, #3B82F6 100%)',
+    shadow: 'rgba(59,130,246,0.55)', shine: 'rgba(96,165,250,0.65)',
+    light: '#EFF6FF', btn3d: '#1D4ED8', badgeBg: '#1E40AF',
+    glow: '0 0 22px rgba(59,130,246,0.65), 0 0 44px rgba(59,130,246,0.3)',
   },
   gold: {
     primary: '#D4A017',

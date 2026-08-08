@@ -32,13 +32,32 @@ export default function PlanesPage({ onBack, navigate }) {
       name: 'BÁSICO (Entrada)',
       icon: '⚪',
       price: 'Gratis',
-      period: '',
+      period: ' (3 meses gratis)',
       shortDesc: 'Ideal para conseguir tus primeros clientes',
-      target: 'Plan de inicio',
+      target: 'Plan de inicio gratis',
       color: '#9CA3AF',
       features: [
         'Perfil público en la app',
         'Hasta 3 contratos al mes gratis',
+        'Soporte estándar',
+      ],
+      limitations: [
+        'Aparece debajo de los perfiles destacados',
+        'Sin etiquetas exclusivas'
+      ]
+    },
+    {
+      id: 'standard',
+      name: 'ESTÁNDAR',
+      icon: '🔹',
+      price: 'RD$500',
+      period: '/ mes',
+      shortDesc: 'Plan mensual de mantenimiento',
+      target: 'Plan básico',
+      color: '#3B82F6',
+      features: [
+        'Perfil público en la app',
+        'Hasta 3 contratos al mes',
         'Soporte estándar',
       ],
       limitations: [
