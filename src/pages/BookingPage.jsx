@@ -202,12 +202,19 @@ export default function BookingPage({ lang = 'es', navigate, professional, userD
             contractsUsed: increment(1)
           })
         } else {
-          await updateDoc(proRef, {
-            contracts: increment(-1),
-            contractsUsed: increment(1)
-          })
-
           const newContracts = (proData.contracts || 0) - 1
+          if (newContracts <= 0) {
+            await updateDoc(proRef, {
+              contracts: 0,
+              available: false,
+              contractsUsed: increment(1)
+            })
+          } else {
+            await updateDoc(proRef, {
+              contracts: increment(-1),
+              contractsUsed: increment(1)
+            })
+          }
           if (newContracts === 1 || newContracts === 0) {
             // A. Notificación In-app en Firestore
             try {
