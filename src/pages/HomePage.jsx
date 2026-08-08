@@ -448,6 +448,7 @@ const SocialLinks = () => (
 
 export default function HomePage({ lang, navigate, userRole }) {
   const { userData, profileComplete } = useUserData()
+  const isNative = Capacitor.isNativePlatform()
   const [proFilter, setProFilter] = useState('todos')
   const [showTour, closeTour]     = useTour()
   const [showHamburguesa, setShowHamburguesa] = useState(false)
@@ -641,7 +642,15 @@ export default function HomePage({ lang, navigate, userRole }) {
     }
     const currentAvail = userData?.available !== false;
     if (!currentAvail && (userData?.contracts || 0) <= 0) {
-      alert(lang === 'es' ? "No tienes contratos disponibles. Postúlate a un plan para recibir clientes." : "No contracts available. Select a plan to receive clients.");
+      if (isNative) {
+        alert(lang === 'es' 
+          ? "No tienes contratos disponibles. Para cambiar o adquirir un plan, ingresa a nuestra plataforma web." 
+          : "No contracts available. To change or purchase a plan, please visit our website.");
+      } else {
+        alert(lang === 'es' 
+          ? "No tienes contratos disponibles. Postúlate a un plan para recibir clientes." 
+          : "No contracts available. Select a plan to receive clients.");
+      }
       return;
     }
     if (!userData?.uid) return;
@@ -1017,7 +1026,9 @@ export default function HomePage({ lang, navigate, userRole }) {
                <p style={{ color: isAvailable ? (isLowContracts && showLowContractWarning ? '#B91C1C' : '#15803D') : '#6B7280', fontSize: '14px', margin: 0, fontWeight: '500' }}>
                  {isAvailable 
                    ? (isLowContracts && showLowContractWarning
-                       ? '🔴 Solo te queda un contrato, postulate para que no pierdas clientes.'
+                       ? (isNative 
+                           ? '🔴 Solo te queda un contrato. Para adquirir o mejorar tu plan, ingresa a nuestra plataforma web.'
+                           : '🔴 Solo te queda un contrato, postulate a un plan para recibir clientes.')
                        : '🟢 Estás en línea. Los clientes te pueden encontrar.') 
                    : '⚫ Estás desconectado. Ningún cliente te verá.'}
                </p>

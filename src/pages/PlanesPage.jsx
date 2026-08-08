@@ -7,7 +7,7 @@ import './PlanesPage.css'
 
 export default function PlanesPage({ onBack, navigate }) {
   const { userData } = useUserData()
-  const isIOS = Capacitor.getPlatform() === 'ios'
+  const isNative = Capacitor.isNativePlatform()
   const [loading, setLoading] = useState(false)
   const [successMsg, setSuccessMsg] = useState('')
 
@@ -303,7 +303,7 @@ export default function PlanesPage({ onBack, navigate }) {
                     ))}
                   </ul>
 
-                  {isIOS && !isCurrent ? (
+                  {isNative && !isCurrent ? (
                     <div style={{
                       marginTop: '12px',
                       padding: '12px',
