@@ -4,6 +4,6 @@
     <string name="title_activity_main">Listo&#160;Patrón</string>
     <string name="package_name">com.listopatron.app</string>
     <string name="custom_url_scheme">com.listopatron.app</string>
-    <string name="facebook_app_id">YOUR_FACEBOOK_APP_ID</string>
-    <string name="facebook_client_token">YOUR_FACEBOOK_CLIENT_TOKEN</string>
+    <string name="facebook_app_id">1737961517531121</string>
+    <string name="facebook_client_token">c42c4e795756abaa2754bf36e4b10eeb</string>
 </resources>

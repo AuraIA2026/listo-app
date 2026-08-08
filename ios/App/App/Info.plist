@@ -75,17 +75,14 @@
 		<dict>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<!-- REEMPLAZAR 'YOUR_FACEBOOK_APP_ID' con tu ID real de Facebook precedido por 'fb' -->
-				<string>fbYOUR_FACEBOOK_APP_ID</string>
+				<string>fb1737961517531121</string>
 			</array>
 		</dict>
 	</array>
 	<key>FacebookAppID</key>
-	<!-- REEMPLAZAR con tu ID real de Facebook -->
-	<string>YOUR_FACEBOOK_APP_ID</string>
+	<string>1737961517531121</string>
 	<key>FacebookClientToken</key>
-	<!-- REEMPLAZAR con tu Client Token de Facebook -->
-	<string>YOUR_FACEBOOK_CLIENT_TOKEN</string>
+	<string>c42c4e795756abaa2754bf36e4b10eeb</string>
 	<key>FacebookDisplayName</key>
 	<string>Listo Patrón</string>
 	<key>LSApplicationQueriesSchemes</key>

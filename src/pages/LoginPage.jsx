@@ -83,7 +83,7 @@ export default function LoginPage({ lang, navigate }) {
   const { videoRef, status, message, verifyFace, stopCamera } = useFaceAuth()
 
   // Constant for Facebook App ID (user can replace this)
-  const FACEBOOK_APP_ID = '123456789012345' // REEMPLAZAR CON TU APP ID DE FACEBOOK
+  const FACEBOOK_APP_ID = '1737961517531121' // REEMPLAZAR CON TU APP ID DE FACEBOOK
 
   useEffect(() => {
     // Inicializar Facebook Login SDK en Capacitor
