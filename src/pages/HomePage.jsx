@@ -114,7 +114,7 @@ function PostularmeBtn({ isPro, userData, onClick }) {
   const [pressed, setPressed] = useState(false)
 
   const label = isPro
-    ? (userData?.planStatus === 'active' ? '👑 Mis Planes' : '🚀 Postularme')
+    ? (userData?.planStatus === 'active' ? '🛒 Visitar Tienda' : '🚀 Postularme')
     : '💼 Postularme'
 
   return (
@@ -744,6 +744,10 @@ export default function HomePage({ lang, navigate, userRole }) {
               />
 
               <PostularmeBtn isPro={isPro} userData={userData} onClick={() => {
+                if (userData?.planStatus === 'active') {
+                  window.open('https://listopatron.vercel.app/?page=shop', '_blank');
+                  return;
+                }
                 if (!profileComplete) {
                   alert("⚠️ Debes completar tu perfil para postularte en un plan.");
                   return;
