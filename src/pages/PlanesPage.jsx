@@ -2,10 +2,12 @@ import { useState, useEffect, useRef } from 'react'
 import { db, auth } from '../firebase'
 import { doc, updateDoc, collection, addDoc, serverTimestamp } from 'firebase/firestore'
 import { useUserData } from '../useUserData'
+import { Capacitor } from '@capacitor/core'
 import './PlanesPage.css'
 
 export default function PlanesPage({ onBack, navigate }) {
   const { userData } = useUserData()
+  const isIOS = Capacitor.getPlatform() === 'ios'
   const [loading, setLoading] = useState(false)
   const [successMsg, setSuccessMsg] = useState('')
 
@@ -301,20 +303,37 @@ export default function PlanesPage({ onBack, navigate }) {
                     ))}
                   </ul>
 
-                  <button 
-                    className={`plan-action-btn ${isCurrent || (plan.id === 'vip' && !isVipEligible) ? 'disabled' : ''}`}
-                    style={{ background: isCurrent || (plan.id === 'vip' && !isVipEligible) ? '#E5E7EB' : plan.color, color: isCurrent || (plan.id === 'vip' && !isVipEligible) ? '#9CA3AF' : 'white' }}
-                    onClick={() => {
-                        if (plan.id === 'vip' && !isVipEligible) {
-                            alert('El plan VIP requiere más de 3 años de experiencia en tu perfil verificado.');
-                            return;
-                        }
-                        handleSelectPlan(plan.id, plan.price)
-                    }}
-                    disabled={isCurrent || isProcessingAzul || (plan.id === 'vip' && !isVipEligible)}
-                  >
-                    {isCurrent ? 'Plan Actual' : (plan.id === 'vip' && !isVipEligible) ? 'Requiere +3 años exp.' : isProcessingAzul ? 'Conectando...' : 'Adquirir Plan'}
-                  </button>
+                  {isIOS && !isCurrent ? (
+                    <div style={{
+                      marginTop: '12px',
+                      padding: '12px',
+                      background: '#F8FAFC',
+                      borderRadius: '16px',
+                      fontSize: '12.5px',
+                      color: '#64748B',
+                      fontWeight: '700',
+                      lineHeight: '1.4',
+                      textAlign: 'center',
+                      border: '1.5px dashed #CBD5E1'
+                    }}>
+                      Para gestionar o cambiar tu plan, accede a tu cuenta desde la plataforma web.
+                    </div>
+                  ) : (
+                    <button 
+                      className={`plan-action-btn ${isCurrent || (plan.id === 'vip' && !isVipEligible) ? 'disabled' : ''}`}
+                      style={{ background: isCurrent || (plan.id === 'vip' && !isVipEligible) ? '#E5E7EB' : plan.color, color: isCurrent || (plan.id === 'vip' && !isVipEligible) ? '#9CA3AF' : 'white' }}
+                      onClick={() => {
+                          if (plan.id === 'vip' && !isVipEligible) {
+                              alert('El plan VIP requiere más de 3 años de experiencia en tu perfil verificado.');
+                              return;
+                          }
+                          handleSelectPlan(plan.id, plan.price)
+                      }}
+                      disabled={isCurrent || isProcessingAzul || (plan.id === 'vip' && !isVipEligible)}
+                    >
+                      {isCurrent ? 'Plan Actual' : (plan.id === 'vip' && !isVipEligible) ? 'Requiere +3 años exp.' : isProcessingAzul ? 'Conectando...' : 'Adquirir Plan'}
+                    </button>
+                  )}
                 </div>
               </div>
             )
