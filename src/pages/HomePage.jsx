@@ -531,13 +531,38 @@ export default function HomePage({ lang, navigate, userRole }) {
   const specs = ['todos', ...new Set(allProsToUse.filter(p=>p.specEs).map(p => p.specEs))]
   const filteredPros = proFilter === 'todos' ? allProsToUse : allProsToUse.filter(p => p.specEs === proFilter)
 
+  // Cálculos para la expiración del plan
+  let isExpired = userData?.planStatus === 'expired';
+  let showWarning = false;
+  let daysRemaining = null;
+  
+  if (isPro && userData?.planStatus !== 'active' && userData?.planStatus !== 'review' && userData?.planExpirationDate) {
+    const expDate = new Date(userData.planExpirationDate);
+    const now = new Date();
+    const diffTime = expDate - now;
+    daysRemaining = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (daysRemaining <= 0) {
+      isExpired = true;
+      daysRemaining = 0;
+    } else if (daysRemaining <= 7 && !isExpired) {
+      showWarning = true;
+    }
+  }
+
   // Cálculos para disponibilidad y el toggle
-  const isAvailable = profileComplete && (userData?.available !== false);
+  const isAvailable = profileComplete && !isExpired && (userData?.available !== false);
   const isLowContracts = (userData?.contracts || 0) === 1;
 
   const toggleAvailability = async () => {
     if (!profileComplete) {
       alert(lang === 'es' ? "Debes completar tu perfil para poder activarte y recibir pedidos." : "You must complete your profile to become active and receive orders.");
+      return;
+    }
+    if (isExpired) {
+      alert(lang === 'es' 
+        ? "Tu cuenta está inactiva. Por favor actualízala en nuestra web para poder ponerte en línea." 
+        : "Your account is inactive. Please update it on our website to go online.");
       return;
     }
     const currentAvail = userData?.available !== false;
@@ -560,25 +585,6 @@ export default function HomePage({ lang, navigate, userRole }) {
       console.error('Error toggling availability', e);
     }
   };
-
-  // Cálculos para la expiración del plan
-  let showWarning = false;
-  let isExpired = false;
-  let daysRemaining = null;
-  
-  if (isPro && userData?.planStatus !== 'active' && userData?.planStatus !== 'review' && userData?.planExpirationDate) {
-    const expDate = new Date(userData.planExpirationDate);
-    const now = new Date();
-    const diffTime = expDate - now;
-    daysRemaining = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
-    if (daysRemaining <= 0) {
-      isExpired = true;
-      daysRemaining = 0;
-    } else if (daysRemaining <= 7) {
-      showWarning = true;
-    }
-  }
 
   return (
     <div className="home-page">
@@ -938,14 +944,16 @@ export default function HomePage({ lang, navigate, userRole }) {
                  </p>
                </div>
              ) : (
-               <p style={{ color: isAvailable ? (isLowContracts && showLowContractWarning ? '#B91C1C' : '#15803D') : '#6B7280', fontSize: '14px', margin: 0, fontWeight: '500' }}>
-                 {isAvailable 
-                   ? (isLowContracts && showLowContractWarning
-                       ? (isNative 
-                           ? '🔴 Solo te queda un contrato. Para adquirir o mejorar tu plan, ingresa a nuestra plataforma web.'
-                           : '🔴 Solo te queda un contrato, postulate a un plan para recibir clientes.')
-                       : '🟢 Estás en línea. Los clientes te pueden encontrar.') 
-                   : '⚫ Estás desconectado. Ningún cliente te verá.'}
+               <p style={{ color: isExpired ? '#B91C1C' : (isAvailable ? (isLowContracts && showLowContractWarning ? '#B91C1C' : '#15803D') : '#6B7280'), fontSize: '14px', margin: 0, fontWeight: '500' }}>
+                 {isExpired
+                   ? '🔴 Perfil inactivo. Actualízalo en nuestra web.'
+                   : (isAvailable 
+                       ? (isLowContracts && showLowContractWarning
+                           ? (isNative 
+                               ? '🔴 Solo te queda un contrato. Para adquirir o mejorar tu plan, ingresa a nuestra plataforma web.'
+                               : '🔴 Solo te queda un contrato, postulate a un plan para recibir clientes.')
+                           : '🟢 Estás en línea. Los clientes te pueden encontrar.') 
+                       : '⚫ Estás desconectado. Ningún cliente te verá.')}
                </p>
              )}
           </div>
@@ -954,14 +962,14 @@ export default function HomePage({ lang, navigate, userRole }) {
             <div style={{ padding: '16px', background: '#FEF2F2', border: '1px solid #F87171', borderRadius: '12px' }}>
               <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '8px' }}>
                 <span style={{ fontSize: '24px' }}>⚠️</span>
-                <span style={{ fontWeight: 'bold', color: '#991B1B', fontSize: '15px' }}>Tu período de prueba ha expirado</span>
+                <span style={{ fontWeight: 'bold', color: '#991B1B', fontSize: '15px' }}>Perfil Inactivo</span>
               </div>
-              <p style={{ margin: '0 0 12px', fontSize: '13px', color: '#7F1D1D', lineHeight: '1.4' }}>Selecciona un plan para mantener tu perfil activo y visible para los clientes.</p>
+              <p style={{ margin: '0 0 12px', fontSize: '13px', color: '#7F1D1D', lineHeight: '1.4' }}>Tu período de prueba ha finalizado. Para mantener tu visibilidad ante los clientes y reactivar tu perfil, actualízalo en nuestra web.</p>
               <button 
-                onClick={() => setShowHamburguesa(true)}
+                onClick={() => window.open('https://listopatron.com.do', '_blank')}
                 style={{ background: '#DC2626', color: 'white', border: 'none', padding: '10px 16px', borderRadius: '8px', fontWeight: 'bold', width: '100%', cursor: 'pointer' }}
               >
-                Elegir mi próximo plan
+                Actualizar en la Web
               </button>
             </div>
           )}
