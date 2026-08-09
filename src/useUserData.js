@@ -53,6 +53,24 @@ export function UserProvider({ children }) {
                   console.error("Error auto-updating expired plan:", e);
                 }
               }
+
+              // Verificar si el plan pagado (standard, gold, platinum, vip) ya venció (duración de 30 días)
+              if ((data.type === 'pro' || data.role === 'professional') && data.planStatus === 'active' && data.planExpirationDate) {
+                try {
+                  const expDate = new Date(data.planExpirationDate);
+                  const now = new Date();
+                  if (now >= expDate) {
+                    // Expiró el plan. Cambiar a expirado en Firestore y apagar disponibilidad
+                    await updateDoc(doc(db, 'users', firebaseUser.uid), {
+                      planStatus: 'expired',
+                      contracts: 0,
+                      available: false
+                    });
+                  }
+                } catch (e) {
+                  console.error("Error auto-expiring paid plan:", e);
+                }
+              }
             }
             setLoading(false)
           },

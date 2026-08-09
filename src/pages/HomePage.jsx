@@ -410,20 +410,7 @@ export default function HomePage({ lang, navigate, userRole }) {
   const [phIdx, setPhIdx] = useState(0);
   const [prevPhIdx, setPrevPhIdx] = useState(null);
 
-  const clientTips = lang === 'es' ? [
-    { icon: '⭐', text: 'Al finalizar un trabajo, valora a tu profesional. Tu opinión garantiza la mejor calidad.' },
-    { icon: '🛡️', text: 'Comunícate y agenda directamente en la plataforma para mayor seguridad.' },
-    { icon: '🤝', text: 'Acuerda el precio siempre antes de que el trabajo inicie, ¡evita sorpresas!' }
-  ] : [
-    { icon: '⭐', text: 'Rate your pro when the job is done. Your feedback ensures better quality.' },
-    { icon: '🛡️', text: 'Keep direct communication via the platform for better security.' },
-    { icon: '🤝', text: 'Always agree on the price before the job starts, avoid surprises!' }
-  ];
-  const [tipIdx, setTipIdx] = useState(0);
-
-  const [showBlackTips, setShowBlackTips] = useState(true);
   const [showBlueBanner, setShowBlueBanner] = useState(true);
-  const [blueBannerMsg, setBlueBannerMsg] = useState(null);
 
   useEffect(() => {
     const t = setInterval(() => {
@@ -432,19 +419,8 @@ export default function HomePage({ lang, navigate, userRole }) {
         return (curr + 1) % searchPlaceholders.length;
       });
     }, 3500);
-    const t2 = setInterval(() => setTipIdx(i => (i + 1) % clientTips.length), 4500);
-    const tipsTimer = setTimeout(() => setShowBlackTips(false), 60000);
-    return () => { clearInterval(t); clearInterval(t2); clearTimeout(tipsTimer); };
+    return () => { clearInterval(t); };
   }, [lang, searchPlaceholders.length]);
-
-  const handleBlueBannerClick = () => {
-    setBlueBannerMsg(lang === 'es' 
-      ? 'ℹ️ Debes cambiar a perfil de profesional en el menú' 
-      : 'ℹ️ You must switch to your professional profile in the menu');
-    setTimeout(() => {
-      setShowBlueBanner(false);
-    }, 4500);
-  };
 
   const [allProsReal, setAllProsReal] = useState([])
   const [featuredReal, setFeaturedReal] = useState([])
@@ -536,7 +512,7 @@ export default function HomePage({ lang, navigate, userRole }) {
   let showWarning = false;
   let daysRemaining = null;
   
-  if (isPro && userData?.planStatus !== 'active' && userData?.planStatus !== 'review' && userData?.planExpirationDate) {
+  if (isPro && userData?.planExpirationDate) {
     const expDate = new Date(userData.planExpirationDate);
     const now = new Date();
     const diffTime = expDate - now;
@@ -545,7 +521,8 @@ export default function HomePage({ lang, navigate, userRole }) {
     if (daysRemaining <= 0) {
       isExpired = true;
       daysRemaining = 0;
-    } else if (daysRemaining <= 7 && !isExpired) {
+    } else if (daysRemaining === 1 && userData?.planStatus === 'active') {
+      // Avisar al profesional exactamente el día antes (ej. día 29 de 30)
       showWarning = true;
     }
   }
@@ -764,33 +741,18 @@ export default function HomePage({ lang, navigate, userRole }) {
         <div className="hp-banner-container" style={{ margin: 0, borderRadius: '16px', overflow: 'hidden', boxShadow: '0 6px 16px rgba(0,0,0,0.12)', height: '220px', position: 'relative' }}>
           <img src={bannerPros} alt="Un profesional siempre cerca de ti" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 15%', display: 'block' }} />
           
-          {/* Animated Tip Overlay */}
-          {!isPro && showBlackTips && (
-            <div className="hp-tip-overlay" style={{ transition: 'opacity 0.8s' }}>
-              <div className="hp-tip-card" key={tipIdx}>
-                <span className="hp-tip-icon">{clientTips[tipIdx].icon}</span>
-                <p className="hp-tip-text">{clientTips[tipIdx].text}</p>
-              </div>
-            </div>
-          )}
-
-          {/* Recruitment Banner (Only for Clients) */}
+          {/* Security Banner (Only for Clients) */}
           {!isPro && showBlueBanner && (
-            <div className="hp-recruitment-banner" onClick={handleBlueBannerClick} style={{ transition: 'all 0.5s ease-out' }}>
+            <div className="hp-recruitment-banner" style={{ transition: 'all 0.5s ease-out', cursor: 'default' }}>
               <div className="shimmer-effect"></div>
-              {blueBannerMsg ? (
-                <div className="recruitment-text" style={{ flex: 1, textAlign: 'center', animation: 'tip-fade-slide 0.4s ease' }}>
-                  <strong style={{ fontSize: '13.5px', color: '#FFF' }}>{blueBannerMsg}</strong>
-                </div>
-              ) : (
-                <>
-                  <span className="recruitment-icon">🚀</span>
-                  <div className="recruitment-text">
-                    <strong>{lang === 'es' ? '¿Quieres generar ingresos?' : 'Want to generate income?'}</strong>
-                    <span>{lang === 'es' ? '¡Postúlate como profesional!' : 'Apply as a professional!'} ›</span>
-                  </div>
-                </>
-              )}
+              <span className="recruitment-icon">🛡️</span>
+              <div className="recruitment-text" style={{ flex: 1 }}>
+                <strong style={{ fontSize: '12.5px', lineHeight: '1.45', fontWeight: '800' }}>
+                  {lang === 'es' 
+                    ? 'Comunícate y agenda directamente en la plataforma para mayor seguridad.' 
+                    : 'Keep direct communication via the platform for better security.'}
+                </strong>
+              </div>
             </div>
           )}
         </div>

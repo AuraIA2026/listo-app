@@ -882,18 +882,18 @@ export default function ProfilePage({ lang, setLang, navigate, onLogout, initial
           <button 
              onClick={toggleAvailability}
              style={{ 
-               margin: '12px auto', 
-               background: userData?.available !== false ? '#10B981' : '#EF4444', 
+               background: (userData?.planStatus === 'expired') ? '#EF4444' : (userData?.available !== false ? '#10B981' : '#F59E0B'), 
                color: 'white', 
                border: 'none', 
-               padding: '10px 24px', 
+               padding: '10px 22px', 
+               fontSize: '14px', 
                borderRadius: '100px', 
                fontWeight: '800', 
                display: 'flex', 
                alignItems: 'center', 
                gap: '8px', 
                cursor: 'pointer', 
-               boxShadow: userData?.available !== false ? '0 4px 12px rgba(16,185,129,0.3)' : '0 4px 12px rgba(239,68,68,0.3)', 
+               boxShadow: (userData?.planStatus === 'expired') ? '0 4px 12px rgba(239,68,68,0.3)' : (userData?.available !== false ? '0 4px 12px rgba(16,185,129,0.3)' : '0 4px 12px rgba(245,158,11,0.3)'), 
                transition: 'all 0.2s', 
                transform: 'scale(1)' 
              }}
@@ -901,8 +901,12 @@ export default function ProfilePage({ lang, setLang, navigate, onLogout, initial
              onMouseUp={e => e.currentTarget.style.transform='scale(1)'}
              onMouseLeave={e => e.currentTarget.style.transform='scale(1)'}
           >
-            <span style={{ fontSize: '16px' }}>{userData?.available !== false ? '✅' : '⛔'}</span>
-            {userData?.available !== false ? (lang==='es'?'DISPONIBLE':'AVAILABLE') : (lang==='es'?'OCUPADO':'BUSY')}
+            <span style={{ fontSize: '16px' }}>{(userData?.planStatus === 'expired') ? '🔴' : (userData?.available !== false ? '✅' : '⛔')}</span>
+            {(userData?.planStatus === 'expired') 
+               ? (lang==='es'?'INACTIVO':'INACTIVE') 
+               : (userData?.available !== false 
+                   ? (lang==='es'?'DISPONIBLE':'AVAILABLE') 
+                   : (lang==='es'?'OCUPADO':'BUSY'))}
           </button>
         )}
 
@@ -929,7 +933,7 @@ export default function ProfilePage({ lang, setLang, navigate, onLogout, initial
                     letterSpacing: '0.5px'
                   }}
                 >
-                  {(userData?.planId === 'vip' || userData?.planId === 'platinum' || (userData?.currentPlan||'').toLowerCase().includes('vip') || (userData?.plan||'').toLowerCase().includes('vip')) ? 'ILIMITADO' : (userData?.contracts || 0)}
+                  {(userData?.planStatus === 'expired') ? '0' : ((userData?.planId === 'vip' || userData?.planId === 'platinum' || (userData?.currentPlan||'').toLowerCase().includes('vip') || (userData?.plan||'').toLowerCase().includes('vip')) ? 'ILIMITADO' : (userData?.contracts || 0))}
                 </span>
                 <span className="stat-label">{T.contracts}</span>
               </div>
