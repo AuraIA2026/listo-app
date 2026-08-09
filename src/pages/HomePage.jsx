@@ -4,7 +4,7 @@ import { db } from '../firebase'
 import './HomePage.css'
 import { Capacitor } from '@capacitor/core'
 import TutorialTour, { useTour } from '../components/TutorialTour'
-import VIPBanner from '../components/VIPBanner'
+
 import BtnHamburguesa from '../components/BtnHamburguesa'
 import BtnHamburguesaUsuario from '../components/BtnHamburguesaUsuario'
 import { useUserData } from '../useUserData'
@@ -752,7 +752,7 @@ export default function HomePage({ lang, navigate, userRole }) {
       {/* ── BOTONES DE ONBOARDING ELIMINADOS POR PETICIÓN ── */}
 
       {/* ── VIP BANNER — solo para profesionales ── */}
-      {isPro && <VIPBanner onOpenPlanes={() => setShowHamburguesa(true)} />}
+
 
       <div style={{ position: 'relative', margin: '0 16px 50px' }}>
         <div className="hp-banner-container" style={{ margin: 0, borderRadius: '16px', overflow: 'hidden', boxShadow: '0 6px 16px rgba(0,0,0,0.12)', height: '220px', position: 'relative' }}>
