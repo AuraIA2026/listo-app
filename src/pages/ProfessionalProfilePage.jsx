@@ -87,53 +87,6 @@ const compressImage = (file) => new Promise((resolve, reject) => {
   reader.onerror = reject; reader.readAsDataURL(file)
 })
 
-const categoryMockPhotos = {
-  electricista: [
-    'https://images.unsplash.com/photo-1621905252507-b354bc25edac?w=600&q=80',
-    'https://images.unsplash.com/photo-1558224494-ef8b24494494?w=600&q=80',
-    'https://images.unsplash.com/photo-1544725176-7c40e5a71c5e?w=600&q=80',
-    'https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=600&q=80'
-  ],
-  mecanico: [
-    'https://images.unsplash.com/photo-1486006920555-c77dce18193b?w=600&q=80',
-    'https://images.unsplash.com/photo-1507541904319-4720e9209701?w=600&q=80',
-    'https://images.unsplash.com/photo-1517524206127-48bbd363f3d7?w=600&q=80',
-    'https://images.unsplash.com/photo-1530047676767-17726af8bb55?w=600&q=80'
-  ],
-  'mecanico / asistencia vial': [
-    'https://images.unsplash.com/photo-1486006920555-c77dce18193b?w=600&q=80',
-    'https://images.unsplash.com/photo-1507541904319-4720e9209701?w=600&q=80',
-    'https://images.unsplash.com/photo-1517524206127-48bbd363f3d7?w=600&q=80'
-  ],
-  plomero: [
-    'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=600&q=80',
-    'https://images.unsplash.com/photo-1508962914676-134849a727f0?w=600&q=80',
-    'https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?w=600&q=80',
-    'https://images.unsplash.com/photo-1542013936693-8848e5740476?w=600&q=80'
-  ],
-  limpieza: [
-    'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=600&q=80',
-    'https://images.unsplash.com/photo-1527515637462-cff0e9c3e92c?w=600&q=80',
-    'https://images.unsplash.com/photo-1584824486509-112e4181ff6b?w=600&q=80',
-    'https://images.unsplash.com/photo-1563453392212-326f5e854473?w=600&q=80'
-  ],
-  'limpieza del hogar': [
-    'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=600&q=80',
-    'https://images.unsplash.com/photo-1527515637462-cff0e9c3e92c?w=600&q=80'
-  ],
-  jardinero: [
-    'https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?w=600&q=80',
-    'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=600&q=80',
-    'https://images.unsplash.com/photo-1592417817098-8f3d6eb19675?w=600&q=80',
-    'https://images.unsplash.com/photo-1598902108854-10e335adac99?w=600&q=80'
-  ],
-  default: [
-    'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=600&q=80',
-    'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=600&q=80',
-    'https://images.unsplash.com/photo-1621905252507-b354bc25edac?w=600&q=80',
-    'https://images.unsplash.com/photo-1486006920555-c77dce18193b?w=600&q=80'
-  ]
-}
 
 function Stars({ rating, interactive = false, onRate }) {
   const [hovered, setHovered] = useState(0)
