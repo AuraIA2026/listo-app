@@ -7,6 +7,7 @@ import {
   doc,
   updateDoc,
   getDoc,
+  getDocs,
   addDoc,
   deleteDoc,
   orderBy,
@@ -22,6 +23,7 @@ export default function AdminPanelPage() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [credits, setCredits] = useState('');
   const [creditReason, setCreditReason] = useState('');
+  const [transfers, setTransfers] = useState([]);
 
   const PLANS = {
     basico: { name: 'Plan Básico', contracts: 3, bonusContracts: 0, price: 0 },
@@ -85,6 +87,165 @@ export default function AdminPanelPage() {
       setLoading(false);
     }
   }, [adminUser]);
+
+  // Cargar transferencias
+  useEffect(() => {
+    if (!adminUser) return;
+
+    try {
+      const purchasesRef = collection(db, 'plan_purchases');
+      const q = query(
+        purchasesRef,
+        where('paymentMethod', '==', 'transfer'),
+        orderBy('createdAt', 'desc')
+      );
+
+      const unsubscribe = onSnapshot(q, (snapshot) => {
+        const transfersData = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        setTransfers(transfersData);
+      });
+
+      return () => unsubscribe();
+    } catch (error) {
+      console.error('Error loading transfers:', error);
+    }
+  }, [adminUser]);
+
+  // Aprobar transferencia y activar plan
+  const approveTransfer = async (transfer) => {
+    if (!window.confirm(`¿Aprobar transferencia de ${transfer.depositorName} por el Plan ${transfer.planName}?`)) return;
+    
+    try {
+      // 1. Actualizar estado de la compra a aprobado
+      await updateDoc(doc(db, 'plan_purchases', transfer.id), {
+        status: 'approved',
+        approvedAt: new Date(),
+        approvedBy: adminUser
+      });
+
+      // 2. Buscar el usuario por email
+      const usersRef = collection(db, 'users');
+      const q = query(usersRef, where('email', '==', transfer.email.trim().toLowerCase()));
+      const snap = await getDocs(q);
+
+      if (!snap.empty) {
+        const userDoc = snap.docs[0];
+        const professionalId = userDoc.id;
+        const planKey = transfer.planId;
+        const plan = PLANS[planKey] || { name: transfer.planName, contracts: 3, bonusContracts: 0, price: 0 };
+        const now = new Date();
+        const expiresAt = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000); // 30 días
+        const totalContracts = plan.contracts + plan.bonusContracts;
+
+        // Actualizar subcolección subscription
+        const subscriptionRef = doc(db, 'users', professionalId, 'subscription', 'current');
+        await updateDoc(subscriptionRef, {
+          plan: planKey,
+          planName: plan.name,
+          totalContracts: totalContracts,
+          usedContracts: 0,
+          availableContracts: totalContracts,
+          price: plan.price,
+          createdAt: now,
+          expiresAt: expiresAt,
+          isActive: true,
+        }).catch(async () => {
+          // Si no existe, crear
+          await updateDoc(doc(db, 'users', professionalId), {
+            subscription: {
+              plan: planKey,
+              planName: plan.name,
+              totalContracts: totalContracts,
+              usedContracts: 0,
+              availableContracts: totalContracts,
+              price: plan.price,
+              createdAt: now,
+              expiresAt: expiresAt,
+              isActive: true,
+            },
+          });
+        });
+
+        // Actualizar campos del documento principal para compatibilidad total
+        await updateDoc(doc(db, 'users', professionalId), {
+          plan: planKey,
+          planStatus: 'active',
+          contracts: totalContracts === Infinity ? 9999 : totalContracts,
+          planExpirationDate: expiresAt.toISOString(),
+          available: true
+        });
+
+        // Registrar en historial
+        await addDoc(collection(db, 'users', professionalId, 'planHistory'), {
+          plan: planKey,
+          planName: plan.name,
+          totalContracts: totalContracts,
+          price: plan.price,
+          assignedBy: adminUser,
+          assignedAt: now,
+          reason: 'transfer_payment_approved',
+          purchaseId: transfer.id
+        });
+
+        // Crear notificación de éxito para el usuario
+        await addDoc(collection(db, 'notificaciones'), {
+          userId: professionalId,
+          type: 'plan_activated_transfer',
+          title: '💎 ¡Transferencia Aprobada!',
+          text: `Tu pago de transferencia para el plan ${plan.name} ha sido aprobado. Tu plan ya está activo por 30 días.`,
+          read: false,
+          createdAt: now
+        });
+
+        alert("Transferencia aprobada y plan activado correctamente.");
+      } else {
+        alert("Transferencia aprobada en registros, pero el correo no está registrado en la app. Deberá activarse manualmente cuando se registre.");
+      }
+    } catch (error) {
+      console.error("Error al aprobar transferencia:", error);
+      alert("Error al aprobar la transferencia.");
+    }
+  };
+
+  // Rechazar transferencia
+  const rejectTransfer = async (transfer) => {
+    const reason = window.prompt("Introduce el motivo del rechazo:");
+    if (reason === null) return;
+    
+    try {
+      await updateDoc(doc(db, 'plan_purchases', transfer.id), {
+        status: 'rejected',
+        rejectedReason: reason,
+        rejectedAt: new Date(),
+        rejectedBy: adminUser
+      });
+
+      // Crear notificación para el usuario si existe
+      const usersRef = collection(db, 'users');
+      const q = query(usersRef, where('email', '==', transfer.email.trim().toLowerCase()));
+      const snap = await getDocs(q);
+
+      if (!snap.empty) {
+        const professionalId = snap.docs[0].id;
+        await addDoc(collection(db, 'notificaciones'), {
+          userId: professionalId,
+          type: 'plan_rejected_transfer',
+          title: '❌ Transferencia Rechazada',
+          text: `Tu notificación de transferencia para el plan ${transfer.planName} ha sido rechazada. Motivo: ${reason || 'Comprobante no válido'}.`,
+          read: false,
+          createdAt: new Date()
+        });
+      }
+
+      alert("Transferencia rechazada.");
+    } catch (error) {
+      console.error("Error al rechazar transferencia:", error);
+      alert("Error al rechazar la transferencia.");
+    }
+  };
 
   // Asignar plan a profesional
   const assignPlan = async (professionalId, planKey) => {
@@ -224,6 +385,12 @@ export default function AdminPanelPage() {
           onClick={() => setActiveTab('plans')}
         >
           📦 Planes
+        </button>
+        <button
+          className={`tab-btn ${activeTab === 'transfers' ? 'active' : ''}`}
+          onClick={() => setActiveTab('transfers')}
+        >
+          🏦 Transferencias
         </button>
       </div>
 
@@ -447,6 +614,68 @@ export default function AdminPanelPage() {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* Transfers Tab */}
+      {activeTab === 'transfers' && (
+        <div className="tab-content">
+          <div className="transfers-list" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <h3>🏦 Transferencias por Verificar</h3>
+            {transfers.length === 0 ? (
+              <p>No hay solicitudes de transferencia registradas.</p>
+            ) : (
+              transfers.map(trans => (
+                <div key={trans.id} className="professional-card" style={{ borderLeft: trans.status === 'approved' ? '6px solid #10B981' : trans.status === 'rejected' ? '6px solid #EF4444' : '6px solid #F26000', padding: '20px', borderRadius: '16px', background: 'white', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px' }}>
+                    <div>
+                      <h4 style={{ margin: '0 0 6px 0', fontSize: '16px' }}>{trans.depositorName || 'Titular no especificado'}</h4>
+                      <p style={{ margin: '0 0 4px 0', fontSize: '13px', color: '#555' }}>📧 {trans.email}</p>
+                      <p style={{ margin: '0 0 4px 0', fontSize: '13px', color: '#555' }}>📱 {trans.phone || 'Sin teléfono'}</p>
+                      <p style={{ margin: '0 0 4px 0', fontSize: '13px', color: '#555' }}>🏛️ Banco de Origen: <strong>{trans.originBank || 'No indicado'}</strong></p>
+                      <p style={{ margin: '0', fontSize: '13px', color: '#555' }}>💎 Plan Solicitado: <strong>{trans.planName} ({trans.price})</strong></p>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      <span className={`status-badge ${trans.status === 'approved' ? 'active' : trans.status === 'rejected' ? 'inactive' : 'pending'}`} style={{ background: trans.status === 'approved' ? '#ECFDF5' : trans.status === 'rejected' ? '#FEF2F2' : '#FFF7ED', color: trans.status === 'approved' ? '#10B981' : trans.status === 'rejected' ? '#EF4444' : '#F26000', padding: '4px 10px', borderRadius: '50px', fontSize: '12px', fontWeight: '800' }}>
+                        {trans.status === 'approved' ? 'Aprobada' : trans.status === 'rejected' ? 'Rechazada' : 'Por Verificar'}
+                      </span>
+                      {trans.createdAt && (
+                        <p style={{ fontSize: '11px', color: '#888', marginTop: '6px' }}>
+                          {new Date(trans.createdAt.seconds * 1000).toLocaleString()}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  {trans.receiptUrl && (
+                    <div style={{ marginTop: '14px', background: '#F9FAFB', padding: '10px 14px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <span style={{ fontSize: '13px', fontWeight: '700', color: '#444' }}>📄 Comprobante Adjunto:</span>
+                      <a href={trans.receiptUrl} target="_blank" rel="noopener noreferrer" className="tab-btn" style={{ textDecoration: 'none', background: '#F26000', color: 'white', padding: '6px 12px', borderRadius: '8px', fontSize: '12px', fontWeight: '700', border: 'none' }}>
+                        👁️ Ver Comprobante
+                      </a>
+                    </div>
+                  )}
+
+                  {trans.status === 'pending_verification' && (
+                    <div style={{ display: 'flex', gap: '10px', marginTop: '16px' }}>
+                      <button className="plan-btn active" style={{ flex: 1, background: '#10B981', color: 'white', border: 'none', borderRadius: '8px', padding: '10px', fontWeight: '800', cursor: 'pointer' }} onClick={() => approveTransfer(trans)}>
+                        ✓ Aprobar Pago
+                      </button>
+                      <button className="plan-btn" style={{ flex: 1, background: '#EF4444', color: 'white', border: 'none', borderRadius: '8px', padding: '10px', fontWeight: '800', cursor: 'pointer' }} onClick={() => rejectTransfer(trans)}>
+                        ✗ Rechazar
+                      </button>
+                    </div>
+                  )}
+
+                  {trans.status === 'rejected' && trans.rejectedReason && (
+                    <p style={{ margin: '10px 0 0 0', fontSize: '12px', color: '#EF4444', fontStyle: 'italic' }}>
+                      Motivo de rechazo: {trans.rejectedReason}
+                    </p>
+                  )}
+                </div>
+              ))
+            )}
           </div>
         </div>
       )}
