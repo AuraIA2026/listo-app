@@ -847,14 +847,14 @@ export default function ProfilePage({ lang, setLang, navigate, onLogout, initial
       <input ref={cameraInputRef} type="file" accept="image/*" capture="user" style={{ display:'none' }} onChange={handleFileSelected} />
 
       <div className="profile-header">
-        <div className="profile-avatar-wrap">
+        <div className="profile-avatar-wrap" onClick={() => setShowPhoto(true)} style={{ cursor: 'pointer' }}>
           <div className="profile-avatar" style={photoURL ? { padding:0, overflow:'hidden' } : {}}>
             {photoURL
               ? <img src={photoURL} alt="perfil" style={{ width:'100%', height:'100%', objectFit:'cover' }} />
               : initials
             }
           </div>
-          <button className="profile-edit-btn" onClick={() => setShowPhoto(true)} disabled={photoStatus==='saving'}>
+          <button className="profile-edit-btn" onClick={(e) => { e.stopPropagation(); setShowPhoto(true); }} disabled={photoStatus==='saving'}>
             {photoStatus === 'saving' ? '⏳' : '✏️'}
           </button>
         </div>
@@ -1119,6 +1119,21 @@ export default function ProfilePage({ lang, setLang, navigate, onLogout, initial
               onClick={() => { setShowPhoto(false); cameraInputRef.current?.click() }}>
               {T.photoCamera}
             </button>
+            {photoURL && (
+              <button className="modal-btn danger" style={{ background:'#EF4444', marginTop:8 }}
+                onClick={async () => {
+                  if (!window.confirm(lang === 'es' ? "¿Seguro que deseas eliminar tu foto de perfil?" : "Are you sure you want to delete your profile photo?")) return;
+                  setShowPhoto(false);
+                  try {
+                    await updateDoc(doc(db, 'users', userData.uid), { photoURL: null });
+                    alert(lang === 'es' ? "Foto de perfil eliminada correctamente." : "Profile photo deleted successfully.");
+                  } catch (err) {
+                    console.error("Error al eliminar foto:", err);
+                  }
+                }}>
+                {lang === 'es' ? '🗑️ Eliminar foto actual' : '🗑️ Delete current photo'}
+              </button>
+            )}
             <button className="modal-btn ghost" onClick={() => setShowPhoto(false)}>{T.photoCancel}</button>
           </div>
         </div>

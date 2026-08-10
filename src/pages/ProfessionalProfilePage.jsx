@@ -336,6 +336,7 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
   const [proPhotos, setProPhotos] = useState([])
   const [loadingReviews, setLoadingReviews] = useState(true)
   const [showWriteReview, setShowWriteReview] = useState(pro.autoWriteReview || false)
+  const [showPhotoOptions, setShowPhotoOptions] = useState(false)
   const avatarColors = ['#F26000','#C24D00','#FF8533','#7A3000','#FFB380']
   const proColor = avatarColors[displayPro.id % avatarColors.length] || '#F26000'
 
@@ -492,6 +493,20 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
     }
   }
 
+  const handleDeleteAvatar = async () => {
+    if (!window.confirm(lang === 'es' ? "¿Seguro que deseas eliminar tu foto de perfil?" : "Are you sure you want to delete your profile photo?")) return;
+    try {
+      await updateDoc(doc(db, 'users', userData.uid), {
+        photoURL: null
+      });
+      setShowPhotoOptions(false);
+      alert(lang === 'es' ? "Foto de perfil eliminada correctamente." : "Profile photo deleted successfully.");
+    } catch (err) {
+      console.error("Error al eliminar foto de perfil:", err);
+      alert(lang === 'es' ? "Error al eliminar la foto." : "Error deleting photo.");
+    }
+  };
+
   const handleWorkUpload = async (files) => {
     try {
       const uploadPromises = Array.from(files).map(file => compressImage(file))
@@ -594,6 +609,7 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
       {/* Ocultos inputs de archivos */}
       <input id="pro-cover-upload" type="file" accept="image/*" style={{ display: 'none' }} onChange={handleCoverUpload} />
       <input id="pro-avatar-upload" type="file" accept="image/*" style={{ display: 'none' }} onChange={handleAvatarUpload} />
+      <input id="pro-avatar-camera" type="file" accept="image/*" capture="user" style={{ display: 'none' }} onChange={handleAvatarUpload} />
 
       {/* Header naranja superior de 25.png */}
       <div className="pro-header-bar">
@@ -641,7 +657,7 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
 
       {/* Info del profesional */}
       <div className="pro-info-section">
-        <div className="pro-avatar-wrap">
+        <div className="pro-avatar-wrap" onClick={isOwnProfile ? () => setShowPhotoOptions(true) : undefined} style={{ cursor: isOwnProfile ? 'pointer' : 'default' }}>
           {displayPro.photoURL ? (
             <img src={displayPro.photoURL} alt={displayPro.name} className="pro-avatar-large" style={{ objectFit: 'cover' }} />
           ) : (
@@ -651,11 +667,11 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
           )}
           
           {isOwnProfile ? (
-            <button className="edit-avatar-btn" onClick={() => document.getElementById('pro-avatar-upload').click()} title="Cambiar Foto de Perfil">
+            <button className="edit-avatar-btn" onClick={(e) => { e.stopPropagation(); setShowPhotoOptions(true); }} title="Cambiar Foto de Perfil">
               ✏️
             </button>
           ) : (
-            <button className="pro-chat-floating-btn" onClick={() => navigate('chat', displayPro)} title="Enviar mensaje">
+            <button className="pro-chat-floating-btn" onClick={(e) => { e.stopPropagation(); navigate('chat', displayPro); }} title="Enviar mensaje">
               💬
             </button>
           )}
@@ -803,6 +819,29 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
               </button>
             )
           })()}
+        </div>
+      )}
+      {showPhotoOptions && (
+        <div className="modal-overlay" onClick={() => setShowPhotoOptions(false)}>
+          <div className="modal-card" onClick={e => e.stopPropagation()}>
+            <span className="modal-icon">📸</span>
+            <h3 className="modal-title">{lang === 'es' ? 'Foto de perfil' : 'Profile photo'}</h3>
+            <button className="modal-btn danger" style={{ background:'linear-gradient(135deg,#F26000,#C24E00)' }}
+              onClick={() => { setShowPhotoOptions(false); document.getElementById('pro-avatar-upload').click(); }}>
+              {lang === 'es' ? '📷 Elegir de galería' : '📷 Choose from gallery'}
+            </button>
+            <button className="modal-btn danger" style={{ background:'linear-gradient(135deg,#3B82F6,#2563EB)', marginTop:8 }}
+              onClick={() => { setShowPhotoOptions(false); document.getElementById('pro-avatar-camera').click(); }}>
+              {lang === 'es' ? '🤳 Tomar foto' : '🤳 Take photo'}
+            </button>
+            {displayPro.photoURL && (
+              <button className="modal-btn danger" style={{ background:'#EF4444', marginTop:8 }}
+                onClick={handleDeleteAvatar}>
+                {lang === 'es' ? '🗑️ Eliminar foto actual' : '🗑️ Delete current photo'}
+              </button>
+            )}
+            <button className="modal-btn ghost" onClick={() => setShowPhotoOptions(false)}>{lang === 'es' ? 'Cancelar' : 'Cancel'}</button>
+          </div>
         </div>
       )}
     </div>
