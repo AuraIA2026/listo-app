@@ -582,13 +582,7 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
     ...proPhotos.filter(ph => !portfolioPhotos.includes(ph.url))
   ]
 
-  const finalPhotos = allPhotos.length > 0 ? allPhotos : (
-    (categoryMockPhotos[String(displayPro.category || displayPro.categoryEs || '').toLowerCase()] || categoryMockPhotos.default).map((url, i) => ({
-      id: `mock-${i}`,
-      url,
-      caption: 'Demo - Trabajo'
-    }))
-  )
+  const finalPhotos = allPhotos
 
   const getPlanDetails = (planId) => {
     const p = (planId || '').toLowerCase()
