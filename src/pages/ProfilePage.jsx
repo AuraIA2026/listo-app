@@ -6,7 +6,7 @@ import { useUserData } from '../useUserData'
 import './ProfilePage.css'
 import VerificacionPage    from './VerificacionPage'
 import RegistroClientePage from './RegistroClientePage'
-import PlanesPage          from './PlanesPage'
+
 
 const txt = {
   es: {
@@ -832,7 +832,7 @@ export default function ProfilePage({ lang, setLang, navigate, onLogout, initial
       case 'privacyDoc':       return <PrivacyDocScreen lang={lang} onBack={back} />
       case 'verification':     return <VerificacionPage lang={lang} onBack={back} />
       case 'completar-perfil': return <RegistroClientePage userRole={userRole} onBack={back} onSuccess={(target) => { if(target) setScreen(target); else back(); }} />
-      case 'planes':           return <PlanesPage onBack={back} navigate={navigate} />
+
       case 'edit-request':     return <EditRequestScreen lang={lang} user={userData} onBack={back} />
       default: return null
     }
@@ -960,7 +960,7 @@ export default function ProfilePage({ lang, setLang, navigate, onLogout, initial
             
             {(!hideUpgrade && (!userData?.planId || userData?.planId === 'basico' || userData?.currentPlan === 'basico' || localStorage.getItem('showUpgradeOverride_Listo_' + userData?.uid) === 'true')) && (
               <div style={{ position: 'relative', marginTop: '12px' }}>
-                <button data-tour="comprar-plan" className="perf-action" onClick={() => setScreen('planes')} style={{ margin: 0, width: '100%' }}>
+                <button data-tour="comprar-plan" className="perf-action" onClick={() => window.open('https://listopatron.com.do', '_blank')} style={{ margin: 0, width: '100%' }}>
                   <span>💎 {lang === 'es' ? 'Sube de Nivel (Gana más)' : 'Upgrade Level (Earn more)'}</span>
                   <span style={{ fontSize: '18px' }}>›</span>
                 </button>
