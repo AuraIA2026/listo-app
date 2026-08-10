@@ -737,7 +737,7 @@ export default function HomePage({ lang, navigate, userRole }) {
       {/* ── VIP BANNER — solo para profesionales ── */}
 
 
-      <div style={{ position: 'relative', margin: '0 16px 50px' }}>
+      <div style={{ position: 'relative', margin: '0 16px 50px', zIndex: 50 }}>
         <div className="hp-banner-container" style={{ margin: 0, borderRadius: '16px', overflow: 'hidden', boxShadow: '0 6px 16px rgba(0,0,0,0.12)', height: '220px', position: 'relative' }}>
           <img src={bannerPros} alt="Un profesional siempre cerca de ti" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 15%', display: 'block' }} />
           
@@ -763,7 +763,7 @@ export default function HomePage({ lang, navigate, userRole }) {
             position: 'absolute', 
             bottom: '-35px', 
             left: '20px', 
-            zIndex: 10,
+            zIndex: 100,
             display: 'flex',
             alignItems: 'center'
           }}
