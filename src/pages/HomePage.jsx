@@ -768,18 +768,20 @@ export default function HomePage({ lang, navigate, userRole }) {
             alignItems: 'center'
           }}
         >
-          <div style={{ position: 'relative' }}>
+          <div 
+            onClick={() => {
+              if (isPro) {
+                navigate('proProfile', userData)
+              } else {
+                navigate('profile')
+              }
+            }}
+            style={{ position: 'relative', cursor: 'pointer' }}
+          >
             {userData?.profilePhoto || userData?.photoURL ? (
               <img 
                 src={userData.profilePhoto || userData.photoURL} 
                 alt="Profile" 
-                onClick={() => {
-                  if (isPro) {
-                    navigate('proProfile', userData)
-                  } else {
-                    navigate('profile')
-                  }
-                }}
                 style={{ 
                   width: '84px', 
                   height: '84px', 
@@ -793,13 +795,6 @@ export default function HomePage({ lang, navigate, userRole }) {
               />
             ) : (
               <div 
-                onClick={() => {
-                  if (isPro) {
-                    navigate('proProfile', userData)
-                  } else {
-                    navigate('profile')
-                  }
-                }} 
                 style={{ 
                   width: '84px', 
                   height: '84px', 
@@ -808,7 +803,7 @@ export default function HomePage({ lang, navigate, userRole }) {
                   color: 'white', 
                   display: 'flex', 
                   alignItems: 'center', 
-                  justify: 'center', 
+                  justifyContent: 'center', 
                   fontWeight: 'bold', 
                   fontSize: '28px', 
                   border: '4px solid white',
@@ -822,7 +817,10 @@ export default function HomePage({ lang, navigate, userRole }) {
 
             {/* Icono de Mensajes Flotante */}
             <div 
-              onClick={() => navigate('chat')}
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate('chat');
+              }}
               style={{
                 position: 'absolute',
                 bottom: '-2px',
