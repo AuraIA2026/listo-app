@@ -507,14 +507,16 @@ export default function LoginPage({ lang, navigate }) {
               {T.faceBtn}
             </button>
 
-            <button className="apple-login-btn" onClick={handleAppleLogin} disabled={loading}>
-              <span style={{ fontSize: '18px', display: 'flex', alignItems: 'center' }}>
-                <svg viewBox="0 0 18 18" width="18" height="18" fill="currentColor">
-                  <path d="M15.56 10.1c-.04-2.22 1.81-3.28 1.89-3.33-1.03-1.51-2.64-1.72-3.21-1.76-1.37-.14-2.68.81-3.38.81-.69 0-1.78-.79-2.94-.77-1.52.02-2.93.89-3.71 2.24-1.58 2.75-.41 6.81 1.12 9.02.75 1.08 1.64 2.29 2.81 2.24 1.12-.04 1.55-.72 2.91-.72 1.35 0 1.75.72 2.92.7 1.19-.02 1.97-1.1 2.71-2.19.86-1.26 1.21-2.48 1.23-2.54-.03-.01-2.37-.91-2.36-3.6zM13.25 3.03c.62-.75 1.03-1.79.92-2.83-.89.04-1.98.6-2.62 1.35-.57.65-1.07 1.71-.94 2.72.99.08 2.02-.49 2.64-1.24z" />
-                </svg>
-              </span>
-              {lang === 'es' ? 'Iniciar sesión con Apple' : 'Sign in with Apple'}
-            </button>
+            {Capacitor.getPlatform() !== 'android' && (
+              <button className="apple-login-btn" onClick={handleAppleLogin} disabled={loading}>
+                <span style={{ fontSize: '18px', display: 'flex', alignItems: 'center' }}>
+                  <svg viewBox="0 0 18 18" width="18" height="18" fill="currentColor">
+                    <path d="M15.56 10.1c-.04-2.22 1.81-3.28 1.89-3.33-1.03-1.51-2.64-1.72-3.21-1.76-1.37-.14-2.68.81-3.38.81-.69 0-1.78-.79-2.94-.77-1.52.02-2.93.89-3.71 2.24-1.58 2.75-.41 6.81 1.12 9.02.75 1.08 1.64 2.29 2.81 2.24 1.12-.04 1.55-.72 2.91-.72 1.35 0 1.75.72 2.92.7 1.19-.02 1.97-1.1 2.71-2.19.86-1.26 1.21-2.48 1.23-2.54-.03-.01-2.37-.91-2.36-3.6zM13.25 3.03c.62-.75 1.03-1.79.92-2.83-.89.04-1.98.6-2.62 1.35-.57.65-1.07 1.71-.94 2.72.99.08 2.02-.49 2.64-1.24z" />
+                  </svg>
+                </span>
+                {lang === 'es' ? 'Iniciar sesión con Apple' : 'Sign in with Apple'}
+              </button>
+            )}
 
             <button className="facebook-login-btn" onClick={handleFacebookLogin} disabled={loading}>
               <span style={{ fontSize: '18px', display: 'flex', alignItems: 'center' }}>

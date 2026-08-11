@@ -631,6 +631,7 @@ export default function AdminPanelPage() {
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px' }}>
                     <div>
                       <h4 style={{ margin: '0 0 6px 0', fontSize: '16px' }}>{trans.depositorName || 'Titular no especificado'}</h4>
+                      {trans.proName && <p style={{ margin: '0 0 4px 0', fontSize: '13px', color: '#333' }}>👤 Profesional: <strong>{trans.proName}</strong> ({trans.proCategory || 'Sin categoría'})</p>}
                       <p style={{ margin: '0 0 4px 0', fontSize: '13px', color: '#555' }}>📧 {trans.email}</p>
                       <p style={{ margin: '0 0 4px 0', fontSize: '13px', color: '#555' }}>📱 {trans.phone || 'Sin teléfono'}</p>
                       <p style={{ margin: '0 0 4px 0', fontSize: '13px', color: '#555' }}>🏛️ Banco de Origen: <strong>{trans.originBank || 'No indicado'}</strong></p>
