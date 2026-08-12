@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
-import { getAuth, signInWithEmailAndPassword, sendPasswordResetEmail, signInWithCredential, OAuthProvider, FacebookAuthProvider } from 'firebase/auth'
-import { getFirestore, doc, getDoc, setDoc, collection, query, where, getDocs, addDoc, serverTimestamp } from 'firebase/firestore'
+import { signInWithEmailAndPassword, sendPasswordResetEmail, signInWithCredential, OAuthProvider, FacebookAuthProvider, signInWithPopup } from 'firebase/auth'
+import { doc, getDoc, setDoc, collection, query, where, getDocs, addDoc, serverTimestamp } from 'firebase/firestore'
+import { auth, db } from '../firebase'
 import { useFaceAuth } from '../useFaceAuth'
 import { SignInWithApple } from '@capacitor-community/apple-sign-in'
 import { FacebookLogin } from '@capacitor-community/facebook-login'
@@ -66,8 +67,6 @@ const txt = {
 export default function LoginPage({ lang, navigate }) {
   const isNative = Capacitor.isNativePlatform()
   const T    = txt[lang]
-  const auth = getAuth()
-  const db   = getFirestore()
 
   const [userType, setUserType] = useState('client')
   const [email,    setEmail]    = useState('')
@@ -190,31 +189,37 @@ export default function LoginPage({ lang, navigate }) {
     setLoading(true)
     setErrors({})
     try {
-      const result = await SignInWithApple.authorize({
-        clientId: 'com.listopatron.app',
-        redirectURI: 'https://listoapp-52b46.firebaseapp.com/__/auth/handler',
-        scopes: 'email name'
-      });
-      
-      if (result.response && result.response.identityToken) {
-        const credential = new OAuthProvider('apple.com').credential({
-          idToken: result.response.identityToken
+      if (isNative) {
+        const result = await SignInWithApple.authorize({
+          clientId: 'com.listopatron.app',
+          redirectURI: 'https://listoapp-52b46.firebaseapp.com/__/auth/handler',
+          scopes: 'email name'
         });
         
-        const userCredential = await signInWithCredential(auth, credential);
-        
-        let fullName = null;
-        if (result.response.givenName) {
-          fullName = result.response.givenName + (result.response.familyName ? ' ' + result.response.familyName : '');
+        if (result.response && result.response.identityToken) {
+          const credential = new OAuthProvider('apple.com').credential({
+            idToken: result.response.identityToken
+          });
+          
+          const userCredential = await signInWithCredential(auth, credential);
+          
+          let fullName = null;
+          if (result.response.givenName) {
+            fullName = result.response.givenName + (result.response.familyName ? ' ' + result.response.familyName : '');
+          }
+          
+          await checkAndRegisterSocialUser(userCredential.user, 'Apple', fullName);
+        } else {
+          throw new Error('No se recibió token de identidad de Apple');
         }
-        
-        await checkAndRegisterSocialUser(userCredential.user, 'Apple', fullName);
       } else {
-        throw new Error('No se recibió token de identidad de Apple');
+        const provider = new OAuthProvider('apple.com');
+        const userCredential = await signInWithPopup(auth, provider);
+        await checkAndRegisterSocialUser(userCredential.user, 'Apple');
       }
     } catch (err) {
       console.error('Apple Login Error:', err)
-      if (err.message && (err.message.includes('cancel') || err.message.includes('user Canceled'))) {
+      if (err.message && (err.message.includes('cancel') || err.message.includes('user Canceled') || err.message.includes('closed by user'))) {
         setLoading(false)
         return
       }
@@ -227,19 +232,25 @@ export default function LoginPage({ lang, navigate }) {
     setLoading(true)
     setErrors({})
     try {
-      const result = await FacebookLogin.login({ permissions: ['email', 'public_profile'] });
-      
-      if (result.accessToken && result.accessToken.token) {
-        const credential = FacebookAuthProvider.credential(result.accessToken.token);
-        const userCredential = await signInWithCredential(auth, credential);
+      if (isNative) {
+        const result = await FacebookLogin.login({ permissions: ['email', 'public_profile'] });
         
-        await checkAndRegisterSocialUser(userCredential.user, 'Facebook');
+        if (result.accessToken && result.accessToken.token) {
+          const credential = FacebookAuthProvider.credential(result.accessToken.token);
+          const userCredential = await signInWithCredential(auth, credential);
+          
+          await checkAndRegisterSocialUser(userCredential.user, 'Facebook');
+        } else {
+          throw new Error('No se recibió token de acceso de Facebook');
+        }
       } else {
-        throw new Error('No se recibió token de acceso de Facebook');
+        const provider = new FacebookAuthProvider();
+        const userCredential = await signInWithPopup(auth, provider);
+        await checkAndRegisterSocialUser(userCredential.user, 'Facebook');
       }
     } catch (err) {
       console.error('Facebook Login Error:', err)
-      if (err.message && (err.message.includes('cancel') || err.message.includes('user Canceled'))) {
+      if (err.message && (err.message.includes('cancel') || err.message.includes('user Canceled') || err.message.includes('closed by user'))) {
         setLoading(false)
         return
       }
@@ -250,9 +261,10 @@ export default function LoginPage({ lang, navigate }) {
 
   const validate = () => {
     const newErrors = {}
-    const isEmail = email.includes('@') && email.includes('.')
-    const cleanPhone = email.replace(/\D/g, '')
-    const isPhone = !email.includes('@') && cleanPhone.length >= 8
+    const trimmedEmail = (email || '').trim()
+    const isEmail = trimmedEmail.includes('@') && trimmedEmail.includes('.')
+    const cleanPhone = trimmedEmail.replace(/\D/g, '')
+    const isPhone = !trimmedEmail.includes('@') && cleanPhone.length >= 8
 
     if (!isEmail && !isPhone) {
       newErrors.email = lang === 'es' ? 'Ingresa un correo válido o número de teléfono' : 'Enter a valid email or phone number'
@@ -267,15 +279,16 @@ export default function LoginPage({ lang, navigate }) {
     setLoading(true)
     setErrors({})
     try {
-      let loginEmail = email
+      const trimmedEmail = (email || '').trim()
+      let loginEmail = trimmedEmail
 
       // Si no contiene '@', asumimos que es número telefónico
-      if (!email.includes('@')) {
-        const cleanPhone = email.replace(/\D/g, '')
+      if (!trimmedEmail.includes('@')) {
+        const cleanPhone = trimmedEmail.replace(/\D/g, '')
         
         // Buscar el usuario por su número de teléfono
         // Construimos variantes por si se guardó con o sin formato
-        const possiblePhones = [email, cleanPhone]
+        const possiblePhones = [trimmedEmail, cleanPhone]
         if (cleanPhone.length === 10) {
           possiblePhones.push(`${cleanPhone.substring(0,3)}-${cleanPhone.substring(3,6)}-${cleanPhone.substring(6)}`)
         }
@@ -291,7 +304,7 @@ export default function LoginPage({ lang, navigate }) {
         
         const userFound = querySnapshot.docs[0].data()
         if (userFound.email) {
-          loginEmail = userFound.email
+          loginEmail = userFound.email.trim()
         } else {
           setErrors({ general: lang === 'es' ? 'El usuario asociado no tiene un correo registrado' : 'Associated user has no registered email' })
           setLoading(false)
@@ -301,6 +314,10 @@ export default function LoginPage({ lang, navigate }) {
 
       const result   = await signInWithEmailAndPassword(auth, loginEmail, password)
       const uid      = result.user.uid
+
+      // Guardar credenciales de forma local para iniciar sesión con rostro en el futuro
+      localStorage.setItem('listo_saved_email', loginEmail)
+      localStorage.setItem('listo_saved_password', password)
 
       // ── Leer datos completos del usuario en Firestore ──
       const userDoc  = await getDoc(doc(db, 'users', uid))
@@ -347,14 +364,47 @@ export default function LoginPage({ lang, navigate }) {
       setErrors({ email: T.faceEmailRequired })
       return
     }
+    
+    const savedEmail = localStorage.getItem('listo_saved_email')
+    const savedPassword = localStorage.getItem('listo_saved_password')
+    
+    if (!savedEmail || !savedPassword || savedEmail.trim().toLowerCase() !== email.trim().toLowerCase()) {
+      setErrors({ general: lang === 'es' ? 'Primero debes iniciar sesión con contraseña una vez en este dispositivo para activar el reconocimiento facial.' : 'You must first log in with password once on this device to enable face recognition.' })
+      return
+    }
+    
     setShowFaceModal(true)
     const userId  = email.replace(/[^a-zA-Z0-9]/g, '_')
     const success = await verifyFace(userId)
+    
     if (success) {
-      setTimeout(() => {
-        setShowFaceModal(false)
-        navigate('home', { user: { email, type: userType } })
-      }, 1500)
+      try {
+        const result = await signInWithEmailAndPassword(auth, savedEmail, savedPassword)
+        const uid = result.user.uid
+        
+        const userDoc = await getDoc(doc(db, 'users', uid))
+        const userData = userDoc.exists() ? userDoc.data() : {}
+        const type = userData.type || userType
+        
+        setTimeout(() => {
+          setShowFaceModal(false)
+          navigate('home', {
+            user: {
+              uid,
+              email: result.user.email,
+              name: userData.name || '',
+              phone: userData.phone || '',
+              type: type,
+              category: userData.category || '',
+              profileComplete: userData.profileComplete || false,
+              createdAt: userData.createdAt || null,
+            }
+          })
+        }, 1500)
+      } catch (err) {
+        console.error('Face sign-in error:', err)
+        setTimeout(() => setShowFaceModal(false), 2500)
+      }
     } else {
       setTimeout(() => setShowFaceModal(false), 2500)
     }

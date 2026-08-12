@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { getAuth, createUserWithEmailAndPassword, updateProfile } from 'firebase/auth'
+import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth'
 import { doc, setDoc, serverTimestamp, addDoc, collection } from 'firebase/firestore'
-import { db } from '../firebase'
+import { auth, db } from '../firebase'
 import { useFaceAuth } from '../useFaceAuth'
 import './AuthPage.css'
 import './FaceModal.css'
@@ -66,7 +66,6 @@ const txt = {
 
 export default function RegisterPage({ lang, navigate }) {
   const T = txt[lang]
-  const auth = getAuth()
   const [userType, setUserType] = useState('client')
   const [form, setForm] = useState({ name: '', email: '', phone: '', password: '', confirm: '', category: '' })
   const [errors, setErrors] = useState({})
@@ -98,6 +97,10 @@ export default function RegisterPage({ lang, navigate }) {
       // Crear usuario en Firebase Auth
       const result = await createUserWithEmailAndPassword(auth, form.email, form.password)
       await updateProfile(result.user, { displayName: form.name })
+
+      // Guardar credenciales locales para reconocimiento facial futuro
+      localStorage.setItem('listo_saved_email', form.email)
+      localStorage.setItem('listo_saved_password', form.password)
 
       // Guardar en Firestore
       const userId = result.user.uid

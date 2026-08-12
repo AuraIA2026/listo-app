@@ -106,7 +106,13 @@ export function useFaceAuth() {
       const faceapi = await loadModels()
       
       // Cargar descriptor guardado
-      const userDoc = await getDoc(doc(db, 'users', userId))
+      let userDoc = await getDoc(doc(db, 'users', userId))
+      if (userDoc.exists() && !userDoc.data().faceDescriptor && userDoc.data().uid) {
+        // Es un emailKey, buscamos por su UID real
+        const realUid = userDoc.data().uid
+        userDoc = await getDoc(doc(db, 'users', realUid))
+      }
+      
       if (!userDoc.exists() || !userDoc.data().faceDescriptor) {
         throw new Error('No tienes un rostro registrado. Regístrate primero.')
       }

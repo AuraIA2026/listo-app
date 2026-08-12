@@ -8,7 +8,10 @@
   "server": {
     "allowNavigation": [
       "pruebas.azul.com.do",
-      "pagos.azul.com.do"
+      "pagos.azul.com.do",
+      "*.googleapis.com",
+      "*.firebaseapp.com",
+      "*.firebasestorage.app"
     ]
   },
   "plugins": {

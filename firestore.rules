@@ -11,7 +11,7 @@ service cloud.firestore {
     // 1. USUARIOS (users)
     match /users/{userId} {
       // Público puede buscar perfiles (para que clientes vean a los profesionales)
-      allow read: if isAuth(); 
+      allow read: if true;  
       // Solo el propietario puede editar sus propios datos
       allow write: if isAuth() && request.auth.uid == userId; 
       

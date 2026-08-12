@@ -960,7 +960,13 @@ export default function ProfilePage({ lang, setLang, navigate, onLogout, initial
             
             {(!hideUpgrade && (!userData?.planId || userData?.planId === 'basico' || userData?.currentPlan === 'basico' || localStorage.getItem('showUpgradeOverride_Listo_' + userData?.uid) === 'true')) && (
               <div style={{ position: 'relative', marginTop: '12px' }}>
-                <button data-tour="comprar-plan" className="perf-action" onClick={() => window.open('https://listopatron.com.do/?action=buy_plan', '_blank')} style={{ margin: 0, width: '100%' }}>
+                <button data-tour="comprar-plan" className="perf-action" onClick={() => {
+                  const email = encodeURIComponent(userData?.email || '');
+                  const phone = encodeURIComponent(userData?.phone || '');
+                  const name = encodeURIComponent(userData?.name || '');
+                  const category = encodeURIComponent(userData?.category || '');
+                  window.open(`https://listopatron.com.do/?action=buy_plan&email=${email}&phone=${phone}&name=${name}&category=${category}`, '_system');
+                }} style={{ margin: 0, width: '100%' }}>
                   <span>💎 {lang === 'es' ? 'Sube de Nivel (Gana más)' : 'Upgrade Level (Earn more)'}</span>
                   <span style={{ fontSize: '18px' }}>›</span>
                 </button>
