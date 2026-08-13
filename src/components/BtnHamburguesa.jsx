@@ -77,7 +77,7 @@ function Accordion({ title, children, open, onToggle }) {
 }
 
 /* ─── COMPONENTE PRINCIPAL ─── */
-export default function BtnHamburguesa({ onClose, navigate }) {
+export default function BtnHamburguesa({ onClose, navigate, lang = 'es', activeView, setActiveView }) {
   const { userData, loading, user, userRole, getInitials, profileComplete } = useUserData()
   const scrollRef = useRef(null)
 
@@ -274,6 +274,39 @@ export default function BtnHamburguesa({ onClose, navigate }) {
                   </div>
                 ))}
               </Accordion>
+
+              {/* Botón de Cambiar a Modo Cliente */}
+              <button 
+                onClick={() => {
+                  localStorage.setItem('listo_active_view', 'user')
+                  setActiveView('user')
+                  onClose()
+                }}
+                style={{
+                  background: '#2E7D32',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '16px',
+                  padding: '16px',
+                  fontSize: '16px',
+                  fontWeight: '900',
+                  width: 'calc(100% - 40px)',
+                  margin: '20px 20px 0',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '10px',
+                  boxShadow: '0 8px 24px rgba(46,125,50,0.22)',
+                  fontFamily: 'inherit',
+                  transition: 'transform 0.1s'
+                }}
+                onMouseDown={e => e.currentTarget.style.transform = 'scale(0.97)'}
+                onMouseUp={e => e.currentTarget.style.transform = 'scale(1)'}
+                onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+              >
+                👤 {lang === 'es' ? 'Modo Cliente' : 'Client Mode'}
+              </button>
 
               {/* Botón Logout */}
               <button className="pp-logout-btn" onClick={handleLogout}>

@@ -425,7 +425,15 @@ export default function HomePage({ lang, navigate, userRole }) {
   const [allProsReal, setAllProsReal] = useState([])
   const [featuredReal, setFeaturedReal] = useState([])
 
-  const isPro = userRole === 'pro'
+  const [activeView, setActiveView] = useState(localStorage.getItem('listo_active_view') || null)
+
+  useEffect(() => {
+    if (userRole && !localStorage.getItem('listo_active_view')) {
+      setActiveView(userRole)
+    }
+  }, [userRole])
+
+  const isPro = (activeView || userRole) === 'pro'
 
   const [showLowContractWarning, setShowLowContractWarning] = useState(true)
   useEffect(() => {
@@ -1154,10 +1162,24 @@ export default function HomePage({ lang, navigate, userRole }) {
 
       {/* ── MENÚ — solo para profesionales ── */}
       {showHamburguesa && !isPro && (
-        <BtnHamburguesaUsuario onClose={() => setShowHamburguesa(false)} navigate={navigate} lang={lang} />
+        <BtnHamburguesaUsuario 
+          onClose={() => setShowHamburguesa(false)} 
+          navigate={navigate} 
+          lang={lang} 
+          userRole={userRole}
+          activeView={activeView}
+          setActiveView={setActiveView}
+        />
       )}
       {showHamburguesa && isPro && (
-        <BtnHamburguesa onClose={() => setShowHamburguesa(false)} navigate={navigate} />
+        <BtnHamburguesa 
+          onClose={() => setShowHamburguesa(false)} 
+          navigate={navigate} 
+          lang={lang}
+          userRole={userRole}
+          activeView={activeView}
+          setActiveView={setActiveView}
+        />
       )}
 
     </div>
