@@ -600,18 +600,25 @@ export default function HomePage({ lang, navigate, userRole }) {
               {/* Botón de hamburguesa ☰ para clientes */}
               <div 
                 onClick={() => setShowHamburguesa(true)}
-                style={{ width:'40px', height:'40px', borderRadius:'50%', background:'#F26000', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', boxShadow: '0 4px 10px rgba(242,96,0,0.25)' }}
+                style={{ 
+                  width: '48px', 
+                  height: '48px', 
+                  borderRadius: '50%', 
+                  background: '#F26000', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center', 
+                  cursor: 'pointer', 
+                  marginLeft: '8px',
+                  boxShadow: '0 4px 12px rgba(242,96,0,0.3)',
+                  transition: 'transform 0.1s'
+                }}
+                onMouseDown={e => e.currentTarget.style.transform = 'scale(0.92)'}
+                onMouseUp={e => e.currentTarget.style.transform = 'scale(1)'}
+                onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
               >
-                <span style={{ fontSize:'20px', color: 'white', fontWeight: 'bold' }}>☰</span>
+                <span style={{ fontSize: '22px', color: 'white', fontWeight: 'bold' }}>☰</span>
               </div>
-              {/* Foto de perfil del cliente arriba a la derecha */}
-              {userData?.profilePhoto || userData?.photoURL ? (
-                <img src={userData.profilePhoto || userData.photoURL} alt="Profile" style={{ width: '44px', height: '44px', borderRadius: '50%', objectFit: 'cover', border: '2px solid white', boxShadow: '0 2px 8px rgba(0,0,0,0.15)', cursor:'pointer' }} onClick={() => navigate('profile')} />
-              ) : (
-                <div onClick={() => navigate('profile')} style={{ width: '44px', height: '44px', borderRadius: '50%', background: '#1A1A2E', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.15)', cursor: 'pointer' }}>
-                  {(userData?.name || 'C').charAt(0).toUpperCase()}
-                </div>
-              )}
             </div>
           </div>
         ) : (
