@@ -24,8 +24,8 @@ import WorkDonePage           from './pages/WorkDonePage'
 import Navbar                 from './components/Navbar'
 import BottomNav              from './components/BottomNav'
 import SplashScreen           from './components/SplashScreen'
-import TutorialTour           from './components/TutorialTour'
-import ProTutorialSystem        from './components/ProTutorialSystem'
+// import TutorialTour           from './components/TutorialTour'
+// import ProTutorialSystem        from './components/ProTutorialSystem'
 import { ExoticOrderNotification, OrderDetailsModal } from './pages/OrdersPage'
 import LocalesPage            from './locales/LocalesPage'
 import LocalDetalle           from './locales/LocalDetalle'
@@ -609,7 +609,6 @@ export default function App() {
     if (data && !data.user && !data.professional && page !== 'profile') setSelectedPro(data)
     if (page === 'profile' && data?.screen) setProfileInitScreen(data.screen)
     else if (page === 'profile') setProfileInitScreen(null)
-    if (page === 'home' && !localStorage.getItem(TOUR_KEY)) setTimeout(() => setShowTour(true), 800)
     setCurrentPage(page)
   }
 
@@ -667,9 +666,7 @@ export default function App() {
 
       {showBottom && <BottomNav currentPage={currentPage} navigate={navigate} lang={lang} userData={userData} />}
 
-      {showTour && (
-        <TutorialTour lang={lang} onFinish={() => { setShowTour(false); localStorage.setItem(TOUR_KEY, 'true') }} />
-      )}
+
 
       {userData?.bonusMessage && (
         <BonusMessageModal bonus={userData.bonusMessage} userId={userData.uid} onClose={() => {}} />
@@ -768,15 +765,7 @@ export default function App() {
         />
       )}
 
-      {userRole === 'pro' && (
-        <ProTutorialSystem 
-           userRole={userRole} 
-           userData={userData} 
-           currentPage={currentPage} 
-           navigate={navigate} 
-           lang={lang} 
-        />
-      )}
+
     </div>
   )
 }
