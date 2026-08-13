@@ -127,24 +127,7 @@ export default function BtnHamburguesaUsuario({ onClose, navigate, lang = 'es' }
               }}>➕ Agregar nueva dirección</button>
             </Accordion>
 
-            {/* ══ 4. MÉTODOS DE PAGO ══ */}
-            <Accordion title="💳 Métodos de Pago" open={open === 'pago'} onToggle={() => toggle('pago')}>
-              {[
-                { icon: '💵', label: 'Efectivo',      active: true },
-                { icon: '🏦', label: 'Transferencia', active: false },
-                { icon: '💳', label: 'Tarjeta',       active: false },
-              ].map((m, i) => (
-                <div key={i} style={{
-                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                  padding: '12px', background: m.active ? '#FFF3EC' : '#F8F9FB',
-                  border: m.active ? '1.5px solid #F26000' : '1.5px solid #EAECF0',
-                  borderRadius: '10px', marginBottom: '8px',
-                }}>
-                  <span style={{ fontSize: '14px', fontWeight: '600', color: '#333' }}>{m.icon} {m.label}</span>
-                  {m.active && <span style={{ fontSize: '11px', fontWeight: '800', color: '#F26000' }}>⭐ Preferido</span>}
-                </div>
-              ))}
-            </Accordion>
+
 
 
             {/* ══ 6. PROMOCIONES ══ */}
