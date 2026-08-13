@@ -591,9 +591,9 @@ export default function HomePage({ lang, navigate, userRole }) {
               {/* Botón de hamburguesa ☰ para clientes */}
               <div 
                 onClick={() => setShowHamburguesa(true)}
-                style={{ width:'40px', height:'40px', borderRadius:'50%', background:'rgba(0,0,0,0.05)', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', border:'1px solid rgba(0,0,0,0.1)' }}
+                style={{ width:'40px', height:'40px', borderRadius:'50%', background:'#F26000', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', boxShadow: '0 4px 10px rgba(242,96,0,0.25)' }}
               >
-                <span style={{ fontSize:'20px', color: '#1A1A2E', fontWeight: 'bold' }}>☰</span>
+                <span style={{ fontSize:'20px', color: 'white', fontWeight: 'bold' }}>☰</span>
               </div>
               {/* Foto de perfil del cliente arriba a la derecha */}
               {userData?.profilePhoto || userData?.photoURL ? (
@@ -619,13 +619,7 @@ export default function HomePage({ lang, navigate, userRole }) {
                   </span>
                 )}
               </div>
-              {/* Botón de hamburguesa ☰ para profesionales */}
-              <div 
-                onClick={() => setShowHamburguesa(true)}
-                style={{ width:'42px', height:'42px', borderRadius:'50%', background:'rgba(255,255,255,0.1)', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', border:'1px solid rgba(255,255,255,0.2)', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
-              >
-                <span style={{ fontSize:'20px', color: 'white', fontWeight: 'bold' }}>☰</span>
-              </div>
+
               <div style={{ textAlign: 'left' }}>
                 <h1 style={{ margin: 0, fontSize: '20px' }}>👋 {lang === 'es' ? 'Panel Profesional' : 'Pro Dashboard'}</h1>
                 <p style={{ margin: '4px 0 0 0', fontSize: '14px', color: '#ccc' }}>{lang === 'es' ? `Hola, ${userData?.name?.split(' ')[0] || 'Socio'}` : `Hi, ${userData?.name?.split(' ')[0] || 'Partner'}`}</p>
@@ -641,26 +635,28 @@ export default function HomePage({ lang, navigate, userRole }) {
               />
 
               <button 
-                onClick={() => window.open('https://listopatron.com.do/?page=shop', '_blank')}
+                onClick={() => setShowHamburguesa(true)}
                 style={{
                   background: '#F26000',
                   color: '#fff',
                   border: 'none',
-                  borderRadius: '22px',
-                  padding: '9px 24px',
-                  fontSize: '13px',
-                  fontWeight: '900',
-                  letterSpacing: '0.5px',
+                  borderRadius: '50%',
+                  width: '42px',
+                  height: '42px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '20px',
+                  fontWeight: 'bold',
                   cursor: 'pointer',
-                  whiteSpace: 'nowrap',
-                  boxShadow: '0 4px 6px rgba(242,96,0,0.15)',
-                  transition: 'transform 0.1s',
-                  textTransform: 'uppercase'
+                  boxShadow: '0 4px 10px rgba(242,96,0,0.3)',
+                  transition: 'transform 0.1s'
                 }}
-                onMouseDown={e => e.currentTarget.style.transform = 'scale(0.95)'}
+                onMouseDown={e => e.currentTarget.style.transform = 'scale(0.92)'}
                 onMouseUp={e => e.currentTarget.style.transform = 'scale(1)'}
+                onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
               >
-                VISITAR TIENDA
+                ☰
               </button>
             </div>
           </div>
