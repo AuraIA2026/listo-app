@@ -35,40 +35,26 @@ export function UserProvider({ children }) {
                 email: firebaseUser.email,
               })
 
-              // Verificar si el plan Básico de 3 meses gratis ya expiró
-              if ((data.type === 'pro' || data.role === 'professional') && data.plan === 'basico' && data.createdAt) {
-                try {
-                  const regDate = data.createdAt.toDate ? data.createdAt.toDate() : new Date(data.createdAt);
-                  const diffTime = new Date() - regDate;
-                  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                  if (diffDays > 90) {
-                    // Expiró el plan básico de 3 meses gratis. Se convierte a plan standard (RD$500/mes)
-                    await updateDoc(doc(db, 'users', firebaseUser.uid), {
-                      plan: 'standard',
-                      planStatus: 'expired', // Requiere pago de RD$500 para reactivarse
-                      contracts: 0           // Se agotan los contratos gratis
-                    });
-                  }
-                } catch (e) {
-                  console.error("Error auto-updating expired plan:", e);
-                }
-              }
-
-              // Verificar si el plan pagado (standard, gold, platinum, vip) ya venció (duración de 30 días)
+              // Verificar si el plan (básico o pagado) ya venció según planExpirationDate
               if ((data.type === 'pro' || data.role === 'professional') && data.planStatus === 'active' && data.planExpirationDate) {
                 try {
                   const expDate = new Date(data.planExpirationDate);
                   const now = new Date();
                   if (now >= expDate) {
                     // Expiró el plan. Cambiar a expirado en Firestore y apagar disponibilidad
-                    await updateDoc(doc(db, 'users', firebaseUser.uid), {
+                    const updatePayload = {
                       planStatus: 'expired',
                       contracts: 0,
                       available: false
-                    });
+                    };
+                    // Si el plan era el básico de 3 meses gratis, al expirar lo convertimos a standard
+                    if (data.plan === 'basico') {
+                      updatePayload.plan = 'standard';
+                    }
+                    await updateDoc(doc(db, 'users', firebaseUser.uid), updatePayload);
                   }
                 } catch (e) {
-                  console.error("Error auto-expiring paid plan:", e);
+                  console.error("Error auto-expiring plan:", e);
                 }
               }
             }

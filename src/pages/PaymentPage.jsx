@@ -142,6 +142,37 @@ export default function PaymentPage({ lang = 'es', navigate, professional }) {
             createdAt: serverTimestamp()
           }).catch(console.error);
 
+          // Enviar notificación al administrador
+          addDoc(collection(db, 'notificaciones'), {
+            userId: 'admin',
+            orderId: pro.orderId,
+            type: 'system',
+            title: method === 'transfer' ? '🏦 NUEVO PAGO POR TRANSFERENCIA' : (method === 'card' ? '💳 NUEVO PAGO CON TARJETA' : '💵 PAGO EN EFECTIVO DECLARADO'),
+            text: `El cliente con correo ${auth.currentUser?.email || 'desconocido'} ha declarado un pago de ${customPrice ? 'RD$' + customPrice : (pro.price || 'RD$0')} para el profesional ${pro.name || 'desconocido'} (${pro.category || 'sin categoría'}) por el método de ${method === 'transfer' ? 'transferencia bancaria' : (method === 'card' ? 'tarjeta' : 'efectivo')}.`,
+            read: false,
+            date: new Date().toISOString(),
+            createdAt: serverTimestamp()
+          }).catch(console.error);
+
+          // Registrar en la colección 'payments' para que el admin pueda validarlo en la App
+          addDoc(collection(db, 'payments'), {
+            proId: pro.proId || pro.uid || pro.id || '',
+            proName: pro.name || 'Profesional',
+            proCategory: pro.category || '',
+            email: pro.email || '',
+            phone: pro.phone || '',
+            planName: method === 'transfer' ? 'Pago de Servicio (Transferencia)' : 'Pago de Servicio (Tarjeta)',
+            planId: 'servicio_pago',
+            planPriceVal: parseFloat(customPrice || pro.price?.replace(/[^0-9.]/g, '') || 0),
+            transferAmount: parseFloat(customPrice || pro.price?.replace(/[^0-9.]/g, '') || 0),
+            status: method === 'card' ? 'paid' : 'pending',
+            paymentMethod: method === 'cash' ? 'cash' : method,
+            bank: method === 'transfer' ? (selectedBank?.name || 'Transferencia') : 'Tarjeta',
+            depositorName: method === 'transfer' ? (depositorName || 'Cliente') : 'Tarjeta',
+            receiptUrl: '',
+            createdAt: serverTimestamp()
+          }).catch(console.error);
+
           // Buscar la notificación de trabajo terminado para el cliente y cambiar su texto
           try {
             const notifQ = query(

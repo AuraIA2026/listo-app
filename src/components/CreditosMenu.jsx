@@ -26,9 +26,13 @@ export default function CreditosMenu({ lang }) {
     setTimeout(() => setCopiedIdx(null), 1800)
   }
 
+  const [rawFile, setRawFile] = useState(null)
+  const [loading, setLoading] = useState(false)
+
   const handleFile = (e) => {
     const file = e.target.files[0]
     if (!file) return
+    setRawFile(file)
     setComprobante(URL.createObjectURL(file))
   }
 
@@ -37,6 +41,68 @@ export default function CreditosMenu({ lang }) {
     window.open(`https://wa.me/${WHATSAPP}?text=${msg}`, '_blank')
     setEnviado(true)
   }
+
+  const handleSubmitPayment = async () => {
+    if (!monto || parseFloat(monto) <= 0) {
+      alert(lang === 'es' ? 'Por favor ingresa un monto válido.' : 'Please enter a valid amount.');
+      return;
+    }
+    setLoading(true);
+    try {
+      const { db, auth, storage } = await import('../firebase');
+      const { collection, addDoc, serverTimestamp } = await import('firebase/firestore');
+      
+      let finalReceiptUrl = '';
+      if (rawFile) {
+        const { ref, uploadBytes, getDownloadURL } = await import('firebase/storage');
+        const fileRef = ref(storage, `comprobantes_creditos/${Date.now()}_${rawFile.name}`);
+        const uploadSnap = await uploadBytes(fileRef, rawFile);
+        finalReceiptUrl = await getDownloadURL(uploadSnap.ref);
+      }
+
+      const proId = auth.currentUser?.uid || localStorage.getItem('userId') || 'desconocido';
+      const proName = localStorage.getItem('userName') || auth.currentUser?.displayName || 'Profesional';
+      const email = auth.currentUser?.email || localStorage.getItem('userEmail') || '';
+      const phone = localStorage.getItem('userPhone') || '';
+
+      // Guardar en la colección 'payments'
+      await addDoc(collection(db, 'payments'), {
+        proId: proId,
+        proName: proName,
+        email: email,
+        phone: phone,
+        planName: 'Recarga de Créditos',
+        planId: 'credito_manual',
+        planPriceVal: parseFloat(monto),
+        transferAmount: parseFloat(monto),
+        status: 'pending',
+        paymentMethod: 'transfer',
+        bank: 'Banreservas / Popular',
+        depositorName: proName,
+        receiptUrl: finalReceiptUrl,
+        createdAt: serverTimestamp()
+      });
+
+      // Notificar al administrador
+      await addDoc(collection(db, 'notificaciones'), {
+        userId: 'admin',
+        type: 'system',
+        title: '💰 NUEVA RECARGA DE CRÉDITOS IN-APP',
+        text: `El profesional ${proName} (${email}) ha declarado un depósito de RD$${monto} para recargar créditos.`,
+        read: false,
+        date: new Date().toISOString(),
+        createdAt: serverTimestamp()
+      });
+
+      alert(lang === 'es' ? '¡Tu pago ha sido notificado al administrador con éxito!' : 'Your payment has been successfully notified to the administrator!');
+      close();
+    } catch (err) {
+      console.error("Error al notificar pago de créditos:", err);
+      alert(lang === 'es' ? 'Ocurrió un error al enviar la notificación.' : 'An error occurred while sending the notification.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <>
@@ -189,8 +255,12 @@ export default function CreditosMenu({ lang }) {
                 </button>
               </div>
 
-              <button className="cm-btn-main" onClick={close}>
-                ✓ {lang === 'es' ? 'Ya realicé el depósito' : 'I already deposited'}
+              <button 
+                className="cm-btn-main" 
+                onClick={handleSubmitPayment}
+                disabled={loading}
+              >
+                {loading ? (lang === 'es' ? 'Procesando...' : 'Processing...') : `✓ ${lang === 'es' ? 'Ya realicé el depósito' : 'I already deposited'}`}
               </button>
               <button className="cm-btn-cancel" onClick={close}>
                 {lang === 'es' ? 'Cancelar' : 'Cancel'}

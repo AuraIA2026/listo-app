@@ -648,6 +648,8 @@ export default function AdminPage({ navigate }) {
            await updateDoc(doc(db, 'users', obj.proId), {
              contracts: currentContracts + obj.planContracts + (obj.planBonus || 0),
              planStatus: 'active',
+             planExpirationDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+             available: true,
              currentPlan: obj.planId || 'standard'
            });
            showToast(`💚 Plan habilitado para ${obj.proName}`);
@@ -669,6 +671,8 @@ export default function AdminPage({ navigate }) {
           approved: true,
           plan: 'basico',
           planStatus: 'active',
+          planExpirationDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString(),
+          available: true,
           'verificacion.estado': 'aprobada',
           'verificacion.fechaAprobacion': new Date().toISOString()
         };
@@ -729,12 +733,22 @@ export default function AdminPage({ navigate }) {
          showToast(`🔴 Pago de ${obj.proName} rechazado`);
       }
       if (type === 'unblock') {
-         await updateDoc(doc(db, 'users', obj.id), { planStatus: 'active', approved: true });
+         await updateDoc(doc(db, 'users', obj.id), { 
+            planStatus: 'active', 
+            approved: true,
+            planExpirationDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+            available: true
+         });
          showToast(`✅ ${obj.name} activado`);
       }
       if (type === 'add_contract') {
          const current = obj.contracts || 0;
-         await updateDoc(doc(db, 'users', obj.id), { contracts: current + 1 });
+         await updateDoc(doc(db, 'users', obj.id), { 
+            contracts: current + 1,
+            planStatus: 'active',
+            planExpirationDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+            available: true
+         });
          showToast(`✅ Se sumó 1 contrato a ${obj.name}`);
       }
       if (type === 'sub_contract') {
@@ -753,6 +767,9 @@ export default function AdminPage({ navigate }) {
          const toAdd = parseInt(giftAmount) || 0;
          await updateDoc(doc(db, 'users', giftUser), {
             contracts: current + toAdd,
+            planStatus: 'active',
+            planExpirationDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+            available: true,
             bonusMessage: {
               amount: toAdd,
               message: giftMessage,
@@ -1330,10 +1347,10 @@ export default function AdminPage({ navigate }) {
                 .filter(u => !dirSearch || String(u.name||'').toLowerCase().includes(dirSearch.toLowerCase().trim()) || String(u.phone||'').includes(dirSearch.trim()))
                 .filter(u => {
                    if (psFilter === 'all') return true;
-                   if (psFilter === 'clients') return u.role !== 'professional';
-                   if (psFilter === 'pros') return u.role === 'professional';
-                   if (psFilter === 'online') return u.role === 'professional' && u.available;
-                   if (psFilter === 'suspended') return u.role === 'professional' && (!u.approved || u.planStatus === 'inactive');
+                   if (psFilter === 'clients') return u.role !== 'professional' && u.type !== 'pro';
+                   if (psFilter === 'pros') return u.role === 'professional' || u.type === 'pro';
+                   if (psFilter === 'online') return (u.role === 'professional' || u.type === 'pro') && u.available;
+                   if (psFilter === 'suspended') return (u.role === 'professional' || u.type === 'pro') && (!u.approved || u.planStatus === 'inactive' || u.planStatus === 'expired');
                    return true;
                 })
                 .sort((a,b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0));
