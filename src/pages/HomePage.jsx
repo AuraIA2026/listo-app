@@ -926,7 +926,13 @@ export default function HomePage({ lang, navigate, userRole }) {
               </div>
               <p style={{ margin: '0 0 12px', fontSize: '13px', color: '#7F1D1D', lineHeight: '1.4' }}>Tu período de prueba ha finalizado. Para mantener tu visibilidad ante los clientes y reactivar tu perfil, actualízalo en nuestra web.</p>
               <button 
-                onClick={() => window.open('https://listopatron.com.do', '_blank')}
+                onClick={() => {
+                  const email = encodeURIComponent(userData?.email || '');
+                  const phone = encodeURIComponent(userData?.phone || '');
+                  const name = encodeURIComponent(userData?.name || '');
+                  const category = encodeURIComponent(userData?.category || '');
+                  window.open(`https://listopatron.com.do/?action=buy_plan&email=${email}&phone=${phone}&name=${name}&category=${category}`, '_system');
+                }}
                 style={{ background: '#DC2626', color: 'white', border: 'none', padding: '10px 16px', borderRadius: '8px', fontWeight: 'bold', width: '100%', cursor: 'pointer' }}
               >
                 Actualizar en la Web
