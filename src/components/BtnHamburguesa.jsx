@@ -281,20 +281,7 @@ export default function BtnHamburguesa({ onClose, navigate, lang = 'es', activeV
                 </button>
               </Accordion>
 
-              {/* Bonos Accordion */}
-              <Accordion title="🎁 Bonos y Créditos Extra" open={openSection === 'bonos'} onToggle={() => toggle('bonos')}>
-                {[
-                  { icon: '⭐', text: '5 estrellas en una reseña', val: '+1 contrato' },
-                  { icon: '📄', text: 'Perfil 100% completo', val: '+2 contratos' },
-                  { icon: '👥', text: 'Referido confirmado', val: '+3 contratos' },
-                ].map((b, i) => (
-                  <div key={i} className="pp-bono-item">
-                    <span className="pp-bono-icon">{b.icon}</span>
-                    <span className="pp-bono-text">{b.text}</span>
-                    <span className="pp-bono-val">{b.val}</span>
-                  </div>
-                ))}
-              </Accordion>
+
 
               {/* Botón de Cambiar a Modo Cliente */}
               <button 
