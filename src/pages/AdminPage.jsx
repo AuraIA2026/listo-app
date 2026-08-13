@@ -667,13 +667,14 @@ export default function AdminPage({ navigate }) {
           type: 'pro',
           profileComplete: true,
           approved: true,
+          plan: 'basico',
           planStatus: 'active',
           'verificacion.estado': 'aprobada',
           'verificacion.fechaAprobacion': new Date().toISOString()
         };
         // Solo establecer bonos si el profesional no ha sido aprobado previamente
         if (!obj.approved) {
-           payload.contracts = 5;
+           payload.contracts = 3;
            payload.rating = 5.0;
            payload.completedJobs = 0;
            payload.pendingJobs = 0;
