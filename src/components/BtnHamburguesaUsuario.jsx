@@ -131,16 +131,6 @@ export default function BtnHamburguesaUsuario({ onClose, navigate, lang = 'es', 
             <span className="uu-row-text">{lang === 'es' ? 'Entregas' : 'Deliveries'}</span>
           </div>
 
-          <div className="uu-row-item" onClick={() => { if(navigate) navigate('search', { catToSelect: 'mudanzas' }); onClose(); }}>
-            <span className="uu-row-icon">🌐</span>
-            <span className="uu-row-text">{lang === 'es' ? 'Ciudad a Ciudad' : 'City to City'}</span>
-          </div>
-
-          <div className="uu-row-item" onClick={() => { if(navigate) navigate('search', { catToSelect: 'mudanzas' }); onClose(); }}>
-            <span className="uu-row-icon">🚚</span>
-            <span className="uu-row-text">{lang === 'es' ? 'Flete' : 'Freight'}</span>
-          </div>
-
           {/* Acordeón de Direcciones */}
           <Accordion title={lang === 'es' ? '📌 Mis direcciones' : '📌 My addresses'} open={open === 'direcciones'} onToggle={() => toggle('direcciones')}>
             {displayAddrs.length > 0
@@ -160,35 +150,6 @@ export default function BtnHamburguesaUsuario({ onClose, navigate, lang = 'es', 
               width: '100%', background: '#F26000', color: '#fff', border: 'none',
               borderRadius: '10px', padding: '11px', fontSize: '13px', fontWeight: '800', cursor: 'pointer', marginTop: '4px',
             }}>{lang === 'es' ? '➕ Agregar nueva dirección' : '➕ Add new address'}</button>
-          </Accordion>
-
-          {/* Acordeón de Promociones */}
-          <Accordion title={lang === 'es' ? '🎁 Promociones y Cupones' : '🎁 Promos and Coupons'} open={open === 'promos'} onToggle={() => toggle('promos')}>
-            <div style={{
-              background: 'linear-gradient(135deg,#1C1C1C,#3A1500)', borderRadius: '14px',
-              padding: '14px', marginBottom: '12px', color: 'white',
-            }}>
-              <p style={{ margin: '0 0 4px', fontSize: '13px', fontWeight: '800' }}>🎟 {lang === 'es' ? 'Invita un amigo' : 'Invite a friend'}</p>
-              <p style={{ margin: 0, fontSize: '12px', color: 'rgba(255,255,255,0.7)' }}>
-                {lang === 'es' ? 'Gana RD$100 en descuento por cada referido' : 'Earn RD$100 off per referral'}
-              </p>
-            </div>
-            <div style={{ display: 'flex', gap: '8px' }}>
-              <input
-                value={coupon} onChange={e => setCoupon(e.target.value)}
-                placeholder={lang === 'es' ? 'Código de cupón' : 'Coupon code'}
-                style={{
-                  flex: 1, background: '#F8F9FB', border: '1.5px solid #EAECF0',
-                  borderRadius: '10px', padding: '10px 12px', fontSize: '13px', outline: 'none',
-                }}
-              />
-              <button onClick={applyCoupon} style={{
-                background: '#F26000', color: '#fff', border: 'none',
-                borderRadius: '10px', padding: '10px 14px', fontSize: '13px', fontWeight: '800', cursor: 'pointer',
-              }}>
-                {couponOk ? '✅' : (lang === 'es' ? 'Aplicar' : 'Apply')}
-              </button>
-            </div>
           </Accordion>
 
           <div className="uu-row-item" onClick={() => { if(navigate) navigate('notificaciones'); onClose(); }}>

@@ -242,16 +242,6 @@ export default function BtnHamburguesa({ onClose, navigate, lang = 'es', activeV
                 <span className="pp-row-text">{lang === 'es' ? 'Entregas' : 'Deliveries'}</span>
               </div>
 
-              <div className="pp-row-item" onClick={() => { if(navigate) navigate('search', { catToSelect: 'mudanzas' }); onClose(); }}>
-                <span className="pp-row-icon">🌐</span>
-                <span className="pp-row-text">{lang === 'es' ? 'Ciudad a Ciudad' : 'City to City'}</span>
-              </div>
-
-              <div className="pp-row-item" onClick={() => { if(navigate) navigate('search', { catToSelect: 'mudanzas' }); onClose(); }}>
-                <span className="pp-row-icon">🚚</span>
-                <span className="pp-row-text">{lang === 'es' ? 'Flete' : 'Freight'}</span>
-              </div>
-
               <div style={{ height: '14px' }} />
 
               {/* Contratos Highlight */}
