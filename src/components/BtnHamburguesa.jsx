@@ -79,6 +79,7 @@ function Accordion({ title, children, open, onToggle }) {
 /* ─── COMPONENTE PRINCIPAL ─── */
 export default function BtnHamburguesa({ onClose, navigate }) {
   const { userData, loading, user, userRole, getInitials, profileComplete } = useUserData()
+  const scrollRef = useRef(null)
 
   const [section, setSection] = useState('main')
   const [openSection, setOpenSection] = useState('stats')
