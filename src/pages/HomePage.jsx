@@ -977,7 +977,13 @@ export default function HomePage({ lang, navigate, userRole }) {
               </div>
               <p style={{ margin: '0 0 12px', fontSize: '13px', color: '#B45309', lineHeight: '1.4' }}>Asegura tu visibilidad en la plataforma. ¿Ya sabes qué plan elegir?</p>
               <button 
-                onClick={() => setShowHamburguesa(true)}
+                onClick={() => {
+                  const email = encodeURIComponent(userData?.email || '');
+                  const phone = encodeURIComponent(userData?.phone || '');
+                  const name = encodeURIComponent(userData?.name || '');
+                  const category = encodeURIComponent(userData?.category || '');
+                  window.open(`https://listopatron.com.do/?action=buy_plan&email=${email}&phone=${phone}&name=${name}&category=${category}`, '_system');
+                }}
                 style={{ background: '#D97706', color: 'white', border: 'none', padding: '10px 16px', borderRadius: '8px', fontWeight: 'bold', width: '100%', cursor: 'pointer' }}
               >
                 Ver planes disponibles
