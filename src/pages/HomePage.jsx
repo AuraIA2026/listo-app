@@ -591,9 +591,9 @@ export default function HomePage({ lang, navigate, userRole }) {
               {/* Botón de hamburguesa ☰ para clientes */}
               <div 
                 onClick={() => setShowHamburguesa(true)}
-                style={{ width:'40px', height:'40px', borderRadius:'50%', background:'rgba(255,255,255,0.1)', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', border:'1px solid rgba(255,255,255,0.2)' }}
+                style={{ width:'40px', height:'40px', borderRadius:'50%', background:'rgba(0,0,0,0.05)', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', border:'1px solid rgba(0,0,0,0.1)' }}
               >
-                <span style={{ fontSize:'20px', color: 'white', fontWeight: 'bold' }}>☰</span>
+                <span style={{ fontSize:'20px', color: '#1A1A2E', fontWeight: 'bold' }}>☰</span>
               </div>
               {/* Foto de perfil del cliente arriba a la derecha */}
               {userData?.profilePhoto || userData?.photoURL ? (
@@ -618,6 +618,13 @@ export default function HomePage({ lang, navigate, userRole }) {
                     {unreadNotifs > 9 ? '9+' : unreadNotifs}
                   </span>
                 )}
+              </div>
+              {/* Botón de hamburguesa ☰ para profesionales */}
+              <div 
+                onClick={() => setShowHamburguesa(true)}
+                style={{ width:'42px', height:'42px', borderRadius:'50%', background:'rgba(255,255,255,0.1)', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', border:'1px solid rgba(255,255,255,0.2)', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+              >
+                <span style={{ fontSize:'20px', color: 'white', fontWeight: 'bold' }}>☰</span>
               </div>
               <div style={{ textAlign: 'left' }}>
                 <h1 style={{ margin: 0, fontSize: '20px' }}>👋 {lang === 'es' ? 'Panel Profesional' : 'Pro Dashboard'}</h1>
