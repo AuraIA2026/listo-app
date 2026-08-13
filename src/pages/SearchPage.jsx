@@ -540,9 +540,15 @@ function ProDelMes({ lang, navigate, userRole }) {
 }
 
 export default function SearchPage({ lang = 'es', navigate, initialCategory = 'all', userRole = 'client', userData }) {
-  const [activeCategory,    setActiveCategory]    = useState('all')
+  const [activeCategory,    setActiveCategory]    = useState(initialCategory || 'all')
   const [activeSubcategory, setActiveSubcategory] = useState('all')
   const [openCategory,      setOpenCategory]      = useState(null)
+  
+  useEffect(() => {
+    if (initialCategory) {
+      setActiveCategory(initialCategory)
+    }
+  }, [initialCategory])
   const [search,            setSearch]            = useState('')
   const [quickFilter,       setQuickFilter]       = useState('all')
   const [sortBy,            setSortBy]            = useState('all')
@@ -845,6 +851,12 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
                     ? <img src={pro.photoURL} alt={pro.name} className="premium-photo" />
                     : <div className="premium-avatar" style={{ background: avatarColors[(Array.from(pro.id).reduce((acc, char) => acc + char.charCodeAt(0), 0)) % avatarColors.length] }}>{pro.avatar}</div>
                   }
+                  {pro.rating && pro.rating > 0 && pro.reviews > 0 && (
+                    <div style={{ position: 'absolute', bottom: '16px', right: '16px', background: 'rgba(26, 26, 46, 0.85)', backdropFilter: 'blur(4px)', borderRadius: '8px', padding: '4px 8px', display: 'flex', alignItems: 'center', gap: '4px', border: '1.5px solid #FFD700', boxShadow: '0 4px 10px rgba(0,0,0,0.15)', zIndex: 10 }}>
+                      <span style={{ fontSize: '11px', color: '#FFD700', fontWeight: 'bold' }}>⭐</span>
+                      <span style={{ fontSize: '11px', color: 'white', fontWeight: '900' }}>{Number(pro.rating).toFixed(1)}</span>
+                    </div>
+                  )}
                   <span className={`status-badge ${pro.available ? 'avail' : 'busy'}`} style={{ bottom: '16px', fontSize: '12px', padding: '6px 14px' }}>
                     {pro.available ? T.available : T.busy}
                   </span>
@@ -915,6 +927,12 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
                   ? <img src={pro.photoURL} alt={pro.name} className="pro-photo" />
                   : <div className="pro-avatar-big" style={{ background: avatarColors[(Array.from(pro.id).reduce((acc, char) => acc + char.charCodeAt(0), 0)) % avatarColors.length] }}>{pro.avatar}</div>
                 }
+                {pro.rating && pro.rating > 0 && pro.reviews > 0 && (
+                  <div style={{ position: 'absolute', bottom: '12px', right: '12px', background: 'rgba(26, 26, 46, 0.85)', backdropFilter: 'blur(4px)', borderRadius: '8px', padding: '4px 8px', display: 'flex', alignItems: 'center', gap: '4px', border: '1.5px solid #FFD700', boxShadow: '0 4px 10px rgba(0,0,0,0.15)', zIndex: 10 }}>
+                    <span style={{ fontSize: '11px', color: '#FFD700', fontWeight: 'bold' }}>⭐</span>
+                    <span style={{ fontSize: '11px', color: 'white', fontWeight: '900' }}>{Number(pro.rating).toFixed(1)}</span>
+                  </div>
+                )}
                 <span className={`status-badge ${pro.available ? 'avail' : 'busy'}`}>
                   {pro.available ? T.available : T.busy}
                 </span>

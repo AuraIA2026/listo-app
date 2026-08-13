@@ -150,6 +150,10 @@ export default function BtnHamburguesa({ onClose, navigate, lang = 'es', activeV
         .pp-user-info { flex: 1; text-align: left; }
         .pp-name { font-size: 18px; fontWeight: 800; color: #1A1A2E; margin: 0; }
         .pp-role { font-size: 12px; color: #F26000; margin: 2px 0 0; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
+        .pp-row-item { display: flex; align-items: center; gap: 14px; padding: 13px 24px; cursor: pointer; transition: background 0.2s; text-align: left; }
+        .pp-row-item:hover { background: #FFF0E6; }
+        .pp-row-icon { font-size: 18px; }
+        .pp-row-text { font-size: 15px; font-weight: 700; color: #1A1A2E; flex: 1; }
         .pp-edit-btn { background: none; border: none; color: #8F7D75; font-size: 13px; font-weight: 700; cursor: pointer; padding: 6px 12px; border-radius: 8px; background: #F5EAE6; transition: background 0.2s; }
         .pp-edit-btn:hover { background: #EADCD6; }
         .pp-accordion { background: white; border-radius: 18px; margin: 0 20px 14px; border: 1.5px solid #F5EAE6; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.02); }
@@ -211,10 +215,44 @@ export default function BtnHamburguesa({ onClose, navigate, lang = 'es', activeV
                 )}
                 <div className="pp-user-info">
                   <h4 className="pp-name">{userData?.name || 'Socio'}</h4>
-                  <p className="pp-role">{userData?.category ? `🔧 ${userData.category.toUpperCase()}` : '🔧 PROFESIONAL'}</p>
+                  <p className="pp-role">
+                    {userData?.rating && userData?.reviews && userData?.reviews > 0 ? `⭐ ${Number(userData.rating).toFixed(1)} ` : ''}
+                    {userData?.category ? `🔧 ${userData.category.toUpperCase()}` : '🔧 PROFESIONAL'}
+                  </p>
                 </div>
                 <button className="pp-edit-btn" onClick={() => setShowEditModal(true)}>✏️ Editar</button>
               </div>
+
+              {/* Opciones de Navegación Estilo inDrive */}
+              <div className="pp-row-item" onClick={() => { if(navigate) navigate('profile'); onClose(); }}>
+                <span className="pp-row-icon">🚗</span>
+                <span className="pp-row-text">
+                  {lang === 'es' ? 'Ciudad: ' : 'City: '}
+                  <strong style={{ color: '#F26000' }}>{userData?.city || (lang === 'es' ? 'Seleccionar...' : 'Select...')}</strong>
+                </span>
+              </div>
+
+              <div className="pp-row-item" onClick={() => { if(navigate) navigate('trabajo'); onClose(); }}>
+                <span className="pp-row-icon">🕒</span>
+                <span className="pp-row-text">{lang === 'es' ? 'Historial de solicitudes' : 'Request history'}</span>
+              </div>
+
+              <div className="pp-row-item" onClick={() => { if(navigate) navigate('search', { catToSelect: 'delivery' }); onClose(); }}>
+                <span className="pp-row-icon">📦</span>
+                <span className="pp-row-text">{lang === 'es' ? 'Entregas' : 'Deliveries'}</span>
+              </div>
+
+              <div className="pp-row-item" onClick={() => { if(navigate) navigate('search', { catToSelect: 'mudanzas' }); onClose(); }}>
+                <span className="pp-row-icon">🌐</span>
+                <span className="pp-row-text">{lang === 'es' ? 'Ciudad a Ciudad' : 'City to City'}</span>
+              </div>
+
+              <div className="pp-row-item" onClick={() => { if(navigate) navigate('search', { catToSelect: 'mudanzas' }); onClose(); }}>
+                <span className="pp-row-icon">🚚</span>
+                <span className="pp-row-text">{lang === 'es' ? 'Flete' : 'Freight'}</span>
+              </div>
+
+              <div style={{ height: '14px' }} />
 
               {/* Contratos Highlight */}
               <div style={{ background: 'linear-gradient(135deg, #FFF0E6, #FFE4D6)', borderRadius: '16px', padding: '16px', margin: '4px 20px 24px', border: '1px solid #F2600044', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 4px 12px rgba(242,96,0,0.08)' }}>

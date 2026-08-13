@@ -107,15 +107,38 @@ export default function BtnHamburguesaUsuario({ onClose, navigate, lang = 'es', 
             <div className="uu-user-info">
               <h4 className="uu-name">{userData?.name || 'Cliente'}</h4>
               <p className="uu-role">
-                {isProApproved ? `⭐ 5.0 (Socio)` : (lang === 'es' ? 'Cliente' : 'Client')}
+                {isProApproved ? (userData?.rating && userData?.reviews && userData?.reviews > 0 ? `⭐ ${Number(userData.rating).toFixed(1)} (Socio)` : `Socio`) : (lang === 'es' ? 'Cliente' : 'Client')}
               </p>
             </div>
           </div>
 
           {/* Opciones de Navegación Estilo inDrive */}
+          <div className="uu-row-item" onClick={() => { if(navigate) navigate('profile'); onClose(); }}>
+            <span className="uu-row-icon">🚗</span>
+            <span className="uu-row-text">
+              {lang === 'es' ? 'Ciudad: ' : 'City: '}
+              <strong style={{ color: '#F26000' }}>{userData?.city || (lang === 'es' ? 'Seleccionar...' : 'Select...')}</strong>
+            </span>
+          </div>
+
           <div className="uu-row-item" onClick={() => { if(navigate) navigate('trabajo'); onClose(); }}>
             <span className="uu-row-icon">🕒</span>
             <span className="uu-row-text">{lang === 'es' ? 'Historial de solicitudes' : 'Request history'}</span>
+          </div>
+
+          <div className="uu-row-item" onClick={() => { if(navigate) navigate('search', { catToSelect: 'delivery' }); onClose(); }}>
+            <span className="uu-row-icon">📦</span>
+            <span className="uu-row-text">{lang === 'es' ? 'Entregas' : 'Deliveries'}</span>
+          </div>
+
+          <div className="uu-row-item" onClick={() => { if(navigate) navigate('search', { catToSelect: 'mudanzas' }); onClose(); }}>
+            <span className="uu-row-icon">🌐</span>
+            <span className="uu-row-text">{lang === 'es' ? 'Ciudad a Ciudad' : 'City to City'}</span>
+          </div>
+
+          <div className="uu-row-item" onClick={() => { if(navigate) navigate('search', { catToSelect: 'mudanzas' }); onClose(); }}>
+            <span className="uu-row-icon">🚚</span>
+            <span className="uu-row-text">{lang === 'es' ? 'Flete' : 'Freight'}</span>
           </div>
 
           {/* Acordeón de Direcciones */}

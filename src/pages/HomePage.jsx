@@ -87,10 +87,11 @@ const sections = [
 ]
 
 function StarRating({ rating }) {
+  if (!rating || rating <= 0) return null;
   return (
     <span className="star-rating">
       {'★'.repeat(Math.floor(rating))}{'☆'.repeat(5 - Math.floor(rating))}
-      <span className="star-num">{Number(rating || 0).toFixed(1)}</span>
+      <span className="star-num">{Number(rating).toFixed(1)}</span>
     </span>
   )
 }
@@ -728,7 +729,12 @@ export default function HomePage({ lang, navigate, userRole }) {
                       )}
                       <div style={{ flex: 1 }}>
                         <p style={{ margin: 0, fontSize: '15px', fontWeight: '800', color: '#1a1a2e' }}>{pro.nameEs}</p>
-                        <p style={{ margin: 0, fontSize: '12px', color: '#666', fontWeight: '600' }}>{pro.specEs} <span style={{color: '#FFD700', marginLeft: '4px'}}>⭐ {Number(pro.rating).toFixed(1)}</span></p>
+                        <p style={{ margin: 0, fontSize: '12px', color: '#666', fontWeight: '600' }}>
+                          {pro.specEs}
+                          {pro.rating && pro.reviews && pro.reviews > 0 ? (
+                            <span style={{color: '#FFD700', marginLeft: '4px'}}>⭐ {Number(pro.rating).toFixed(1)}</span>
+                          ) : null}
+                        </p>
                       </div>
                       <span style={{ fontSize: '18px', color: '#ccc', fontWeight: 'bold' }}>›</span>
                     </div>
@@ -1014,7 +1020,9 @@ export default function HomePage({ lang, navigate, userRole }) {
                   <p className="featured-name">{pro.nameEs}</p>
                   <p className="featured-spec">{lang === 'es' ? pro.specEs : pro.specEn}</p>
                   <StarRating rating={pro.rating} />
-                  <p className="featured-reviews">{pro.reviews} {lang === 'es' ? 'reseñas' : 'reviews'}</p>
+                  {pro.reviews && pro.reviews > 0 ? (
+                    <p className="featured-reviews">{pro.reviews} {lang === 'es' ? 'reseñas' : 'reviews'}</p>
+                  ) : null}
                   <p className="featured-price" style={{ color: '#008F39', fontSize: '13px', fontWeight: 'bold' }}>
                     🤝 {lang === 'es' ? 'A convenir' : 'To agree'}
                   </p>
