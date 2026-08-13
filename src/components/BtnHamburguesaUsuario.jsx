@@ -112,23 +112,31 @@ export default function BtnHamburguesaUsuario({ onClose, navigate, lang = 'es', 
             </div>
           </div>
 
-          {/* Opciones de Navegación Estilo inDrive */}
-          <div className="uu-row-item" onClick={() => { if(navigate) navigate('profile'); onClose(); }}>
-            <span className="uu-row-icon">🚗</span>
-            <span className="uu-row-text">
-              {lang === 'es' ? 'Ciudad: ' : 'City: '}
-              <strong style={{ color: '#F26000' }}>{userData?.city || (lang === 'es' ? 'Seleccionar...' : 'Select...')}</strong>
-            </span>
-          </div>
-
           <div className="uu-row-item" onClick={() => { if(navigate) navigate('trabajo'); onClose(); }}>
             <span className="uu-row-icon">🕒</span>
             <span className="uu-row-text">{lang === 'es' ? 'Historial de solicitudes' : 'Request history'}</span>
           </div>
 
-          <div className="uu-row-item" onClick={() => { if(navigate) navigate('search', { catToSelect: 'delivery' }); onClose(); }}>
-            <span className="uu-row-icon">📦</span>
-            <span className="uu-row-text">{lang === 'es' ? 'Entregas' : 'Deliveries'}</span>
+          <div className="uu-row-item" onClick={() => { 
+            if (isProApproved) {
+              localStorage.setItem('listo_active_view', 'pro')
+              setActiveView('pro')
+            } else {
+              if (!profileComplete) {
+                if (navigate) navigate('profile')
+              } else {
+                if (navigate) navigate('profile', { screen: 'verification' })
+              }
+            }
+            onClose(); 
+          }}>
+            <span className="uu-row-icon">📄</span>
+            <span className="uu-row-text">
+              {lang === 'es' ? 'Contratos' : 'Contracts'}
+              {isProApproved && userData?.contracts !== undefined && (
+                <strong style={{ marginLeft: '8px', color: '#F26000' }}>({userData.contracts})</strong>
+              )}
+            </span>
           </div>
 
           {/* Acordeón de Direcciones */}

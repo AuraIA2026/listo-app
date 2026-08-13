@@ -223,23 +223,16 @@ export default function BtnHamburguesa({ onClose, navigate, lang = 'es', activeV
                 <button className="pp-edit-btn" onClick={() => setShowEditModal(true)}>✏️ Editar</button>
               </div>
 
-              {/* Opciones de Navegación Estilo inDrive */}
-              <div className="pp-row-item" onClick={() => { if(navigate) navigate('profile'); onClose(); }}>
-                <span className="pp-row-icon">🚗</span>
-                <span className="pp-row-text">
-                  {lang === 'es' ? 'Ciudad: ' : 'City: '}
-                  <strong style={{ color: '#F26000' }}>{userData?.city || (lang === 'es' ? 'Seleccionar...' : 'Select...')}</strong>
-                </span>
-              </div>
-
               <div className="pp-row-item" onClick={() => { if(navigate) navigate('trabajo'); onClose(); }}>
                 <span className="pp-row-icon">🕒</span>
                 <span className="pp-row-text">{lang === 'es' ? 'Historial de solicitudes' : 'Request history'}</span>
               </div>
 
-              <div className="pp-row-item" onClick={() => { if(navigate) navigate('search', { catToSelect: 'delivery' }); onClose(); }}>
-                <span className="pp-row-icon">📦</span>
-                <span className="pp-row-text">{lang === 'es' ? 'Entregas' : 'Deliveries'}</span>
+              <div className="pp-row-item" onClick={() => { setSection('stats'); }}>
+                <span className="pp-row-icon">📄</span>
+                <span className="pp-row-text">
+                  {lang === 'es' ? 'Contratos y Estadísticas' : 'Contracts & Stats'}
+                </span>
               </div>
 
               <div style={{ height: '14px' }} />
