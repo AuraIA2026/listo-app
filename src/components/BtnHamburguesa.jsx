@@ -316,10 +316,7 @@ export default function BtnHamburguesa({ onClose, navigate, lang = 'es', activeV
                 👤 {lang === 'es' ? 'Modo Cliente' : 'Client Mode'}
               </button>
 
-              {/* Botón Logout */}
-              <button className="pp-logout-btn" onClick={handleLogout}>
-                🚪 Cerrar Sesión
-              </button>
+
             </>
           )}
         </div>
