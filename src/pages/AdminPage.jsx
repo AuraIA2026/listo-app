@@ -643,16 +643,39 @@ export default function AdminPage({ navigate }) {
         
         // Cargar los contratos al profesional si aplica
         if (obj.planContracts) {
-           const u = users.find(u => u.id === obj.proId);
-           const currentContracts = u?.contracts || 0;
-           await updateDoc(doc(db, 'users', obj.proId), {
-             contracts: currentContracts + obj.planContracts + (obj.planBonus || 0),
-             planStatus: 'active',
-             planExpirationDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-             available: true,
-             currentPlan: obj.planId || 'standard'
-           });
-           showToast(`💚 Plan habilitado para ${obj.proName}`);
+           const u = users.find(u => u.id === obj.proId) || users.find(u => u.email?.trim().toLowerCase() === obj.email?.trim().toLowerCase());
+           if (u) {
+              const currentContracts = u.contracts || 0;
+              await updateDoc(doc(db, 'users', u.id), {
+                contracts: currentContracts + obj.planContracts + (obj.planBonus || 0),
+                planStatus: 'active',
+                planExpirationDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+                available: true,
+                currentPlan: obj.planId || 'standard'
+              });
+              
+              if (!obj.proId) {
+                await updateDoc(doc(db, 'payments', obj.id), { proId: u.id });
+              }
+
+              try {
+                await addDoc(collection(db, 'notificaciones'), {
+                  userId: u.id,
+                  type: 'system',
+                  title: '💎 ¡Plan Activado con Éxito!',
+                  text: `Tu plan ${obj.planName} ha sido aprobado por el administrador. ¡Ya puedes ponerte en línea en la app Listo Patrón!`,
+                  read: false,
+                  date: new Date().toISOString(),
+                  createdAt: new Date().toISOString()
+                });
+              } catch (eNotif) {
+                console.error("Error sending user notification:", eNotif);
+              }
+
+              showToast(`💚 Plan habilitado para ${u.name || obj.proName}`);
+           } else {
+              showToast(`⚠️ No se encontró al profesional con el correo: ${obj.email}`);
+           }
         } else {
            showToast(`💚 Transferencia de ${obj.proName} validada`);
         }
@@ -1193,10 +1216,28 @@ export default function AdminPage({ navigate }) {
                   </div>
                   
                   {c.receiptUrl && (
-                    <div style={{marginBottom:12}}>
-                      <a href={c.receiptUrl} target="_blank" rel="noreferrer" style={{color:'var(--blue)', fontSize:12, textDecoration:'none', background:'var(--blue-dim)', padding:'4px 8px', borderRadius:8}}>
-                         🖼️ Ver comprobante de pago
-                      </a>
+                    <div style={{marginBottom:12, marginTop: 8}}>
+                      <div style={{fontSize:11, color:'var(--muted)', marginBottom:6, fontWeight:700}}>📄 COMPROBANTE DE PAGO:</div>
+                      {c.receiptUrl.toLowerCase().includes('.pdf') ? (
+                        <a href={c.receiptUrl} target="_blank" rel="noreferrer" style={{color:'var(--blue)', fontSize:13, textDecoration:'underline', fontWeight:'700'}}>
+                          📄 Ver comprobante PDF (Abrir en nueva pestaña)
+                        </a>
+                      ) : (
+                        <img 
+                          src={c.receiptUrl} 
+                          alt="comprobante" 
+                          style={{
+                            width: '100%', 
+                            maxHeight: '200px', 
+                            objectFit: 'contain', 
+                            borderRadius: '12px', 
+                            border: '1.5px solid var(--border)',
+                            cursor: 'pointer',
+                            background: '#F8FAFC'
+                          }}
+                          onClick={() => window.open(c.receiptUrl, '_blank')}
+                        />
+                      )}
                     </div>
                   )}
 
