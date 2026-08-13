@@ -59,8 +59,8 @@ export default function BtnHamburguesaUsuario({ onClose, navigate, lang = 'es', 
     <div className="uu-container">
       <style>{`
         .uu-container { position: fixed; inset: 0; z-index: 1000; font-family: 'Outfit', sans-serif; }
-        .uu-overlay { position: absolute; inset: 0; background: rgba(26,26,46,0.4); backdrop-filter: blur(8px); }
-        .uu-panel { position: absolute; bottom: 0; left: 0; right: 0; background: #FFF9F6; border-radius: 32px 32px 0 0; box-shadow: 0 -10px 40px rgba(0,0,0,0.15); max-height: 92vh; display: flex; flexDirection: column; animation: slideUp 0.3s ease-out; }
+        .uu-overlay { position: absolute; inset: 0; background: rgba(26,26,46,0.4); backdrop-filter: blur(8px); z-index: 1; }
+        .uu-panel { position: absolute; bottom: 0; left: 0; right: 0; background: #FFF9F6; border-radius: 32px 32px 0 0; box-shadow: 0 -10px 40px rgba(0,0,0,0.15); max-height: 92vh; display: flex; flexDirection: column; animation: slideUp 0.3s ease-out; z-index: 2; }
         .uu-handle { width: 44px; height: 5px; background: #E0D5D0; border-radius: 3px; margin: 12px auto 8px; }
         .uu-close { position: absolute; top: 16px; right: 20px; border: none; background: #F5EAE6; color: #7A6962; width: 32px; height: 32px; border-radius: 50%; font-size: 14px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; }
         .uu-scroll { overflow-y: auto; padding: 12px 0 44px; flex: 1; }
