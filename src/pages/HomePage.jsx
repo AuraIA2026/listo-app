@@ -650,14 +650,15 @@ export default function HomePage({ lang, navigate, userRole }) {
                   color: '#fff',
                   border: 'none',
                   borderRadius: '50%',
-                  width: '42px',
-                  height: '42px',
+                  width: '48px',
+                  height: '48px',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  fontSize: '20px',
+                  fontSize: '22px',
                   fontWeight: 'bold',
                   cursor: 'pointer',
+                  marginLeft: '12px',
                   boxShadow: '0 4px 10px rgba(242,96,0,0.3)',
                   transition: 'transform 0.1s'
                 }}

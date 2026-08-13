@@ -299,7 +299,7 @@ export default function BtnHamburguesa({ onClose, navigate, lang = 'es', activeV
                   fontSize: '16px',
                   fontWeight: '900',
                   width: 'calc(100% - 40px)',
-                  margin: '20px 20px 0',
+                  margin: '20px 20px 50px',
                   cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center',
