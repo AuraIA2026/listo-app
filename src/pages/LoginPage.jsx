@@ -152,18 +152,8 @@ export default function LoginPage({ lang, navigate }) {
           console.error("Error al crear notificación de bienvenida social:", e);
         }
       } else {
-        // El usuario ya existe en Firestore, verificamos que coincida el tipo seleccionado
-        const existingData = userDocSnap.data()
-        const existingIsPro = existingData.type === 'pro'
-        const selectedIsPro = userType === 'pro'
-        
-        if (existingIsPro !== selectedIsPro) {
-          await auth.signOut()
-          setErrors({ general: T.errWrongType })
-          setLoading(false)
-          return
-        }
-        finalUserData = existingData
+        // El usuario ya existe en Firestore
+        finalUserData = userDocSnap.data()
       }
       
       // Navegar a home con los datos correspondientes
@@ -324,19 +314,7 @@ export default function LoginPage({ lang, navigate }) {
       const userData = userDoc.exists() ? userDoc.data() : {}
 
       // ✅ FIX: usar "type" en lugar de "role"
-      const type = userData.type || userType  // "pro" o "client"
-
-      // Validar que el tipo coincida con lo seleccionado
-      // "client" en Firestore puede venir como "client" o "user"
-      const selectedIsPro    = userType === 'pro'
-      const firestoreIsPro   = type === 'pro'
-
-      if (userDoc.exists() && selectedIsPro !== firestoreIsPro) {
-        await auth.signOut()
-        setErrors({ general: T.errWrongType })
-        setLoading(false)
-        return
-      }
+      const type = userData.type || 'client'  // "pro" o "client"
 
       // Todo OK → navegar con todos los datos del usuario
       navigate('home', {
@@ -384,7 +362,7 @@ export default function LoginPage({ lang, navigate }) {
         
         const userDoc = await getDoc(doc(db, 'users', uid))
         const userData = userDoc.exists() ? userDoc.data() : {}
-        const type = userData.type || userType
+        const type = userData.type || 'client'
         
         setTimeout(() => {
           setShowFaceModal(false)
@@ -455,14 +433,7 @@ export default function LoginPage({ lang, navigate }) {
             <p className="auth-sub">{T.sub}</p>
           </div>
 
-          <div className="user-type-toggle">
-            <button className={userType === 'client' ? 'active' : ''} onClick={() => setUserType('client')}>
-              👤 {T.asClient}
-            </button>
-            <button className={userType === 'pro' ? 'active' : ''} onClick={() => setUserType('pro')}>
-              🔧 {T.asPro}
-            </button>
-          </div>
+
 
           <div className="auth-form">
             <div className="field">

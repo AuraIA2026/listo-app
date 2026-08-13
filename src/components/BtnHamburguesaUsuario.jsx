@@ -227,24 +227,42 @@ export default function BtnHamburguesaUsuario({ onClose, navigate, lang = 'es' }
             </Accordion>
 
             {/* ── 7. POSTULARSE COMO PROFESIONAL ── */}
-            <Accordion title="💼 Postularse (Ver Planes)" open={open === 'postularse'} onToggle={() => toggle('postularse')} disabled={!profileComplete}>
-              <p style={{ fontSize: '13px', color: '#666', marginBottom: '16px', lineHeight: 1.5 }}>
-                {lang === 'es' 
-                  ? 'Selecciona un plan para iniciar tu postulación. Te guiaremos en la verificación de tus documentos para comenzar a ganar dinero.' 
-                  : 'Select a plan to start your application. We will prompt you to verify your identity to begin earning money.'}
-              </p>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '8px' }}>
-                {planes.map((p, i) => (
-                  <PlanCardPreview 
-                    key={i} 
-                    plan={p} 
-                    onClick={() => {
-                      if(navigate) navigate('verificacion')
-                      onClose()
-                    }} 
-                  />
-                ))}
-              </div>
+            <Accordion title="💼 Postularse (Ver Planes)" open={open === 'postularse'} onToggle={() => toggle('postularse')}>
+              {!profileComplete ? (
+                <div style={{ textAlign: 'center', padding: '10px 0' }}>
+                  <p style={{ fontSize: '13px', color: '#666', marginBottom: '12px', lineHeight: 1.5 }}>
+                    {lang === 'es'
+                      ? 'Completa primero tus datos básicos de perfil (nombre y teléfono) para poder postularte como profesional.'
+                      : 'Please complete your basic profile details (name and phone) first to apply as a professional.'}
+                  </p>
+                  <button 
+                    onClick={() => { if(navigate) navigate('profile'); onClose(); }} 
+                    style={{ background: '#F26000', color: '#fff', border: 'none', borderRadius: '10px', padding: '10px 16px', fontSize: '13px', fontWeight: '800', cursor: 'pointer' }}
+                  >
+                    ✏️ {lang === 'es' ? 'Completar mi Perfil' : 'Complete my Profile'}
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <p style={{ fontSize: '13px', color: '#666', marginBottom: '16px', lineHeight: 1.5 }}>
+                    {lang === 'es' 
+                      ? 'Selecciona un plan para iniciar tu postulación. Te guiaremos en la verificación de tus documentos para comenzar a ganar dinero.' 
+                      : 'Select a plan to start your application. We will prompt you to verify your identity to begin earning money.'}
+                  </p>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '8px' }}>
+                    {planes.map((p, i) => (
+                      <PlanCardPreview 
+                        key={i} 
+                        plan={p} 
+                        onClick={() => {
+                          if(navigate) navigate('profile', { screen: 'verification' })
+                          onClose()
+                        }} 
+                      />
+                    ))}
+                  </div>
+                </>
+              )}
             </Accordion>
 
             <div style={{ height: 20 }} />

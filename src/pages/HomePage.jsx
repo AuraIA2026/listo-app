@@ -588,6 +588,13 @@ export default function HomePage({ lang, navigate, userRole }) {
                   </span>
                 )}
               </div>
+              {/* Botón de hamburguesa ☰ para clientes */}
+              <div 
+                onClick={() => setShowHamburguesa(true)}
+                style={{ width:'40px', height:'40px', borderRadius:'50%', background:'rgba(255,255,255,0.1)', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', border:'1px solid rgba(255,255,255,0.2)' }}
+              >
+                <span style={{ fontSize:'20px', color: 'white', fontWeight: 'bold' }}>☰</span>
+              </div>
               {/* Foto de perfil del cliente arriba a la derecha */}
               {userData?.profilePhoto || userData?.photoURL ? (
                 <img src={userData.profilePhoto || userData.photoURL} alt="Profile" style={{ width: '44px', height: '44px', borderRadius: '50%', objectFit: 'cover', border: '2px solid white', boxShadow: '0 2px 8px rgba(0,0,0,0.15)', cursor:'pointer' }} onClick={() => navigate('profile')} />
@@ -1143,6 +1150,9 @@ export default function HomePage({ lang, navigate, userRole }) {
       {showTour && <TutorialTour lang={lang} onFinish={closeTour} />}
 
       {/* ── MENÚ — solo para profesionales ── */}
+      {showHamburguesa && !isPro && (
+        <BtnHamburguesaUsuario onClose={() => setShowHamburguesa(false)} navigate={navigate} lang={lang} />
+      )}
       {showHamburguesa && isPro && (
         <BtnHamburguesa onClose={() => setShowHamburguesa(false)} navigate={navigate} />
       )}

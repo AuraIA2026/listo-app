@@ -84,7 +84,6 @@ export default function RegisterPage({ lang, navigate }) {
     if (form.phone.replace(/\D/g, '').length < 8) e.phone = T.errPhone
     if (form.password.length < 6) e.password = T.errPass
     if (form.password !== form.confirm) e.confirm = T.errConfirm
-    if (userType === 'pro' && !form.category) e.category = T.errCategory
     setErrors(e)
     return Object.keys(e).length === 0
   }
@@ -111,13 +110,7 @@ export default function RegisterPage({ lang, navigate }) {
         name: form.name,
         email: form.email,
         phone: form.phone,
-        type: userType,
-        ...(userType === 'pro' && { 
-          category: form.category,
-          plan: 'basico',
-          contracts: 3,
-          planExpirationDate: expireDate.toISOString()
-        }),
+        type: 'client',
         createdAt: serverTimestamp(),
       })
 
@@ -126,9 +119,7 @@ export default function RegisterPage({ lang, navigate }) {
       await setDoc(doc(db, 'users', emailKey), { uid: userId }, { merge: true })
 
       // Mensaje Automático de Bienvenida
-      const welcomeText = userType === 'client'
-        ? `¡Hola ${form.name.split(' ')[0]}! Bienvenido a Listo Patrón. Estamos felices de tenerte aquí. Explora nuestro directorio y contrata a los mejores profesionales de confianza para tus proyectos hoy mismo.`
-        : `¡Hola ${form.name.split(' ')[0]}! Bienvenido a Listo Patrón. Estás a un paso de generar ingresos. Entra a "Perfil", llena tus datos de Verificación y postúlate para ser un aliado oficial. ¡Mucho éxito!`;
+      const welcomeText = `¡Hola ${form.name.split(' ')[0]}! Bienvenido a Listo Patrón. Estamos felices de tenerte aquí. Explora nuestro directorio y contrata a los mejores profesionales de confianza para tus proyectos hoy mismo.`
 
       try {
         await addDoc(collection(db, 'notificaciones'), {
@@ -253,14 +244,7 @@ export default function RegisterPage({ lang, navigate }) {
             <p className="auth-sub">{T.sub}</p>
           </div>
 
-          <div className="user-type-toggle">
-            <button className={userType === 'client' ? 'active' : ''} onClick={() => setUserType('client')}>
-              👤 {T.asClient}
-            </button>
-            <button className={userType === 'pro' ? 'active' : ''} onClick={() => setUserType('pro')}>
-              🔧 {T.asPro}
-            </button>
-          </div>
+
 
           <div className="auth-form">
             <div className="field">
@@ -285,19 +269,7 @@ export default function RegisterPage({ lang, navigate }) {
               {errors.phone && <span className="error-msg">{errors.phone}</span>}
             </div>
 
-            {userType === 'pro' && (
-              <div className="field">
-                <label>{T.category}</label>
-                <select value={form.category} onChange={e => set('category', e.target.value)}
-                  className={errors.category ? 'input-error' : ''}>
-                  <option value="">{T.selectCat}</option>
-                  {ALL_SUBCATEGORIES.map(cat => (
-                    <option key={cat.id} value={cat.id}>{cat.icon} {lang === 'es' ? cat.labelEs : cat.labelEn}</option>
-                  ))}
-                </select>
-                {errors.category && <span className="error-msg">{errors.category}</span>}
-              </div>
-            )}
+
 
             <div className="field">
               <label>{T.password}</label>
