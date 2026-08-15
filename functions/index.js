@@ -159,9 +159,9 @@ exports.azulWebHook = functions.https.onRequest(async (req, res) => {
     if (!isApproved) {
       console.warn(`⚠️ Pago NO aprobado. IsoCode: ${isoCode}, Mensaje: ${responseMessage}`);
       if (orderNumber.startsWith("PLAN_")) {
-        return res.redirect(`https://listo-app.vercel.app/profile?planError=declined`);
+        return res.redirect(`https://listopatron.vercel.app/profile?planError=declined`);
       } else {
-        return res.redirect(`https://listo-app.vercel.app/orders?payment=error`);
+        return res.redirect(`https://listopatron.vercel.app/orders?payment=error`);
       }
     }
 
@@ -196,19 +196,19 @@ exports.azulWebHook = functions.https.onRequest(async (req, res) => {
           });
 
           console.log(`✅ Plan ${actualPlan} activado para usuario ${userId}`);
-          return res.redirect(`https://listo-app.vercel.app/profile?planSetupSuccess=${actualPlan}`);
+          return res.redirect(`https://listopatron.vercel.app/profile?planSetupSuccess=${actualPlan}`);
         }
       }
 
       // Plan inválido — redirigir con error
-      return res.redirect(`https://listo-app.vercel.app/profile?planError=invalid`);
+      return res.redirect(`https://listopatron.vercel.app/profile?planError=invalid`);
     }
 
     // ── SERVICIOS: formato ORD-{timestamp} ───────────────────
     if (orderNumber.startsWith("ORD-") || orderNumber.startsWith("ORD_")) {
       if (monto <= 0) {
         console.warn("⚠️ Monto inválido recibido de AZUL:", payload.Amount);
-        return res.redirect(`https://listo-app.vercel.app/orders?payment=error`);
+        return res.redirect(`https://listopatron.vercel.app/orders?payment=error`);
       }
 
       const tuComision = Math.round(monto * 0.10);
@@ -275,16 +275,16 @@ exports.azulWebHook = functions.https.onRequest(async (req, res) => {
         });
       }
 
-      return res.redirect(`https://listo-app.vercel.app/orders?payment=success`);
+      return res.redirect(`https://listopatron.vercel.app/orders?payment=success`);
     }
 
     // OrderNumber no reconocido
     console.warn("⚠️ OrderNumber no reconocido:", orderNumber);
-    return res.redirect(`https://listo-app.vercel.app/`);
+    return res.redirect(`https://listopatron.vercel.app/`);
 
   } catch (err) {
     console.error("❌ Error en azulWebHook:", err);
-    return res.redirect(`https://listo-app.vercel.app/?paymentError=true`);
+    return res.redirect(`https://listopatron.vercel.app/?paymentError=true`);
   }
 });
 
