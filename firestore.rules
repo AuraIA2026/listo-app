@@ -71,6 +71,24 @@ service cloud.firestore {
       allow read, update, delete: if isAuth(); // Solo usuarios autenticados en la app pueden ver/validar pagos
     }
 
+    // 6b. COMPRAS DE PLANES (plan_purchases)
+    match /plan_purchases/{purchaseId} {
+      allow create: if true; // Permitir que la web pública registre compras
+      allow read, update, delete: if isAuth();
+    }
+
+    // 6c. SOLICITUDES DE EDICION DE PERFIL (profile_edit_requests)
+    match /profile_edit_requests/{requestId} {
+      allow create: if isAuth();
+      allow read, update, delete: if isAuth();
+    }
+
+    // 6d. QUEJAS Y REPORTES (reports)
+    match /reports/{reportId} {
+      allow create: if isAuth();
+      allow read, update, delete: if isAuth();
+    }
+
     // 7. OTRAS COLECCIONES PUBLICAS TEMPORALES (comisiones, etc)
     match /{document=**} {
       allow read, write: if false;
