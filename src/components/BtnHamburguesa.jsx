@@ -261,7 +261,7 @@ export default function BtnHamburguesa({ onClose, navigate, lang = 'es', activeV
                       const phone = encodeURIComponent(userData?.phone || '');
                       const name = encodeURIComponent(userData?.name || '');
                       const category = encodeURIComponent(userData?.category || '');
-                      window.open(`https://listopatron.vercel.app/?action=buy_plan&email=${email}&phone=${phone}&name=${name}&category=${category}`, '_system');
+                      window.open(`https://listopatron-web.vercel.app/?action=buy_plan&email=${email}&phone=${phone}&name=${name}&category=${category}`, '_system');
                     }}
                     style={{ background: '#DC2626', color: 'white', border: 'none', borderRadius: '12px', padding: '12px 16px', fontSize: '13px', fontWeight: '900', width: '100%', cursor: 'pointer', boxShadow: '0 4px 10px rgba(220,38,38,0.2)' }}
                   >

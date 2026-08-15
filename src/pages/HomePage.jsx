@@ -960,7 +960,7 @@ export default function HomePage({ lang, navigate, userRole }) {
                   const phone = encodeURIComponent(userData?.phone || '');
                   const name = encodeURIComponent(userData?.name || '');
                   const category = encodeURIComponent(userData?.category || '');
-                  window.open(`https://listopatron.vercel.app/?action=buy_plan&email=${email}&phone=${phone}&name=${name}&category=${category}`, '_system');
+                  window.open(`https://listopatron-web.vercel.app/?action=buy_plan&email=${email}&phone=${phone}&name=${name}&category=${category}`, '_system');
                 }}
                 style={{ background: '#DC2626', color: 'white', border: 'none', padding: '10px 16px', borderRadius: '8px', fontWeight: 'bold', width: '100%', cursor: 'pointer' }}
               >
@@ -982,7 +982,7 @@ export default function HomePage({ lang, navigate, userRole }) {
                   const phone = encodeURIComponent(userData?.phone || '');
                   const name = encodeURIComponent(userData?.name || '');
                   const category = encodeURIComponent(userData?.category || '');
-                  window.open(`https://listopatron.vercel.app/?action=buy_plan&email=${email}&phone=${phone}&name=${name}&category=${category}`, '_system');
+                  window.open(`https://listopatron-web.vercel.app/?action=buy_plan&email=${email}&phone=${phone}&name=${name}&category=${category}`, '_system');
                 }}
                 style={{ background: '#D97706', color: 'white', border: 'none', padding: '10px 16px', borderRadius: '8px', fontWeight: 'bold', width: '100%', cursor: 'pointer' }}
               >

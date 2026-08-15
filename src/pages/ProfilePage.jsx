@@ -965,7 +965,7 @@ export default function ProfilePage({ lang, setLang, navigate, onLogout, initial
                   const phone = encodeURIComponent(userData?.phone || '');
                   const name = encodeURIComponent(userData?.name || '');
                   const category = encodeURIComponent(userData?.category || '');
-                  window.open(`https://listopatron.vercel.app/?action=buy_plan&email=${email}&phone=${phone}&name=${name}&category=${category}`, '_system');
+                  window.open(`https://listopatron-web.vercel.app/?action=buy_plan&email=${email}&phone=${phone}&name=${name}&category=${category}`, '_system');
                 }} style={{ margin: 0, width: '100%' }}>
                   <span>💎 {lang === 'es' ? 'Sube de Nivel (Gana más)' : 'Upgrade Level (Earn more)'}</span>
                   <span style={{ fontSize: '18px' }}>›</span>
