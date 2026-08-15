@@ -61,15 +61,18 @@ service cloud.firestore {
 
     // 5. NOTIFICACIONES (notificaciones)
     match /notificaciones/{notifId} {
-      allow create: if isAuth();
-      allow read, update, delete: if isAuth() && request.auth.uid == resource.data.userId;
+      allow create: if true; // Permitir que la web pública envíe alertas/notificaciones al admin
+      allow read, update, delete: if isAuth() && (request.auth.uid == resource.data.userId || request.auth.uid == 'admin');
     }
 
-    // 6. OTRAS COLECCIONES PUBLICAS TEMPORALES (comisiones, etc)
-    // Para simplificar cualquier otra cosa no cubierta por estas prioridades:
+    // 6. PAGOS (payments)
+    match /payments/{paymentId} {
+      allow create: if true; // Permitir que la web pública registre intenciones de pago/transferencias
+      allow read, update, delete: if isAuth(); // Solo usuarios autenticados en la app pueden ver/validar pagos
+    }
+
+    // 7. OTRAS COLECCIONES PUBLICAS TEMPORALES (comisiones, etc)
     match /{document=**} {
-      // Temporalmente permitimos que usuarios autenticados pasen si no coinciden arriba
-      // (Cerrado por motivos de seguridad en producción)
       allow read, write: if false;
     }
   }
