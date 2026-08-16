@@ -8,41 +8,53 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    // Función global: Verifica que el usuario sea administrador
+    function isAdmin() {
+      return isAuth() && (
+        request.auth.token.email == 'listopatron.app@gmail.com' ||
+        request.auth.token.email == 'artemediosrd@gmail.com' ||
+        request.auth.uid == 'admin' ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin')
+      );
+    }
+
     // 1. USUARIOS (users)
     match /users/{userId} {
       // Público puede buscar perfiles (para que clientes vean a los profesionales)
       allow read: if true;  
-      // Solo el propietario puede editar sus propios datos
-      allow write: if isAuth() && request.auth.uid == userId; 
+      // Solo el propietario o el administrador pueden editar los datos
+      allow write: if isAuth() && (request.auth.uid == userId || isAdmin()); 
       
       // Colecciones anidadas (como historiales)
       match /{subcollections=**} {
-        allow read, write: if isAuth() && request.auth.uid == userId;
+        allow read, write: if isAuth() && (request.auth.uid == userId || isAdmin());
       }
     }
 
     // 2. CHATS PRIVADOS (chats)
     match /chats/{chatId} {
       // Un usuario puede ver el chat solo si su UID está dentro del arreglo "members" y borrar chats si los tiene
-      allow read, update, delete: if isAuth() && request.auth.uid in resource.data.members;
+      allow read, update, delete: if isAuth() && (request.auth.uid in resource.data.members || isAdmin());
       // Cualquier usuario autenticado puede crear un chat nuevo
       allow create: if isAuth();
 
       // MENSAGES DEL CHAT (subcolección)
       match /messages/{messageId} {
         // Lee/escribe mensajes solo si es miembro del chat padre
-        allow read, write: if isAuth() &&
-          request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.members;
+        allow read, write: if isAuth() && (
+          request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.members || isAdmin()
+        );
       }
     }
 
     // 3. PEDIDOS / ÓRDENES (orders)
     match /orders/{orderId} {
-      // Solo el cliente o el profesional asignado pueden ver o editar el pedido
-      // Validamos ambas propiedades (clientId y proId) según lo que usa tu app
+      // Solo el cliente, profesional asignado o administrador pueden ver o editar el pedido
       allow read, update: if isAuth() && (
         request.auth.uid == resource.data.clientId || 
-        request.auth.uid == resource.data.proId
+        request.auth.uid == resource.data.proId ||
+        isAdmin()
       );
       // Cualquier cliente autenticado puede crear un pedido
       allow create: if isAuth();
@@ -54,15 +66,15 @@ service cloud.firestore {
     match /locales/{localId} {
       // Todo el mundo puede ver la lista de locales
       allow read: if isAuth();
-      // Solo el dueño (que su UID coincida con el proId) puede modificar
-      allow create: if isAuth() && request.auth.uid == request.resource.data.proId;
-      allow update, delete: if isAuth() && request.auth.uid == resource.data.proId;
+      // Solo el dueño o el admin pueden modificar
+      allow create: if isAuth() && (request.auth.uid == request.resource.data.proId || isAdmin());
+      allow update, delete: if isAuth() && (request.auth.uid == resource.data.proId || isAdmin());
     }
 
     // 5. NOTIFICACIONES (notificaciones)
     match /notificaciones/{notifId} {
       allow create: if true; // Permitir que la web pública envíe alertas/notificaciones al admin
-      allow read, update, delete: if isAuth() && (request.auth.uid == resource.data.userId || request.auth.uid == 'admin');
+      allow read, update, delete: if isAuth() && (request.auth.uid == resource.data.userId || request.auth.uid == 'admin' || isAdmin());
     }
 
     // 6. PAGOS (payments)
