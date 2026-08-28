@@ -511,8 +511,8 @@ export default function HomePage({ lang, navigate, userRole }) {
     fetchPros()
   }, [])
 
-  const allProsToUse = allProsReal
-  const featuredProsToUse = featuredReal
+  const allProsToUse = allProsReal.filter(p => !userData?.blockedUsers?.includes(p.id))
+  const featuredProsToUse = featuredReal.filter(p => !userData?.blockedUsers?.includes(p.id))
   const specs = ['todos', ...new Set(allProsToUse.filter(p=>p.specEs).map(p => p.specEs))]
   const filteredPros = proFilter === 'todos' ? allProsToUse : allProsToUse.filter(p => p.specEs === proFilter)
 

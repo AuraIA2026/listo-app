@@ -714,6 +714,8 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
 
   const filtered = professionals
     .filter(p => {
+      if (userData?.blockedUsers?.includes(p.id)) return false
+      
       const mappedCat  = getMappedProCatId(p.category)
       const isSubInMain = currentCat && currentCat.subcategories.some(s => s.id === mappedCat)
       const matchCat   = activeCategory === 'all' || mappedCat === activeCategory || mappedCat === activeSubcategory || isSubInMain

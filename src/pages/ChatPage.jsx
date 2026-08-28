@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import {
   collection, query, where, orderBy, onSnapshot,
   addDoc, serverTimestamp, doc, setDoc, getDoc,
-  updateDoc, deleteDoc
+  updateDoc, deleteDoc, arrayUnion
 } from 'firebase/firestore'
 import { auth, db } from '../firebase'
 import './ChatPage.css'
@@ -107,6 +107,8 @@ export default function ChatPage({ lang = 'es', navigate, professional, userData
   const [showQuick, setShowQuick] = useState(false)
   const [showReport, setShowReport] = useState(false)
   const [selectedMsgId, setSelectedMsgId] = useState(null) // Para opciones de borrar/copiar
+  const [chatBlocked, setChatBlocked] = useState(false)
+  const [blockedBy, setBlockedBy] = useState(null)
   
   const messagesEndRef = useRef(null)
   const inputRef = useRef(null)
@@ -148,6 +150,7 @@ export default function ChatPage({ lang = 'es', navigate, professional, userData
           lastMsg: d.lastMsg || '',
           updatedAt: d.updatedAt || null,
           unread: d.unreadCount?.[me.uid] || 0,
+          blocked: d.blocked || false,
         })
       }
       setChats(list)
@@ -183,12 +186,14 @@ export default function ChatPage({ lang = 'es', navigate, professional, userData
     return () => unsub()
   }, [activeChatId]) // eslint-disable-line
 
-  // ── Escuchar typing del otro usuario ──────────────────────────────────────
+  // ── Escuchar typing y bloqueo del otro usuario ──────────────────────────────
   useEffect(() => {
     if (!activeChatId || !otherUser) return
     const unsub = onSnapshot(doc(db, 'chats', activeChatId), (snap) => {
       const d = snap.data()
       setIsTyping(d?.typing?.[otherUser.uid] === true)
+      setChatBlocked(d?.blocked === true)
+      setBlockedBy(d?.blockedBy || null)
     })
     return () => unsub()
   }, [activeChatId, otherUser])
@@ -253,6 +258,20 @@ export default function ChatPage({ lang = 'es', navigate, professional, userData
       updatedAt: serverTimestamp(),
       ...(otherId ? { [`unreadCount.${otherId}`]: (chats.find(c => c.chatId === activeChatId)?.unread || 0) + 1 } : {}),
     }).catch(() => { })
+  }
+
+  const handleBlockUser = async () => {
+    if (!me || !otherUser || !activeChatId) return
+    await updateDoc(doc(db, 'chats', activeChatId), {
+      blocked: true,
+      blockedBy: me.uid
+    }).catch(() => {})
+    await updateDoc(doc(db, 'users', me.uid), {
+      blockedUsers: arrayUnion(otherUser.uid)
+    }).catch(() => {})
+    setActiveChatId(null)
+    setMessages([])
+    setShowReport(false)
   }
 
   // ── Opciones de Mensaje (Borrar / Copiar) ─────────────────────────────────
@@ -367,40 +386,47 @@ export default function ChatPage({ lang = 'es', navigate, professional, userData
             </div>
           )}
 
-          {chats.map((convo, i) => (
-            <div
-              key={convo.chatId}
-              className="chat-list-item"
-              style={{ animation: `fadeSlideUp .35s ease ${i * 0.05}s both`, background: convo.other?.isOfficial ? 'rgba(255,215,0,0.05)' : '#fff', border: convo.other?.isOfficial ? '1px solid rgba(242,96,0,0.2)' : 'none' }}
-              onClick={() => {
-                setOtherUser(convo.other)
-                setActiveChatId(convo.chatId)
-                setLoadingMessages(true)
-              }}
-            >
-              <div className="cli-avatar-wrap">
-                <Avatar
-                  name={convo.other?.name || '?'}
-                  photoURL={convo.other?.photoURL}
-                  color={convo.other?.color || '#F26000'}
-                  size={52}
-                  online={convo.other?.online || false}
-                  isOfficial={convo.other?.isOfficial}
-                />
-              </div>
-              <div className="cli-body">
-                <div className="cli-top">
-                  <span className="cli-name" style={{ color: convo.other?.isOfficial ? '#F26000' : 'var(--text)', fontWeight: convo.other?.isOfficial ? 800 : 600 }}>{convo.other?.name || 'Usuario'}</span>
-                  <span className="cli-time">{formatLastTime(convo.updatedAt)}</span>
+          {chats
+            .filter(convo => {
+              if (convo.blocked === true) return false
+              const otherId = convo.other?.uid
+              if (userData?.blockedUsers?.includes(otherId)) return false
+              return true
+            })
+            .map((convo, i) => (
+              <div
+                key={convo.chatId}
+                className="chat-list-item"
+                style={{ animation: `fadeSlideUp .35s ease ${i * 0.05}s both`, background: convo.other?.isOfficial ? 'rgba(255,215,0,0.05)' : '#fff', border: convo.other?.isOfficial ? '1px solid rgba(242,96,0,0.2)' : 'none' }}
+                onClick={() => {
+                  setOtherUser(convo.other)
+                  setActiveChatId(convo.chatId)
+                  setLoadingMessages(true)
+                }}
+              >
+                <div className="cli-avatar-wrap">
+                  <Avatar
+                    name={convo.other?.name || '?'}
+                    photoURL={convo.other?.photoURL}
+                    color={convo.other?.color || '#F26000'}
+                    size={52}
+                    online={convo.other?.online || false}
+                    isOfficial={convo.other?.isOfficial}
+                  />
                 </div>
-                <div className="cli-bottom">
-                  <span className="cli-preview">{convo.lastMsg || '...'}</span>
-                  {convo.unread > 0 && <span className="cli-badge">{convo.unread}</span>}
+                <div className="cli-body">
+                  <div className="cli-top">
+                    <span className="cli-name" style={{ color: convo.other?.isOfficial ? '#F26000' : 'var(--text)', fontWeight: convo.other?.isOfficial ? 800 : 600 }}>{convo.other?.name || 'Usuario'}</span>
+                    <span className="cli-time">{formatLastTime(convo.updatedAt)}</span>
+                  </div>
+                  <div className="cli-bottom">
+                    <span className="cli-preview">{convo.lastMsg || '...'}</span>
+                    {convo.unread > 0 && <span className="cli-badge">{convo.unread}</span>}
+                  </div>
+                  <span className="cli-category">{convo.other?.specialty || convo.other?.proSpecialty || ''}</span>
                 </div>
-                <span className="cli-category">{convo.other?.specialty || convo.other?.proSpecialty || ''}</span>
               </div>
-            </div>
-          ))}
+            ))}
         </div>
       </div>
     )
@@ -558,33 +584,39 @@ export default function ChatPage({ lang = 'es', navigate, professional, userData
       )}
 
       {/* ── Input ── */}
-      <div className="chat-input-bar">
-        <button
-          className={`chat-emoji-btn ${showQuick ? 'active' : ''}`}
-          onClick={() => setShowQuick(!showQuick)}
-        >⚡</button>
-        <div className="chat-input-wrap">
-          <input
-            ref={inputRef} type="text" className="chat-input"
-            placeholder={lang === 'es' ? 'Mensaje...' : 'Message...'}
-            value={inputText} onChange={handleInputChange} onKeyDown={handleKeyDown}
-            onFocus={() => setSelectedMsgId(null)}
-          />
+      {chatBlocked ? (
+        <div style={{ padding: '16px', textAlign: 'center', background: '#FEE2E2', color: '#B91C1C', fontWeight: 'bold', borderRadius: '12px', margin: '16px' }}>
+          {blockedBy === me?.uid ? 'Has bloqueado a este usuario.' : 'Esta conversación está bloqueada.'}
         </div>
-        <button
-          className={`chat-send-btn ${inputText.trim() ? 'active' : ''}`}
-          onClick={() => sendMessage(inputText)}
-          disabled={!inputText.trim()}
-        >➤</button>
-      </div>
+      ) : (
+        <div className="chat-input-bar">
+          <button
+            className={`chat-emoji-btn ${showQuick ? 'active' : ''}`}
+            onClick={() => setShowQuick(!showQuick)}
+          >⚡</button>
+          <div className="chat-input-wrap">
+            <input
+              ref={inputRef} type="text" className="chat-input"
+              placeholder={lang === 'es' ? 'Mensaje...' : 'Message...'}
+              value={inputText} onChange={handleInputChange} onKeyDown={handleKeyDown}
+              onFocus={() => setSelectedMsgId(null)}
+            />
+          </div>
+          <button
+            className={`chat-send-btn ${inputText.trim() ? 'active' : ''}`}
+            onClick={() => sendMessage(inputText)}
+            disabled={!inputText.trim()}
+          >➤</button>
+        </div>
+      )}
 
-      {showReport && <ReportModal lang={lang} otherUser={otherUser} onClose={() => setShowReport(false)} />}
+      {showReport && <ReportModal lang={lang} otherUser={otherUser} onClose={() => setShowReport(false)} onBlock={handleBlockUser} />}
     </div>
   )
 }
 
 // ── Modal de Reporte (Google Play UGC Compliance) ──────────────────────────
-export function ReportModal({ lang, otherUser, onClose }) {
+export function ReportModal({ lang, otherUser, onClose, onBlock }) {
   const me = auth.currentUser
   const [reason, setReason] = useState('')
   const [severity, setSeverity] = useState('')
@@ -592,8 +624,8 @@ export function ReportModal({ lang, otherUser, onClose }) {
   const [done, setDone] = useState(false)
   
   const submitReport = async (isBlock) => {
-    if (!severity) return alert('Por favor selecciona la gravedad de la queja primero.')
     if (!reason.trim()) return alert('Escribe el motivo de la queja.')
+    if (!severity) return alert('Por favor selecciona la gravedad de la queja primero.')
     setSubmitting(true)
     try {
       await addDoc(collection(db, 'reports'), {
@@ -607,6 +639,9 @@ export function ReportModal({ lang, otherUser, onClose }) {
         createdAt: serverTimestamp(), 
         status: 'pending'
       })
+      if (isBlock && onBlock) {
+        await onBlock()
+      }
       setDone(true)
     } catch(e) {}
     setSubmitting(false)

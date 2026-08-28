@@ -639,7 +639,7 @@ export default function App() {
 
       {currentPage === 'landing'      && <LandingPage  {...commonProps} />}
       {currentPage === 'home'         && <HomePage     {...userProps} />}
-      {currentPage === 'services'     && <ServicesPage {...commonProps} />}
+      {currentPage === 'services'     && <ServicesPage {...userProps} />}
       {currentPage === 'search'       && <SearchPage   {...userProps} initialCategory={selectedPro?.catToSelect || 'all'} />}
       {currentPage === 'orders'       && <OrdersPage   {...userProps} />}
       {currentPage === 'login'        && <LoginPage    {...commonProps} />}

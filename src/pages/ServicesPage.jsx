@@ -70,7 +70,7 @@ const txt = {
 const avatarColors = ['#F26000','#C24D00','#FF8533','#7A3000','#FFB380']
 
 // ── Componente principal ──────────────────────────────────────────────────────
-export default function ServicesPage({ lang = 'es', navigate }) {
+export default function ServicesPage({ lang = 'es', navigate, userData }) {
   const [activeCategory, setActiveCategory] = useState('all')
   const [search,         setSearch]         = useState('')
   const [onlyAvailable,  setOnlyAvailable]  = useState(false)
@@ -155,6 +155,7 @@ export default function ServicesPage({ lang = 'es', navigate }) {
 
   const filtered = professionals
     .filter(p => {
+      if (userData?.blockedUsers?.includes(p.id)) return false
       const matchCat    = activeCategory === 'all' || p.category === activeCategory
       const matchSearch = p.name.toLowerCase().includes(search.toLowerCase()) ||
                           p.location.toLowerCase().includes(search.toLowerCase())
