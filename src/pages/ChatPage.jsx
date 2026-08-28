@@ -473,7 +473,7 @@ export default function ChatPage({ lang = 'es', navigate, professional, userData
           </div>
         </div>
         <div className="chat-header-actions">
-          <button className="chat-action-btn report-btn" title="Reportar / Bloquear" onClick={() => setShowReport(true)}>⚠️</button>
+          <button className="chat-action-btn report-btn" title="Reportar / Bloquear" onClick={() => setShowReport(true)}>⚠️ {lang === 'es' ? 'Reportar' : 'Report'}</button>
           {phone ? (
             <a href={`tel:${phone}`} className="chat-action-btn call-btn" title={`Llamar a ${otherUser?.name}`}
               style={{ textDecoration: 'none' }}>📞</a>
