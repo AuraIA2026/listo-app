@@ -180,10 +180,10 @@ export default function VIPSection({ realVipPros = [], lang = 'es', navigate }) 
             backdropFilter: 'blur(4px)',
             border: '1px solid rgba(255,255,255,0.2)'
           }}>
-            <img src={plomero} alt="Plomero" style={{ width: '100%', height: '65px', objectFit: 'cover', borderRadius: '10px' }} />
-            <img src={electrica1} alt="Electricista" style={{ width: '100%', height: '65px', objectFit: 'cover', borderRadius: '10px' }} />
-            <img src={mecanico1} alt="Mecánico" style={{ width: '100%', height: '65px', objectFit: 'cover', borderRadius: '10px' }} />
-            <img src={cerrajero1} alt="Cerrajero" style={{ width: '100%', height: '65px', objectFit: 'cover', borderRadius: '10px' }} />
+            <img src={plomero} alt="Plomero" className="amz-hero-pro-img amz-hero-pro-img-1" />
+            <img src={electrica1} alt="Electricista" className="amz-hero-pro-img amz-hero-pro-img-2" />
+            <img src={mecanico1} alt="Mecánico" className="amz-hero-pro-img amz-hero-pro-img-3" />
+            <img src={cerrajero1} alt="Cerrajero" className="amz-hero-pro-img amz-hero-pro-img-4" />
           </div>
 
           {/* Typography */}

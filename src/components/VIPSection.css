@@ -101,6 +101,50 @@
   100% { left: 200%; }
 }
 
+/* Animated Photos Inside Amazon Blue Hero Card */
+.amz-hero-pro-img {
+  width: 100%;
+  height: 65px;
+  object-fit: cover;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.amz-hero-pro-img-1 {
+  animation: amzProFloat1 3s ease-in-out infinite alternate;
+}
+.amz-hero-pro-img-2 {
+  animation: amzProFloat2 3.4s ease-in-out 0.4s infinite alternate;
+}
+.amz-hero-pro-img-3 {
+  animation: amzProFloat3 3.2s ease-in-out 0.8s infinite alternate;
+}
+.amz-hero-pro-img-4 {
+  animation: amzProFloat4 3.6s ease-in-out 1.2s infinite alternate;
+}
+
+@keyframes amzProFloat1 {
+  0% { transform: scale(1) translateY(0); }
+  100% { transform: scale(1.08) translateY(-3px); box-shadow: 0 8px 16px rgba(255, 122, 26, 0.4); }
+}
+
+@keyframes amzProFloat2 {
+  0% { transform: scale(1) translateY(0); }
+  100% { transform: scale(1.08) translateY(-4px); box-shadow: 0 8px 16px rgba(59, 130, 246, 0.4); }
+}
+
+@keyframes amzProFloat3 {
+  0% { transform: scale(1) translateY(0); }
+  100% { transform: scale(1.08) translateY(-3px); box-shadow: 0 8px 16px rgba(34, 197, 94, 0.4); }
+}
+
+@keyframes amzProFloat4 {
+  0% { transform: scale(1) translateY(0); }
+  100% { transform: scale(1.08) translateY(-4px); box-shadow: 0 8px 16px rgba(245, 158, 11, 0.4); }
+}
+
+
 
 @keyframes amzCardSlideIn {
   from { opacity: 0; transform: translateX(20px) scale(0.95); }
