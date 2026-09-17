@@ -4,6 +4,7 @@ import { db } from '../firebase'
 import './HomePage.css'
 import { Capacitor } from '@capacitor/core'
 import TutorialTour, { useTour } from '../components/TutorialTour'
+import VIPSection from '../components/VIPSection'
 
 import BtnHamburguesa from '../components/BtnHamburguesa'
 import BtnHamburguesaUsuario from '../components/BtnHamburguesaUsuario'
@@ -1009,6 +1010,9 @@ export default function HomePage({ lang, navigate, userRole }) {
           ))}
         </div>
       )}
+
+      {/* ── PROFESIONALES VIP CON FOTOS GRANDES ── */}
+      <VIPSection realVipPros={featuredProsToUse} lang={lang} navigate={navigate} />
 
       <TestimonialsCarousel lang={lang} navigate={navigate} />
 

@@ -1,0 +1,275 @@
+/* ═══════════════════════════════════════════════
+   VIPSection.css — Profesionales VIP (Foto Grande)
+   ═══════════════════════════════════════════════ */
+
+.vip-hero-section {
+  margin: 16px 16px 24px;
+  position: relative;
+}
+
+.vip-sec-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.vip-sec-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.vip-sec-title {
+  font-size: 19px;
+  font-weight: 900;
+  color: #1A1A2E;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.vip-crown-badge {
+  background: linear-gradient(135deg, #FFD700, #FFA500);
+  color: #1A1A2E;
+  font-size: 10px;
+  font-weight: 900;
+  padding: 3px 8px;
+  border-radius: 20px;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 8px rgba(255, 215, 0, 0.4);
+  text-transform: uppercase;
+}
+
+.vip-cards-container {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  scroll-snap-type: x mandatory;
+  padding-bottom: 12px;
+}
+
+.vip-cards-container::-webkit-scrollbar {
+  display: none;
+}
+
+/* ── TARJETA HERO DE FOTO GRANDE ── */
+.vip-card-hero {
+  flex: 0 0 88vw;
+  max-width: 380px;
+  scroll-snap-align: center;
+  background: #ffffff;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(242, 96, 0, 0.15);
+  position: relative;
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s;
+  cursor: pointer;
+}
+
+@media (min-width: 480px) {
+  .vip-card-hero {
+    flex: 0 0 320px;
+  }
+}
+
+.vip-card-hero:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 16px 36px rgba(242, 96, 0, 0.2);
+}
+
+/* ── CONTENEDOR FOTO GRANDE (240px ALTO) ── */
+.vip-photo-wrapper {
+  position: relative;
+  width: 100%;
+  height: 240px;
+  background: #1a1a2e;
+  overflow: hidden;
+}
+
+.vip-photo-large {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+  transition: transform 0.5s ease;
+}
+
+.vip-card-hero:hover .vip-photo-large {
+  transform: scale(1.05);
+}
+
+/* Overlay sutil para legibilidad */
+.vip-photo-gradient {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0) 40%, rgba(26,26,46,0.85) 100%);
+  pointer-events: none;
+}
+
+/* Badges sobre la foto gran tamaño */
+.vip-top-badges {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  right: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 2;
+}
+
+.vip-tag-platinum {
+  background: linear-gradient(135deg, #1A1A2E, #2A2A4A);
+  color: #FFD700;
+  font-size: 10px;
+  font-weight: 900;
+  padding: 5px 12px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 215, 0, 0.5);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  text-transform: uppercase;
+}
+
+.vip-tag-online {
+  background: rgba(34, 197, 94, 0.9);
+  backdrop-filter: blur(4px);
+  color: white;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.vip-online-pulse {
+  width: 7px;
+  height: 7px;
+  background: #ffffff;
+  border-radius: 50%;
+  animation: vipPulse 1.5s infinite;
+}
+
+@keyframes vipPulse {
+  0% { transform: scale(0.9); opacity: 0.8; }
+  50% { transform: scale(1.3); opacity: 1; }
+  100% { transform: scale(0.9); opacity: 0.8; }
+}
+
+/* Info superpuesta al pie de la foto */
+.vip-photo-bottom-info {
+  position: absolute;
+  bottom: 12px;
+  left: 14px;
+  right: 14px;
+  z-index: 2;
+  color: white;
+}
+
+.vip-pro-name {
+  font-size: 19px;
+  font-weight: 900;
+  color: #ffffff;
+  margin: 0 0 2px;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+}
+
+.vip-pro-spec {
+  font-size: 13px;
+  color: #FF9E4A;
+  font-weight: 700;
+  margin: 0 0 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.vip-rating-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.vip-stars-badge {
+  background: rgba(255, 255, 255, 0.95);
+  color: #1A1A2E;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+
+.vip-reviews-count {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.85);
+  font-weight: 600;
+}
+
+/* Body / Detalles de la tarjeta VIP */
+.vip-card-body {
+  padding: 14px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: #ffffff;
+}
+
+.vip-highlights-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.vip-pill {
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  color: #475569;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.vip-actions-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 2px;
+}
+
+.vip-btn-book {
+  flex: 1;
+  background: linear-gradient(135deg, #FF7A1A, #F26000);
+  color: white;
+  border: none;
+  border-radius: 14px;
+  padding: 14px;
+  font-size: 14px;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(242, 96, 0, 0.3);
+  transition: transform 0.15s, background 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+}
+
+.vip-btn-book:active {
+  transform: scale(0.96);
+}
