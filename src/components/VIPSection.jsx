@@ -324,8 +324,27 @@ export default function VIPSection({ realVipPros = [], lang = 'es', navigate }) 
             {/* CUERPO Y ACCIONES DE LA TARJETA */}
             <div className="vip-card-body">
               <div className="vip-highlights-row">
-                <span className="vip-pill">📍 {pro.location || 'Rep. Dominicana'}</span>
-                <span className="vip-pill">🛠️ {pro.experience || 'Verificado'}</span>
+                <span className="vip-pill">📍 {(() => {
+                  const candidates = [
+                    pro.sector,
+                    pro.municipio || pro.ciudad || pro.city,
+                    pro.provincia,
+                    pro.direccion,
+                    pro.location,
+                    pro.verificacion?.sector,
+                    pro.verificacion?.municipio,
+                    pro.verificacion?.provincia,
+                    pro.verificacion?.direccion
+                  ].filter(Boolean);
+                  const clean = candidates.filter(str => {
+                    const s = String(str).trim().toLowerCase();
+                    return s !== 'rd' && s !== 'rep. dominicana' && s !== 'república dominicana' && s !== 'rep dominicana';
+                  });
+                  return clean.length > 0 ? clean.slice(0, 2).join(', ') : 'Santo Domingo, D.N.';
+                })()}</span>
+                {pro.experience && !['nuevo', 'verificado'].includes(String(pro.experience).trim().toLowerCase()) && (
+                  <span className="vip-pill">🛠️ {pro.experience}</span>
+                )}
                 {pro.guarantee && <span className="vip-pill" style={{ background: '#EFF6FF', color: '#1D4ED8', borderColor: '#BFDBFE' }}>🛡️ {pro.guarantee}</span>}
               </div>
 

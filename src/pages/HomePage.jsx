@@ -468,6 +468,23 @@ export default function HomePage({ lang, navigate, userRole }) {
           if (!isComplete || (!hasPlan && !hasContracts)) return;
 
           const catObj = getMappedProCatId(data.category)
+          const candidates = [
+            data.sector,
+            data.municipio || data.ciudad || data.city,
+            data.provincia,
+            data.direccion,
+            data.location,
+            data.verificacion?.sector,
+            data.verificacion?.municipio,
+            data.verificacion?.provincia,
+            data.verificacion?.direccion
+          ].filter(Boolean);
+          const cleanLoc = candidates.filter(str => {
+            const s = String(str).trim().toLowerCase();
+            return s !== 'rd' && s !== 'rep. dominicana' && s !== 'república dominicana' && s !== 'rep dominicana';
+          });
+          const finalLoc = cleanLoc.length > 0 ? cleanLoc.slice(0, 2).join(', ') : 'Santo Domingo, D.N.';
+
           prosList.push({
             id: doc.id,
             nameEs: data.name || 'Sin nombre',
@@ -477,8 +494,13 @@ export default function HomePage({ lang, navigate, userRole }) {
             category: data.category || 'unknown',
             rating: data.rating || 0.0,
             reviews: data.reviewCount || data.reviews || 0,
-            location: data.location || 'RD',
-            experience: data.experience || 'Nuevo',
+            location: finalLoc,
+            sector: data.sector || data.verificacion?.sector || '',
+            municipio: data.municipio || data.ciudad || data.city || data.verificacion?.municipio || '',
+            provincia: data.provincia || data.verificacion?.provincia || '',
+            direccion: data.direccion || data.verificacion?.direccion || '',
+            verificacion: data.verificacion || null,
+            experience: (data.experience && !['nuevo', 'verificado'].includes(String(data.experience).trim().toLowerCase())) ? data.experience : '',
             avatar: (data.name || 'P').substring(0, 2).toUpperCase(),
             avail: data.profileComplete && data.available !== false,
             img: data.photoURL || null
