@@ -88,7 +88,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--body);}
   backdrop-filter:blur(16px);
   border-bottom:1px solid var(--border);
   display:flex;align-items:center;justify-content:space-between;
-  padding:16px 20px;
+  padding:max(calc(env(safe-area-inset-top, 0px) + 16px), 52px) 20px 16px;
 }
 .topbar-left{display:flex;align-items:center;gap:12px;}
 .admin-back{
@@ -871,6 +871,21 @@ export default function AdminPage({ navigate }) {
       if (type === 'approve_edit') {
          await updateDoc(doc(db, 'users', obj.userId), obj.requestedChanges);
          await updateDoc(doc(db, 'profile_edit_requests', obj.id), { status: 'approved', processedAt: new Date().toISOString() });
+         
+         try {
+            await addDoc(collection(db, 'notificaciones'), {
+               userId: obj.userId,
+               type: 'system',
+               title: '✏️ Cambios de Perfil Aprobados',
+               text: '¡Tu solicitud para actualizar tus datos o foto de perfil ha sido aprobada con éxito por la administración!',
+               date: new Date().toISOString(),
+               createdAt: new Date().toISOString(),
+               read: false
+            });
+         } catch (eNotif) {
+            console.error("Error guardando notificación de aprobación:", eNotif);
+         }
+
          showToast(`✅ Cambios aplicados al perfil de ${obj.userName}`);
       }
 
@@ -1281,11 +1296,18 @@ export default function AdminPage({ navigate }) {
             )}
             {alerts.map((a, i) => {
               const isUnread = !a.read;
+              const isEditAlert = ['new_edit_request', 'new_edit_request_photo', 'new_edit_request_cover', 'new_edit_request_work'].includes(a.type);
+              const isVerifAlert = a.type === 'new_verification_request';
+              const isPaymentAlert = a.type === 'admin_plan_purchased';
+
               let emoji = '🔄';
               if (a.type === 'admin_plan_purchased' || a.type === 'system') emoji = '👑';
-              else if (a.type === 'new_verification_request') emoji = '🛡️';
+              else if (isVerifAlert) emoji = '🛡️';
               else if (a.type === 'new_edit_request') emoji = '✏️';
-              else if (a.type === 'new_edit_request_photo') emoji = '🖼️';
+              else if (a.type === 'new_edit_request_photo' || a.type === 'new_edit_request_cover' || a.type === 'new_edit_request_work') emoji = '🖼️';
+
+              const matchedEditReq = isEditAlert ? editRequests.find(r => r.status === 'pending' && (r.userId === a.userId || (r.userName && a.text && a.text.includes(r.userName)))) : null;
+
               return (
                 <div 
                   className="payment-card" 
@@ -1294,7 +1316,13 @@ export default function AdminPage({ navigate }) {
                     animationDelay: `${i * 0.05}s`, 
                     borderLeft: isUnread ? '4px solid var(--brand)' : '1px solid var(--border)',
                     background: isUnread ? 'rgba(242, 96, 0, 0.03)' : 'var(--surface)',
-                    marginBottom: 10
+                    marginBottom: 10,
+                    cursor: (isEditAlert || isVerifAlert || isPaymentAlert) ? 'pointer' : 'default'
+                  }}
+                  onClick={() => {
+                    if (isEditAlert) setTab('ediciones');
+                    else if (isVerifAlert) setTab('postulaciones');
+                    else if (isPaymentAlert) setTab('comisiones');
                   }}
                 >
                   <div className="pc-top" style={{alignItems: 'center'}}>
@@ -1307,11 +1335,50 @@ export default function AdminPage({ navigate }) {
                       <div style={{fontSize: 11, color: 'var(--muted)', marginTop: 6}}>{fmtDate(a.createdAt || a.date)}</div>
                     </div>
                     <div className="pc-right" style={{display: 'flex', gap: 6, flexDirection: 'column'}}>
+                      {isEditAlert && matchedEditReq && (
+                        <button 
+                          className="cc-btn paid" 
+                          style={{padding: '6px 10px', fontSize: 11, background: '#10B981', color: '#fff', border: 'none', fontWeight: 'bold'}}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setConfirm({type: 'approve_edit', obj: matchedEditReq});
+                          }}
+                        >
+                          ✅ Aprobar Cambios
+                        </button>
+                      )}
+                      {isEditAlert && (
+                        <button 
+                          className="cc-btn remind" 
+                          style={{padding: '6px 10px', fontSize: 11, background: 'var(--brand)', color: '#fff', border: 'none', fontWeight: 'bold'}}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setTab('ediciones');
+                          }}
+                        >
+                          ✏️ Ir a Ediciones
+                        </button>
+                      )}
+                      {isVerifAlert && (
+                        <button 
+                          className="cc-btn remind" 
+                          style={{padding: '6px 10px', fontSize: 11, background: '#3B82F6', color: '#fff', border: 'none', fontWeight: 'bold'}}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setTab('postulaciones');
+                          }}
+                        >
+                          🛡️ Revisar
+                        </button>
+                      )}
                       {isUnread && (
                         <button 
                           className="cc-btn paid" 
                           style={{padding: '6px 10px', fontSize: 11, background: 'var(--green-dim)', color: 'var(--green)', border: '1px solid rgba(16,185,129,0.25)'}}
-                          onClick={() => setConfirm({type: 'mark_read', obj: a})}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setConfirm({type: 'mark_read', obj: a});
+                          }}
                         >
                           Leído
                         </button>
@@ -1319,7 +1386,10 @@ export default function AdminPage({ navigate }) {
                       <button 
                         className="cc-btn block" 
                         style={{padding: '6px 10px', fontSize: 11}}
-                        onClick={() => setConfirm({type: 'delete_alert', obj: a})}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setConfirm({type: 'delete_alert', obj: a});
+                        }}
                       >
                         Eliminar
                       </button>
@@ -1566,7 +1636,7 @@ export default function AdminPage({ navigate }) {
                </div>
             )}
             {editRequests.filter(r => r.status === 'pending').map(req => {
-               const u = users.find(x => x.id === req.userId);
+               const u = users.find(x => x.id === req.userId || x.uid === req.userId);
                const isMedia = ['photo', 'cover', 'work_photo'].includes(req.type);
                const reqLabel = 
                  req.type === 'photo' ? '📸 FOTO DE PERFIL' :

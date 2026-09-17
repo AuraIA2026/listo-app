@@ -9,7 +9,7 @@
 
 .profile-header {
   background: linear-gradient(160deg, var(--mamey) 0%, var(--mamey-dark) 100%);
-  padding: 36px 20px 28px;
+  padding: max(calc(env(safe-area-inset-top, 0px) + 36px), 68px) 20px 28px;
   display: flex; flex-direction: column; align-items: center; text-align: center;
 }
 
@@ -75,7 +75,7 @@
 
 .screen-header {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 16px 16px 12px; background: white;
+  padding: max(calc(env(safe-area-inset-top, 0px) + 16px), 52px) 16px 12px; background: white;
   border-bottom: 1px solid rgba(0,0,0,0.06);
   position: sticky; top: 0; z-index: 10;
 }

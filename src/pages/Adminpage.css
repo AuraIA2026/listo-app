@@ -47,7 +47,7 @@
 /* ── HEADER ───────────────────────────────────── */
 .admin-header {
   display: flex; align-items: center; justify-content: space-between;
-  background: #fff; padding: 16px 20px;
+  background: #fff; padding: max(calc(env(safe-area-inset-top, 0px) + 16px), 52px) 20px 16px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.07);
   position: sticky; top: 0; z-index: 50;
 }

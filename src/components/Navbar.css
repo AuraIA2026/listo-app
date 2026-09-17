@@ -5,6 +5,7 @@
   background: rgba(250, 247, 245, 0.92);
   backdrop-filter: blur(16px);
   border-bottom: 1px solid rgba(232, 105, 74, 0.12);
+  padding-top: max(env(safe-area-inset-top, 0px), 36px);
 }
 
 .navbar-inner {
