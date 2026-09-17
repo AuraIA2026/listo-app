@@ -762,10 +762,96 @@ export default function HomePage({ lang, navigate, userRole }) {
         )}
       </div>
 
-      {/* ── BARRA DE NAVEGACIÓN AMAZON PILLS ── */}
-
+      {/* ── BARRA DE NAVEGACIÓN AMAZON PILLS CON FOTO DE PERFIL DELANTE ── */}
       {!isPro && (
-        <div className="amz-top-nav-bar">
+        <div className="amz-top-nav-bar" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          {/* Avatar del usuario con ícono de chat flotante delante de Ofertas Relámpago */}
+          <div 
+            onClick={() => navigate('profile')}
+            style={{ position: 'relative', cursor: 'pointer', flexShrink: 0 }}
+          >
+            {userData?.profilePhoto || userData?.photoURL ? (
+              <img 
+                src={userData.profilePhoto || userData.photoURL} 
+                alt="Perfil" 
+                style={{ 
+                  width: '46px', 
+                  height: '46px', 
+                  borderRadius: '50%', 
+                  objectFit: 'cover', 
+                  border: '2px solid white', 
+                  boxShadow: '0 3px 10px rgba(0,0,0,0.3)',
+                  background: '#FFF'
+                }} 
+              />
+            ) : (
+              <div 
+                style={{ 
+                  width: '46px', 
+                  height: '46px', 
+                  borderRadius: '50%', 
+                  background: 'linear-gradient(135deg, #FF7A1A, #F26000)', 
+                  color: 'white', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center', 
+                  fontWeight: 'bold', 
+                  fontSize: '20px', 
+                  border: '2px solid white',
+                  boxShadow: '0 3px 10px rgba(0,0,0,0.3)'
+                }}
+              >
+                {(userData?.name || '👤').charAt(0).toUpperCase()}
+              </div>
+            )}
+
+            {/* Ícono de chat flotante en la esquina de la foto de perfil */}
+            <div 
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate('chat');
+              }}
+              style={{
+                position: 'absolute',
+                bottom: '-2px',
+                right: '-4px',
+                width: '22px',
+                height: '22px',
+                borderRadius: '50%',
+                background: 'linear-gradient(135deg, #FF7A1A, #F26000)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 2px 6px rgba(0,0,0,0.4)',
+                cursor: 'pointer',
+                border: '1.5px solid white',
+                zIndex: 11
+              }}
+            >
+              <span style={{ fontSize: '11px', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                💬
+              </span>
+              {totalUnreadMessages > 0 && (
+                <span 
+                  style={{ 
+                    position: 'absolute', 
+                    top: '-6px', 
+                    right: '-6px', 
+                    background: '#EF4444', 
+                    color: 'white', 
+                    fontSize: '8px', 
+                    fontWeight: '900', 
+                    borderRadius: '8px', 
+                    padding: '1px 4px', 
+                    border: '1px solid white'
+                  }}
+                >
+                  {totalUnreadMessages > 9 ? '9+' : totalUnreadMessages}
+                </span>
+              )}
+            </div>
+          </div>
+
           <button className="amz-nav-pill active" onClick={() => navigate('search')}>
             ⚡ Ofertas Relámpago
           </button>
@@ -796,144 +882,6 @@ export default function HomePage({ lang, navigate, userRole }) {
       {/* ── PRIMER ESPACIO PRINCIPAL: CARRUSEL DE TARJETAS VERTICALES DE DOBLE ALTO ── */}
       <VIPSection realVipPros={featuredProsToUse} lang={lang} navigate={navigate} />
 
-
-      {/* ── BOTONES DE ONBOARDING ELIMINADOS POR PETICIÓN ── */}
-
-      {/* ── VIP BANNER — solo para profesionales ── */}
-
-
-      <div style={{ position: 'relative', margin: '0 16px 50px', zIndex: 50 }}>
-
-        <div className="hp-banner-container" style={{ margin: 0, borderRadius: '16px', overflow: 'hidden', boxShadow: '0 6px 16px rgba(0,0,0,0.12)', height: '220px', position: 'relative' }}>
-          <img src={bannerPros} alt="Un profesional siempre cerca de ti" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 15%', display: 'block' }} />
-          
-          {/* Security Banner (Only for Clients) */}
-          {!isPro && showBlueBanner && (
-            <div className="hp-recruitment-banner" style={{ transition: 'all 0.5s ease-out', cursor: 'default' }}>
-              <div className="shimmer-effect"></div>
-              <span className="recruitment-icon">🛡️</span>
-              <div className="recruitment-text" style={{ flex: 1 }}>
-                <strong style={{ fontSize: '12.5px', lineHeight: '1.45', fontWeight: '800' }}>
-                  {lang === 'es' 
-                    ? 'Comunícate y agenda directamente en la plataforma para mayor seguridad.' 
-                    : 'Keep direct communication via the platform for better security.'}
-                </strong>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Foto de perfil flotante con botón de chat integrado en la esquina inferior derecha */}
-        <div 
-          style={{ 
-            position: 'absolute', 
-            bottom: '-35px', 
-            left: '20px', 
-            zIndex: 100,
-            display: 'flex',
-            alignItems: 'center'
-          }}
-        >
-          <div 
-            onClick={() => {
-              if (isPro) {
-                navigate('proProfile', userData)
-              } else {
-                navigate('profile')
-              }
-            }}
-            style={{ position: 'relative', cursor: 'pointer' }}
-          >
-            {userData?.profilePhoto || userData?.photoURL ? (
-              <img 
-                src={userData.profilePhoto || userData.photoURL} 
-                alt="Profile" 
-                style={{ 
-                  width: '84px', 
-                  height: '84px', 
-                  borderRadius: '50%', 
-                  objectFit: 'cover', 
-                  border: '4px solid white', 
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                  cursor: 'pointer',
-                  background: '#FFF'
-                }} 
-              />
-            ) : (
-              <div 
-                style={{ 
-                  width: '84px', 
-                  height: '84px', 
-                  borderRadius: '50%', 
-                  background: 'linear-gradient(135deg, #1A1A2E, #2A2A4A)', 
-                  color: 'white', 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  justifyContent: 'center', 
-                  fontWeight: 'bold', 
-                  fontSize: '28px', 
-                  border: '4px solid white',
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.15)', 
-                  cursor: 'pointer' 
-                }}
-              >
-                {(userData?.name || '👤').charAt(0).toUpperCase()}
-              </div>
-            )}
-
-            {/* Icono de Mensajes Flotante */}
-            <div 
-              onClick={(e) => {
-                e.stopPropagation();
-                navigate('chat');
-              }}
-              style={{
-                position: 'absolute',
-                bottom: '-2px',
-                right: '-4px',
-                width: '32px',
-                height: '32px',
-                borderRadius: '50%',
-                background: 'linear-gradient(135deg, #FF7A1A, #F26000)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                boxShadow: '0 2px 8px rgba(242,96,0,0.4)',
-                cursor: 'pointer',
-                border: '2px solid white',
-                zIndex: 11
-              }}
-            >
-              <span style={{ fontSize: '15px', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z"/>
-                </svg>
-              </span>
-
-              {/* Badge de mensajes no leídos */}
-              {totalUnreadMessages > 0 && (
-                <span 
-                  style={{ 
-                    position: 'absolute', 
-                    top: '-8px', 
-                    right: '-8px', 
-                    background: '#EF4444', 
-                    color: 'white', 
-                    fontSize: '9px', 
-                    fontWeight: '900', 
-                    borderRadius: '10px', 
-                    padding: '2px 5px', 
-                    border: '1.5px solid white',
-                    boxShadow: '0 2px 6px rgba(239,68,68,0.4)'
-                  }}
-                >
-                  {totalUnreadMessages > 9 ? '9+' : totalUnreadMessages}
-                </span>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
 
       {isPro ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', margin: '0 16px 20px' }}>
