@@ -92,6 +92,24 @@ const demoVipPros = [
 
 export default function VIPSection({ realVipPros = [], lang = 'es', navigate }) {
   const displayPros = realVipPros.length > 0 ? realVipPros : demoVipPros
+  const containerRef = React.useRef(null)
+  const isInteracting = React.useRef(false)
+
+  React.useEffect(() => {
+    const timer = setInterval(() => {
+      if (containerRef.current && !isInteracting.current) {
+        const { scrollLeft, scrollWidth, clientWidth } = containerRef.current
+        const maxScroll = scrollWidth - clientWidth
+        if (scrollLeft + 15 >= maxScroll) {
+          containerRef.current.scrollTo({ left: 0, behavior: 'smooth' })
+        } else {
+          containerRef.current.scrollBy({ left: 230, behavior: 'smooth' })
+        }
+      }
+    }, 3200)
+
+    return () => clearInterval(timer)
+  }, [])
 
   return (
     <section className="vip-hero-section">
@@ -113,8 +131,15 @@ export default function VIPSection({ realVipPros = [], lang = 'es', navigate }) 
         </button>
       </div>
 
-      <div className="vip-cards-container">
-        {/* TARJETA 1: HERO AZUL ESTILO AMAZON PRIME DE TU VIDEO */}
+      <div 
+        ref={containerRef}
+        className="vip-cards-container"
+        onTouchStart={() => { isInteracting.current = true }}
+        onTouchEnd={() => { setTimeout(() => { isInteracting.current = false }, 2500) }}
+        onMouseEnter={() => { isInteracting.current = true }}
+        onMouseLeave={() => { isInteracting.current = false }}
+      >
+        {/* TARJETA 1: HERO AZUL ESTILO AMAZON PRIME DE TU VIDEO CON FOTOS DENTRO */}
         <div 
           className="vip-card-hero amz-blue-hero-card"
           onClick={() => navigate('search')}
@@ -125,10 +150,10 @@ export default function VIPSection({ realVipPros = [], lang = 'es', navigate }) 
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'space-between',
-            padding: '22px 18px',
+            padding: '18px 16px',
             position: 'relative',
             overflow: 'hidden',
-            minHeight: '340px'
+            minHeight: '350px'
           }}
         >
           {/* Shimmer Effect */}
@@ -139,25 +164,44 @@ export default function VIPSection({ realVipPros = [], lang = 'es', navigate }) 
             <span style={{ background: 'rgba(255,255,255,0.25)', color: 'white', padding: '4px 10px', borderRadius: '20px', fontSize: '10px', fontWeight: '900', letterSpacing: '0.5px' }}>
               👑 LISTO PATRÓN
             </span>
-            <span style={{ fontSize: '18px' }}>✨</span>
+            <span style={{ fontSize: '16px' }}>✨</span>
           </div>
 
-          {/* Big Typography like Amazon Prime Video Screenshot */}
-          <div style={{ margin: '24px 0 16px', zIndex: 2 }}>
-            <h3 style={{ fontSize: '24px', fontWeight: '900', color: '#ffffff', margin: 0, lineHeight: '1.15', textShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>
+          {/* Rejilla de fotos de profesionales dentro de la tarjeta azul */}
+          <div style={{ 
+            display: 'grid', 
+            gridTemplateColumns: '1fr 1fr', 
+            gap: '6px', 
+            margin: '10px 0', 
+            zIndex: 2,
+            background: 'rgba(255,255,255,0.12)',
+            padding: '6px',
+            borderRadius: '16px',
+            backdropFilter: 'blur(4px)',
+            border: '1px solid rgba(255,255,255,0.2)'
+          }}>
+            <img src={plomero} alt="Plomero" style={{ width: '100%', height: '65px', objectFit: 'cover', borderRadius: '10px' }} />
+            <img src={electrica1} alt="Electricista" style={{ width: '100%', height: '65px', objectFit: 'cover', borderRadius: '10px' }} />
+            <img src={mecanico1} alt="Mecánico" style={{ width: '100%', height: '65px', objectFit: 'cover', borderRadius: '10px' }} />
+            <img src={cerrajero1} alt="Cerrajero" style={{ width: '100%', height: '65px', objectFit: 'cover', borderRadius: '10px' }} />
+          </div>
+
+          {/* Typography */}
+          <div style={{ margin: '2px 0 10px', zIndex: 2 }}>
+            <h3 style={{ fontSize: '20px', fontWeight: '900', color: '#ffffff', margin: 0, lineHeight: '1.15', textShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>
               {lang === 'es' ? 'Bienvenido a Listo Patrón' : 'Welcome to Listo Patrón'}
             </h3>
-            <p style={{ fontSize: '12px', color: '#B3D7FF', fontWeight: '700', margin: '8px 0 0', lineHeight: '1.4' }}>
-              {lang === 'es' ? 'Profesionales VIP verificados con respuesta inmediata.' : 'Top verified pros with immediate response.'}
+            <p style={{ fontSize: '11px', color: '#B3D7FF', fontWeight: '700', margin: '4px 0 0', lineHeight: '1.3' }}>
+              {lang === 'es' ? 'Profesionales VIP verificados a tu disposición' : 'Verified VIP professionals available'}
             </p>
           </div>
 
           {/* Bottom Controls Overlay (Pause/Sound icons like Amazon video screenshot) */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', zIndex: 2, marginTop: 'auto' }}>
-            <div style={{ display: 'flex', gap: '6px', alignItems: 'center', background: 'rgba(0,0,0,0.35)', padding: '5px 10px', borderRadius: '20px', backdropFilter: 'blur(4px)' }}>
-              <span style={{ fontSize: '11px', color: 'white' }}>⏸️</span>
-              <span style={{ fontSize: '11px', color: 'white' }}>🔊</span>
-              <span style={{ fontSize: '10px', color: '#E0F2FE', fontWeight: '900', marginLeft: '2px' }}>VERIFICADO</span>
+            <div style={{ display: 'flex', gap: '5px', alignItems: 'center', background: 'rgba(0,0,0,0.35)', padding: '4px 8px', borderRadius: '20px', backdropFilter: 'blur(4px)' }}>
+              <span style={{ fontSize: '10px', color: 'white' }}>⏸️</span>
+              <span style={{ fontSize: '10px', color: 'white' }}>🔊</span>
+              <span style={{ fontSize: '9px', color: '#E0F2FE', fontWeight: '900', marginLeft: '2px' }}>VERIFICADO</span>
             </div>
 
             <button 
@@ -165,8 +209,8 @@ export default function VIPSection({ realVipPros = [], lang = 'es', navigate }) 
                 background: '#FF7A1A',
                 color: 'white',
                 border: 'none',
-                borderRadius: '12px',
-                padding: '9px 12px',
+                borderRadius: '10px',
+                padding: '8px 12px',
                 fontSize: '11px',
                 fontWeight: '900',
                 cursor: 'pointer',
@@ -177,6 +221,7 @@ export default function VIPSection({ realVipPros = [], lang = 'es', navigate }) 
             </button>
           </div>
         </div>
+
 
         {displayPros.map((pro, idx) => (
           <div 
