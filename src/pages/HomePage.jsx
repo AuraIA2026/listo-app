@@ -1044,12 +1044,12 @@ export default function HomePage({ lang, navigate, userRole }) {
       )}
 
 
-      {/* ── SECCIÓN BENTO GRID 2x2 ESTILO AMAZON ── */}
+      {/* ── ESTRUCTURA VARIADA 1 ESTILO AMAZON: BENTO GRID CONTENEDOR 2x2 ── */}
       {!isPro && (
         <section className="amz-bento-section">
           <div className="amz-bento-header">
             <h2 className="amz-bento-title">
-              🛍️ {lang === 'es' ? 'Servicios más solicitados hoy' : 'Most requested services today'}
+              🛍️ {lang === 'es' ? 'Abarrotes y servicios con entrega hoy' : 'Same day services'}
             </h2>
             <button className="hp-see-all" onClick={() => navigate('search')}>
               {lang === 'es' ? 'Ver todo' : 'See all'} ›
@@ -1095,8 +1095,9 @@ export default function HomePage({ lang, navigate, userRole }) {
         </section>
       )}
 
-      {/* ── PROFESIONALES VIP CON FOTOS GRANDES ── */}
+      {/* ── ESTRUCTURA VARIADA 2 ESTILO AMAZON: TARJETAS DE PROFESIONALES VIP ── */}
       <VIPSection realVipPros={featuredProsToUse} lang={lang} navigate={navigate} />
+
 
 
       <TestimonialsCarousel lang={lang} navigate={navigate} />
