@@ -114,12 +114,77 @@ export default function VIPSection({ realVipPros = [], lang = 'es', navigate }) 
       </div>
 
       <div className="vip-cards-container">
+        {/* TARJETA 1: HERO AZUL ESTILO AMAZON PRIME DE TU VIDEO */}
+        <div 
+          className="vip-card-hero amz-blue-hero-card"
+          onClick={() => navigate('search')}
+          style={{
+            background: 'linear-gradient(160deg, #0073EC 0%, #0045B5 60%, #002B7A 100%)',
+            color: 'white',
+            borderColor: '#0052C2',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between',
+            padding: '22px 18px',
+            position: 'relative',
+            overflow: 'hidden',
+            minHeight: '340px'
+          }}
+        >
+          {/* Shimmer Effect */}
+          <div className="amz-shimmer-effect" />
+
+          {/* Top Tag */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', zIndex: 2 }}>
+            <span style={{ background: 'rgba(255,255,255,0.25)', color: 'white', padding: '4px 10px', borderRadius: '20px', fontSize: '10px', fontWeight: '900', letterSpacing: '0.5px' }}>
+              👑 LISTO PATRÓN
+            </span>
+            <span style={{ fontSize: '18px' }}>✨</span>
+          </div>
+
+          {/* Big Typography like Amazon Prime Video Screenshot */}
+          <div style={{ margin: '24px 0 16px', zIndex: 2 }}>
+            <h3 style={{ fontSize: '24px', fontWeight: '900', color: '#ffffff', margin: 0, lineHeight: '1.15', textShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>
+              {lang === 'es' ? 'Bienvenido a Listo Patrón' : 'Welcome to Listo Patrón'}
+            </h3>
+            <p style={{ fontSize: '12px', color: '#B3D7FF', fontWeight: '700', margin: '8px 0 0', lineHeight: '1.4' }}>
+              {lang === 'es' ? 'Profesionales VIP verificados con respuesta inmediata.' : 'Top verified pros with immediate response.'}
+            </p>
+          </div>
+
+          {/* Bottom Controls Overlay (Pause/Sound icons like Amazon video screenshot) */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', zIndex: 2, marginTop: 'auto' }}>
+            <div style={{ display: 'flex', gap: '6px', alignItems: 'center', background: 'rgba(0,0,0,0.35)', padding: '5px 10px', borderRadius: '20px', backdropFilter: 'blur(4px)' }}>
+              <span style={{ fontSize: '11px', color: 'white' }}>⏸️</span>
+              <span style={{ fontSize: '11px', color: 'white' }}>🔊</span>
+              <span style={{ fontSize: '10px', color: '#E0F2FE', fontWeight: '900', marginLeft: '2px' }}>VERIFICADO</span>
+            </div>
+
+            <button 
+              style={{
+                background: '#FF7A1A',
+                color: 'white',
+                border: 'none',
+                borderRadius: '12px',
+                padding: '9px 12px',
+                fontSize: '11px',
+                fontWeight: '900',
+                cursor: 'pointer',
+                boxShadow: '0 4px 10px rgba(0,0,0,0.3)'
+              }}
+            >
+              {lang === 'es' ? 'Explorar ›' : 'Explore ›'}
+            </button>
+          </div>
+        </div>
+
         {displayPros.map((pro, idx) => (
           <div 
             key={pro.id || idx} 
             className="vip-card-hero"
             onClick={() => navigate('booking', { professional: pro })}
           >
+
             {/* CONTENEDOR FOTO GRANDE */}
             <div className="vip-photo-wrapper">
               <img 
