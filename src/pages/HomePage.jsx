@@ -25,6 +25,7 @@ import jardinero  from '../assets/pros/Jardinero.jpg'
 import ninera     from '../assets/pros/Niñera.jpg'
 import ninera1    from '../assets/pros/Niñera1.jpg'
 import bannerPros from '../assets/banner_pros.jpg'
+import logoListo  from '../assets/logo_listo.png'
 
 const testimonials = [
   { nameEs:'María González',  photo: electrica1, rating:5, dateEs:'Hace 2 días',    dateEn:'2 days ago',   specEs:'Electricista', specEn:'Electrician', textEs:'Excelente servicio, llegó puntual y resolvió el problema en menos de una hora. Lo recomiendo 100%.', textEn:'Excellent service, arrived on time and fixed the problem in less than an hour. 100% recommended.' },
@@ -762,48 +763,27 @@ export default function HomePage({ lang, navigate, userRole }) {
         )}
       </div>
 
-      {/* ── BARRA DE NAVEGACIÓN AMAZON PILLS CON FOTO DE PERFIL DELANTE ── */}
+      {/* ── BARRA DE NAVEGACIÓN AMAZON PILLS CON FOTO DE PERFIL DELANTE (SOBRESALE DEL CUADRO) ── */}
       {!isPro && (
-        <div className="amz-top-nav-bar" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          {/* Avatar del usuario con ícono de chat flotante delante de Ofertas Relámpago */}
+        <div className="amz-top-nav-bar" style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '6px 16px', overflow: 'visible' }}>
+          {/* Avatar del usuario que SOBRESALE un poco del cuadro azul/oscuro */}
           <div 
             onClick={() => navigate('profile')}
-            style={{ position: 'relative', cursor: 'pointer', flexShrink: 0 }}
+            style={{ position: 'relative', cursor: 'pointer', flexShrink: 0, zIndex: 20, margin: '-6px 2px -6px 0' }}
           >
-            {userData?.profilePhoto || userData?.photoURL ? (
-              <img 
-                src={userData.profilePhoto || userData.photoURL} 
-                alt="Perfil" 
-                style={{ 
-                  width: '46px', 
-                  height: '46px', 
-                  borderRadius: '50%', 
-                  objectFit: 'cover', 
-                  border: '2px solid white', 
-                  boxShadow: '0 3px 10px rgba(0,0,0,0.3)',
-                  background: '#FFF'
-                }} 
-              />
-            ) : (
-              <div 
-                style={{ 
-                  width: '46px', 
-                  height: '46px', 
-                  borderRadius: '50%', 
-                  background: 'linear-gradient(135deg, #FF7A1A, #F26000)', 
-                  color: 'white', 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  justifyContent: 'center', 
-                  fontWeight: 'bold', 
-                  fontSize: '20px', 
-                  border: '2px solid white',
-                  boxShadow: '0 3px 10px rgba(0,0,0,0.3)'
-                }}
-              >
-                {(userData?.name || '👤').charAt(0).toUpperCase()}
-              </div>
-            )}
+            <img 
+              src={userData?.profilePhoto || userData?.photoURL || logoListo} 
+              alt="Perfil" 
+              style={{ 
+                width: '58px', 
+                height: '58px', 
+                borderRadius: '50%', 
+                objectFit: 'cover', 
+                border: '3px solid white', 
+                boxShadow: '0 4px 14px rgba(0,0,0,0.4)',
+                background: '#FFF'
+              }} 
+            />
 
             {/* Ícono de chat flotante en la esquina de la foto de perfil */}
             <div 
@@ -814,21 +794,21 @@ export default function HomePage({ lang, navigate, userRole }) {
               style={{
                 position: 'absolute',
                 bottom: '-2px',
-                right: '-4px',
-                width: '22px',
-                height: '22px',
+                right: '-2px',
+                width: '26px',
+                height: '26px',
                 borderRadius: '50%',
                 background: 'linear-gradient(135deg, #FF7A1A, #F26000)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                boxShadow: '0 2px 6px rgba(0,0,0,0.4)',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.5)',
                 cursor: 'pointer',
-                border: '1.5px solid white',
-                zIndex: 11
+                border: '2px solid white',
+                zIndex: 21
               }}
             >
-              <span style={{ fontSize: '11px', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <span style={{ fontSize: '13px', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 💬
               </span>
               {totalUnreadMessages > 0 && (
@@ -839,11 +819,11 @@ export default function HomePage({ lang, navigate, userRole }) {
                     right: '-6px', 
                     background: '#EF4444', 
                     color: 'white', 
-                    fontSize: '8px', 
+                    fontSize: '9px', 
                     fontWeight: '900', 
                     borderRadius: '8px', 
-                    padding: '1px 4px', 
-                    border: '1px solid white'
+                    padding: '1px 5px', 
+                    border: '1.5px solid white'
                   }}
                 >
                   {totalUnreadMessages > 9 ? '9+' : totalUnreadMessages}
