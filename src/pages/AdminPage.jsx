@@ -869,24 +869,39 @@ export default function AdminPage({ navigate }) {
       }
 
       if (type === 'approve_edit') {
-         await updateDoc(doc(db, 'users', obj.userId), obj.requestedChanges);
-         await updateDoc(doc(db, 'profile_edit_requests', obj.id), { status: 'approved', processedAt: new Date().toISOString() });
+         const targetUserId = obj.userId || (users.find(u => (obj.userName && u.name?.toLowerCase().includes(obj.userName.toLowerCase())) || (obj.email && u.email?.toLowerCase() === obj.email.toLowerCase()))?.id);
+         
+         if (targetUserId && obj.requestedChanges && Object.keys(obj.requestedChanges).length > 0) {
+            await updateDoc(doc(db, 'users', targetUserId), obj.requestedChanges);
+         } else if (targetUserId) {
+            await updateDoc(doc(db, 'users', targetUserId), { profileEditPending: false });
+         }
+
+         if (obj.id) {
+            try {
+               await updateDoc(doc(db, 'profile_edit_requests', obj.id), { status: 'approved', processedAt: new Date().toISOString() });
+            } catch (eDoc) {
+               // Silently ignore if collection id differed
+            }
+         }
          
          try {
-            await addDoc(collection(db, 'notificaciones'), {
-               userId: obj.userId,
-               type: 'system',
-               title: '✏️ Cambios de Perfil Aprobados',
-               text: '¡Tu solicitud para actualizar tus datos o foto de perfil ha sido aprobada con éxito por la administración!',
-               date: new Date().toISOString(),
-               createdAt: new Date().toISOString(),
-               read: false
-            });
+            if (targetUserId) {
+               await addDoc(collection(db, 'notificaciones'), {
+                  userId: targetUserId,
+                  type: 'system',
+                  title: '✏️ Cambios de Perfil Aprobados',
+                  text: '¡Tu solicitud para actualizar tus datos o foto de perfil ha sido aprobada con éxito por la administración!',
+                  date: new Date().toISOString(),
+                  createdAt: new Date().toISOString(),
+                  read: false
+               });
+            }
          } catch (eNotif) {
             console.error("Error guardando notificación de aprobación:", eNotif);
          }
 
-         showToast(`✅ Cambios aplicados al perfil de ${obj.userName}`);
+         showToast(`✅ Cambios aplicados al perfil de ${obj.userName || 'Profesional'}`);
       }
 
       if (type === 'reject_edit') {
@@ -1306,7 +1321,26 @@ export default function AdminPage({ navigate }) {
               else if (a.type === 'new_edit_request') emoji = '✏️';
               else if (a.type === 'new_edit_request_photo' || a.type === 'new_edit_request_cover' || a.type === 'new_edit_request_work') emoji = '🖼️';
 
-              const matchedEditReq = isEditAlert ? editRequests.find(r => r.status === 'pending' && (r.userId === a.userId || (r.userName && a.text && a.text.includes(r.userName)))) : null;
+              const matchedEditReq = isEditAlert ? (
+                editRequests.find(r => 
+                  (r.status === 'pending' || !r.status) && (
+                    (r.userId && a.userId && (r.userId === a.userId || r.userId === a.editRequestId)) ||
+                    (r.id && a.editRequestId && r.id === a.editRequestId) ||
+                    (r.id && a.id && r.id === a.id) ||
+                    (r.userName && a.text && a.text.toLowerCase().includes(r.userName.toLowerCase())) ||
+                    (r.name && a.text && a.text.toLowerCase().includes(r.name.toLowerCase())) ||
+                    (r.email && a.text && a.text.toLowerCase().includes(r.email.toLowerCase())) ||
+                    (a.userEmail && r.email && a.userEmail.toLowerCase() === r.email.toLowerCase())
+                  )
+                ) || {
+                  id: a.editRequestId || a.id,
+                  userId: a.userId || (users.find(u => a.text && a.text.toLowerCase().includes(u.name?.toLowerCase()))?.id),
+                  userName: a.userName || a.name || (a.text ? (a.text.match(/El profesional ([^(]+)/) || [])[1] : '') || 'Profesional',
+                  requestedChanges: a.requestedChanges || {},
+                  status: 'pending',
+                  fromAlert: true
+                }
+              ) : null;
 
               return (
                 <div 
@@ -1335,13 +1369,17 @@ export default function AdminPage({ navigate }) {
                       <div style={{fontSize: 11, color: 'var(--muted)', marginTop: 6}}>{fmtDate(a.createdAt || a.date)}</div>
                     </div>
                     <div className="pc-right" style={{display: 'flex', gap: 6, flexDirection: 'column'}}>
-                      {isEditAlert && matchedEditReq && (
+                      {isEditAlert && (
                         <button 
                           className="cc-btn paid" 
                           style={{padding: '6px 10px', fontSize: 11, background: '#10B981', color: '#fff', border: 'none', fontWeight: 'bold'}}
                           onClick={(e) => {
                             e.stopPropagation();
-                            setConfirm({type: 'approve_edit', obj: matchedEditReq});
+                            if (matchedEditReq) {
+                              setConfirm({type: 'approve_edit', obj: matchedEditReq});
+                            } else {
+                              setTab('ediciones');
+                            }
                           }}
                         >
                           ✅ Aprobar Cambios
