@@ -910,7 +910,7 @@ export default function LandingPage({ navigate, lang }) {
           </div>
         <h2 className="pro-title">Gana más trabajando<br/>con Listo</h2>
         <p className="pro-sub">Únete a la red de profesionales más confiable de República Dominicana y consigue clientes todos los días.</p>
-        <div className="free-tag">🎉 &nbsp;1 mes GRATIS · Plan Básico incluido</div>
+        <div className="free-tag">🎉 &nbsp;3 meses GRATIS · Plan Básico (3 contratos/mes)</div>
         <div className="pro-perks">
           <div className="perk"><span className="perk-icon">📱</span><p><strong>Más clientes sin esfuerzo</strong> — ellos te encuentran a ti</p></div>
           <div className="perk"><span className="perk-icon">💬</span><p><strong>Chat y llamadas integradas</strong> — comunícate directo</p></div>
@@ -1268,7 +1268,7 @@ export default function LandingPage({ navigate, lang }) {
         <summary style={{"fontWeight": "800", "fontSize": "15px", "color": "#C24D00", "listStyle": "none", "display": "flex", "justifyContent": "space-between", "alignItems": "center"}}>
           ¿Cuánto cuesta unirse a Listo Patrón? <span style={{"fontSize": "20px", "color": "#F26000"}}>+</span>
         </summary>
-        <p style={{"marginTop": "12px", "color": "#555", "fontSize": "14px", "lineHeight": "1.7"}}>El primer mes es completamente gratis con el Plan Básico incluido. Después puedes elegir el plan que más te convenga según tu volumen de trabajo.</p>
+        <p style={{"marginTop": "12px", "color": "#555", "fontSize": "14px", "lineHeight": "1.7"}}>Los primeros 3 meses son completamente gratis con el Plan Básico incluido (3 contratos por mes). Después puedes elegir el plan que más te convenga según tu volumen de trabajo.</p>
       </details>
 
       <details style={{"background": "#FFF3EC", "borderRadius": "14px", "padding": "18px 20px", "border": "1px solid #FFD4B8", "cursor": "pointer"}}>
@@ -1353,7 +1353,7 @@ export default function LandingPage({ navigate, lang }) {
           <span>¿Cómo me registro como profesional?</span>
           <span className="faq-arrow">▼</span>
         </div>
-        <div className="faq-a">Entra a la app, selecciona "Soy profesional", completa tu perfil con tus datos y especialidad, y elige el plan que mejor se adapte a ti. El primer mes es gratis.</div>
+        <div className="faq-a">Entra a la app, selecciona "Soy profesional", completa tu perfil con tus datos y especialidad, y elige el plan que mejor se adapte a ti. Los primeros 3 meses son gratis (3 contratos por mes).</div>
       </div>
 
     </div>

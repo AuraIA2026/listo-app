@@ -108,7 +108,7 @@ export default function LoginPage({ lang, navigate }) {
       if (!userDocSnap.exists()) {
         // Es un nuevo registro social
         const expireDate = new Date()
-        expireDate.setDate(expireDate.getDate() + 30)
+        expireDate.setDate(expireDate.getDate() + 90) // 3 meses gratis con Plan Básico
         
         const displayName = appleName || user.displayName || 'Usuario ' + providerId
         
