@@ -762,12 +762,44 @@ export default function HomePage({ lang, navigate, userRole }) {
         )}
       </div>
 
+      {/* ── BARRA DE NAVEGACIÓN AMAZON PILLS ── */}
+
+      {!isPro && (
+        <div className="amz-top-nav-bar">
+          <button className="amz-nav-pill active" onClick={() => navigate('search')}>
+            ⚡ Ofertas Relámpago
+          </button>
+          <button className="amz-nav-pill" onClick={() => navigate('search', { catToSelect: 'mecanico' })}>
+            🔧 Mecánicos
+          </button>
+          <button className="amz-nav-pill" onClick={() => navigate('search', { catToSelect: 'electricista' })}>
+            ⚡ Electricistas
+          </button>
+          <button className="amz-nav-pill" onClick={() => navigate('search', { catToSelect: 'plomero' })}>
+            🔩 Plomeros
+          </button>
+          <button className="amz-nav-pill" onClick={() => navigate('search', { catToSelect: 'cerrajero' })}>
+            🔑 Cerrajeros
+          </button>
+          <button className="amz-nav-pill" onClick={() => navigate('search', { catToSelect: 'pintor' })}>
+            🎨 Pintores
+          </button>
+          <button className="amz-nav-pill" onClick={() => navigate('search', { catToSelect: 'jardinero' })}>
+            🌿 Jardineros
+          </button>
+          <button className="amz-nav-pill" onClick={() => navigate('search', { catToSelect: 'ninera' })}>
+            👶 Niñeras
+          </button>
+        </div>
+      )}
+
       {/* ── BOTONES DE ONBOARDING ELIMINADOS POR PETICIÓN ── */}
 
       {/* ── VIP BANNER — solo para profesionales ── */}
 
 
       <div style={{ position: 'relative', margin: '0 16px 50px', zIndex: 50 }}>
+
         <div className="hp-banner-container" style={{ margin: 0, borderRadius: '16px', overflow: 'hidden', boxShadow: '0 6px 16px rgba(0,0,0,0.12)', height: '220px', position: 'relative' }}>
           <img src={bannerPros} alt="Un profesional siempre cerca de ti" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 15%', display: 'block' }} />
           
@@ -1011,8 +1043,61 @@ export default function HomePage({ lang, navigate, userRole }) {
         </div>
       )}
 
+
+      {/* ── SECCIÓN BENTO GRID 2x2 ESTILO AMAZON ── */}
+      {!isPro && (
+        <section className="amz-bento-section">
+          <div className="amz-bento-header">
+            <h2 className="amz-bento-title">
+              🛍️ {lang === 'es' ? 'Servicios más solicitados hoy' : 'Most requested services today'}
+            </h2>
+            <button className="hp-see-all" onClick={() => navigate('search')}>
+              {lang === 'es' ? 'Ver todo' : 'See all'} ›
+            </button>
+          </div>
+          <div className="amz-bento-grid">
+            <div className="amz-bento-item" onClick={() => navigate('search', { catToSelect: 'mecanico' })}>
+              <div className="amz-bento-img-wrap">
+                <span className="amz-bento-item-tag">🔥 MÁS VENDIDO</span>
+                <img src={mecanico1} alt="Mecánico" className="amz-bento-img" />
+              </div>
+              <p className="amz-bento-item-title">{lang === 'es' ? 'Diagnóstico Vehicular' : 'Auto Diagnostic'}</p>
+              <p className="amz-bento-item-sub">🤝 {lang === 'es' ? 'A convenir' : 'To agree'}</p>
+            </div>
+
+            <div className="amz-bento-item" onClick={() => navigate('search', { catToSelect: 'electricista' })}>
+              <div className="amz-bento-img-wrap">
+                <span className="amz-bento-item-tag">⚡ 24/7 URGENTE</span>
+                <img src={electrica1} alt="Electricista" className="amz-bento-img" />
+              </div>
+              <p className="amz-bento-item-title">{lang === 'es' ? 'Instalación Eléctrica' : 'Electrical Install'}</p>
+              <p className="amz-bento-item-sub">🤝 {lang === 'es' ? 'A convenir' : 'To agree'}</p>
+            </div>
+
+            <div className="amz-bento-item" onClick={() => navigate('search', { catToSelect: 'plomero' })}>
+              <div className="amz-bento-img-wrap">
+                <span className="amz-bento-item-tag">🛡️ GARANTIZADO</span>
+                <img src={plomero} alt="Plomero" className="amz-bento-img" />
+              </div>
+              <p className="amz-bento-item-title">{lang === 'es' ? 'Reparación de Tubería' : 'Pipe Repair'}</p>
+              <p className="amz-bento-item-sub">🤝 {lang === 'es' ? 'A convenir' : 'To agree'}</p>
+            </div>
+
+            <div className="amz-bento-item" onClick={() => navigate('search', { catToSelect: 'cerrajero' })}>
+              <div className="amz-bento-img-wrap">
+                <span className="amz-bento-item-tag">🔑 POPULAR</span>
+                <img src={cerrajero1} alt="Cerrajero" className="amz-bento-img" />
+              </div>
+              <p className="amz-bento-item-title">{lang === 'es' ? 'Apertura de Puertas' : 'Door Opening'}</p>
+              <p className="amz-bento-item-sub">🤝 {lang === 'es' ? 'A convenir' : 'To agree'}</p>
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* ── PROFESIONALES VIP CON FOTOS GRANDES ── */}
       <VIPSection realVipPros={featuredProsToUse} lang={lang} navigate={navigate} />
+
 
       <TestimonialsCarousel lang={lang} navigate={navigate} />
 
