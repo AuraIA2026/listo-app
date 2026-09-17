@@ -6,6 +6,7 @@ import electrica1 from '../assets/pros/Electricista1.jpg'
 import plomero    from '../assets/pros/Plomero.jpg'
 import cerrajero1 from '../assets/pros/Cerrajero1.jpg'
 import jardinero  from '../assets/pros/Jardinero.jpg'
+import logoListo  from '../assets/logo_listo.png'
 
 const demoVipPros = [
   {
@@ -154,7 +155,7 @@ export default function VIPSection({ realVipPros = [], lang = 'es', navigate }) 
         onMouseEnter={() => { isInteracting.current = true }}
         onMouseLeave={() => { isInteracting.current = false }}
       >
-        {/* TARJETA 1: HERO AZUL ESTILO AMAZON PRIME DE TU VIDEO CON CARRUSEL DE FOTOS ANIMADO */}
+        {/* TARJETA 1: HERO AZUL ESTILO AMAZON PRIME — PROFESIONAL MÁS POPULAR DEL MES */}
         <div 
           className="vip-card-hero amz-blue-hero-card"
           onClick={() => navigate('search')}
@@ -174,15 +175,33 @@ export default function VIPSection({ realVipPros = [], lang = 'es', navigate }) 
           {/* Shimmer Effect */}
           <div className="amz-shimmer-effect" />
 
-          {/* Top Tag */}
+          {/* Top Tag & Logo Listo (Reemplazó estrellas por logo listo un poco más grande) */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', zIndex: 2 }}>
-            <span style={{ background: 'rgba(255,255,255,0.25)', color: 'white', padding: '4px 10px', borderRadius: '20px', fontSize: '10px', fontWeight: '900', letterSpacing: '0.5px' }}>
-              👑 LISTO PATRÓN
+            <span style={{ 
+              background: 'linear-gradient(135deg, #FFD700, #FFA500)', 
+              color: '#1A1A2E', 
+              padding: '4px 10px', 
+              borderRadius: '20px', 
+              fontSize: '10px', 
+              fontWeight: '900', 
+              letterSpacing: '0.5px',
+              boxShadow: '0 2px 8px rgba(255, 215, 0, 0.4)'
+            }}>
+              🏆 MÁS POPULAR DEL MES
             </span>
-            <span style={{ fontSize: '16px' }}>✨</span>
+            <img 
+              src={logoListo} 
+              alt="Listo Patrón Logo" 
+              style={{ 
+                height: '28px', 
+                width: 'auto', 
+                objectFit: 'contain',
+                filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' 
+              }} 
+            />
           </div>
 
-          {/* Carrusel Deslizante Interno de Fotos estilo Amazon Video */}
+          {/* Carrusel Deslizante Interno de Fotos del Profesional Popular (Sin fondo negro) */}
           <div className="amz-inner-carousel-wrapper" style={{ zIndex: 2 }}>
             <div 
               className="amz-inner-carousel-track"
@@ -192,7 +211,7 @@ export default function VIPSection({ realVipPros = [], lang = 'es', navigate }) 
                 <div key={idx} className="amz-inner-slide">
                   <img src={item.img} alt={item.titleEs} className="amz-inner-slide-img" />
                   <div className="amz-inner-slide-overlay">
-                    <span className="amz-inner-slide-badge">{item.badge}</span>
+                    <span className="amz-inner-slide-badge">🏆 #{idx + 1} POPULAR</span>
                     <span className="amz-inner-slide-title">{lang === 'es' ? item.titleEs : item.titleEn}</span>
                   </div>
                 </div>
@@ -214,38 +233,38 @@ export default function VIPSection({ realVipPros = [], lang = 'es', navigate }) 
             </div>
           </div>
 
-          {/* Typography */}
+          {/* Typography del Profesional del Mes */}
           <div style={{ margin: '2px 0 10px', zIndex: 2 }}>
-            <h3 style={{ fontSize: '20px', fontWeight: '900', color: '#ffffff', margin: 0, lineHeight: '1.15', textShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>
-              {lang === 'es' ? 'Bienvenido a Listo Patrón' : 'Welcome to Listo Patrón'}
+            <h3 style={{ fontSize: '19px', fontWeight: '900', color: '#ffffff', margin: 0, lineHeight: '1.15', textShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>
+              {lang === 'es' ? 'Profesional del Mes' : 'Professional of the Month'}
             </h3>
             <p style={{ fontSize: '11px', color: '#B3D7FF', fontWeight: '700', margin: '4px 0 0', lineHeight: '1.3' }}>
-              {lang === 'es' ? 'Profesionales VIP verificados a tu disposición' : 'Verified VIP professionals available'}
+              ⭐ 5.0 (180+ contrataciones) • {lang === 'es' ? 'El más contratado de la app' : 'Most hired pro in app'}
             </p>
           </div>
 
-          {/* Bottom Controls Overlay (Pause/Sound icons like Amazon video screenshot) */}
+          {/* Bottom Controls Overlay (Sin fondo negro -> Glassmorphic blanco) */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', zIndex: 2, marginTop: 'auto' }}>
-            <div style={{ display: 'flex', gap: '5px', alignItems: 'center', background: 'rgba(0,0,0,0.35)', padding: '4px 8px', borderRadius: '20px', backdropFilter: 'blur(4px)' }}>
+            <div style={{ display: 'flex', gap: '5px', alignItems: 'center', background: 'rgba(255,255,255,0.22)', padding: '4px 10px', borderRadius: '20px', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.3)' }}>
               <span style={{ fontSize: '10px', color: 'white' }}>⏸️</span>
               <span style={{ fontSize: '10px', color: 'white' }}>🔊</span>
-              <span style={{ fontSize: '9px', color: '#E0F2FE', fontWeight: '900', marginLeft: '2px' }}>VERIFICADO</span>
+              <span style={{ fontSize: '9px', color: '#ffffff', fontWeight: '900', marginLeft: '2px' }}>VERIFICADO</span>
             </div>
 
             <button 
               style={{
-                background: '#FF7A1A',
+                background: 'linear-gradient(135deg, #FF7A1A, #F26000)',
                 color: 'white',
                 border: 'none',
-                borderRadius: '10px',
-                padding: '8px 12px',
+                borderRadius: '12px',
+                padding: '8px 14px',
                 fontSize: '11px',
                 fontWeight: '900',
                 cursor: 'pointer',
-                boxShadow: '0 4px 10px rgba(0,0,0,0.3)'
+                boxShadow: '0 4px 12px rgba(242, 96, 0, 0.4)'
               }}
             >
-              {lang === 'es' ? 'Explorar ›' : 'Explore ›'}
+              ⚡ {lang === 'es' ? 'Contratar ›' : 'Hire ›'}
             </button>
           </div>
         </div>
