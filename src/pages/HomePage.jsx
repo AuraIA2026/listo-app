@@ -793,6 +793,10 @@ export default function HomePage({ lang, navigate, userRole }) {
         </div>
       )}
 
+      {/* ── PRIMER ESPACIO PRINCIPAL: CARRUSEL DE TARJETAS VERTICALES DE DOBLE ALTO ── */}
+      <VIPSection realVipPros={featuredProsToUse} lang={lang} navigate={navigate} />
+
+
       {/* ── BOTONES DE ONBOARDING ELIMINADOS POR PETICIÓN ── */}
 
       {/* ── VIP BANNER — solo para profesionales ── */}
@@ -1095,8 +1099,6 @@ export default function HomePage({ lang, navigate, userRole }) {
         </section>
       )}
 
-      {/* ── ESTRUCTURA VARIADA 2 ESTILO AMAZON: TARJETAS DE PROFESIONALES VIP ── */}
-      <VIPSection realVipPros={featuredProsToUse} lang={lang} navigate={navigate} />
 
 
 
