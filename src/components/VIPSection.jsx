@@ -90,10 +90,18 @@ const demoVipPros = [
   }
 ]
 
+const innerPhotos = [
+  { img: plomero, titleEs: 'Juan Pérez — Plomero Máster', titleEn: 'Juan Pérez — Master Plumber', badge: '💧 Plomería 24/7' },
+  { img: electrica1, titleEs: 'María González — Electricista', titleEn: 'María González — Electrician', badge: '⚡ Electricidad' },
+  { img: mecanico1, titleEs: 'Luisa Martínez — Mecánica', titleEn: 'Luisa Martínez — Auto Mechanic', badge: '🔧 Mecánica' },
+  { img: cerrajero1, titleEs: 'Roberto Núñez — Cerrajero', titleEn: 'Roberto Núñez — Locksmith', badge: '🔑 Cerrajería' }
+]
+
 export default function VIPSection({ realVipPros = [], lang = 'es', navigate }) {
   const displayPros = realVipPros.length > 0 ? realVipPros : demoVipPros
   const containerRef = React.useRef(null)
   const isInteracting = React.useRef(false)
+  const [activeInnerSlide, setActiveInnerSlide] = React.useState(0)
 
   React.useEffect(() => {
     const timer = setInterval(() => {
@@ -108,7 +116,14 @@ export default function VIPSection({ realVipPros = [], lang = 'es', navigate }) 
       }
     }, 3200)
 
-    return () => clearInterval(timer)
+    const innerTimer = setInterval(() => {
+      setActiveInnerSlide((prev) => (prev + 1) % innerPhotos.length)
+    }, 2500)
+
+    return () => {
+      clearInterval(timer)
+      clearInterval(innerTimer)
+    }
   }, [])
 
   return (
@@ -139,7 +154,7 @@ export default function VIPSection({ realVipPros = [], lang = 'es', navigate }) 
         onMouseEnter={() => { isInteracting.current = true }}
         onMouseLeave={() => { isInteracting.current = false }}
       >
-        {/* TARJETA 1: HERO AZUL ESTILO AMAZON PRIME DE TU VIDEO CON FOTOS DENTRO */}
+        {/* TARJETA 1: HERO AZUL ESTILO AMAZON PRIME DE TU VIDEO CON CARRUSEL DE FOTOS ANIMADO */}
         <div 
           className="vip-card-hero amz-blue-hero-card"
           onClick={() => navigate('search')}
@@ -167,23 +182,36 @@ export default function VIPSection({ realVipPros = [], lang = 'es', navigate }) 
             <span style={{ fontSize: '16px' }}>✨</span>
           </div>
 
-          {/* Rejilla de fotos de profesionales dentro de la tarjeta azul */}
-          <div style={{ 
-            display: 'grid', 
-            gridTemplateColumns: '1fr 1fr', 
-            gap: '6px', 
-            margin: '10px 0', 
-            zIndex: 2,
-            background: 'rgba(255,255,255,0.12)',
-            padding: '6px',
-            borderRadius: '16px',
-            backdropFilter: 'blur(4px)',
-            border: '1px solid rgba(255,255,255,0.2)'
-          }}>
-            <img src={plomero} alt="Plomero" className="amz-hero-pro-img amz-hero-pro-img-1" />
-            <img src={electrica1} alt="Electricista" className="amz-hero-pro-img amz-hero-pro-img-2" />
-            <img src={mecanico1} alt="Mecánico" className="amz-hero-pro-img amz-hero-pro-img-3" />
-            <img src={cerrajero1} alt="Cerrajero" className="amz-hero-pro-img amz-hero-pro-img-4" />
+          {/* Carrusel Deslizante Interno de Fotos estilo Amazon Video */}
+          <div className="amz-inner-carousel-wrapper" style={{ zIndex: 2 }}>
+            <div 
+              className="amz-inner-carousel-track"
+              style={{ transform: `translateX(-${activeInnerSlide * 100}%)` }}
+            >
+              {innerPhotos.map((item, idx) => (
+                <div key={idx} className="amz-inner-slide">
+                  <img src={item.img} alt={item.titleEs} className="amz-inner-slide-img" />
+                  <div className="amz-inner-slide-overlay">
+                    <span className="amz-inner-slide-badge">{item.badge}</span>
+                    <span className="amz-inner-slide-title">{lang === 'es' ? item.titleEs : item.titleEn}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Dots de navegación del carrusel interno */}
+            <div className="amz-inner-dots">
+              {innerPhotos.map((_, idx) => (
+                <span 
+                  key={idx} 
+                  className={`amz-inner-dot ${idx === activeInnerSlide ? 'active' : ''}`}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setActiveInnerSlide(idx)
+                  }}
+                />
+              ))}
+            </div>
           </div>
 
           {/* Typography */}
