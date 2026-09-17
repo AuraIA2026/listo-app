@@ -115,11 +115,11 @@ export default function VIPSection({ realVipPros = [], lang = 'es', navigate }) 
           containerRef.current.scrollBy({ left: 230, behavior: 'smooth' })
         }
       }
-    }, 3200)
+    }, 7000)
 
     const innerTimer = setInterval(() => {
       setActiveInnerSlide((prev) => (prev + 1) % innerPhotos.length)
-    }, 2500)
+    }, 3200)
 
     return () => {
       clearInterval(timer)
