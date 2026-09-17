@@ -10,7 +10,7 @@ const txt = {
   es: {
     reviews: 'Reseñas',
     photos: 'Trabajos Realizados',
-    book: 'Reservar servicio',
+    book: 'Contratar',
     chat: 'Enviar mensaje',
     available: 'Disponible ahora',
     busy: 'Ocupado',

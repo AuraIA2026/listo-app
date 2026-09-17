@@ -14,7 +14,7 @@ const txt = {
     search:      '¿Qué necesitas?',
     available:   'Disponible',
     busy:        'Ocupado',
-    book:        'Reservar',
+    book:        'Contratar',
     profile:     'Ver perfil',
     reviews:     'reseñas',
     exp:         'experiencia',
@@ -915,7 +915,7 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
                     👤 {T.profile}
                   </button>
                   <button className="premium-btn-book" onClick={(e) => { e.stopPropagation(); navigate('booking', pro); }} style={{ background: isVip ? 'linear-gradient(135deg, #FF6B00, #FF3D00)' : 'linear-gradient(135deg, #B0BEC5, #78909C)', boxShadow: isVip ? '0 4px 15px rgba(255, 107, 0, 0.4)' : '0 4px 15px rgba(120, 144, 156, 0.4)' }}>
-                    {isVip ? '✨' : '💎'} {lang === 'es' ? 'Reservar' : 'Book'}
+                    {isVip ? '✨' : '💎'} {lang === 'es' ? 'Contratar' : 'Hire'}
                   </button>
                 </div>
               </div>

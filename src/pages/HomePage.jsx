@@ -1162,7 +1162,7 @@ export default function HomePage({ lang, navigate, userRole }) {
                         🤝 {lang === 'es' ? 'A convenir' : 'To agree'}
                       </p>
                     </div>
-                    <button className="pro-list-book">{lang === 'es' ? 'Reservar' : 'Book'}</button>
+                    <button className="pro-list-book">{lang === 'es' ? 'Contratar' : 'Hire'}</button>
                   </div>
                 ))
               ) : (
