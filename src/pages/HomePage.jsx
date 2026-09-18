@@ -503,7 +503,10 @@ export default function HomePage({ lang, navigate, userRole }) {
             experience: (data.experience && !['nuevo', 'verificado'].includes(String(data.experience).trim().toLowerCase())) ? data.experience : '',
             avatar: (data.name || 'P').substring(0, 2).toUpperCase(),
             avail: data.profileComplete && data.available !== false,
-            img: data.photoURL || null
+            img: data.photoURL || null,
+            currentPlan: data.currentPlan || data.planName || data.plan || data.planId || data.planType || data.tipoPlan || data.subscription?.planName || data.subscription?.plan || data.membership || data.verificacion?.plan || null,
+            planName: data.planName || data.currentPlan || data.subscription?.planName || data.verificacion?.plan || data.plan || null,
+            contracts: data.contracts || 0
           })
         })
         const elitePros = prosList.filter(p => p.rating >= 5.0).sort((a, b) => b.reviews - a.reviews);
@@ -604,44 +607,70 @@ export default function HomePage({ lang, navigate, userRole }) {
         
         {/* Saludo y Títulos */}
         {!isPro ? (
-          <div className="hp-greeting" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div>
-              <h1>👋 {lang === 'es' ? `Hola, ${userData?.name?.split(' ')[0] || 'Cliente'}` : `Hi, ${userData?.name?.split(' ')[0] || 'Client'}`}</h1>
-              <p>{lang === 'es' ? '¿Qué necesitas solucionar hoy?' : 'What do you need to fix today?'}</p>
+          <div className="hp-greeting" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            {/* Pill Ubicación Estilo Amazon Mobile */}
+            <div 
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                background: 'rgba(255, 255, 255, 0.18)',
+                backdropFilter: 'blur(10px)',
+                padding: '4px 12px',
+                borderRadius: '20px',
+                border: '1px solid rgba(255, 255, 255, 0.25)',
+                color: '#FFFFFF',
+                fontSize: '12px',
+                fontWeight: '700',
+                cursor: 'pointer',
+                width: 'fit-content'
+              }}
+              onClick={() => alert(lang === 'es' ? 'Ubicación actual: Santiago, D.N. (República Dominicana)' : 'Current location: Santiago, D.N. (Dominican Republic)')}
+            >
+              <span>📍</span>
+              <span>Santiago, D.N.</span>
+              <span style={{ fontSize: '10px', opacity: 0.8 }}>▼</span>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <div 
-                onClick={() => navigate('notificaciones')}
-                style={{ position:'relative', width:'40px', height:'40px', borderRadius:'50%', background:'rgba(255,255,255,0.1)', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', border:'1px solid rgba(255,255,255,0.2)' }}
-              >
-                <span style={{ fontSize:'20px' }}>🔔</span>
-                {unreadNotifs > 0 && (
-                  <span style={{ position:'absolute', top:'-2px', right:'-2px', background:'#EF4444', color:'white', fontSize:'11px', fontWeight:'900', borderRadius:'10px', padding:'2px 6px', border:'2px solid #1A1A2E' }}>
-                    {unreadNotifs > 9 ? '9+' : unreadNotifs}
-                  </span>
-                )}
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <h1>👋 {lang === 'es' ? `Hola, ${userData?.name?.split(' ')[0] || 'Cliente'}` : `Hi, ${userData?.name?.split(' ')[0] || 'Client'}`}</h1>
+                <p>{lang === 'es' ? '¿Qué necesitas solucionar hoy?' : 'What do you need to fix today?'}</p>
               </div>
-              {/* Botón de hamburguesa ☰ para clientes */}
-              <div 
-                onClick={() => setShowHamburguesa(true)}
-                style={{ 
-                  width: '48px', 
-                  height: '48px', 
-                  borderRadius: '50%', 
-                  background: '#F26000', 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  justifyContent: 'center', 
-                  cursor: 'pointer', 
-                  marginLeft: '8px',
-                  boxShadow: '0 4px 12px rgba(242,96,0,0.3)',
-                  transition: 'transform 0.1s'
-                }}
-                onMouseDown={e => e.currentTarget.style.transform = 'scale(0.92)'}
-                onMouseUp={e => e.currentTarget.style.transform = 'scale(1)'}
-                onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
-              >
-                <span style={{ fontSize: '22px', color: 'white', fontWeight: 'bold' }}>☰</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div 
+                  onClick={() => navigate('notificaciones')}
+                  style={{ position:'relative', width:'40px', height:'40px', borderRadius:'50%', background:'rgba(255,255,255,0.1)', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', border:'1px solid rgba(255,255,255,0.2)' }}
+                >
+                  <span style={{ fontSize:'20px' }}>🔔</span>
+                  {unreadNotifs > 0 && (
+                    <span style={{ position:'absolute', top:'-2px', right:'-2px', background:'#EF4444', color:'white', fontSize:'11px', fontWeight:'900', borderRadius:'10px', padding:'2px 6px', border:'2px solid #1A1A2E' }}>
+                      {unreadNotifs > 9 ? '9+' : unreadNotifs}
+                    </span>
+                  )}
+                </div>
+                {/* Botón de hamburguesa ☰ para clientes */}
+                <div 
+                  onClick={() => setShowHamburguesa(true)}
+                  style={{ 
+                    width: '48px', 
+                    height: '48px', 
+                    borderRadius: '50%', 
+                    background: '#F26000', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center', 
+                    cursor: 'pointer', 
+                    marginLeft: '8px',
+                    boxShadow: '0 4px 12px rgba(242,96,0,0.3)',
+                    transition: 'transform 0.1s'
+                  }}
+                  onMouseDown={e => e.currentTarget.style.transform = 'scale(0.92)'}
+                  onMouseUp={e => e.currentTarget.style.transform = 'scale(1)'}
+                  onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+                >
+                  <span style={{ fontSize: '22px', color: 'white', fontWeight: 'bold' }}>☰</span>
+                </div>
               </div>
             </div>
           </div>
@@ -700,7 +729,7 @@ export default function HomePage({ lang, navigate, userRole }) {
           </div>
         )}
 
-        {/* Buscador Gigante Autocompletable */}
+        {/* Buscador Gigante Autocompletable Con Cámara Estilo Amazon */}
         {!isPro && (
           <div className="hp-hero-search-container" style={{ position: 'relative', width: '100%', maxWidth: '600px', margin: '0 auto' }}>
             <div className="hp-hero-search-btn" style={{ padding: '0 6px 0 16px', display: 'flex', alignItems: 'center', cursor: 'text' }} onClick={() => document.getElementById('hp-search-input').focus()}>
@@ -729,6 +758,31 @@ export default function HomePage({ lang, navigate, userRole }) {
                 onBlur={() => setTimeout(() => setShowDropdown(false), 200)}
                 style={{ flex: 1, border: 'none', background: 'transparent', height: '100%', outline: 'none', fontSize: '15px', fontWeight: '600', color: '#1a1a2e', padding: '16px 0', zIndex: 2 }}
               />
+              
+              {/* Botón de Cámara Escáner Estilo Amazon */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  alert(lang === 'es' ? '📷 Escáner de foto / QR activado' : '📷 Photo / QR Scanner activated');
+                }}
+                title="Búsqueda por Foto / QR"
+                style={{
+                  background: 'rgba(0,0,0,0.05)',
+                  border: 'none',
+                  borderRadius: '50%',
+                  width: '34px',
+                  height: '34px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  marginRight: '6px',
+                  zIndex: 3
+                }}
+              >
+                <span style={{ fontSize: '16px' }}>📷</span>
+              </button>
+
               <button 
                 onClick={(e) => {
                   e.stopPropagation();
@@ -884,6 +938,186 @@ export default function HomePage({ lang, navigate, userRole }) {
       {/* ── PRIMER ESPACIO PRINCIPAL: CARRUSEL DE TARJETAS VERTICALES DE DOBLE ALTO ── */}
       <VIPSection realVipPros={featuredProsToUse} lang={lang} navigate={navigate} />
 
+      {/* ── CARD SECCIÓN "TUS PEDIDOS" ESTILO AMAZON ── */}
+      {!isPro && (
+        <div 
+          onClick={() => navigate('orders')}
+          style={{
+            margin: '0 16px 18px',
+            background: 'linear-gradient(135deg, #1A1A2E, #282846)',
+            borderRadius: '16px',
+            padding: '14px 16px',
+            color: 'white',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
+            border: '1px solid rgba(255,255,255,0.1)',
+            cursor: 'pointer'
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ width: '42px', height: '42px', borderRadius: '12px', background: 'rgba(242,96,0,0.2)', border: '1px solid #F26000', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px' }}>
+              📦
+            </div>
+            <div>
+              <p style={{ margin: 0, fontSize: '14px', fontWeight: '900', color: '#FFFFFF' }}>
+                {lang === 'es' ? 'Tus Pedidos & Servicios' : 'Your Orders & Services'}
+              </p>
+              <p style={{ margin: '2px 0 0', fontSize: '11px', color: '#B3D7FF', fontWeight: '600' }}>
+                {lang === 'es' ? 'Revisa el estado de tus contrataciones en vivo' : 'Check status of your live hires'}
+              </p>
+            </div>
+          </div>
+          <span style={{ fontSize: '14px', background: '#F26000', color: 'white', padding: '6px 12px', borderRadius: '10px', fontWeight: '800' }}>
+            Ver ›
+          </span>
+        </div>
+      )}
+
+      {/* ── GRILLA BENTO 2x2 ESTILO AMAZON "OFERTAS RELÁMPAGO & RECOMENDACIONES" ── */}
+      {!isPro && (
+        <section style={{ margin: '0 16px 24px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+            <h2 style={{ fontSize: '18px', fontWeight: '900', color: '#1A1A2E', margin: 0, display: 'flex', alignItems: 'center', gap: '6px' }}>
+              ⚡ {lang === 'es' ? 'Ofertas Relámpago y Destacados' : 'Lightning Deals & Featured'}
+            </h2>
+            <span style={{ background: '#EF4444', color: 'white', fontSize: '10px', fontWeight: '900', padding: '3px 8px', borderRadius: '12px', letterSpacing: '0.5px' }}>
+              HASTA -50% OFF
+            </span>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
+            {/* Card 1: Ofertas Relámpago */}
+            <div 
+              onClick={() => navigate('search', { catToSelect: 'plomero' })}
+              style={{
+                background: '#FFFFFF',
+                borderRadius: '16px',
+                padding: '14px',
+                boxShadow: '0 4px 16px rgba(0,0,0,0.06)',
+                border: '1px solid rgba(0,0,0,0.08)',
+                cursor: 'pointer',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between'
+              }}
+            >
+              <div>
+                <span style={{ background: '#FEF2F2', color: '#DC2626', fontSize: '10px', fontWeight: '900', padding: '3px 8px', borderRadius: '10px', border: '1px solid #FECACA' }}>
+                  🔥 -40% OFF
+                </span>
+                <h3 style={{ fontSize: '14px', fontWeight: '900', color: '#1A1A2E', margin: '8px 0 4px' }}>
+                  Plomería Express
+                </h3>
+                <p style={{ fontSize: '11px', color: '#64748B', margin: 0, fontWeight: '600' }}>
+                  Reparaciones 24/7 urgentes
+                </p>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '12px' }}>
+                <span style={{ fontSize: '12px', fontWeight: '800', color: '#F26000' }}>RD$ A convenir</span>
+                <span style={{ fontSize: '12px', color: '#94A3B8' }}>›</span>
+              </div>
+            </div>
+
+            {/* Card 2: A/C & Refrigeración */}
+            <div 
+              onClick={() => navigate('search', { catToSelect: 'refrigeracion' })}
+              style={{
+                background: '#FFFFFF',
+                borderRadius: '16px',
+                padding: '14px',
+                boxShadow: '0 4px 16px rgba(0,0,0,0.06)',
+                border: '1px solid rgba(0,0,0,0.08)',
+                cursor: 'pointer',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between'
+              }}
+            >
+              <div>
+                <span style={{ background: '#EFF6FF', color: '#2563EB', fontSize: '10px', fontWeight: '900', padding: '3px 8px', borderRadius: '10px', border: '1px solid #BFDBFE' }}>
+                  ❄️ -50% OFF
+                </span>
+                <h3 style={{ fontSize: '14px', fontWeight: '900', color: '#1A1A2E', margin: '8px 0 4px' }}>
+                  Mantenimiento A/C
+                </h3>
+                <p style={{ fontSize: '11px', color: '#64748B', margin: 0, fontWeight: '600' }}>
+                  Limpieza y carga de gas
+                </p>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '12px' }}>
+                <span style={{ fontSize: '12px', fontWeight: '800', color: '#F26000' }}>Garantizado</span>
+                <span style={{ fontSize: '12px', color: '#94A3B8' }}>›</span>
+              </div>
+            </div>
+
+            {/* Card 3: Mecánica a Domicilio */}
+            <div 
+              onClick={() => navigate('search', { catToSelect: 'mecanico' })}
+              style={{
+                background: '#FFFFFF',
+                borderRadius: '16px',
+                padding: '14px',
+                boxShadow: '0 4px 16px rgba(0,0,0,0.06)',
+                border: '1px solid rgba(0,0,0,0.08)',
+                cursor: 'pointer',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between'
+              }}
+            >
+              <div>
+                <span style={{ background: '#FEF3C7', color: '#D97706', fontSize: '10px', fontWeight: '900', padding: '3px 8px', borderRadius: '10px', border: '1px solid #FDE68A' }}>
+                  🔧 POPULAR
+                </span>
+                <h3 style={{ fontSize: '14px', fontWeight: '900', color: '#1A1A2E', margin: '8px 0 4px' }}>
+                  Mecánica Móvil
+                </h3>
+                <p style={{ fontSize: '11px', color: '#64748B', margin: 0, fontWeight: '600' }}>
+                  Diagnóstico en tu ubicación
+                </p>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '12px' }}>
+                <span style={{ fontSize: '12px', fontWeight: '800', color: '#F26000' }}>Respuesta &lt; 30m</span>
+                <span style={{ fontSize: '12px', color: '#94A3B8' }}>›</span>
+              </div>
+            </div>
+
+            {/* Card 4: Cerrajeros de Emergencia */}
+            <div 
+              onClick={() => navigate('search', { catToSelect: 'cerrajero' })}
+              style={{
+                background: '#FFFFFF',
+                borderRadius: '16px',
+                padding: '14px',
+                boxShadow: '0 4px 16px rgba(0,0,0,0.06)',
+                border: '1px solid rgba(0,0,0,0.08)',
+                cursor: 'pointer',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between'
+              }}
+            >
+              <div>
+                <span style={{ background: '#F0FDF4', color: '#16A34A', fontSize: '10px', fontWeight: '900', padding: '3px 8px', borderRadius: '10px', border: '1px solid #BBF7D0' }}>
+                  🔑 URGENTE
+                </span>
+                <h3 style={{ fontSize: '14px', fontWeight: '900', color: '#1A1A2E', margin: '8px 0 4px' }}>
+                  Cerrajería 24 horas
+                </h3>
+                <p style={{ fontSize: '11px', color: '#64748B', margin: 0, fontWeight: '600' }}>
+                  Apertura de autos y casas
+                </p>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '12px' }}>
+                <span style={{ fontSize: '12px', fontWeight: '800', color: '#F26000' }}>Verificados</span>
+                <span style={{ fontSize: '12px', color: '#94A3B8' }}>›</span>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
 
       {isPro ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', margin: '0 16px 20px' }}>
