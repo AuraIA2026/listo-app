@@ -918,7 +918,7 @@ export default function HomePage({ lang, navigate, userRole }) {
       {!isPro && (
         <div className="amz-marquee-container">
           <div className="amz-marquee-content">
-            🎉 ¡Bienvenido a Listo Patrón! &nbsp;&nbsp;•&nbsp;&nbsp; 🏆 Cada vez que un profesional complete un contrato perfecto gana un chance para la tómbola donde podrás tener la oportunidad de ganar un contrato gratis &nbsp;&nbsp;•&nbsp;&nbsp; ⚡ Profesionales verificados listos en menos de 30 minutos &nbsp;&nbsp;•&nbsp;&nbsp; 🛡️ Todos los servicios 100% garantizados con soporte Listo Patrón &nbsp;&nbsp;•&nbsp;&nbsp; 🎁 ¡Completa tus contrataciones y acumula beneficios!
+            🎉 ¡Bienvenido a Listo Patrón! &nbsp;&nbsp;•&nbsp;&nbsp; 🏆 Cada trabajo perfecto de 4 o 5 estrellas te otorga un giro en la Tómbola para ganar un Contrato Gratis &nbsp;&nbsp;•&nbsp;&nbsp; 🏆 Cada vez que un profesional complete un contrato perfecto gana un chance para la tómbola donde podrás tener la oportunidad de ganar un contrato gratis &nbsp;&nbsp;•&nbsp;&nbsp; ⚡ Profesionales verificados listos en menos de 30 minutos &nbsp;&nbsp;•&nbsp;&nbsp; 🛡️ Todos los servicios 100% garantizados con soporte Listo Patrón &nbsp;&nbsp;•&nbsp;&nbsp; 🎁 ¡Completa tus contrataciones y acumula beneficios!
           </div>
         </div>
       )}
