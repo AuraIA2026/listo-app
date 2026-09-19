@@ -3,7 +3,7 @@ import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firesto
 import { db } from '../firebase'
 import { CATEGORIES, FILTERS, ALL_SUBCATEGORIES } from '../categories'
 import LocalesCarrusel from '../locales/LocalesCarrusel'  // ✅ importado
-import VIPSection from '../components/VIPSection'
+import VIPSection, { isProVip } from '../components/VIPSection'
 import recomendarIcon from '../assets/icons/recomendar.png'
 import opinionesIcon from '../assets/icons/opiniones.png'
 import compartirIcon from '../assets/icons/compartir.png'
@@ -736,7 +736,7 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
     })
 
   const vipProsList = professionals
-    .filter(p => Number(p.rating || 5.0) >= 4.9)
+    .filter(p => isProVip(p) && Number(p.rating || 5.0) >= 4.9)
     .map(p => ({
       ...p,
       nameEs: p.name,

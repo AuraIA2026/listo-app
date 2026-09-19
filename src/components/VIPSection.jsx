@@ -14,27 +14,27 @@ const demoVipPros = [
     id: 'vip_1',
     nameEs: 'Juan Pérez',
     nameEn: 'Juan Pérez',
-    specEs: 'Plomero Máster',
-    specEn: 'Master Plumber',
+    specEs: 'Plomero Máster VIP',
+    specEn: 'Master VIP Plumber',
     rating: 5.0,
     reviews: 142,
     location: 'Santo Domingo',
     jobs: 180,
-    currentPlan: 'Platinum',
-    planName: 'Platinum',
-    badgeTitle: '💎 PLAN PLATINUM',
+    currentPlan: 'VIP',
+    planName: 'VIP',
+    badgeTitle: '👑 PLAN VIP',
     avail: true,
     img: plomero,
     experience: '8 años de exp.',
-    guarantee: 'Garantía Listo'
+    guarantee: 'Garantía Listo VIP'
   },
   {
     id: 'vip_2',
     nameEs: 'María González',
     nameEn: 'María González',
-    specEs: 'Electricista Certificada',
-    specEn: 'Certified Electrician',
-    rating: 4.9,
+    specEs: 'Electricista Certificada VIP',
+    specEn: 'Certified VIP Electrician',
+    rating: 5.0,
     reviews: 98,
     location: 'Santiago',
     jobs: 125,
@@ -44,70 +44,89 @@ const demoVipPros = [
     avail: true,
     img: electrica1,
     experience: '6 años de exp.',
-    guarantee: 'Certificación 24/7'
+    guarantee: 'Certificación VIP 24/7'
   },
   {
     id: 'vip_3',
     nameEs: 'Roberto Núñez',
     nameEn: 'Roberto Núñez',
-    specEs: 'Cerrajero de Emergencia',
-    specEn: 'Emergency Locksmith',
+    specEs: 'Cerrajero de Emergencia VIP',
+    specEn: 'Emergency VIP Locksmith',
     rating: 5.0,
     reviews: 215,
     location: 'Santo Domingo Este',
     jobs: 260,
-    currentPlan: 'Gold',
-    planName: 'Gold',
-    badgeTitle: '⭐ PLAN GOLD',
+    currentPlan: 'VIP',
+    planName: 'VIP',
+    badgeTitle: '👑 PLAN VIP',
     avail: true,
     img: cerrajero1,
     experience: '10 años de exp.',
-    guarantee: 'Respuesta < 20 min'
+    guarantee: 'Respuesta VIP < 20 min'
   },
   {
     id: 'vip_4',
     nameEs: 'Carlos Herrera',
     nameEn: 'Carlos Herrera',
-    specEs: 'Paisajista y Jardinero',
-    specEn: 'Landscape Gardener',
-    rating: 4.8,
+    specEs: 'Paisajista VIP',
+    specEn: 'VIP Landscape Gardener',
+    rating: 4.9,
     reviews: 76,
     location: 'La Vega',
     jobs: 90,
-    currentPlan: 'Estándar',
-    planName: 'Estándar',
-    badgeTitle: '🔹 PLAN ESTÁNDAR',
+    currentPlan: 'VIP',
+    planName: 'VIP',
+    badgeTitle: '👑 PLAN VIP',
     avail: true,
     img: jardinero,
     experience: '5 años de exp.',
-    guarantee: 'Diseño Personalizado'
+    guarantee: 'Diseño VIP'
   },
   {
     id: 'vip_5',
     nameEs: 'Luisa Martínez',
     nameEn: 'Luisa Martínez',
-    specEs: 'Mecánica Automotriz',
-    specEn: 'Auto Mechanic',
+    specEs: 'Mecánica Automotriz VIP',
+    specEn: 'VIP Auto Mechanic',
     rating: 4.9,
     reviews: 164,
     location: 'Puerto Plata',
     jobs: 210,
-    currentPlan: 'Básico',
-    planName: 'Básico',
-    badgeTitle: '⚪ PLAN BÁSICO',
+    currentPlan: 'VIP',
+    planName: 'VIP',
+    badgeTitle: '👑 PLAN VIP',
     avail: true,
     img: mecanico1,
     experience: '9 años de exp.',
-    guarantee: 'Diagnóstico Computarizado'
+    guarantee: 'Diagnóstico VIP'
   }
 ]
 
 const innerPhotos = [
-  { img: plomero, titleEs: 'Juan Pérez — Plomero Máster', titleEn: 'Juan Pérez — Master Plumber', badge: '💧 Plomería 24/7' },
-  { img: electrica1, titleEs: 'María González — Electricista', titleEn: 'María González — Electrician', badge: '⚡ Electricidad' },
-  { img: mecanico1, titleEs: 'Luisa Martínez — Mecánica', titleEn: 'Luisa Martínez — Auto Mechanic', badge: '🔧 Mecánica' },
-  { img: cerrajero1, titleEs: 'Roberto Núñez — Cerrajero', titleEn: 'Roberto Núñez — Locksmith', badge: '🔑 Cerrajería' }
+  { img: plomero, titleEs: 'Juan Pérez — Plomero Máster VIP', titleEn: 'Juan Pérez — Master VIP Plumber', badge: '💧 Plomería VIP 24/7' },
+  { img: electrica1, titleEs: 'María González — Electricista VIP', titleEn: 'María González — VIP Electrician', badge: '⚡ Electricidad VIP' },
+  { img: mecanico1, titleEs: 'Luisa Martínez — Mecánica VIP', titleEn: 'Luisa Martínez — VIP Auto Mechanic', badge: '🔧 Mecánica VIP' },
+  { img: cerrajero1, titleEs: 'Roberto Núñez — Cerrajero VIP', titleEn: 'Roberto Núñez — VIP Locksmith', badge: '🔑 Cerrajería VIP' }
 ]
+
+export const isProVip = (pro) => {
+  if (!pro) return false;
+  const rawPlan = String(
+    pro.currentPlan || 
+    pro.planName || 
+    pro.plan || 
+    pro.planId || 
+    pro.planType ||
+    pro.tipoPlan ||
+    pro.subscription?.planName ||
+    pro.subscription?.plan || 
+    pro.membership ||
+    pro.verificacion?.plan ||
+    ''
+  ).toLowerCase().trim();
+
+  return rawPlan.includes('vip') || rawPlan.includes('ilimitado') || rawPlan.includes('elite');
+};
 
 export const getProPlanBadge = (pro, lang = 'es') => {
   const rawPlan = String(
@@ -356,8 +375,9 @@ export default function VIPSection({
   sectionSub,
   showSeeAll = true
 }) {
-  // Filtrar estrictamente solo profesionales de 5 estrellas (rating >= 4.9)
-  const rawProsList = realVipPros.length > 0 ? realVipPros : demoVipPros
+  // Filtrar estrictamente solo profesionales con Plan VIP activo y calificación >= 4.9
+  const realOnlyVip = (realVipPros || []).filter(isProVip)
+  const rawProsList = realOnlyVip.length > 0 ? realOnlyVip : demoVipPros
   const displayPros = rawProsList.filter(pro => Number(pro.rating || 5.0) >= 4.9)
   const containerRef = React.useRef(null)
   const isInteracting = React.useRef(false)
