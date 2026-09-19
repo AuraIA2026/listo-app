@@ -781,6 +781,7 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
         sectionTitle={lang === 'es' ? '👑 NUESTROS VIP' : '👑 OUR VIPs'}
         sectionSub={lang === 'es' ? 'Profesionales preparados para cumplir todas tus necesidades' : 'Professionals ready to fulfill all your needs'}
         showSeeAll={false}
+        strictVipOnly={true}
       />
 
       <PromoBanner lang={lang} userRole={userRole} />

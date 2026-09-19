@@ -382,18 +382,23 @@ export default function VIPSection({
   navigate,
   sectionTitle,
   sectionSub,
-  showSeeAll = true
+  showSeeAll = true,
+  strictVipOnly = false
 }) {
-  // Filtrar estrictamente solo profesionales con Plan VIP activo y con reseñas > 0 y calificación >= 4.9
-  const realOnlyVip = (realVipPros || []).filter(pro => {
-    if (!isProVip(pro)) return false
+  const filterVipOnly = strictVipOnly || Boolean(sectionSub);
+
+  // Filtrar la lista de profesionales reales según el contexto (Inicio vs Buscar VIP)
+  const realFiltered = (realVipPros || []).filter(pro => {
+    if (filterVipOnly && !isProVip(pro)) return false
     const nRev = Number(pro.reviews !== undefined ? pro.reviews : (pro.reviewsCount || 0))
     const eRate = nRev > 0 ? Number(pro.rating || 0) : 0.0
     return nRev > 0 && eRate >= 4.9
   })
-  const rawProsList = realOnlyVip.length > 0 ? realOnlyVip : demoVipPros
+
+  const rawProsList = realFiltered.length > 0 ? realFiltered : demoVipPros
   const displayPros = rawProsList.filter(pro => {
     if (String(pro.id || '').startsWith('vip_')) return true
+    if (filterVipOnly && !isProVip(pro)) return false
     const nRev = Number(pro.reviews !== undefined ? pro.reviews : (pro.reviewsCount || 0))
     const eRate = nRev > 0 ? Number(pro.rating || 0) : 0.0
     return nRev > 0 && eRate >= 4.9
