@@ -163,13 +163,197 @@ export const getProPlanBadge = (pro, lang = 'es') => {
   return { text, badgeClass };
 }
 
+function VIPProCard({ pro, lang, navigate }) {
+  const cardRef = React.useRef(null)
+  const [isInView, setIsInView] = React.useState(false)
+  const [animKey, setAnimKey] = React.useState(0)
+
+  React.useEffect(() => {
+    if (!('IntersectionObserver' in window)) {
+      setIsInView(true)
+      return
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsInView(true)
+          setAnimKey((prev) => prev + 1)
+        } else {
+          setIsInView(false)
+        }
+      },
+      {
+        threshold: 0.35
+      }
+    )
+
+    const currentEl = cardRef.current
+    if (currentEl) {
+      observer.observe(currentEl)
+    }
+
+    return () => {
+      if (currentEl) {
+        observer.unobserve(currentEl)
+      }
+    }
+  }, [])
+
+  const isFiveStar = Number(pro.rating || 5.0) >= 4.9
+
+  return (
+    <div 
+      ref={cardRef}
+      className={`vip-card-hero ${isInView ? 'is-in-view' : ''}`}
+      onClick={() => navigate('booking', { professional: pro })}
+    >
+      {/* CONTENEDOR FOTO GRANDE */}
+      <div className="vip-photo-wrapper">
+        <img 
+          src={pro.img || pro.photoURL} 
+          alt={pro.nameEs || pro.name} 
+          className="vip-photo-large"
+        />
+        <div className="vip-photo-gradient" />
+
+        {/* BADGES Y LOGO LISTO EN LA PARTE SUPERIOR DE LA FOTO */}
+        <div className="vip-top-badges">
+          {(() => {
+            const planInfo = getProPlanBadge(pro, lang);
+            return (
+              <span className={`vip-tag-platinum ${planInfo.badgeClass}`} title={planInfo.text}>
+                {planInfo.text}
+              </span>
+            );
+          })()}
+          <img 
+            src={logoListo} 
+            alt="Listo Patrón Logo" 
+            style={{ 
+              height: '28px', 
+              width: 'auto', 
+              objectFit: 'contain',
+              filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' 
+            }} 
+          />
+        </div>
+
+        {/* DISPONIBLE Y BOTÓN "VER PERFIL" SOBRE LA FOTO */}
+        <div style={{ position: 'absolute', top: '46px', right: '12px', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '5px', zIndex: 4 }}>
+          <span className="vip-tag-online">
+            <span className="vip-online-pulse" />
+            {lang === 'es' ? 'DISPONIBLE' : 'AVAILABLE'}
+          </span>
+          <button 
+            className="vip-photo-view-profile-btn"
+            style={{ position: 'static' }}
+            onClick={(e) => {
+              e.stopPropagation();
+              navigate('proProfile', pro);
+            }}
+            title={lang === 'es' ? 'Ver perfil completo' : 'View full profile'}
+          >
+            👁️ {lang === 'es' ? 'Ver perfil' : 'View profile'}
+          </button>
+        </div>
+
+        {/* DETALLES ÉPICOS AL PIE DE LA FOTO */}
+        <div className="vip-photo-bottom-info">
+          <div className="vip-name-spec-wrap">
+            <p className={`vip-pro-name ${isInView ? 'epic-name-anim' : ''}`}>
+              {pro.nameEs || pro.name}
+              {isFiveStar && (
+                <span className={`vip-epic-crown-icon ${isInView ? 'crown-active' : ''}`} title="Profesional 5 Estrellas">👑</span>
+              )}
+            </p>
+            <p className={`vip-pro-spec ${isInView ? 'epic-spec-anim' : ''}`}>
+              {lang === 'es' ? pro.specEs : (pro.specEn || pro.specialty)}
+            </p>
+          </div>
+
+          <div className="vip-rating-row">
+            <div className={`vip-stars-badge ${isFiveStar ? 'epic-5star-badge' : ''}`}>
+              {isInView && (
+                <div key={animKey} className="vip-animated-stars">
+                  {[1, 2, 3, 4, 5].map((starIdx) => (
+                    <span 
+                      key={starIdx} 
+                      className="vip-star-pop" 
+                      style={{ animationDelay: `${starIdx * 0.10}s` }}
+                    >
+                      ★
+                    </span>
+                  ))}
+                </div>
+              )}
+              <span className="vip-rating-score">{Number(pro.rating || 5.0).toFixed(1)}</span>
+            </div>
+            <span className="vip-reviews-count">
+              ({pro.reviews || 50} {lang === 'es' ? 'reseñas' : 'reviews'})
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* CUERPO Y ACCIONES DE LA TARJETA */}
+      <div className="vip-card-body">
+        <div className="vip-highlights-row">
+          <span className="vip-pill">📍 {(() => {
+            const candidates = [
+              pro.sector,
+              pro.municipio || pro.ciudad || pro.city,
+              pro.provincia,
+              pro.direccion,
+              pro.location,
+              pro.verificacion?.sector,
+              pro.verificacion?.municipio,
+              pro.verificacion?.provincia,
+              pro.verificacion?.direccion
+            ].filter(Boolean);
+            const clean = candidates.filter(str => {
+              const s = String(str).trim().toLowerCase();
+              return s !== 'rd' && s !== 'rep. dominicana' && s !== 'república dominicana' && s !== 'rep dominicana';
+            });
+            return clean.length > 0 ? clean.slice(0, 2).join(', ') : 'Santo Domingo, D.N.';
+          })()}</span>
+          {pro.experience && !['nuevo', 'verificado'].includes(String(pro.experience).trim().toLowerCase()) && (
+            <span className="vip-pill">🛠️ {pro.experience}</span>
+          )}
+          {pro.guarantee && <span className="vip-pill" style={{ background: '#EFF6FF', color: '#1D4ED8', borderColor: '#BFDBFE' }}>🛡️ {pro.guarantee}</span>}
+        </div>
+
+        <div className="vip-actions-row">
+          <button 
+            className="vip-btn-profile-secondary"
+            onClick={(e) => {
+              e.stopPropagation()
+              navigate('proProfile', pro)
+            }}
+          >
+            👤 {lang === 'es' ? 'Ver Perfil' : 'Profile'}
+          </button>
+          <button 
+            className="vip-btn-book"
+            onClick={(e) => {
+              e.stopPropagation()
+              navigate('booking', { professional: pro })
+            }}
+          >
+            ⚡ {lang === 'es' ? 'Contratar' : 'Hire'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function VIPSection({ realVipPros = [], lang = 'es', navigate }) {
   const displayPros = realVipPros.length > 0 ? realVipPros : demoVipPros
   const containerRef = React.useRef(null)
   const isInteracting = React.useRef(false)
   const [activeInnerSlide, setActiveInnerSlide] = React.useState(0)
   const [isHeroPlaying, setIsHeroPlaying] = React.useState(true)
-  const [isHeroMuted, setIsHeroMuted] = React.useState(false)
 
   React.useEffect(() => {
     const timer = setInterval(() => {
@@ -364,149 +548,13 @@ export default function VIPSection({ realVipPros = [], lang = 'es', navigate }) 
           </div>
         </div>
 
-
         {displayPros.map((pro, idx) => (
-          <div 
-            key={pro.id || idx} 
-            className="vip-card-hero"
-            onClick={() => navigate('booking', { professional: pro })}
-          >
-
-            {/* CONTENEDOR FOTO GRANDE */}
-            <div className="vip-photo-wrapper">
-              <img 
-                src={pro.img || pro.photoURL} 
-                alt={pro.nameEs || pro.name} 
-                className="vip-photo-large"
-              />
-              <div className="vip-photo-gradient" />
-
-              {/* BADGES Y LOGO LISTO EN LA PARTE SUPERIOR DE LA FOTO (IGUAL A LA TARJETA AZUL) */}
-              <div className="vip-top-badges">
-                {(() => {
-                  const planInfo = getProPlanBadge(pro, lang);
-                  return (
-                    <span className={`vip-tag-platinum ${planInfo.badgeClass}`} title={planInfo.text}>
-                      {planInfo.text}
-                    </span>
-                  );
-                })()}
-                <img 
-                  src={logoListo} 
-                  alt="Listo Patrón Logo" 
-                  style={{ 
-                    height: '28px', 
-                    width: 'auto', 
-                    objectFit: 'contain',
-                    filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' 
-                  }} 
-                />
-              </div>
-
-              {/* DISPONIBLE Y BOTÓN "VER PERFIL" SOBRE LA FOTO */}
-              <div style={{ position: 'absolute', top: '46px', right: '12px', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '5px', zIndex: 4 }}>
-                <span className="vip-tag-online">
-                  <span className="vip-online-pulse" />
-                  {lang === 'es' ? 'DISPONIBLE' : 'AVAILABLE'}
-                </span>
-                <button 
-                  className="vip-photo-view-profile-btn"
-                  style={{ position: 'static' }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    navigate('proProfile', pro);
-                  }}
-                  title={lang === 'es' ? 'Ver perfil completo' : 'View full profile'}
-                >
-                  👁️ {lang === 'es' ? 'Ver perfil' : 'View profile'}
-                </button>
-              </div>
-
-              {/* DETALLES ÉPICOS AL PIE DE LA FOTO */}
-              <div className="vip-photo-bottom-info">
-                <div className="vip-name-spec-wrap">
-                  <p className="vip-pro-name epic-name-anim">
-                    {pro.nameEs || pro.name}
-                    {Number(pro.rating || 5.0) >= 4.9 && (
-                      <span className="vip-epic-crown-icon" title="Profesional 5 Estrellas">👑</span>
-                    )}
-                  </p>
-                  <p className="vip-pro-spec epic-spec-anim">
-                    {lang === 'es' ? pro.specEs : (pro.specEn || pro.specialty)}
-                  </p>
-                </div>
-
-                <div className="vip-rating-row">
-                  <div className={`vip-stars-badge ${Number(pro.rating || 5.0) >= 4.9 ? 'epic-5star-badge' : ''}`}>
-                    <div className="vip-animated-stars">
-                      {[1, 2, 3, 4, 5].map((starIdx) => (
-                        <span 
-                          key={starIdx} 
-                          className="vip-star-pop" 
-                          style={{ animationDelay: `${starIdx * 0.09}s` }}
-                        >
-                          ★
-                        </span>
-                      ))}
-                    </div>
-                    <span className="vip-rating-score">{Number(pro.rating || 5.0).toFixed(1)}</span>
-                  </div>
-                  <span className="vip-reviews-count">
-                    ({pro.reviews || 50} {lang === 'es' ? 'reseñas' : 'reviews'})
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* CUERPO Y ACCIONES DE LA TARJETA */}
-            <div className="vip-card-body">
-              <div className="vip-highlights-row">
-                <span className="vip-pill">📍 {(() => {
-                  const candidates = [
-                    pro.sector,
-                    pro.municipio || pro.ciudad || pro.city,
-                    pro.provincia,
-                    pro.direccion,
-                    pro.location,
-                    pro.verificacion?.sector,
-                    pro.verificacion?.municipio,
-                    pro.verificacion?.provincia,
-                    pro.verificacion?.direccion
-                  ].filter(Boolean);
-                  const clean = candidates.filter(str => {
-                    const s = String(str).trim().toLowerCase();
-                    return s !== 'rd' && s !== 'rep. dominicana' && s !== 'república dominicana' && s !== 'rep dominicana';
-                  });
-                  return clean.length > 0 ? clean.slice(0, 2).join(', ') : 'Santo Domingo, D.N.';
-                })()}</span>
-                {pro.experience && !['nuevo', 'verificado'].includes(String(pro.experience).trim().toLowerCase()) && (
-                  <span className="vip-pill">🛠️ {pro.experience}</span>
-                )}
-                {pro.guarantee && <span className="vip-pill" style={{ background: '#EFF6FF', color: '#1D4ED8', borderColor: '#BFDBFE' }}>🛡️ {pro.guarantee}</span>}
-              </div>
-
-              <div className="vip-actions-row">
-                <button 
-                  className="vip-btn-profile-secondary"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    navigate('proProfile', pro)
-                  }}
-                >
-                  👤 {lang === 'es' ? 'Ver Perfil' : 'Profile'}
-                </button>
-                <button 
-                  className="vip-btn-book"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    navigate('booking', { professional: pro })
-                  }}
-                >
-                  ⚡ {lang === 'es' ? 'Contratar' : 'Hire'}
-                </button>
-              </div>
-            </div>
-          </div>
+          <VIPProCard 
+            key={pro.id || idx}
+            pro={pro}
+            lang={lang}
+            navigate={navigate}
+          />
         ))}
       </div>
     </section>
