@@ -914,11 +914,11 @@ export default function HomePage({ lang, navigate, userRole }) {
         )}
       </div>
 
-      {/* ── MARQUEE TICKER BANNER ESTILO TEMU ── */}
+      {/* ── MARQUEE TICKER BANNER INFORMATIVO PARA PROFESIONALES Y CLIENTES ── */}
       {!isPro && (
         <div className="amz-marquee-container">
           <div className="amz-marquee-content">
-            🔥 ¡OFERTAS RELÁMPAGO HOY! &nbsp;&nbsp;•&nbsp;&nbsp; 🎟️ Gira la Ruleta y gana hasta RD$500 OFF &nbsp;&nbsp;•&nbsp;&nbsp; 🛡️ Contrataciones 100% Protegidas por Listo Patrón &nbsp;&nbsp;•&nbsp;&nbsp; ⚡ Profesionales listos en menos de 30 minutos &nbsp;&nbsp;•&nbsp;&nbsp; 🎁 ¡Reclama tu cupón de bienvenida!
+            🎉 ¡Bienvenido a Listo Patrón! &nbsp;&nbsp;•&nbsp;&nbsp; 🏆 Cada trabajo perfecto de 4 o 5 estrellas te otorga un giro en la Tómbola para ganar un Contrato Gratis &nbsp;&nbsp;•&nbsp;&nbsp; ⚡ Profesionales verificados listos en menos de 30 minutos &nbsp;&nbsp;•&nbsp;&nbsp; 🛡️ Servicios 100% garantizados &nbsp;&nbsp;•&nbsp;&nbsp; 🎁 ¡Completa tus contrataciones y acumula beneficios!
           </div>
         </div>
       )}
@@ -1075,8 +1075,8 @@ export default function HomePage({ lang, navigate, userRole }) {
                 <span className="timer-digit">{String(flashTime.s).padStart(2, '0')}</span>
               </div>
             </div>
-            <span style={{ background: '#EF4444', color: 'white', fontSize: '10px', fontWeight: '900', padding: '4px 9px', borderRadius: '12px', letterSpacing: '0.5px' }}>
-              HASTA -50% OFF
+            <span style={{ background: '#F26000', color: 'white', fontSize: '10px', fontWeight: '900', padding: '4px 9px', borderRadius: '12px', letterSpacing: '0.5px' }}>
+              ⭐ MÁS VALORADOS
             </span>
           </div>
 
@@ -1098,7 +1098,7 @@ export default function HomePage({ lang, navigate, userRole }) {
             >
               <div>
                 <span style={{ background: '#FEF2F2', color: '#DC2626', fontSize: '10px', fontWeight: '900', padding: '3px 8px', borderRadius: '10px', border: '1px solid #FECACA' }}>
-                  🔥 -40% OFF
+                  🔥 POPULAR
                 </span>
                 <h3 style={{ fontSize: '14px', fontWeight: '900', color: '#1A1A2E', margin: '8px 0 4px' }}>
                   Plomería Express
@@ -1108,7 +1108,7 @@ export default function HomePage({ lang, navigate, userRole }) {
                 </p>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '12px' }}>
-                <span style={{ fontSize: '12px', fontWeight: '800', color: '#F26000' }}>RD$ A convenir</span>
+                <span style={{ fontSize: '12px', fontWeight: '800', color: '#F26000' }}>🤝 A convenir</span>
                 <span style={{ fontSize: '12px', color: '#94A3B8' }}>›</span>
               </div>
             </div>
@@ -1130,7 +1130,7 @@ export default function HomePage({ lang, navigate, userRole }) {
             >
               <div>
                 <span style={{ background: '#EFF6FF', color: '#2563EB', fontSize: '10px', fontWeight: '900', padding: '3px 8px', borderRadius: '10px', border: '1px solid #BFDBFE' }}>
-                  ❄️ -50% OFF
+                  ❄️ GARANTIZADO
                 </span>
                 <h3 style={{ fontSize: '14px', fontWeight: '900', color: '#1A1A2E', margin: '8px 0 4px' }}>
                   Mantenimiento A/C
