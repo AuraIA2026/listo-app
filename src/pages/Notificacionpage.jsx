@@ -24,12 +24,17 @@ export default function NotificacionPage({ lang, navigate, userData }) {
       const items = [];
       snapshot.forEach(docSnap => {
         const data = docSnap.data();
-        if (data.type === 'promo' || data.type === 'offer') {
+        // Incluir todas las notificaciones de la app (ofertas, anuncios del sistema, avisos) excepto chats directos
+        if (data.type !== 'message') {
           items.push({ id: docSnap.id, ...data });
         }
       });
-      // Sort newer first
-      items.sort((a, b) => new Date(b.date) - new Date(a.date));
+      // Sort newer first (handles Firestore Timestamp, ISO string or date field)
+      items.sort((a, b) => {
+        const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : (a.date ? new Date(a.date) : new Date(0));
+        const dateB = b.createdAt?.toDate ? b.createdAt.toDate() : (b.date ? new Date(b.date) : new Date(0));
+        return dateB - dateA;
+      });
       setNotifications(items);
       setLoading(false);
     }, (error) => {
@@ -71,11 +76,29 @@ export default function NotificacionPage({ lang, navigate, userData }) {
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
-  const formatDate = (isoString) => {
-    const date = new Date(isoString);
+  const formatDate = (item) => {
+    if (!item) return '';
+    let date = null;
+    if (item.createdAt?.toDate) {
+      date = item.createdAt.toDate();
+    } else if (item.date) {
+      date = new Date(item.date);
+    }
+    if (!date || isNaN(date.getTime())) return lang === 'es' ? 'Reciente' : 'Recent';
     return date.toLocaleDateString(lang === 'es' ? 'es-DO' : 'en-US', { 
       day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' 
     });
+  };
+
+  const getNotifIcon = (notif) => {
+    if (notif.icon) return notif.icon;
+    switch (notif.type) {
+      case 'promo': case 'offer': return '🏷️';
+      case 'system': case 'app_notif': return '📢';
+      case 'reward': return '🎰';
+      case 'order_status': case 'new_order': case 'job_done': return '📦';
+      default: return '🔔';
+    }
   };
 
   if (loading) {
@@ -129,11 +152,12 @@ export default function NotificacionPage({ lang, navigate, userData }) {
               <div className="notification-content">
                 <div className="notification-header">
                   <span className="notification-icon">
-                     🏷️
+                     {getNotifIcon(notif)}
                   </span>
                   <div className="notification-text-wrapper">
+                    {notif.title && <p className="notification-title" style={{ margin: '0 0 4px 0', fontWeight: '800', fontSize: '15px', color: '#1a1a2e' }}>{notif.title}</p>}
                     <p className="notification-text">{notif.text}</p>
-                    <span className="notification-time">{formatDate(notif.date)}</span>
+                    <span className="notification-time">{formatDate(notif)}</span>
                   </div>
                 </div>
                 {!notif.read && <div className="unread-indicator"></div>}
@@ -155,7 +179,7 @@ export default function NotificacionPage({ lang, navigate, userData }) {
           <div className="empty-state">
             <span style={{fontSize:'48px', display:'block', marginBottom:'16px'}}>📭</span>
             <p>{filter === 'unread' 
-              ? (lang === 'es' ? 'No tienes mensajes nuevos.' : 'No new messages.')
+              ? (lang === 'es' ? 'No tienes mensajes o avisos nuevos.' : 'No new messages or notifications.')
               : (lang === 'es' ? 'Tu bandeja está vacía.' : 'Your inbox is empty.')}
             </p>
           </div>
