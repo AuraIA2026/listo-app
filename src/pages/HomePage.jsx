@@ -365,6 +365,13 @@ export default function HomePage({ lang, navigate, userRole }) {
   const [showLuckyWheel, setShowLuckyWheel] = useState(false)
   const [claimedCoupon, setClaimedCoupon]   = useState(null)
 
+  useEffect(() => {
+    if (localStorage.getItem('open_tombola_trigger') === 'true') {
+      setShowLuckyWheel(true);
+      localStorage.removeItem('open_tombola_trigger');
+    }
+  }, []);
+
   const handleClaimReward = async (prize, newProgress, earnedContract) => {
     if (!userData?.uid) return;
     try {

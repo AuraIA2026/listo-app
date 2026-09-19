@@ -228,6 +228,15 @@ export default function BtnHamburguesa({ onClose, navigate, lang = 'es', activeV
                 <span className="pp-row-text">{lang === 'es' ? 'Historial de solicitudes' : 'Request history'}</span>
               </div>
 
+              <div className="pp-row-item" onClick={() => { 
+                localStorage.setItem('open_tombola_trigger', 'true');
+                if(navigate) navigate('home'); 
+                onClose(); 
+              }}>
+                <span className="pp-row-icon">🎰</span>
+                <span className="pp-row-text">{lang === 'es' ? 'Tómbola de Contratos Gratis' : 'Free Contracts Wheel'}</span>
+              </div>
+
               <div className="pp-row-item" onClick={() => { setSection('stats'); }}>
                 <span className="pp-row-icon">📄</span>
                 <span className="pp-row-text">
