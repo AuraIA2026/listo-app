@@ -610,13 +610,8 @@ export default function HomePage({ lang, navigate, userRole }) {
             contracts: data.contracts || 0
           })
         })
-        const elitePros = prosList.filter(p => p.rating >= 5.0).sort((a, b) => b.reviews - a.reviews);
-        const goodPros  = prosList.filter(p => p.rating >= 4.0 && p.rating < 5.0).sort((a, b) => b.reviews - a.reviews);
-        const limitedGoodPros = goodPros.slice(0, 3);
-        const finalFeatured = [...elitePros, ...limitedGoodPros].sort((a, b) => {
-          if (b.rating !== a.rating) return b.rating - a.rating;
-          return b.reviews - a.reviews;
-        });
+        const elitePros = prosList.filter(p => Number(p.rating || 0) >= 4.9).sort((a, b) => b.reviews - a.reviews);
+        const finalFeatured = elitePros;
 
         // E-Commerce gamification: Automagically assign Temu/Amazon style badges to top professionals
         const topFeatured = finalFeatured.slice(0, 12);

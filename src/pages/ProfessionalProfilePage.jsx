@@ -271,6 +271,26 @@ const formatProfession = (category) => {
   return category.charAt(0).toUpperCase() + category.slice(1).toLowerCase()
 }
 
+const getProMemberSinceText = (proObj, lang = 'es') => {
+  if (proObj?.createdAt) {
+    try {
+      const date = proObj.createdAt.toDate ? proObj.createdAt.toDate() : new Date(proObj.createdAt)
+      return date.toLocaleDateString(lang === 'es' ? 'es-DO' : 'en-US', { month: 'short', year: 'numeric' })
+    } catch (e) {
+      console.error(e)
+    }
+  }
+  if (proObj?.verificacion?.fechaAprobacion) {
+    try {
+      const date = new Date(proObj.verificacion.fechaAprobacion)
+      return date.toLocaleDateString(lang === 'es' ? 'es-DO' : 'en-US', { month: 'short', year: 'numeric' })
+    } catch (e) {
+      console.error(e)
+    }
+  }
+  return lang === 'es' ? 'Reciente' : 'Recent'
+}
+
 export default function ProfessionalProfilePage({ lang = 'es', navigate, professional }) {
   const T = txt[lang]
   const { userData } = useUserData()
@@ -336,14 +356,14 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
         setProPhotos(fetchedEvidences)
 
         if (fetchedReviews.length === 0) {
-          setReviews(mockReviews)
+          setReviews([])
         } else {
           fetchedReviews.sort((a,b) => b.createdAt - a.createdAt)
           setReviews(fetchedReviews)
         }
       } catch (e) {
         console.error('Error fetching data:', e)
-        setReviews(mockReviews)
+        setReviews([])
       } finally {
         setLoadingReviews(false)
       }
@@ -351,11 +371,14 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
     fetchData()
   }, [displayPro.id, displayPro.uid])
 
-  const avgRating = reviews.length > 0 ? (reviews.reduce((s, r) => s + r.rating, 0) / reviews.length).toFixed(1) : '5.0'
+  const avgRating = reviews.length > 0 
+    ? (reviews.reduce((s, r) => s + r.rating, 0) / reviews.length).toFixed(1) 
+    : (displayPro.rating && Number(displayPro.rating) > 0 ? Number(displayPro.rating).toFixed(1) : '0.0')
+
   const ratingDist = [5,4,3,2,1].map(n => ({
     n,
     count: reviews.filter(r => r.rating === n).length,
-    pct: reviews.length > 0 ? Math.round((reviews.filter(r => r.rating === n).length / reviews.length) * 100) : (n === 5 ? 100 : 0)
+    pct: reviews.length > 0 ? Math.round((reviews.filter(r => r.rating === n).length / reviews.length) * 100) : 0
   }))
 
   const handleNewReview = ({ rating, comment, service }) => {
@@ -644,7 +667,7 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
       <div className="pro-stats-row">
         <div className="pro-stat">
           <span className="pro-stat-num">★ {avgRating}</span>
-          <span className="pro-stat-label">{T.reviews}</span>
+          <span className="pro-stat-label">{lang === 'es' ? 'Calificación' : 'Rating'}</span>
         </div>
         <div className="pro-stat-divider" />
         <div className="pro-stat">
@@ -653,13 +676,13 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
         </div>
         <div className="pro-stat-divider" />
         <div className="pro-stat">
-          <span className="pro-stat-num">{displayPro.price || pro.price}</span>
+          <span className="pro-stat-num">{displayPro.price || pro.price || 'A convenir'}</span>
           <span className="pro-stat-label">Tarifa</span>
         </div>
         <div className="pro-stat-divider" />
         <div className="pro-stat">
-          <span className="pro-stat-num">3</span>
-          <span className="pro-stat-label">{T.years}</span>
+          <span className="pro-stat-num">{getProMemberSinceText(displayPro, lang)}</span>
+          <span className="pro-stat-label">{lang === 'es' ? 'Miembro desde' : 'Member since'}</span>
         </div>
       </div>
 

@@ -290,7 +290,7 @@ function VIPProCard({ pro, lang, navigate }) {
               <span className="vip-rating-score">{Number(pro.rating || 5.0).toFixed(1)}</span>
             </div>
             <span className="vip-reviews-count">
-              ({pro.reviews || 50} {lang === 'es' ? 'reseñas' : 'reviews'})
+              ({pro.reviews !== undefined ? pro.reviews : 0} {lang === 'es' ? 'reseñas' : 'reviews'})
             </span>
           </div>
         </div>
@@ -349,7 +349,9 @@ function VIPProCard({ pro, lang, navigate }) {
 }
 
 export default function VIPSection({ realVipPros = [], lang = 'es', navigate }) {
-  const displayPros = realVipPros.length > 0 ? realVipPros : demoVipPros
+  // Filtrar estrictamente solo profesionales de 5 estrellas (rating >= 4.9)
+  const rawProsList = realVipPros.length > 0 ? realVipPros : demoVipPros
+  const displayPros = rawProsList.filter(pro => Number(pro.rating || 5.0) >= 4.9)
   const containerRef = React.useRef(null)
   const isInteracting = React.useRef(false)
   const [activeInnerSlide, setActiveInnerSlide] = React.useState(0)
