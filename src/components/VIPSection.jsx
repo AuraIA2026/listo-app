@@ -381,7 +381,7 @@ export default function VIPSection({ realVipPros = [], lang = 'es', navigate }) 
               />
               <div className="vip-photo-gradient" />
 
-              {/* BADGES EN LA PARTE SUPERIOR DE LA FOTO */}
+              {/* BADGES Y LOGO LISTO EN LA PARTE SUPERIOR DE LA FOTO */}
               <div className="vip-top-badges">
                 {(() => {
                   const planInfo = getProPlanBadge(pro, lang);
@@ -391,10 +391,22 @@ export default function VIPSection({ realVipPros = [], lang = 'es', navigate }) 
                     </span>
                   );
                 })()}
-                <span className="vip-tag-online">
-                  <span className="vip-online-pulse" />
-                  {lang === 'es' ? 'DISPONIBLE' : 'AVAILABLE'}
-                </span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <img 
+                    src={logoListo} 
+                    alt="Listo Patrón Logo" 
+                    style={{ 
+                      height: '24px', 
+                      width: 'auto', 
+                      objectFit: 'contain',
+                      filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.4))' 
+                    }} 
+                  />
+                  <span className="vip-tag-online">
+                    <span className="vip-online-pulse" />
+                    {lang === 'es' ? 'DISPONIBLE' : 'AVAILABLE'}
+                  </span>
+                </div>
               </div>
 
               {/* BOTÓN/BADGE "VER PERFIL" SOBRE LA FOTO */}
