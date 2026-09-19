@@ -6,6 +6,9 @@
   background: #FFF3EC;
   min-height: 100vh;
   padding-bottom: 20px;
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden !important;
 }
 
 /* ── NEW HERO HEADER (GLASSMORPHISM) ───────────────────────────────── */
