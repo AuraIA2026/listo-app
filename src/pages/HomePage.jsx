@@ -945,100 +945,98 @@ export default function HomePage({ lang, navigate, userRole }) {
       )}
 
       {/* ── BARRA DE NAVEGACIÓN AMAZON PILLS CON FOTO DE PERFIL DELANTE (SOBRESALE DEL CUADRO) ── */}
-      {!isPro && (
-        <div className="amz-top-nav-bar" style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '6px 16px', overflow: 'visible' }}>
-          {/* Avatar del usuario que SOBRESALE un poco del cuadro azul/oscuro */}
+      <div className="amz-top-nav-bar" style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '6px 16px', overflow: 'visible' }}>
+        {/* Avatar del usuario que SOBRESALE un poco del cuadro azul/oscuro */}
+        <div 
+          onClick={() => navigate('profile')}
+          style={{ position: 'relative', cursor: 'pointer', flexShrink: 0, zIndex: 20, margin: '-6px 2px -6px 0' }}
+        >
+          <img 
+            src={userData?.profilePhoto || userData?.photoURL || logoListo} 
+            alt="Perfil" 
+            style={{ 
+              width: '58px', 
+              height: '58px', 
+              borderRadius: '50%', 
+              objectFit: 'cover', 
+              border: '3px solid white', 
+              boxShadow: '0 4px 14px rgba(0,0,0,0.4)',
+              background: '#FFF'
+            }} 
+          />
+
+          {/* Ícono de chat flotante en la esquina de la foto de perfil */}
           <div 
-            onClick={() => navigate('profile')}
-            style={{ position: 'relative', cursor: 'pointer', flexShrink: 0, zIndex: 20, margin: '-6px 2px -6px 0' }}
+            onClick={(e) => {
+              e.stopPropagation();
+              navigate('chat');
+            }}
+            style={{
+              position: 'absolute',
+              bottom: '-2px',
+              right: '-2px',
+              width: '26px',
+              height: '26px',
+              borderRadius: '50%',
+              background: 'linear-gradient(135deg, #FF7A1A, #F26000)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.5)',
+              cursor: 'pointer',
+              border: '2px solid white',
+              zIndex: 21
+            }}
           >
-            <img 
-              src={userData?.profilePhoto || userData?.photoURL || logoListo} 
-              alt="Perfil" 
-              style={{ 
-                width: '58px', 
-                height: '58px', 
-                borderRadius: '50%', 
-                objectFit: 'cover', 
-                border: '3px solid white', 
-                boxShadow: '0 4px 14px rgba(0,0,0,0.4)',
-                background: '#FFF'
-              }} 
-            />
-
-            {/* Ícono de chat flotante en la esquina de la foto de perfil */}
-            <div 
-              onClick={(e) => {
-                e.stopPropagation();
-                navigate('chat');
-              }}
-              style={{
-                position: 'absolute',
-                bottom: '-2px',
-                right: '-2px',
-                width: '26px',
-                height: '26px',
-                borderRadius: '50%',
-                background: 'linear-gradient(135deg, #FF7A1A, #F26000)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.5)',
-                cursor: 'pointer',
-                border: '2px solid white',
-                zIndex: 21
-              }}
-            >
-              <span style={{ fontSize: '13px', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                💬
+            <span style={{ fontSize: '13px', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              💬
+            </span>
+            {totalUnreadMessages > 0 && (
+              <span 
+                style={{ 
+                  position: 'absolute', 
+                  top: '-6px', 
+                  right: '-6px', 
+                  background: '#EF4444', 
+                  color: 'white', 
+                  fontSize: '9px', 
+                  fontWeight: '900', 
+                  borderRadius: '8px', 
+                  padding: '1px 5px', 
+                  border: '1.5px solid white'
+                }}
+              >
+                {totalUnreadMessages > 9 ? '9+' : totalUnreadMessages}
               </span>
-              {totalUnreadMessages > 0 && (
-                <span 
-                  style={{ 
-                    position: 'absolute', 
-                    top: '-6px', 
-                    right: '-6px', 
-                    background: '#EF4444', 
-                    color: 'white', 
-                    fontSize: '9px', 
-                    fontWeight: '900', 
-                    borderRadius: '8px', 
-                    padding: '1px 5px', 
-                    border: '1.5px solid white'
-                  }}
-                >
-                  {totalUnreadMessages > 9 ? '9+' : totalUnreadMessages}
-                </span>
-              )}
-            </div>
+            )}
           </div>
-
-          <button className="amz-nav-pill active" onClick={() => navigate('search')}>
-            ⚡ Ofertas Relámpago
-          </button>
-          <button className="amz-nav-pill" onClick={() => navigate('search', { catToSelect: 'mecanico' })}>
-            🔧 Mecánicos
-          </button>
-          <button className="amz-nav-pill" onClick={() => navigate('search', { catToSelect: 'electricista' })}>
-            ⚡ Electricistas
-          </button>
-          <button className="amz-nav-pill" onClick={() => navigate('search', { catToSelect: 'plomero' })}>
-            🔩 Plomeros
-          </button>
-          <button className="amz-nav-pill" onClick={() => navigate('search', { catToSelect: 'cerrajero' })}>
-            🔑 Cerrajeros
-          </button>
-          <button className="amz-nav-pill" onClick={() => navigate('search', { catToSelect: 'pintor' })}>
-            🎨 Pintores
-          </button>
-          <button className="amz-nav-pill" onClick={() => navigate('search', { catToSelect: 'jardinero' })}>
-            🌿 Jardineros
-          </button>
-          <button className="amz-nav-pill" onClick={() => navigate('search', { catToSelect: 'ninera' })}>
-            👶 Niñeras
-          </button>
         </div>
-      )}
+
+        <button className="amz-nav-pill active" onClick={() => navigate('search')}>
+          ⚡ Ofertas Relámpago
+        </button>
+        <button className="amz-nav-pill" onClick={() => navigate('search', { catToSelect: 'mecanico' })}>
+          🔧 Mecánicos
+        </button>
+        <button className="amz-nav-pill" onClick={() => navigate('search', { catToSelect: 'electricista' })}>
+          ⚡ Electricistas
+        </button>
+        <button className="amz-nav-pill" onClick={() => navigate('search', { catToSelect: 'plomero' })}>
+          🔩 Plomeros
+        </button>
+        <button className="amz-nav-pill" onClick={() => navigate('search', { catToSelect: 'cerrajero' })}>
+          🔑 Cerrajeros
+        </button>
+        <button className="amz-nav-pill" onClick={() => navigate('search', { catToSelect: 'pintor' })}>
+          🎨 Pintores
+        </button>
+        <button className="amz-nav-pill" onClick={() => navigate('search', { catToSelect: 'jardinero' })}>
+          🌿 Jardineros
+        </button>
+        <button className="amz-nav-pill" onClick={() => navigate('search', { catToSelect: 'ninera' })}>
+          👶 Niñeras
+        </button>
+      </div>
 
       {/* ── PRIMER ESPACIO PRINCIPAL: CARRUSEL DE TARJETAS VERTICALES DE DOBLE ALTO ── */}
       <VIPSection realVipPros={featuredProsToUse} lang={lang} navigate={navigate} />
