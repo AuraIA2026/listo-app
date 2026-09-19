@@ -412,13 +412,13 @@
 }
 
 .vip-btn-book {
-  flex: 1;
+  flex: 1.2;
   background: linear-gradient(135deg, #FF7A1A 0%, #F26000 50%, #C24D00 100%);
   color: white;
   border: none;
   border-radius: 16px;
-  padding: 14px;
-  font-size: 14px;
+  padding: 12px 8px;
+  font-size: 13px;
   font-weight: 900;
   cursor: pointer;
   box-shadow: 0 6px 18px rgba(242, 96, 0, 0.35);
@@ -426,8 +426,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  width: 100%;
+  gap: 4px;
 }
 
 .vip-btn-book:hover {
@@ -438,3 +437,65 @@
 .vip-btn-book:active {
   transform: scale(0.95);
 }
+
+.vip-btn-profile-secondary {
+  flex: 1;
+  background: #ffffff;
+  color: #F26000;
+  border: 1.5px solid #F26000;
+  border-radius: 16px;
+  padding: 12px 8px;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.vip-btn-profile-secondary:hover {
+  background: #FFF5EE;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(242, 96, 0, 0.15);
+}
+
+.vip-btn-profile-secondary:active {
+  transform: scale(0.95);
+}
+
+/* Botón "Ver Perfil" flotante sobre la foto */
+.vip-photo-view-profile-btn {
+  position: absolute;
+  top: 44px;
+  right: 12px;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 20px;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+  z-index: 4;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+  transition: all 0.25s ease;
+}
+
+.vip-photo-view-profile-btn:hover {
+  background: #F26000;
+  border-color: #FF8533;
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 6px 18px rgba(242, 96, 0, 0.5);
+}
+
+.vip-photo-view-profile-btn:active {
+  transform: scale(0.95);
+}
+

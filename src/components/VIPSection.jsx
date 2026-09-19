@@ -397,6 +397,18 @@ export default function VIPSection({ realVipPros = [], lang = 'es', navigate }) 
                 </span>
               </div>
 
+              {/* BOTÓN/BADGE "VER PERFIL" SOBRE LA FOTO */}
+              <button 
+                className="vip-photo-view-profile-btn"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate('proProfile', pro);
+                }}
+                title={lang === 'es' ? 'Ver perfil completo' : 'View full profile'}
+              >
+                👁️ {lang === 'es' ? 'Ver perfil' : 'View profile'}
+              </button>
+
               {/* DETALLES AL PIE DE LA FOTO */}
               <div className="vip-photo-bottom-info">
                 <p className="vip-pro-name">{pro.nameEs || pro.name}</p>
@@ -443,13 +455,22 @@ export default function VIPSection({ realVipPros = [], lang = 'es', navigate }) 
 
               <div className="vip-actions-row">
                 <button 
+                  className="vip-btn-profile-secondary"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    navigate('proProfile', pro)
+                  }}
+                >
+                  👤 {lang === 'es' ? 'Ver Perfil' : 'Profile'}
+                </button>
+                <button 
                   className="vip-btn-book"
                   onClick={(e) => {
                     e.stopPropagation()
                     navigate('booking', { professional: pro })
                   }}
                 >
-                  ⚡ {lang === 'es' ? 'Contratar Ahora' : 'Hire Now'}
+                  ⚡ {lang === 'es' ? 'Contratar' : 'Hire'}
                 </button>
               </div>
             </div>
