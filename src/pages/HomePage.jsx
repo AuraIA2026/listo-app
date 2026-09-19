@@ -411,32 +411,54 @@ export default function HomePage({ lang, navigate, userRole }) {
     return () => clearInterval(timer)
   }, [])
 
-  // Live Hiring Activity Toast Notifications (Tiempos aleatorios entre 10m y 120m)
-  const liveActivitiesTemplate = [
-    { text: 'Carmen S. en Santiago contrató a Plomero Máster', icon: '💬' },
-    { text: 'José M. en La Vega contrató Mantenimiento A/C', icon: '⚡' },
-    { text: 'Rosa P. en Sto. Domingo contrató Cerrajero 24h', icon: '🔑' },
-    { text: 'Carlos R. en Santiago contrató Mecánica Móvil', icon: '🔧' },
-    { text: 'María L. en Santiago contrató Pintura de Fachada', icon: '🎨' },
-    { text: 'Rafael T. en San Cristóbal contrató Electricista 24/7', icon: '⚡' },
-    { text: 'Elena V. en Puerto Plata contrató Limpieza del Hogar', icon: '🧹' },
-    { text: 'Manuel G. en Santiago contrató Jardinero Profesional', icon: '🌿' }
-  ]
-  const [liveToastIdx, setLiveToastIdx] = useState(0)
-  const [currentToastMinutes, setCurrentToastMinutes] = useState(() => Math.floor(Math.random() * (120 - 10 + 1)) + 10)
-  const [showLiveToast, setShowLiveToast] = useState(true)
+  // Dynamic Live Hiring Toast Generator using Real Registered Pros from Firestore + Dominican Pool
+  const clientNamesPool = [
+    'Carmen S.', 'José M.', 'Rosa P.', 'Carlos R.', 'María L.', 'Rafael T.', 'Elena V.', 'Manuel G.', 
+    'Ana B.', 'Pedro H.', 'Laura M.', 'Francisco K.', 'Patricia D.', 'Gabriel F.', 'Yolanda R.', 
+    'Luz M.', 'Ramón V.', 'Teresa S.', 'Miguel A.', 'Isabel C.', 'Juan B.', 'Esperanza M.', 'Domingo R.'
+  ];
+  const citiesPool = ['Santiago', 'Santo Domingo, D.N.', 'La Vega', 'San Cristóbal', 'Puerto Plata', 'San Pedro', 'La Romana', 'Moca', 'Bonao', 'Baní', 'Higüey'];
+
+  const [currentLiveToastText, setCurrentLiveToastText] = useState('');
+
+  const generateRandomToastText = () => {
+    const randomClient = clientNamesPool[Math.floor(Math.random() * clientNamesPool.length)];
+    const randomCity = citiesPool[Math.floor(Math.random() * citiesPool.length)];
+    const randomMins = Math.floor(Math.random() * (120 - 10 + 1)) + 10;
+
+    if (allProsReal && allProsReal.length > 0 && Math.random() > 0.3) {
+      const realPro = allProsReal[Math.floor(Math.random() * allProsReal.length)];
+      const locationName = realPro.municipio || realPro.provincia || randomCity;
+      return `${randomClient} en ${locationName} contrató a ${realPro.nameEs} (${realPro.specEs}) hace ${randomMins}m`;
+    } else {
+      const servicePool = [
+        { name: 'Plomero Máster', spec: 'Plomería' },
+        { name: 'Mantenimiento A/C', spec: 'Refrigeración' },
+        { name: 'Cerrajero 24h', spec: 'Cerrajería' },
+        { name: 'Mecánica Móvil', spec: 'Mecánica' },
+        { name: 'Pintura de Fachada', spec: 'Pintura' },
+        { name: 'Electricista 24/7', spec: 'Electricidad' },
+        { name: 'Limpieza del Hogar', spec: 'Limpieza' },
+        { name: 'Jardinero Profesional', spec: 'Jardinería' }
+      ];
+      const svc = servicePool[Math.floor(Math.random() * servicePool.length)];
+      return `${randomClient} en ${randomCity} contrató a ${svc.name} hace ${randomMins}m`;
+    }
+  };
+
+  const [showLiveToast, setShowLiveToast] = useState(true);
 
   useEffect(() => {
+    setCurrentLiveToastText(generateRandomToastText());
     const t = setInterval(() => {
-      setShowLiveToast(false)
+      setShowLiveToast(false);
       setTimeout(() => {
-        setLiveToastIdx(curr => (curr + 1) % liveActivitiesTemplate.length)
-        setCurrentToastMinutes(Math.floor(Math.random() * (120 - 10 + 1)) + 10)
-        setShowLiveToast(true)
-      }, 400)
-    }, 9000)
-    return () => clearInterval(t)
-  }, [liveActivitiesTemplate.length])
+        setCurrentLiveToastText(generateRandomToastText());
+        setShowLiveToast(true);
+      }, 400);
+    }, 9000);
+    return () => clearInterval(t);
+  }, [allProsReal.length]);
 
   const [featuredRef, featuredVisible] = useScrollReveal()
   const [allProsRef,  allProsVisible]  = useScrollReveal(0.05)
@@ -1576,11 +1598,11 @@ export default function HomePage({ lang, navigate, userRole }) {
       )}
       {/* ── ELEMENTOS FLOTANTES ESTILO TEMU / AMAZON ── */}
       {/* Live Hiring Activity Toast */}
-      {!isPro && showLiveToast && (
+      {!isPro && showLiveToast && currentLiveToastText && (
         <div className="live-activity-toast">
           <span style={{ fontSize: '18px' }}>🔔</span>
           <p className="live-activity-toast-text">
-            {`${liveActivitiesTemplate[liveToastIdx].icon} ${liveActivitiesTemplate[liveToastIdx].text} hace ${currentToastMinutes}m`}
+            {currentLiveToastText}
           </p>
         </div>
       )}
