@@ -1041,7 +1041,9 @@ export default function HomePage({ lang, navigate, userRole }) {
       )}
 
       {/* ── PRIMER ESPACIO PRINCIPAL: CARRUSEL DE TARJETAS VERTICALES DE DOBLE ALTO ── */}
-      <VIPSection realVipPros={featuredProsToUse} lang={lang} navigate={navigate} />
+      {!isPro && (
+        <VIPSection realVipPros={featuredProsToUse} lang={lang} navigate={navigate} />
+      )}
 
       {/* ── BANNER ÉPICO VIP: "CONOCE NUESTROS PROFESIONALES VIP" (ANIMACIÓN LLAMATIVA) ── */}
       {!isPro && (
@@ -1336,6 +1338,52 @@ export default function HomePage({ lang, navigate, userRole }) {
               </button>
             </div>
           )}
+          {/* Tarjetas de Acceso Rápido para el Profesional */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px', marginTop: '4px' }}>
+            <div 
+              onClick={() => navigate('orders')}
+              style={{ background: 'white', borderRadius: '16px', padding: '16px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)', cursor: 'pointer', border: '1px solid rgba(0,0,0,0.08)', display: 'flex', flexDirection: 'column', gap: '8px' }}
+            >
+              <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: '#EFF6FF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px' }}>📦</div>
+              <div>
+                <p style={{ margin: 0, fontWeight: '800', fontSize: '14px', color: '#1E293B' }}>{lang === 'es' ? 'Solicitudes' : 'Orders'}</p>
+                <p style={{ margin: '2px 0 0', fontSize: '11px', color: '#64748B' }}>{lang === 'es' ? 'Ver contratos recibidos' : 'View received orders'}</p>
+              </div>
+            </div>
+
+            <div 
+              onClick={() => navigate('proProfile', userData)}
+              style={{ background: 'white', borderRadius: '16px', padding: '16px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)', cursor: 'pointer', border: '1px solid rgba(0,0,0,0.08)', display: 'flex', flexDirection: 'column', gap: '8px' }}
+            >
+              <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: '#FEF3C7', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px' }}>👤</div>
+              <div>
+                <p style={{ margin: 0, fontWeight: '800', fontSize: '14px', color: '#1E293B' }}>{lang === 'es' ? 'Mi Perfil Pro' : 'My Pro Profile'}</p>
+                <p style={{ margin: '2px 0 0', fontSize: '11px', color: '#64748B' }}>{lang === 'es' ? 'Fotos y portafolio' : 'Photos & portfolio'}</p>
+              </div>
+            </div>
+
+            <div 
+              onClick={() => navigate('chat')}
+              style={{ background: 'white', borderRadius: '16px', padding: '16px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)', cursor: 'pointer', border: '1px solid rgba(0,0,0,0.08)', display: 'flex', flexDirection: 'column', gap: '8px' }}
+            >
+              <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: '#F0FDF4', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px' }}>💬</div>
+              <div>
+                <p style={{ margin: 0, fontWeight: '800', fontSize: '14px', color: '#1E293B' }}>{lang === 'es' ? 'Mensajes' : 'Messages'}</p>
+                <p style={{ margin: '2px 0 0', fontSize: '11px', color: '#64748B' }}>{lang === 'es' ? 'Chat con clientes' : 'Chat with clients'}</p>
+              </div>
+            </div>
+
+            <div 
+              onClick={() => navigate('createLocal')}
+              style={{ background: 'white', borderRadius: '16px', padding: '16px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)', cursor: 'pointer', border: '1px solid rgba(0,0,0,0.08)', display: 'flex', flexDirection: 'column', gap: '8px' }}
+            >
+              <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: '#FDF4FF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px' }}>🏬</div>
+              <div>
+                <p style={{ margin: 0, fontWeight: '800', fontSize: '14px', color: '#1E293B' }}>{lang === 'es' ? 'Mi Local VIP' : 'My VIP Shop'}</p>
+                <p style={{ margin: '2px 0 0', fontSize: '11px', color: '#64748B' }}>{lang === 'es' ? 'Gestionar negocio' : 'Manage shop'}</p>
+              </div>
+            </div>
+          </div>
         </div>
       ) : (
         <div className="hp-cats-scroll">
@@ -1409,45 +1457,47 @@ export default function HomePage({ lang, navigate, userRole }) {
       )}
 
 
+      {!isPro && (
+        <>
+          <TestimonialsCarousel lang={lang} navigate={navigate} />
 
-
-      <TestimonialsCarousel lang={lang} navigate={navigate} />
-
-      <section ref={featuredRef} className={`featured-section${featuredVisible ? ' reveal' : ''}`}>
-        <div className="hp-sec-header">
-          <h2 className="hp-sec-title">⭐ {lang === 'es' ? 'Profesionales Destacados' : 'Featured Professionals'}</h2>
-          <button className="hp-see-all" onClick={() => navigate('search')}>{lang === 'es' ? 'Ver todos' : 'See all'}</button>
-        </div>
-        <div className="featured-scroll">
-          {featuredProsToUse.length > 0 ? (
-            featuredProsToUse.map((pro, i) => (
-              <div key={i} className="featured-card" style={{ animationDelay: `${i * 0.08}s` }} onClick={() => navigate('booking', { professional: pro })}>
-                {pro.badge && <span className={`featured-badge badge-${pro.badge.toLowerCase()}`}>{pro.badge}</span>}
-                {pro.img ? (
-                   <img src={pro.img} alt={pro.nameEs} className="featured-img" />
-                ) : (
-                   <div className="featured-img" style={{background:'#FF8533',display:'flex',justifyContent:'center',alignItems:'center',color:'white',fontSize:24,fontWeight:'bold'}}>{pro.avatar}</div>
-                )}
-                <div className="featured-info">
-                  <p className="featured-name">{pro.nameEs}</p>
-                  <p className="featured-spec">{lang === 'es' ? pro.specEs : pro.specEn}</p>
-                  <StarRating rating={pro.rating} />
-                  {pro.reviews && pro.reviews > 0 ? (
-                    <p className="featured-reviews">{pro.reviews} {lang === 'es' ? 'reseñas' : 'reviews'}</p>
-                  ) : null}
-                  <p className="featured-price" style={{ color: '#008F39', fontSize: '13px', fontWeight: 'bold' }}>
-                    🤝 {lang === 'es' ? 'A convenir' : 'To agree'}
-                  </p>
-                </div>
-              </div>
-            ))
-          ) : (
-            <div style={{ padding: '20px', color: 'var(--gray)', fontSize: '14px', textAlign: 'center', width: '100%' }}>
-              {lang === 'es' ? 'Aún no hay profesionales destacados.' : 'No featured professionals yet.'}
+          <section ref={featuredRef} className={`featured-section${featuredVisible ? ' reveal' : ''}`}>
+            <div className="hp-sec-header">
+              <h2 className="hp-sec-title">⭐ {lang === 'es' ? 'Profesionales Destacados' : 'Featured Professionals'}</h2>
+              <button className="hp-see-all" onClick={() => navigate('search')}>{lang === 'es' ? 'Ver todos' : 'See all'}</button>
             </div>
-          )}
-        </div>
-      </section>
+            <div className="featured-scroll">
+              {featuredProsToUse.length > 0 ? (
+                featuredProsToUse.map((pro, i) => (
+                  <div key={i} className="featured-card" style={{ animationDelay: `${i * 0.08}s` }} onClick={() => navigate('booking', { professional: pro })}>
+                    {pro.badge && <span className={`featured-badge badge-${pro.badge.toLowerCase()}`}>{pro.badge}</span>}
+                    {pro.img ? (
+                       <img src={pro.img} alt={pro.nameEs} className="featured-img" />
+                    ) : (
+                       <div className="featured-img" style={{background:'#FF8533',display:'flex',justifyContent:'center',alignItems:'center',color:'white',fontSize:24,fontWeight:'bold'}}>{pro.avatar}</div>
+                    )}
+                    <div className="featured-info">
+                      <p className="featured-name">{pro.nameEs}</p>
+                      <p className="featured-spec">{lang === 'es' ? pro.specEs : pro.specEn}</p>
+                      <StarRating rating={pro.rating} />
+                      {pro.reviews && pro.reviews > 0 ? (
+                        <p className="featured-reviews">{pro.reviews} {lang === 'es' ? 'reseñas' : 'reviews'}</p>
+                      ) : null}
+                      <p className="featured-price" style={{ color: '#008F39', fontSize: '13px', fontWeight: 'bold' }}>
+                        🤝 {lang === 'es' ? 'A convenir' : 'To agree'}
+                      </p>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div style={{ padding: '20px', color: 'var(--gray)', fontSize: '14px', textAlign: 'center', width: '100%' }}>
+                  {lang === 'es' ? 'Aún no hay profesionales destacados.' : 'No featured professionals yet.'}
+                </div>
+              )}
+            </div>
+          </section>
+        </>
+      )}
 
       {!isPro && (
         <>
