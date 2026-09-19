@@ -368,8 +368,10 @@ export default function HomePage({ lang, navigate, userRole }) {
     try {
       const userRef = doc(db, 'users', userData.uid);
       const currentContracts = userData.contracts || 0;
+      const currentSpins = userData.spinsAvailable || 0;
       const updatePayload = {
-        wheelProgress: newProgress
+        wheelProgress: newProgress,
+        spinsAvailable: Math.max(0, currentSpins - 1)
       };
       if (earnedContract) {
         updatePayload.contracts = currentContracts + 1;
@@ -1578,14 +1580,16 @@ export default function HomePage({ lang, navigate, userRole }) {
         </div>
       )}
 
-      {/* Floating Lucky Wheel FAB */}
-      <button 
-        className="lucky-wheel-fab" 
-        onClick={() => setShowLuckyWheel(true)}
-      >
-        <span style={{ fontSize: '18px' }}>🎁</span>
-        <span>Ruleta ({userData?.wheelProgress || 0}%)</span>
-      </button>
+      {/* Floating Lucky Wheel FAB — Solo se muestra cuando el profesional gana un giro por obtener 4 o 5 estrellas */}
+      {(userData?.spinsAvailable > 0 || (userData?.completedContracts % 10 === 0 && userData?.completedContracts > 0)) && (
+        <button 
+          className="lucky-wheel-fab" 
+          onClick={() => setShowLuckyWheel(true)}
+        >
+          <span style={{ fontSize: '18px' }}>🎁</span>
+          <span>Ruleta ({userData?.spinsAvailable || 1} giro{userData?.spinsAvailable > 1 ? 's' : ''})</span>
+        </button>
+      )}
 
       {/* Modal de la Ruleta de la Suerte Listo Patrón */}
       <LuckyWheelModal 
