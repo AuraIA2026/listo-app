@@ -858,24 +858,35 @@
    TEMU / AMAZON EXTRA HIGH-CONVERTING FEATURES
    ═══════════════════════════════════════════════ */
 
-/* Marquee Ticker Banner */
+/* Marquee Ticker Banner (High-End Broadcast Ribbon) */
 .amz-marquee-container {
-  background: linear-gradient(90deg, #E11D48, #F26000, #E11D48);
+  background: linear-gradient(90deg, #D97706 0%, #DC2626 35%, #F26000 65%, #D97706 100%);
+  background-size: 200% 100%;
   color: #FFFFFF;
-  padding: 8px 0;
+  padding: 10px 0;
   overflow: hidden;
   white-space: nowrap;
-  font-size: 12px;
+  font-size: 12.5px;
   font-weight: 800;
-  letter-spacing: 0.3px;
-  box-shadow: 0 2px 8px rgba(225, 29, 72, 0.3);
+  letter-spacing: 0.4px;
+  border-top: 1px solid rgba(255, 255, 255, 0.25);
+  border-bottom: 1px solid rgba(255, 215, 0, 0.4);
+  box-shadow: 0 4px 14px rgba(225, 29, 72, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.3);
   position: relative;
   z-index: 15;
+  animation: gradientShift 8s ease infinite;
 }
 .amz-marquee-content {
   display: inline-block;
   padding-left: 100%;
-  animation: marqueeScroll 45s linear infinite;
+  animation: marqueeScroll 40s linear infinite;
+  will-change: transform;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 @keyframes marqueeScroll {
   0% { transform: translate3d(0, 0, 0); }
@@ -912,28 +923,30 @@
   top: max(calc(env(safe-area-inset-top, 0px) + 10px), 14px);
   left: 50%;
   transform: translateX(-50%);
-  background: rgba(26, 26, 46, 0.94);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  background: rgba(20, 20, 38, 0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   color: #FFFFFF;
-  padding: 8px 16px;
-  border-radius: 25px;
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  box-shadow: 0 10px 30px rgba(0,0,0,0.35), 0 0 15px rgba(242,96,0,0.3);
+  padding: 10px 18px;
+  border-radius: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-left: 4px solid #F26000;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.4), 0 0 20px rgba(242, 96, 0, 0.35);
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   z-index: 99999;
   width: calc(100% - 32px);
-  max-width: 360px;
+  max-width: 380px;
   animation: toastSlideDown 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 .live-activity-toast-text {
-  font-size: 12px;
+  font-size: 12.5px;
   font-weight: 700;
   margin: 0;
   line-height: 1.35;
   color: #FFFFFF;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.4);
 }
 
 @keyframes toastSlideDown {
@@ -946,27 +959,32 @@
   position: fixed;
   bottom: 84px;
   right: 16px;
-  background: linear-gradient(135deg, #FFD700, #FF8533, #E11D48);
-  color: #1A1A2E;
-  border: 2px solid #FFFFFF;
-  padding: 12px 18px;
-  border-radius: 30px;
-  font-size: 13px;
+  background: linear-gradient(135deg, #FFE600 0%, #FF8533 50%, #E11D48 100%);
+  color: #111827;
+  border: 2px solid rgba(255, 255, 255, 0.95);
+  padding: 12px 20px;
+  border-radius: 40px;
+  font-size: 13.5px;
   font-weight: 900;
   cursor: pointer;
-  box-shadow: 0 8px 24px rgba(242, 96, 0, 0.4), 0 0 15px rgba(255, 215, 0, 0.6);
+  box-shadow: 0 10px 28px rgba(242, 96, 0, 0.45), 0 0 20px rgba(255, 215, 0, 0.7);
   z-index: 999;
   display: flex;
   align-items: center;
   gap: 8px;
-  animation: fabPulse 2s infinite alternate cubic-bezier(0.45, 0.05, 0.55, 0.95);
-  transition: transform 0.2s;
+  letter-spacing: -0.2px;
+  animation: fabPulse 2.2s infinite alternate cubic-bezier(0.45, 0.05, 0.55, 0.95);
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s;
+}
+.lucky-wheel-fab:hover {
+  transform: translateY(-3px) scale(1.04);
+  box-shadow: 0 14px 36px rgba(242, 96, 0, 0.55), 0 0 30px rgba(255, 215, 0, 0.9);
 }
 .lucky-wheel-fab:active {
-  transform: scale(0.92);
+  transform: scale(0.94);
 }
 @keyframes fabPulse {
-  0% { transform: scale(1); box-shadow: 0 8px 24px rgba(242, 96, 0, 0.4), 0 0 15px rgba(255, 215, 0, 0.6); }
-  100% { transform: scale(1.06); box-shadow: 0 12px 32px rgba(242, 96, 0, 0.6), 0 0 25px rgba(255, 215, 0, 0.9); }
+  0% { transform: scale(1); box-shadow: 0 10px 28px rgba(242, 96, 0, 0.45), 0 0 20px rgba(255, 215, 0, 0.7); }
+  100% { transform: scale(1.05); box-shadow: 0 14px 36px rgba(242, 96, 0, 0.65), 0 0 30px rgba(255, 215, 0, 1); }
 }
 
