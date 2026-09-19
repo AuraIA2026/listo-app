@@ -335,21 +335,72 @@
   color: white;
 }
 
+.vip-name-spec-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 6px;
+}
+
 .vip-pro-name {
   font-size: 19px;
   font-weight: 900;
   color: #ffffff;
-  margin: 0 0 2px;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+  margin: 0;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.7), 0 0 20px rgba(255, 215, 0, 0.3);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  letter-spacing: -0.2px;
+}
+
+.epic-name-anim {
+  animation: epicNameGlow 3s ease-in-out infinite alternate;
+}
+
+@keyframes epicNameGlow {
+  0% {
+    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.8), 0 0 10px rgba(255, 215, 0, 0.2);
+    transform: translateY(0);
+  }
+  100% {
+    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.9), 0 0 18px rgba(255, 215, 0, 0.6), 0 0 30px rgba(242, 96, 0, 0.4);
+    transform: translateY(-1px);
+  }
+}
+
+.vip-epic-crown-icon {
+  font-size: 16px;
+  display: inline-block;
+  animation: crownBounce 2.4s ease-in-out infinite;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));
+}
+
+@keyframes crownBounce {
+  0%, 100% { transform: translateY(0) rotate(0deg) scale(1); }
+  50% { transform: translateY(-3px) rotate(8deg) scale(1.15); }
 }
 
 .vip-pro-spec {
-  font-size: 13px;
-  color: #FF9E4A;
-  font-weight: 700;
-  margin: 0 0 6px;
+  font-size: 12px;
+  color: #FFB366;
+  font-weight: 900;
+  margin: 0;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.8px;
+}
+
+.epic-spec-anim {
+  background: linear-gradient(90deg, #FFB366 0%, #FFD700 50%, #FF8533 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: epicSpecShimmer 3s linear infinite;
+}
+
+@keyframes epicSpecShimmer {
+  0% { background-position: 0% center; }
+  100% { background-position: 200% center; }
 }
 
 .vip-rating-row {
@@ -369,6 +420,76 @@
   align-items: center;
   gap: 4px;
   box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+
+/* Badge de 5 Estrellas Épico */
+.vip-stars-badge.epic-5star-badge {
+  background: linear-gradient(135deg, #1A1A2E 0%, #2A2A4A 100%);
+  color: #FFD700;
+  border: 1px solid rgba(255, 215, 0, 0.6);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4), 0 0 12px rgba(255, 215, 0, 0.4);
+  padding: 4px 10px;
+  border-radius: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.vip-stars-badge.epic-5star-badge::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.4), transparent);
+  transform: skewX(-20deg);
+  animation: starSweep 3s infinite;
+  pointer-events: none;
+}
+
+@keyframes starSweep {
+  0% { left: -100%; }
+  40% { left: 200%; }
+  100% { left: 200%; }
+}
+
+.vip-animated-stars {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.vip-star-pop {
+  color: #FFD700;
+  font-size: 12px;
+  display: inline-block;
+  opacity: 0;
+  transform: scale(0) rotate(-45deg);
+  animation: epicStarPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  filter: drop-shadow(0 0 4px rgba(255, 215, 0, 0.8));
+}
+
+@keyframes epicStarPop {
+  0% {
+    opacity: 0;
+    transform: scale(0) rotate(-45deg);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1.4) rotate(10deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+.vip-rating-score {
+  font-size: 12px;
+  font-weight: 900;
+  color: #FFFFFF;
+  margin-left: 2px;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.5);
 }
 
 .vip-reviews-count {

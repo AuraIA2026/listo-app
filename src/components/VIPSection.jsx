@@ -422,15 +422,34 @@ export default function VIPSection({ realVipPros = [], lang = 'es', navigate }) 
                 </button>
               </div>
 
-              {/* DETALLES AL PIE DE LA FOTO */}
+              {/* DETALLES ÉPICOS AL PIE DE LA FOTO */}
               <div className="vip-photo-bottom-info">
-                <p className="vip-pro-name">{pro.nameEs || pro.name}</p>
-                <p className="vip-pro-spec">{lang === 'es' ? pro.specEs : (pro.specEn || pro.specialty)}</p>
+                <div className="vip-name-spec-wrap">
+                  <p className="vip-pro-name epic-name-anim">
+                    {pro.nameEs || pro.name}
+                    {Number(pro.rating || 5.0) >= 4.9 && (
+                      <span className="vip-epic-crown-icon" title="Profesional 5 Estrellas">👑</span>
+                    )}
+                  </p>
+                  <p className="vip-pro-spec epic-spec-anim">
+                    {lang === 'es' ? pro.specEs : (pro.specEn || pro.specialty)}
+                  </p>
+                </div>
 
                 <div className="vip-rating-row">
-                  <div className="vip-stars-badge">
-                    <span style={{ color: '#F26000' }}>★</span>
-                    <span>{Number(pro.rating || 5.0).toFixed(1)}</span>
+                  <div className={`vip-stars-badge ${Number(pro.rating || 5.0) >= 4.9 ? 'epic-5star-badge' : ''}`}>
+                    <div className="vip-animated-stars">
+                      {[1, 2, 3, 4, 5].map((starIdx) => (
+                        <span 
+                          key={starIdx} 
+                          className="vip-star-pop" 
+                          style={{ animationDelay: `${starIdx * 0.09}s` }}
+                        >
+                          ★
+                        </span>
+                      ))}
+                    </div>
+                    <span className="vip-rating-score">{Number(pro.rating || 5.0).toFixed(1)}</span>
                   </div>
                   <span className="vip-reviews-count">
                     ({pro.reviews || 50} {lang === 'es' ? 'reseñas' : 'reviews'})
