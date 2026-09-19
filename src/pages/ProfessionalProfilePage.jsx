@@ -573,10 +573,10 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
         <div 
           className="pro-cover-bg"
           style={{
-            backgroundImage: displayPro.coverURL 
-              ? `url(${displayPro.coverURL})`
-              : displayPro.photoURL
-                ? `url(${displayPro.photoURL})`
+            backgroundImage: (displayPro.coverURL || displayPro.coverPhoto)
+              ? `url(${displayPro.coverURL || displayPro.coverPhoto})`
+              : (displayPro.photoURL || displayPro.profilePhoto || displayPro.img || displayPro.verificacion?.docs?.selfie)
+                ? `url(${displayPro.photoURL || displayPro.profilePhoto || displayPro.img || displayPro.verificacion?.docs?.selfie})`
                 : 'url("https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=800&q=80")'
           }}
         />
@@ -596,8 +596,8 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
         </div>
 
         {isOwnProfile && (
-          <button className="edit-cover-btn-facebook" onClick={() => document.getElementById('pro-cover-upload').click()} title="Cambiar Portada">
-            📷
+          <button className="edit-cover-btn-facebook" onClick={() => document.getElementById('pro-cover-upload').click()} title="Cambiar Foto de Portada">
+            📷 {lang === 'es' ? 'Portada' : 'Cover'}
           </button>
         )}
       </div>
@@ -605,11 +605,16 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
       {/* Info del profesional */}
       <div className="pro-info-section">
         <div className="pro-avatar-wrap" onClick={isOwnProfile ? () => setShowPhotoOptions(true) : undefined} style={{ cursor: isOwnProfile ? 'pointer' : 'default' }}>
-          {displayPro.photoURL ? (
-            <img src={displayPro.photoURL} alt={displayPro.name} className="pro-avatar-large" style={{ objectFit: 'cover' }} />
+          {(displayPro.photoURL || displayPro.profilePhoto || displayPro.img || displayPro.verificacion?.docs?.selfie) ? (
+            <img 
+              src={displayPro.photoURL || displayPro.profilePhoto || displayPro.img || displayPro.verificacion?.docs?.selfie} 
+              alt={displayPro.name} 
+              className="pro-avatar-large" 
+              style={{ objectFit: 'cover' }} 
+            />
           ) : (
             <div className="pro-avatar-large" style={{ background: proColor }}>
-              {displayPro.avatar || pro.avatar}
+              {displayPro.avatar || pro.avatar || (displayPro.name ? displayPro.name.substring(0,2).toUpperCase() : 'P')}
             </div>
           )}
           
@@ -772,16 +777,20 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
         <div className="modal-overlay" onClick={() => setShowPhotoOptions(false)}>
           <div className="modal-card" onClick={e => e.stopPropagation()}>
             <span className="modal-icon">📸</span>
-            <h3 className="modal-title">{lang === 'es' ? 'Foto de perfil' : 'Profile photo'}</h3>
+            <h3 className="modal-title">{lang === 'es' ? 'Foto de perfil y portada' : 'Profile & Cover photo'}</h3>
             <button className="modal-btn danger" style={{ background:'linear-gradient(135deg,#F26000,#C24E00)' }}
               onClick={() => { setShowPhotoOptions(false); document.getElementById('pro-avatar-upload').click(); }}>
-              {lang === 'es' ? '📷 Elegir de galería' : '📷 Choose from gallery'}
+              {lang === 'es' ? '📷 Cambiar foto de perfil (Galería)' : '📷 Change profile photo (Gallery)'}
             </button>
             <button className="modal-btn danger" style={{ background:'linear-gradient(135deg,#3B82F6,#2563EB)', marginTop:8 }}
               onClick={() => { setShowPhotoOptions(false); document.getElementById('pro-avatar-camera').click(); }}>
-              {lang === 'es' ? '🤳 Tomar foto' : '🤳 Take photo'}
+              {lang === 'es' ? '🤳 Tomar foto de perfil (Cámara)' : '🤳 Take profile photo (Camera)'}
             </button>
-            {displayPro.photoURL && (
+            <button className="modal-btn danger" style={{ background:'linear-gradient(135deg,#10B981,#059669)', marginTop:8 }}
+              onClick={() => { setShowPhotoOptions(false); document.getElementById('pro-cover-upload').click(); }}>
+              {lang === 'es' ? '🖼️ Cambiar foto de portada' : '🖼️ Change cover photo'}
+            </button>
+            {(displayPro.photoURL || displayPro.coverURL) && (
               <button className="modal-btn danger" style={{ background:'#EF4444', marginTop:8 }}
                 onClick={handleDeleteAvatar}>
                 {lang === 'es' ? '🗑️ Eliminar foto actual' : '🗑️ Delete current photo'}
