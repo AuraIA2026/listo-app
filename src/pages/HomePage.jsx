@@ -948,7 +948,13 @@ export default function HomePage({ lang, navigate, userRole }) {
       <div className="amz-top-nav-bar" style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '6px 16px', overflow: 'visible' }}>
         {/* Avatar del usuario que SOBRESALE un poco del cuadro azul/oscuro */}
         <div 
-          onClick={() => navigate('profile')}
+          onClick={() => {
+            if (isPro || userRole === 'pro' || userData?.type === 'pro') {
+              navigate('proProfile', userData)
+            } else {
+              navigate('profile')
+            }
+          }}
           style={{ position: 'relative', cursor: 'pointer', flexShrink: 0, zIndex: 20, margin: '-6px 2px -6px 0' }}
         >
           <img 
