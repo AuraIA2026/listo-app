@@ -381,7 +381,7 @@ export default function VIPSection({ realVipPros = [], lang = 'es', navigate }) 
               />
               <div className="vip-photo-gradient" />
 
-              {/* BADGES Y LOGO LISTO EN LA PARTE SUPERIOR DE LA FOTO */}
+              {/* BADGES Y LOGO LISTO EN LA PARTE SUPERIOR DE LA FOTO (IGUAL A LA TARJETA AZUL) */}
               <div className="vip-top-badges">
                 {(() => {
                   const planInfo = getProPlanBadge(pro, lang);
@@ -391,35 +391,36 @@ export default function VIPSection({ realVipPros = [], lang = 'es', navigate }) 
                     </span>
                   );
                 })()}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <img 
-                    src={logoListo} 
-                    alt="Listo Patrón Logo" 
-                    style={{ 
-                      height: '24px', 
-                      width: 'auto', 
-                      objectFit: 'contain',
-                      filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.4))' 
-                    }} 
-                  />
-                  <span className="vip-tag-online">
-                    <span className="vip-online-pulse" />
-                    {lang === 'es' ? 'DISPONIBLE' : 'AVAILABLE'}
-                  </span>
-                </div>
+                <img 
+                  src={logoListo} 
+                  alt="Listo Patrón Logo" 
+                  style={{ 
+                    height: '28px', 
+                    width: 'auto', 
+                    objectFit: 'contain',
+                    filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' 
+                  }} 
+                />
               </div>
 
-              {/* BOTÓN/BADGE "VER PERFIL" SOBRE LA FOTO */}
-              <button 
-                className="vip-photo-view-profile-btn"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  navigate('proProfile', pro);
-                }}
-                title={lang === 'es' ? 'Ver perfil completo' : 'View full profile'}
-              >
-                👁️ {lang === 'es' ? 'Ver perfil' : 'View profile'}
-              </button>
+              {/* DISPONIBLE Y BOTÓN "VER PERFIL" SOBRE LA FOTO */}
+              <div style={{ position: 'absolute', top: '46px', right: '12px', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '5px', zIndex: 4 }}>
+                <span className="vip-tag-online">
+                  <span className="vip-online-pulse" />
+                  {lang === 'es' ? 'DISPONIBLE' : 'AVAILABLE'}
+                </span>
+                <button 
+                  className="vip-photo-view-profile-btn"
+                  style={{ position: 'static' }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate('proProfile', pro);
+                  }}
+                  title={lang === 'es' ? 'Ver perfil completo' : 'View full profile'}
+                >
+                  👁️ {lang === 'es' ? 'Ver perfil' : 'View profile'}
+                </button>
+              </div>
 
               {/* DETALLES AL PIE DE LA FOTO */}
               <div className="vip-photo-bottom-info">
