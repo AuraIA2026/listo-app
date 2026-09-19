@@ -27,7 +27,7 @@
 
 .hp-hero-search-btn {
   display: flex; align-items: center; gap: 12px;
-  background: white; border: 2px solid rgba(242,96,0,0.1); border-radius: 100px;
+  background: white; border: 2px solid rgba(242,96,0,0.1); border-radius: 10px;
   padding: 12px 16px; cursor: pointer; font-size: 15px;
   color: #666; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   box-shadow: 0 8px 20px rgba(242,96,0,0.06); width: 100%;
@@ -181,7 +181,7 @@
 }
 .featured-scroll::-webkit-scrollbar { display: none; }
 .featured-card {
-  background: #fff; border-radius: 18px; padding: 14px;
+  background: #fff; border-radius: 10px; padding: 14px;
   min-width: 160px; max-width: 160px; cursor: pointer; position: relative;
   box-shadow: 0 3px 14px rgba(0,0,0,0.08); transition: all .25s; flex-shrink: 0;
   animation: fadeSlideUp .5s ease both;
@@ -268,7 +268,7 @@
 }
 .hp-service-cards::-webkit-scrollbar { display: none; }
 .hp-svc-card {
-  background: #fff; border-radius: 18px; overflow: hidden;
+  background: #fff; border-radius: 10px; overflow: hidden;
   min-width: 170px; max-width: 170px; cursor: pointer; flex-shrink: 0;
   box-shadow: 0 6px 18px rgba(0,0,0,0.06); transition: all .3s cubic-bezier(0.34, 1.56, 0.64, 1);
   border: 1px solid rgba(0, 0, 0, 0.05);
@@ -281,7 +281,7 @@
   }
 }
 .amz-bento-card {
-  border-radius: 18px; border: 1px solid rgba(0,0,0,0.05);
+  border-radius: 10px; border: 1px solid rgba(0,0,0,0.05);
   box-shadow: 0 6px 18px rgba(0,0,0,0.06);
 }
 .hp-svc-card:hover { transform: translateY(-5px); box-shadow: 0 12px 28px rgba(0,0,0,0.12); border-color: rgba(242,96,0,0.25); }
@@ -300,15 +300,15 @@
 /* ── TODOS LOS PROFESIONALES ──────────────────── */
 .all-pros-section {
   margin: 12px 0; padding: 22px 18px; background: #fff;
-  border-radius: 28px 28px 0 0; box-shadow: 0 -6px 24px rgba(0,0,0,0.05);
+  border-radius: 16px 16px 0 0; box-shadow: 0 -6px 24px rgba(0,0,0,0.05);
   opacity: 0; transform: translateY(40px); transition: opacity .7s ease, transform .7s ease;
 }
 .all-pros-section.reveal { opacity: 1; transform: translateY(0); }
-.pros-count { font-size: 12px; color: #64748B; font-weight: 700; background: #F1F5F9; padding: 5px 12px; border-radius: 20px; }
+.pros-count { font-size: 12px; color: #64748B; font-weight: 700; background: #F1F5F9; padding: 5px 12px; border-radius: 6px; }
 .pros-filter-scroll { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; padding-bottom: 14px; margin-top: 6px; }
 .pros-filter-scroll::-webkit-scrollbar { display: none; }
 .pros-filter-btn {
-  background: #F1F5F9; border: 1px solid rgba(0,0,0,0.04); border-radius: 20px;
+  background: #F1F5F9; border: 1px solid rgba(0,0,0,0.04); border-radius: 8px;
   padding: 8px 18px; font-size: 12.5px; font-weight: 700; color: #475569;
   cursor: pointer; white-space: nowrap; flex-shrink: 0; transition: all .25s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
@@ -318,7 +318,7 @@
 .pro-list-card {
   display: flex; align-items: center; gap: 14px;
   background: #FFFFFF; border: 1.5px solid #F1F5F9;
-  border-radius: 20px; padding: 14px 16px;
+  border-radius: 10px; padding: 14px 16px;
   cursor: pointer; animation: fadeSlideUp .4s ease both; transition: all .25s cubic-bezier(0.34, 1.56, 0.64, 1);
   box-shadow: 0 4px 14px rgba(0,0,0,0.03);
 }
@@ -748,7 +748,7 @@
   background: rgba(255, 255, 255, 0.12);
   color: #ffffff;
   border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 20px;
+  border-radius: 8px;
   padding: 8px 16px;
   font-size: 13px;
   font-weight: 800;
@@ -772,7 +772,7 @@
 .amz-bento-section {
   margin: 16px;
   background: #ffffff;
-  border-radius: 20px;
+  border-radius: 10px;
   padding: 16px;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
   border: 1px solid rgba(0, 0, 0, 0.06);

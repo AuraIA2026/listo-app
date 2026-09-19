@@ -1058,7 +1058,7 @@ const s = {
   opt: {
     padding: '8px 16px',
     border: '1.5px solid #EEE',
-    borderRadius: '20px',
+    borderRadius: '8px',
     background: '#FAFAFA',
     fontSize: '13px',
     color: '#5A5A5A',
@@ -1068,7 +1068,7 @@ const s = {
   optActive: {
     padding: '8px 16px',
     border: '1.5px solid #F26000',
-    borderRadius: '20px',
+    borderRadius: '8px',
     background: '#FFF0E6',
     fontSize: '13px',
     color: '#F26000',

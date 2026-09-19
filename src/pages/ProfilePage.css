@@ -43,7 +43,7 @@
 .profile-stats .stat-label  { font-size: 11px; color: rgba(255,255,255,0.7) !important; text-align: center; }
 .profile-stats .stat-divider{ width: 1px; height: 32px; background: rgba(255,255,255,0.25); }
 
-.profile-menu { background: white; margin: 16px; border-radius: 20px; overflow: hidden; border: 1.5px solid rgba(0,0,0,0.05); }
+.profile-menu { background: white; margin: 16px; border-radius: 10px; overflow: hidden; border: 1.5px solid rgba(0,0,0,0.05); }
 .profile-menu-item {
   width: 100%; display: flex; align-items: center; gap: 14px; padding: 16px 18px;
   background: none; border: none; border-bottom: 1px solid rgba(0,0,0,0.05);
@@ -58,7 +58,7 @@
 .profile-logout-wrap { padding: 0 16px; }
 .profile-logout {
   width: 100%; background: white; color: #EF4444;
-  border: 1.5px solid rgba(239,68,68,0.2); border-radius: 16px;
+  border: 1.5px solid rgba(239,68,68,0.2); border-radius: 8px;
   padding: 15px; font-size: 15px; font-weight: 700; cursor: pointer; transition: all 0.2s;
 }
 .profile-logout:hover { background: #FEF2F2; border-color: #EF4444; }
@@ -89,7 +89,7 @@
 .screen-title { font-family: var(--font-display); font-size: 17px; font-weight: 800; color: var(--black); }
 .screen-sub   { padding: 14px 16px 4px; font-size: 13px; color: var(--gray); }
 
-.settings-list { background: white; margin: 16px; border-radius: 20px; overflow: hidden; border: 1.5px solid rgba(0,0,0,0.05); }
+.settings-list { background: white; margin: 16px; border-radius: 10px; overflow: hidden; border: 1.5px solid rgba(0,0,0,0.05); }
 .settings-row  { display: flex; align-items: center; gap: 14px; padding: 16px 18px; border-bottom: 1px solid rgba(0,0,0,0.05); }
 .settings-row:last-child { border-bottom: none; }
 .settings-row.two-line   { align-items: flex-start; }
@@ -145,7 +145,7 @@
 
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); display: flex; align-items: flex-end; justify-content: center; z-index: 1000000; animation: fadeIn .2s ease; }
 @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
-.modal-card { background: white; border-radius: 28px 28px 0 0; padding: 28px 24px 36px; width: 100%; max-width: 480px; display: flex; flex-direction: column; align-items: center; gap: 10px; animation: slideUp .25s ease; max-height: 90vh; overflow-y: auto; box-sizing: border-box; }
+.modal-card { background: white; border-radius: 16px 16px 0 0; padding: 28px 24px 36px; width: 100%; max-width: 480px; display: flex; flex-direction: column; align-items: center; gap: 10px; animation: slideUp .25s ease; max-height: 90vh; overflow-y: auto; box-sizing: border-box; }
 @keyframes slideUp { from { transform: translateY(60px); opacity:0; } to { transform: translateY(0); opacity:1; } }
 .modal-icon  { font-size: 40px; margin-bottom: 4px; }
 .modal-title { font-family: var(--font-display); font-size: 20px; font-weight: 800; color: var(--black); }
@@ -209,7 +209,7 @@
 }
 .verif-badge-yellow {
   background: white; color: #D97706; padding: 4px 10px;
-  border-radius: 99px; font-size: 11px; font-weight: 800;
+  border-radius: 6px; font-size: 11px; font-weight: 800;
   box-shadow: 0 2px 8px rgba(0,0,0,0.15); margin-left: auto;
 }
 .verif-badge {
@@ -218,7 +218,7 @@
   font-size: 11px;
   font-weight: 800;
   padding: 4px 10px;
-  border-radius: 99px;
+  border-radius: 6px;
   white-space: nowrap;
   animation: pulse-green 2s infinite;
 }
@@ -251,7 +251,7 @@
   font-size: 11px;
   font-weight: 800;
   padding: 4px 10px;
-  border-radius: 99px;
+  border-radius: 6px;
   white-space: nowrap;
   animation: pulse-blue 2s infinite;
 }
@@ -282,7 +282,7 @@
   font-size: 11px;
   font-weight: 800;
   padding: 4px 10px;
-  border-radius: 99px;
+  border-radius: 6px;
   white-space: nowrap;
 }/* ── Pegar al final de ProfilePage.css ── */
 
@@ -311,7 +311,7 @@
   font-size: 11px;
   font-weight: 800;
   padding: 4px 10px;
-  border-radius: 99px;
+  border-radius: 6px;
   white-space: nowrap;
   animation: pulse-blue 2s infinite;
 }
@@ -345,7 +345,7 @@
   font-size: 11px;
   font-weight: 800;
   padding: 4px 10px;
-  border-radius: 99px;
+  border-radius: 6px;
   white-space: nowrap;
   animation: pulse-blue 2s infinite;
 }
