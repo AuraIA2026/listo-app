@@ -3,6 +3,7 @@ import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firesto
 import { db } from '../firebase'
 import { CATEGORIES, FILTERS, ALL_SUBCATEGORIES } from '../categories'
 import LocalesCarrusel from '../locales/LocalesCarrusel'  // ✅ importado
+import VIPSection from '../components/VIPSection'
 import recomendarIcon from '../assets/icons/recomendar.png'
 import opinionesIcon from '../assets/icons/opiniones.png'
 import compartirIcon from '../assets/icons/compartir.png'
@@ -734,6 +735,17 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
       return 0
     })
 
+  const vipProsList = professionals
+    .filter(p => Number(p.rating || 5.0) >= 4.9)
+    .map(p => ({
+      ...p,
+      nameEs: p.name,
+      nameEn: p.name,
+      specEs: p.category,
+      specEn: p.category,
+      img: p.photoURL || p.img
+    }))
+
   return (
     <div className="services-page">
 
@@ -757,6 +769,9 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
           {search && <button className="search-clear" onClick={() => setSearch('')} style={{ zIndex: 3 }}>✕</button>}
         </div>
       </div>
+
+      {/* ── CARRUSEL ÉPICO VIP DE PROFESIONALES DESTACADOS (ENCIMA DEL CUADRO MAMEY) ── */}
+      <VIPSection realVipPros={vipProsList} lang={lang} navigate={navigate} />
 
       <PromoBanner lang={lang} userRole={userRole} />
       <ProDelMes lang={lang} navigate={navigate} userRole={userRole} />
