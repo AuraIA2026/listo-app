@@ -363,6 +363,23 @@ export default function HomePage({ lang, navigate, userRole }) {
   const [showLuckyWheel, setShowLuckyWheel] = useState(false)
   const [claimedCoupon, setClaimedCoupon]   = useState(null)
 
+  const handleClaimReward = async (prize, newProgress, earnedContract) => {
+    if (!userData?.uid) return;
+    try {
+      const userRef = doc(db, 'users', userData.uid);
+      const currentContracts = userData.contracts || 0;
+      const updatePayload = {
+        wheelProgress: newProgress
+      };
+      if (earnedContract) {
+        updatePayload.contracts = currentContracts + 1;
+      }
+      await updateDoc(userRef, updatePayload);
+    } catch (err) {
+      console.error("Error updating wheel reward:", err);
+    }
+  };
+
   // Flash Sale Live Timer (HH:MM:SS)
   const [flashTime, setFlashTime] = useState({ h: 4, m: 28, s: 45 })
   useEffect(() => {
@@ -1536,36 +1553,34 @@ export default function HomePage({ lang, navigate, userRole }) {
         />
       )}
       {/* ── ELEMENTOS FLOTANTES ESTILO TEMU / AMAZON ── */}
-      {!isPro && (
-        <>
-          {/* Live Hiring Activity Toast */}
-          {showLiveToast && (
-            <div className="live-activity-toast">
-              <span style={{ fontSize: '18px' }}>🔔</span>
-              <p className="live-activity-toast-text">
-                {liveActivities[liveToastIdx].text}
-              </p>
-            </div>
-          )}
-
-          {/* Floating Lucky Wheel FAB */}
-          <button 
-            className="lucky-wheel-fab" 
-            onClick={() => setShowLuckyWheel(true)}
-          >
-            <span style={{ fontSize: '18px' }}>🎁</span>
-            <span>{claimedCoupon ? `🎟️ ${claimedCoupon.code}` : 'Ruleta Cupones'}</span>
-          </button>
-
-          {/* Modal de la Ruleta de la Suerte */}
-          <LuckyWheelModal 
-            isOpen={showLuckyWheel} 
-            onClose={() => setShowLuckyWheel(false)} 
-            lang={lang} 
-            onClaimCoupon={(coupon) => setClaimedCoupon(coupon)} 
-          />
-        </>
+      {/* Live Hiring Activity Toast */}
+      {!isPro && showLiveToast && (
+        <div className="live-activity-toast">
+          <span style={{ fontSize: '18px' }}>🔔</span>
+          <p className="live-activity-toast-text">
+            {liveActivities[liveToastIdx].text}
+          </p>
+        </div>
       )}
+
+      {/* Floating Lucky Wheel FAB */}
+      <button 
+        className="lucky-wheel-fab" 
+        onClick={() => setShowLuckyWheel(true)}
+      >
+        <span style={{ fontSize: '18px' }}>🎁</span>
+        <span>Ruleta ({userData?.wheelProgress || 0}%)</span>
+      </button>
+
+      {/* Modal de la Ruleta de la Suerte Listo Patrón */}
+      <LuckyWheelModal 
+        isOpen={showLuckyWheel} 
+        onClose={() => setShowLuckyWheel(false)} 
+        lang={lang} 
+        wheelProgress={userData?.wheelProgress || 0}
+        completedContracts={userData?.completedContracts || userData?.contracts || 0}
+        onClaimReward={handleClaimReward} 
+      />
 
     </div>
   )
