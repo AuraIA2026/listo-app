@@ -1,8 +1,27 @@
 import { useState, useEffect } from 'react'
-import { collection, query, where, getDocs, updateDoc, doc, getDoc, addDoc, serverTimestamp } from 'firebase/firestore'
+import { collection, query, where, getDocs, updateDoc, doc, getDoc, addDoc, serverTimestamp, onSnapshot } from 'firebase/firestore'
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage'
 import { db, storage } from '../firebase'
 import listoLogo from '../assets/logo listo blanco.png'
+
+const compressImage = (file) => new Promise((resolve, reject) => {
+  const reader = new FileReader()
+  reader.onload = (e) => {
+    const img = new Image()
+    img.onload = () => {
+      const MAX = 600
+      let { width, height } = img
+      if (width > height) { if (width > MAX) { height = Math.round(height * MAX / width); width = MAX } }
+      else { if (height > MAX) { width = Math.round(width * MAX / height); height = MAX } }
+      const canvas = document.createElement('canvas')
+      canvas.width = width; canvas.height = height
+      canvas.getContext('2d').drawImage(img, 0, 0, width, height)
+      resolve(canvas.toDataURL('image/jpeg', 0.75))
+    }
+    img.onerror = reject; img.src = e.target.result
+  }
+  reader.onerror = reject; reader.readAsDataURL(file)
+})
 
 export default function WorkDonePage({ lang = 'es', navigate, professional, userRole, userData }) {
   console.log('WorkDonePage montado. userRole:', userRole, 'userData:', userData)
@@ -43,6 +62,136 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
   const [latestOrder, setLatestOrder] = useState(null)
   const [isUploading, setIsUploading] = useState(false)
   const [quejaTexto, setQuejaTexto] = useState('')
+  const [pendingRequests, setPendingRequests] = useState([])
+
+  useEffect(() => {
+    if (!isPro || !finalUserData?.uid) return
+    const q = query(
+      collection(db, 'profile_edit_requests'),
+      where('userId', '==', finalUserData.uid),
+      where('status', '==', 'pending')
+    )
+    const unsub = onSnapshot(q, (snap) => {
+      setPendingRequests(snap.docs.map(d => ({ id: d.id, ...d.data() })))
+    }, (err) => console.error(err))
+
+    return () => unsub()
+  }, [isPro, finalUserData?.uid])
+
+  const handleDirectProfilePhotoUpload = async (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setIsUploading(true)
+    try {
+      const base64 = await compressImage(file)
+      await addDoc(collection(db, 'profile_edit_requests'), {
+        userId: finalUserData.uid,
+        userName: finalUserData.name || 'Profesional',
+        requestedChanges: { photoURL: base64 },
+        status: 'pending',
+        createdAt: serverTimestamp(),
+        type: 'photo'
+      })
+      await addDoc(collection(db, 'notificaciones'), {
+        userId: 'admin',
+        type: 'new_edit_request_photo',
+        title: '📷 SOLICITUD DE CAMBIO DE FOTO DE PERFIL',
+        text: `El profesional ${finalUserData.name || 'Un profesional'} ha solicitado actualizar su foto de perfil.`,
+        read: false,
+        createdAt: serverTimestamp(),
+        date: new Date().toISOString()
+      })
+      alert(lang === 'es'
+        ? '¡Solicitud enviada! Tu nueva foto de perfil ha sido enviada a la Central de Mando para su autorización.'
+        : 'Request sent! Your new profile photo has been sent for approval.'
+      )
+    } catch (err) {
+      console.error(err)
+      alert(lang === 'es' ? 'Error al subir la foto de perfil.' : 'Error uploading profile photo.')
+    } finally {
+      setIsUploading(false)
+      e.target.value = ''
+    }
+  }
+
+  const handleDirectCoverPhotoUpload = async (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setIsUploading(true)
+    try {
+      const base64 = await compressImage(file)
+      await addDoc(collection(db, 'profile_edit_requests'), {
+        userId: finalUserData.uid,
+        userName: finalUserData.name || 'Profesional',
+        requestedChanges: { coverURL: base64 },
+        status: 'pending',
+        createdAt: serverTimestamp(),
+        type: 'cover'
+      })
+      await addDoc(collection(db, 'notificaciones'), {
+        userId: 'admin',
+        type: 'new_edit_request_cover',
+        title: '🖼️ SOLICITUD DE CAMBIO DE PORTADA',
+        text: `El profesional ${finalUserData.name || 'Un profesional'} ha solicitado actualizar su foto de portada.`,
+        read: false,
+        createdAt: serverTimestamp(),
+        date: new Date().toISOString()
+      })
+      alert(lang === 'es'
+        ? '¡Solicitud enviada! Tu nueva foto de portada ha sido enviada a la Central de Mando para su autorización.'
+        : 'Request sent! Your new cover photo has been sent for approval.'
+      )
+    } catch (err) {
+      console.error(err)
+      alert(lang === 'es' ? 'Error al subir la foto de portada.' : 'Error uploading cover photo.')
+    } finally {
+      setIsUploading(false)
+      e.target.value = ''
+    }
+  }
+
+  const handleDirectWorkPhotoUpload = async (e) => {
+    const files = e.target.files
+    if (!files || files.length === 0) return
+    setIsUploading(true)
+    try {
+      const uploadPromises = Array.from(files).map(file => compressImage(file))
+      const base64Images = await Promise.all(uploadPromises)
+      
+      const currentPhotos = finalUserData.photos || []
+      const updatedPhotos = [...currentPhotos, ...base64Images]
+
+      await addDoc(collection(db, 'profile_edit_requests'), {
+        userId: finalUserData.uid,
+        userName: finalUserData.name || 'Profesional',
+        requestedChanges: { photos: updatedPhotos },
+        status: 'pending',
+        createdAt: serverTimestamp(),
+        type: 'work_photo'
+      })
+
+      await addDoc(collection(db, 'notificaciones'), {
+        userId: 'admin',
+        type: 'new_edit_request_work',
+        title: '💼 SOLICITUD DE NUEVAS FOTOS DE TRABAJOS',
+        text: `El profesional ${finalUserData.name || 'Un profesional'} ha solicitado agregar fotos de trabajos realizados.`,
+        read: false,
+        createdAt: serverTimestamp(),
+        date: new Date().toISOString()
+      })
+
+      alert(lang === 'es'
+        ? '¡Solicitud enviada! Las fotos de tus trabajos realizados han sido enviadas a la Central de Mando para su autorización.'
+        : 'Request sent! Your work photos have been sent for approval.'
+      )
+    } catch (err) {
+      console.error(err)
+      alert(lang === 'es' ? 'Error al subir fotos de trabajos.' : 'Error uploading work photos.')
+    } finally {
+      setIsUploading(false)
+      e.target.value = ''
+    }
+  }
 
   useEffect(() => {
     if (!finalUserData?.uid) {
@@ -444,6 +593,55 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
         </div>
 
         <div style={s.form}>
+          {/* Card de Gestión de Fotos del Profesional (Perfil, Portada, Trabajos Realizados) */}
+          <div style={{ ...s.card, background: 'linear-gradient(135deg, #1A1A2E, #252542)', color: 'white', border: '1px solid rgba(242,96,0,0.4)', boxShadow: '0 8px 24px rgba(0,0,0,0.3)' }}>
+            <p style={{ ...s.sectionLabel, color: '#FF7A1A', fontSize: '15px', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+              <span>📸</span> {lang === 'es' ? 'Gestor de Fotos del Profesional' : 'Pro Photo Manager'}
+            </p>
+            <p style={{ fontSize: '12px', color: '#CCC', margin: '0 0 14px 0', lineHeight: '1.4' }}>
+              {lang === 'es' 
+                ? 'Actualiza tu perfil público. Cambia tu foto de perfil, foto de portada o sube una foto por cada trabajo realizado a tu portafolio.'
+                : 'Update your public profile. Change your profile photo, cover photo, or upload photos of your completed work.'}
+            </p>
+
+            {pendingRequests.length > 0 && (
+              <div style={{ background: 'rgba(245, 158, 11, 0.15)', border: '1px solid #F59E0B', borderRadius: '10px', padding: '10px 12px', marginBottom: '14px', fontSize: '12px', color: '#FCD34D', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span>⏳</span>
+                <span>{lang === 'es' ? `Tienes ${pendingRequests.length} solicitud(es) de fotos en revisión por la Central de Mando.` : `${pendingRequests.length} photo request(s) under review by Central de Mando.`}</span>
+              </div>
+            )}
+
+            <input id="pro-direct-avatar" type="file" accept="image/*" style={{ display: 'none' }} onChange={handleDirectProfilePhotoUpload} />
+            <input id="pro-direct-cover" type="file" accept="image/*" style={{ display: 'none' }} onChange={handleDirectCoverPhotoUpload} />
+            <input id="pro-direct-work" type="file" accept="image/*" multiple style={{ display: 'none' }} onChange={handleDirectWorkPhotoUpload} />
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <button 
+                type="button"
+                onClick={() => document.getElementById('pro-direct-avatar').click()}
+                style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', background: 'linear-gradient(135deg, #F26000, #C24E00)', color: 'white', fontWeight: '800', fontSize: '13px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', boxShadow: '0 4px 12px rgba(242,96,0,0.4)' }}
+              >
+                <span>📷</span> {lang === 'es' ? 'Cambiar Foto de Perfil' : 'Change Profile Photo'}
+              </button>
+
+              <button 
+                type="button"
+                onClick={() => document.getElementById('pro-direct-cover').click()}
+                style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', background: 'linear-gradient(135deg, #3B82F6, #1D4ED8)', color: 'white', fontWeight: '800', fontSize: '13px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', boxShadow: '0 4px 12px rgba(59,130,246,0.4)' }}
+              >
+                <span>🖼️</span> {lang === 'es' ? 'Cambiar Foto de Portada' : 'Change Cover Photo'}
+              </button>
+
+              <button 
+                type="button"
+                onClick={() => document.getElementById('pro-direct-work').click()}
+                style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', background: 'linear-gradient(135deg, #10B981, #047857)', color: 'white', fontWeight: '800', fontSize: '13px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', boxShadow: '0 4px 12px rgba(16,185,129,0.4)' }}
+              >
+                <span>💼</span> {lang === 'es' ? 'Subir Foto de Trabajo Realizado (1 por trabajo)' : 'Upload Completed Work Photo (1 per job)'}
+              </button>
+            </div>
+          </div>
+
           {/* Tarjeta Cliente Asignado */}
           <div style={s.proCard}>
             <div style={s.proAvatar}>
