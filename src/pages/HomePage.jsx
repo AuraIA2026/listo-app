@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { collection, query, where, getDocs, limit, doc, updateDoc, onSnapshot } from 'firebase/firestore'
+import { collection, query, where, getDocs, limit, doc, updateDoc, onSnapshot, addDoc, serverTimestamp } from 'firebase/firestore'
 import { db } from '../firebase'
 import './HomePage.css'
 import { Capacitor } from '@capacitor/core'
@@ -373,6 +373,21 @@ export default function HomePage({ lang, navigate, userRole }) {
       };
       if (earnedContract) {
         updatePayload.contracts = currentContracts + 1;
+        
+        // Crear notificación oficial en Firestore
+        await addDoc(collection(db, 'notificaciones'), {
+          userId: userData.uid,
+          type: 'reward',
+          title: '👑 ¡1 CONTRATO GRATIS OTORGADO!',
+          text: '¡Felicidades! Se ha acreditado 1 contrato gratis a tu saldo por completar tu progreso en la Ruleta Listo Patrón.',
+          read: false,
+          icon: '🎰',
+          createdAt: serverTimestamp()
+        });
+
+        alert(lang === 'es' 
+          ? "🎉 ¡FELICIDADES! Se ha otorgado y acreditado +1 CONTRATO GRATIS automáticamente a tu cuenta de Listo Patrón." 
+          : "🎉 CONGRATULATIONS! +1 FREE CONTRACT has been automatically granted to your Listo Patrón account.");
       }
       await updateDoc(userRef, updatePayload);
     } catch (err) {

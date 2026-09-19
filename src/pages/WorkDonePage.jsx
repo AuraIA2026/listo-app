@@ -183,7 +183,7 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
         checkoutFormaPago: formData.formaPago || ''
       })
 
-      // Notificar al profesional con push nativo
+      // Notificar al profesional con push nativo y otorgar progreso/contrato gratis
       if (latestOrder.proId) {
         await addDoc(collection(db, 'notificaciones'), {
           userId:    latestOrder.proId,
@@ -195,6 +195,53 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
           icon:      '⭐',
           createdAt: serverTimestamp()
         })
+
+        // Auto-acreditar contrato gratis al profesional por 100% progreso / 10 contratos
+        try {
+          const proRef = doc(db, 'users', latestOrder.proId);
+          const proSnap = await getDoc(proRef);
+          if (proSnap.exists()) {
+            const proData = proSnap.data();
+            const currentCompleted = proData.completedContracts || 0;
+            const newCompleted = currentCompleted + 1;
+            const proUpdate = { completedContracts: newCompleted };
+            
+            if (newCompleted % 10 === 0) {
+              proUpdate.contracts = (proData.contracts || 0) + 1;
+              proUpdate.wheelProgress = 100;
+              await addDoc(collection(db, 'notificaciones'), {
+                userId: latestOrder.proId,
+                type: 'reward',
+                title: '🎰 ¡1 CONTRATO GRATIS OTORGADO!',
+                text: `¡Felicidades! Has completado ${newCompleted} trabajos y la Ruleta Listo Patrón alcanzó el 100%. Te acreditamos +1 contrato gratis automáticamente a tu saldo.`,
+                read: false,
+                icon: '🎰',
+                createdAt: serverTimestamp()
+              });
+            } else {
+              const currentProgress = proData.wheelProgress || 0;
+              const nextProgress = currentProgress + 10;
+              if (nextProgress >= 100) {
+                proUpdate.contracts = (proData.contracts || 0) + 1;
+                proUpdate.wheelProgress = nextProgress - 100;
+                await addDoc(collection(db, 'notificaciones'), {
+                  userId: latestOrder.proId,
+                  type: 'reward',
+                  title: '🎰 ¡1 CONTRATO GRATIS OTORGADO!',
+                  text: '¡Felicidades! Tu barra de la Ruleta Listo Patrón se llenó al 100%. Te acreditamos +1 contrato gratis automáticamente a tu saldo.',
+                  read: false,
+                  icon: '🎰',
+                  createdAt: serverTimestamp()
+                });
+              } else {
+                proUpdate.wheelProgress = nextProgress;
+              }
+            }
+            await updateDoc(proRef, proUpdate);
+          }
+        } catch (errPro) {
+          console.error("Error auto-granting contract reward:", errPro);
+        }
       }
 
       // AGREGAR REPORTE A ADMIN SI TIENE QUEJA
@@ -249,6 +296,54 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
         evidences: downloadedURLs,
         evidenceText: formData.experiencia
       })
+      
+      if (latestOrder.proId) {
+        try {
+          const proRef = doc(db, 'users', latestOrder.proId);
+          const proSnap = await getDoc(proRef);
+          if (proSnap.exists()) {
+            const proData = proSnap.data();
+            const currentCompleted = proData.completedContracts || 0;
+            const newCompleted = currentCompleted + 1;
+            const proUpdate = { completedContracts: newCompleted };
+            
+            if (newCompleted % 10 === 0) {
+              proUpdate.contracts = (proData.contracts || 0) + 1;
+              proUpdate.wheelProgress = 100;
+              await addDoc(collection(db, 'notificaciones'), {
+                userId: latestOrder.proId,
+                type: 'reward',
+                title: '🎰 ¡1 CONTRATO GRATIS OTORGADO!',
+                text: `¡Felicidades! Has completado ${newCompleted} evidencias y la Ruleta Listo Patrón alcanzó el 100%. Te acreditamos +1 contrato gratis automáticamente a tu saldo.`,
+                read: false,
+                icon: '🎰',
+                createdAt: serverTimestamp()
+              });
+            } else {
+              const currentProgress = proData.wheelProgress || 0;
+              const nextProgress = currentProgress + 10;
+              if (nextProgress >= 100) {
+                proUpdate.contracts = (proData.contracts || 0) + 1;
+                proUpdate.wheelProgress = nextProgress - 100;
+                await addDoc(collection(db, 'notificaciones'), {
+                  userId: latestOrder.proId,
+                  type: 'reward',
+                  title: '🎰 ¡1 CONTRATO GRATIS OTORGADO!',
+                  text: '¡Felicidades! Tu barra de la Ruleta Listo Patrón se llenó al 100%. Te acreditamos +1 contrato gratis automáticamente a tu saldo.',
+                  read: false,
+                  icon: '🎰',
+                  createdAt: serverTimestamp()
+                });
+              } else {
+                proUpdate.wheelProgress = nextProgress;
+              }
+            }
+            await updateDoc(proRef, proUpdate);
+          }
+        } catch (errPro) {
+          console.error("Error auto-granting contract reward on evidence upload:", errPro);
+        }
+      }
       
       if (finalUserData?.uid) {
         localStorage.removeItem('hideUpgrade_Listo_' + finalUserData.uid)
