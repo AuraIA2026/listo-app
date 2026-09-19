@@ -348,7 +348,14 @@ function VIPProCard({ pro, lang, navigate }) {
   )
 }
 
-export default function VIPSection({ realVipPros = [], lang = 'es', navigate }) {
+export default function VIPSection({ 
+  realVipPros = [], 
+  lang = 'es', 
+  navigate,
+  sectionTitle,
+  sectionSub,
+  showSeeAll = true
+}) {
   // Filtrar estrictamente solo profesionales de 5 estrellas (rating >= 4.9)
   const rawProsList = realVipPros.length > 0 ? realVipPros : demoVipPros
   const displayPros = rawProsList.filter(pro => Number(pro.rating || 5.0) >= 4.9)
@@ -384,22 +391,31 @@ export default function VIPSection({ realVipPros = [], lang = 'es', navigate }) 
 
   return (
     <section className="vip-hero-section">
-      <div className="vip-sec-header">
-        <div className="vip-sec-title-wrap">
-          <h2 className="vip-sec-title">
-            🌟 {lang === 'es' ? 'Profesionales Destacados' : 'Featured Professionals'}
-          </h2>
-          <span className="vip-crown-badge">
-            {lang === 'es' ? 'VERIFICADOS' : 'VERIFIED'}
-          </span>
+      <div className="vip-sec-header" style={{ flexDirection: sectionSub ? 'column' : 'row', alignItems: sectionSub ? 'flex-start' : 'center', gap: '4px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+          <div className="vip-sec-title-wrap">
+            <h2 className="vip-sec-title">
+              {sectionTitle || (lang === 'es' ? '🌟 Profesionales Destacados' : '🌟 Featured Professionals')}
+            </h2>
+            <span className="vip-crown-badge">
+              {lang === 'es' ? 'VERIFICADOS' : 'VERIFIED'}
+            </span>
+          </div>
+          {showSeeAll && (
+            <button 
+              className="hp-see-all" 
+              onClick={() => navigate('search')}
+              style={{ cursor: 'pointer' }}
+            >
+              {lang === 'es' ? 'Ver todos' : 'See all'} ›
+            </button>
+          )}
         </div>
-        <button 
-          className="hp-see-all" 
-          onClick={() => navigate('search')}
-          style={{ cursor: 'pointer' }}
-        >
-          {lang === 'es' ? 'Ver todos' : 'See all'} ›
-        </button>
+        {sectionSub && (
+          <p style={{ margin: '4px 0 2px', fontSize: '13px', fontWeight: '800', color: '#F26000', letterSpacing: '-0.1px' }}>
+            {sectionSub}
+          </p>
+        )}
       </div>
 
       <div 

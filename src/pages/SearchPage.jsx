@@ -771,7 +771,14 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
       </div>
 
       {/* ── CARRUSEL ÉPICO VIP DE PROFESIONALES DESTACADOS (ENCIMA DEL CUADRO MAMEY) ── */}
-      <VIPSection realVipPros={vipProsList} lang={lang} navigate={navigate} />
+      <VIPSection 
+        realVipPros={vipProsList} 
+        lang={lang} 
+        navigate={navigate} 
+        sectionTitle={lang === 'es' ? '👑 NUESTROS VIP' : '👑 OUR VIPs'}
+        sectionSub={lang === 'es' ? 'Profesionales preparados para cumplir todas tus necesidades' : 'Professionals ready to fulfill all your needs'}
+        showSeeAll={false}
+      />
 
       <PromoBanner lang={lang} userRole={userRole} />
       <ProDelMes lang={lang} navigate={navigate} userRole={userRole} />
