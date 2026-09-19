@@ -323,6 +323,7 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
   const [proPhotos, setProPhotos] = useState([])
   const [loadingReviews, setLoadingReviews] = useState(true)
   const [showWriteReview, setShowWriteReview] = useState(pro.autoWriteReview || false)
+  const [showPhotoOptions, setShowPhotoOptions] = useState(false)
   const [pendingRequests, setPendingRequests] = useState([])
 
   useEffect(() => {
