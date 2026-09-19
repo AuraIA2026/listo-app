@@ -5,6 +5,7 @@ import './HomePage.css'
 import { Capacitor } from '@capacitor/core'
 import TutorialTour, { useTour } from '../components/TutorialTour'
 import VIPSection from '../components/VIPSection'
+import LuckyWheelModal from '../components/LuckyWheelModal'
 
 import BtnHamburguesa from '../components/BtnHamburguesa'
 import BtnHamburguesaUsuario from '../components/BtnHamburguesaUsuario'
@@ -357,6 +358,46 @@ export default function HomePage({ lang, navigate, userRole }) {
   const [showHamburguesa, setShowHamburguesa] = useState(false)
   const [homeSearch, setHomeSearch] = useState('')
   const [showDropdown, setShowDropdown] = useState(false)
+
+  // ── ESTADOS TEMU / AMAZON FEATURES ──
+  const [showLuckyWheel, setShowLuckyWheel] = useState(false)
+  const [claimedCoupon, setClaimedCoupon]   = useState(null)
+
+  // Flash Sale Live Timer (HH:MM:SS)
+  const [flashTime, setFlashTime] = useState({ h: 4, m: 28, s: 45 })
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setFlashTime(prev => {
+        if (prev.s > 0) return { ...prev, s: prev.s - 1 }
+        if (prev.m > 0) return { ...prev, m: 59, s: 59 }
+        if (prev.h > 0) return { h: prev.h - 1, m: 59, s: 59 }
+        return { h: 5, m: 59, s: 59 }
+      })
+    }, 1000)
+    return () => clearInterval(timer)
+  }, [])
+
+  // Live Hiring Activity Toast Notifications
+  const liveActivities = [
+    { text: '💬 Carmen S. en Santiago contrató a Plomero Máster hace 2m', pro: 'Plomero Máster' },
+    { text: '⚡ José M. en La Vega contrató Mantenimiento A/C hace 4m', pro: 'Mantenimiento A/C' },
+    { text: '🔑 Rosa P. en Sto. Domingo contrató Cerrajero 24h hace 1m', pro: 'Cerrajero 24h' },
+    { text: '🔧 Carlos R. en Santiago contrató Mecánica Móvil hace 5m', pro: 'Mecánica Móvil' },
+    { text: '🎨 María L. en Santiago contrató Pintura de Fachada hace 3m', pro: 'Pintura' }
+  ]
+  const [liveToastIdx, setLiveToastIdx] = useState(0)
+  const [showLiveToast, setShowLiveToast] = useState(true)
+
+  useEffect(() => {
+    const t = setInterval(() => {
+      setShowLiveToast(false)
+      setTimeout(() => {
+        setLiveToastIdx(curr => (curr + 1) % liveActivities.length)
+        setShowLiveToast(true)
+      }, 400)
+    }, 8000)
+    return () => clearInterval(t)
+  }, [liveActivities.length])
 
   const [featuredRef, featuredVisible] = useScrollReveal()
   const [allProsRef,  allProsVisible]  = useScrollReveal(0.05)
@@ -839,6 +880,15 @@ export default function HomePage({ lang, navigate, userRole }) {
         )}
       </div>
 
+      {/* ── MARQUEE TICKER BANNER ESTILO TEMU ── */}
+      {!isPro && (
+        <div className="amz-marquee-container">
+          <div className="amz-marquee-content">
+            🔥 ¡OFERTAS RELÁMPAGO HOY! &nbsp;&nbsp;•&nbsp;&nbsp; 🎟️ Gira la Ruleta y gana hasta RD$500 OFF &nbsp;&nbsp;•&nbsp;&nbsp; 🛡️ Contrataciones 100% Protegidas por Listo Patrón &nbsp;&nbsp;•&nbsp;&nbsp; ⚡ Profesionales listos en menos de 30 minutos &nbsp;&nbsp;•&nbsp;&nbsp; 🎁 ¡Reclama tu cupón de bienvenida!
+          </div>
+        </div>
+      )}
+
       {/* ── BARRA DE NAVEGACIÓN AMAZON PILLS CON FOTO DE PERFIL DELANTE (SOBRESALE DEL CUADRO) ── */}
       {!isPro && (
         <div className="amz-top-nav-bar" style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '6px 16px', overflow: 'visible' }}>
@@ -978,11 +1028,20 @@ export default function HomePage({ lang, navigate, userRole }) {
       {/* ── GRILLA BENTO 2x2 ESTILO AMAZON "OFERTAS RELÁMPAGO & RECOMENDACIONES" ── */}
       {!isPro && (
         <section style={{ margin: '0 16px 24px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-            <h2 style={{ fontSize: '18px', fontWeight: '900', color: '#1A1A2E', margin: 0, display: 'flex', alignItems: 'center', gap: '6px' }}>
-              ⚡ {lang === 'es' ? 'Ofertas Relámpago y Destacados' : 'Lightning Deals & Featured'}
-            </h2>
-            <span style={{ background: '#EF4444', color: 'white', fontSize: '10px', fontWeight: '900', padding: '3px 8px', borderRadius: '12px', letterSpacing: '0.5px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px', flexWrap: 'wrap', gap: '8px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <h2 style={{ fontSize: '18px', fontWeight: '900', color: '#1A1A2E', margin: 0, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                ⚡ {lang === 'es' ? 'Ofertas Relámpago y Destacados' : 'Lightning Deals & Featured'}
+              </h2>
+              {/* Digital Countdown Timer */}
+              <div className="flash-sale-timer">
+                <span style={{ fontSize: '11px' }}>⏱️</span>
+                <span className="timer-digit">{String(flashTime.h).padStart(2, '0')}</span>:
+                <span className="timer-digit">{String(flashTime.m).padStart(2, '0')}</span>:
+                <span className="timer-digit">{String(flashTime.s).padStart(2, '0')}</span>
+              </div>
+            </div>
+            <span style={{ background: '#EF4444', color: 'white', fontSize: '10px', fontWeight: '900', padding: '4px 9px', borderRadius: '12px', letterSpacing: '0.5px' }}>
               HASTA -50% OFF
             </span>
           </div>
@@ -1475,6 +1534,37 @@ export default function HomePage({ lang, navigate, userRole }) {
           activeView={activeView}
           setActiveView={setActiveView}
         />
+      )}
+      {/* ── ELEMENTOS FLOTANTES ESTILO TEMU / AMAZON ── */}
+      {!isPro && (
+        <>
+          {/* Live Hiring Activity Toast */}
+          {showLiveToast && (
+            <div className="live-activity-toast">
+              <span style={{ fontSize: '18px' }}>🔔</span>
+              <p className="live-activity-toast-text">
+                {liveActivities[liveToastIdx].text}
+              </p>
+            </div>
+          )}
+
+          {/* Floating Lucky Wheel FAB */}
+          <button 
+            className="lucky-wheel-fab" 
+            onClick={() => setShowLuckyWheel(true)}
+          >
+            <span style={{ fontSize: '18px' }}>🎁</span>
+            <span>{claimedCoupon ? `🎟️ ${claimedCoupon.code}` : 'Ruleta Cupones'}</span>
+          </button>
+
+          {/* Modal de la Ruleta de la Suerte */}
+          <LuckyWheelModal 
+            isOpen={showLuckyWheel} 
+            onClose={() => setShowLuckyWheel(false)} 
+            lang={lang} 
+            onClaimCoupon={(coupon) => setClaimedCoupon(coupon)} 
+          />
+        </>
       )}
 
     </div>
