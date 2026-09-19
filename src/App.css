@@ -64,16 +64,74 @@ a {
   color: inherit;
 }
 
-/* Scrollbar - Hidden completely to prevent bottom orange bar & mobile horizontal shift */
+/* Sleek Desktop Vertical Scrollbar */
 ::-webkit-scrollbar {
+  width: 8px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+::-webkit-scrollbar-thumb {
+  background: #F26000;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #C24D00;
+}
+
+/* Firefox standard scrollbar styling */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: #F26000 rgba(0, 0, 0, 0.04);
+}
+
+/* Hide horizontal scrollbar specifically on horizontal scrolling containers */
+.no-scrollbar::-webkit-scrollbar,
+.hp-cats-scroll::-webkit-scrollbar,
+.featured-scroll::-webkit-scrollbar,
+.amz-cards-scroll::-webkit-scrollbar,
+.hp-service-cards::-webkit-scrollbar,
+.pros-filter-scroll::-webkit-scrollbar,
+.amz-top-nav-bar::-webkit-scrollbar,
+.filter-tags::-webkit-scrollbar,
+.categories-scroll::-webkit-scrollbar,
+.subcategories-scroll::-webkit-scrollbar,
+.pill-filters::-webkit-scrollbar,
+.quick-replies-wrap::-webkit-scrollbar,
+.date-scroll::-webkit-scrollbar,
+.admin-tabs::-webkit-scrollbar,
+.marketplace-categories-scroll::-webkit-scrollbar,
+.locales-carrusel-scroll::-webkit-scrollbar,
+.cls-ico-scroll::-webkit-scrollbar,
+.vip-cards-container::-webkit-scrollbar,
+.pp-scroll::-webkit-scrollbar {
   display: none !important;
-  width: 0px !important;
   height: 0px !important;
 }
-::-webkit-scrollbar-track { display: none !important; }
-::-webkit-scrollbar-thumb { display: none !important; }
 
-* {
+.no-scrollbar,
+.hp-cats-scroll,
+.featured-scroll,
+.amz-cards-scroll,
+.hp-service-cards,
+.pros-filter-scroll,
+.amz-top-nav-bar,
+.filter-tags,
+.categories-scroll,
+.subcategories-scroll,
+.pill-filters,
+.quick-replies-wrap,
+.date-scroll,
+.admin-tabs,
+.marketplace-categories-scroll,
+.locales-carrusel-scroll,
+.cls-ico-scroll,
+.vip-cards-container,
+.pp-scroll {
   scrollbar-width: none !important;
   -ms-overflow-style: none !important;
 }
