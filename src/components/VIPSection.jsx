@@ -339,34 +339,8 @@ export default function VIPSection({ realVipPros = [], lang = 'es', navigate }) 
             </p>
           </div>
 
-          {/* Bottom Controls Overlay (Interactive Play/Pause & Sound) */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', zIndex: 2, marginTop: 'auto' }}>
-            <div style={{ display: 'flex', gap: '6px', alignItems: 'center', background: 'rgba(255,255,255,0.25)', padding: '5px 10px', borderRadius: '20px', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.35)' }}>
-              <button 
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setIsHeroPlaying(!isHeroPlaying);
-                }}
-                style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: '12px', display: 'flex', alignItems: 'center' }}
-                title={isHeroPlaying ? 'Pausar carrusel' : 'Reproducir carrusel'}
-              >
-                {isHeroPlaying ? '⏸️' : '▶️'}
-              </button>
-              <button 
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setIsHeroMuted(!isHeroMuted);
-                }}
-                style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: '12px', display: 'flex', alignItems: 'center' }}
-                title={isHeroMuted ? 'Activar sonido' : 'Silenciar'}
-              >
-                {isHeroMuted ? '🔇' : '🔊'}
-              </button>
-              <span style={{ fontSize: '9px', color: '#ffffff', fontWeight: '900', marginLeft: '2px', letterSpacing: '0.3px' }}>
-                {isHeroPlaying ? 'EN VIVO' : 'PAUSADO'}
-              </span>
-            </div>
-
+          {/* Bottom Action Button */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', zIndex: 2, marginTop: 'auto' }}>
             <button 
               onClick={(e) => {
                 e.stopPropagation();
@@ -377,14 +351,15 @@ export default function VIPSection({ realVipPros = [], lang = 'es', navigate }) 
                 color: 'white',
                 border: 'none',
                 borderRadius: '12px',
-                padding: '8px 14px',
-                fontSize: '11px',
+                padding: '10px 18px',
+                fontSize: '12px',
                 fontWeight: '900',
                 cursor: 'pointer',
-                boxShadow: '0 4px 12px rgba(242, 96, 0, 0.4)'
+                boxShadow: '0 4px 12px rgba(242, 96, 0, 0.4)',
+                width: '100%'
               }}
             >
-              ⚡ {lang === 'es' ? 'Contratar ›' : 'Hire ›'}
+              ⚡ {lang === 'es' ? 'Contratar Ahora ›' : 'Hire Now ›'}
             </button>
           </div>
         </div>
