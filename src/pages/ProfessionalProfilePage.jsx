@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { collection, query, where, getDocs, doc, updateDoc, arrayUnion, arrayRemove, addDoc, serverTimestamp } from 'firebase/firestore'
+import { collection, query, where, getDocs, doc, updateDoc, arrayUnion, arrayRemove, addDoc, serverTimestamp, onSnapshot } from 'firebase/firestore'
 import { db } from '../firebase'
 import { CATEGORIES, ALL_SUBCATEGORIES } from '../categories'
 import { useUserData } from '../useUserData'
@@ -124,7 +124,7 @@ function ReviewCard({ review }) {
   )
 }
 
-function PhotoGrid({ photos, lang, isOwnProfile, onUploadPhoto, onDeletePhoto }) {
+function PhotoGrid({ photos, lang, isOwnProfile, onUploadPhoto, onDeletePhoto, hasPendingWork }) {
   const T = txt[lang]
   const [lightbox, setLightbox] = useState(null)
 
@@ -138,6 +138,20 @@ function PhotoGrid({ photos, lang, isOwnProfile, onUploadPhoto, onDeletePhoto })
   return (
     <div className="photo-section">
       <input id="pro-work-upload" type="file" accept="image/*" multiple style={{ display: 'none' }} onChange={handleFileChange} />
+
+      {hasPendingWork && (
+        <div style={{ background: '#FFFBEB', border: '1px solid #FCD34D', borderRadius: '12px', padding: '12px 16px', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <span style={{ fontSize: '20px' }}>⏳</span>
+          <div>
+            <p style={{ margin: 0, fontWeight: '700', fontSize: '13px', color: '#92400E' }}>
+              {lang === 'es' ? 'Fotos de trabajos en revisión por el Administrador' : 'Work photos under Admin review'}
+            </p>
+            <p style={{ margin: '2px 0 0', fontSize: '11px', color: '#B45309' }}>
+              {lang === 'es' ? 'Tus fotos enviadas se publicarán en tu portafolio en cuanto sean autorizadas por Central de Mando.' : 'Your submitted photos will be published to your portfolio as soon as authorized.'}
+            </p>
+          </div>
+        </div>
+      )}
       
       {photos.length === 0 && !isOwnProfile && (
          <div style={{ textAlign: 'center', padding: '40px 20px' }}>
@@ -309,7 +323,25 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
   const [proPhotos, setProPhotos] = useState([])
   const [loadingReviews, setLoadingReviews] = useState(true)
   const [showWriteReview, setShowWriteReview] = useState(pro.autoWriteReview || false)
-  const [showPhotoOptions, setShowPhotoOptions] = useState(false)
+  const [pendingRequests, setPendingRequests] = useState([])
+
+  useEffect(() => {
+    if (!isOwnProfile || !userData?.uid) return
+    const q = query(
+      collection(db, 'profile_edit_requests'),
+      where('userId', '==', userData.uid),
+      where('status', '==', 'pending')
+    )
+    const unsub = onSnapshot(q, (snap) => {
+      setPendingRequests(snap.docs.map(d => ({ id: d.id, ...d.data() })))
+    }, (err) => console.error(err))
+
+    return () => unsub()
+  }, [isOwnProfile, userData?.uid])
+
+  const hasPendingPhoto = pendingRequests.some(r => r.type === 'photo')
+  const hasPendingCover = pendingRequests.some(r => r.type === 'cover')
+  const hasPendingWork  = pendingRequests.some(r => r.type === 'work_photo')
   const avatarColors = ['#F26000','#C24D00','#FF8533','#7A3000','#FFB380']
   const proColor = avatarColors[displayPro.id % avatarColors.length] || '#F26000'
 
@@ -619,15 +651,22 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
         </div>
 
         {isOwnProfile && (
-          <button className="edit-cover-btn-facebook" onClick={() => document.getElementById('pro-cover-upload').click()} title="Cambiar Foto de Portada">
-            📷 {lang === 'es' ? 'Portada' : 'Cover'}
-          </button>
+          <div style={{ position: 'absolute', top: '12px', right: '12px', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px', zIndex: 10 }}>
+            <button className="edit-cover-btn-facebook" onClick={() => document.getElementById('pro-cover-upload').click()} title="Cambiar Foto de Portada">
+              📷 {lang === 'es' ? 'Portada' : 'Cover'}
+            </button>
+            {hasPendingCover && (
+              <span style={{ background: 'rgba(245, 158, 11, 0.95)', color: '#fff', fontSize: '10px', fontWeight: '800', padding: '3px 8px', borderRadius: '12px', backdropFilter: 'blur(4px)', boxShadow: '0 2px 6px rgba(0,0,0,0.3)' }}>
+                ⏳ {lang === 'es' ? 'Portada en revisión' : 'Cover pending'}
+              </span>
+            )}
+          </div>
         )}
       </div>
 
       {/* Info del profesional */}
       <div className="pro-info-section">
-        <div className="pro-avatar-wrap" onClick={isOwnProfile ? () => setShowPhotoOptions(true) : undefined} style={{ cursor: isOwnProfile ? 'pointer' : 'default' }}>
+        <div className="pro-avatar-wrap" onClick={isOwnProfile ? () => setShowPhotoOptions(true) : undefined} style={{ cursor: isOwnProfile ? 'pointer' : 'default', position: 'relative' }}>
           {(displayPro.photoURL || displayPro.profilePhoto || displayPro.img || displayPro.verificacion?.docs?.selfie) ? (
             <img 
               src={displayPro.photoURL || displayPro.profilePhoto || displayPro.img || displayPro.verificacion?.docs?.selfie} 
@@ -640,7 +679,13 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
               {displayPro.avatar || pro.avatar || (displayPro.name ? displayPro.name.substring(0,2).toUpperCase() : 'P')}
             </div>
           )}
-          
+
+          {hasPendingPhoto && (
+            <span style={{ position: 'absolute', bottom: '-8px', left: '50%', transform: 'translateX(-50%)', background: '#F59E0B', color: '#fff', fontSize: '9px', fontWeight: '800', padding: '2px 7px', borderRadius: '10px', whiteSpace: 'nowrap', zIndex: 10, boxShadow: '0 2px 6px rgba(0,0,0,0.2)' }}>
+              ⏳ {lang === 'es' ? 'En revisión' : 'Pending'}
+            </span>
+          )}
+
           {isOwnProfile ? (
             <button className="edit-avatar-btn" onClick={(e) => { e.stopPropagation(); setShowPhotoOptions(true); }} title="Cambiar Foto de Perfil">
               ✏️
@@ -705,6 +750,7 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
             isOwnProfile={isOwnProfile}
             onUploadPhoto={handleWorkUpload}
             onDeletePhoto={handleDeleteWorkPhoto}
+            hasPendingWork={hasPendingWork}
           />
         )}
 
