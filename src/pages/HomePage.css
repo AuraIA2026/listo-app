@@ -991,4 +991,192 @@
   0% { transform: scale(1); box-shadow: 0 10px 28px rgba(242, 96, 0, 0.45), 0 0 20px rgba(255, 215, 0, 0.7); }
   100% { transform: scale(1.05); box-shadow: 0 14px 36px rgba(242, 96, 0, 0.65), 0 0 30px rgba(255, 215, 0, 1); }
 }
+
+/* ── BANNER ÉPICO "CONOCE NUESTROS PROFESIONALES VIP" ────────────────── */
+.vip-explore-banner-card {
+  margin: 0 16px 18px;
+  background: linear-gradient(135deg, #1A1A2E 0%, #2D1B4E 35%, #F26000 70%, #FFB300 100%);
+  background-size: 300% 300%;
+  animation: vipBannerGradient 6s ease infinite alternate;
+  border-radius: 20px;
+  padding: 16px;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(242, 96, 0, 0.28), 0 0 20px rgba(255, 215, 0, 0.2);
+  border: 1.5px solid rgba(255, 215, 0, 0.4);
+  cursor: pointer;
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease;
+}
+
+@media (min-width: 480px) {
+  .vip-explore-banner-card {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.vip-explore-banner-card:hover {
+  transform: translateY(-4px) scale(1.01);
+  box-shadow: 0 16px 40px rgba(242, 96, 0, 0.4), 0 0 30px rgba(255, 215, 0, 0.4);
+  border-color: #FFD700;
+}
+
+@keyframes vipBannerGradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.vip-banner-shimmer {
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+  transform: skewX(-25deg);
+  animation: vipBannerShimmerWave 3.5s infinite;
+  pointer-events: none;
+}
+
+@keyframes vipBannerShimmerWave {
+  0% { left: -100%; }
+  35% { left: 200%; }
+  100% { left: 200%; }
+}
+
+.vip-crown-icon-container {
+  width: 50px;
+  height: 50px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 215, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  flex-shrink: 0;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+}
+
+.vip-crown-icon-animated {
+  font-size: 26px;
+  animation: crownFloating 2.5s ease-in-out infinite alternate;
+  filter: drop-shadow(0 2px 6px rgba(255, 215, 0, 0.8));
+}
+
+@keyframes crownFloating {
+  0% { transform: translateY(0) rotate(0deg) scale(1); }
+  100% { transform: translateY(-4px) rotate(8deg) scale(1.12); }
+}
+
+.vip-crown-star-glow {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  font-size: 12px;
+  animation: starSparkle 1.8s infinite;
+}
+
+@keyframes starSparkle {
+  0%, 100% { opacity: 0.4; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.3) rotate(20deg); }
+}
+
+.vip-banner-badge-tag {
+  background: linear-gradient(135deg, #FFD700, #FFA500);
+  color: #1A1A2E;
+  font-size: 9px;
+  font-weight: 900;
+  padding: 3px 8px;
+  border-radius: 20px;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 8px rgba(255, 215, 0, 0.5);
+  text-transform: uppercase;
+}
+
+.vip-banner-live-pulse {
+  width: 7px;
+  height: 7px;
+  background: #22C55E;
+  border-radius: 50%;
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.35);
+  animation: livePulseAnim 1.5s infinite;
+}
+
+@keyframes livePulseAnim {
+  0%, 100% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(1.4); opacity: 1; }
+}
+
+.vip-banner-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 900;
+  color: #FFFFFF;
+  line-height: 1.2;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+.vip-banner-sub {
+  margin: 3px 0 0;
+  font-size: 11px;
+  color: #FFE6D5;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.vip-banner-action-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 2;
+}
+
+.vip-banner-btn {
+  background: linear-gradient(135deg, #FFFFFF, #FFF3EC);
+  color: #F26000;
+  border: none;
+  border-radius: 12px;
+  padding: 10px 16px;
+  font-size: 12px;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  white-space: nowrap;
+}
+
+.vip-banner-btn:hover {
+  background: #FF7A1A;
+  color: #FFFFFF;
+  transform: scale(1.06);
+  box-shadow: 0 6px 18px rgba(242, 96, 0, 0.5);
+}
+
+.vip-banner-orders-link {
+  background: rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(4px);
+  color: #FFFFFF;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.vip-banner-orders-link:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: #FFFFFF;
+}
 

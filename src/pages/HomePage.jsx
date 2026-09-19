@@ -1043,40 +1043,51 @@ export default function HomePage({ lang, navigate, userRole }) {
       {/* ── PRIMER ESPACIO PRINCIPAL: CARRUSEL DE TARJETAS VERTICALES DE DOBLE ALTO ── */}
       <VIPSection realVipPros={featuredProsToUse} lang={lang} navigate={navigate} />
 
-      {/* ── CARD SECCIÓN "TUS PEDIDOS" ESTILO AMAZON ── */}
+      {/* ── BANNER ÉPICO VIP: "CONOCE NUESTROS PROFESIONALES VIP" (ANIMACIÓN LLAMATIVA) ── */}
       {!isPro && (
         <div 
-          onClick={() => navigate('orders')}
-          style={{
-            margin: '0 16px 18px',
-            background: 'linear-gradient(135deg, #1A1A2E, #282846)',
-            borderRadius: '16px',
-            padding: '14px 16px',
-            color: 'white',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
-            border: '1px solid rgba(255,255,255,0.1)',
-            cursor: 'pointer'
-          }}
+          className="vip-explore-banner-card"
+          onClick={() => navigate('search')}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{ width: '42px', height: '42px', borderRadius: '12px', background: 'rgba(242,96,0,0.2)', border: '1px solid #F26000', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px' }}>
-              📦
+          {/* Shimmer Light Wave Effect */}
+          <div className="vip-banner-shimmer" />
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '14px', zIndex: 2 }}>
+            <div className="vip-crown-icon-container">
+              <span className="vip-crown-icon-animated">👑</span>
+              <span className="vip-crown-star-glow">⭐</span>
             </div>
-            <div>
-              <p style={{ margin: 0, fontSize: '14px', fontWeight: '900', color: '#FFFFFF' }}>
-                {lang === 'es' ? 'Tus Pedidos & Servicios' : 'Your Orders & Services'}
-              </p>
-              <p style={{ margin: '2px 0 0', fontSize: '11px', color: '#B3D7FF', fontWeight: '600' }}>
-                {lang === 'es' ? 'Revisa el estado de tus contrataciones en vivo' : 'Check status of your live hires'}
+            <div style={{ flex: 1 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '3px' }}>
+                <span className="vip-banner-badge-tag">
+                  ⭐ ÉLITE 5 ESTRELLAS
+                </span>
+                <span className="vip-banner-live-pulse" />
+              </div>
+              <h3 className="vip-banner-title">
+                {lang === 'es' ? 'Conoce nuestros Profesionales VIP' : 'Meet our VIP Professionals'}
+              </h3>
+              <p className="vip-banner-sub">
+                {lang === 'es' ? 'Especialistas verificados con garantía de calidad 100%' : 'Verified specialists with 100% quality guarantee'}
               </p>
             </div>
           </div>
-          <span style={{ fontSize: '14px', background: '#F26000', color: 'white', padding: '6px 12px', borderRadius: '10px', fontWeight: '800' }}>
-            Ver ›
-          </span>
+
+          <div className="vip-banner-action-wrap">
+            <button className="vip-banner-btn">
+              ⚡ {lang === 'es' ? 'Explorar VIP ›' : 'Explore VIP ›'}
+            </button>
+            <button 
+              className="vip-banner-orders-link"
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate('orders');
+              }}
+              title={lang === 'es' ? 'Ver mis pedidos' : 'View my orders'}
+            >
+              📦 {lang === 'es' ? 'Mis Pedidos' : 'Orders'}
+            </button>
+          </div>
         </div>
       )}
 
