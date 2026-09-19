@@ -246,38 +246,17 @@ export default function BtnHamburguesa({ onClose, navigate, lang = 'es', activeV
 
               <div style={{ height: '14px' }} />
 
-              {/* Contratos Highlight */}
+              {/* Puntos de Servicio Highlight */}
               <div style={{ background: 'linear-gradient(135deg, #FFF0E6, #FFE4D6)', borderRadius: '16px', padding: '16px', margin: '4px 20px 24px', border: '1px solid #F2600044', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 4px 12px rgba(242,96,0,0.08)' }}>
                 <div style={{ textAlign: 'center', flex: 1, borderRight: '1px solid #F2600033' }}>
                   <span style={{ display: 'block', fontSize: '28px', fontWeight: '900', color: '#F26000', lineHeight: 1 }}>{userData?.contracts || 0}</span>
-                  <span style={{ fontSize: '11px', fontWeight: '800', color: '#B34700', textTransform: 'uppercase', marginTop: '6px', display: 'block' }}>Restantes</span>
+                  <span style={{ fontSize: '11px', fontWeight: '800', color: '#B34700', textTransform: 'uppercase', marginTop: '6px', display: 'block' }}>Puntos Disponibles</span>
                 </div>
                 <div style={{ textAlign: 'center', flex: 1 }}>
                   <span style={{ display: 'block', fontSize: '28px', fontWeight: '900', color: '#666', lineHeight: 1 }}>{userData?.contractsUsed || 0}</span>
-                  <span style={{ fontSize: '11px', fontWeight: '800', color: '#777', textTransform: 'uppercase', marginTop: '6px', display: 'block' }}>Usados</span>
+                  <span style={{ fontSize: '11px', fontWeight: '800', color: '#777', textTransform: 'uppercase', marginTop: '6px', display: 'block' }}>Servicios Realizados</span>
                 </div>
               </div>
-
-              {/* Aviso de Renovación o Actualización de Plan */}
-              {((userData?.contracts || 0) <= 0 || userData?.planStatus === 'expired') && (
-                <div style={{ background: '#FEF2F2', border: '1.5px solid #F87171', borderRadius: '16px', padding: '16px', margin: '0 20px 24px', textAlign: 'left', boxShadow: '0 4px 12px rgba(239,68,68,0.05)' }}>
-                  <p style={{ margin: '0 0 12px', fontSize: '13px', color: '#991B1B', fontWeight: 'bold', lineHeight: 1.5 }}>
-                    ⚠️ Has agotado tus contratos de este mes o tu plan ha expirado. Para seguir postulándote a trabajos de inmediato, puedes actualizar tu plan en nuestra web.
-                  </p>
-                  <button 
-                    onClick={() => {
-                      const email = encodeURIComponent(userData?.email || '');
-                      const phone = encodeURIComponent(userData?.phone || '');
-                      const name = encodeURIComponent(userData?.name || '');
-                      const category = encodeURIComponent(userData?.category || '');
-                      window.open(`https://www.listopatron.com.do/?action=buy_plan&email=${email}&phone=${phone}&name=${name}&category=${category}`, '_system');
-                    }}
-                    style={{ background: '#DC2626', color: 'white', border: 'none', borderRadius: '12px', padding: '12px 16px', fontSize: '13px', fontWeight: '900', width: '100%', cursor: 'pointer', boxShadow: '0 4px 10px rgba(220,38,38,0.2)' }}
-                  >
-                    🔄 Actualizar en la Web
-                  </button>
-                </div>
-              )}
 
               {/* Mi Rendimiento (Estadísticas) Accordion */}
               <Accordion title="📊 Rendimiento y Estadísticas" open={openSection === 'stats'} onToggle={() => toggle('stats')}>

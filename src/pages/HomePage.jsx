@@ -1306,49 +1306,7 @@ export default function HomePage({ lang, navigate, userRole }) {
              )}
           </div>
           
-          {isExpired && (
-            <div style={{ padding: '16px', background: '#FEF2F2', border: '1px solid #F87171', borderRadius: '12px' }}>
-              <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '8px' }}>
-                <span style={{ fontSize: '24px' }}>⚠️</span>
-                <span style={{ fontWeight: 'bold', color: '#991B1B', fontSize: '15px' }}>Perfil Inactivo</span>
-              </div>
-              <p style={{ margin: '0 0 12px', fontSize: '13px', color: '#7F1D1D', lineHeight: '1.4' }}>Tu período de prueba ha finalizado. Para mantener tu visibilidad ante los clientes y reactivar tu perfil, actualízalo en nuestra web.</p>
-              <button 
-                onClick={() => {
-                  const email = encodeURIComponent(userData?.email || '');
-                  const phone = encodeURIComponent(userData?.phone || '');
-                  const name = encodeURIComponent(userData?.name || '');
-                  const category = encodeURIComponent(userData?.category || '');
-                  window.open(`https://www.listopatron.com.do/?action=buy_plan&email=${email}&phone=${phone}&name=${name}&category=${category}`, '_system');
-                }}
-                style={{ background: '#DC2626', color: 'white', border: 'none', padding: '10px 16px', borderRadius: '8px', fontWeight: 'bold', width: '100%', cursor: 'pointer' }}
-              >
-                Actualizar en la Web
-              </button>
-            </div>
-          )}
 
-          {showWarning && !isExpired && (
-            <div style={{ padding: '16px', background: '#FFFBEB', border: '1px solid #FCD34D', borderRadius: '12px' }}>
-              <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '8px' }}>
-                <span style={{ fontSize: '24px' }}>⏳</span>
-                <span style={{ fontWeight: 'bold', color: '#92400E', fontSize: '15px' }}>Tu prueba expira en {daysRemaining} {daysRemaining === 1 ? 'día' : 'días'}</span>
-              </div>
-              <p style={{ margin: '0 0 12px', fontSize: '13px', color: '#B45309', lineHeight: '1.4' }}>Asegura tu visibilidad en la plataforma. ¿Ya sabes qué plan elegir?</p>
-              <button 
-                onClick={() => {
-                  const email = encodeURIComponent(userData?.email || '');
-                  const phone = encodeURIComponent(userData?.phone || '');
-                  const name = encodeURIComponent(userData?.name || '');
-                  const category = encodeURIComponent(userData?.category || '');
-                  window.open(`https://www.listopatron.com.do/?action=buy_plan&email=${email}&phone=${phone}&name=${name}&category=${category}`, '_system');
-                }}
-                style={{ background: '#D97706', color: 'white', border: 'none', padding: '10px 16px', borderRadius: '8px', fontWeight: 'bold', width: '100%', cursor: 'pointer' }}
-              >
-                Ver planes disponibles
-              </button>
-            </div>
-          )}
         </div>
       ) : (
         <div className="hp-cats-scroll">

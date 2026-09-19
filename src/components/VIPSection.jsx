@@ -22,7 +22,7 @@ const demoVipPros = [
     jobs: 180,
     currentPlan: 'VIP',
     planName: 'VIP',
-    badgeTitle: '👑 PLAN VIP',
+    badgeTitle: '👑 SOCIO VIP',
     avail: true,
     img: plomero,
     experience: '8 años de exp.',
@@ -40,7 +40,7 @@ const demoVipPros = [
     jobs: 125,
     currentPlan: 'VIP',
     planName: 'VIP',
-    badgeTitle: '👑 PLAN VIP',
+    badgeTitle: '👑 SOCIO VIP',
     avail: true,
     img: electrica1,
     experience: '6 años de exp.',
@@ -58,7 +58,7 @@ const demoVipPros = [
     jobs: 260,
     currentPlan: 'VIP',
     planName: 'VIP',
-    badgeTitle: '👑 PLAN VIP',
+    badgeTitle: '👑 SOCIO VIP',
     avail: true,
     img: cerrajero1,
     experience: '10 años de exp.',
@@ -76,7 +76,7 @@ const demoVipPros = [
     jobs: 90,
     currentPlan: 'VIP',
     planName: 'VIP',
-    badgeTitle: '👑 PLAN VIP',
+    badgeTitle: '👑 SOCIO VIP',
     avail: true,
     img: jardinero,
     experience: '5 años de exp.',
@@ -94,7 +94,7 @@ const demoVipPros = [
     jobs: 210,
     currentPlan: 'VIP',
     planName: 'VIP',
-    badgeTitle: '👑 PLAN VIP',
+    badgeTitle: '👑 SOCIO VIP',
     avail: true,
     img: mecanico1,
     experience: '9 años de exp.',
@@ -147,31 +147,31 @@ export const getProPlanBadge = (pro, lang = 'es') => {
   let badgeClass = 'plan-badge-basico';
 
   if (rawPlan.includes('vip') || rawPlan.includes('ilimitado') || rawPlan.includes('elite')) {
-    text = lang === 'es' ? '👑 PLAN VIP' : '👑 VIP PLAN';
+    text = lang === 'es' ? '👑 SOCIO VIP' : '👑 VIP PARTNER';
     badgeClass = 'plan-badge-vip';
   } else if (rawPlan.includes('platinum') || rawPlan.includes('platino')) {
-    text = lang === 'es' ? '💎 PLAN PLATINUM' : '💎 PLATINUM PLAN';
+    text = lang === 'es' ? '💎 SOCIO PLATINUM' : '💎 PLATINUM PARTNER';
     badgeClass = 'plan-badge-platinum';
   } else if (rawPlan.includes('gold') || rawPlan.includes('oro')) {
-    text = lang === 'es' ? '⭐ PLAN GOLD' : '⭐ GOLD PLAN';
+    text = lang === 'es' ? '⭐ SOCIO GOLD' : '⭐ GOLD PARTNER';
     badgeClass = 'plan-badge-gold';
   } else if (rawPlan.includes('standard') || rawPlan.includes('estandar') || rawPlan.includes('estándar')) {
-    text = lang === 'es' ? '🔹 PLAN ESTÁNDAR' : '🔹 STANDARD PLAN';
+    text = lang === 'es' ? '🔹 SOCIO VERIFICADO' : '🔹 VERIFIED PARTNER';
     badgeClass = 'plan-badge-standard';
   } else if (rawPlan.includes('basico') || rawPlan.includes('básico') || rawPlan.includes('basic')) {
-    text = lang === 'es' ? '⚪ PLAN BÁSICO' : '⚪ BASIC PLAN';
+    text = lang === 'es' ? '⚪ SOCIO REGISTRADO' : '⚪ REGISTERED PARTNER';
     badgeClass = 'plan-badge-basico';
   } else if (rawPlan.length > 0) {
-    text = `🔹 PLAN ${rawPlan.toUpperCase()}`;
+    text = `🔹 SOCIO ${rawPlan.toUpperCase()}`;
     badgeClass = 'plan-badge-standard';
   } else {
     // Si no tiene plan explícito en Firestore, determinar dinámicamente según sus contratos reales
     const contracts = Number(pro.contracts || 0);
     if (contracts >= 20) {
-      text = lang === 'es' ? '💎 PLAN PLATINUM' : '💎 PLATINUM PLAN';
+      text = lang === 'es' ? '💎 SOCIO PLATINUM' : '💎 PLATINUM PARTNER';
       badgeClass = 'plan-badge-platinum';
     } else if (contracts > 0) {
-      text = lang === 'es' ? '🔹 PLAN ESTÁNDAR' : '🔹 STANDARD PLAN';
+      text = lang === 'es' ? '🔹 SOCIO VERIFICADO' : '🔹 VERIFIED PARTNER';
       badgeClass = 'plan-badge-standard';
     } else {
       text = lang === 'es' ? '⚪ PLAN BÁSICO' : '⚪ BASIC PLAN';
