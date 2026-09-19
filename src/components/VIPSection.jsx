@@ -219,7 +219,10 @@ function VIPProCard({ pro, lang, navigate }) {
     }
   }, [])
 
-  const isFiveStar = Number(pro.rating || 5.0) >= 4.9
+  const numReviews = Number(pro.reviews !== undefined ? pro.reviews : (pro.reviewsCount || 0))
+  const hasReviews = numReviews > 0
+  const effectiveRating = hasReviews ? Number(pro.rating || 0) : 0.0
+  const isFiveStar = hasReviews && effectiveRating >= 4.9
 
   return (
     <div 
@@ -293,23 +296,29 @@ function VIPProCard({ pro, lang, navigate }) {
 
           <div className="vip-rating-row">
             <div className={`vip-stars-badge ${isFiveStar ? 'epic-5star-badge' : ''}`}>
-              {isInView && (
-                <div key={animKey} className="vip-animated-stars">
-                  {[1, 2, 3, 4, 5].map((starIdx) => (
-                    <span 
-                      key={starIdx} 
-                      className="vip-star-pop" 
-                      style={{ animationDelay: `${starIdx * 0.10}s` }}
-                    >
-                      ★
-                    </span>
-                  ))}
+              {hasReviews ? (
+                isInView && (
+                  <div key={animKey} className="vip-animated-stars">
+                    {[1, 2, 3, 4, 5].map((starIdx) => (
+                      <span 
+                        key={starIdx} 
+                        className="vip-star-pop" 
+                        style={{ animationDelay: `${starIdx * 0.10}s` }}
+                      >
+                        ★
+                      </span>
+                    ))}
+                  </div>
+                )
+              ) : (
+                <div style={{ color: '#94A3B8', fontSize: '12px', display: 'flex', gap: '2px', letterSpacing: '-1px' }}>
+                  ★ ★ ★ ★ ★
                 </div>
               )}
-              <span className="vip-rating-score">{Number(pro.rating || 5.0).toFixed(1)}</span>
+              <span className="vip-rating-score">{effectiveRating.toFixed(1)}</span>
             </div>
             <span className="vip-reviews-count">
-              ({pro.reviews !== undefined ? pro.reviews : 0} {lang === 'es' ? 'reseñas' : 'reviews'})
+              ({numReviews} {lang === 'es' ? 'reseñas' : 'reviews'})
             </span>
           </div>
         </div>
@@ -375,10 +384,20 @@ export default function VIPSection({
   sectionSub,
   showSeeAll = true
 }) {
-  // Filtrar estrictamente solo profesionales con Plan VIP activo y calificación >= 4.9
-  const realOnlyVip = (realVipPros || []).filter(isProVip)
+  // Filtrar estrictamente solo profesionales con Plan VIP activo y con reseñas > 0 y calificación >= 4.9
+  const realOnlyVip = (realVipPros || []).filter(pro => {
+    if (!isProVip(pro)) return false
+    const nRev = Number(pro.reviews !== undefined ? pro.reviews : (pro.reviewsCount || 0))
+    const eRate = nRev > 0 ? Number(pro.rating || 0) : 0.0
+    return nRev > 0 && eRate >= 4.9
+  })
   const rawProsList = realOnlyVip.length > 0 ? realOnlyVip : demoVipPros
-  const displayPros = rawProsList.filter(pro => Number(pro.rating || 5.0) >= 4.9)
+  const displayPros = rawProsList.filter(pro => {
+    if (String(pro.id || '').startsWith('vip_')) return true
+    const nRev = Number(pro.reviews !== undefined ? pro.reviews : (pro.reviewsCount || 0))
+    const eRate = nRev > 0 ? Number(pro.rating || 0) : 0.0
+    return nRev > 0 && eRate >= 4.9
+  })
   const containerRef = React.useRef(null)
   const isInteracting = React.useRef(false)
   const [activeInnerSlide, setActiveInnerSlide] = React.useState(0)

@@ -665,12 +665,15 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
           const hasContracts = Boolean(data.contracts && data.contracts > 0)
           if (!isComplete || (!hasPlan && !hasContracts)) return;
 
+          const reviewsCount = Number(data.reviews || data.reviewsCount || data.numReviews || 0);
+          const realRating = reviewsCount > 0 ? Number(data.rating || 0) : 0.0;
+
           prosList.push({
             id:         docSnap.id,
             name:       data.name       || 'Sin nombre',
             category:   data.category   || 'unknown',
-            rating:     data.rating     || 5.0,
-            reviews:    data.reviews    || 0,
+            rating:     realRating,
+            reviews:    reviewsCount,
             location:   data.verificacion?.municipio || data.verificacion?.provincia || data.city || data.location || 'República Dominicana',
             experience: data.experience || '1 año',
             avatar:     (data.name || 'P').substring(0, 2).toUpperCase(),
@@ -736,7 +739,7 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
     })
 
   const vipProsList = professionals
-    .filter(p => isProVip(p) && Number(p.rating || 5.0) >= 4.9)
+    .filter(p => isProVip(p) && Number(p.reviews || 0) > 0 && Number(p.rating || 0) >= 4.9)
     .map(p => ({
       ...p,
       nameEs: p.name,
