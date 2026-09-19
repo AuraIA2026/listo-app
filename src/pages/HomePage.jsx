@@ -360,6 +360,8 @@ export default function HomePage({ lang, navigate, userRole }) {
   const [showDropdown, setShowDropdown] = useState(false)
 
   // ── ESTADOS TEMU / AMAZON FEATURES ──
+  const [allProsReal, setAllProsReal] = useState([])
+  const [featuredReal, setFeaturedReal] = useState([])
   const [showLuckyWheel, setShowLuckyWheel] = useState(false)
   const [claimedCoupon, setClaimedCoupon]   = useState(null)
 
@@ -526,9 +528,6 @@ export default function HomePage({ lang, navigate, userRole }) {
     }, 3500);
     return () => { clearInterval(t); };
   }, [lang, searchPlaceholders.length]);
-
-  const [allProsReal, setAllProsReal] = useState([])
-  const [featuredReal, setFeaturedReal] = useState([])
 
   const [activeView, setActiveView] = useState(localStorage.getItem('listo_active_view') || null)
 
