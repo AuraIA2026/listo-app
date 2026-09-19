@@ -934,14 +934,17 @@ export default function HomePage({ lang, navigate, userRole }) {
         )}
       </div>
 
-      {/* ── MARQUEE TICKER BANNER INFORMATIVO CON LOS 3 ANUNCIOS EN SECUENCIA ── */}
-      {!isPro && (
-        <div className="amz-marquee-container">
-          <div className="amz-marquee-content">
-            🎉 ¡Bienvenido a Listo Patrón! &nbsp;&nbsp;•&nbsp;&nbsp; 🏆 Cada trabajo perfecto de 4 o 5 estrellas te otorga un giro en la Tómbola para ganar un Contrato Gratis &nbsp;&nbsp;&nbsp;&nbsp; ✦ &nbsp;&nbsp;&nbsp;&nbsp; 🏆 Cada vez que un profesional complete un contrato perfecto gana un chance para la tómbola donde podrás tener la oportunidad de ganar un contrato gratis &nbsp;&nbsp;&nbsp;&nbsp; ✦ &nbsp;&nbsp;&nbsp;&nbsp; ⭐ Recuerda que tu trabajo habla por ti: completa cada contrato con responsabilidad, excelencia y puntualidad para destacar como Socio VIP en Listo Patrón &nbsp;&nbsp;&nbsp;&nbsp; ✦ &nbsp;&nbsp;&nbsp;&nbsp; ⚡ Profesionales verificados listos en menos de 30 minutos &nbsp;&nbsp;•&nbsp;&nbsp; 🛡️ Todos los servicios 100% garantizados
-          </div>
+      {/* ── MARQUEE TICKER BANNER INFORMATIVO CON LOS 3 ANUNCIOS EN SECUENCIA (TÓMBOLA & OFERTAS) ── */}
+      <div 
+        className="amz-marquee-container" 
+        onClick={() => setShowLuckyWheel(true)} 
+        style={{ cursor: 'pointer' }}
+        title="Toca para abrir la Tómbola de Contratos Gratis"
+      >
+        <div className="amz-marquee-content">
+          🎉 ¡Bienvenido a Listo Patrón! &nbsp;&nbsp;•&nbsp;&nbsp; 🏆 Cada trabajo perfecto de 4 o 5 estrellas te otorga un giro en la Tómbola para ganar un Contrato Gratis &nbsp;&nbsp;&nbsp;&nbsp; ✦ &nbsp;&nbsp;&nbsp;&nbsp; 🏆 Cada vez que un profesional complete un contrato perfecto gana un chance para la tómbola donde podrás tener la oportunidad de ganar un contrato gratis &nbsp;&nbsp;&nbsp;&nbsp; ✦ &nbsp;&nbsp;&nbsp;&nbsp; ⭐ Recuerda que tu trabajo habla por ti: completa cada contrato con responsabilidad, excelencia y puntualidad para destacar como Socio VIP en Listo Patrón &nbsp;&nbsp;&nbsp;&nbsp; ✦ &nbsp;&nbsp;&nbsp;&nbsp; ⚡ Profesionales verificados listos en menos de 30 minutos &nbsp;&nbsp;•&nbsp;&nbsp; 🛡️ Todos los servicios 100% garantizados
         </div>
-      )}
+      </div>
 
       {/* ── BARRA DE NAVEGACIÓN AMAZON PILLS CON FOTO DE PERFIL DELANTE (SOBRESALE DEL CUADRO) ── */}
       <div className="amz-top-nav-bar" style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '6px 16px', overflow: 'visible' }}>
@@ -1615,14 +1618,14 @@ export default function HomePage({ lang, navigate, userRole }) {
         </div>
       )}
 
-      {/* Floating Lucky Wheel FAB — Solo se muestra cuando el profesional gana un giro por obtener 4 o 5 estrellas */}
-      {(userData?.spinsAvailable > 0 || (userData?.completedContracts % 10 === 0 && userData?.completedContracts > 0)) && (
+      {/* Floating Lucky Wheel FAB — Se muestra para profesionales y cuando hay giros disponibles */}
+      {(isPro || userData?.spinsAvailable > 0 || (userData?.completedContracts % 10 === 0 && userData?.completedContracts > 0)) && (
         <button 
           className="lucky-wheel-fab" 
           onClick={() => setShowLuckyWheel(true)}
         >
-          <span style={{ fontSize: '18px' }}>🎁</span>
-          <span>Ruleta ({userData?.spinsAvailable || 1} giro{userData?.spinsAvailable > 1 ? 's' : ''})</span>
+          <span style={{ fontSize: '18px' }}>🎰</span>
+          <span>{lang === 'es' ? 'Tómbola' : 'Lucky Wheel'} ({(userData?.spinsAvailable || 0)} {lang === 'es' ? 'giros' : 'spins'})</span>
         </button>
       )}
 
