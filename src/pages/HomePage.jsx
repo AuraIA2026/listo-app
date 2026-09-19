@@ -411,27 +411,32 @@ export default function HomePage({ lang, navigate, userRole }) {
     return () => clearInterval(timer)
   }, [])
 
-  // Live Hiring Activity Toast Notifications
-  const liveActivities = [
-    { text: '💬 Carmen S. en Santiago contrató a Plomero Máster hace 2m', pro: 'Plomero Máster' },
-    { text: '⚡ José M. en La Vega contrató Mantenimiento A/C hace 4m', pro: 'Mantenimiento A/C' },
-    { text: '🔑 Rosa P. en Sto. Domingo contrató Cerrajero 24h hace 1m', pro: 'Cerrajero 24h' },
-    { text: '🔧 Carlos R. en Santiago contrató Mecánica Móvil hace 5m', pro: 'Mecánica Móvil' },
-    { text: '🎨 María L. en Santiago contrató Pintura de Fachada hace 3m', pro: 'Pintura' }
+  // Live Hiring Activity Toast Notifications (Tiempos aleatorios entre 10m y 120m)
+  const liveActivitiesTemplate = [
+    { text: 'Carmen S. en Santiago contrató a Plomero Máster', icon: '💬' },
+    { text: 'José M. en La Vega contrató Mantenimiento A/C', icon: '⚡' },
+    { text: 'Rosa P. en Sto. Domingo contrató Cerrajero 24h', icon: '🔑' },
+    { text: 'Carlos R. en Santiago contrató Mecánica Móvil', icon: '🔧' },
+    { text: 'María L. en Santiago contrató Pintura de Fachada', icon: '🎨' },
+    { text: 'Rafael T. en San Cristóbal contrató Electricista 24/7', icon: '⚡' },
+    { text: 'Elena V. en Puerto Plata contrató Limpieza del Hogar', icon: '🧹' },
+    { text: 'Manuel G. en Santiago contrató Jardinero Profesional', icon: '🌿' }
   ]
   const [liveToastIdx, setLiveToastIdx] = useState(0)
+  const [currentToastMinutes, setCurrentToastMinutes] = useState(() => Math.floor(Math.random() * (120 - 10 + 1)) + 10)
   const [showLiveToast, setShowLiveToast] = useState(true)
 
   useEffect(() => {
     const t = setInterval(() => {
       setShowLiveToast(false)
       setTimeout(() => {
-        setLiveToastIdx(curr => (curr + 1) % liveActivities.length)
+        setLiveToastIdx(curr => (curr + 1) % liveActivitiesTemplate.length)
+        setCurrentToastMinutes(Math.floor(Math.random() * (120 - 10 + 1)) + 10)
         setShowLiveToast(true)
       }, 400)
-    }, 8000)
+    }, 9000)
     return () => clearInterval(t)
-  }, [liveActivities.length])
+  }, [liveActivitiesTemplate.length])
 
   const [featuredRef, featuredVisible] = useScrollReveal()
   const [allProsRef,  allProsVisible]  = useScrollReveal(0.05)
@@ -1575,7 +1580,7 @@ export default function HomePage({ lang, navigate, userRole }) {
         <div className="live-activity-toast">
           <span style={{ fontSize: '18px' }}>🔔</span>
           <p className="live-activity-toast-text">
-            {liveActivities[liveToastIdx].text}
+            {`${liveActivitiesTemplate[liveToastIdx].icon} ${liveActivitiesTemplate[liveToastIdx].text} hace ${currentToastMinutes}m`}
           </p>
         </div>
       )}
