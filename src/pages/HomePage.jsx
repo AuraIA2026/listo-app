@@ -1118,8 +1118,8 @@ export default function HomePage({ lang, navigate, userRole }) {
 
       {/* ── GRILLA BENTO 2x2 ESTILO AMAZON "OFERTAS RELÁMPAGO & RECOMENDACIONES" ── */}
       {!isPro && (
-        <section style={{ margin: '0 16px 24px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px', flexWrap: 'wrap', gap: '8px' }}>
+        <section style={{ margin: '2px 16px 6px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px', flexWrap: 'wrap', gap: '8px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <h2 style={{ fontSize: '18px', fontWeight: '900', color: '#1A1A2E', margin: 0, display: 'flex', alignItems: 'center', gap: '6px' }}>
                 ⚡ {lang === 'es' ? 'Ofertas Relámpago y Destacados' : 'Lightning Deals & Featured'}
@@ -1132,19 +1132,19 @@ export default function HomePage({ lang, navigate, userRole }) {
                 <span className="timer-digit">{String(flashTime.s).padStart(2, '0')}</span>
               </div>
             </div>
-            <span style={{ background: '#F26000', color: 'white', fontSize: '10px', fontWeight: '900', padding: '4px 9px', borderRadius: '12px', letterSpacing: '0.5px' }}>
+            <span style={{ background: '#F26000', color: 'white', fontSize: '10px', fontWeight: '900', padding: '4px 9px', borderRadius: '0px', letterSpacing: '0.5px' }}>
               ⭐ MÁS VALORADOS
             </span>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px' }}>
             {/* Card 1: Ofertas Relámpago */}
             <div 
               onClick={() => navigate('search', { catToSelect: 'plomero' })}
               style={{
                 background: '#FFFFFF',
-                borderRadius: '16px',
-                padding: '14px',
+                borderRadius: '0px',
+                padding: '12px',
                 boxShadow: '0 4px 16px rgba(0,0,0,0.06)',
                 border: '1px solid rgba(0,0,0,0.08)',
                 cursor: 'pointer',
@@ -1154,7 +1154,7 @@ export default function HomePage({ lang, navigate, userRole }) {
               }}
             >
               <div>
-                <span style={{ background: '#FEF2F2', color: '#DC2626', fontSize: '10px', fontWeight: '900', padding: '3px 8px', borderRadius: '10px', border: '1px solid #FECACA' }}>
+                <span style={{ background: '#FEF2F2', color: '#DC2626', fontSize: '10px', fontWeight: '900', padding: '3px 8px', borderRadius: '0px', border: '1px solid #FECACA' }}>
                   🔥 POPULAR
                 </span>
                 <h3 style={{ fontSize: '14px', fontWeight: '900', color: '#1A1A2E', margin: '8px 0 4px' }}>
@@ -1175,8 +1175,8 @@ export default function HomePage({ lang, navigate, userRole }) {
               onClick={() => navigate('search', { catToSelect: 'refrigeracion' })}
               style={{
                 background: '#FFFFFF',
-                borderRadius: '16px',
-                padding: '14px',
+                borderRadius: '0px',
+                padding: '12px',
                 boxShadow: '0 4px 16px rgba(0,0,0,0.06)',
                 border: '1px solid rgba(0,0,0,0.08)',
                 cursor: 'pointer',
@@ -1186,7 +1186,7 @@ export default function HomePage({ lang, navigate, userRole }) {
               }}
             >
               <div>
-                <span style={{ background: '#EFF6FF', color: '#2563EB', fontSize: '10px', fontWeight: '900', padding: '3px 8px', borderRadius: '10px', border: '1px solid #BFDBFE' }}>
+                <span style={{ background: '#EFF6FF', color: '#2563EB', fontSize: '10px', fontWeight: '900', padding: '3px 8px', borderRadius: '0px', border: '1px solid #BFDBFE' }}>
                   ❄️ GARANTIZADO
                 </span>
                 <h3 style={{ fontSize: '14px', fontWeight: '900', color: '#1A1A2E', margin: '8px 0 4px' }}>
@@ -1207,8 +1207,8 @@ export default function HomePage({ lang, navigate, userRole }) {
               onClick={() => navigate('search', { catToSelect: 'mecanico' })}
               style={{
                 background: '#FFFFFF',
-                borderRadius: '16px',
-                padding: '14px',
+                borderRadius: '0px',
+                padding: '12px',
                 boxShadow: '0 4px 16px rgba(0,0,0,0.06)',
                 border: '1px solid rgba(0,0,0,0.08)',
                 cursor: 'pointer',
@@ -1218,7 +1218,7 @@ export default function HomePage({ lang, navigate, userRole }) {
               }}
             >
               <div>
-                <span style={{ background: '#FEF3C7', color: '#D97706', fontSize: '10px', fontWeight: '900', padding: '3px 8px', borderRadius: '10px', border: '1px solid #FDE68A' }}>
+                <span style={{ background: '#FEF3C7', color: '#D97706', fontSize: '10px', fontWeight: '900', padding: '3px 8px', borderRadius: '0px', border: '1px solid #FDE68A' }}>
                   🔧 POPULAR
                 </span>
                 <h3 style={{ fontSize: '14px', fontWeight: '900', color: '#1A1A2E', margin: '8px 0 4px' }}>
@@ -1239,8 +1239,8 @@ export default function HomePage({ lang, navigate, userRole }) {
               onClick={() => navigate('search', { catToSelect: 'cerrajero' })}
               style={{
                 background: '#FFFFFF',
-                borderRadius: '16px',
-                padding: '14px',
+                borderRadius: '0px',
+                padding: '12px',
                 boxShadow: '0 4px 16px rgba(0,0,0,0.06)',
                 border: '1px solid rgba(0,0,0,0.08)',
                 cursor: 'pointer',
@@ -1250,7 +1250,7 @@ export default function HomePage({ lang, navigate, userRole }) {
               }}
             >
               <div>
-                <span style={{ background: '#F0FDF4', color: '#16A34A', fontSize: '10px', fontWeight: '900', padding: '3px 8px', borderRadius: '10px', border: '1px solid #BBF7D0' }}>
+                <span style={{ background: '#F0FDF4', color: '#16A34A', fontSize: '10px', fontWeight: '900', padding: '3px 8px', borderRadius: '0px', border: '1px solid #BBF7D0' }}>
                   🔑 URGENTE
                 </span>
                 <h3 style={{ fontSize: '14px', fontWeight: '900', color: '#1A1A2E', margin: '8px 0 4px' }}>
@@ -1270,8 +1270,8 @@ export default function HomePage({ lang, navigate, userRole }) {
       )}
 
       {isPro ? (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', margin: '0 16px 20px' }}>
-          <div style={{ padding: '20px 24px', background: 'white', borderRadius: '16px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', margin: '2px 16px 8px' }}>
+          <div style={{ padding: '16px 20px', background: 'white', borderRadius: '0px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
                <h2 style={{ fontSize: '20px', margin: 0 }}>👋 ¡Hola, Socio!</h2>
                <div 
