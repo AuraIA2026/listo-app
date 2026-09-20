@@ -737,7 +737,7 @@
   overflow-y: visible;
   scrollbar-width: none;
   background: #1A1A2E;
-  margin-bottom: 2px;
+  margin-bottom: 0px;
   position: relative;
   z-index: 10;
 }
