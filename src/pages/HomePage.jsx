@@ -1397,6 +1397,28 @@ export default function HomePage({ lang, navigate, userRole }) {
 
       <TestimonialsCarousel lang={lang} navigate={navigate} />
 
+      {/* ── CINTA / ANUNCIO LARGO Y FINO INVITANDO A LA TIENDA WEB ── */}
+      <div 
+        className="store-ribbon-banner"
+        onClick={() => window.open('https://listopatron.com.do/tienda', '_blank')}
+        title={lang === 'es' ? 'Visitar la Tienda Web de Listo Patrón' : 'Visit Listo Patrón Web Store'}
+      >
+        <div className="store-ribbon-content">
+          <span className="store-ribbon-icon">🛍️</span>
+          <div className="store-ribbon-text-group">
+            <p className="store-ribbon-title">
+              {lang === 'es' ? <>Equípate en nuestra tienda <strong>Listo Patrón</strong></> : <>Equip yourself at <strong>Listo Patrón</strong> Store</>}
+            </p>
+            <p className="store-ribbon-sub">
+              {lang === 'es' ? 'Herramientas, equipos e insumos de seguridad con envío rápido a todo el país' : 'Tools, safety gear & supplies with fast nationwide shipping'}
+            </p>
+          </div>
+        </div>
+        <button className="store-ribbon-btn">
+          🛒 {lang === 'es' ? 'Visitar Tienda ›' : 'Visit Store ›'}
+        </button>
+      </div>
+
       <section ref={featuredRef} className={`featured-section${featuredVisible ? ' reveal' : ''}`}>
         <div className="hp-sec-header">
           <h2 className="hp-sec-title">⭐ {lang === 'es' ? 'Profesionales Destacados' : 'Featured Professionals'}</h2>
