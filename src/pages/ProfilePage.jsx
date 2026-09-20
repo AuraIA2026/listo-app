@@ -582,7 +582,7 @@ function EditRequestScreen({ lang, user, onBack }) {
     if (!form.name || !form.phone) return alert("Nombre y teléfono requeridos");
     setLoading(true);
     try {
-       await addDoc(collection(db, 'profile_edit_requests'), {
+       const docRef = await addDoc(collection(db, 'profile_edit_requests'), {
           userId: user.uid,
           userName: user.name,
           requestedChanges: form,
@@ -595,6 +595,11 @@ function EditRequestScreen({ lang, user, onBack }) {
        try {
          await addDoc(collection(db, 'notificaciones'), {
             userId: 'admin',
+            fromUserId: user.uid,
+            editRequestId: docRef.id,
+            userEmail: user.email || '',
+            userName: user.name || 'Profesional',
+            requestedChanges: form,
             type: 'new_edit_request',
             title: '✏️ SOLICITUD DE CAMBIO DE DATOS',
             text: `El profesional ${user.name || 'Un profesional'} (${user.email || 'Sin email'}) ha solicitado modificar sus datos principales de perfil.`,
@@ -732,7 +737,7 @@ export default function ProfilePage({ lang, setLang, navigate, onLogout, initial
       const base64 = await compressImage(file)
       
       if (profileComplete || isProVerifComplete) {
-         await addDoc(collection(db, 'profile_edit_requests'), {
+         const docRef = await addDoc(collection(db, 'profile_edit_requests'), {
             userId: userData.uid,
             userName: userData.name,
             requestedChanges: { photoURL: base64 },
@@ -745,6 +750,11 @@ export default function ProfilePage({ lang, setLang, navigate, onLogout, initial
          try {
            await addDoc(collection(db, 'notificaciones'), {
               userId: 'admin',
+              fromUserId: userData.uid,
+              editRequestId: docRef.id,
+              userEmail: userData.email || '',
+              userName: userData.name || 'Profesional',
+              requestedChanges: { photoURL: base64 },
               type: 'new_edit_request_photo',
               title: '🖼️ SOLICITUD DE CAMBIO DE FOTO',
               text: `El profesional ${userData.name || 'Un profesional'} (${userData.email || 'Sin email'}) ha solicitado actualizar su foto de perfil.`,

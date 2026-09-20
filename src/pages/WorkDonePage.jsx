@@ -84,7 +84,7 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
     setIsUploading(true)
     try {
       const base64 = await compressImage(file)
-      await addDoc(collection(db, 'profile_edit_requests'), {
+      const docRef1 = await addDoc(collection(db, 'profile_edit_requests'), {
         userId: finalUserData.uid,
         userName: finalUserData.name || 'Profesional',
         requestedChanges: { photoURL: base64 },
@@ -94,6 +94,11 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
       })
       await addDoc(collection(db, 'notificaciones'), {
         userId: 'admin',
+        fromUserId: finalUserData.uid,
+        editRequestId: docRef1.id,
+        userEmail: finalUserData.email || '',
+        userName: finalUserData.name || 'Profesional',
+        requestedChanges: { photoURL: base64 },
         type: 'new_edit_request_photo',
         title: '📷 SOLICITUD DE CAMBIO DE FOTO DE PERFIL',
         text: `El profesional ${finalUserData.name || 'Un profesional'} ha solicitado actualizar su foto de perfil.`,
@@ -120,7 +125,7 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
     setIsUploading(true)
     try {
       const base64 = await compressImage(file)
-      await addDoc(collection(db, 'profile_edit_requests'), {
+      const docRef2 = await addDoc(collection(db, 'profile_edit_requests'), {
         userId: finalUserData.uid,
         userName: finalUserData.name || 'Profesional',
         requestedChanges: { coverURL: base64 },
@@ -130,6 +135,11 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
       })
       await addDoc(collection(db, 'notificaciones'), {
         userId: 'admin',
+        fromUserId: finalUserData.uid,
+        editRequestId: docRef2.id,
+        userEmail: finalUserData.email || '',
+        userName: finalUserData.name || 'Profesional',
+        requestedChanges: { coverURL: base64 },
         type: 'new_edit_request_cover',
         title: '🖼️ SOLICITUD DE CAMBIO DE PORTADA',
         text: `El profesional ${finalUserData.name || 'Un profesional'} ha solicitado actualizar su foto de portada.`,
@@ -161,7 +171,7 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
       const currentPhotos = finalUserData.photos || []
       const updatedPhotos = [...currentPhotos, ...base64Images]
 
-      await addDoc(collection(db, 'profile_edit_requests'), {
+      const docRef3 = await addDoc(collection(db, 'profile_edit_requests'), {
         userId: finalUserData.uid,
         userName: finalUserData.name || 'Profesional',
         requestedChanges: { photos: updatedPhotos },
@@ -172,6 +182,11 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
 
       await addDoc(collection(db, 'notificaciones'), {
         userId: 'admin',
+        fromUserId: finalUserData.uid,
+        editRequestId: docRef3.id,
+        userEmail: finalUserData.email || '',
+        userName: finalUserData.name || 'Profesional',
+        requestedChanges: { photos: updatedPhotos },
         type: 'new_edit_request_work',
         title: '💼 SOLICITUD DE NUEVAS FOTOS DE TRABAJOS',
         text: `El profesional ${finalUserData.name || 'Un profesional'} ha solicitado agregar fotos de trabajos realizados.`,

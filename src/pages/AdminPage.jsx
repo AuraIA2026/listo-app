@@ -869,24 +869,67 @@ export default function AdminPage({ navigate }) {
       }
 
       if (type === 'approve_edit') {
-         const targetUserId = obj.userId || (users.find(u => (obj.userName && u.name?.toLowerCase().includes(obj.userName.toLowerCase())) || (obj.email && u.email?.toLowerCase() === obj.email.toLowerCase()))?.id);
-         
-         if (targetUserId && obj.requestedChanges && Object.keys(obj.requestedChanges).length > 0) {
-            await updateDoc(doc(db, 'users', targetUserId), obj.requestedChanges);
-         } else if (targetUserId) {
+         // Determine targetUserId safely, ignoring 'admin'
+         let targetUserId = (obj.userId && obj.userId !== 'admin') ? obj.userId : obj.fromUserId;
+         if (!targetUserId || targetUserId === 'admin') {
+            const foundUser = users.find(u => 
+               (obj.userName && u.name?.toLowerCase().trim() === obj.userName.toLowerCase().trim()) ||
+               (obj.userName && u.name?.toLowerCase().includes(obj.userName.toLowerCase())) ||
+               (obj.email && u.email?.toLowerCase() === obj.email.toLowerCase()) ||
+               (obj.userEmail && u.email?.toLowerCase() === obj.userEmail.toLowerCase())
+            );
+            if (foundUser) targetUserId = foundUser.id;
+         }
+
+         const changes = obj.requestedChanges || {};
+         if (targetUserId && targetUserId !== 'admin' && Object.keys(changes).length > 0) {
+            await updateDoc(doc(db, 'users', targetUserId), changes);
+         } else if (targetUserId && targetUserId !== 'admin') {
             await updateDoc(doc(db, 'users', targetUserId), { profileEditPending: false });
          }
 
-         if (obj.id) {
+         const editReqId = obj.editRequestId || (obj.fromAlert ? null : obj.id);
+         if (editReqId) {
             try {
-               await updateDoc(doc(db, 'profile_edit_requests', obj.id), { status: 'approved', processedAt: new Date().toISOString() });
+               await updateDoc(doc(db, 'profile_edit_requests', editReqId), { status: 'approved', processedAt: new Date().toISOString() });
             } catch (eDoc) {
-               // Silently ignore if collection id differed
+               console.warn("Could not update profile_edit_requests doc:", eDoc);
+            }
+         } else if (targetUserId && targetUserId !== 'admin') {
+            const pendingReq = editRequests.find(r => r.userId === targetUserId && r.status === 'pending');
+            if (pendingReq) {
+               try {
+                  await updateDoc(doc(db, 'profile_edit_requests', pendingReq.id), { status: 'approved', processedAt: new Date().toISOString() });
+               } catch (eDoc) {
+                  console.warn("Could not update pending profile_edit_requests doc:", eDoc);
+               }
+            }
+         }
+
+         // DESAPARECER LA ALERTA: Eliminar la notificación de la base de datos para que desaparezca del panel
+         const notifId = obj.alertId || (obj.fromAlert ? obj.id : null);
+         if (notifId) {
+            try {
+               await deleteDoc(doc(db, 'notificaciones', notifId));
+            } catch (eNotif) {
+               console.warn("Could not delete alert notification:", eNotif);
+            }
+         } else {
+            // Si se aprobó desde el tab Ediciones, eliminar cualquier alerta de notificación vinculada a este usuario/solicitud
+            const matchingAlert = alerts.find(a => 
+               a.editRequestId === obj.id || 
+               (a.fromUserId && a.fromUserId === targetUserId) || 
+               (a.userId && a.userId === targetUserId && a.userId !== 'admin')
+            );
+            if (matchingAlert) {
+               try {
+                  await deleteDoc(doc(db, 'notificaciones', matchingAlert.id));
+               } catch (eA) {}
             }
          }
          
          try {
-            if (targetUserId) {
+            if (targetUserId && targetUserId !== 'admin') {
                await addDoc(collection(db, 'notificaciones'), {
                   userId: targetUserId,
                   type: 'system',
@@ -905,15 +948,52 @@ export default function AdminPage({ navigate }) {
       }
 
       if (type === 'reject_edit') {
-         await updateDoc(doc(db, 'profile_edit_requests', obj.id), { status: 'rejected', processedAt: new Date().toISOString() });
+         let targetUserId = (obj.userId && obj.userId !== 'admin') ? obj.userId : obj.fromUserId;
+         if (!targetUserId || targetUserId === 'admin') {
+            const foundUser = users.find(u => 
+               (obj.userName && u.name?.toLowerCase().includes(obj.userName.toLowerCase())) ||
+               (obj.email && u.email?.toLowerCase() === obj.email.toLowerCase())
+            );
+            if (foundUser) targetUserId = foundUser.id;
+         }
+
+         const editReqId = obj.editRequestId || (obj.fromAlert ? null : obj.id);
+         if (editReqId) {
+            try {
+               await updateDoc(doc(db, 'profile_edit_requests', editReqId), { status: 'rejected', processedAt: new Date().toISOString() });
+            } catch (eDoc) {}
+         }
+         
+         if (targetUserId && targetUserId !== 'admin') {
             await addDoc(collection(db, 'notificaciones'), {
-               userId: obj.userId,
+               userId: targetUserId,
                type: 'system',
                title: 'Cambio de Perfil Rechazado',
                text: 'Hola, tu solicitud para actualizar tus datos o foto de perfil no fue aprobada por nuestros agentes. Intenta de nuevo con información válida.',
                date: new Date().toISOString(),
                read: false
             });
+         }
+
+         // DESAPARECER LA ALERTA: Eliminar la notificación de la base de datos
+         const notifId = obj.alertId || (obj.fromAlert ? obj.id : null);
+         if (notifId) {
+            try {
+               await deleteDoc(doc(db, 'notificaciones', notifId));
+            } catch (eNotif) {}
+         } else {
+            const matchingAlert = alerts.find(a => 
+               a.editRequestId === obj.id || 
+               (a.fromUserId && a.fromUserId === targetUserId) || 
+               (a.userId && a.userId === targetUserId && a.userId !== 'admin')
+            );
+            if (matchingAlert) {
+               try {
+                  await deleteDoc(doc(db, 'notificaciones', matchingAlert.id));
+               } catch (eA) {}
+            }
+         }
+
          showToast(`🔴 Solicitud de cambio rechazada`);
       }
 
@@ -1324,9 +1404,9 @@ export default function AdminPage({ navigate }) {
               const matchedEditReq = isEditAlert ? (
                 editRequests.find(r => 
                   (r.status === 'pending' || !r.status) && (
-                    (r.userId && a.userId && (r.userId === a.userId || r.userId === a.editRequestId)) ||
                     (r.id && a.editRequestId && r.id === a.editRequestId) ||
-                    (r.id && a.id && r.id === a.id) ||
+                    (r.userId && a.fromUserId && r.userId === a.fromUserId) ||
+                    (r.userId && a.userId && a.userId !== 'admin' && r.userId === a.userId) ||
                     (r.userName && a.text && a.text.toLowerCase().includes(r.userName.toLowerCase())) ||
                     (r.name && a.text && a.text.toLowerCase().includes(r.name.toLowerCase())) ||
                     (r.email && a.text && a.text.toLowerCase().includes(r.email.toLowerCase())) ||
@@ -1334,7 +1414,10 @@ export default function AdminPage({ navigate }) {
                   )
                 ) || {
                   id: a.editRequestId || a.id,
-                  userId: a.userId || (users.find(u => a.text && a.text.toLowerCase().includes(u.name?.toLowerCase()))?.id),
+                  alertId: a.id,
+                  editRequestId: a.editRequestId,
+                  userId: (a.userId && a.userId !== 'admin') ? a.userId : a.fromUserId || (users.find(u => a.text && a.text.toLowerCase().includes(u.name?.toLowerCase()))?.id),
+                  fromUserId: a.fromUserId || (a.userId !== 'admin' ? a.userId : null),
                   userName: a.userName || a.name || (a.text ? (a.text.match(/El profesional ([^(]+)/) || [])[1] : '') || 'Profesional',
                   requestedChanges: a.requestedChanges || {},
                   status: 'pending',

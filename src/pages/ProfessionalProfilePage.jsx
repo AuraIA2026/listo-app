@@ -435,7 +435,7 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
       const base64 = await compressImage(file)
       
       // Enviar solicitud de cambio de portada al administrador
-      await addDoc(collection(db, 'profile_edit_requests'), {
+      const docRef = await addDoc(collection(db, 'profile_edit_requests'), {
         userId: userData.uid,
         userName: userData.name || displayPro.name,
         requestedChanges: { coverURL: base64 },
@@ -447,6 +447,11 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
       // Registrar notificación para el administrador
       await addDoc(collection(db, 'notificaciones'), {
         userId: 'admin',
+        fromUserId: userData.uid,
+        editRequestId: docRef.id,
+        userEmail: userData.email || '',
+        userName: userData.name || displayPro.name || 'Profesional',
+        requestedChanges: { coverURL: base64 },
         type: 'new_edit_request_cover',
         title: '🖼️ SOLICITUD DE CAMBIO DE PORTADA',
         text: `El profesional ${userData.name || displayPro.name || 'Un profesional'} ha solicitado actualizar su foto de portada.`,
@@ -472,7 +477,7 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
       const base64 = await compressImage(file)
       
       // Enviar solicitud de cambio de foto al administrador
-      await addDoc(collection(db, 'profile_edit_requests'), {
+      const docRef = await addDoc(collection(db, 'profile_edit_requests'), {
         userId: userData.uid,
         userName: userData.name || displayPro.name,
         requestedChanges: { photoURL: base64 },
@@ -484,6 +489,11 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
       // Registrar notificación para el administrador
       await addDoc(collection(db, 'notificaciones'), {
         userId: 'admin',
+        fromUserId: userData.uid,
+        editRequestId: docRef.id,
+        userEmail: userData.email || '',
+        userName: userData.name || displayPro.name || 'Profesional',
+        requestedChanges: { photoURL: base64 },
         type: 'new_edit_request_photo',
         title: '🖼️ SOLICITUD DE CAMBIO DE FOTO',
         text: `El profesional ${userData.name || displayPro.name || 'Un profesional'} ha solicitado actualizar su foto de perfil.`,
@@ -525,7 +535,7 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
       const updatedPhotos = [...currentPhotos, ...base64Images]
 
       // Enviar solicitud de nuevo trabajo al administrador
-      await addDoc(collection(db, 'profile_edit_requests'), {
+      const docRef = await addDoc(collection(db, 'profile_edit_requests'), {
         userId: userData.uid,
         userName: userData.name || displayPro.name,
         requestedChanges: { photos: updatedPhotos },
@@ -537,6 +547,11 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
       // Registrar notificación para el administrador
       await addDoc(collection(db, 'notificaciones'), {
         userId: 'admin',
+        fromUserId: userData.uid,
+        editRequestId: docRef.id,
+        userEmail: userData.email || '',
+        userName: userData.name || displayPro.name || 'Profesional',
+        requestedChanges: { photos: updatedPhotos },
         type: 'new_edit_request_work',
         title: '📷 SOLICITUD DE NUEVO TRABAJO',
         text: `El profesional ${userData.name || displayPro.name || 'Un profesional'} ha solicitado subir fotos de trabajos realizados a su portafolio.`,
