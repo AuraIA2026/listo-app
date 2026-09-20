@@ -367,10 +367,12 @@ export default function HomePage({ lang, navigate, userRole }) {
 
   useEffect(() => {
     if (localStorage.getItem('open_tombola_trigger') === 'true') {
-      setShowLuckyWheel(true);
+      if ((userData?.spinsAvailable || 0) > 0) {
+        setShowLuckyWheel(true);
+      }
       localStorage.removeItem('open_tombola_trigger');
     }
-  }, []);
+  }, [userData?.spinsAvailable]);
 
   const handleClaimReward = async (prize, newProgress, earnedContract) => {
     if (!userData?.uid) return;
@@ -378,9 +380,11 @@ export default function HomePage({ lang, navigate, userRole }) {
       const userRef = doc(db, 'users', userData.uid);
       const currentContracts = userData.contracts || 0;
       const currentSpins = userData.spinsAvailable || 0;
+      const currentSpinCount = userData.wheelSpinCount || 0;
       const updatePayload = {
         wheelProgress: newProgress,
-        spinsAvailable: Math.max(0, currentSpins - 1)
+        spinsAvailable: Math.max(0, currentSpins - 1),
+        wheelSpinCount: currentSpinCount + 1
       };
       if (earnedContract) {
         updatePayload.contracts = currentContracts + 1;
@@ -944,7 +948,15 @@ export default function HomePage({ lang, navigate, userRole }) {
       {/* ── MARQUEE TICKER BANNER INFORMATIVO CON LOS 3 ANUNCIOS EN SECUENCIA (TÓMBOLA & OFERTAS) ── */}
       <div 
         className="amz-marquee-container" 
-        onClick={() => setShowLuckyWheel(true)} 
+        onClick={() => {
+          if ((userData?.spinsAvailable || 0) > 0) {
+            setShowLuckyWheel(true);
+          } else {
+            alert(lang === 'es' 
+              ? "🎰 La Tómbola de Contratos Gratis se activa únicamente al completar un contrato con calificación de 4 o 5 estrellas."
+              : "🎰 The Free Contracts Wheel unlocks only when completing a contract with a 4 or 5-star rating.");
+          }
+        }} 
         style={{ cursor: 'pointer' }}
         title="Toca para abrir la Tómbola de Contratos Gratis"
       >
@@ -1583,8 +1595,8 @@ export default function HomePage({ lang, navigate, userRole }) {
         </div>
       )}
 
-      {/* Floating Lucky Wheel FAB — Se muestra para profesionales y cuando hay giros disponibles */}
-      {(isPro || userData?.spinsAvailable > 0 || (userData?.completedContracts % 10 === 0 && userData?.completedContracts > 0)) && (
+      {/* Floating Lucky Wheel FAB — Se muestra ÚNICAMENTE para profesionales cuando tienen giros ganados por 4 o 5 estrellas */}
+      {(isPro && (userData?.spinsAvailable || 0) > 0) && (
         <button 
           className="lucky-wheel-fab" 
           onClick={() => setShowLuckyWheel(true)}
@@ -1601,6 +1613,7 @@ export default function HomePage({ lang, navigate, userRole }) {
         lang={lang} 
         wheelProgress={userData?.wheelProgress || 0}
         completedContracts={userData?.completedContracts || userData?.contracts || 0}
+        wheelSpinCount={userData?.wheelSpinCount || 0}
         onClaimReward={handleClaimReward} 
       />
 

@@ -229,12 +229,21 @@ export default function BtnHamburguesa({ onClose, navigate, lang = 'es', activeV
               </div>
 
               <div className="pp-row-item" onClick={() => { 
-                localStorage.setItem('open_tombola_trigger', 'true');
-                if(navigate) navigate('home'); 
-                onClose(); 
+                if ((userData?.spinsAvailable || 0) > 0) {
+                  localStorage.setItem('open_tombola_trigger', 'true');
+                  if(navigate) navigate('home'); 
+                  onClose(); 
+                } else {
+                  alert(lang === 'es' 
+                    ? '🎰 La Tómbola se desbloquea únicamente al completar un contrato con 4 o 5 estrellas.' 
+                    : '🎰 The Wheel unlocks only when completing a contract with 4 or 5 stars.');
+                }
               }}>
                 <span className="pp-row-icon">🎰</span>
-                <span className="pp-row-text">{lang === 'es' ? 'Tómbola de Contratos Gratis' : 'Free Contracts Wheel'}</span>
+                <span className="pp-row-text">
+                  {lang === 'es' ? 'Tómbola de Contratos Gratis' : 'Free Contracts Wheel'}
+                  {(userData?.spinsAvailable || 0) > 0 ? ` (${userData.spinsAvailable})` : ''}
+                </span>
               </div>
 
               <div className="pp-row-item" onClick={() => { setSection('stats'); }}>

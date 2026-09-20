@@ -55,6 +55,7 @@ export default function LuckyWheelModal({
   lang = 'es', 
   wheelProgress = 0, 
   completedContracts = 0,
+  wheelSpinCount = 0,
   onClaimReward 
 }) {
   const [spinning, setSpinning] = useState(false);
@@ -74,36 +75,21 @@ export default function LuckyWheelModal({
     if (spinning || wonPrize) return;
     setSpinning(true);
 
-    // TRUQUIAR LA RULETA SMARTLY:
-    // 1. Si el profesional tiene contratos completados múltiples de 10 -> Cae en Jackpot (100% GRATIS)
-    // 2. De lo contrario, selección ponderada emocionante (+1%, +5%, +10%, +20%, +30%, +50%, +75%)
+    // TRUCO ESTILO LAS VEGAS (CICLO PROGRESIVO DE 3 TIROS):
+    // Tiro 1 (% bajo/inicial: +10% o +15%)
+    // Tiro 2 (% medio: +20% o +25%)
+    // Tiro 3 (¡EL GRAN GOLPE! 100% GRATIS / JACKPOT CONTRATO GANADO)
     let prizeIndex;
-    if (completedContracts > 0 && completedContracts % 10 === 0) {
-      prizeIndex = 8; // Index of '100% GRATIS'
+    const cycleIndex = (wheelSpinCount || 0) % 3;
+    if (cycleIndex === 0) {
+      // Tiro 1: +10% o +15%
+      prizeIndex = Math.random() > 0.5 ? 0 : 1;
+    } else if (cycleIndex === 1) {
+      // Tiro 2: +20% o +25%
+      prizeIndex = Math.random() > 0.5 ? 2 : 3;
     } else {
-      // Ponderación truqueada: favorece +10%, +20%, +30%, +50%, con opción a +1% y +5%
-      const weights = [
-        { index: 0, weight: 10 }, // +1%
-        { index: 1, weight: 15 }, // +5%
-        { index: 2, weight: 25 }, // +10%
-        { index: 3, weight: 15 }, // +15%
-        { index: 4, weight: 15 }, // +20%
-        { index: 5, weight: 10 }, // +30%
-        { index: 6, weight: 6 },  // +50%
-        { index: 7, weight: 3 },  // +75%
-        { index: 9, weight: 10 }  // +5% (segundo)
-      ];
-      
-      const totalWeight = weights.reduce((acc, w) => acc + w.weight, 0);
-      let randomNum = Math.random() * totalWeight;
-      for (const w of weights) {
-        if (randomNum < w.weight) {
-          prizeIndex = w.index;
-          break;
-        }
-        randomNum -= w.weight;
-      }
-      if (typeof prizeIndex === 'undefined') prizeIndex = 2; // Fallback +10%
+      // Tiro 3: ¡JACKPOT! 100% GRATIS CONTRATO
+      prizeIndex = 8; // Index of '100% GRATIS'
     }
 
     const numSegments = PRIZES.length;

@@ -906,26 +906,30 @@ export default function AdminPage({ navigate }) {
             }
          }
 
-         // DESAPARECER LA ALERTA: Eliminar la notificación de la base de datos para que desaparezca del panel
-         const notifId = obj.alertId || (obj.fromAlert ? obj.id : null);
-         if (notifId) {
-            try {
-               await deleteDoc(doc(db, 'notificaciones', notifId));
-            } catch (eNotif) {
-               console.warn("Could not delete alert notification:", eNotif);
-            }
-         } else {
-            // Si se aprobó desde el tab Ediciones, eliminar cualquier alerta de notificación vinculada a este usuario/solicitud
-            const matchingAlert = alerts.find(a => 
-               a.editRequestId === obj.id || 
-               (a.fromUserId && a.fromUserId === targetUserId) || 
-               (a.userId && a.userId === targetUserId && a.userId !== 'admin')
-            );
-            if (matchingAlert) {
+         // DESAPARECER TODAS LAS ALERTAS VINCULADAS A ESTA SOLICITUD / USUARIO
+         const targetNotifId = obj.alertId || (obj.fromAlert ? obj.id : null);
+         const alertsToDelete = alerts.filter(a => {
+            if (targetNotifId && a.id === targetNotifId) return true;
+            if (obj.id && a.editRequestId === obj.id) return true;
+            if (targetUserId && targetUserId !== 'admin' && (a.fromUserId === targetUserId || a.userId === targetUserId)) return true;
+            const aText = (a.text || '').toLowerCase();
+            const emailMatch = (obj.email || obj.userEmail) && aText.includes((obj.email || obj.userEmail).toLowerCase());
+            const nameMatch = obj.userName && obj.userName.length > 2 && aText.includes(obj.userName.toLowerCase());
+            return (emailMatch || nameMatch) && ['new_edit_request', 'new_edit_request_photo', 'new_edit_request_cover', 'new_edit_request_work'].includes(a.type);
+         });
+
+         if (alertsToDelete.length > 0) {
+            for (const aDoc of alertsToDelete) {
                try {
-                  await deleteDoc(doc(db, 'notificaciones', matchingAlert.id));
-               } catch (eA) {}
+                  await deleteDoc(doc(db, 'notificaciones', aDoc.id));
+               } catch (eDel) {
+                  console.warn("Could not delete alert doc:", aDoc.id, eDel);
+               }
             }
+         } else if (targetNotifId) {
+            try {
+               await deleteDoc(doc(db, 'notificaciones', targetNotifId));
+            } catch (eNotif) {}
          }
          
          try {
@@ -975,23 +979,28 @@ export default function AdminPage({ navigate }) {
             });
          }
 
-         // DESAPARECER LA ALERTA: Eliminar la notificación de la base de datos
-         const notifId = obj.alertId || (obj.fromAlert ? obj.id : null);
-         if (notifId) {
-            try {
-               await deleteDoc(doc(db, 'notificaciones', notifId));
-            } catch (eNotif) {}
-         } else {
-            const matchingAlert = alerts.find(a => 
-               a.editRequestId === obj.id || 
-               (a.fromUserId && a.fromUserId === targetUserId) || 
-               (a.userId && a.userId === targetUserId && a.userId !== 'admin')
-            );
-            if (matchingAlert) {
+         // DESAPARECER TODAS LAS ALERTAS VINCULADAS
+         const targetNotifId = obj.alertId || (obj.fromAlert ? obj.id : null);
+         const alertsToDelete = alerts.filter(a => {
+            if (targetNotifId && a.id === targetNotifId) return true;
+            if (obj.id && a.editRequestId === obj.id) return true;
+            if (targetUserId && targetUserId !== 'admin' && (a.fromUserId === targetUserId || a.userId === targetUserId)) return true;
+            const aText = (a.text || '').toLowerCase();
+            const emailMatch = (obj.email || obj.userEmail) && aText.includes((obj.email || obj.userEmail).toLowerCase());
+            const nameMatch = obj.userName && obj.userName.length > 2 && aText.includes(obj.userName.toLowerCase());
+            return (emailMatch || nameMatch) && ['new_edit_request', 'new_edit_request_photo', 'new_edit_request_cover', 'new_edit_request_work'].includes(a.type);
+         });
+
+         if (alertsToDelete.length > 0) {
+            for (const aDoc of alertsToDelete) {
                try {
-                  await deleteDoc(doc(db, 'notificaciones', matchingAlert.id));
-               } catch (eA) {}
+                  await deleteDoc(doc(db, 'notificaciones', aDoc.id));
+               } catch (eDel) {}
             }
+         } else if (targetNotifId) {
+            try {
+               await deleteDoc(doc(db, 'notificaciones', targetNotifId));
+            } catch (eNotif) {}
          }
 
          showToast(`🔴 Solicitud de cambio rechazada`);
@@ -1534,15 +1543,15 @@ export default function AdminPage({ navigate }) {
             {/* Live Metrics */}
             <div style={{display:'flex', gap:8, marginBottom: 16}}>
               <div style={{flex:1, background:'var(--surface)', border:'1px solid rgba(59,130,246,0.3)', borderRadius:12, padding:12, textAlign:'center'}}>
-                <div style={{fontSize:22, fontWeight:800, color:'var(--blue)', fontFamily:'var(--mono)'}}>{users.length}</div>
-                <div style={{fontSize:10, color:'var(--muted)', fontWeight:700, textTransform:'uppercase'}}>Cuentas Totales</div>
+                <div style={{fontSize:22, fontWeight:800, color:'var(--blue)', fontFamily:'var(--mono)'}}>{users.filter(u => !u.deleted && u.name !== 'Usuario Eliminado').length}</div>
+                <div style={{fontSize:10, color:'var(--muted)', fontWeight:700, textTransform:'uppercase'}}>Cuentas Activas</div>
               </div>
               <div style={{flex:1, background:'#F1F5F9', border:'1px solid var(--border)', borderRadius:12, padding:12, textAlign:'center'}}>
-                <div style={{fontSize:22, fontWeight:800, color:'var(--text)', fontFamily:'var(--mono)'}}>{users.filter(u => u.role !== 'professional').length}</div>
+                <div style={{fontSize:22, fontWeight:800, color:'var(--text)', fontFamily:'var(--mono)'}}>{users.filter(u => !u.deleted && u.name !== 'Usuario Eliminado' && u.role !== 'professional').length}</div>
                 <div style={{fontSize:10, color:'var(--muted)', fontWeight:700, textTransform:'uppercase'}}>Clientes</div>
               </div>
               <div style={{flex:1, background:'#FFFBEB', border:'1px solid rgba(245,158,11,0.3)', borderRadius:12, padding:12, textAlign:'center'}}>
-                <div style={{fontSize:22, fontWeight:800, color:'var(--brand)', fontFamily:'var(--mono)'}}>{users.filter(u => u.role === 'professional').length}</div>
+                <div style={{fontSize:22, fontWeight:800, color:'var(--brand)', fontFamily:'var(--mono)'}}>{users.filter(u => !u.deleted && u.name !== 'Usuario Eliminado' && u.role === 'professional').length}</div>
                 <div style={{fontSize:10, color:'var(--muted)', fontWeight:700, textTransform:'uppercase'}}>Profesionales</div>
               </div>
             </div>
@@ -1576,6 +1585,7 @@ export default function AdminPage({ navigate }) {
 
             {(() => {
               const filteredList = users
+                .filter(u => !u.deleted && u.name !== 'Usuario Eliminado')
                 .filter(u => !dirSearch || String(u.name||'').toLowerCase().includes(dirSearch.toLowerCase().trim()) || String(u.phone||'').includes(dirSearch.trim()))
                 .filter(u => {
                    if (psFilter === 'all') return true;
