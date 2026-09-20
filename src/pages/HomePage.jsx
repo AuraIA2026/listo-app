@@ -1400,7 +1400,7 @@ export default function HomePage({ lang, navigate, userRole }) {
       {/* ── CINTA / ANUNCIO LARGO Y FINO INVITANDO A LA TIENDA WEB ── */}
       <div 
         className="store-ribbon-banner"
-        onClick={() => window.open('https://listopatron.com.do/tienda', '_blank')}
+        onClick={() => window.open('https://listopatron.com.do/?page=shop', '_blank')}
         title={lang === 'es' ? 'Visitar la Tienda Web de Listo Patrón' : 'Visit Listo Patrón Web Store'}
       >
         <div className="store-ribbon-content">
