@@ -1129,13 +1129,13 @@ export default function HomePage({ lang, navigate, userRole }) {
           {/* Shimmer Light Wave Effect */}
           <div className="vip-banner-shimmer" />
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '14px', zIndex: 2 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1, minWidth: 0, zIndex: 2 }}>
             <div className="vip-crown-icon-container">
               <span className="vip-crown-icon-animated">👑</span>
               <span className="vip-crown-star-glow">⭐</span>
             </div>
-            <div style={{ flex: 1 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '3px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <span className="vip-banner-badge-tag">
                   ⭐ ÉLITE 5 ESTRELLAS
                 </span>

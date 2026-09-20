@@ -991,37 +991,30 @@
   100% { transform: scale(1.05); box-shadow: 0 14px 36px rgba(242, 96, 0, 0.65), 0 0 30px rgba(255, 215, 0, 1); }
 }
 
-/* ── BANNER ÉPICO "CONOCE NUESTROS PROFESIONALES VIP" ────────────────── */
+/* ── BANNER ÉPICO "CONOCE NUESTROS PROFESIONALES VIP" (CINTA DELGADA Y LARGA) ────────────────── */
 .vip-explore-banner-card {
-  margin: 2px 16px 4px;
-  background: linear-gradient(135deg, #1A1A2E 0%, #2D1B4E 35%, #F26000 70%, #FFB300 100%);
-  background-size: 300% 300%;
-  animation: vipBannerGradient 6s ease infinite alternate;
+  margin: 2px 16px;
+  background: linear-gradient(90deg, #1A1A2E 0%, #2D1B4E 50%, #1A1A2E 100%);
+  border: 1px solid rgba(255, 215, 0, 0.4);
+  border-left: 4px solid #FFD700;
   border-radius: 0px;
-  padding: 14px 16px;
+  padding: 10px 14px;
   color: white;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
   gap: 12px;
   position: relative;
   overflow: hidden;
-  box-shadow: 0 6px 20px rgba(242, 96, 0, 0.2), 0 0 14px rgba(255, 215, 0, 0.15);
-  border: 1.5px solid rgba(255, 215, 0, 0.4);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
   cursor: pointer;
-  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease;
-}
-
-@media (min-width: 480px) {
-  .vip-explore-banner-card {
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-  }
+  transition: transform 0.2s, box-shadow 0.2s;
 }
 
 .vip-explore-banner-card:hover {
-  transform: translateY(-4px) scale(1.01);
-  box-shadow: 0 16px 40px rgba(242, 96, 0, 0.4), 0 0 30px rgba(255, 215, 0, 0.4);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 215, 0, 0.25);
   border-color: #FFD700;
 }
 
@@ -1050,8 +1043,8 @@
 }
 
 .vip-crown-icon-container {
-  width: 50px;
-  height: 50px;
+  width: 34px;
+  height: 34px;
   border-radius: 0px;
   background: rgba(255, 255, 255, 0.15);
   backdrop-filter: blur(8px);
@@ -1062,13 +1055,13 @@
   justify-content: center;
   position: relative;
   flex-shrink: 0;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
 }
 
 .vip-crown-icon-animated {
-  font-size: 26px;
+  font-size: 18px;
   animation: crownFloating 2.5s ease-in-out infinite alternate;
-  filter: drop-shadow(0 2px 6px rgba(255, 215, 0, 0.8));
+  filter: drop-shadow(0 2px 4px rgba(255, 215, 0, 0.8));
 }
 
 @keyframes crownFloating {
@@ -1080,7 +1073,7 @@
   position: absolute;
   top: -4px;
   right: -4px;
-  font-size: 12px;
+  font-size: 10px;
   animation: starSparkle 1.8s infinite;
 }
 
@@ -1092,12 +1085,12 @@
 .vip-banner-badge-tag {
   background: linear-gradient(135deg, #FFD700, #FFA500);
   color: #1A1A2E;
-  font-size: 9px;
+  font-size: 8.5px;
   font-weight: 900;
-  padding: 3px 8px;
+  padding: 2px 6px;
   border-radius: 0px;
   letter-spacing: 0.5px;
-  box-shadow: 0 2px 8px rgba(255, 215, 0, 0.5);
+  box-shadow: 0 2px 6px rgba(255, 215, 0, 0.4);
   text-transform: uppercase;
 }
 
@@ -1116,48 +1109,53 @@
 }
 
 .vip-banner-title {
-  margin: 0;
-  font-size: 16px;
+  margin: 2px 0 0;
+  font-size: 13.5px;
   font-weight: 900;
   color: #FFFFFF;
   line-height: 1.2;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
 }
 
 .vip-banner-sub {
-  margin: 3px 0 0;
+  margin: 2px 0 0;
   font-size: 11px;
   color: #FFE6D5;
   font-weight: 600;
   line-height: 1.35;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .vip-banner-action-wrap {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   z-index: 2;
+  flex-shrink: 0;
 }
 
 .vip-banner-btn {
-  background: linear-gradient(135deg, #FFFFFF, #FFF3EC);
-  color: #F26000;
+  background: linear-gradient(135deg, #FFD700, #FFA500);
+  color: #1A1A2E;
   border: none;
   border-radius: 0px;
-  padding: 10px 16px;
+  padding: 8px 14px;
   font-size: 12px;
   font-weight: 900;
   cursor: pointer;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
-  transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 0 2px 8px rgba(255, 215, 0, 0.4);
+  transition: all 0.2s ease;
   white-space: nowrap;
 }
 
 .vip-banner-btn:hover {
-  background: #FF7A1A;
-  color: #FFFFFF;
-  transform: scale(1.06);
-  box-shadow: 0 6px 18px rgba(242, 96, 0, 0.5);
+  background: #FFD700;
+  transform: scale(1.04);
 }
 
 .vip-banner-orders-link {
@@ -1166,7 +1164,7 @@
   color: #FFFFFF;
   border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 0px;
-  padding: 10px 12px;
+  padding: 8px 10px;
   font-size: 11px;
   font-weight: 800;
   cursor: pointer;
