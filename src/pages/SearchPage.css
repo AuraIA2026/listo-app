@@ -105,7 +105,7 @@
 .filter-tag:hover  { border-color: var(--mamey-light); color: var(--mamey); }
 .filter-tag.active { background: var(--mamey); color: white; border-color: var(--mamey); }
 
-.search-results { padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+.search-results { padding: 4px 16px; display: flex; flex-direction: column; gap: 0px; }
 .results-label  { font-size: 13px; color: var(--gray); font-weight: 500; margin-bottom: 4px; }
 
 .no-results { text-align: center; padding: 60px 20px; color: var(--gray); }
@@ -155,11 +155,11 @@
 
 /* ── Categorías Horizontales ── */
 .categories-wrapper {
-  margin-bottom: 16px;
+  margin-bottom: 0px;
   background: white;
   border-top: 1px solid rgba(0,0,0,0.05);
   border-bottom: 1px solid rgba(0,0,0,0.05);
-  padding: 12px 0;
+  padding: 4px 0;
 }
 
 .categories-scroll {
@@ -249,8 +249,8 @@
 .professionals-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  gap: 14px;
-  padding: 0 16px 16px;
+  gap: 6px;
+  padding: 0 16px 4px;
 }
 
 .pro-card {
@@ -530,8 +530,8 @@
 }
 
 .pill-filters {
-  display: flex; gap: 12px; overflow-x: auto; padding: 8px 16px 20px;
-  margin-bottom: 4px; scrollbar-width: none;
+  display: flex; gap: 12px; overflow-x: auto; padding: 4px 16px 4px;
+  margin-bottom: 0px; scrollbar-width: none;
   background: transparent;
 }
 .pill-filters::-webkit-scrollbar { display: none; }

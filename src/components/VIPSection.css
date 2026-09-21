@@ -3,7 +3,8 @@
    ═══════════════════════════════════════════════ */
 
 .vip-hero-section {
-  margin: 1px 16px 1px;
+  margin: 0 16px 0;
+  padding: 0;
   position: relative;
 }
 
@@ -11,7 +12,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 6px;
+  margin-bottom: 0px;
+  margin-top: 0px;
 }
 
 .vip-sec-title-wrap {
@@ -48,7 +50,8 @@
   overflow-x: auto;
   scrollbar-width: none;
   scroll-snap-type: x mandatory;
-  padding: 0 12px 6px;
+  padding: 0 12px 0px;
+  margin: 0;
 }
 
 .vip-cards-container::-webkit-scrollbar {
