@@ -433,45 +433,57 @@ export default function HomePage({ lang, navigate, userRole }) {
   const citiesPool = ['Santiago', 'Santo Domingo, D.N.', 'La Vega', 'San Cristóbal', 'Puerto Plata', 'San Pedro', 'La Romana', 'Moca', 'Bonao', 'Baní', 'Higüey'];
 
   const [currentLiveToastText, setCurrentLiveToastText] = useState('');
+  const [showLiveToast, setShowLiveToast] = useState(false);
 
-  const generateRandomToastText = () => {
-    const randomClient = clientNamesPool[Math.floor(Math.random() * clientNamesPool.length)];
-    const randomCity = citiesPool[Math.floor(Math.random() * citiesPool.length)];
-    const randomMins = Math.floor(Math.random() * (120 - 10 + 1)) + 10;
-
-    if (allProsReal && allProsReal.length > 0 && Math.random() > 0.3) {
-      const realPro = allProsReal[Math.floor(Math.random() * allProsReal.length)];
-      const locationName = realPro.municipio || realPro.provincia || randomCity;
-      return `${randomClient} en ${locationName} contrató a ${realPro.nameEs} (${realPro.specEs}) hace ${randomMins}m`;
-    } else {
-      const servicePool = [
-        { name: 'Plomero Máster', spec: 'Plomería' },
-        { name: 'Mantenimiento A/C', spec: 'Refrigeración' },
-        { name: 'Cerrajero 24h', spec: 'Cerrajería' },
-        { name: 'Mecánica Móvil', spec: 'Mecánica' },
-        { name: 'Pintura de Fachada', spec: 'Pintura' },
-        { name: 'Electricista 24/7', spec: 'Electricidad' },
-        { name: 'Limpieza del Hogar', spec: 'Limpieza' },
-        { name: 'Jardinero Profesional', spec: 'Jardinería' }
-      ];
-      const svc = servicePool[Math.floor(Math.random() * servicePool.length)];
-      return `${randomClient} en ${randomCity} contrató a ${svc.name} hace ${randomMins}m`;
-    }
-  };
-
-  const [showLiveToast, setShowLiveToast] = useState(true);
-
+  // Escuchador en TIEMPO REAL para notificaciones cuando se completa un contrato o se deja una reseña
   useEffect(() => {
-    setCurrentLiveToastText(generateRandomToastText());
-    const t = setInterval(() => {
-      setShowLiveToast(false);
-      setTimeout(() => {
-        setCurrentLiveToastText(generateRandomToastText());
-        setShowLiveToast(true);
-      }, 400);
-    }, 9000);
-    return () => clearInterval(t);
-  }, [allProsReal.length]);
+    const qOrders = query(collection(db, 'orders'), limit(30));
+    
+    const unsubscribe = onSnapshot(qOrders, (snapshot) => {
+      if (!snapshot.empty) {
+        const docs = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+        
+        // Filtrar SOLO contratos completados o reseñas dejadas
+        const validEvents = docs.filter(d => 
+          d.status === 'done' || 
+          d.status === 'completed' || 
+          d.status === 'finalizado' || 
+          d.rated === true ||
+          (d.ratingScore && Number(d.ratingScore) > 0)
+        );
+
+        // Ordenar por la fecha más reciente
+        validEvents.sort((a, b) => {
+          const timeA = new Date(a.updatedAt || a.completedAt || a.createdAt || a.ratedAt || 0).getTime();
+          const timeB = new Date(b.updatedAt || b.completedAt || b.createdAt || b.ratedAt || 0).getTime();
+          return timeB - timeA;
+        });
+
+        if (validEvents.length > 0) {
+          const latest = validEvents[0];
+          const client = latest.reviewerName || latest.clientName || latest.client || 'Un cliente';
+          const pro = latest.proName || latest.pro || 'un profesional';
+          const spec = latest.specEs || latest.specialty || latest.category || 'Servicio';
+          const city = latest.city || latest.provincia || latest.location || 'República Dominicana';
+          const stars = latest.ratingScore ? `⭐ ${latest.ratingScore} estrellas` : '';
+
+          let text = '';
+          if (latest.rated || latest.ratingScore) {
+            text = `💬 ${client} en ${city} dejó una reseña ${stars} a ${pro} (${spec})`;
+          } else {
+            text = `✅ ${client} en ${city} completó un contrato con ${pro} (${spec})`;
+          }
+
+          setCurrentLiveToastText(text);
+          setShowLiveToast(true);
+        }
+      }
+    }, (error) => {
+      console.log('Realtime notification listener notice:', error);
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   const [featuredRef, featuredVisible] = useScrollReveal()
   const [allProsRef,  allProsVisible]  = useScrollReveal(0.05)
