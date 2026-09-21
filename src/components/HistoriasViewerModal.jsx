@@ -14,6 +14,7 @@ export default function HistoriasViewerModal({
   const [currentIndex, setCurrentIndex] = useState(initialIndex)
   const [likedStories, setLikedStories] = useState({})
   const [shareNotice, setShareNotice] = useState(false)
+  const [isMuted, setIsMuted] = useState(false)
   const timerRef = useRef(null)
 
   useEffect(() => {
@@ -30,7 +31,11 @@ export default function HistoriasViewerModal({
     }
   }, [])
 
-  // Auto-progress timer for stories (5 seconds per story)
+  const currentStory = stories[currentIndex] || stories[0]
+  const isVideoStory = currentStory?.mediaType === 'video' || Boolean(currentStory?.videoUrl) || String(currentStory?.imageUrl || '').endsWith('.mp4')
+  const storyDuration = isVideoStory ? (currentStory?.videoDuration ? currentStory.videoDuration * 1000 : 15000) : 5000
+
+  // Auto-progress timer for stories (5s for photo, 15s or videoDuration for video)
   useEffect(() => {
     if (!isOpen || stories.length === 0) return
 
@@ -38,16 +43,14 @@ export default function HistoriasViewerModal({
 
     timerRef.current = setTimeout(() => {
       handleNextStory()
-    }, 5000)
+    }, storyDuration)
 
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current)
     }
-  }, [currentIndex, isOpen, stories])
+  }, [currentIndex, isOpen, stories, storyDuration])
 
   if (!isOpen || !stories || stories.length === 0) return null
-
-  const currentStory = stories[currentIndex] || stories[0]
 
   const handleNextStory = () => {
     if (currentIndex < stories.length - 1) {
@@ -74,13 +77,11 @@ export default function HistoriasViewerModal({
 
     if (isNowLiked) {
       try {
-        // Increment story likes in doc
         if (currentStory.id) {
           const storyRef = doc(db, 'historias', currentStory.id)
           updateDoc(storyRef, { likesCount: increment(1) }).catch(err => console.log('Story doc update error:', err))
         }
 
-        // Add to real-time likes feed for toast notification on home/search pages
         const clientName = userData?.name || userData?.displayName || 'Un cliente'
         const proId = currentStory.proId || 'pro_unknown'
         const proName = currentStory.proName || 'un profesional'
@@ -139,7 +140,7 @@ export default function HistoriasViewerModal({
     <div className="historias-viewer-overlay" onClick={onClose}>
       <div className="historias-viewer-card" onClick={(e) => e.stopPropagation()}>
         
-        {/* Top 5-second progress bars */}
+        {/* Top 5s / 15s progress bars */}
         <div className="historias-timer-container">
           {stories.map((story, idx) => {
             let statusClass = ''
@@ -148,7 +149,10 @@ export default function HistoriasViewerModal({
 
             return (
               <div key={story.id || idx} className="historias-timer-segment">
-                <div className={`historias-timer-fill ${statusClass}`} />
+                <div
+                  className={`historias-timer-fill ${statusClass}`}
+                  style={idx === currentIndex ? { animationDuration: `${storyDuration / 1000}s` } : {}}
+                />
               </div>
             )
           })}
@@ -168,6 +172,11 @@ export default function HistoriasViewerModal({
                 <span style={{ fontSize: '10px', background: 'linear-gradient(135deg, #F59E0B, #D97706)', color: 'white', padding: '1px 6px', borderRadius: '10px', fontWeight: 800 }}>
                   ⭐ 5.0
                 </span>
+                {isVideoStory && (
+                  <span style={{ fontSize: '10px', background: 'rgba(255,255,255,0.2)', color: 'white', padding: '1px 6px', borderRadius: '10px', fontWeight: 700 }}>
+                    🎥 Video
+                  </span>
+                )}
               </div>
               <span className="historias-header-spec">⚡ {currentStory.proCategory} • Entrega 5★</span>
             </div>
@@ -177,13 +186,52 @@ export default function HistoriasViewerModal({
           </button>
         </div>
 
-        {/* Story Image */}
+        {/* Story Media (Image or Video) */}
         <div className="historias-viewer-image-container">
-          <img
-            src={currentStory.imageUrl}
-            alt="Trabajo realizado"
-            className="historias-viewer-image"
-          />
+          {isVideoStory ? (
+            <video
+              src={currentStory.videoUrl || currentStory.imageUrl}
+              autoPlay
+              loop
+              muted={isMuted}
+              playsInline
+              className="historias-viewer-image"
+            />
+          ) : (
+            <img
+              src={currentStory.imageUrl}
+              alt="Trabajo realizado"
+              className="historias-viewer-image"
+            />
+          )}
+
+          {/* Mute / Unmute Floating Control for Video Stories */}
+          {isVideoStory && (
+            <button
+              onClick={(e) => { e.stopPropagation(); setIsMuted(!isMuted); }}
+              style={{
+                position: 'absolute',
+                top: '75px',
+                right: '16px',
+                background: 'rgba(0,0,0,0.65)',
+                backdropFilter: 'blur(4px)',
+                border: '1px solid rgba(255,255,255,0.25)',
+                borderRadius: '50%',
+                width: '36px',
+                height: '36px',
+                color: '#fff',
+                fontSize: '16px',
+                cursor: 'pointer',
+                zIndex: 25,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+              title={isMuted ? 'Activar sonido' : 'Silenciar'}
+            >
+              {isMuted ? '🔇' : '🔊'}
+            </button>
+          )}
 
           {/* Left/Right Touch Controls for navigation */}
           <div className="historias-nav-touch-left" onClick={handlePrevStory} />
