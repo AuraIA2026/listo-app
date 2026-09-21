@@ -4,6 +4,7 @@ import { doc, updateDoc, deleteDoc, collection, query, where, getDocs, addDoc, s
 import { deleteUser } from 'firebase/auth'
 import { useUserData } from '../useUserData'
 import './ProfilePage.css'
+import SubirHistoriaModal from '../components/SubirHistoriaModal'
 import VerificacionPage    from './VerificacionPage'
 import RegistroClientePage from './RegistroClientePage'
 
@@ -700,6 +701,7 @@ export default function ProfilePage({ lang, setLang, navigate, onLogout, initial
   const [showPhoto,   setShowPhoto]   = useState(false)
   const [photoStatus, setPhotoStatus] = useState(null)
   const [ordersCount, setOrdersCount] = useState(0)
+  const [showSubirHistoria, setShowSubirHistoria] = useState(false)
   const [hideUpgrade, setHideUpgrade] = useState(() => localStorage.getItem('hideUpgrade_Listo_' + (userData?.uid || 'guest')) === 'true')
 
   useEffect(() => {
@@ -852,6 +854,11 @@ export default function ProfilePage({ lang, setLang, navigate, onLogout, initial
 
   return (
     <div className="profile-page">
+      <SubirHistoriaModal
+        isOpen={showSubirHistoria}
+        onClose={() => setShowSubirHistoria(false)}
+        userData={userData}
+      />
 
       <input ref={fileInputRef}   type="file" accept="image/*"               style={{ display:'none' }} onChange={handleFileSelected} />
       <input ref={cameraInputRef} type="file" accept="image/*" capture="user" style={{ display:'none' }} onChange={handleFileSelected} />

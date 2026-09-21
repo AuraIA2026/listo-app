@@ -1,0 +1,435 @@
+/* ==========================================================================
+   HISTORIAS DE TRABAJOS REALIZADOS (HISTORIAS.CSS)
+   Aesthetic Instagram / WhatsApp Stories component for Listo Patrón
+   ========================================================================== */
+
+.historias-carrusel-wrapper {
+  width: 100%;
+  padding: 12px 16px;
+  background: var(--bg-card, #ffffff);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  margin-bottom: 16px;
+}
+
+.historias-carrusel-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-color, #1e293b);
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.historias-carrusel-title span {
+  font-size: 12px;
+  font-weight: 500;
+  color: #ff5e00;
+}
+
+.historias-track {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  padding-bottom: 6px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.historias-track::-webkit-scrollbar {
+  display: none;
+}
+
+/* Single Story Avatar Item */
+.historia-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  width: 72px;
+  text-align: center;
+  transition: transform 0.2s ease;
+}
+
+.historia-item:active {
+  transform: scale(0.95);
+}
+
+.historia-ring {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  padding: 2.5px;
+  position: relative;
+  background: linear-gradient(135deg, #ff5e00, #ff8c00, #e6007e, #9b51e0);
+  box-shadow: 0 4px 12px rgba(255, 94, 0, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.historia-ring.seen {
+  background: #cbd5e1;
+  box-shadow: none;
+}
+
+.historia-ring.add-story-ring {
+  background: linear-gradient(135deg, #ff5e00, #ff8c00);
+}
+
+.historia-avatar {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #ffffff;
+  background-color: #f1f5f9;
+}
+
+.historia-add-plus {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  background: #ff5e00;
+  color: #ffffff;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.historia-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-color, #334155);
+  margin-top: 5px;
+  width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ==========================================================================
+   FULLSCREEN STORY VIEWER MODAL
+   ========================================================================== */
+
+.historias-viewer-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.95);
+  z-index: 999999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  backdrop-filter: blur(10px);
+}
+
+.historias-viewer-card {
+  width: 100%;
+  max-width: 440px;
+  height: 100%;
+  max-height: 92vh;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background-color: #000000;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8);
+}
+
+@media (max-width: 480px) {
+  .historias-viewer-card {
+    max-height: 100vh;
+    border-radius: 0;
+  }
+}
+
+/* Timer bars at top */
+.historias-timer-container {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  right: 12px;
+  display: flex;
+  gap: 4px;
+  z-index: 20;
+}
+
+.historias-timer-segment {
+  height: 3px;
+  flex: 1;
+  background-color: rgba(255, 255, 255, 0.35);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.historias-timer-fill {
+  height: 100%;
+  background-color: #ffffff;
+  width: 0%;
+}
+
+.historias-timer-fill.active {
+  animation: historiaTimer 5s linear forwards;
+}
+
+.historias-timer-fill.completed {
+  width: 100%;
+}
+
+@keyframes historiaTimer {
+  from { width: 0%; }
+  to { width: 100%; }
+}
+
+/* Top Header in Story */
+.historias-viewer-header {
+  position: absolute;
+  top: 24px;
+  left: 12px;
+  right: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 20;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.6), rgba(0,0,0,0));
+  padding: 8px;
+  border-radius: 8px;
+}
+
+.historias-pro-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.historias-header-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid #ff5e00;
+  object-fit: cover;
+}
+
+.historias-header-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.historias-header-name {
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 700;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+}
+
+.historias-header-spec {
+  color: #ff8c00;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.historias-close-btn {
+  background: rgba(0, 0, 0, 0.5);
+  border: none;
+  color: #ffffff;
+  font-size: 20px;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.historias-close-btn:hover {
+  background: rgba(255, 94, 0, 0.8);
+}
+
+/* Main Image Area */
+.historias-viewer-image-container {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #050505;
+}
+
+.historias-viewer-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* Touch click areas for Next / Prev */
+.historias-nav-touch-left {
+  position: absolute;
+  top: 60px;
+  left: 0;
+  width: 35%;
+  bottom: 100px;
+  z-index: 15;
+}
+
+.historias-nav-touch-right {
+  position: absolute;
+  top: 60px;
+  right: 0;
+  width: 65%;
+  bottom: 100px;
+  z-index: 15;
+}
+
+/* Caption and Tag Overlay */
+.historias-caption-box {
+  position: absolute;
+  bottom: 90px;
+  left: 16px;
+  right: 16px;
+  z-index: 20;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(8px);
+  padding: 12px 16px;
+  border-radius: 12px;
+  border-left: 4px solid #ff5e00;
+}
+
+.historias-caption-text {
+  color: #ffffff;
+  font-size: 13.5px;
+  line-height: 1.4;
+  margin: 0;
+  font-weight: 500;
+}
+
+/* Bottom Bar - STRICTLY 3 ACTION BUTTONS (CONTRATAR, ME GUSTA, COMPARTIR) - NO MESSAGES */
+.historias-bottom-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 80px;
+  padding: 12px 16px;
+  background: linear-gradient(to top, rgba(0,0,0,0.95), rgba(0,0,0,0.4));
+  z-index: 25;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.btn-historia-action {
+  flex: 1;
+  height: 44px;
+  border-radius: 22px;
+  border: none;
+  font-size: 13px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-historia-action:active {
+  transform: scale(0.96);
+}
+
+.btn-historia-action.contratar {
+  background: linear-gradient(135deg, #ff5e00, #ff8c00);
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(255, 94, 0, 0.4);
+}
+
+.btn-historia-action.like {
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.btn-historia-action.like.liked {
+  background: rgba(239, 68, 68, 0.25);
+  color: #ef4444;
+  border-color: #ef4444;
+}
+
+.btn-historia-action.share {
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+/* ==========================================================================
+   SUBIR HISTORIA MODAL
+   ========================================================================== */
+
+.subir-historia-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  backdrop-filter: blur(5px);
+}
+
+.subir-historia-modal-card {
+  width: 100%;
+  max-width: 480px;
+  background: var(--bg-card, #ffffff);
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.subir-historia-preview-area {
+  width: 100%;
+  height: 220px;
+  border: 2px dashed #cbd5e1;
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  overflow: hidden;
+  background: #f8fafc;
+  transition: border-color 0.2s;
+}
+
+.subir-historia-preview-area:hover {
+  border-color: #ff5e00;
+}
+
+.subir-historia-preview-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}

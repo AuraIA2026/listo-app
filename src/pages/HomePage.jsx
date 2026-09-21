@@ -6,6 +6,7 @@ import { Capacitor } from '@capacitor/core'
 import TutorialTour, { useTour } from '../components/TutorialTour'
 import VIPSection from '../components/VIPSection'
 import LuckyWheelModal from '../components/LuckyWheelModal'
+import HistoriasCarrusel from '../components/HistoriasCarrusel'
 
 import BtnHamburguesa from '../components/BtnHamburguesa'
 import BtnHamburguesaUsuario from '../components/BtnHamburguesaUsuario'
@@ -1004,6 +1005,16 @@ export default function HomePage({ lang, navigate, userRole }) {
           </div>
         )}
       </div>
+
+      {/* ── CARRUSEL DE HISTORIAS DE TRABAJOS REALIZADOS (STORIES 24H) ── */}
+      <HistoriasCarrusel 
+        userData={userData} 
+        isPro={isPro} 
+        onHirePro={(proId) => { 
+          const proObj = (allProsToUse || []).find(p => p.id === proId) || { id: proId }; 
+          navigate('proProfile', proObj); 
+        }} 
+      />
 
       {/* ── MARQUEE TICKER BANNER INFORMATIVO CON LOS 3 ANUNCIOS EN SECUENCIA (TÓMBOLA & OFERTAS) ── */}
       <div 

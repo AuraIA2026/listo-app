@@ -4,6 +4,7 @@ import { db } from '../firebase'
 import { CATEGORIES, FILTERS, ALL_SUBCATEGORIES } from '../categories'
 import LocalesCarrusel from '../locales/LocalesCarrusel'  // ✅ importado
 import VIPSection, { isProVip } from '../components/VIPSection'
+import HistoriasCarrusel from '../components/HistoriasCarrusel'
 import recomendarIcon from '../assets/icons/recomendar.png'
 import opinionesIcon from '../assets/icons/opiniones.png'
 import compartirIcon from '../assets/icons/compartir.png'
@@ -795,6 +796,16 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
           {search && <button className="search-clear" onClick={() => setSearch('')} style={{ zIndex: 3 }}>✕</button>}
         </div>
       </div>
+
+      {/* ── CARRUSEL DE HISTORIAS DE TRABAJOS REALIZADOS (STORIES 24H) ── */}
+      <HistoriasCarrusel 
+        userData={userData} 
+        isPro={userRole === 'pro'} 
+        onHirePro={(proId) => { 
+          const proObj = (professionals || []).find(p => p.id === proId) || { id: proId }; 
+          navigate('proProfile', proObj); 
+        }} 
+      />
 
       {/* ── CARRUSEL ÉPICO VIP DE PROFESIONALES DESTACADOS (ENCIMA DEL CUADRO MAMEY) ── */}
       <VIPSection 
