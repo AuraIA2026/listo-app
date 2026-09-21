@@ -178,21 +178,26 @@ export default function VerificacionPage({ onBack }) {
     try {
       const uid = auth.currentUser?.uid;
       if (uid) {
-        // Función para subir a Storage con TimeOut de 15 segundos para evitar bloqueos infinitos
+        // Función para subir a Storage con fallback automático a Base64 optimizado si hay error de permisos
         const uploadToStorage = async (base64, pathName) => {
           if (!base64 || !base64.startsWith('data:image')) return base64; // Si ya es url o nulo
-          const storageRef = ref(storage, `verificaciones/${uid}/${pathName}_${Date.now()}.jpg`);
-          
-          const uploadTask = async () => {
-            await uploadString(storageRef, base64, 'data_url');
-            return await getDownloadURL(storageRef);
-          };
+          try {
+            const storageRef = ref(storage, `verificaciones/${uid}/${pathName}_${Date.now()}.jpg`);
+            
+            const uploadTask = async () => {
+              await uploadString(storageRef, base64, 'data_url');
+              return await getDownloadURL(storageRef);
+            };
 
-          const timeoutTask = new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('TIMEOUT_STORAGE')), 15000)
-          );
+            const timeoutTask = new Promise((_, reject) => 
+              setTimeout(() => reject(new Error('TIMEOUT_STORAGE')), 10000)
+            );
 
-          return await Promise.race([uploadTask(), timeoutTask]);
+            return await Promise.race([uploadTask(), timeoutTask]);
+          } catch (errStorage) {
+            console.warn(`[Storage Fallback] Error subiendo ${pathName} a Storage (${errStorage.message}). Guardando base64 optimizado en Firestore.`, errStorage);
+            return base64;
+          }
         };
 
         const [urlFrontal, urlTrasera, urlSelfie, urlConducta] = await Promise.all([

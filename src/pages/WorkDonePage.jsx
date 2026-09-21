@@ -460,12 +460,17 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
     
     setIsUploading(true)
     try {
-      // Subir cada foto a Firebase Storage (evita corromper la DB con base64 gigante)
+      // Subir cada foto a Firebase Storage con fallback a base64 si falla Storage
       const uploadPromises = fotos.map(async (fotoObj) => {
         if (!fotoObj.file) return fotoObj.url;
-        const storageRef = ref(storage, `work_evidences/${latestOrder.id}_${Date.now()}_${fotoObj.file.name}`)
-        const uploadTask = await uploadBytesResumable(storageRef, fotoObj.file)
-        return await getDownloadURL(uploadTask.ref)
+        try {
+          const storageRef = ref(storage, `work_evidences/${latestOrder.id}_${Date.now()}_${fotoObj.file.name}`)
+          const uploadTask = await uploadBytesResumable(storageRef, fotoObj.file)
+          return await getDownloadURL(uploadTask.ref)
+        } catch (errStorage) {
+          console.warn("[Storage Fallback] Error subiendo evidencia:", errStorage);
+          return await compressImage(fotoObj.file);
+        }
       })
       
       const downloadedURLs = await Promise.all(uploadPromises)
