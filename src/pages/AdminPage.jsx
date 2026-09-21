@@ -1240,23 +1240,39 @@ export default function AdminPage({ navigate }) {
               </div>
 
               <div style={{display:'flex', flexDirection:'column', gap:12, marginBottom:20}}>
-                {viewDocs.verificacion?.docs?.cedulaFrontal && (
+                {viewDocs.verificacion?.docs?.cedulaFrontal ? (
                   <div><span style={{fontSize:12, color:'#aaa', display:'block', marginBottom:4}}>Cédula: Frente</span>
                   <img src={viewDocs.verificacion.docs.cedulaFrontal} style={{width:'100%', borderRadius:8, border:'1px solid #333'}} alt="Frente"/></div>
+                ) : (
+                  <div style={{padding:'10px 14px', background:'rgba(239,68,68,0.1)', border:'1px solid #EF4444', borderRadius:10, color:'#EF4444', fontSize:12, fontWeight:700}}>
+                    ⚠️ Foto Cédula (Frente): NO ADJUNTADA
+                  </div>
                 )}
-                {viewDocs.verificacion?.docs?.cedulaTrasera && (
+                {viewDocs.verificacion?.docs?.cedulaTrasera ? (
                   <div><span style={{fontSize:12, color:'#aaa', display:'block', marginBottom:4}}>Cédula: Reverso</span>
                   <img src={viewDocs.verificacion.docs.cedulaTrasera} style={{width:'100%', borderRadius:8, border:'1px solid #333'}} alt="Reverso"/></div>
+                ) : (
+                  <div style={{padding:'10px 14px', background:'rgba(239,68,68,0.1)', border:'1px solid #EF4444', borderRadius:10, color:'#EF4444', fontSize:12, fontWeight:700}}>
+                    ⚠️ Foto Cédula (Reverso): NO ADJUNTADA
+                  </div>
                 )}
-                {viewDocs.verificacion?.docs?.selfie && (
+                {viewDocs.verificacion?.docs?.selfie ? (
                   <div><span style={{fontSize:12, color:'#aaa', display:'block', marginBottom:4}}>Selfie de Autenticidad</span>
                   <img src={viewDocs.verificacion.docs.selfie} style={{width:'100%', borderRadius:8, border:'1px solid #333'}} alt="Selfie"/></div>
+                ) : (
+                  <div style={{padding:'8px 12px', background:'rgba(239,68,68,0.1)', border:'1px solid #EF4444', borderRadius:10, color:'#EF4444', fontSize:12, fontWeight:700}}>
+                    ⚠️ Selfie con Cédula: NO ADJUNTADA
+                  </div>
                 )}
-                {viewDocs.verificacion?.docs?.buenaConducta && (
+                {viewDocs.verificacion?.docs?.buenaConducta ? (
                   <div><span style={{fontSize:12, color:'#aaa', display:'block', marginBottom:4}}>Certificado de Buena Conducta</span>
                   {viewDocs.verificacion.docs.buenaConducta.includes('.pdf') 
                     ? <a href={viewDocs.verificacion.docs.buenaConducta} target="_blank" rel="noreferrer" style={{color:'#3B82F6'}}>📄 Ver PDF Buena Conducta</a>
                     : <img src={viewDocs.verificacion.docs.buenaConducta} style={{width:'100%', borderRadius:8, border:'1px solid #333'}} alt="Antecedentes"/>}
+                  </div>
+                ) : (
+                  <div style={{padding:'10px 14px', background:'rgba(239,68,68,0.1)', border:'1px solid #EF4444', borderRadius:10, color:'#EF4444', fontSize:12, fontWeight:700}}>
+                    ⚠️ Papel de Buena Conducta: NO ADJUNTADO
                   </div>
                 )}
               </div>
