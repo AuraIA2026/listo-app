@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore'
+import { collection, query, where, getDocs, doc, getDoc, addDoc, serverTimestamp } from 'firebase/firestore'
 import { db } from '../firebase'
 import { CATEGORIES, FILTERS, ALL_SUBCATEGORIES } from '../categories'
 import LocalesCarrusel from '../locales/LocalesCarrusel'  // ✅ importado
@@ -618,8 +618,31 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
   const toggleLike = (proId, e) => {
     e.stopPropagation()
     setLikedPros(prev => {
-      const next = { ...prev, [proId]: !prev[proId] }
+      const isNowLiked = !prev[proId]
+      const next = { ...prev, [proId]: isNowLiked }
       localStorage.setItem('listo_liked_pros', JSON.stringify(next))
+
+      if (isNowLiked) {
+        try {
+          const proObj = (prosToDisplay || []).find(p => (p.id || p.uid) === proId) || {}
+          const cName = userData?.name || userData?.displayName || 'Un cliente'
+          const pName = proObj.nameEs || proObj.name || proObj.nameEn || 'un profesional'
+          const sEs   = proObj.specEs || proObj.category || 'Servicio'
+          const cty   = userData?.ciudad || userData?.municipio || proObj.location || 'Santo Domingo'
+
+          addDoc(collection(db, 'likes'), {
+            clientName: cName,
+            proId: proId,
+            proName: pName,
+            specEs: sEs,
+            city: cty,
+            createdAt: serverTimestamp()
+          }).catch(err => console.log('Error adding like doc:', err))
+        } catch (err) {
+          console.log('Error logging like:', err)
+        }
+      }
+
       return next
     })
   }

@@ -435,62 +435,100 @@ export default function HomePage({ lang, navigate, userRole }) {
   const [currentLiveToastText, setCurrentLiveToastText] = useState('');
   const [showLiveToast, setShowLiveToast] = useState(false);
   const hideTimerRef = useRef(null);
+  const lastEventIdRef = useRef(null);
 
-  // Escuchador en TIEMPO REAL para notificaciones cuando se completa un contrato o se deja una reseña
+  // Escuchador en TIEMPO REAL para notificaciones verdaderas: Reseñas, Likes y Contratos completados
   useEffect(() => {
+    let ordersEvents = [];
+    let likesEvents = [];
+
+    const processEvents = () => {
+      const allEvents = [...ordersEvents, ...likesEvents];
+      allEvents.sort((a, b) => b.timestamp - a.timestamp);
+
+      if (allEvents.length > 0) {
+        const latest = allEvents[0];
+        if (latest.id === lastEventIdRef.current) return;
+        lastEventIdRef.current = latest.id;
+
+        setCurrentLiveToastText(latest.text);
+        setShowLiveToast(true);
+
+        // Auto-desaparecer automáticamente tras 5 segundos (5000 ms)
+        if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
+        hideTimerRef.current = setTimeout(() => {
+          setShowLiveToast(false);
+        }, 5000);
+      }
+    };
+
+    // 1. Escuchar Contratos Completados y Reseñas en 'orders'
     const qOrders = query(collection(db, 'orders'), limit(30));
-    
-    const unsubscribe = onSnapshot(qOrders, (snapshot) => {
+    const unsubOrders = onSnapshot(qOrders, (snapshot) => {
       if (!snapshot.empty) {
-        const docs = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-        
-        // Filtrar SOLO contratos completados o reseñas dejadas
-        const validEvents = docs.filter(d => 
-          d.status === 'done' || 
-          d.status === 'completed' || 
-          d.status === 'finalizado' || 
-          d.rated === true ||
-          (d.ratingScore && Number(d.ratingScore) > 0)
-        );
+        ordersEvents = snapshot.docs
+          .map(d => ({ id: d.id, ...d.data() }))
+          .filter(d => 
+            d.status === 'done' || 
+            d.status === 'completed' || 
+            d.status === 'finalizado' || 
+            d.status === 'completado' ||
+            d.rated === true ||
+            (d.ratingScore && Number(d.ratingScore) > 0)
+          )
+          .map(d => {
+            const client = d.reviewerName || d.clientName || d.client || 'Un cliente';
+            const pro = d.proName || d.pro || 'un profesional';
+            const spec = d.specEs || d.specialty || d.category || 'Servicio';
+            const city = d.city || d.provincia || d.location || 'República Dominicana';
+            const isReview = d.rated || (d.ratingScore && Number(d.ratingScore) > 0);
+            const stars = d.ratingScore ? `⭐ ${d.ratingScore}` : '⭐ 5.0';
 
-        // Ordenar por la fecha más reciente
-        validEvents.sort((a, b) => {
-          const timeA = new Date(a.updatedAt || a.completedAt || a.createdAt || a.ratedAt || 0).getTime();
-          const timeB = new Date(b.updatedAt || b.completedAt || b.createdAt || b.ratedAt || 0).getTime();
-          return timeB - timeA;
-        });
+            const text = isReview 
+              ? `💬 ${client} en ${city} dejó una reseña ${stars} a ${pro} (${spec})`
+              : `✅ ${client} en ${city} completó un contrato con ${pro} (${spec})`;
 
-        if (validEvents.length > 0) {
-          const latest = validEvents[0];
-          const client = latest.reviewerName || latest.clientName || latest.client || 'Un cliente';
-          const pro = latest.proName || latest.pro || 'un profesional';
-          const spec = latest.specEs || latest.specialty || latest.category || 'Servicio';
-          const city = latest.city || latest.provincia || latest.location || 'República Dominicana';
-          const stars = latest.ratingScore ? `⭐ ${latest.ratingScore} estrellas` : '';
+            const rawTime = d.updatedAt || d.completedAt || d.ratedAt || d.createdAt;
+            const timestamp = rawTime ? new Date(rawTime.seconds ? rawTime.seconds * 1000 : rawTime).getTime() : 0;
 
-          let text = '';
-          if (latest.rated || latest.ratingScore) {
-            text = `💬 ${client} en ${city} dejó una reseña ${stars} a ${pro} (${spec})`;
-          } else {
-            text = `✅ ${client} en ${city} completó un contrato con ${pro} (${spec})`;
-          }
+            return { id: `order_${d.id}_${d.updatedAt || d.ratedAt || d.status}`, text, timestamp };
+          });
 
-          setCurrentLiveToastText(text);
-          setShowLiveToast(true);
-
-          // Auto-desaparecer automáticamente tras 5 segundos (5000 ms)
-          if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
-          hideTimerRef.current = setTimeout(() => {
-            setShowLiveToast(false);
-          }, 5000);
-        }
+        processEvents();
       }
     }, (error) => {
-      console.log('Realtime notification listener notice:', error);
+      console.log('Realtime orders listener notice:', error);
+    });
+
+    // 2. Escuchar Me Gusta (Likes) en 'likes'
+    const qLikes = query(collection(db, 'likes'), limit(30));
+    const unsubLikes = onSnapshot(qLikes, (snapshot) => {
+      if (!snapshot.empty) {
+        likesEvents = snapshot.docs
+          .map(d => ({ id: d.id, ...d.data() }))
+          .map(d => {
+            const client = d.clientName || d.client || 'Un cliente';
+            const pro = d.proName || d.pro || 'un profesional';
+            const spec = d.specEs || d.specialty || 'Servicio';
+            const city = d.city || d.provincia || d.location || 'República Dominicana';
+
+            const text = `❤️ ${client} en ${city} dio me gusta al perfil de ${pro} (${spec})`;
+
+            const rawTime = d.createdAt;
+            const timestamp = rawTime ? new Date(rawTime.seconds ? rawTime.seconds * 1000 : rawTime).getTime() : 0;
+
+            return { id: `like_${d.id}`, text, timestamp };
+          });
+
+        processEvents();
+      }
+    }, (error) => {
+      console.log('Realtime likes listener notice:', error);
     });
 
     return () => {
-      unsubscribe();
+      unsubOrders();
+      unsubLikes();
       if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
     };
   }, []);
@@ -1631,7 +1669,7 @@ export default function HomePage({ lang, navigate, userRole }) {
       )}
       {/* ── ELEMENTOS FLOTANTES ESTILO TEMU / AMAZON ── */}
       {/* Live Hiring Activity Toast */}
-      {!isPro && showLiveToast && currentLiveToastText && (
+      {showLiveToast && currentLiveToastText && (
         <div 
           className="live-activity-toast"
           onClick={() => setShowLiveToast(false)}
