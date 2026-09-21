@@ -1067,7 +1067,7 @@ export default function HomePage({ lang, navigate, userRole }) {
 
       {/* ── BOTÓN / PANEL SOCIO "¡HOLA, SOCIO!" (UBICADO ARRIBA DE PROFESIONALES DESTACADOS) ── */}
       {isPro && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', margin: '2px 16px 2px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0px', margin: '0 16px' }}>
           <div style={{ padding: '12px 16px', background: 'white', borderRadius: '0px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)', border: '1px solid rgba(0,0,0,0.06)' }}>
              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
                <h2 style={{ fontSize: '18px', fontWeight: '900', margin: 0, color: '#1A1A2E' }}>👋 ¡Hola, Socio!</h2>
