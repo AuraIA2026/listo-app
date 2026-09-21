@@ -434,6 +434,7 @@ export default function HomePage({ lang, navigate, userRole }) {
 
   const [currentLiveToastText, setCurrentLiveToastText] = useState('');
   const [showLiveToast, setShowLiveToast] = useState(false);
+  const hideTimerRef = useRef(null);
 
   // Escuchador en TIEMPO REAL para notificaciones cuando se completa un contrato o se deja una reseña
   useEffect(() => {
@@ -476,13 +477,22 @@ export default function HomePage({ lang, navigate, userRole }) {
 
           setCurrentLiveToastText(text);
           setShowLiveToast(true);
+
+          // Auto-desaparecer automáticamente tras 5 segundos (5000 ms)
+          if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
+          hideTimerRef.current = setTimeout(() => {
+            setShowLiveToast(false);
+          }, 5000);
         }
       }
     }, (error) => {
       console.log('Realtime notification listener notice:', error);
     });
 
-    return () => unsubscribe();
+    return () => {
+      unsubscribe();
+      if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
+    };
   }, []);
 
   const [featuredRef, featuredVisible] = useScrollReveal()
@@ -1622,11 +1632,34 @@ export default function HomePage({ lang, navigate, userRole }) {
       {/* ── ELEMENTOS FLOTANTES ESTILO TEMU / AMAZON ── */}
       {/* Live Hiring Activity Toast */}
       {!isPro && showLiveToast && currentLiveToastText && (
-        <div className="live-activity-toast">
-          <span style={{ fontSize: '18px' }}>🔔</span>
-          <p className="live-activity-toast-text">
+        <div 
+          className="live-activity-toast"
+          onClick={() => setShowLiveToast(false)}
+          style={{ cursor: 'pointer' }}
+          title="Toca para cerrar"
+        >
+          <span style={{ fontSize: '18px', flexShrink: 0 }}>🔔</span>
+          <p className="live-activity-toast-text" style={{ flex: 1 }}>
             {currentLiveToastText}
           </p>
+          <button 
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowLiveToast(false);
+            }}
+            style={{
+              background: 'none',
+              border: 'none',
+              color: '#AAA',
+              fontSize: '14px',
+              cursor: 'pointer',
+              padding: '0 0 0 8px',
+              fontWeight: 'bold'
+            }}
+          >
+            ✕
+          </button>
         </div>
       )}
 
