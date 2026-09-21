@@ -1138,52 +1138,100 @@ export default function HomePage({ lang, navigate, userRole }) {
 
       {/* ── BOTÓN / PANEL SOCIO "¡HOLA, SOCIO!" (UBICADO ARRIBA DE PROFESIONALES DESTACADOS) ── */}
       {isPro && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0px', margin: '0 16px' }}>
-          <div style={{ padding: '12px 16px', background: 'white', borderRadius: '0px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)', border: '1px solid rgba(0,0,0,0.06)' }}>
-             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-               <h2 style={{ fontSize: '18px', fontWeight: '900', margin: 0, color: '#1A1A2E' }}>👋 ¡Hola, Socio!</h2>
-               <div 
-                 onClick={toggleAvailability}
-                 style={{ 
-                   width: '48px', height: '26px', borderRadius: '13px', 
-                   background: isAvailable ? (isLowContracts && showLowContractWarning ? '#EF4444' : '#22C55E') : '#E5E7EB', 
-                   position: 'relative', cursor: 'pointer', transition: 'background 0.3s',
-                   opacity: profileComplete ? 1 : 0.6
-                 }}
-               >
-                 <div style={{
-                   width: '20px', height: '20px', borderRadius: '50%', background: 'white',
-                   position: 'absolute', top: '3px', left: isAvailable ? '25px' : '3px',
-                   transition: 'left 0.3s', boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
-                 }} />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0px', margin: '0 16px 18px' }}>
+          <div 
+            style={{ 
+              padding: '16px 18px', 
+              background: 'linear-gradient(135deg, #ffffff 0%, #fff7f0 100%)', 
+              borderRadius: '20px', 
+              boxShadow: '0 8px 24px rgba(242, 96, 0, 0.12)', 
+              border: '1.5px solid rgba(242, 96, 0, 0.18)',
+              position: 'relative',
+              overflow: 'hidden'
+            }}
+          >
+             <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '4px', background: 'linear-gradient(90deg, #FF7A1A, #F26000, #E65100)' }} />
+
+             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                 <h2 style={{ fontSize: '18px', fontWeight: '900', margin: 0, color: '#1A1A2E' }}>👋 ¡Hola, Socio!</h2>
+                 <span style={{ fontSize: '10px', fontWeight: '800', background: 'rgba(242, 96, 0, 0.12)', color: '#F26000', padding: '3px 8px', borderRadius: '12px', border: '1px solid rgba(242, 96, 0, 0.25)' }}>
+                   ⭐ PANEL PRO
+                 </span>
+               </div>
+
+               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                 <span style={{ fontSize: '11px', fontWeight: '700', color: isAvailable ? '#16A34A' : '#64748B' }}>
+                   {isAvailable ? '🟢 En línea' : '⚫ Desconectado'}
+                 </span>
+                 <div 
+                   onClick={toggleAvailability}
+                   style={{ 
+                     width: '50px', height: '28px', borderRadius: '14px', 
+                     background: isAvailable ? (isLowContracts && showLowContractWarning ? '#EF4444' : 'linear-gradient(135deg, #22C55E, #16A34A)') : '#CBD5E1', 
+                     position: 'relative', cursor: 'pointer', transition: 'all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
+                     opacity: profileComplete ? 1 : 0.6,
+                     boxShadow: isAvailable ? '0 2px 8px rgba(34, 197, 94, 0.35)' : 'none'
+                   }}
+                 >
+                   <div style={{
+                     width: '22px', height: '22px', borderRadius: '50%', background: 'white',
+                     position: 'absolute', top: '3px', left: isAvailable ? '25px' : '3px',
+                     transition: 'left 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)', boxShadow: '0 2px 6px rgba(0,0,0,0.25)'
+                   }} />
+                 </div>
                </div>
              </div>
              
              {!profileComplete ? (
                <div 
                  onClick={() => navigate('profile', { screen: 'verification' })} 
-                 style={{ padding: '8px 10px', background: '#FEF2F2', borderRadius: '0px', border: '1px solid #FECACA', marginTop: '6px', cursor: 'pointer' }}
+                 style={{ padding: '12px 14px', background: '#FEF2F2', borderRadius: '14px', border: '1.5px solid #FECACA', marginTop: '8px', cursor: 'pointer' }}
                >
                  <p style={{ margin: '0 0 4px', fontSize: '12.5px', color: '#991B1B', fontWeight: 'bold' }}>
                    ⚠️ Tu perfil está incompleto (presiona aquí para verificar).
                  </p>
-                 <p style={{ margin: 0, fontSize: '11.5px', color: '#B91C1C' }}>
+                 <p style={{ margin: 0, fontSize: '11.5px', color: '#B91C1C', lineHeight: 1.4 }}>
                    No puedes recibir pedidos. Cuando termines de completar tu perfil y verificación, actívate.
                  </p>
                </div>
              ) : (
-               <p style={{ color: isExpired ? '#B91C1C' : (isAvailable ? (isLowContracts && showLowContractWarning ? '#B91C1C' : '#15803D') : '#6B7280'), fontSize: '13px', margin: 0, fontWeight: '700' }}>
-                 {isExpired
-                   ? '🔴 Perfil inactivo. Actualízalo en nuestra web.'
-                   : (isAvailable 
-                       ? (isLowContracts && showLowContractWarning
-                           ? (isNative 
-                               ? '🔴 Solo te queda un contrato. Para adquirir o mejorar tu plan, ingresa a nuestra plataforma web.'
-                               : '🔴 Solo te queda un contrato, postulate a un plan para recibir clientes.')
-                           : '🟢 Estás en línea. Los clientes te pueden encontrar.') 
-                       : '⚫ Estás desconectado. Ningún cliente te verá.')}
-               </p>
+               <div style={{ background: isAvailable ? 'rgba(34, 197, 94, 0.08)' : '#F1F5F9', padding: '10px 12px', borderRadius: '12px', border: `1px solid ${isAvailable ? 'rgba(34, 197, 94, 0.2)' : '#E2E8F0'}`, marginTop: '6px' }}>
+                 <p style={{ color: isExpired ? '#B91C1C' : (isAvailable ? (isLowContracts && showLowContractWarning ? '#B91C1C' : '#15803D') : '#64748B'), fontSize: '12.5px', margin: 0, fontWeight: '700' }}>
+                   {isExpired
+                     ? '🔴 Perfil inactivo. Actualízalo en nuestra web.'
+                     : (isAvailable 
+                         ? (isLowContracts && showLowContractWarning
+                             ? (isNative 
+                                 ? '🔴 Solo te queda un contrato. Para adquirir o mejorar tu plan, ingresa a nuestra plataforma web.'
+                                 : '🔴 Solo te queda un contrato, postulate a un plan para recibir clientes.')
+                             : '🟢 Estás visible para clientes cercanos. ¡Listo para recibir solicitudes!') 
+                         : '⚫ Estás en modo ausente. Actívate cuando desees recibir solicitudes.')}
+                 </p>
+               </div>
              )}
+
+             {/* Acciones Rápidas del Socio */}
+             <div style={{ display: 'flex', gap: '8px', marginTop: '12px', paddingTop: '10px', borderTop: '1px solid rgba(0,0,0,0.06)' }}>
+               <button 
+                 onClick={() => navigate('orders')}
+                 style={{ flex: 1, padding: '8px 10px', borderRadius: '12px', background: 'white', border: '1px solid rgba(0,0,0,0.1)', fontSize: '11.5px', fontWeight: '800', color: '#1A1A2E', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', boxShadow: '0 2px 6px rgba(0,0,0,0.04)' }}
+               >
+                 📦 Pedidos
+               </button>
+               <button 
+                 onClick={() => navigate('proProfile', userData)}
+                 style={{ flex: 1, padding: '8px 10px', borderRadius: '12px', background: 'white', border: '1px solid rgba(0,0,0,0.1)', fontSize: '11.5px', fontWeight: '800', color: '#1A1A2E', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', boxShadow: '0 2px 6px rgba(0,0,0,0.04)' }}
+               >
+                 👤 Mi Perfil
+               </button>
+               <button 
+                 onClick={() => navigate('profile')}
+                 style={{ flex: 1, padding: '8px 10px', borderRadius: '12px', background: 'white', border: '1px solid rgba(0,0,0,0.1)', fontSize: '11.5px', fontWeight: '800', color: '#F26000', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', boxShadow: '0 2px 6px rgba(0,0,0,0.04)' }}
+               >
+                 ⚙️ Ajustes
+               </button>
+             </div>
           </div>
         </div>
       )}
