@@ -175,7 +175,7 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro }) {
   }
 
   const handleAddStoryClick = () => {
-    if (has5StarContract) {
+    if (!isProUser || has5StarContract) {
       setUploadModalOpen(true)
     } else {
       setShowLockNotice(true)
@@ -211,26 +211,24 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro }) {
           ref={trackRef}
           onScroll={checkScroll}
         >
-          {/* If User is Professional, show Add Story item first */}
-          {isProUser && (
-            <div className="historia-item" onClick={handleAddStoryClick}>
-              <div className={`historia-ring add-story-ring ${!has5StarContract ? 'locked' : ''}`}>
-                <div className="historia-avatar-inner">
-                  <img
-                    src={userData?.photoURL || userData?.avatarUrl || 'https://randomuser.me/api/portraits/men/32.jpg'}
-                    alt="Tu perfil"
-                    className="historia-avatar"
-                  />
-                </div>
-                <div className="historia-add-plus">
-                  {has5StarContract ? '+' : '🔒'}
-                </div>
+          {/* Add Story Button for both Clients and Professionals */}
+          <div className="historia-item" onClick={handleAddStoryClick}>
+            <div className={`historia-ring add-story-ring ${isProUser && !has5StarContract ? 'locked' : ''}`}>
+              <div className="historia-avatar-inner">
+                <img
+                  src={userData?.photoURL || userData?.avatarUrl || userData?.profilePhoto || 'https://randomuser.me/api/portraits/men/32.jpg'}
+                  alt="Tu perfil"
+                  className="historia-avatar"
+                />
               </div>
-              <span className="historia-label pro-label">
-                {has5StarContract ? 'Tu Historia' : '⭐ 5 Estrellas'}
-              </span>
+              <div className="historia-add-plus">
+                {isProUser ? (has5StarContract ? '+' : '🔒') : '+'}
+              </div>
             </div>
-          )}
+            <span className="historia-label pro-label">
+              {isProUser ? (has5StarContract ? 'Tu Historia' : '⭐ 5 Estrellas') : 'Tu Historia'}
+            </span>
+          </div>
 
           {/* Stories List */}
           {stories.map((story, index) => (
