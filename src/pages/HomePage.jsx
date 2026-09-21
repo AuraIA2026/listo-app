@@ -734,6 +734,17 @@ export default function HomePage({ lang, navigate, userRole }) {
   const isAvailable = profileComplete && !isExpired && (userData?.available !== false);
   const isLowContracts = (userData?.contracts || 0) === 1;
 
+  const openWebPlanPage = () => {
+    const isLocal = typeof window !== 'undefined' && (window.location.origin.includes('localhost') || window.location.origin.includes('127.0.0.1'));
+    const targetUrl = isLocal ? 'https://listopatron.vercel.app/#planes' : `${window.location.origin}/#planes`;
+    
+    if (Capacitor.isNativePlatform()) {
+      window.open('https://listopatron.vercel.app/#planes', '_system');
+    } else {
+      window.open(targetUrl, '_blank');
+    }
+  };
+
   const toggleAvailability = async () => {
     if (!profileComplete) {
       alert(lang === 'es' ? "Debes completar tu perfil para poder activarte y recibir pedidos." : "You must complete your profile to become active and receive orders.");
@@ -743,19 +754,15 @@ export default function HomePage({ lang, navigate, userRole }) {
       alert(lang === 'es' 
         ? "Tu cuenta está inactiva. Por favor actualízala en nuestra web para poder ponerte en línea." 
         : "Your account is inactive. Please update it on our website to go online.");
+      openWebPlanPage();
       return;
     }
     const currentAvail = userData?.available !== false;
     if (!currentAvail && (userData?.contracts || 0) <= 0) {
-      if (isNative) {
-        alert(lang === 'es' 
-          ? "No tienes contratos disponibles. Para cambiar o adquirir un plan, ingresa a nuestra plataforma web." 
-          : "No contracts available. To change or purchase a plan, please visit our website.");
-      } else {
-        alert(lang === 'es' 
-          ? "No tienes contratos disponibles. Postúlate a un plan para recibir clientes." 
-          : "No contracts available. Select a plan to receive clients.");
-      }
+      alert(lang === 'es' 
+        ? "No tienes contratos disponibles. Para cambiar o adquirir un plan, ingresa a nuestra plataforma web." 
+        : "No contracts available. To change or purchase a plan, please visit our website.");
+      openWebPlanPage();
       return;
     }
     if (!userData?.uid) return;
@@ -1196,20 +1203,70 @@ export default function HomePage({ lang, navigate, userRole }) {
                  </p>
                </div>
              ) : (
-               <div style={{ background: isAvailable ? 'rgba(34, 197, 94, 0.08)' : '#F1F5F9', padding: '10px 12px', borderRadius: '12px', border: `1px solid ${isAvailable ? 'rgba(34, 197, 94, 0.2)' : '#E2E8F0'}`, marginTop: '6px' }}>
-                 <p style={{ color: isExpired ? '#B91C1C' : (isAvailable ? (isLowContracts && showLowContractWarning ? '#B91C1C' : '#15803D') : '#64748B'), fontSize: '12.5px', margin: 0, fontWeight: '700' }}>
-                   {isExpired
-                     ? '🔴 Perfil inactivo. Actualízalo en nuestra web.'
-                     : (isAvailable 
-                         ? (isLowContracts && showLowContractWarning
-                             ? (isNative 
-                                 ? '🔴 Solo te queda un contrato. Para adquirir o mejorar tu plan, ingresa a nuestra plataforma web.'
-                                 : '🔴 Solo te queda un contrato, postulate a un plan para recibir clientes.')
-                             : '🟢 Estás visible para clientes cercanos. ¡Listo para recibir solicitudes!') 
-                         : '⚫ Estás en modo ausente. Actívate cuando desees recibir solicitudes.')}
-                 </p>
-               </div>
-             )}
+                <div 
+                  onClick={() => {
+                    if (isExpired || (isAvailable && isLowContracts && showLowContractWarning)) {
+                      openWebPlanPage();
+                    }
+                  }}
+                  style={{ 
+                    background: (isExpired || (isAvailable && isLowContracts && showLowContractWarning)) ? '#FEF2F2' : (isAvailable ? 'rgba(34, 197, 94, 0.08)' : '#F1F5F9'), 
+                    padding: '10px 14px', 
+                    borderRadius: '12px', 
+                    border: `1.5px solid ${(isExpired || (isAvailable && isLowContracts && showLowContractWarning)) ? '#FECACA' : (isAvailable ? 'rgba(34, 197, 94, 0.2)' : '#E2E8F0')}`, 
+                    marginTop: '6px',
+                    cursor: (isExpired || (isAvailable && isLowContracts && showLowContractWarning)) ? 'pointer' : 'default',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: '10px',
+                    transition: 'all 0.2s ease',
+                    boxShadow: (isExpired || (isAvailable && isLowContracts && showLowContractWarning)) ? '0 2px 8px rgba(220, 38, 38, 0.12)' : 'none'
+                  }}
+                  onMouseEnter={e => { if (isExpired || (isAvailable && isLowContracts && showLowContractWarning)) e.currentTarget.style.transform = 'translateY(-1px)'; }}
+                  onMouseLeave={e => { if (isExpired || (isAvailable && isLowContracts && showLowContractWarning)) e.currentTarget.style.transform = 'translateY(0)'; }}
+                  title={(isExpired || (isAvailable && isLowContracts && showLowContractWarning)) ? (lang === 'es' ? 'Haz clic para comprar o renovar tu plan en la web' : 'Click to purchase or renew your plan on web') : ''}
+                >
+                  <p style={{ 
+                    color: (isExpired || (isAvailable && isLowContracts && showLowContractWarning)) ? '#B91C1C' : (isAvailable ? '#15803D' : '#64748B'), 
+                    fontSize: '12.5px', 
+                    margin: 0, 
+                    fontWeight: '700',
+                    flex: 1
+                  }}>
+                    {isExpired
+                      ? '🔴 Perfil inactivo. Actualízalo en nuestra web.'
+                      : (isAvailable 
+                          ? (isLowContracts && showLowContractWarning
+                              ? (isNative 
+                                  ? '🔴 Solo te queda un contrato. Para adquirir o mejorar tu plan, ingresa a nuestra plataforma web.'
+                                  : '🔴 Solo te queda un contrato. Adquiere tu plan en nuestra web para recibir clientes.')
+                              : '🟢 Estás visible para clientes cercanos. ¡Listo para recibir solicitudes!') 
+                          : '⚫ Estás en modo ausente. Actívate cuando desees recibir solicitudes.')}
+                  </p>
+
+                  {(isExpired || (isAvailable && isLowContracts && showLowContractWarning)) && (
+                    <span 
+                      style={{
+                        background: 'linear-gradient(135deg, #EF4444, #DC2626)',
+                        color: '#FFFFFF',
+                        fontSize: '11px',
+                        fontWeight: '800',
+                        padding: '5px 10px',
+                        borderRadius: '8px',
+                        whiteSpace: 'nowrap',
+                        boxShadow: '0 2px 6px rgba(239, 68, 68, 0.35)',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        flexShrink: 0
+                      }}
+                    >
+                      🛒 Comprar Plan ↗
+                    </span>
+                  )}
+                </div>
+              )}
 
              {/* Acciones Rápidas del Socio */}
              <div style={{ display: 'flex', gap: '8px', marginTop: '12px', paddingTop: '10px', borderTop: '1px solid rgba(0,0,0,0.06)' }}>
