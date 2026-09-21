@@ -69,6 +69,8 @@ export default function SubirHistoriaModal({ isOpen, onClose, userData, onStoryU
         imageUrl: imagePreview,
         caption: caption.trim() || 'Trabajo realizado con calidad Listo Patrón ⚡',
         likesCount: 0,
+        is5StarVerified: true,
+        ratingBadge: '⭐⭐⭐⭐⭐ Entrega 5 Estrellas',
         createdAt: new Date().toISOString(),
         expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() // 24 Horas
       }
@@ -104,6 +106,11 @@ export default function SubirHistoriaModal({ isOpen, onClose, userData, onStoryU
           >
             ✕
           </button>
+        </div>
+
+        <div style={{ background: 'linear-gradient(135deg, #FEF3C7, #FDE68A)', border: '1px solid #F59E0B', padding: '6px 12px', borderRadius: '10px', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: '#B45309', fontWeight: 700 }}>
+          <span>⭐</span>
+          <span>¡Desbloqueado por Contrato Perfecto de 5 Estrellas!</span>
         </div>
 
         <p style={{ margin: 0, fontSize: '13px', color: '#64748b' }}>

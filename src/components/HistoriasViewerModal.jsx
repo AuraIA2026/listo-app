@@ -163,8 +163,13 @@ export default function HistoriasViewerModal({
               className="historias-header-avatar"
             />
             <div className="historias-header-text">
-              <span className="historias-header-name">{currentStory.proName}</span>
-              <span className="historias-header-spec">⚡ {currentStory.proCategory}</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span className="historias-header-name">{currentStory.proName}</span>
+                <span style={{ fontSize: '10px', background: 'linear-gradient(135deg, #F59E0B, #D97706)', color: 'white', padding: '1px 6px', borderRadius: '10px', fontWeight: 800 }}>
+                  ⭐ 5.0
+                </span>
+              </div>
+              <span className="historias-header-spec">⚡ {currentStory.proCategory} • Entrega 5★</span>
             </div>
           </div>
           <button className="historias-close-btn" onClick={onClose} title="Cerrar">
