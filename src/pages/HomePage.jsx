@@ -750,20 +750,16 @@ export default function HomePage({ lang, navigate, userRole }) {
       if (e.stopPropagation) e.stopPropagation();
       if (e.preventDefault) e.preventDefault();
     }
+    const webUrl = 'https://www.listopatron.com.do/';
     try {
       if (typeof window !== 'undefined' && window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()) {
-        window.open('https://listopatron.vercel.app/?page=comprar-plan#comprar-plan', '_system');
+        window.open(webUrl, '_system');
         return;
       }
     } catch (err) {
       console.error("Native open error:", err);
     }
-    window.location.hash = 'comprar-plan';
-    if (typeof navigate === 'function') {
-      navigate('landing');
-    } else {
-      window.location.href = 'https://listopatron.vercel.app/?page=comprar-plan#comprar-plan';
-    }
+    window.open(webUrl, '_blank');
   };
 
   const toggleAvailability = async () => {
