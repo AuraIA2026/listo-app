@@ -750,7 +750,14 @@ export default function HomePage({ lang, navigate, userRole }) {
       if (e.stopPropagation) e.stopPropagation();
       if (e.preventDefault) e.preventDefault();
     }
-    const webUrl = 'https://www.listopatron.com.do/';
+    const uid = encodeURIComponent(userData?.uid || userData?.id || '');
+    const name = encodeURIComponent(userData?.name || userData?.verificacion?.nombre || '');
+    const email = encodeURIComponent(userData?.email || userData?.verificacion?.correo || '');
+    const phone = encodeURIComponent(userData?.phone || userData?.verificacion?.telefono || '');
+    const cedula = encodeURIComponent(userData?.cedula || userData?.verificacion?.cedula || '');
+    const category = encodeURIComponent(userData?.category || userData?.especialidad || '');
+
+    const webUrl = `https://www.listopatron.com.do/?comprar-plan=true&uid=${uid}&name=${name}&email=${email}&phone=${phone}&cedula=${cedula}&category=${category}`;
     try {
       if (typeof window !== 'undefined' && window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()) {
         window.open(webUrl, '_system');
