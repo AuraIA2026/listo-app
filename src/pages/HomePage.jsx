@@ -758,7 +758,12 @@ export default function HomePage({ lang, navigate, userRole }) {
     } catch (err) {
       console.error("Native open error:", err);
     }
-    setShowPlanModal(true);
+    window.location.hash = 'comprar-plan';
+    if (typeof navigate === 'function') {
+      navigate('landing');
+    } else {
+      window.location.href = 'https://listopatron.vercel.app/?page=comprar-plan#comprar-plan';
+    }
   };
 
   const toggleAvailability = async () => {

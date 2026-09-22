@@ -403,8 +403,13 @@ export default function App() {
         localStorage.setItem('listoUserData', JSON.stringify(userData))
       }
       setCurrentPage(prev => {
-        if (prev === 'landing' || prev === 'login') return 'home'
-        return prev
+        if (typeof window !== 'undefined') {
+          const search = window.location.search || '';
+          const hash = window.location.hash || '';
+          if (search.includes('comprar-plan') || hash.includes('comprar-plan') || hash.includes('planes')) return 'landing';
+        }
+        if (prev === 'landing' || prev === 'login') return 'home';
+        return prev;
       })
     } else {
       setCurrentPage(prev => {

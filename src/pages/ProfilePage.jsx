@@ -990,7 +990,12 @@ export default function ProfilePage({ lang, setLang, navigate, onLogout, initial
                       return;
                     }
                   } catch (err) {}
-                  setShowPlanModal(true);
+                  window.location.hash = 'comprar-plan';
+                  if (typeof navigate === 'function') {
+                    navigate('landing');
+                  } else {
+                    window.location.href = 'https://listopatron.vercel.app/?page=comprar-plan#comprar-plan';
+                  }
                 }} style={{ margin: 0, width: '100%', cursor: 'pointer' }}>
                   <span>💎 {lang === 'es' ? 'Certificación & Verificación' : 'Certification & Verification'}</span>
                   <span style={{ fontSize: '18px' }}>›</span>
