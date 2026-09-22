@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { db } from '../firebase'
+import { db, auth } from '../firebase'
 import { collection, addDoc } from 'firebase/firestore'
 import './Historias.css'
 
@@ -105,15 +105,21 @@ export default function SubirHistoriaModal({ isOpen, onClose, userData, onStoryU
       return
     }
 
+    const activeUser = auth.currentUser;
+    if (!activeUser) {
+      setErrorMsg('Debes iniciar sesión con tu cuenta para publicar historias de trabajo.')
+      return
+    }
+
     setIsUploading(true)
     setErrorMsg('')
 
     try {
       const isClient = !(userData?.role === 'pro' || userData?.type === 'pro')
       const newStory = {
-        proId: userData?.uid || userData?.id || 'user_demo',
-        proName: userData?.name || userData?.displayName || (isClient ? 'Cliente Listo' : 'Profesional de Listo'),
-        proAvatar: userData?.avatarUrl || userData?.photoURL || userData?.profilePhoto || 'https://randomuser.me/api/portraits/men/32.jpg',
+        proId: activeUser.uid,
+        proName: userData?.name || userData?.displayName || activeUser.displayName || (isClient ? 'Cliente Listo' : 'Profesional de Listo'),
+        proAvatar: userData?.avatarUrl || userData?.photoURL || userData?.profilePhoto || activeUser.photoURL || 'https://randomuser.me/api/portraits/men/32.jpg',
         proCategory: isClient ? 'Cliente Satisfecho 🤝' : (userData?.especialidad || userData?.category || userData?.specEs || 'Profesional Registrado'),
         mediaType: mediaType,
         imageUrl: mediaType === 'image' ? mediaPreview : null,
