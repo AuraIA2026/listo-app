@@ -7,6 +7,7 @@ import './ProfilePage.css'
 import SubirHistoriaModal from '../components/SubirHistoriaModal'
 import VerificacionPage    from './VerificacionPage'
 import RegistroClientePage from './RegistroClientePage'
+import PlanSelectionModal from '../components/PlanSelectionModal'
 
 
 const txt = {
@@ -702,6 +703,7 @@ export default function ProfilePage({ lang, setLang, navigate, onLogout, initial
   const [photoStatus, setPhotoStatus] = useState(null)
   const [ordersCount, setOrdersCount] = useState(0)
   const [showSubirHistoria, setShowSubirHistoria] = useState(false)
+  const [showPlanModal, setShowPlanModal] = useState(false)
   const [hideUpgrade, setHideUpgrade] = useState(() => localStorage.getItem('hideUpgrade_Listo_' + (userData?.uid || 'guest')) === 'true')
 
   useEffect(() => {
@@ -982,14 +984,13 @@ export default function ProfilePage({ lang, setLang, navigate, onLogout, initial
                     if (e.stopPropagation) e.stopPropagation();
                     if (e.preventDefault) e.preventDefault();
                   }
-                  const webUrl = 'https://listopatron.vercel.app/#planes';
                   try {
                     if (typeof window !== 'undefined' && window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()) {
-                      window.open(webUrl, '_system');
+                      window.open('https://listopatron.vercel.app/?page=comprar-plan#comprar-plan', '_system');
                       return;
                     }
                   } catch (err) {}
-                  window.location.href = webUrl;
+                  setShowPlanModal(true);
                 }} style={{ margin: 0, width: '100%', cursor: 'pointer' }}>
                   <span>💎 {lang === 'es' ? 'Certificación & Verificación' : 'Certification & Verification'}</span>
                   <span style={{ fontSize: '18px' }}>›</span>
@@ -1171,6 +1172,15 @@ export default function ProfilePage({ lang, setLang, navigate, onLogout, initial
 
       {showLogout && <LogoutModal lang={lang} onConfirm={handleLogout} onCancel={() => setShowLogout(false)} />}
       {showDelete && <DeleteAccountModal lang={lang} onConfirm={handleDeleteAccount} onCancel={() => setShowDelete(false)} />}
+
+      <PlanSelectionModal 
+        isOpen={showPlanModal} 
+        onClose={() => setShowPlanModal(false)} 
+        onSelectPlan={(plan) => {
+          alert(`Has seleccionado el ${plan.name} (${plan.price}). Por favor comunícate con la administración de Listo Patrón o realiza tu transferencia para activar tus contratos.`);
+          setShowPlanModal(false);
+        }} 
+      />
     </div>
   )
 }

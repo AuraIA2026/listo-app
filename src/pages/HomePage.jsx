@@ -7,6 +7,7 @@ import TutorialTour, { useTour } from '../components/TutorialTour'
 import VIPSection from '../components/VIPSection'
 import LuckyWheelModal from '../components/LuckyWheelModal'
 import HistoriasCarrusel from '../components/HistoriasCarrusel'
+import PlanSelectionModal from '../components/PlanSelectionModal'
 
 import BtnHamburguesa from '../components/BtnHamburguesa'
 import BtnHamburguesaUsuario from '../components/BtnHamburguesaUsuario'
@@ -734,21 +735,30 @@ export default function HomePage({ lang, navigate, userRole }) {
   const isAvailable = profileComplete && !isExpired && (userData?.available !== false);
   const isLowContracts = (userData?.contracts || 0) === 1;
 
+  const [showPlanModal, setShowPlanModal] = useState(false);
+
+  useEffect(() => {
+    const search = typeof window !== 'undefined' ? (window.location.search || '') : '';
+    const hash = typeof window !== 'undefined' ? (window.location.hash || '') : '';
+    if (search.includes('comprar-plan') || hash.includes('comprar-plan') || hash.includes('planes')) {
+      setShowPlanModal(true);
+    }
+  }, []);
+
   const openWebPlanPage = (e) => {
     if (e) {
       if (e.stopPropagation) e.stopPropagation();
       if (e.preventDefault) e.preventDefault();
     }
-    const webUrl = 'https://listopatron.vercel.app/#planes';
     try {
       if (typeof window !== 'undefined' && window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()) {
-        window.open(webUrl, '_system');
+        window.open('https://listopatron.vercel.app/?page=comprar-plan#comprar-plan', '_system');
         return;
       }
     } catch (err) {
       console.error("Native open error:", err);
     }
-    window.location.href = webUrl;
+    setShowPlanModal(true);
   };
 
   const toggleAvailability = async () => {
@@ -1814,8 +1824,16 @@ export default function HomePage({ lang, navigate, userRole }) {
         lang={lang} 
         wheelProgress={userData?.wheelProgress || 0}
         completedContracts={userData?.completedContracts || userData?.contracts || 0}
-        wheelSpinCount={userData?.wheelSpinCount || 0}
         onClaimReward={handleClaimReward} 
+      />
+      {/* Modal de Selección de Plan Profesional */}
+      <PlanSelectionModal 
+        isOpen={showPlanModal} 
+        onClose={() => setShowPlanModal(false)} 
+        onSelectPlan={(plan) => {
+          alert(`Has seleccionado el ${plan.name} (${plan.price}). Por favor comunícate con la administración de Listo Patrón o realiza tu transferencia para activar tus contratos.`);
+          setShowPlanModal(false);
+        }} 
       />
 
     </div>
