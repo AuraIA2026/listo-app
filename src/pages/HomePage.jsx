@@ -1264,28 +1264,6 @@ export default function HomePage({ lang, navigate, userRole }) {
                   </p>
                 </div>
               )}
-
-             {/* Acciones Rápidas del Socio */}
-             <div style={{ display: 'flex', gap: '8px', marginTop: '12px', paddingTop: '10px', borderTop: '1px solid rgba(0,0,0,0.06)' }}>
-               <button 
-                 onClick={() => navigate('orders')}
-                 style={{ flex: 1, padding: '8px 10px', borderRadius: '12px', background: 'white', border: '1px solid rgba(0,0,0,0.1)', fontSize: '11.5px', fontWeight: '800', color: '#1A1A2E', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', boxShadow: '0 2px 6px rgba(0,0,0,0.04)' }}
-               >
-                 📦 Pedidos
-               </button>
-               <button 
-                 onClick={() => navigate('proProfile', userData)}
-                 style={{ flex: 1, padding: '8px 10px', borderRadius: '12px', background: 'white', border: '1px solid rgba(0,0,0,0.1)', fontSize: '11.5px', fontWeight: '800', color: '#1A1A2E', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', boxShadow: '0 2px 6px rgba(0,0,0,0.04)' }}
-               >
-                 👤 Mi Perfil
-               </button>
-               <button 
-                 onClick={() => navigate('profile')}
-                 style={{ flex: 1, padding: '8px 10px', borderRadius: '12px', background: 'white', border: '1px solid rgba(0,0,0,0.1)', fontSize: '11.5px', fontWeight: '800', color: '#F26000', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', boxShadow: '0 2px 6px rgba(0,0,0,0.04)' }}
-               >
-                 ⚙️ Ajustes
-               </button>
-             </div>
           </div>
         </div>
       )}
