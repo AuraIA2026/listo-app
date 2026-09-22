@@ -3,16 +3,25 @@
    Aesthetic Instagram / WhatsApp Stories component for Listo Patrón
    ========================================================================== */
 
+/* Fondo Mamey Animado Estilo Instagram */
 .historias-carrusel-wrapper {
   width: 100%;
-  padding: 16px 16px 14px 16px;
-  background: linear-gradient(135deg, #ff5e00 0%, #ff7a1a 45%, #e65100 100%);
-  border-radius: 20px;
-  box-shadow: 0 10px 28px rgba(255, 94, 0, 0.28), 0 2px 8px rgba(0, 0, 0, 0.08);
+  padding: 18px 16px 14px 16px;
+  background: linear-gradient(-45deg, #ff4500, #ff6000, #ff8c00, #e64a19, #d84315, #ff3a00);
+  background-size: 350% 350%;
+  animation: animatedMameyBg 8s ease infinite;
+  border-radius: 22px;
+  box-shadow: 0 12px 32px rgba(255, 94, 0, 0.32), 0 4px 14px rgba(0, 0, 0, 0.12);
   margin-bottom: 20px;
   position: relative;
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+@keyframes animatedMameyBg {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
 .historias-carrusel-wrapper::before {
@@ -22,8 +31,14 @@
   left: -50%;
   width: 200%;
   height: 200%;
-  background: radial-gradient(circle at 25% 20%, rgba(255, 255, 255, 0.25) 0%, transparent 55%);
+  background: radial-gradient(circle at 30% 20%, rgba(255, 255, 255, 0.3) 0%, transparent 60%);
   pointer-events: none;
+  animation: shimmerLight 6s ease-in-out infinite alternate;
+}
+
+@keyframes shimmerLight {
+  0% { transform: translate(0, 0); opacity: 0.7; }
+  100% { transform: translate(40px, 20px); opacity: 1; }
 }
 
 .historias-carrusel-header {
@@ -65,7 +80,7 @@
   font-weight: 800;
   color: #ffffff;
   letter-spacing: -0.2px;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 .historias-title-right {
@@ -99,7 +114,7 @@
   gap: 16px;
   overflow-x: auto;
   scroll-behavior: smooth;
-  padding: 4px 4px 6px 4px;
+  padding: 6px 4px 6px 4px;
   -webkit-overflow-scrolling: touch;
   width: 100%;
 }
@@ -163,37 +178,40 @@
 }
 
 .historia-item:hover {
-  transform: translateY(-3px) scale(1.05);
+  transform: translateY(-3px) scale(1.06);
 }
 
 .historia-item:active {
   transform: scale(0.95);
 }
 
-/* Instagram Multi-Color Ring & White Spacing Ring */
+/* Instagram Multi-Color Gradient Ring & White Spacing Ring */
 .historia-ring {
-  width: 68px;
-  height: 68px;
+  width: 70px;
+  height: 70px;
   border-radius: 50%;
   padding: 3px;
   position: relative;
-  background: linear-gradient(135deg, #ff007f 0%, #ff5e00 40%, #ffb700 75%, #9b51e0 100%);
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.22);
+  /* Anillo estilo Instagram real: Amarillo-Naranja-Rosa-Morado-Fucsia */
+  background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: box-shadow 0.25s ease;
+  transition: all 0.25s ease;
 }
 
 .historia-item:hover .historia-ring {
-  box-shadow: 0 6px 20px rgba(255, 255, 255, 0.45);
+  box-shadow: 0 6px 20px rgba(255, 255, 255, 0.5), 0 0 15px rgba(220, 39, 67, 0.6);
 }
 
+/* Anillo de historia ya vista (Estilo Instagram gris) */
 .historia-ring.seen {
-  background: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.45);
   box-shadow: none;
 }
 
+/* Anillo "Tu Historia" */
 .historia-ring.add-story-ring {
   background: linear-gradient(135deg, #ffffff 0%, #ffe0b2 100%);
 }
@@ -230,7 +248,7 @@
   width: 23px;
   height: 23px;
   border-radius: 50%;
-  border: 2px solid #ffffff;
+  border: 2.5px solid #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -248,7 +266,7 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
   letter-spacing: -0.1px;
 }
 
