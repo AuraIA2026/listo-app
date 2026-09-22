@@ -1216,23 +1216,18 @@ export default function HomePage({ lang, navigate, userRole }) {
                     border: `1.5px solid ${(isExpired || (isAvailable && isLowContracts && showLowContractWarning)) ? '#FECACA' : (isAvailable ? 'rgba(34, 197, 94, 0.2)' : '#E2E8F0')}`, 
                     marginTop: '6px',
                     cursor: (isExpired || (isAvailable && isLowContracts && showLowContractWarning)) ? 'pointer' : 'default',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    gap: '10px',
                     transition: 'all 0.2s ease',
                     boxShadow: (isExpired || (isAvailable && isLowContracts && showLowContractWarning)) ? '0 2px 8px rgba(220, 38, 38, 0.12)' : 'none'
                   }}
                   onMouseEnter={e => { if (isExpired || (isAvailable && isLowContracts && showLowContractWarning)) e.currentTarget.style.transform = 'translateY(-1px)'; }}
                   onMouseLeave={e => { if (isExpired || (isAvailable && isLowContracts && showLowContractWarning)) e.currentTarget.style.transform = 'translateY(0)'; }}
-                  title={(isExpired || (isAvailable && isLowContracts && showLowContractWarning)) ? (lang === 'es' ? 'Haz clic para comprar o renovar tu plan en la web' : 'Click to purchase or renew your plan on web') : ''}
+                  title={(isExpired || (isAvailable && isLowContracts && showLowContractWarning)) ? (lang === 'es' ? 'Haz clic para ir a nuestra plataforma web' : 'Click to open web platform') : ''}
                 >
                   <p style={{ 
                     color: (isExpired || (isAvailable && isLowContracts && showLowContractWarning)) ? '#B91C1C' : (isAvailable ? '#15803D' : '#64748B'), 
                     fontSize: '12.5px', 
                     margin: 0, 
-                    fontWeight: '700',
-                    flex: 1
+                    fontWeight: '700'
                   }}>
                     {isExpired
                       ? '🔴 Perfil inactivo. Actualízalo en nuestra web.'
@@ -1244,27 +1239,6 @@ export default function HomePage({ lang, navigate, userRole }) {
                               : '🟢 Estás visible para clientes cercanos. ¡Listo para recibir solicitudes!') 
                           : '⚫ Estás en modo ausente. Actívate cuando desees recibir solicitudes.')}
                   </p>
-
-                  {(isExpired || (isAvailable && isLowContracts && showLowContractWarning)) && (
-                    <span 
-                      style={{
-                        background: 'linear-gradient(135deg, #EF4444, #DC2626)',
-                        color: '#FFFFFF',
-                        fontSize: '11px',
-                        fontWeight: '800',
-                        padding: '5px 10px',
-                        borderRadius: '8px',
-                        whiteSpace: 'nowrap',
-                        boxShadow: '0 2px 6px rgba(239, 68, 68, 0.35)',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '4px',
-                        flexShrink: 0
-                      }}
-                    >
-                      🛒 Comprar Plan ↗
-                    </span>
-                  )}
                 </div>
               )}
 
