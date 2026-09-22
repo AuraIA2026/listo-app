@@ -734,14 +734,20 @@ export default function HomePage({ lang, navigate, userRole }) {
   const isAvailable = profileComplete && !isExpired && (userData?.available !== false);
   const isLowContracts = (userData?.contracts || 0) === 1;
 
-  const openWebPlanPage = () => {
-    const isLocal = typeof window !== 'undefined' && (window.location.origin.includes('localhost') || window.location.origin.includes('127.0.0.1'));
-    const targetUrl = isLocal ? 'https://listopatron.vercel.app/#planes' : `${window.location.origin}/#planes`;
-    
-    if (Capacitor.isNativePlatform()) {
-      window.open('https://listopatron.vercel.app/#planes', '_system');
-    } else {
-      window.open(targetUrl, '_blank');
+  const openWebPlanPage = (e) => {
+    if (e && e.stopPropagation) e.stopPropagation();
+    const webUrl = 'https://listopatron.vercel.app/#planes';
+    try {
+      if (Capacitor.isNativePlatform()) {
+        window.open(webUrl, '_system');
+      } else {
+        const win = window.open(webUrl, '_blank');
+        if (!win || win.closed || typeof win.closed === 'undefined') {
+          window.location.href = webUrl;
+        }
+      }
+    } catch (err) {
+      window.location.href = webUrl;
     }
   };
 
@@ -1206,11 +1212,8 @@ export default function HomePage({ lang, navigate, userRole }) {
                  </p>
                </div>
              ) : (
-                <div 
-                  onClick={() => {
-                    navigate('profile', { screen: 'verification' });
-                    openWebPlanPage();
-                  }}
+                 <div 
+                   onClick={(e) => openWebPlanPage(e)}
                   style={{ 
                     background: (isExpired || (isAvailable && isLowContracts && showLowContractWarning)) ? '#FEF2F2' : (isAvailable ? 'rgba(34, 197, 94, 0.08)' : '#F1F5F9'), 
                     padding: '10px 14px', 
