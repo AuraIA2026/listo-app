@@ -83,13 +83,14 @@ export default function VerificacionPage({ onBack }) {
     certificaciones: vData.certificaciones || "",
   });
 
-  // Estado de documentos subidos
+  // Estado de documentos subidos (pre-cargar si ya existen en Firestore)
+  const vDocs = vData.docs || {};
   const [docs, setDocs] = useState({
-    cedulaFrontal: null,
-    cedulaTrasera: null,
-    selfie:        null,
-    buenaConducta: null,
-    portafolio:    [],
+    cedulaFrontal: vDocs.cedulaFrontal ? { name: 'Cédula Frente (Guardado)', base64: vDocs.cedulaFrontal } : null,
+    cedulaTrasera: vDocs.cedulaTrasera ? { name: 'Cédula Reverso (Guardado)', base64: vDocs.cedulaTrasera } : null,
+    selfie:        vDocs.selfie ? { name: 'Selfie con Cédula (Guardado)', base64: vDocs.selfie } : null,
+    buenaConducta: vDocs.buenaConducta ? { name: 'Buena Conducta (Guardado)', base64: vDocs.buenaConducta } : null,
+    portafolio:    vDocs.portafolio || [],
   });
 
   // Refs para inputs ocultos — galería
@@ -110,10 +111,15 @@ export default function VerificacionPage({ onBack }) {
   const toggleCheck   = (key) => setChecks((p) => ({ ...p, [key]: !p[key] }));
 
   const isSection1Done = Boolean(form.nombre && form.nombre.trim().length >= 3 && form.cedula && form.cedula.replace(/[- ]/g, '').length >= 11);
-  const isSection2Done = Boolean(docs.cedulaFrontal && docs.cedulaTrasera && docs.selfie && docs.buenaConducta);
+  const isSection2Done = Boolean(
+    (docs.cedulaFrontal?.base64 || docs.cedulaFrontal) &&
+    (docs.cedulaTrasera?.base64 || docs.cedulaTrasera) &&
+    (docs.selfie?.base64 || docs.selfie) &&
+    (docs.buenaConducta?.base64 || docs.buenaConducta)
+  );
   const isSection3Done = Boolean(form.direccion && form.direccion.trim().length >= 5);
   const isSection4Done = Boolean(form.telefono && form.telefono.trim().length >= 8);
-  const isSection5Done = Boolean(form.especialidad || form.categoria || form.expAnos);
+  const isSection5Done = Boolean((form.especialidad && form.especialidad.trim().length > 0) && (form.experiencia && form.experiencia.trim().length > 0));
   const isSection6Done = Boolean(checks.c1 && checks.c2 && checks.c3);
 
   const completedSections = [isSection1Done, isSection2Done, isSection3Done, isSection4Done, isSection5Done, isSection6Done].filter(Boolean).length;
@@ -156,7 +162,7 @@ export default function VerificacionPage({ onBack }) {
     }
     if (!isSection2Done) {
       setOpenSections(prev => ({ ...prev, 2: true }));
-      alert("⚠️ Por favor adjunta los 4 documentos obligatorios: Cédula Frente, Cédula Reverso, Selfie con Cédula y Papel de Buena Conducta.");
+      alert("⚠️ Por favor adjunta OBLIGATORIAMENTE los 4 documentos: Cédula Frente, Cédula Reverso, Selfie con Cédula y Papel de Buena Conducta.");
       return;
     }
     if (!isSection3Done) {
@@ -167,6 +173,11 @@ export default function VerificacionPage({ onBack }) {
     if (!isSection4Done) {
       setOpenSections(prev => ({ ...prev, 4: true }));
       alert("⚠️ Por favor ingresa tu Número de Teléfono de Contacto.");
+      return;
+    }
+    if (!isSection5Done) {
+      setOpenSections(prev => ({ ...prev, 5: true }));
+      alert("⚠️ Por favor selecciona tu Especialidad / Profesión u Oficio y tus años de experiencia.");
       return;
     }
     if (!isSection6Done) {

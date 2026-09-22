@@ -95,8 +95,28 @@ export function UserProvider({ children }) {
     } catch { return '—' }
   }
 
-  const userRole     = (userData?.type === 'pro' || userData?.role === 'professional' || userData?.verificacion?.estado === 'aprobada') ? 'pro' : 'user'
-  const profileComplete = userData?.profileComplete || userData?.verificacion?.estado === 'aprobada' || false
+  const userRole = (userData?.type === 'pro' || userData?.role === 'professional' || userData?.verificacion?.estado === 'aprobada') ? 'pro' : 'user'
+
+  const isPro = userData?.type === 'pro' || userData?.role === 'professional' || userData?.verificacion;
+
+  let profileComplete = false;
+
+  if (isPro) {
+    const vf = userData?.verificacion || {};
+    const vfDocs = vf.docs || {};
+    const hasCedulaFront = Boolean(vfDocs.cedulaFrontal);
+    const hasCedulaBack  = Boolean(vfDocs.cedulaTrasera);
+    const hasSelfie      = Boolean(vfDocs.selfie);
+    const hasConducta    = Boolean(vfDocs.buenaConducta);
+    const hasProfession  = Boolean(userData?.category || vf.especialidad || userData?.especialidad);
+
+    const hasAllRequirements = hasCedulaFront && hasCedulaBack && hasSelfie && hasConducta && hasProfession;
+    const isApproved = vf.estado === 'aprobada' || userData?.approved === true;
+
+    profileComplete = Boolean(hasAllRequirements && (isApproved || userData?.profileComplete === true));
+  } else {
+    profileComplete = Boolean(userData?.profileComplete || (userData?.name && userData?.phone));
+  }
 
   const value = {
     userData,

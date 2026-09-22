@@ -729,8 +729,15 @@ export default function ProfilePage({ lang, setLang, navigate, onLogout, initial
   const displayEmail = userData?.email || ''
   const photoURL     = userData?.photoURL || null
   const memberSince  = getMemberSince(lang)
-  const initials     = displayName.trim().split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
-  const isProVerifComplete = !!userData?.verificacion
+  const vf = userData?.verificacion || {}
+  const vfDocs = vf.docs || {}
+  const isProVerifComplete = Boolean(
+    vfDocs.cedulaFrontal &&
+    vfDocs.cedulaTrasera &&
+    vfDocs.selfie &&
+    vfDocs.buenaConducta &&
+    (userData?.category || vf.especialidad || userData?.especialidad)
+  )
 
   const handleFileSelected = async (e) => {
     const file = e.target.files?.[0]
