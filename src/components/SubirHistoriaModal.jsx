@@ -137,6 +137,8 @@ export default function SubirHistoriaModal({ isOpen, onClose, userData, onStoryU
       const errStr = String(err?.message || err)
       if (errStr.toLowerCase().includes('size') || errStr.toLowerCase().includes('exceeds')) {
         setErrorMsg('El archivo seleccionado es muy pesado para la base de datos (límite 1MB). Por favor selecciona una imagen o video más ligero.')
+      } else if (errStr.toLowerCase().includes('permission') || errStr.toLowerCase().includes('insufficient')) {
+        setErrorMsg('Debes iniciar sesión con tu cuenta de usuario o profesional para publicar historias de trabajo.')
       } else {
         setErrorMsg(`No se pudo publicar la historia: ${err?.message || 'Error de conexión. Intenta nuevamente.'}`)
       }
