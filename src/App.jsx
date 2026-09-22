@@ -280,7 +280,15 @@ export default function App() {
   const authReady = !authLoading
 
   const [showSplash,      setShowSplash]      = useState(isNative)
-  const [currentPage,     setCurrentPage]     = useState('login')
+  const [currentPage,     setCurrentPage]     = useState(() => {
+    if (typeof window !== 'undefined') {
+      const search = window.location.search || '';
+      const hash = window.location.hash || '';
+      if (search.includes('page=shop') || hash.includes('shop')) return 'shop';
+      if (search.includes('comprar-plan') || hash.includes('comprar-plan') || hash.includes('planes')) return 'landing';
+    }
+    return 'login';
+  });
   const [lang,            setLang]            = useState('es')
   const [selectedPro,     setSelectedPro]     = useState(null)
   const [selectedLocal,   setSelectedLocal]   = useState(null)

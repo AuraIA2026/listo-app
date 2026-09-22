@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import './LandingPage.css';
 import useLandingLogic from '../useLandingLogic';
+import PlanSelectionModal from '../components/PlanSelectionModal';
 import ad15 from '../assets/landing/extracted_15.png';
 import ad16 from '../assets/landing/extracted_16.png';
 import ad17 from '../assets/landing/extracted_17.png';
@@ -14,6 +15,20 @@ import pro25 from '../assets/landing/extracted_25.jpeg';
 
 export default function LandingPage({ navigate, lang }) {
   useLandingLogic();
+  const [showPlanModal, setShowPlanModal] = useState(false);
+
+  useEffect(() => {
+    const checkUrlForPlan = () => {
+      const search = window.location.search || '';
+      const hash = window.location.hash || '';
+      if (search.includes('comprar-plan') || hash.includes('comprar-plan') || hash.includes('planes') || search.includes('planes')) {
+        setShowPlanModal(true);
+      }
+    };
+    checkUrlForPlan();
+    window.addEventListener('hashchange', checkUrlForPlan);
+    return () => window.removeEventListener('hashchange', checkUrlForPlan);
+  }, []);
 
   const closeIntro = () => { if (window.closeIntro) window.closeIntro(); };
   const nextSlide = () => { if (window.nextSlide) window.nextSlide(); };
@@ -78,8 +93,32 @@ export default function LandingPage({ navigate, lang }) {
     <a href="#servicios">Servicios</a>
     <a href="#como-funciona">Cómo funciona</a>
     <a href="#profesionales">Para profesionales</a>
-    <a href="#planes">Planes</a>
+    <a href="#planes" onClick={(e) => { e.preventDefault(); setShowPlanModal(true); }}>Planes</a>
     <a href="#faq">FAQ</a>
+    <a onClick={() => navigate('shop')} style={{cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "4px"}}>Tienda 🛒</a>
+    <button 
+      onClick={() => setShowPlanModal(true)} 
+      className="nav-btn-plan" 
+      style={{
+        background: '#10B981', 
+        color: '#FFFFFF', 
+        fontWeight: '900', 
+        padding: '8px 18px', 
+        borderRadius: '50px', 
+        border: 'none', 
+        cursor: 'pointer',
+        boxShadow: '0 4px 12px rgba(16, 185, 129, 0.4)',
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: '6px',
+        fontSize: '13px',
+        transition: 'transform 0.2s ease, background 0.2s ease'
+      }}
+      onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+      onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
+    >
+      💳 COMPRAR UN PLAN
+    </button>
     <a onClick={() => navigate('login')} className="nav-btn" style={{cursor: "pointer", "color": "#FFFFFF", "fontWeight": "bold"}}>Abrir app →</a>
   </div>
   <button className="burger" id="burger"><span></span><span></span><span></span></button>
@@ -1616,7 +1655,17 @@ export default function LandingPage({ navigate, lang }) {
     </div>
   </footer>
 
-    </div>
-  );
+  <PlanSelectionModal 
+    isOpen={showPlanModal} 
+    onClose={() => setShowPlanModal(false)} 
+    onSelectPlan={(plan) => {
+      alert(`Has seleccionado el ${plan.name} (${plan.price}). Para completar tu pago y activación de cuenta, por favor inicia sesión o regístrate en Listo Patrón.`);
+      setShowPlanModal(false);
+      navigate('login');
+    }} 
+  />
+
+</div>
+);
 }
 
