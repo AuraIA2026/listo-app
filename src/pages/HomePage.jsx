@@ -735,20 +735,20 @@ export default function HomePage({ lang, navigate, userRole }) {
   const isLowContracts = (userData?.contracts || 0) === 1;
 
   const openWebPlanPage = (e) => {
-    if (e && e.stopPropagation) e.stopPropagation();
+    if (e) {
+      if (e.stopPropagation) e.stopPropagation();
+      if (e.preventDefault) e.preventDefault();
+    }
     const webUrl = 'https://listopatron.vercel.app/#planes';
     try {
-      if (Capacitor.isNativePlatform()) {
+      if (typeof window !== 'undefined' && window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()) {
         window.open(webUrl, '_system');
-      } else {
-        const win = window.open(webUrl, '_blank');
-        if (!win || win.closed || typeof win.closed === 'undefined') {
-          window.location.href = webUrl;
-        }
+        return;
       }
     } catch (err) {
-      window.location.href = webUrl;
+      console.error("Native open error:", err);
     }
+    window.location.href = webUrl;
   };
 
   const toggleAvailability = async () => {
@@ -1215,21 +1215,21 @@ export default function HomePage({ lang, navigate, userRole }) {
                  <div 
                    onClick={(e) => openWebPlanPage(e)}
                   style={{ 
-                    background: (isExpired || (isAvailable && isLowContracts && showLowContractWarning)) ? '#FEF2F2' : (isAvailable ? 'rgba(34, 197, 94, 0.08)' : '#F1F5F9'), 
+                    background: (isExpired || !isAvailable || (isAvailable && isLowContracts && showLowContractWarning)) ? '#FEF2F2' : 'rgba(34, 197, 94, 0.08)', 
                     padding: '10px 14px', 
                     borderRadius: '12px', 
-                    border: `1.5px solid ${(isExpired || (isAvailable && isLowContracts && showLowContractWarning)) ? '#FECACA' : (isAvailable ? 'rgba(34, 197, 94, 0.2)' : '#E2E8F0')}`, 
+                    border: `1.5px solid ${(isExpired || !isAvailable || (isAvailable && isLowContracts && showLowContractWarning)) ? '#FECACA' : 'rgba(34, 197, 94, 0.2)'}`, 
                     marginTop: '6px',
-                    cursor: (isExpired || (isAvailable && isLowContracts && showLowContractWarning)) ? 'pointer' : 'default',
+                    cursor: 'pointer',
                     transition: 'all 0.2s ease',
-                    boxShadow: (isExpired || (isAvailable && isLowContracts && showLowContractWarning)) ? '0 2px 8px rgba(220, 38, 38, 0.12)' : 'none'
+                    boxShadow: (isExpired || !isAvailable || (isAvailable && isLowContracts && showLowContractWarning)) ? '0 2px 8px rgba(220, 38, 38, 0.12)' : 'none'
                   }}
-                  onMouseEnter={e => { if (isExpired || (isAvailable && isLowContracts && showLowContractWarning)) e.currentTarget.style.transform = 'translateY(-1px)'; }}
-                  onMouseLeave={e => { if (isExpired || (isAvailable && isLowContracts && showLowContractWarning)) e.currentTarget.style.transform = 'translateY(0)'; }}
-                  title={(isExpired || (isAvailable && isLowContracts && showLowContractWarning)) ? (lang === 'es' ? 'Haz clic para ir a nuestra plataforma web' : 'Click to open web platform') : ''}
+                  onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-1px)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; }}
+                  title={lang === 'es' ? 'Haz clic para ir a nuestra plataforma web y adquirir tu plan' : 'Click to open web platform'}
                 >
                   <p style={{ 
-                    color: (isExpired || (isAvailable && isLowContracts && showLowContractWarning)) ? '#B91C1C' : (isAvailable ? '#15803D' : '#64748B'), 
+                    color: (isExpired || !isAvailable || (isAvailable && isLowContracts && showLowContractWarning)) ? '#B91C1C' : (isAvailable ? '#15803D' : '#64748B'), 
                     fontSize: '12.5px', 
                     margin: 0, 
                     fontWeight: '700'
