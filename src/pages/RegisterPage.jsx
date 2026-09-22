@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth'
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from 'firebase/auth'
 import { doc, setDoc, serverTimestamp, addDoc, collection } from 'firebase/firestore'
 import { auth, db } from '../firebase'
 import { useFaceAuth } from '../useFaceAuth'
@@ -79,47 +79,79 @@ export default function RegisterPage({ lang, navigate }) {
 
   const validate = () => {
     const e = {}
-    if (form.name.trim().length < 3) e.name = T.errName
-    if (!form.email.includes('@') || !form.email.includes('.')) e.email = T.errEmail
-    if (form.phone.replace(/\D/g, '').length < 8) e.phone = T.errPhone
-    if (form.password.length < 6) e.password = T.errPass
+    const cleanEmail = (form.email || '').trim().toLowerCase()
+    const cleanPhone = (form.phone || '').replace(/\D/g, '')
+
+    if ((form.name || '').trim().length < 3) e.name = T.errName
+    if (!cleanEmail.includes('@') || !cleanEmail.includes('.')) e.email = T.errEmail
+    if (cleanPhone.length < 8) e.phone = T.errPhone
+    if ((form.password || '').length < 6) e.password = T.errPass
     if (form.password !== form.confirm) e.confirm = T.errConfirm
     setErrors(e)
     return Object.keys(e).length === 0
   }
 
   const handleRegister = async () => {
+    if (loading) return
     if (!validate()) return
     setLoading(true)
     setErrors({})
+
+    const cleanEmail = form.email.trim().toLowerCase()
+    const cleanName  = form.name.trim()
+    const cleanPhone = form.phone.trim()
+
+    let resultUser = null
+
     try {
-      // Crear usuario en Firebase Auth
-      const result = await createUserWithEmailAndPassword(auth, form.email, form.password)
-      await updateProfile(result.user, { displayName: form.name })
+      // 1. Crear usuario en Firebase Auth
+      try {
+        const res = await createUserWithEmailAndPassword(auth, cleanEmail, form.password)
+        resultUser = res.user
+      } catch (authErr) {
+        if (authErr.code === 'auth/email-already-in-use') {
+          // Si el usuario ya existe en Auth (por intento previo o interrupción), probamos autenticar con la clave ingresada
+          try {
+            const loginRes = await signInWithEmailAndPassword(auth, cleanEmail, form.password)
+            resultUser = loginRes.user
+          } catch (loginErr) {
+            setErrors({ general: lang === 'es'
+              ? 'Este correo ya está registrado en Listo Patrón. Si ya tienes cuenta, inicia sesión o restablece tu contraseña.'
+              : 'This email is already registered. Please sign in or reset your password.'
+            })
+            setLoading(false)
+            return
+          }
+        } else {
+          throw authErr
+        }
+      }
+
+      if (!resultUser) throw new Error("No user object")
+
+      await updateProfile(resultUser, { displayName: cleanName })
 
       // Guardar credenciales locales para reconocimiento facial futuro
-      localStorage.setItem('listo_saved_email', form.email)
+      localStorage.setItem('listo_saved_email', cleanEmail)
       localStorage.setItem('listo_saved_password', form.password)
 
       // Guardar en Firestore
-      const userId = result.user.uid
-      const expireDate = new Date()
-      expireDate.setDate(expireDate.getDate() + 30)
+      const userId = resultUser.uid
 
       await setDoc(doc(db, 'users', userId), {
-        name: form.name,
-        email: form.email,
-        phone: form.phone,
+        name: cleanName,
+        email: cleanEmail,
+        phone: cleanPhone,
         type: 'client',
         createdAt: serverTimestamp(),
-      })
+      }, { merge: true })
 
       // También guardar con email como key para face login
-      const emailKey = form.email.replace(/[^a-zA-Z0-9]/g, '_')
+      const emailKey = cleanEmail.replace(/[^a-zA-Z0-9]/g, '_')
       await setDoc(doc(db, 'users', emailKey), { uid: userId }, { merge: true })
 
       // Mensaje Automático de Bienvenida
-      const welcomeText = `¡Hola ${form.name.split(' ')[0]}! Bienvenido a Listo Patrón. Estamos felices de tenerte aquí. Explora nuestro directorio y contrata a los mejores profesionales de confianza para tus proyectos hoy mismo.`
+      const welcomeText = `¡Hola ${cleanName.split(' ')[0]}! Bienvenido a Listo Patrón. Estamos felices de tenerte aquí. Explora nuestro directorio y contrata a los mejores profesionales de confianza para tus proyectos hoy mismo.`
 
       try {
         await addDoc(collection(db, 'notificaciones'), {
@@ -138,10 +170,14 @@ export default function RegisterPage({ lang, navigate }) {
       setLoading(false)
       setStep('face') // Ir al paso de registro facial
     } catch (err) {
-      setErrors({ general: err.code === 'auth/email-already-in-use'
-        ? (lang === 'es' ? 'Este correo ya está registrado.' : 'This email is already registered.')
-        : T.errGeneral
-      })
+      console.error("Error al registrar:", err)
+      let msg = T.errGeneral
+      if (err.code === 'auth/invalid-email') {
+        msg = lang === 'es' ? 'El formato del correo no es válido.' : 'Invalid email format.'
+      } else if (err.code === 'auth/weak-password') {
+        msg = lang === 'es' ? 'La contraseña debe ser de al menos 6 caracteres.' : 'Password is too weak.'
+      }
+      setErrors({ general: msg })
       setLoading(false)
     }
   }
