@@ -732,10 +732,10 @@ export default function ProfilePage({ lang, setLang, navigate, onLogout, initial
   const vf = userData?.verificacion || {}
   const vfDocs = vf.docs || {}
   const isProVerifComplete = Boolean(
-    vfDocs.cedulaFrontal &&
-    vfDocs.cedulaTrasera &&
-    vfDocs.selfie &&
-    vfDocs.buenaConducta &&
+    (vfDocs.cedulaFrontal || userData?.cedulaFrontal) &&
+    (vfDocs.cedulaTrasera || userData?.cedulaTrasera) &&
+    (vfDocs.selfie || userData?.selfie) &&
+    (vfDocs.buenaConducta || userData?.buenaConducta) &&
     (userData?.category || vf.especialidad || userData?.especialidad)
   )
 

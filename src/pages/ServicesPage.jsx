@@ -88,10 +88,24 @@ export default function ServicesPage({ lang = 'es', navigate, userData }) {
         const q = query(collection(db, 'users'), where('role', '==', 'professional'))
         const querySnapshot = await getDocs(q)
         const pros = []
+        const isProComplete = (data) => {
+          if (!data) return false;
+          const vf = data.verificacion || {};
+          const vfDocs = vf.docs || {};
+          const hasFront = Boolean(vfDocs.cedulaFrontal || data.cedulaFrontal);
+          const hasBack  = Boolean(vfDocs.cedulaTrasera || data.cedulaTrasera);
+          const hasSelfie = Boolean(vfDocs.selfie || data.selfie);
+          const hasConducta = Boolean(vfDocs.buenaConducta || data.buenaConducta);
+          const hasProf = Boolean(data.category || vf.especialidad || data.especialidad);
+          const hasAllDocs = hasFront && hasBack && hasSelfie && hasConducta && hasProf;
+          const isApproved = vf.estado === 'aprobada' || vf.estado === 'verificado' || data.approved === true;
+          return Boolean(hasAllDocs && isApproved);
+        };
+
         querySnapshot.forEach((doc) => {
           const data = doc.data()
           // Filtro estricto: Solo mostrar si completó el perfil y tiene plan activo o contratos
-          const isComplete = Boolean(data.profileComplete || data.verificacion?.estado === 'aprobada')
+          const isComplete = isProComplete(data)
           const hasPlan = Boolean(data.planStatus === 'active')
           const hasContracts = Boolean(data.contracts && data.contracts > 0)
           if (!isComplete || (!hasPlan && !hasContracts)) return;
@@ -105,7 +119,7 @@ export default function ServicesPage({ lang = 'es', navigate, userData }) {
             price: data.basePrice || 'RD$0/hr',
             location: data.verificacion?.municipio || data.verificacion?.provincia || data.city || data.location || 'República Dominicana',
             experience: data.experience || '1 año',
-            available: data.profileComplete && data.available !== false,
+            available: isComplete && data.available !== false,
             photo: data.photoURL || data.avatar || null,
             avatar: (data.name || 'P').substring(0,2).toUpperCase(),
             phone: data.phone || data.telefono || '',
@@ -119,7 +133,7 @@ export default function ServicesPage({ lang = 'es', navigate, userData }) {
         querySnapshot2.forEach((doc) => {
           const data = doc.data()
           
-          const isComplete = Boolean(data.profileComplete || data.verificacion?.estado === 'aprobada')
+          const isComplete = isProComplete(data)
           const hasPlan = Boolean(data.planStatus === 'active')
           const hasContracts = Boolean(data.contracts && data.contracts > 0)
           if (!isComplete || (!hasPlan && !hasContracts)) return;
@@ -134,7 +148,7 @@ export default function ServicesPage({ lang = 'es', navigate, userData }) {
               price: data.basePrice || 'RD$0/hr',
               location: data.verificacion?.municipio || data.verificacion?.provincia || data.city || data.location || 'República Dominicana',
               experience: data.experience || '1 año',
-              available: data.profileComplete && data.available !== false,
+              available: isComplete && data.available !== false,
               photo: data.photoURL || data.avatar || null,
               avatar: (data.name || 'P').substring(0,2).toUpperCase(),
               phone: data.phone || data.telefono || '',

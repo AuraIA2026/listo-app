@@ -677,6 +677,20 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
     const fetchProfessionals = async () => {
       setLoading(true)
       try {
+        const isProComplete = (d) => {
+          if (!d) return false;
+          const vf = d.verificacion || {};
+          const vfDocs = vf.docs || {};
+          const hasFront = Boolean(vfDocs.cedulaFrontal || d.cedulaFrontal);
+          const hasBack  = Boolean(vfDocs.cedulaTrasera || d.cedulaTrasera);
+          const hasSelfie = Boolean(vfDocs.selfie || d.selfie);
+          const hasConducta = Boolean(vfDocs.buenaConducta || d.buenaConducta);
+          const hasProf = Boolean(d.category || vf.especialidad || d.especialidad);
+          const hasAllDocs = hasFront && hasBack && hasSelfie && hasConducta && hasProf;
+          const isApproved = vf.estado === 'aprobada' || vf.estado === 'verificado' || d.approved === true;
+          return Boolean(hasAllDocs && isApproved);
+        };
+
         const q = query(collection(db, 'users'), where('type', '==', 'pro'))
         const querySnapshot = await getDocs(q)
         const prosList = []
@@ -684,7 +698,7 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
           const data = docSnap.data()
 
           // ─ Filtro estricto: Solo mostrar si completó el perfil y tiene plan activo o contratos
-          const isComplete = Boolean(data.profileComplete || data.verificacion?.estado === 'aprobada')
+          const isComplete = isProComplete(data)
           const hasPlan = Boolean(data.planStatus === 'active')
           const hasContracts = Boolean(data.contracts && data.contracts > 0)
           if (!isComplete || (!hasPlan && !hasContracts)) return;

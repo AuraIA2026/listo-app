@@ -72,9 +72,10 @@ export default function RegistroClientePage({ userRole, onBack, onSuccess }) {
 
     if (auth.currentUser) {
       try {
+        const isProUser = userRole === 'pro' || auth.currentUser?.type === 'pro' || auth.currentUser?.role === 'professional';
         await updateDoc(doc(db, 'users', auth.currentUser.uid), {
           ...form,
-          profileComplete: true,
+          ...(isProUser ? {} : { profileComplete: true }),
           phoneVerified: isVerified
         });
       } catch (err) {
