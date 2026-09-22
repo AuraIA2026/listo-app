@@ -1220,6 +1220,7 @@ export default function HomePage({ lang, navigate, userRole }) {
                    navigate('profile', { screen: 'verification' });
                    openWebPlanPage();
                  }} 
+                 className="warning-pulse-banner"
                  style={{ padding: '12px 14px', background: '#FEF2F2', borderRadius: '14px', border: '1.5px solid #FECACA', marginTop: '8px', cursor: 'pointer' }}
                >
                  <p style={{ margin: '0 0 4px', fontSize: '12.5px', color: '#991B1B', fontWeight: 'bold' }}>
@@ -1232,6 +1233,7 @@ export default function HomePage({ lang, navigate, userRole }) {
              ) : (
                  <div 
                    onClick={(e) => openWebPlanPage(e)}
+                   className={(isExpired || !isAvailable || (isAvailable && isLowContracts && showLowContractWarning)) ? "warning-pulse-banner" : ""}
                   style={{ 
                     background: (isExpired || !isAvailable || (isAvailable && isLowContracts && showLowContractWarning)) ? '#FEF2F2' : 'rgba(34, 197, 94, 0.08)', 
                     padding: '10px 14px', 

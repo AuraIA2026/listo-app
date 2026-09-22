@@ -1274,4 +1274,23 @@
   background: #C24D00;
   transform: scale(1.04);
 }
+
+/* ── ANIMACIÓN PARPADEO / PULSO PARA BARRA DE ESTADO INACTIVO ── */
+@keyframes warningPulseBlink {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+    box-shadow: 0 2px 10px rgba(220, 38, 38, 0.25);
+  }
+  50% {
+    opacity: 0.35;
+    transform: scale(0.993);
+    box-shadow: 0 0 18px 4px rgba(239, 68, 68, 0.5);
+  }
+}
+
+.warning-pulse-banner {
+  animation: warningPulseBlink 1.4s infinite ease-in-out !important;
+}
+
 
