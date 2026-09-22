@@ -1192,7 +1192,10 @@ export default function HomePage({ lang, navigate, userRole }) {
              
              {!profileComplete ? (
                <div 
-                 onClick={() => navigate('profile', { screen: 'verification' })} 
+                 onClick={() => {
+                   navigate('profile', { screen: 'verification' });
+                   openWebPlanPage();
+                 }} 
                  style={{ padding: '12px 14px', background: '#FEF2F2', borderRadius: '14px', border: '1.5px solid #FECACA', marginTop: '8px', cursor: 'pointer' }}
                >
                  <p style={{ margin: '0 0 4px', fontSize: '12.5px', color: '#991B1B', fontWeight: 'bold' }}>
@@ -1205,9 +1208,8 @@ export default function HomePage({ lang, navigate, userRole }) {
              ) : (
                 <div 
                   onClick={() => {
-                    if (isExpired || (isAvailable && isLowContracts && showLowContractWarning)) {
-                      openWebPlanPage();
-                    }
+                    navigate('profile', { screen: 'verification' });
+                    openWebPlanPage();
                   }}
                   style={{ 
                     background: (isExpired || (isAvailable && isLowContracts && showLowContractWarning)) ? '#FEF2F2' : (isAvailable ? 'rgba(34, 197, 94, 0.08)' : '#F1F5F9'), 
