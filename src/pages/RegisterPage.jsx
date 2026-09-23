@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile, sendPasswordResetEmail } from 'firebase/auth'
 import { doc, setDoc, serverTimestamp, addDoc, collection } from 'firebase/firestore'
 import { auth, db } from '../firebase'
@@ -74,6 +74,7 @@ export default function RegisterPage({ lang, navigate }) {
   const [newUserId, setNewUserId] = useState(null)
   const [resetSent, setResetSent] = useState(false)
   const [resetLoading, setResetLoading] = useState(false)
+  const isRegisteringRef = useRef(false)
 
   const { videoRef, status, message, registerFace, stopCamera } = useFaceAuth()
 
@@ -94,8 +95,10 @@ export default function RegisterPage({ lang, navigate }) {
   }
 
   const handleRegister = async () => {
-    if (loading) return
+    if (isRegisteringRef.current || loading) return
     if (!validate()) return
+
+    isRegisteringRef.current = true
     setLoading(true)
     setErrors({})
 
@@ -118,7 +121,6 @@ export default function RegisterPage({ lang, navigate }) {
             resultUser = loginRes.user
           } catch (loginErr) {
             setErrors({ general: 'email-already-in-use' })
-            setLoading(false)
             return
           }
         } else {
@@ -166,7 +168,6 @@ export default function RegisterPage({ lang, navigate }) {
       }
 
       setNewUserId(userId)
-      setLoading(false)
       setStep('face') // Ir al paso de registro facial
     } catch (err) {
       console.error("Error al registrar:", err)
@@ -177,6 +178,8 @@ export default function RegisterPage({ lang, navigate }) {
         msg = lang === 'es' ? 'La contraseña debe ser de al menos 6 caracteres.' : 'Password is too weak.'
       }
       setErrors({ general: msg })
+    } finally {
+      isRegisteringRef.current = false
       setLoading(false)
     }
   }
