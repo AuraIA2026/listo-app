@@ -197,46 +197,48 @@ export default function SubirHistoriaModal({ isOpen, onClose, userData, onStoryU
           </div>
         )}
 
-        <label className="subir-historia-preview-area">
-          <input
-            type="file"
-            accept="image/*,video/*"
-            style={{ display: 'none' }}
-            onChange={handleFileChange}
-          />
-          {mediaPreview ? (
-            mediaType === 'video' ? (
-              <div style={{ position: 'relative', width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#000' }}>
-                <video
-                  src={mediaPreview}
-                  controls
-                  autoPlay
-                  muted
-                  playsInline
-                  style={{ width: '100%', height: '100%', objectFit: 'contain' }}
-                />
-                {videoDuration && (
-                  <span style={{ position: 'absolute', top: '10px', right: '10px', background: 'rgba(0,0,0,0.75)', color: '#fff', fontSize: '11px', fontWeight: 800, padding: '3px 8px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.3)' }}>
-                    ⏱️ {videoDuration}s
-                  </span>
-                )}
-              </div>
+        <div style={{ display: 'flex', justifyContent: 'center', width: '100%', margin: '4px 0' }}>
+          <label className="subir-historia-preview-area">
+            <input
+              type="file"
+              accept="image/*,video/*"
+              style={{ display: 'none' }}
+              onChange={handleFileChange}
+            />
+            {mediaPreview ? (
+              mediaType === 'video' ? (
+                <div style={{ position: 'relative', width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#000' }}>
+                  <video
+                    src={mediaPreview}
+                    controls
+                    autoPlay
+                    muted
+                    playsInline
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  />
+                  {videoDuration && (
+                    <span style={{ position: 'absolute', top: '10px', right: '10px', background: 'rgba(0,0,0,0.75)', color: '#fff', fontSize: '11px', fontWeight: 800, padding: '3px 8px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.3)' }}>
+                      ⏱️ {videoDuration}s
+                    </span>
+                  )}
+                </div>
+              ) : (
+                <img src={mediaPreview} alt="Vista previa del trabajo" className="subir-historia-preview-img" />
+              )
             ) : (
-              <img src={mediaPreview} alt="Vista previa del trabajo" className="subir-historia-preview-img" />
-            )
-          ) : (
-            <div style={{ textAlign: 'center', padding: '20px' }}>
-              <div style={{ display: 'flex', justifyContent: 'center', gap: '14px', fontSize: '36px', marginBottom: '8px' }}>
-                <span>📷</span>
-                <span>🎥</span>
+              <div style={{ textAlign: 'center', padding: '20px' }}>
+                <div style={{ display: 'flex', justifyContent: 'center', gap: '14px', fontSize: '36px', marginBottom: '8px' }}>
+                  <span>📸</span>
+                  <span>🎥</span>
+                </div>
+                <span style={{ fontSize: '13.5px', fontWeight: 800, color: '#F26000' }}>Toca para seleccionar Foto o Video</span>
+                <span style={{ fontSize: '11px', color: '#94A3B8', display: 'block', marginTop: '6px' }}>
+                  Formato Historia 9:16 estilo Instagram
+                </span>
               </div>
-              <span style={{ fontSize: '14px', fontWeight: 800, color: '#F26000' }}>Toca para seleccionar Foto o Video</span>
-              <span style={{ fontSize: '11.5px', color: '#94A3B8', display: 'block', marginTop: '4px' }}>
-                Foto (compresión auto) o Video corto (máx 750KB / 15s)
-              </span>
-            </div>
-          )}
-        </label>
+            )}
+          </label>
+        </div>
 
         <div>
           <label style={{ fontSize: '13px', fontWeight: 700, color: '#334155', display: 'block', marginBottom: '6px' }}>
