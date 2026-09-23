@@ -3,7 +3,6 @@ import { signInWithEmailAndPassword, sendPasswordResetEmail, signInWithCredentia
 import { doc, getDoc, setDoc, collection, query, where, getDocs, addDoc, serverTimestamp } from 'firebase/firestore'
 import { auth, db } from '../firebase'
 import { useFaceAuth } from '../useFaceAuth'
-import { SignInWithApple } from '@capacitor-community/apple-sign-in'
 import { FacebookLogin } from '@capacitor-community/facebook-login'
 import { Capacitor } from '@capacitor/core'
 import './AuthPage.css'
