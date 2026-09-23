@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from 'firebase/auth'
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile, sendPasswordResetEmail } from 'firebase/auth'
 import { doc, setDoc, serverTimestamp, addDoc, collection } from 'firebase/firestore'
 import { auth, db } from '../firebase'
 import { useFaceAuth } from '../useFaceAuth'
@@ -72,6 +72,8 @@ export default function RegisterPage({ lang, navigate }) {
   const [loading, setLoading] = useState(false)
   const [step, setStep] = useState('form') // 'form' | 'face'
   const [newUserId, setNewUserId] = useState(null)
+  const [resetSent, setResetSent] = useState(false)
+  const [resetLoading, setResetLoading] = useState(false)
 
   const { videoRef, status, message, registerFace, stopCamera } = useFaceAuth()
 
@@ -115,10 +117,7 @@ export default function RegisterPage({ lang, navigate }) {
             const loginRes = await signInWithEmailAndPassword(auth, cleanEmail, form.password)
             resultUser = loginRes.user
           } catch (loginErr) {
-            setErrors({ general: lang === 'es'
-              ? 'Este correo ya está registrado en Listo Patrón. Si ya tienes cuenta, inicia sesión o restablece tu contraseña.'
-              : 'This email is already registered. Please sign in or reset your password.'
-            })
+            setErrors({ general: 'email-already-in-use' })
             setLoading(false)
             return
           }
@@ -322,7 +321,58 @@ export default function RegisterPage({ lang, navigate }) {
               {errors.confirm && <span className="error-msg">{errors.confirm}</span>}
             </div>
 
-            {errors.general && <div className="error-banner">{errors.general}</div>}
+            {errors.general === 'email-already-in-use' ? (
+              <div className="error-banner" style={{ display: 'flex', flexDirection: 'column', gap: '10px', textAlign: 'left' }}>
+                <p style={{ margin: 0, fontWeight: '600' }}>
+                  {lang === 'es'
+                    ? 'Este correo ya está registrado en Listo Patrón.'
+                    : 'This email is already registered in Listo Patrón.'}
+                </p>
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '2px' }}>
+                  <button
+                    type="button"
+                    onClick={() => navigate('login')}
+                    style={{
+                      background: '#0F172A', color: 'white', border: 'none',
+                      padding: '8px 14px', borderRadius: '10px', fontSize: '12px',
+                      fontWeight: '700', cursor: 'pointer', outline: 'none'
+                    }}
+                  >
+                    {lang === 'es' ? '🔑 Iniciar Sesión' : '🔑 Sign In'}
+                  </button>
+
+                  <button
+                    type="button"
+                    disabled={resetLoading || resetSent}
+                    onClick={async () => {
+                      if (!form.email.trim()) return
+                      setResetLoading(true)
+                      try {
+                        await sendPasswordResetEmail(auth, form.email.trim().toLowerCase())
+                        setResetSent(true)
+                      } catch (e) {
+                        console.error('Reset error:', e)
+                      } finally {
+                        setResetLoading(false)
+                      }
+                    }}
+                    style={{
+                      background: resetSent ? '#10B981' : '#F26000', color: 'white', border: 'none',
+                      padding: '8px 14px', borderRadius: '10px', fontSize: '12px',
+                      fontWeight: '700', cursor: 'pointer', outline: 'none', transition: 'all 0.2s'
+                    }}
+                  >
+                    {resetSent
+                      ? (lang === 'es' ? '✓ Enlace enviado al correo' : '✓ Reset link sent!')
+                      : resetLoading
+                        ? (lang === 'es' ? 'Enviando...' : 'Sending...')
+                        : (lang === 'es' ? '📧 Restablecer Contraseña' : '📧 Reset Password')}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              errors.general && <div className="error-banner">{errors.general}</div>
+            )}
 
             <button className="auth-btn" onClick={handleRegister} disabled={loading}>
               {loading ? T.loading : T.btn}
