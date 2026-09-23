@@ -113,19 +113,28 @@ export default function SubirHistoriaModal({ isOpen, onClose, userData, onStoryU
       return
     }
 
+    let storedUser = {}
+    try {
+      storedUser = JSON.parse(localStorage.getItem('listoUserData') || '{}')
+    } catch (e) {}
+
     const activeUser = auth.currentUser;
-    const activeUid = activeUser?.uid || userData?.uid || userData?.id || localStorage.getItem('listo_user_uid') || `anon_${Date.now()}`;
+    const activeUid = activeUser?.uid || userData?.uid || userData?.id || storedUser?.uid || storedUser?.id || localStorage.getItem('listo_user_uid') || `pro_${Date.now()}`;
+    const isClient = !(userData?.role === 'pro' || userData?.type === 'pro' || storedUser?.role === 'pro' || storedUser?.type === 'pro')
+
+    const name = userData?.name || userData?.displayName || activeUser?.displayName || storedUser?.name || (isClient ? 'Cliente Listo' : 'Profesional de Listo');
+    const avatar = userData?.avatarUrl || userData?.photoURL || userData?.profilePhoto || activeUser?.photoURL || storedUser?.avatarUrl || storedUser?.photoURL || 'https://randomuser.me/api/portraits/men/32.jpg';
+    const category = isClient ? 'Cliente Satisfecho 🤝' : (userData?.especialidad || userData?.category || userData?.specEs || storedUser?.especialidad || storedUser?.category || 'Profesional Registrado');
 
     setIsUploading(true)
     setErrorMsg('')
 
     try {
-      const isClient = !(userData?.role === 'pro' || userData?.type === 'pro')
       const newStory = {
         proId: activeUid,
-        proName: userData?.name || userData?.displayName || activeUser?.displayName || (isClient ? 'Cliente Listo' : 'Profesional de Listo'),
-        proAvatar: userData?.avatarUrl || userData?.photoURL || userData?.profilePhoto || activeUser?.photoURL || 'https://randomuser.me/api/portraits/men/32.jpg',
-        proCategory: isClient ? 'Cliente Satisfecho 🤝' : (userData?.especialidad || userData?.category || userData?.specEs || 'Profesional Registrado'),
+        proName: name,
+        proAvatar: avatar,
+        proCategory: category,
         mediaType: mediaType,
         imageUrl: mediaType === 'image' ? mediaPreview : null,
         videoUrl: mediaType === 'video' ? mediaPreview : null,
@@ -148,8 +157,6 @@ export default function SubirHistoriaModal({ isOpen, onClose, userData, onStoryU
       const errStr = String(err?.message || err)
       if (errStr.toLowerCase().includes('size') || errStr.toLowerCase().includes('exceeds')) {
         setErrorMsg('El archivo seleccionado es muy pesado para la base de datos (límite 1MB). Por favor selecciona una imagen o video más ligero.')
-      } else if (errStr.toLowerCase().includes('permission') || errStr.toLowerCase().includes('insufficient')) {
-        setErrorMsg('Debes iniciar sesión con tu cuenta de usuario o profesional para publicar historias de trabajo.')
       } else {
         setErrorMsg(`No se pudo publicar la historia: ${err?.message || 'Error de conexión. Intenta nuevamente.'}`)
       }
