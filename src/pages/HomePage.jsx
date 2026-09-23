@@ -1610,6 +1610,50 @@ export default function HomePage({ lang, navigate, userRole }) {
 
       {!isPro && (
         <>
+          <section ref={allProsRef} className={`all-pros-section${allProsVisible ? ' reveal' : ''}`}>
+            <div className="hp-sec-header" style={{ marginBottom: 12 }}>
+              <h2 className="hp-sec-title">👥 {lang === 'es' ? 'Todos los Profesionales' : 'All Professionals'}</h2>
+              <span className="pros-count">{filteredPros.length} {lang === 'es' ? 'disponibles' : 'available'}</span>
+            </div>
+            <div className="pros-filter-scroll">
+              {specs.map((s, i) => (
+                <button key={i} className={`pros-filter-btn${proFilter === s ? ' active' : ''}`} onClick={() => setProFilter(s)}>
+                  {s === 'todos' ? (lang === 'es' ? 'Todos' : 'All') : s}
+                </button>
+              ))}
+            </div>
+            <div className="all-pros-grid">
+              {filteredPros.length > 0 ? (
+                filteredPros.map((pro, i) => (
+                  <div key={i} className="pro-list-card" style={{ animationDelay: `${i * 0.05}s` }} onClick={() => navigate('booking', { professional: pro })}>
+                    <div className="pro-list-img-wrap">
+                      {pro.img ? (
+                         <img src={pro.img} alt={pro.nameEs} className="pro-list-img" />
+                      ) : (
+                         <div style={{width: 80, height: 80, borderRadius: 12, background: '#FF8533', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28, fontWeight: 'bold'}}>{pro.avatar}</div>
+                      )}
+                      <span className={`pro-avail-dot${pro.avail ? ' online' : ''}`} />
+                      {i % 4 === 0 && <span className="cat-flash-badge" style={{top: '-8px', right: '-8px', animation: 'ecom-pop 1s infinite alternate'}}>⚡ {lang === 'es' ? 'RÁPIDO' : 'FAST'}</span>}
+                    </div>
+                    <div className="pro-list-info">
+                      <p className="pro-list-name">{pro.nameEs}</p>
+                      <p className="pro-list-spec">{pro.specEs}</p>
+                      <StarRating rating={pro.rating} />
+                      <p className="pro-list-price" style={{ color: '#008F39', fontSize: '13px', fontWeight: 'bold', marginTop: '4px' }}>
+                        🤝 {lang === 'es' ? 'A convenir' : 'To agree'}
+                      </p>
+                    </div>
+                    <button className="pro-list-book">{lang === 'es' ? 'Contratar' : 'Hire'}</button>
+                  </div>
+                ))
+              ) : (
+                <div style={{ padding: '40px 20px', color: 'var(--gray)', fontSize: '15px', textAlign: 'center', gridColumn: '1 / -1' }}>
+                  {lang === 'es' ? '🔍 No se encontraron profesionales en esta categoría.' : '🔍 No professionals found in this category.'}
+                </div>
+              )}
+            </div>
+          </section>
+
           {sections.map((sec, idx) => {
             // Colores temáticos extraidos de los Planes VIP/Platinum/Gold/Basico para dar forma
             const amzThemes = [
@@ -1652,7 +1696,6 @@ export default function HomePage({ lang, navigate, userRole }) {
             );
           })}
 
-
           <section ref={catListRef} className={`cat-list-section${catListVisible ? ' reveal' : ''}`}>
             <div className="hp-sec-header">
               <h2 className="hp-sec-title">🗂️ {lang === 'es' ? 'Explorar servicios' : 'Explore services'}</h2>
@@ -1686,50 +1729,6 @@ export default function HomePage({ lang, navigate, userRole }) {
                   <span className="profession-name">{lang === 'es' ? sub.labelEs : sub.labelEn}</span>
                 </div>
               ))}
-            </div>
-          </section>
-
-          <section ref={allProsRef} className={`all-pros-section${allProsVisible ? ' reveal' : ''}`}>
-            <div className="hp-sec-header" style={{ marginBottom: 12 }}>
-              <h2 className="hp-sec-title">👥 {lang === 'es' ? 'Todos los Profesionales' : 'All Professionals'}</h2>
-              <span className="pros-count">{filteredPros.length} {lang === 'es' ? 'disponibles' : 'available'}</span>
-            </div>
-            <div className="pros-filter-scroll">
-              {specs.map((s, i) => (
-                <button key={i} className={`pros-filter-btn${proFilter === s ? ' active' : ''}`} onClick={() => setProFilter(s)}>
-                  {s === 'todos' ? (lang === 'es' ? 'Todos' : 'All') : s}
-                </button>
-              ))}
-            </div>
-            <div className="all-pros-grid">
-              {filteredPros.length > 0 ? (
-                filteredPros.map((pro, i) => (
-                  <div key={i} className="pro-list-card" style={{ animationDelay: `${i * 0.05}s` }} onClick={() => navigate('booking', { professional: pro })}>
-                    <div className="pro-list-img-wrap">
-                      {pro.img ? (
-                         <img src={pro.img} alt={pro.nameEs} className="pro-list-img" />
-                      ) : (
-                         <div style={{width: 80, height: 80, borderRadius: 12, background: '#FF8533', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28, fontWeight: 'bold'}}>{pro.avatar}</div>
-                      )}
-                      <span className={`pro-avail-dot${pro.avail ? ' online' : ''}`} />
-                      {i % 4 === 0 && <span className="cat-flash-badge" style={{top: '-8px', right: '-8px', animation: 'ecom-pop 1s infinite alternate'}}>⚡ {lang === 'es' ? 'RÁPIDO' : 'FAST'}</span>}
-                    </div>
-                    <div className="pro-list-info">
-                      <p className="pro-list-name">{pro.nameEs}</p>
-                      <p className="pro-list-spec">{pro.specEs}</p>
-                      <StarRating rating={pro.rating} />
-                      <p className="pro-list-price" style={{ color: '#008F39', fontSize: '13px', fontWeight: 'bold', marginTop: '4px' }}>
-                        🤝 {lang === 'es' ? 'A convenir' : 'To agree'}
-                      </p>
-                    </div>
-                    <button className="pro-list-book">{lang === 'es' ? 'Contratar' : 'Hire'}</button>
-                  </div>
-                ))
-              ) : (
-                <div style={{ padding: '40px 20px', color: 'var(--gray)', fontSize: '15px', textAlign: 'center', gridColumn: '1 / -1' }}>
-                  {lang === 'es' ? '🔍 No se encontraron profesionales en esta categoría.' : '🔍 No professionals found in this category.'}
-                </div>
-              )}
             </div>
           </section>
         </>
