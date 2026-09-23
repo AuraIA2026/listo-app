@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { db } from '../firebase'
 import { collection, query, getDocs, onSnapshot } from 'firebase/firestore'
 import HistoriasViewerModal from './HistoriasViewerModal'
@@ -302,41 +303,68 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate
         isOpen={uploadModalOpen}
         onClose={() => setUploadModalOpen(false)}
         userData={userData}
-        onStoryUploaded={() => console.log('Nueva historia subida con éxito.')}
+        onStoryUploaded={() => console.log('Historia subida')}
       />
 
-      {/* Lock Notice Modal for Professionals without 5-star completed contracts */}
-      {showLockNotice && (
+      {/* Exotic Floating Lock Notice Modal for Professionals needing 4-5 stars */}
+      {showLockNotice && createPortal(
         <div className="subir-historia-modal-overlay" onClick={() => setShowLockNotice(false)}>
-          <div className="subir-historia-modal-card" onClick={e => e.stopPropagation()} style={{ textAlign: 'center', padding: '24px' }}>
-            <div style={{ fontSize: '48px', marginBottom: '12px' }}>🔒</div>
-            <h3 style={{ margin: '0 0 8px 0', fontSize: '18px', fontWeight: 800, color: '#1e293b' }}>
-              ⭐ Requiere 1 Contrato Perfecto (5 Estrellas)
+          <div 
+            className="subir-historia-modal-card" 
+            onClick={e => e.stopPropagation()} 
+            style={{ 
+              textAlign: 'center', 
+              padding: '28px 22px', 
+              background: 'linear-gradient(145deg, #0F172A 0%, #1E1B4B 50%, #0F172A 100%)',
+              border: '1.5px solid rgba(245, 158, 11, 0.4)',
+              boxShadow: '0 25px 60px rgba(0, 0, 0, 0.85), 0 0 35px rgba(245, 158, 11, 0.25)',
+              borderRadius: '24px',
+              color: '#FFFFFF'
+            }}
+          >
+            {/* Exotic Animated Trophy & Star Badge */}
+            <div style={{ position: 'relative', display: 'inline-block', margin: '0 auto 12px' }}>
+              <div style={{ fontSize: '54px', filter: 'drop-shadow(0 0 16px rgba(245, 158, 11, 0.6))' }}>
+                🏆
+              </div>
+              <span style={{ position: 'absolute', bottom: '-4px', right: '-8px', fontSize: '20px' }}>⭐</span>
+            </div>
+
+            <div style={{ display: 'inline-block', background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(242, 96, 0, 0.2))', border: '1px solid rgba(245, 158, 11, 0.5)', padding: '4px 12px', borderRadius: '20px', fontSize: '11px', fontWeight: '900', color: '#FBBF24', letterSpacing: '0.5px', marginBottom: '10px' }}>
+              👑 REQUISITO DE SOCIO VIP
+            </div>
+
+            <h3 style={{ margin: '0 0 10px 0', fontSize: '19px', fontWeight: '900', background: 'linear-gradient(135deg, #FFFFFF, #FDE68A)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+              Desbloquea tus Historias de 24h
             </h3>
-            <p style={{ fontSize: '13px', color: '#64748b', lineHeight: 1.5, marginBottom: '20px' }}>
-              Para garantizar la máxima calidad en Listo Patrón, la función de publicar historias de 24h está reservada exclusivamente para profesionales que hayan completado al menos 1 trabajo con calificación perfecta de <strong>5 estrellas ⭐⭐⭐⭐⭐</strong>.
+
+            <p style={{ fontSize: '13.5px', color: '#CBD5E1', lineHeight: 1.6, marginBottom: '22px' }}>
+              Para garantizar la máxima calidad en Listo Patrón, la función de publicar Historias de Trabajo de 24h está reservada exclusivamente para profesionales que hayan obtenido una calificación de <strong style={{ color: '#FBBF24' }}>4 a 5 Estrellas ⭐⭐⭐⭐⭐ por contrato / trabajo finalizado</strong>.
               <br /><br />
-              ¡Completa tu próximo trabajo con responsabilidad y excelencia para recibir 5 estrellas de tu cliente y desbloquear tus Historias!
+              ¡Completa tu próximo contrato con responsabilidad, puntualidad y excelencia para recibir de 4 a 5 estrellas de tu cliente y desbloquear tus Historias!
             </p>
+
             <button
               onClick={() => setShowLockNotice(false)}
               style={{
                 width: '100%',
-                padding: '12px',
-                borderRadius: '12px',
+                padding: '14px',
+                borderRadius: '16px',
                 border: 'none',
-                background: 'linear-gradient(135deg, #f26000, #ff8c00)',
+                background: 'linear-gradient(135deg, #F59E0B 0%, #F26000 100%)',
                 color: '#ffffff',
-                fontWeight: 700,
-                fontSize: '14px',
+                fontWeight: '900',
+                fontSize: '14.5px',
                 cursor: 'pointer',
-                boxShadow: '0 4px 12px rgba(242, 96, 0, 0.3)'
+                boxShadow: '0 6px 20px rgba(242, 96, 0, 0.5)',
+                transition: 'all 0.2s ease'
               }}
             >
-              ¡Entendido! 👍
+              ⭐ ¡Entendido, a dar un servicio de 5 Estrellas!
             </button>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   )
