@@ -23,8 +23,12 @@ service cloud.firestore {
     match /users/{userId} {
       // Público puede buscar perfiles (para que clientes vean a los profesionales)
       allow read: if true;  
-      // Solo el propietario o el administrador pueden editar los datos
-      allow write: if isAuth() && (request.auth.uid == userId || isAdmin()); 
+      // Solo el propietario, el mapeo de su propio UID, o el administrador pueden editar los datos
+      allow write: if isAuth() && (
+        request.auth.uid == userId || 
+        isAdmin() || 
+        (request.resource.data.uid == request.auth.uid)
+      ); 
       
       // Colecciones anidadas (como historiales)
       match /{subcollections=**} {

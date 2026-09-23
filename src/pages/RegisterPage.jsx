@@ -130,31 +130,46 @@ export default function RegisterPage({ lang, navigate }) {
 
       if (!resultUser) throw new Error("No user object")
 
-      await updateProfile(resultUser, { displayName: cleanName })
-
-      // Guardar credenciales locales para reconocimiento facial futuro
-      localStorage.setItem('listo_saved_email', cleanEmail)
-      localStorage.setItem('listo_saved_password', form.password)
-
-      // Guardar en Firestore
       const userId = resultUser.uid
 
-      await setDoc(doc(db, 'users', userId), {
-        name: cleanName,
-        email: cleanEmail,
-        phone: cleanPhone,
-        type: 'client',
-        createdAt: serverTimestamp(),
-      }, { merge: true })
+      try {
+        await updateProfile(resultUser, { displayName: cleanName })
+      } catch (e) {
+        console.warn("Could not update profile displayName:", e)
+      }
 
-      // También guardar con email como key para face login
-      const emailKey = cleanEmail.replace(/[^a-zA-Z0-9]/g, '_')
-      await setDoc(doc(db, 'users', emailKey), { uid: userId }, { merge: true })
+      // Guardar credenciales locales para reconocimiento facial futuro
+      try {
+        localStorage.setItem('listo_saved_email', cleanEmail)
+        localStorage.setItem('listo_saved_password', form.password)
+      } catch (e) {
+        console.warn("Could not write to localStorage:", e)
+      }
+
+      // Guardar en Firestore
+      try {
+        await setDoc(doc(db, 'users', userId), {
+          name: cleanName,
+          email: cleanEmail,
+          phone: cleanPhone,
+          type: 'client',
+          createdAt: serverTimestamp(),
+        }, { merge: true })
+      } catch (e) {
+        console.error("Error setting user doc in Firestore:", e)
+      }
+
+      // También guardar con email como key para face login (paso secundario protegido)
+      try {
+        const emailKey = cleanEmail.replace(/[^a-zA-Z0-9]/g, '_')
+        await setDoc(doc(db, 'users', emailKey), { uid: userId }, { merge: true })
+      } catch (e) {
+        console.warn("Could not save emailKey doc:", e)
+      }
 
       // Mensaje Automático de Bienvenida
-      const welcomeText = `¡Hola ${cleanName.split(' ')[0]}! Bienvenido a Listo Patrón. Estamos felices de tenerte aquí. Explora nuestro directorio y contrata a los mejores profesionales de confianza para tus proyectos hoy mismo.`
-
       try {
+        const welcomeText = `¡Hola ${cleanName.split(' ')[0]}! Bienvenido a Listo Patrón. Estamos felices de tenerte aquí. Explora nuestro directorio y contrata a los mejores profesionales de confianza para tus proyectos hoy mismo.`
         await addDoc(collection(db, 'notificaciones'), {
           userId: userId,
           type: 'system',
@@ -186,11 +201,11 @@ export default function RegisterPage({ lang, navigate }) {
 
   const handleFaceRegister = async () => {
     await registerFace(newUserId)
-    setTimeout(() => navigate('login'), 2000)
+    setTimeout(() => navigate('home'), 1500)
   }
 
   const handleSkipFace = () => {
-    navigate('login')
+    navigate('home')
   }
 
   // ── Paso 2: Registro facial ──

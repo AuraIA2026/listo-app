@@ -130,8 +130,12 @@ export default function LoginPage({ lang, navigate }) {
         
         // También registrar con el correo como llave para el inicio de sesión facial si se requiere
         if (user.email) {
-          const emailKey = user.email.replace(/[^a-zA-Z0-9]/g, '_')
-          await setDoc(doc(db, 'users', emailKey), { uid: user.uid }, { merge: true })
+          try {
+            const emailKey = user.email.replace(/[^a-zA-Z0-9]/g, '_')
+            await setDoc(doc(db, 'users', emailKey), { uid: user.uid }, { merge: true })
+          } catch (e) {
+            console.warn("Could not save emailKey mapping doc:", e)
+          }
         }
         
         // Enviar mensaje de bienvenida

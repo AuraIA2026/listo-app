@@ -403,7 +403,7 @@ export default function App() {
         localStorage.setItem('listoUserData', JSON.stringify(userData))
       }
       setCurrentPage(prev => {
-        if (prev === 'landing' || prev === 'login') return 'home'
+        if (prev === 'landing' || prev === 'login' || prev === 'register') return 'home'
         return prev
       })
     } else {
