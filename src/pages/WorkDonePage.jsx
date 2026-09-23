@@ -369,6 +369,10 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
             const currentCompleted = proData.completedContracts || 0;
             const newCompleted = currentCompleted + 1;
             const proUpdate = { completedContracts: newCompleted };
+            if (formData.calificacion >= 4) {
+              proUpdate.has5StarContract = true;
+              proUpdate.completed5StarCount = (proData.completed5StarCount || 0) + 1;
+            }
             
             if (newCompleted % 10 === 0) {
               proUpdate.contracts = (proData.contracts || 0) + 1;

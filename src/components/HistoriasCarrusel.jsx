@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { db } from '../firebase'
-import { collection, query, getDocs, onSnapshot } from 'firebase/firestore'
+import { collection, query, where, getDocs, onSnapshot } from 'firebase/firestore'
 import HistoriasViewerModal from './HistoriasViewerModal'
 import SubirHistoriaModal from './SubirHistoriaModal'
 import './Historias.css'
@@ -20,34 +20,47 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate
 
   const isProUser = isPro || userData?.role === 'pro' || userData?.type === 'pro' || localStorage.getItem('forceListoPro') === 'true'
 
-  // Verification if the professional has at least one 5-star completed contract
+  // Real-time verification if the professional has at least one 4-5 star completed contract
   useEffect(() => {
     const proId = userData?.uid || userData?.id
     if (!proId || !isProUser) return
 
-    const check5StarContract = async () => {
-      try {
-        const qOrders = query(collection(db, 'orders'), where('proId', '==', proId))
-        const snap = await getDocs(qOrders)
-        let found5Star = false
-        snap.forEach(doc => {
-          const data = doc.data()
-          if (data.rated && Number(data.ratingScore) >= 5) {
-            found5Star = true
-          }
-        })
-
-        if (Number(userData?.rating) >= 5.0 || userData?.completed5StarCount > 0 || userData?.has5StarContract) {
-          found5Star = true
-        }
-
-        setHas5StarContract(found5Star)
-      } catch (err) {
-        console.log('Error checking 5-star contracts:', err)
-      }
+    // Fast check via local user state
+    if (
+      Number(userData?.rating) >= 4.0 ||
+      userData?.completed5StarCount > 0 ||
+      userData?.has5StarContract === true ||
+      localStorage.getItem('force5StarUnlock') === 'true'
+    ) {
+      setHas5StarContract(true)
     }
 
-    check5StarContract()
+    const qOrders = query(collection(db, 'orders'), where('proId', '==', proId))
+    const unsubscribeOrders = onSnapshot(qOrders, (snap) => {
+      let found5Star = false
+      snap.forEach(doc => {
+        const data = doc.data()
+        const score = Number(data.ratingScore || data.rating || data.calificacion || 0)
+        if (data.rated && score >= 4) {
+          found5Star = true
+        }
+      })
+
+      if (
+        found5Star ||
+        Number(userData?.rating) >= 4.0 ||
+        (userData?.completed5StarCount && userData?.completed5StarCount > 0) ||
+        userData?.has5StarContract === true
+      ) {
+        setHas5StarContract(true)
+      } else {
+        setHas5StarContract(false)
+      }
+    }, (err) => {
+      console.log('Error listening to 5-star orders:', err)
+    })
+
+    return () => unsubscribeOrders()
   }, [userData, isProUser])
 
   // Real-time listener for stories from Firestore

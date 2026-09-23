@@ -630,6 +630,14 @@ export default function OrdersPage({ lang = 'es', navigate, userData, userRole }
     await updateDoc(doc(db, 'orders', id), { rated:true, ratingScore:stars, ratingComment:comment, reviewerName:userData?.name||'Cliente', moderated:false }).catch(()=>{})
     const order = allOrders.find(o => o.id === id)
     if (order && order.proId) {
+      if (stars >= 4) {
+        import('firebase/firestore').then(({ updateDoc, doc, increment }) => {
+          updateDoc(doc(db, 'users', order.proId), {
+            has5StarContract: true,
+            completed5StarCount: increment(1)
+          }).catch(console.error);
+        });
+      }
       import('firebase/firestore').then(({ addDoc, collection, serverTimestamp }) => {
         addDoc(collection(db, 'notificaciones'), {
           userId:    order.proId,
