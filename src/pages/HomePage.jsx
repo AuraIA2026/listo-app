@@ -1321,7 +1321,81 @@ export default function HomePage({ lang, navigate, userRole }) {
         </div>
       )}
 
-      {/* ── GRILLA BENTO 2x2 ESTILO AMAZON "OFERTAS RELÁMPAGO & RECOMENDACIONES" ── */}
+      {/* ── LO QUE DICEN NUESTROS CLIENTES (TESTIMONIALS CAROUSEL - MOVIDO ARRIBA) ── */}
+      <TestimonialsCarousel lang={lang} navigate={navigate} />
+
+      {!isPro && (
+        <div className="hp-cats-scroll">
+          {topHomeCategories.map((c, i) => (
+            <div key={i} className="hp-cat-btn" onClick={() => navigate('search', { catToSelect: c.id || 'all' })}>
+              {i === 0 && <span className="cat-flash-badge">🔥 HOT</span>}
+              {i === 2 && <span className="cat-flash-badge" style={{background:'#10B981', boxShadow: '0 4px 8px rgba(16, 185, 129, 0.4)'}}>NUEVO</span>}
+              <div className="cat-icon-wrap">
+                {c.image ? (
+                  <img src={c.image} alt={c.labelEs} style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '10px' }} />
+                ) : (
+                  <span className="hp-cat-icon">{c.icon}</span>
+                )}
+              </div>
+              <span className="hp-cat-label">{lang === 'es' ? c.labelEs : c.labelEn}</span>
+            </div>
+          ))}
+        </div>
+      )}
+
+
+      {/* ── ESTRUCTURA VARIADA 1 ESTILO AMAZON: BENTO GRID CONTENEDOR 2x2 ── */}
+      {!isPro && (
+        <section className="amz-bento-section">
+          <div className="amz-bento-header">
+            <h2 className="amz-bento-title">
+              🛍️ {lang === 'es' ? 'Abarrotes y servicios con entrega hoy' : 'Same day services'}
+            </h2>
+            <button className="hp-see-all" onClick={() => navigate('search')}>
+              {lang === 'es' ? 'Ver todo' : 'See all'} ›
+            </button>
+          </div>
+          <div className="amz-bento-grid">
+            <div className="amz-bento-item" onClick={() => navigate('search', { catToSelect: 'mecanico' })}>
+              <div className="amz-bento-img-wrap">
+                <span className="amz-bento-item-tag">🔥 MÁS VENDIDO</span>
+                <img src={mecanico1} alt="Mecánico" className="amz-bento-img" />
+              </div>
+              <p className="amz-bento-item-title">{lang === 'es' ? 'Diagnóstico Vehicular' : 'Auto Diagnostic'}</p>
+              <p className="amz-bento-item-sub">🤝 {lang === 'es' ? 'A convenir' : 'To agree'}</p>
+            </div>
+
+            <div className="amz-bento-item" onClick={() => navigate('search', { catToSelect: 'electricista' })}>
+              <div className="amz-bento-img-wrap">
+                <span className="amz-bento-item-tag">⚡ 24/7 URGENTE</span>
+                <img src={electrica1} alt="Electricista" className="amz-bento-img" />
+              </div>
+              <p className="amz-bento-item-title">{lang === 'es' ? 'Instalación Eléctrica' : 'Electrical Install'}</p>
+              <p className="amz-bento-item-sub">🤝 {lang === 'es' ? 'A convenir' : 'To agree'}</p>
+            </div>
+
+            <div className="amz-bento-item" onClick={() => navigate('search', { catToSelect: 'plomero' })}>
+              <div className="amz-bento-img-wrap">
+                <span className="amz-bento-item-tag">🛡️ GARANTIZADO</span>
+                <img src={plomero} alt="Plomero" className="amz-bento-img" />
+              </div>
+              <p className="amz-bento-item-title">{lang === 'es' ? 'Reparación de Tubería' : 'Pipe Repair'}</p>
+              <p className="amz-bento-item-sub">🤝 {lang === 'es' ? 'A convenir' : 'To agree'}</p>
+            </div>
+
+            <div className="amz-bento-item" onClick={() => navigate('search', { catToSelect: 'cerrajero' })}>
+              <div className="amz-bento-img-wrap">
+                <span className="amz-bento-item-tag">🔑 POPULAR</span>
+                <img src={cerrajero1} alt="Cerrajero" className="amz-bento-img" />
+              </div>
+              <p className="amz-bento-item-title">{lang === 'es' ? 'Apertura de Puertas' : 'Door Opening'}</p>
+              <p className="amz-bento-item-sub">🤝 {lang === 'es' ? 'A convenir' : 'To agree'}</p>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ── GRILLA BENTO 2x2 ESTILO AMAZON "OFERTAS RELÁMPAGO & RECOMENDACIONES" (MOVIDO ABAJO) ── */}
       {!isPro && (
         <section style={{ margin: '0 16px 0' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px', flexWrap: 'wrap', gap: '8px' }}>
@@ -1473,82 +1547,6 @@ export default function HomePage({ lang, navigate, userRole }) {
           </div>
         </section>
       )}
-
-      {!isPro && (
-        <div className="hp-cats-scroll">
-          {topHomeCategories.map((c, i) => (
-            <div key={i} className="hp-cat-btn" onClick={() => navigate('search', { catToSelect: c.id || 'all' })}>
-              {i === 0 && <span className="cat-flash-badge">🔥 HOT</span>}
-              {i === 2 && <span className="cat-flash-badge" style={{background:'#10B981', boxShadow: '0 4px 8px rgba(16, 185, 129, 0.4)'}}>NUEVO</span>}
-              <div className="cat-icon-wrap">
-                {c.image ? (
-                  <img src={c.image} alt={c.labelEs} style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '10px' }} />
-                ) : (
-                  <span className="hp-cat-icon">{c.icon}</span>
-                )}
-              </div>
-              <span className="hp-cat-label">{lang === 'es' ? c.labelEs : c.labelEn}</span>
-            </div>
-          ))}
-        </div>
-      )}
-
-
-      {/* ── ESTRUCTURA VARIADA 1 ESTILO AMAZON: BENTO GRID CONTENEDOR 2x2 ── */}
-      {!isPro && (
-        <section className="amz-bento-section">
-          <div className="amz-bento-header">
-            <h2 className="amz-bento-title">
-              🛍️ {lang === 'es' ? 'Abarrotes y servicios con entrega hoy' : 'Same day services'}
-            </h2>
-            <button className="hp-see-all" onClick={() => navigate('search')}>
-              {lang === 'es' ? 'Ver todo' : 'See all'} ›
-            </button>
-          </div>
-          <div className="amz-bento-grid">
-            <div className="amz-bento-item" onClick={() => navigate('search', { catToSelect: 'mecanico' })}>
-              <div className="amz-bento-img-wrap">
-                <span className="amz-bento-item-tag">🔥 MÁS VENDIDO</span>
-                <img src={mecanico1} alt="Mecánico" className="amz-bento-img" />
-              </div>
-              <p className="amz-bento-item-title">{lang === 'es' ? 'Diagnóstico Vehicular' : 'Auto Diagnostic'}</p>
-              <p className="amz-bento-item-sub">🤝 {lang === 'es' ? 'A convenir' : 'To agree'}</p>
-            </div>
-
-            <div className="amz-bento-item" onClick={() => navigate('search', { catToSelect: 'electricista' })}>
-              <div className="amz-bento-img-wrap">
-                <span className="amz-bento-item-tag">⚡ 24/7 URGENTE</span>
-                <img src={electrica1} alt="Electricista" className="amz-bento-img" />
-              </div>
-              <p className="amz-bento-item-title">{lang === 'es' ? 'Instalación Eléctrica' : 'Electrical Install'}</p>
-              <p className="amz-bento-item-sub">🤝 {lang === 'es' ? 'A convenir' : 'To agree'}</p>
-            </div>
-
-            <div className="amz-bento-item" onClick={() => navigate('search', { catToSelect: 'plomero' })}>
-              <div className="amz-bento-img-wrap">
-                <span className="amz-bento-item-tag">🛡️ GARANTIZADO</span>
-                <img src={plomero} alt="Plomero" className="amz-bento-img" />
-              </div>
-              <p className="amz-bento-item-title">{lang === 'es' ? 'Reparación de Tubería' : 'Pipe Repair'}</p>
-              <p className="amz-bento-item-sub">🤝 {lang === 'es' ? 'A convenir' : 'To agree'}</p>
-            </div>
-
-            <div className="amz-bento-item" onClick={() => navigate('search', { catToSelect: 'cerrajero' })}>
-              <div className="amz-bento-img-wrap">
-                <span className="amz-bento-item-tag">🔑 POPULAR</span>
-                <img src={cerrajero1} alt="Cerrajero" className="amz-bento-img" />
-              </div>
-              <p className="amz-bento-item-title">{lang === 'es' ? 'Apertura de Puertas' : 'Door Opening'}</p>
-              <p className="amz-bento-item-sub">🤝 {lang === 'es' ? 'A convenir' : 'To agree'}</p>
-            </div>
-          </div>
-        </section>
-      )}
-
-
-
-
-      <TestimonialsCarousel lang={lang} navigate={navigate} />
 
       {/* ── CINTA / ANUNCIO LARGO Y FINO INVITANDO A LA TIENDA WEB ── */}
       <div 
