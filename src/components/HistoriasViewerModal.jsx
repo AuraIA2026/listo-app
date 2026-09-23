@@ -2,6 +2,9 @@ import React, { useState, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { db } from '../firebase'
 import { collection, addDoc, doc, updateDoc, increment, serverTimestamp } from 'firebase/firestore'
+import recomendarIcon from '../assets/icons/recomendar.png'
+import opinionesIcon from '../assets/icons/opiniones.png'
+import compartirIcon from '../assets/icons/compartir.png'
 import './Historias.css'
 
 export default function HistoriasViewerModal({
@@ -395,21 +398,24 @@ export default function HistoriasViewerModal({
               className="btn-historia-action contratar"
               onClick={handleContratarClick}
             >
-              ⚡ Contratar
+              <img src={recomendarIcon} alt="Contratar" style={{ width: '22px', height: '22px', objectFit: 'contain', filter: 'brightness(0) invert(1)' }} />
+              Contratar
             </button>
 
             <button
               className={`btn-historia-action like ${likedStories[currentStory.id] ? 'liked' : ''}`}
               onClick={handleLikeStory}
             >
-              {likedStories[currentStory.id] ? '❤️ Me gusta' : '🤍 Me gusta'}
+              <img src={opinionesIcon} alt="Me gusta" style={{ width: '22px', height: '22px', objectFit: 'contain' }} />
+              {likedStories[currentStory.id] ? 'Me gusta' : 'Me gusta'}
             </button>
 
             <button
               className="btn-historia-action share"
               onClick={handleShareStory}
             >
-              🔗 Compartir
+              <img src={compartirIcon} alt="Compartir" style={{ width: '22px', height: '22px', objectFit: 'contain' }} />
+              Compartir
             </button>
           </div>
 
