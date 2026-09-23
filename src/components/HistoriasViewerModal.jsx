@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { db } from '../firebase'
 import { collection, addDoc, doc, updateDoc, increment, serverTimestamp } from 'firebase/firestore'
 import './Historias.css'
@@ -207,7 +208,7 @@ export default function HistoriasViewerModal({
     }
   }
 
-  return (
+  return createPortal(
     <div className="historias-viewer-overlay" onClick={onClose}>
       <div 
         className="historias-viewer-card" 
@@ -415,6 +416,7 @@ export default function HistoriasViewerModal({
         </div>
 
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }

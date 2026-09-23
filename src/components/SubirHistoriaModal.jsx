@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { createPortal } from 'react-dom'
 import { db, auth } from '../firebase'
 import { collection, addDoc } from 'firebase/firestore'
 import './Historias.css'
@@ -159,7 +160,7 @@ export default function SubirHistoriaModal({ isOpen, onClose, userData, onStoryU
     }
   }
 
-  return (
+  return createPortal(
     <div className="subir-historia-modal-overlay" onClick={onClose}>
       <div className="subir-historia-modal-card" onClick={(e) => e.stopPropagation()}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -326,6 +327,7 @@ export default function SubirHistoriaModal({ isOpen, onClose, userData, onStoryU
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
