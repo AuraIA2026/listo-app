@@ -3,6 +3,8 @@ import { db, auth } from '../firebase'
 import { collection, addDoc } from 'firebase/firestore'
 import './Historias.css'
 
+const QUICK_TAGS = ['#Plomería', '#Electricidad', '#Pintura', '#Mecánica', '#Catering', '#Reparación', '#Limpieza', '#TrabajoListo']
+
 export default function SubirHistoriaModal({ isOpen, onClose, userData, onStoryUploaded }) {
   const [mediaType, setMediaType] = useState('image') // 'image' | 'video'
   const [mediaPreview, setMediaPreview] = useState(null)
@@ -25,7 +27,7 @@ export default function SubirHistoriaModal({ isOpen, onClose, userData, onStoryU
     if (file.type.startsWith('video/')) {
       setMediaType('video')
 
-      // Check raw file size limit for Firestore base64 storage (max 750KB)
+      // Check raw file size limit for Firestore base64 storage (max 800KB)
       if (file.size > 800 * 1024) {
         setErrorMsg(`⚠️ El archivo de video es demasiado pesado (${Math.round(file.size / 1024)}KB). Para garantizar velocidad y guardado en vivo sin fallos, selecciona un video corto (5-15s) de máximo 750KB.`)
         return
@@ -93,6 +95,11 @@ export default function SubirHistoriaModal({ isOpen, onClose, userData, onStoryU
     }
   }
 
+  const handleAddTag = (tag) => {
+    if (caption.includes(tag)) return
+    setCaption(prev => (prev ? `${prev} ${tag}` : tag))
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     if (!mediaPreview) {
@@ -156,7 +163,7 @@ export default function SubirHistoriaModal({ isOpen, onClose, userData, onStoryU
     <div className="subir-historia-modal-overlay" onClick={onClose}>
       <div className="subir-historia-modal-card" onClick={(e) => e.stopPropagation()}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: '#1e293b' }}>
+          <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: '#0F172A' }}>
             📸 / 🎥 Publicar Historia de Trabajo
           </h3>
           <button
@@ -166,30 +173,26 @@ export default function SubirHistoriaModal({ isOpen, onClose, userData, onStoryU
               border: 'none',
               fontSize: '22px',
               cursor: 'pointer',
-              color: '#64748b'
+              color: '#64748B'
             }}
           >
             ✕
           </button>
         </div>
 
-        <div style={{ background: 'linear-gradient(135deg, #FEF3C7, #FDE68A)', border: '1px solid #F59E0B', padding: '6px 12px', borderRadius: '10px', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: '#B45309', fontWeight: 700 }}>
+        <div style={{ background: 'linear-gradient(135deg, #FEF3C7, #FDE68A)', border: '1px solid #F59E0B', padding: '8px 12px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: '#B45309', fontWeight: 700 }}>
           <span>⭐</span>
-          <span>¡Comparte con la comunidad de Listo Patrón!</span>
+          <span>¡Muestra la calidad de tu trabajo a toda la comunidad de Listo Patrón!</span>
         </div>
 
-        <p style={{ margin: 0, fontSize: '12.5px', color: '#64748b', lineHeight: 1.4 }}>
-          Sube tu <strong>Foto 📷</strong> o <strong>Video corto 🎥 (máx 750KB / 15s)</strong>. Tu historia estará visible durante 24 horas.
-        </p>
-
         {errorMsg && (
-          <div style={{ padding: '10px 12px', background: '#fef2f2', color: '#ef4444', borderRadius: '10px', fontSize: '12.5px', fontWeight: 700, border: '1px solid #fecaca' }}>
+          <div style={{ padding: '10px 12px', background: '#FEF2F2', color: '#EF4444', borderRadius: '12px', fontSize: '12.5px', fontWeight: 700, border: '1px solid #FECACA' }}>
             ⚠️ {errorMsg}
           </div>
         )}
 
         {warningMsg && (
-          <div style={{ padding: '8px 12px', background: '#fffbe6', color: '#d97706', borderRadius: '8px', fontSize: '12.5px', fontWeight: 600, border: '1px solid #fde68a' }}>
+          <div style={{ padding: '8px 12px', background: '#FFFBE6', color: '#D97706', borderRadius: '10px', fontSize: '12.5px', fontWeight: 600, border: '1px solid #FDE68A' }}>
             💡 {warningMsg}
           </div>
         )}
@@ -223,12 +226,12 @@ export default function SubirHistoriaModal({ isOpen, onClose, userData, onStoryU
             )
           ) : (
             <div style={{ textAlign: 'center', padding: '20px' }}>
-              <div style={{ display: 'flex', justifyContent: 'center', gap: '14px', fontSize: '32px', marginBottom: '8px' }}>
+              <div style={{ display: 'flex', justifyContent: 'center', gap: '14px', fontSize: '36px', marginBottom: '8px' }}>
                 <span>📷</span>
                 <span>🎥</span>
               </div>
-              <span style={{ fontSize: '14px', fontWeight: 700, color: '#ff5e00' }}>Toca para seleccionar Foto o Video</span>
-              <span style={{ fontSize: '11px', color: '#94a3b8', display: 'block', marginTop: '4px' }}>
+              <span style={{ fontSize: '14px', fontWeight: 800, color: '#F26000' }}>Toca para seleccionar Foto o Video</span>
+              <span style={{ fontSize: '11.5px', color: '#94A3B8', display: 'block', marginTop: '4px' }}>
                 Foto (compresión auto) o Video corto (máx 750KB / 15s)
               </span>
             </div>
@@ -242,19 +245,43 @@ export default function SubirHistoriaModal({ isOpen, onClose, userData, onStoryU
           <textarea
             value={caption}
             onChange={(e) => setCaption(e.target.value)}
-            placeholder="Ej: Instalación de tubería en Piantini con acabado impecable."
+            placeholder="Ej: Instalación de tubería en Piantini con acabado impecable ⚡"
             rows={3}
             style={{
               width: '100%',
               padding: '10px 12px',
-              borderRadius: '10px',
-              border: '1px solid #cbd5e1',
+              borderRadius: '12px',
+              border: '1px solid #CBD5E1',
               fontSize: '13px',
               fontFamily: 'inherit',
               resize: 'none',
               outline: 'none'
             }}
           />
+
+          {/* Quick Tag Pills */}
+          <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: '8px' }}>
+            {QUICK_TAGS.map(tag => (
+              <button
+                key={tag}
+                type="button"
+                onClick={() => handleAddTag(tag)}
+                style={{
+                  background: caption.includes(tag) ? '#F26000' : '#F1F5F9',
+                  color: caption.includes(tag) ? '#FFFFFF' : '#475569',
+                  border: 'none',
+                  borderRadius: '14px',
+                  padding: '3px 9px',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                {tag}
+              </button>
+            ))}
+          </div>
         </div>
 
         <div style={{ display: 'flex', gap: '10px', marginTop: '4px' }}>
@@ -265,8 +292,8 @@ export default function SubirHistoriaModal({ isOpen, onClose, userData, onStoryU
             style={{
               flex: 1,
               padding: '12px',
-              borderRadius: '12px',
-              border: '1px solid #cbd5e1',
+              borderRadius: '14px',
+              border: '1px solid #CBD5E1',
               background: '#ffffff',
               color: '#475569',
               fontWeight: 700,
@@ -283,14 +310,14 @@ export default function SubirHistoriaModal({ isOpen, onClose, userData, onStoryU
             style={{
               flex: 1,
               padding: '12px',
-              borderRadius: '12px',
+              borderRadius: '14px',
               border: 'none',
-              background: (mediaPreview && !(mediaType === 'video' && videoDuration > 30)) ? 'linear-gradient(135deg, #ff5e00, #ff8c00)' : '#cbd5e1',
+              background: (mediaPreview && !(mediaType === 'video' && videoDuration > 30)) ? 'linear-gradient(135deg, #F26000, #FF7A1A)' : '#CBD5E1',
               color: '#ffffff',
-              fontWeight: 700,
+              fontWeight: 800,
               fontSize: '14px',
               cursor: (mediaPreview && !(mediaType === 'video' && videoDuration > 30)) ? 'pointer' : 'not-allowed',
-              boxShadow: (mediaPreview && !(mediaType === 'video' && videoDuration > 30)) ? '0 4px 12px rgba(255, 94, 0, 0.3)' : 'none'
+              boxShadow: (mediaPreview && !(mediaType === 'video' && videoDuration > 30)) ? '0 4px 14px rgba(242, 96, 0, 0.4)' : 'none'
             }}
           >
             {isUploading ? 'Publicando...' : '🚀 Publicar Historia'}
@@ -300,5 +327,3 @@ export default function SubirHistoriaModal({ isOpen, onClose, userData, onStoryU
     </div>
   )
 }
-
-

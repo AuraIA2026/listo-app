@@ -15,10 +15,15 @@ export default function HistoriasViewerModal({
   const [likedStories, setLikedStories] = useState({})
   const [shareNotice, setShareNotice] = useState(false)
   const [isMuted, setIsMuted] = useState(false)
+  const [isPaused, setIsPaused] = useState(false)
+  const [floatingReaction, setFloatingReaction] = useState(null)
+  
   const timerRef = useRef(null)
+  const pressTimerRef = useRef(null)
 
   useEffect(() => {
     setCurrentIndex(initialIndex)
+    setIsPaused(false)
   }, [initialIndex, isOpen])
 
   // Load liked state from localStorage
@@ -35,9 +40,9 @@ export default function HistoriasViewerModal({
   const isVideoStory = currentStory?.mediaType === 'video' || Boolean(currentStory?.videoUrl) || String(currentStory?.imageUrl || '').endsWith('.mp4')
   const storyDuration = isVideoStory ? (currentStory?.videoDuration ? currentStory.videoDuration * 1000 : 15000) : 5000
 
-  // Auto-progress timer for stories (5s for photo, 15s or videoDuration for video)
+  // Auto-progress timer for stories (paused if user holds screen)
   useEffect(() => {
-    if (!isOpen || stories.length === 0) return
+    if (!isOpen || stories.length === 0 || isPaused) return
 
     if (timerRef.current) clearTimeout(timerRef.current)
 
@@ -48,13 +53,14 @@ export default function HistoriasViewerModal({
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current)
     }
-  }, [currentIndex, isOpen, stories, storyDuration])
+  }, [currentIndex, isOpen, stories, storyDuration, isPaused])
 
   if (!isOpen || !stories || stories.length === 0) return null
 
   const handleNextStory = () => {
     if (currentIndex < stories.length - 1) {
       setCurrentIndex(prev => prev + 1)
+      setIsPaused(false)
     } else {
       onClose()
     }
@@ -63,6 +69,21 @@ export default function HistoriasViewerModal({
   const handlePrevStory = () => {
     if (currentIndex > 0) {
       setCurrentIndex(prev => prev - 1)
+      setIsPaused(false)
+    }
+  }
+
+  // ── Hold to Pause Gestures ──
+  const handlePressStart = () => {
+    pressTimerRef.current = setTimeout(() => {
+      setIsPaused(true)
+    }, 180)
+  }
+
+  const handlePressEnd = () => {
+    if (pressTimerRef.current) clearTimeout(pressTimerRef.current)
+    if (isPaused) {
+      setIsPaused(false)
     }
   }
 
@@ -76,6 +97,7 @@ export default function HistoriasViewerModal({
     localStorage.setItem('listo_story_likes', JSON.stringify(nextLikes))
 
     if (isNowLiked) {
+      triggerFloatingReaction('❤️')
       try {
         if (currentStory.id) {
           const storyRef = doc(db, 'historias', currentStory.id)
@@ -99,6 +121,35 @@ export default function HistoriasViewerModal({
       } catch (err) {
         console.error('Error recording story like:', err)
       }
+    }
+  }
+
+  const triggerFloatingReaction = (emoji) => {
+    setFloatingReaction(emoji)
+    setTimeout(() => {
+      setFloatingReaction(null)
+    }, 1200)
+  }
+
+  const handleEmojiReaction = async (e, emoji) => {
+    if (e) e.stopPropagation()
+    triggerFloatingReaction(emoji)
+
+    try {
+      const clientName = userData?.name || userData?.displayName || 'Un cliente'
+      const proId = currentStory.proId || 'pro_unknown'
+      const proName = currentStory.proName || 'un profesional'
+
+      await addDoc(collection(db, 'notificaciones'), {
+        userId: proId,
+        type: 'system',
+        title: `Reacción ${emoji} en tu Historia`,
+        text: `¡${clientName} reaccionó ${emoji} a tu historia de trabajo "${currentStory.proCategory}"!`,
+        date: new Date().toISOString(),
+        read: false
+      })
+    } catch (err) {
+      console.log('Error sending emoji reaction:', err)
     }
   }
 
@@ -138,14 +189,50 @@ export default function HistoriasViewerModal({
 
   return (
     <div className="historias-viewer-overlay" onClick={onClose}>
-      <div className="historias-viewer-card" onClick={(e) => e.stopPropagation()}>
-        
+      <div 
+        className="historias-viewer-card" 
+        onClick={(e) => e.stopPropagation()}
+        onMouseDown={handlePressStart}
+        onMouseUp={handlePressEnd}
+        onTouchStart={handlePressStart}
+        onTouchEnd={handlePressEnd}
+      >
+        {/* Paused Floating Indicator */}
+        {isPaused && (
+          <div className="historias-paused-indicator">
+            <span>⏸️ Pausado</span>
+          </div>
+        )}
+
+        {/* Floating Emoji Reaction Animation */}
+        {floatingReaction && (
+          <div style={{
+            position: 'absolute',
+            top: '40%',
+            left: '50%',
+            transform: 'translate(-50%, -50%) scale(1)',
+            fontSize: '80px',
+            zIndex: 50,
+            pointerEvents: 'none',
+            animation: 'reactionPop 1.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards'
+          }}>
+            <style>{`
+              @keyframes reactionPop {
+                0% { opacity: 0; transform: translate(-50%, -50%) scale(0.3); }
+                40% { opacity: 1; transform: translate(-50%, -65%) scale(1.4); }
+                100% { opacity: 0; transform: translate(-50%, -100%) scale(1.8); }
+              }
+            `}</style>
+            {floatingReaction}
+          </div>
+        )}
+
         {/* Top 5s / 15s progress bars */}
         <div className="historias-timer-container">
           {stories.map((story, idx) => {
             let statusClass = ''
             if (idx < currentIndex) statusClass = 'completed'
-            else if (idx === currentIndex) statusClass = 'active'
+            else if (idx === currentIndex) statusClass = `active ${isPaused ? 'paused' : ''}`
 
             return (
               <div key={story.id || idx} className="historias-timer-segment">
@@ -158,8 +245,8 @@ export default function HistoriasViewerModal({
           })}
         </div>
 
-        {/* Top Pro Info Header */}
-        <div className="historias-viewer-header">
+        {/* Top Pro Info Header (Hidden when user holds screen to pause) */}
+        <div className={`historias-viewer-header ${isPaused ? 'hidden-on-pause' : ''}`}>
           <div className="historias-pro-info">
             <img
               src={currentStory.proAvatar || 'https://randomuser.me/api/portraits/men/32.jpg'}
@@ -206,7 +293,7 @@ export default function HistoriasViewerModal({
           )}
 
           {/* Mute / Unmute Floating Control for Video Stories */}
-          {isVideoStory && (
+          {isVideoStory && !isPaused && (
             <button
               onClick={(e) => { e.stopPropagation(); setIsMuted(!isMuted); }}
               style={{
@@ -240,7 +327,7 @@ export default function HistoriasViewerModal({
 
         {/* Caption Box Overlay */}
         {currentStory.caption && (
-          <div className="historias-caption-box">
+          <div className={`historias-caption-box ${isPaused ? 'hidden-on-pause' : ''}`}>
             <p className="historias-caption-text">{currentStory.caption}</p>
           </div>
         )}
@@ -249,7 +336,7 @@ export default function HistoriasViewerModal({
         {shareNotice && (
           <div style={{
             position: 'absolute',
-            bottom: '85px',
+            bottom: '125px',
             left: '50%',
             transform: 'translateX(-50%)',
             background: 'rgba(16, 185, 129, 0.95)',
@@ -258,34 +345,53 @@ export default function HistoriasViewerModal({
             borderRadius: '20px',
             fontSize: '12px',
             fontWeight: 700,
-            zIndex: 30
+            zIndex: 40
           }}>
             📋 ¡Enlace copiado al portapapeles!
           </div>
         )}
 
-        {/* STRICTLY 3 ACTION BUTTONS AT BOTTOM (CONTRATAR, ME GUSTA, COMPARTIR) - NO MESSAGE OPTION */}
-        <div className="historias-bottom-bar">
-          <button
-            className="btn-historia-action contratar"
-            onClick={handleContratarClick}
-          >
-            ⚡ Contratar
-          </button>
+        {/* Bottom Actions Container (Reactions + Contratar, Like, Share) */}
+        <div className={`historias-bottom-container ${isPaused ? 'hidden-on-pause' : ''}`}>
+          
+          {/* Fast Reaction Emojis Bar (1-Tap) */}
+          <div className="historias-reactions-bar">
+            {['❤️', '🔥', '👏', '💯', '⭐'].map((emoji) => (
+              <button
+                key={emoji}
+                className="btn-emoji-reaction"
+                onClick={(e) => handleEmojiReaction(e, emoji)}
+                title={`Reaccionar ${emoji}`}
+              >
+                {emoji}
+              </button>
+            ))}
+          </div>
 
-          <button
-            className={`btn-historia-action like ${likedStories[currentStory.id] ? 'liked' : ''}`}
-            onClick={handleLikeStory}
-          >
-            {likedStories[currentStory.id] ? '❤️ Me gusta' : '🤍 Me gusta'}
-          </button>
+          {/* Main Action Buttons */}
+          <div className="historias-bottom-bar">
+            <button
+              className="btn-historia-action contratar"
+              onClick={handleContratarClick}
+            >
+              ⚡ Contratar
+            </button>
 
-          <button
-            className="btn-historia-action share"
-            onClick={handleShareStory}
-          >
-            🔗 Compartir
-          </button>
+            <button
+              className={`btn-historia-action like ${likedStories[currentStory.id] ? 'liked' : ''}`}
+              onClick={handleLikeStory}
+            >
+              {likedStories[currentStory.id] ? '❤️ Me gusta' : '🤍 Me gusta'}
+            </button>
+
+            <button
+              className="btn-historia-action share"
+              onClick={handleShareStory}
+            >
+              🔗 Compartir
+            </button>
+          </div>
+
         </div>
 
       </div>

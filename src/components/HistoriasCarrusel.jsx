@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { db } from '../firebase'
-import { collection, query, where, getDocs, onSnapshot } from 'firebase/firestore'
+import { collection, query, getDocs, onSnapshot } from 'firebase/firestore'
 import HistoriasViewerModal from './HistoriasViewerModal'
 import SubirHistoriaModal from './SubirHistoriaModal'
 import './Historias.css'
@@ -70,7 +70,7 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro }) {
         {
           id: 'sample_1',
           proId: 'pro_demo_1',
-          proName: 'mym_smart...',
+          proName: 'M&M Smart Phone',
           fullName: 'M&M Smart Phone',
           proAvatar: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=200&q=80',
           proCategory: 'Reparación de Celulares',
@@ -82,7 +82,7 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro }) {
         {
           id: 'sample_2',
           proId: 'pro_demo_2',
-          proName: 'ebusinesst...',
+          proName: 'E-Business Store',
           fullName: 'E-Business Store',
           proAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80',
           proCategory: 'Soporte Técnico VIP',
@@ -94,7 +94,7 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro }) {
         {
           id: 'sample_3',
           proId: 'pro_demo_3',
-          proName: 'controlpiz...',
+          proName: 'Control Pizza Burger',
           fullName: 'Control Pizza Burger',
           proAvatar: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=200&q=80',
           proCategory: 'Chef & Catering 24h',
@@ -106,7 +106,7 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro }) {
         {
           id: 'sample_4',
           proId: 'pro_demo_4',
-          proName: 'santanaxoo',
+          proName: 'Carlos Santana',
           fullName: 'Carlos Santana',
           proAvatar: 'https://randomuser.me/api/portraits/men/32.jpg',
           proCategory: 'Electricista Certificado',
@@ -118,7 +118,7 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro }) {
         {
           id: 'sample_5',
           proId: 'pro_demo_5',
-          proName: 'roanrafael',
+          proName: 'Roan Rafael',
           fullName: 'Roan Rafael',
           proAvatar: 'https://randomuser.me/api/portraits/men/46.jpg',
           proCategory: 'Plomería & Tuberías',
@@ -130,7 +130,7 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro }) {
         {
           id: 'sample_6',
           proId: 'pro_demo_6',
-          proName: 'oscaraleja...',
+          proName: 'Oscar Alejandro',
           fullName: 'Oscar Alejandro',
           proAvatar: 'https://randomuser.me/api/portraits/men/68.jpg',
           proCategory: 'Mecánica Móvil 24/7',
@@ -207,10 +207,10 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro }) {
         <div className="historias-title-left">
           <div className="historias-live-pulse" />
           <span className="historias-title-icon">📸</span>
-          <span className="historias-title-text">Trabajos Realizados Recientemente</span>
+          <span className="historias-title-text">Trabajos Realizados</span>
         </div>
         <div className="historias-title-right">
-          <span className="historias-badge-24h">⚡ 24h Stories</span>
+          <span className="historias-badge-24h">🔥 En Vivo • 24h</span>
         </div>
       </div>
 
@@ -324,12 +324,12 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro }) {
                 padding: '12px',
                 borderRadius: '12px',
                 border: 'none',
-                background: 'linear-gradient(135deg, #ff5e00, #ff8c00)',
+                background: 'linear-gradient(135deg, #f26000, #ff8c00)',
                 color: '#ffffff',
                 fontWeight: 700,
                 fontSize: '14px',
                 cursor: 'pointer',
-                boxShadow: '0 4px 12px rgba(255, 94, 0, 0.3)'
+                boxShadow: '0 4px 12px rgba(242, 96, 0, 0.3)'
               }}
             >
               ¡Entendido! 👍
@@ -340,5 +340,3 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro }) {
     </div>
   )
 }
-
-
