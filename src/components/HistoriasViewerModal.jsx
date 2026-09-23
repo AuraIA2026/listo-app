@@ -9,7 +9,9 @@ export default function HistoriasViewerModal({
   stories = [],
   initialIndex = 0,
   userData,
-  onHirePro
+  onHirePro,
+  onViewProfile,
+  navigate
 }) {
   const [currentIndex, setCurrentIndex] = useState(initialIndex)
   const [likedStories, setLikedStories] = useState({})
@@ -187,6 +189,24 @@ export default function HistoriasViewerModal({
     }
   }
 
+  const handleProClick = (e) => {
+    if (e) e.stopPropagation()
+    onClose()
+    if (onViewProfile) {
+      onViewProfile(currentStory)
+    } else if (navigate) {
+      const proData = {
+        id: currentStory.proId || currentStory.proUid || currentStory.id,
+        uid: currentStory.proId || currentStory.proUid || currentStory.id,
+        name: currentStory.fullName || currentStory.proName,
+        category: currentStory.proCategory,
+        avatarUrl: currentStory.proAvatar,
+        photoURL: currentStory.proAvatar
+      }
+      navigate('proProfile', proData)
+    }
+  }
+
   return (
     <div className="historias-viewer-overlay" onClick={onClose}>
       <div 
@@ -247,7 +267,7 @@ export default function HistoriasViewerModal({
 
         {/* Top Pro Info Header (Hidden when user holds screen to pause) */}
         <div className={`historias-viewer-header ${isPaused ? 'hidden-on-pause' : ''}`}>
-          <div className="historias-pro-info">
+          <div className="historias-pro-info" onClick={handleProClick} style={{ cursor: 'pointer' }}>
             <img
               src={currentStory.proAvatar || 'https://randomuser.me/api/portraits/men/32.jpg'}
               alt={currentStory.proName}

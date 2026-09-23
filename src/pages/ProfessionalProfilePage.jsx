@@ -4,6 +4,7 @@ import { db } from '../firebase'
 import { CATEGORIES, ALL_SUBCATEGORIES } from '../categories'
 import { useUserData } from '../useUserData'
 import logoListo from '../assets/logo_listo.png'
+import HistoriasViewerModal from '../components/HistoriasViewerModal'
 import './ProfessionalProfilePage.css'
 
 const txt = {
@@ -325,6 +326,30 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
   const [showWriteReview, setShowWriteReview] = useState(pro.autoWriteReview || false)
   const [showPhotoOptions, setShowPhotoOptions] = useState(false)
   const [pendingRequests, setPendingRequests] = useState([])
+  const [proStories, setProStories] = useState([])
+  const [showStoryViewer, setShowStoryViewer] = useState(false)
+
+  useEffect(() => {
+    const proUid = displayPro.uid || displayPro.id
+    if (!proUid) return
+
+    const qStories = query(collection(db, 'historias'), where('proId', '==', proUid))
+    const unsub = onSnapshot(qStories, (snapshot) => {
+      const now = new Date().getTime()
+      const list = []
+      snapshot.forEach(docSnap => {
+        const data = docSnap.data()
+        const expiresTime = data.expiresAt ? new Date(data.expiresAt).getTime() : now + 86400000
+        if (expiresTime > now - 86400000) {
+          list.push({ id: docSnap.id, ...data })
+        }
+      })
+      list.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      setProStories(list)
+    }, err => console.log('Error fetching pro stories:', err))
+
+    return () => unsub()
+  }, [displayPro.uid, displayPro.id])
 
   useEffect(() => {
     if (!isOwnProfile || !userData?.uid) return
@@ -682,18 +707,36 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
 
       {/* Info del profesional */}
       <div className="pro-info-section">
-        <div className="pro-avatar-wrap" onClick={isOwnProfile ? () => setShowPhotoOptions(true) : undefined} style={{ cursor: isOwnProfile ? 'pointer' : 'default', position: 'relative' }}>
+        <div 
+          className="pro-avatar-wrap" 
+          onClick={proStories.length > 0 ? () => setShowStoryViewer(true) : (isOwnProfile ? () => setShowPhotoOptions(true) : undefined)} 
+          style={{ 
+            cursor: (proStories.length > 0 || isOwnProfile) ? 'pointer' : 'default', 
+            position: 'relative',
+            padding: proStories.length > 0 ? '4px' : '0',
+            background: proStories.length > 0 ? 'linear-gradient(45deg, #F26000 0%, #FF7A1A 25%, #E11D48 50%, #C084FC 75%, #F43F5E 100%)' : 'transparent',
+            borderRadius: '50%',
+            boxShadow: proStories.length > 0 ? '0 4px 16px rgba(242, 96, 0, 0.4)' : 'none',
+            transition: 'all 0.3s ease'
+          }}
+        >
           {(displayPro.photoURL || displayPro.profilePhoto || displayPro.img || displayPro.verificacion?.docs?.selfie) ? (
             <img 
               src={displayPro.photoURL || displayPro.profilePhoto || displayPro.img || displayPro.verificacion?.docs?.selfie} 
               alt={displayPro.name} 
               className="pro-avatar-large" 
-              style={{ objectFit: 'cover' }} 
+              style={{ objectFit: 'cover', border: proStories.length > 0 ? '3px solid #FFFFFF' : 'none' }} 
             />
           ) : (
-            <div className="pro-avatar-large" style={{ background: proColor }}>
+            <div className="pro-avatar-large" style={{ background: proColor, border: proStories.length > 0 ? '3px solid #FFFFFF' : 'none' }}>
               {displayPro.avatar || pro.avatar || (displayPro.name ? displayPro.name.substring(0,2).toUpperCase() : 'P')}
             </div>
+          )}
+
+          {proStories.length > 0 && (
+            <span style={{ position: 'absolute', top: '-6px', right: '-6px', background: 'linear-gradient(135deg, #F26000, #FF7A1A)', color: '#fff', fontSize: '10px', fontWeight: '900', padding: '2px 8px', borderRadius: '12px', border: '2px solid #FFF', boxShadow: '0 2px 8px rgba(0,0,0,0.3)', zIndex: 10 }}>
+              📸 24h
+            </span>
           )}
 
           {hasPendingPhoto && (
@@ -885,6 +928,15 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
           </div>
         </div>
       )}
+
+      {/* Visor de historias del profesional */}
+      <HistoriasViewerModal
+        isOpen={showStoryViewer}
+        onClose={() => setShowStoryViewer(false)}
+        stories={proStories}
+        userData={userData}
+        navigate={navigate}
+      />
     </div>
   )
 }

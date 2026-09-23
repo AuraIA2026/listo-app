@@ -5,7 +5,7 @@ import HistoriasViewerModal from './HistoriasViewerModal'
 import SubirHistoriaModal from './SubirHistoriaModal'
 import './Historias.css'
 
-export default function HistoriasCarrusel({ userData, isPro, onHirePro }) {
+export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate }) {
   const [stories, setStories] = useState([])
   const [viewerOpen, setViewerOpen] = useState(false)
   const [selectedStoryIndex, setSelectedStoryIndex] = useState(0)
@@ -294,6 +294,7 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro }) {
         initialIndex={selectedStoryIndex}
         userData={userData}
         onHirePro={onHirePro}
+        navigate={navigate}
       />
 
       {/* Upload Story Modal for 5-Star Eligible Professionals */}

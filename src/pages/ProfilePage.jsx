@@ -1072,6 +1072,14 @@ export default function ProfilePage({ lang, setLang, navigate, onLogout, initial
           <span className="pmi-arrow">›</span>
         </button>
 
+        {userRole === 'pro' && (
+          <button className="profile-menu-item" onClick={() => setShowSubirHistoria(true)} style={{ background: 'linear-gradient(135deg, #FFF3EC, #FFE6D5)', border: '1px solid rgba(242,96,0,0.2)' }}>
+            <span className="pmi-icon" style={{ background: '#F26000', color: '#FFF', borderRadius: '8px', fontSize: '16px' }}>📸</span>
+            <span className="pmi-label" style={{ fontWeight: '800', color: '#F26000' }}>{lang==='es' ? 'Publicar Historia de Trabajo (24h)' : 'Post Work Story (24h)'}</span>
+            <span className="pmi-arrow" style={{ color: '#F26000', fontWeight: '900', fontSize: '18px' }}>+</span>
+          </button>
+        )}
+
         {(profileComplete || isProVerifComplete) && (
           <button className="profile-menu-item" onClick={() => handleMenu('edit-request')}>
             <span className="pmi-icon" style={{background:'#FFFBEB', color:'#F59E0B', borderRadius:'8px', fontSize:'16px'}}>✏️</span>
