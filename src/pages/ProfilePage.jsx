@@ -729,6 +729,7 @@ export default function ProfilePage({ lang, setLang, navigate, onLogout, initial
   const displayEmail = userData?.email || ''
   const photoURL     = userData?.photoURL || null
   const memberSince  = getMemberSince(lang)
+  const initials     = (displayName || 'U').substring(0, 2).toUpperCase()
   const vf = userData?.verificacion || {}
   const vfDocs = vf.docs || {}
   const isProVerifComplete = Boolean(
