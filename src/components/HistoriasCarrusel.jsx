@@ -264,30 +264,50 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate
             </span>
           </div>
 
-          {/* Stories List */}
-          {stories.map((story, index) => {
-            const isSeen = seenStories.includes(story.id)
-            return (
-              <div
-                key={story.id || index}
-                className="historia-item"
-                onClick={() => handleOpenViewer(index)}
-              >
-                <div className={`historia-ring ${isSeen ? 'seen' : ''}`}>
-                  <div className="historia-avatar-inner">
-                    <img
-                      src={story.proAvatar || 'https://randomuser.me/api/portraits/men/32.jpg'}
-                      alt={story.fullName || story.proName}
-                      className="historia-avatar"
-                    />
+          {/* Unique Professionals Stories List (Grouped to prevent duplicates) */}
+          {(() => {
+            const uniquePros = []
+            const seenKeys = new Set()
+
+            stories.forEach((story, idx) => {
+              const key = story.proId || story.proName || story.fullName || story.id
+              if (!seenKeys.has(key)) {
+                seenKeys.add(key)
+                const allStoryIds = stories.filter(s => (s.proId || s.proName || s.fullName || s.id) === key).map(s => s.id)
+                uniquePros.push({
+                  key,
+                  firstIndex: idx,
+                  proName: story.proName || story.fullName,
+                  proAvatar: story.proAvatar,
+                  allStoryIds
+                })
+              }
+            })
+
+            return uniquePros.map((pro) => {
+              const isAllSeen = pro.allStoryIds.every(id => seenStories.includes(id))
+              return (
+                <div
+                  key={pro.key}
+                  className="historia-item"
+                  onClick={() => handleOpenViewer(pro.firstIndex)}
+                >
+                  <div className={`historia-ring ${isAllSeen ? 'seen' : ''}`}>
+                    <div className="historia-avatar-inner">
+                      <img
+                        src={pro.proAvatar || 'https://randomuser.me/api/portraits/men/32.jpg'}
+                        alt={pro.proName}
+                        className="historia-avatar"
+                      />
+                    </div>
                   </div>
+                  <span className="historia-label" title={pro.proName}>
+                    {pro.proName}
+                  </span>
                 </div>
-                <span className="historia-label" title={story.fullName || story.proName}>
-                  {story.proName || story.fullName}
-                </span>
-              </div>
-            )
-          })}
+              )
+            })
+          })()}
         </div>
 
         {canScrollRight && (
