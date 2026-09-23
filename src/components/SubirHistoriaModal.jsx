@@ -143,11 +143,26 @@ export default function SubirHistoriaModal({ isOpen, onClose, userData, onStoryU
         likesCount: 0,
         is5StarVerified: !isClient,
         ratingBadge: isClient ? '⭐ Cliente Listo' : '⭐⭐⭐⭐⭐ Entrega 5 Estrellas',
+        status: 'pending',
+        moderated: false,
         createdAt: new Date().toISOString(),
         expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() // 24 Horas
       }
 
-      await addDoc(collection(db, 'historias'), newStory)
+      const docRef = await addDoc(collection(db, 'historias'), newStory)
+
+      // Alert Admin
+      await addDoc(collection(db, 'notificaciones'), {
+        userId: 'admin',
+        type: 'new_story_review',
+        title: '📸 NUEVA HISTORIA EN ESPERA DE VALIDACIÓN',
+        text: `El profesional ${name} (${category}) ha enviado una historia de trabajo para su revisión.`,
+        storyDocId: docRef.id,
+        read: false,
+        createdAt: new Date().toISOString()
+      }).catch(() => {})
+
+      alert('🎉 ¡Historia enviada a revisión!\n\nTu historia ha sido enviada al equipo de administración para su validación. Una vez aprobada, aparecerá visible en la plataforma.')
 
       setIsUploading(false)
       if (onStoryUploaded) onStoryUploaded()

@@ -73,7 +73,8 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate
       snapshot.forEach(doc => {
         const data = doc.data()
         const expiresTime = data.expiresAt ? new Date(data.expiresAt).getTime() : now + 86400000
-        if (expiresTime > now - 86400000) {
+        const isApproved = data.status === 'approved' || data.moderated === true
+        if (expiresTime > now - 86400000 && isApproved) {
           fetched.push({ id: doc.id, ...data })
         }
       })

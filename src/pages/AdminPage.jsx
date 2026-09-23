@@ -505,6 +505,7 @@ export default function AdminPage({ navigate }) {
   const [editRequests, setEditRequests] = useState([]); // Solicitudes de Edición
   const [alerts, setAlerts]     = useState([]); // Alertas de plan
   const [vipLocales, setVipLocales] = useState([]); // Locales VIP
+  const [storiesList, setStoriesList] = useState([]); // Historias de Trabajo para moderar
   const [toast, setToast]       = useState('');
   const [confirm, setConfirm]   = useState(null); // { type, obj }
   const [viewDocs, setViewDocs] = useState(null); // Usuario a inspeccionar documentos
@@ -585,7 +586,14 @@ export default function AdminPage({ navigate }) {
       setVipLocales(arr);
     });
 
-    return () => { unsubPay(); unsubUsers(); unsubVerif(); unsubReps(); unsubEdits(); unsubAlerts(); unsubLocales(); };
+    // 8. Escuchar Historias de Trabajo para Moderación
+    const unsubStories = onSnapshot(collection(db, 'historias'), (snap) => {
+      const arr = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      arr.sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
+      setStoriesList(arr);
+    });
+
+    return () => { unsubPay(); unsubUsers(); unsubVerif(); unsubReps(); unsubEdits(); unsubAlerts(); unsubLocales(); unsubStories(); };
   }, []);
 
   const prevUnreadCount = useRef(0);
@@ -1022,6 +1030,50 @@ export default function AdminPage({ navigate }) {
          showToast('🗑️ Alerta eliminada');
       }
 
+      if (type === 'approve_story') {
+        await updateDoc(doc(db, 'historias', obj.id), {
+          status: 'approved',
+          moderated: true,
+          approvedAt: new Date().toISOString()
+        });
+        if (obj.proId && !obj.proId.startsWith('anon_') && !obj.proId.startsWith('pro_')) {
+          await addDoc(collection(db, 'notificaciones'), {
+            userId: obj.proId,
+            type: 'system',
+            title: '📸 ¡Tu Historia ha sido Aprobada! 🎉',
+            text: 'Tu Historia de Trabajo de 24h ha sido validada por administración y ya está visible en la plataforma.',
+            date: new Date().toISOString(),
+            createdAt: new Date().toISOString(),
+            read: false
+          }).catch(() => {});
+        }
+        showToast(`📸 Historia de ${obj.proName || 'Profesional'} aprobada y publicada`);
+      }
+
+      if (type === 'reject_story') {
+        await updateDoc(doc(db, 'historias', obj.id), {
+          status: 'rejected',
+          moderated: true
+        });
+        if (obj.proId && !obj.proId.startsWith('anon_') && !obj.proId.startsWith('pro_')) {
+          await addDoc(collection(db, 'notificaciones'), {
+            userId: obj.proId,
+            type: 'system',
+            title: 'ℹ️ Solicitud de Historia Rechazada',
+            text: 'Tu publicación en Historias fue revisada pero no fue aprobada por nuestro equipo de moderación.',
+            date: new Date().toISOString(),
+            createdAt: new Date().toISOString(),
+            read: false
+          }).catch(() => {});
+        }
+        showToast(`🔴 Historia rechazada`);
+      }
+
+      if (type === 'delete_story') {
+        await deleteDoc(doc(db, 'historias', obj.id));
+        showToast(`🗑️ Historia eliminada`);
+      }
+
       if (type === 'mark_all_read') {
          const batch = writeBatch(db);
          const unreads = alerts.filter(a => !a.read);
@@ -1126,8 +1178,8 @@ export default function AdminPage({ navigate }) {
         {/* TABS */}
         <div className="admin-tabs" style={{overflowX:'auto', paddingBottom:4}}>
           {[
+            { id:'historias',    icon:'📸', label:'Historias', count: storiesList.filter(s => s.status === 'pending' || (!s.status && !s.moderated)).length },
             { id:'postulaciones', icon:'🛡️', label:'Nuevos', count:verifications.length },
-            { id:'locales',      icon:'🏬', label:'Locales VIP', count: vipLocales.filter(l => !l.activo).length },
             { id:'alertas',      icon:'🔔', label:'Alertas', count: alerts.filter(a => !a.read).length },
             { id:'pagos',      icon:'💳', label:'Historial',  count:completedPayments.length },
             { id:'comisiones', icon:'⏳', label:'Validar', count:pendienteCount },
@@ -1183,43 +1235,119 @@ export default function AdminPage({ navigate }) {
           </div>
         )}
 
-        {/* ── TAB: LOCALES VIP (Aprobar Locales VIP) ── */}
-        {tab === 'locales' && (
+        {/* ── TAB: HISTORIAS (Moderación de Historias de Trabajo) ── */}
+        {tab === 'historias' && (
           <div className="admin-section" style={{marginTop:16}}>
             <div className="section-header">
-              <span className="section-title">Locales VIP por Aprobar ({vipLocales.filter(l => !l.activo).length})</span>
+              <span className="section-title">Moderación de Historias ({storiesList.length})</span>
             </div>
-            {vipLocales.filter(l => !l.activo).length === 0 && (
-              <div className="empty-admin"><p>No hay locales VIP pendientes de aprobación.</p></div>
+            {storiesList.length === 0 && (
+              <div className="empty-admin"><p>No hay historias de trabajo registradas aún.</p></div>
             )}
-            {vipLocales.filter(l => !l.activo).map((local, i) => (
-              <div className="payment-card" key={local.id} style={{animationDelay:`${i*.06}s`, borderColor:'rgba(245,158,11,0.3)'}}>
-                <div className="pc-top" style={{alignItems:'center'}}>
-                  <div className="pc-avatar" style={{background:'#F59E0B', backgroundImage: `url(${local.logoURL})`, backgroundSize: 'cover', backgroundPosition: 'center'}}>
-                    {!local.logoURL && '🏬'}
+            {storiesList.map((story, i) => {
+              const isPending = story.status === 'pending' || (!story.status && !story.moderated);
+              const isApproved = story.status === 'approved' || story.moderated === true;
+              const isRejected = story.status === 'rejected';
+
+              return (
+                <div 
+                  className="payment-card" 
+                  key={story.id} 
+                  style={{
+                    animationDelay: `${i * .05}s`, 
+                    borderColor: isPending ? '#F59E0B' : isApproved ? '#10B981' : '#EF4444',
+                    background: isPending ? '#FFFDF5' : '#FFFFFF'
+                  }}
+                >
+                  <div className="pc-top" style={{alignItems:'center'}}>
+                    <img 
+                      src={story.proAvatar || 'https://randomuser.me/api/portraits/men/32.jpg'} 
+                      alt={story.proName} 
+                      style={{ width: 44, height: 44, borderRadius: '50%', objectFit: 'cover', border: '2px solid #F26000' }} 
+                    />
+                    <div className="pc-info">
+                      <div className="pc-name">{story.proName || 'Profesional'}</div>
+                      <div className="pc-detail">⚡ {story.proCategory} · {fmtDate(story.createdAt)}</div>
+                    </div>
+                    <div className="pc-right">
+                      <span className={`status-pill ${isApproved ? 'paid' : isPending ? 'pending' : 'blocked'}`}>
+                        {isApproved ? '✅ Aprobada' : isPending ? '⏳ Pendiente' : '🔴 Rechazada'}
+                      </span>
+                    </div>
                   </div>
-                  <div className="pc-info">
-                    <div className="pc-name">{local.nombre || 'Local VIP'}</div>
-                    <div className="pc-detail">{local.categoria || 'Servicios VIP'} · Pro: {local.proNombre}</div>
-                  </div>
-                  <div className="pc-right">
-                    <button className="cc-btn remind" style={{background:'#F59E0B', color:'#fff', border:'none', padding:'6px 12px', fontSize:'11px'}} onClick={() => setConfirm({type:'approve_local', obj: local})}>
-                      ✅ Aprobar Local VIP
+
+                  {story.caption && (
+                    <div style={{ background: '#F8FAFC', padding: '10px 14px', borderRadius: '10px', marginTop: '10px', fontSize: '13px', color: '#1E293B', borderLeft: '3px solid #F26000' }}>
+                      💬 "{story.caption}"
+                    </div>
+                  )}
+
+                  {(story.imageUrl || story.videoUrl) && (
+                    <div style={{ marginTop: '12px', textAlign: 'center' }}>
+                      {story.mediaType === 'video' || story.videoUrl ? (
+                        <video 
+                          src={story.videoUrl || story.imageUrl} 
+                          controls 
+                          style={{ width: '100%', maxHeight: '280px', borderRadius: '14px', background: '#0F172A', objectFit: 'contain' }} 
+                        />
+                      ) : (
+                        <img 
+                          src={story.imageUrl} 
+                          alt="Trabajo" 
+                          style={{ width: '100%', maxHeight: '280px', borderRadius: '14px', objectFit: 'cover', border: '1px solid #E2E8F0' }} 
+                        />
+                      )}
+                    </div>
+                  )}
+
+                  <div className="cc-actions" style={{ marginTop: '14px', display: 'flex', gap: '8px' }}>
+                    {isPending && (
+                      <>
+                        <button 
+                          className="cc-btn paid" 
+                          onClick={() => setConfirm({ type: 'approve_story', obj: story })}
+                          style={{ fontWeight: 800, fontSize: '12px' }}
+                        >
+                          ✅ Aprobar y Publicar
+                        </button>
+                        <button 
+                          className="cc-btn block" 
+                          onClick={() => setConfirm({ type: 'reject_story', obj: story })}
+                          style={{ fontWeight: 800, fontSize: '12px' }}
+                        >
+                          ❌ Rechazar
+                        </button>
+                      </>
+                    )}
+                    {isApproved && (
+                      <button 
+                        className="cc-btn block" 
+                        onClick={() => setConfirm({ type: 'reject_story', obj: story })}
+                        style={{ fontWeight: 800, fontSize: '12px' }}
+                      >
+                        🔴 Desactivar
+                      </button>
+                    )}
+                    {isRejected && (
+                      <button 
+                        className="cc-btn paid" 
+                        onClick={() => setConfirm({ type: 'approve_story', obj: story })}
+                        style={{ fontWeight: 800, fontSize: '12px' }}
+                      >
+                        ✅ Reactivar
+                      </button>
+                    )}
+                    <button 
+                      className="cc-btn remind" 
+                      onClick={() => setConfirm({ type: 'delete_story', obj: story })}
+                      style={{ flex: '0.4', fontSize: '12px' }}
+                    >
+                      🗑️ Borrar
                     </button>
                   </div>
                 </div>
-                {local.fotosTrabajos && local.fotosTrabajos.length > 0 && (
-                  <div style={{marginTop:10}}>
-                    <span style={{fontSize:11, color:'var(--muted)', display:'block', marginBottom:4}}>Fotos de trabajos cargadas ({local.fotosTrabajos.length}):</span>
-                    <div style={{display:'flex', gap:6, overflowX:'auto', paddingBottom:4}}>
-                      {local.fotosTrabajos.map((foto, idx) => (
-                        <img key={idx} src={foto} style={{width:55, height:55, borderRadius:8, objectFit:'cover', border:'1px solid #ddd'}} alt="Trabajo"/>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
 
