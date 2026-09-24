@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { db, auth } from '../firebase'
 import { collection, addDoc } from 'firebase/firestore'
@@ -10,6 +10,13 @@ export default function SubirHistoriaModal({ isOpen, onClose, userData, onStoryU
   const [mediaType, setMediaType] = useState('image') // 'image' | 'video'
   const [mediaPreview, setMediaPreview] = useState(null)
   const [videoDuration, setVideoDuration] = useState(null)
+  const [videoRawDuration, setVideoRawDuration] = useState(0)
+  const [trimStart, setTrimStart] = useState(0)
+  const [trimEnd, setTrimEnd] = useState(15)
+  const [fileSizeStr, setFileSizeStr] = useState('')
+  const [isVideoMuted, setIsVideoMuted] = useState(false)
+  const videoRef = useRef(null)
+
   const [caption, setCaption] = useState('')
   const [isUploading, setIsUploading] = useState(false)
   const [errorMsg, setErrorMsg] = useState('')
@@ -25,12 +32,17 @@ export default function SubirHistoriaModal({ isOpen, onClose, userData, onStoryU
     setWarningMsg('')
     setVideoDuration(null)
 
+    // Calculate file size label
+    const sizeInMB = (file.size / (1024 * 1024)).toFixed(1)
+    const szStr = file.size >= 1024 * 1024 ? `${sizeInMB} MB` : `${Math.round(file.size / 1024)} KB`
+    setFileSizeStr(szStr)
+
     if (file.type.startsWith('video/')) {
       setMediaType('video')
 
-      // Check raw file size limit for Firestore base64 storage (max 800KB)
-      if (file.size > 800 * 1024) {
-        setErrorMsg(`⚠️ El archivo de video es demasiado pesado (${Math.round(file.size / 1024)}KB). Para garantizar velocidad y guardado en vivo sin fallos, selecciona un video corto (5-15s) de máximo 750KB.`)
+      // Check raw file size limit for Firestore base64 storage (max 12MB)
+      if (file.size > 12 * 1024 * 1024) {
+        setErrorMsg(`⚠️ El archivo de video es demasiado pesado (${szStr}). Para garantizar velocidad y guardado sin fallos, selecciona un video de máximo 12MB.`)
         return
       }
 
@@ -40,17 +52,20 @@ export default function SubirHistoriaModal({ isOpen, onClose, userData, onStoryU
         const base64Video = event.target.result
         setMediaPreview(base64Video)
 
-        // Calculate video duration
+        // Calculate video duration & default 15s trim window
         const tempVideo = document.createElement('video')
         tempVideo.src = base64Video
         tempVideo.onloadedmetadata = () => {
-          const dur = Math.round(tempVideo.duration)
-          setVideoDuration(dur)
+          const rawDur = tempVideo.duration || 15
+          setVideoRawDuration(rawDur)
 
-          if (dur > 30) {
-            setErrorMsg(`El video dura ${dur}s. El límite máximo para historias es de 30 segundos. Por favor selecciona un video más corto.`)
-          } else if (dur > 15) {
-            setWarningMsg(`⚡ Recomendación: Este video dura ${dur}s. Las historias de 15 segundos cargan más rápido y tienen mayor impacto.`)
+          const initialEnd = Math.min(15, rawDur)
+          setTrimStart(0)
+          setTrimEnd(initialEnd)
+          setVideoDuration(Math.round(initialEnd))
+
+          if (rawDur > 15) {
+            setWarningMsg(`✂️ Video de ${Math.round(rawDur)}s acortado automáticamente a los primeros 15s estilo WhatsApp. Usa la barra deslizante para recortar el segmento deseado.`)
           }
         }
       }
@@ -62,7 +77,7 @@ export default function SubirHistoriaModal({ isOpen, onClose, userData, onStoryU
       reader.onload = (event) => {
         const img = new Image()
         img.onload = () => {
-          // Compress image to max 800px & 0.65 quality to ensure payload is <200KB (well within 1MB Firestore limit)
+          // Compress image to max 800px & 0.65 quality to ensure payload is <200KB
           const canvas = document.createElement('canvas')
           const MAX_DIM = 800
           let width = img.width
@@ -96,6 +111,45 @@ export default function SubirHistoriaModal({ isOpen, onClose, userData, onStoryU
     }
   }
 
+  const handleStartChange = (val) => {
+    const s = Math.max(0, Math.min(val, videoRawDuration - 1))
+    setTrimStart(s)
+
+    let e = trimEnd
+    if (e <= s || e - s > 15) {
+      e = Math.min(videoRawDuration, s + 15)
+    }
+    setTrimEnd(e)
+    setVideoDuration(Math.round(e - s))
+
+    if (videoRef.current) {
+      videoRef.current.currentTime = s
+    }
+  }
+
+  const handleEndChange = (val) => {
+    const e = Math.min(videoRawDuration, Math.max(val, trimStart + 1))
+    let s = trimStart
+    if (e - s > 15) {
+      s = Math.max(0, e - 15)
+    }
+    setTrimStart(s)
+    setTrimEnd(e)
+    setVideoDuration(Math.round(e - s))
+
+    if (videoRef.current) {
+      videoRef.current.currentTime = s
+    }
+  }
+
+  const handleTimeUpdate = () => {
+    if (videoRef.current) {
+      if (videoRef.current.currentTime >= trimEnd || videoRef.current.currentTime < trimStart) {
+        videoRef.current.currentTime = trimStart
+      }
+    }
+  }
+
   const handleAddTag = (tag) => {
     if (caption.includes(tag)) return
     setCaption(prev => (prev ? `${prev} ${tag}` : tag))
@@ -108,8 +162,9 @@ export default function SubirHistoriaModal({ isOpen, onClose, userData, onStoryU
       return
     }
 
-    if (mediaType === 'video' && videoDuration > 30) {
-      setErrorMsg('Por favor recorta o selecciona un video de máximo 30 segundos.')
+    const selectedSegmentDuration = Math.round(trimEnd - trimStart)
+    if (mediaType === 'video' && selectedSegmentDuration > 15) {
+      setErrorMsg('Por favor recorta el video a un segmento máximo de 15 segundos.')
       return
     }
 
@@ -138,7 +193,9 @@ export default function SubirHistoriaModal({ isOpen, onClose, userData, onStoryU
         mediaType: mediaType,
         imageUrl: mediaType === 'image' ? mediaPreview : null,
         videoUrl: mediaType === 'video' ? mediaPreview : null,
-        videoDuration: videoDuration || 15,
+        trimStart: mediaType === 'video' ? trimStart : 0,
+        trimEnd: mediaType === 'video' ? trimEnd : 15,
+        videoDuration: mediaType === 'video' ? (selectedSegmentDuration || 15) : 15,
         caption: caption.trim() || (isClient ? 'Excelente servicio solicitado en Listo Patrón ⚡' : 'Trabajo realizado con calidad Listo Patrón ⚡'),
         likesCount: 0,
         is5StarVerified: !isClient,
@@ -221,6 +278,67 @@ export default function SubirHistoriaModal({ isOpen, onClose, userData, onStoryU
           </div>
         )}
 
+        {/* WhatsApp Video Editor Bar & Trimmer (rendered when video is selected) */}
+        {mediaType === 'video' && mediaPreview && videoRawDuration > 0 && (
+          <div className="wa-video-editor-wrapper">
+            {/* Top Toolbar WhatsApp Icons */}
+            <div className="wa-top-toolbar">
+              <span className="wa-top-icon" onClick={() => setIsVideoMuted(!isVideoMuted)} title={isVideoMuted ? "Activar sonido" : "Silenciar"}>
+                {isVideoMuted ? '🔇' : '🔊'}
+              </span>
+              <div className="wa-top-actions">
+                <span className="wa-tool-badge">🎵</span>
+                <span className="wa-tool-badge active">✂️ 15s</span>
+                <span className="wa-tool-badge">🏷️</span>
+                <span className="wa-tool-badge">Aa</span>
+                <span className="wa-tool-badge">✏️</span>
+              </div>
+            </div>
+
+            {/* Trimmer Filmstrip Bar with handles */}
+            <div className="wa-filmstrip-bar">
+              <div className="wa-filmstrip-track">
+                <div 
+                  className="wa-filmstrip-highlight"
+                  style={{
+                    left: `${(trimStart / videoRawDuration) * 100}%`,
+                    width: `${Math.max(10, ((trimEnd - trimStart) / videoRawDuration) * 100)}%`
+                  }}
+                >
+                  <div className="wa-handle left">‹</div>
+                  <div className="wa-handle right">›</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Trimmer Sliders */}
+            <div className="wa-trimmer-controls">
+              <div className="wa-trim-item">
+                <span>Inicio: <strong>{trimStart.toFixed(1)}s</strong></span>
+                <input
+                  type="range"
+                  min="0"
+                  max={Math.max(0, videoRawDuration - 1)}
+                  step="0.1"
+                  value={trimStart}
+                  onChange={(e) => handleStartChange(parseFloat(e.target.value))}
+                />
+              </div>
+              <div className="wa-trim-item">
+                <span>Fin: <strong>{trimEnd.toFixed(1)}s</strong></span>
+                <input
+                  type="range"
+                  min="0.5"
+                  max={videoRawDuration}
+                  step="0.1"
+                  value={trimEnd}
+                  onChange={(e) => handleEndChange(parseFloat(e.target.value))}
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
         <div style={{ display: 'flex', justifyContent: 'center', width: '100%', margin: '4px 0' }}>
           <label className="subir-historia-preview-area">
             <input
@@ -233,18 +351,18 @@ export default function SubirHistoriaModal({ isOpen, onClose, userData, onStoryU
               mediaType === 'video' ? (
                 <div style={{ position: 'relative', width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#000' }}>
                   <video
+                    ref={videoRef}
                     src={mediaPreview}
-                    controls
                     autoPlay
-                    muted
+                    loop
+                    muted={isVideoMuted}
                     playsInline
+                    onTimeUpdate={handleTimeUpdate}
                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                   />
-                  {videoDuration && (
-                    <span style={{ position: 'absolute', top: '10px', right: '10px', background: 'rgba(0,0,0,0.75)', color: '#fff', fontSize: '11px', fontWeight: 800, padding: '3px 8px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.3)' }}>
-                      ⏱️ {videoDuration}s
-                    </span>
-                  )}
+                  <span className="wa-video-overlay-badge">
+                    ⏱️ 0:{Math.round(trimEnd - trimStart).toString().padStart(2, '0')} • {fileSizeStr || '2.9 MB'}
+                  </span>
                 </div>
               ) : (
                 <img src={mediaPreview} alt="Vista previa del trabajo" className="subir-historia-preview-img" />

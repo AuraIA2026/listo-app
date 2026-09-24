@@ -684,3 +684,137 @@
   height: 100%;
   object-fit: cover;
 }
+
+/* ── WHATSAPP STATUS VIDEO EDITOR & TRIMMER BAR ── */
+.wa-video-editor-wrapper {
+  background: #0F172A;
+  border-radius: 16px;
+  padding: 12px;
+  border: 1px solid rgba(242, 96, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.wa-top-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.wa-top-icon {
+  background: rgba(255, 255, 255, 0.12);
+  padding: 6px 10px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.wa-top-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.wa-tool-badge {
+  background: rgba(255, 255, 255, 0.1);
+  color: #CBD5E1;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.wa-tool-badge.active {
+  background: #F26000;
+  color: #FFFFFF;
+}
+
+.wa-filmstrip-bar {
+  width: 100%;
+  height: 42px;
+  background: #1E293B;
+  border-radius: 8px;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid #334155;
+  background-image: repeating-linear-gradient(90deg, #334155 0px, #334155 2px, transparent 2px, transparent 16px);
+}
+
+.wa-filmstrip-track {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.wa-filmstrip-highlight {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  background: rgba(242, 96, 0, 0.25);
+  border-top: 3px solid #F26000;
+  border-bottom: 3px solid #F26000;
+  box-sizing: border-box;
+}
+
+.wa-handle {
+  position: absolute;
+  top: -2px;
+  bottom: -2px;
+  width: 14px;
+  background: #F26000;
+  color: #FFFFFF;
+  font-size: 12px;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 3px;
+  cursor: ew-resize;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+}
+
+.wa-handle.left { left: 0; }
+.wa-handle.right { right: 0; }
+
+.wa-trimmer-controls {
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;
+}
+
+.wa-trim-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 11px;
+  color: #94A3B8;
+}
+
+.wa-trim-item strong {
+  color: #F26000;
+}
+
+.wa-trim-item input[type="range"] {
+  accent-color: #F26000;
+  cursor: pointer;
+  height: 4px;
+}
+
+.wa-video-overlay-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(4px);
+  color: #FFFFFF;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}

@@ -307,6 +307,16 @@ export default function HistoriasViewerModal({
               muted={isMuted}
               playsInline
               className="historias-viewer-image"
+              onLoadedMetadata={(e) => {
+                if (currentStory.trimStart && currentStory.trimStart > 0) {
+                  e.target.currentTime = currentStory.trimStart
+                }
+              }}
+              onTimeUpdate={(e) => {
+                if (currentStory.trimEnd && e.target.currentTime >= currentStory.trimEnd) {
+                  e.target.currentTime = currentStory.trimStart || 0
+                }
+              }}
             />
           ) : (
             <img
