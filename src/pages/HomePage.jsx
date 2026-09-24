@@ -434,7 +434,22 @@ export default function HomePage({ lang, navigate, userRole }) {
   ];
   const citiesPool = ['Santiago', 'Santo Domingo, D.N.', 'La Vega', 'San Cristóbal', 'Puerto Plata', 'San Pedro', 'La Romana', 'Moca', 'Bonao', 'Baní', 'Higüey'];
 
-  const [currentLiveToastText, setCurrentLiveToastText] = useState('');
+  const getCleanCity = (raw, seedStr = '') => {
+    if (raw && typeof raw === 'string' && raw.trim() && 
+        !raw.toLowerCase().includes('república') && 
+        !raw.toLowerCase().includes('dominicana') && 
+        raw.trim().toUpperCase() !== 'RD' &&
+        raw.trim().toUpperCase() !== 'DOMINICAN REPUBLIC') {
+      return raw.trim();
+    }
+    let hash = 0;
+    for (let i = 0; i < seedStr.length; i++) {
+      hash += seedStr.charCodeAt(i);
+    }
+    return citiesPool[Math.abs(hash) % citiesPool.length];
+  };
+
+  const [currentLiveToastObj, setCurrentLiveToastObj] = useState({ icon: '🔔', text: '' });
   const [showLiveToast, setShowLiveToast] = useState(false);
   const hideTimerRef = useRef(null);
   const lastEventIdRef = useRef(null);
@@ -450,7 +465,7 @@ export default function HomePage({ lang, navigate, userRole }) {
     const showEvent = (eventObj) => {
       if (!eventObj || !eventObj.text) return;
       lastEventIdRef.current = eventObj.id;
-      setCurrentLiveToastText(eventObj.text);
+      setCurrentLiveToastObj(eventObj);
       setShowLiveToast(true);
 
       if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
@@ -498,23 +513,28 @@ export default function HomePage({ lang, navigate, userRole }) {
             const client = d.reviewerName || d.clientName || d.client || 'Un cliente';
             const pro = d.proName || d.pro || 'un profesional';
             const spec = d.specEs || d.specialty || d.category || 'Servicio';
-            const city = d.city || d.provincia || d.location || 'República Dominicana';
+            const rawCity = d.city || d.provincia || d.location || d.ciudad;
+            const city = getCleanCity(rawCity, d.id || client);
             const isReview = d.rated || (d.ratingScore && Number(d.ratingScore) > 0);
             const scoreVal = d.ratingScore ? Number(d.ratingScore) : 5;
 
+            let icon = '💬';
             let text = '';
             if (isReview && d.ratingComment?.trim()) {
-              text = `💬 ${client} en ${city} dejó una reseña ⭐ ${scoreVal} a ${pro} (${spec})`;
+              icon = '💬';
+              text = `${client} en ${city} dejó una reseña ⭐ ${scoreVal} a ${pro} (${spec})`;
             } else if (isReview) {
-              text = `⭐ ${client} en ${city} dio ${scoreVal} estrellas a ${pro} (${spec}) en Trabajo Finalizado`;
+              icon = '⭐';
+              text = `${client} en ${city} dio ${scoreVal} estrellas a ${pro} (${spec}) en Trabajo Finalizado`;
             } else {
-              text = `✅ ${client} en ${city} finalizó un trabajo con ${pro} (${spec})`;
+              icon = '✅';
+              text = `${client} en ${city} finalizó un trabajo con ${pro} (${spec})`;
             }
 
             const rawTime = d.updatedAt || d.completedAt || d.ratedAt || d.createdAt;
             const timestamp = rawTime ? new Date(rawTime.seconds ? rawTime.seconds * 1000 : rawTime).getTime() : Date.now();
 
-            return { id: `order_${d.id}_${d.updatedAt || d.ratedAt || d.status || scoreVal}`, text, timestamp };
+            return { id: `order_${d.id}_${d.updatedAt || d.ratedAt || d.status || scoreVal}`, icon, text, timestamp };
           });
 
         processEvents();
@@ -533,23 +553,28 @@ export default function HomePage({ lang, navigate, userRole }) {
             const client = d.clientName || d.client || 'Un cliente';
             const pro = d.proName || d.pro || 'un profesional';
             const spec = d.specEs || d.specialty || d.category || 'Servicio';
-            const city = d.city || d.provincia || d.location || 'República Dominicana';
+            const rawCity = d.city || d.provincia || d.location || d.ciudad;
+            const city = getCleanCity(rawCity, d.id || client);
             const type = d.type || 'profile_like';
             const reactionName = d.reactionName || d.reactionIcon || 'Reacción';
 
+            let icon = '❤️';
             let text = '';
             if (type === 'story_like') {
-              text = `📸 ${client} en ${city} dio me gusta a la Historia de ${pro} (${spec})`;
+              icon = '📸';
+              text = `${client} en ${city} dio me gusta a la Historia de ${pro} (${spec})`;
             } else if (type === 'story_reaction') {
-              text = `💬 ${client} en ${city} reaccionó "${reactionName}" a la Historia de ${pro} (${spec})`;
+              icon = '💬';
+              text = `${client} en ${city} reaccionó "${reactionName}" a la Historia de ${pro} (${spec})`;
             } else {
-              text = `❤️ ${client} en ${city} dio me gusta al perfil de ${pro} (${spec})`;
+              icon = '❤️';
+              text = `${client} en ${city} dio me gusta al perfil de ${pro} (${spec})`;
             }
 
             const rawTime = d.createdAt;
             const timestamp = rawTime ? new Date(rawTime.seconds ? rawTime.seconds * 1000 : rawTime).getTime() : Date.now();
 
-            return { id: `like_${d.id}_${type}`, text, timestamp };
+            return { id: `like_${d.id}_${type}`, icon, text, timestamp };
           });
 
         processEvents();
@@ -1790,16 +1815,16 @@ export default function HomePage({ lang, navigate, userRole }) {
       )}
       {/* ── ELEMENTOS FLOTANTES ESTILO TEMU / AMAZON ── */}
       {/* Live Hiring Activity Toast */}
-      {showLiveToast && currentLiveToastText && (
+      {showLiveToast && currentLiveToastObj?.text && (
         <div 
           className="live-activity-toast"
           onClick={() => setShowLiveToast(false)}
           style={{ cursor: 'pointer' }}
           title="Toca para cerrar"
         >
-          <span style={{ fontSize: '18px', flexShrink: 0 }}>🔔</span>
+          <span style={{ fontSize: '18px', flexShrink: 0 }}>{currentLiveToastObj.icon || '🔔'}</span>
           <p className="live-activity-toast-text" style={{ flex: 1 }}>
-            {currentLiveToastText}
+            {currentLiveToastObj.text}
           </p>
           <button 
             type="button"
