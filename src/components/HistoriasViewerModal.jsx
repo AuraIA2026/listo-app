@@ -5,6 +5,7 @@ import { collection, addDoc, doc, updateDoc, increment, serverTimestamp } from '
 import recomendarIcon from '../assets/icons/recomendar.png'
 import opinionesIcon from '../assets/icons/opiniones.png'
 import compartirIcon from '../assets/icons/compartir.png'
+import { getProPlanTheme } from '../planTheme'
 import './Historias.css'
 
 export default function HistoriasViewerModal({
@@ -44,6 +45,10 @@ export default function HistoriasViewerModal({
   }, [])
 
   const currentStory = stories[currentIndex] || stories[0]
+  const storyPlanTheme = getProPlanTheme(
+    currentStory?.proPlan || currentStory?.plan || currentStory?.subscription,
+    currentStory?.proRating || currentStory?.rating || 5.0
+  )
 
   // Record story view counter
   useEffect(() => {
@@ -328,12 +333,13 @@ export default function HistoriasViewerModal({
               src={currentStory.proAvatar || 'https://randomuser.me/api/portraits/men/32.jpg'}
               alt={currentStory.proName}
               className="historias-header-avatar"
+              style={{ borderColor: storyPlanTheme.color }}
             />
             <div className="historias-header-text">
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
                 <span className="historias-header-name">{currentStory.proName}</span>
-                <span style={{ fontSize: '10px', background: 'linear-gradient(135deg, #F59E0B, #D97706)', color: 'white', padding: '1px 6px', borderRadius: '10px', fontWeight: 800 }}>
-                  ⭐ 5.0
+                <span style={{ fontSize: '10px', background: storyPlanTheme.badgeBg, color: storyPlanTheme.badgeColor, padding: '1px 7px', borderRadius: '10px', fontWeight: 900 }}>
+                  {storyPlanTheme.badge}
                 </span>
                 {isVideoStory && (
                   <span style={{ fontSize: '10px', background: 'rgba(255,255,255,0.2)', color: 'white', padding: '1px 6px', borderRadius: '10px', fontWeight: 700 }}>
@@ -341,7 +347,7 @@ export default function HistoriasViewerModal({
                   </span>
                 )}
               </div>
-              <span className="historias-header-spec">⚡ {currentStory.proCategory} • Entrega 5★</span>
+              <span className="historias-header-spec">⚡ {currentStory.proCategory} • ⭐ {currentStory.proRating || currentStory.rating || 5.0}</span>
             </div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -376,6 +382,31 @@ export default function HistoriasViewerModal({
 
         {/* Story Media (Image or Video) */}
         <div className="historias-viewer-image-container">
+          {/* Sello '⭐ Top Profesional' para VIP o 5 Estrellas */}
+          {(storyPlanTheme.id === 'vip' || Number(currentStory.proRating || currentStory.rating || 5.0) >= 4.8) && !isPaused && (
+            <div style={{
+              position: 'absolute',
+              top: '75px',
+              left: '16px',
+              background: 'linear-gradient(135deg, #F59E0B 0%, #D97706 50%, #F26000 100%)',
+              color: '#FFFFFF',
+              padding: '5px 12px',
+              borderRadius: '20px',
+              fontSize: '11px',
+              fontWeight: '900',
+              zIndex: 25,
+              boxShadow: '0 4px 15px rgba(245, 158, 11, 0.6), 0 0 10px rgba(242, 96, 0, 0.4)',
+              border: '1px solid rgba(255, 255, 255, 0.4)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              letterSpacing: '0.3px'
+            }}>
+              <span>⭐</span>
+              <span>Top Profesional</span>
+            </div>
+          )}
+
           {isVideoStory ? (
             <video
               src={currentStory.videoUrl || currentStory.imageUrl}

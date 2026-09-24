@@ -4,6 +4,7 @@ import { db } from '../firebase'
 import { collection, query, where, getDocs, onSnapshot } from 'firebase/firestore'
 import HistoriasViewerModal from './HistoriasViewerModal'
 import SubirHistoriaModal from './SubirHistoriaModal'
+import { getProPlanTheme } from '../planTheme'
 import './Historias.css'
 
 export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate }) {
@@ -19,6 +20,15 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate
   const [canScrollRight, setCanScrollRight] = useState(true)
 
   const isProUser = isPro || userData?.role === 'pro' || userData?.type === 'pro' || localStorage.getItem('forceListoPro') === 'true'
+
+  // Regla de Bienvenida (Grace Period): Pro de planes Gold, Platinum o VIP registrados en los últimos 30 días pueden subir 1 historia gratis
+  const userPlanRaw = String(userData?.plan || userData?.planName || userData?.subscription || '').toLowerCase()
+  const userCreatedAt = userData?.createdAt ? new Date(userData.createdAt).getTime() : 0
+  const isWithin30Days = userCreatedAt > 0 ? (Date.now() - userCreatedAt <= 30 * 24 * 60 * 60 * 1000) : true
+  const isGoldOrAbove = userPlanRaw.includes('gold') || userPlanRaw.includes('platinum') || userPlanRaw.includes('vip') || userPlanRaw.includes('élite')
+  const isGracePeriodEligible = isProUser && isGoldOrAbove && isWithin30Days
+
+  const canPublishStory = !isProUser || has5StarContract || isGracePeriodEligible
 
   // Real-time verification if the professional has at least one 4-5 star completed contract
   useEffect(() => {
@@ -89,6 +99,8 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate
           fullName: 'M&M Smart Phone',
           proAvatar: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=200&q=80',
           proCategory: 'Reparación de Celulares',
+          proPlan: 'gold',
+          proRating: 4.6,
           imageUrl: 'https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?auto=format&fit=crop&w=800&q=80',
           caption: '📱 Cambio de pantalla AMOLED & batería para iPhone 15 Pro Max listo en 20 mins.',
           likesCount: 38,
@@ -101,6 +113,8 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate
           fullName: 'E-Business Store',
           proAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80',
           proCategory: 'Soporte Técnico VIP',
+          proPlan: 'vip',
+          proRating: 5.0,
           imageUrl: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80',
           caption: '💻 Instalación y optimización de redes de fibra óptica en torre residencial.',
           likesCount: 45,
@@ -113,6 +127,8 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate
           fullName: 'Control Pizza Burger',
           proAvatar: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=200&q=80',
           proCategory: 'Chef & Catering 24h',
+          proPlan: 'platinum',
+          proRating: 4.7,
           imageUrl: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=800&q=80',
           caption: '🍕 Servicio VIP de Pizza Artesanal a la leña para eventos corporativos.',
           likesCount: 62,
@@ -125,6 +141,8 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate
           fullName: 'Carlos Santana',
           proAvatar: 'https://randomuser.me/api/portraits/men/32.jpg',
           proCategory: 'Electricista Certificado',
+          proPlan: 'estandar',
+          proRating: 3.8,
           imageUrl: 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=800&q=80',
           caption: '⚡ Montaje de breakers inteligentes y luces LED ocultas en techo flotante.',
           likesCount: 29,
@@ -137,6 +155,8 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate
           fullName: 'Roan Rafael',
           proAvatar: 'https://randomuser.me/api/portraits/men/46.jpg',
           proCategory: 'Plomería & Tuberías',
+          proPlan: 'gold',
+          proRating: 4.5,
           imageUrl: 'https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?auto=format&fit=crop&w=800&q=80',
           caption: '🔧 Detección de fugas de agua no destructiva con escáner ultrasónico.',
           likesCount: 51,
@@ -149,6 +169,8 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate
           fullName: 'Oscar Alejandro',
           proAvatar: 'https://randomuser.me/api/portraits/men/68.jpg',
           proCategory: 'Mecánica Móvil 24/7',
+          proPlan: 'vip',
+          proRating: 4.9,
           imageUrl: 'https://images.unsplash.com/photo-1486006920555-c77dce18193b?auto=format&fit=crop&w=800&q=80',
           caption: '🚗 Auxilio vial y cambio de alternador directo en la carretera.',
           likesCount: 77,
@@ -209,7 +231,7 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate
   }
 
   const handleAddStoryClick = () => {
-    if (!isProUser || has5StarContract) {
+    if (canPublishStory) {
       setUploadModalOpen(true)
     } else {
       setShowLockNotice(true)
@@ -247,7 +269,7 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate
         >
           {/* Add Story Button for both Clients and Professionals */}
           <div className="historia-item" onClick={handleAddStoryClick}>
-            <div className={`historia-ring add-story-ring ${isProUser && !has5StarContract ? 'locked' : ''}`}>
+            <div className={`historia-ring add-story-ring ${!canPublishStory ? 'locked' : ''}`}>
               <div className="historia-avatar-inner">
                 <img
                   src={userData?.photoURL || userData?.avatarUrl || userData?.profilePhoto || 'https://randomuser.me/api/portraits/men/32.jpg'}
@@ -256,15 +278,15 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate
                 />
               </div>
               <div className="historia-add-plus">
-                {isProUser ? (has5StarContract ? '+' : '🔒') : '+'}
+                {canPublishStory ? '+' : '🔒'}
               </div>
             </div>
             <span className="historia-label pro-label">
-              {isProUser ? (has5StarContract ? 'Tu Historia' : '⭐ 5 Estrellas') : 'Tu Historia'}
+              {canPublishStory ? 'Tu Historia' : '⭐ 5 Estrellas'}
             </span>
           </div>
 
-          {/* Unique Professionals Stories List (Grouped to prevent duplicates) */}
+          {/* Unique Professionals Stories List with Custom Plan Color Themes */}
           {(() => {
             const uniquePros = []
             const seenKeys = new Set()
@@ -279,6 +301,8 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate
                   firstIndex: idx,
                   proName: story.proName || story.fullName,
                   proAvatar: story.proAvatar,
+                  proPlan: story.proPlan || story.plan || story.subscription,
+                  proRating: story.proRating || story.rating || story.calificacion || 5.0,
                   allStoryIds
                 })
               }
@@ -286,13 +310,21 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate
 
             return uniquePros.map((pro) => {
               const isAllSeen = pro.allStoryIds.every(id => seenStories.includes(id))
+              const theme = getProPlanTheme(pro.proPlan, pro.proRating)
+
               return (
                 <div
                   key={pro.key}
                   className="historia-item"
                   onClick={() => handleOpenViewer(pro.firstIndex)}
                 >
-                  <div className={`historia-ring ${isAllSeen ? 'seen' : ''}`}>
+                  <div
+                    className={`historia-ring ${isAllSeen ? 'seen' : ''}`}
+                    style={isAllSeen ? {} : {
+                      background: theme.ringGradient,
+                      boxShadow: `0 4px 14px ${theme.color}55`
+                    }}
+                  >
                     <div className="historia-avatar-inner">
                       <img
                         src={pro.proAvatar || 'https://randomuser.me/api/portraits/men/32.jpg'}
@@ -300,6 +332,11 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate
                         className="historia-avatar"
                       />
                     </div>
+                    {!isAllSeen && (
+                      <span className="historia-plan-badge-tag" style={{ background: theme.badgeBg, color: theme.badgeColor }}>
+                        {theme.tag}
+                      </span>
+                    )}
                   </div>
                   <span className="historia-label" title={pro.proName}>
                     {pro.proName}
