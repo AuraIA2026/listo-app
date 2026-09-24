@@ -357,7 +357,11 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate
                 >
                   <div
                     className={`historia-ring ${isAllSeen ? 'seen' : ''}`}
-                    style={isAllSeen ? {} : {
+                    style={isAllSeen ? {
+                      background: 'rgba(255, 255, 255, 0.15)',
+                      border: `2px solid ${theme.color}`,
+                      boxShadow: `0 2px 8px ${theme.color}44`
+                    } : {
                       background: theme.ringGradient,
                       boxShadow: `0 4px 14px ${theme.color}55`
                     }}
@@ -369,11 +373,17 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate
                         className="historia-avatar"
                       />
                     </div>
-                    {!isAllSeen && (
-                      <span className="historia-plan-badge-tag" style={{ background: theme.badgeBg, color: theme.badgeColor }}>
-                        {theme.tag}
-                      </span>
-                    )}
+                    {/* El distintivo de plan (GOLD, PLATINUM, VIP, BÁSICO) SIEMPRE permanece visible */}
+                    <span 
+                      className="historia-plan-badge-tag" 
+                      style={{ 
+                        background: theme.badgeBg, 
+                        color: theme.badgeColor,
+                        opacity: isAllSeen ? 0.85 : 1
+                      }}
+                    >
+                      {theme.tag}
+                    </span>
                   </div>
                   <span className="historia-label" title={pro.proName}>
                     {pro.proName}
