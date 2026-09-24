@@ -47,7 +47,7 @@ export default function HistoriasViewerModal({
   const currentStory = stories[currentIndex] || stories[0]
   const storyPlanTheme = getProPlanTheme(
     currentStory?.proPlan || currentStory?.plan || currentStory?.subscription,
-    currentStory?.proRating || currentStory?.rating || 5.0
+    currentStory?.proRating || currentStory?.rating || 0
   )
 
   // Record story view counter
@@ -326,19 +326,28 @@ export default function HistoriasViewerModal({
           })}
         </div>
 
-        {/* Top Pro Info Header (Hidden when user holds screen to pause) */}
-        <div className={`historias-viewer-header ${isPaused ? 'hidden-on-pause' : ''}`}>
+        {/* Top Pro Info Header (Difuminado con color del plan del profesional) */}
+        <div 
+          className={`historias-viewer-header ${isPaused ? 'hidden-on-pause' : ''}`}
+          style={{
+            background: storyPlanTheme.headerGradient,
+            borderBottom: storyPlanTheme.headerBorder,
+            boxShadow: storyPlanTheme.headerGlow,
+            backdropFilter: 'blur(14px)',
+            WebkitBackdropFilter: 'blur(14px)'
+          }}
+        >
           <div className="historias-pro-info" onClick={handleProClick} style={{ cursor: 'pointer' }}>
             <img
               src={currentStory.proAvatar || 'https://randomuser.me/api/portraits/men/32.jpg'}
               alt={currentStory.proName}
               className="historias-header-avatar"
-              style={{ borderColor: storyPlanTheme.color }}
+              style={{ borderColor: storyPlanTheme.color, boxShadow: `0 0 10px ${storyPlanTheme.color}` }}
             />
             <div className="historias-header-text">
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
                 <span className="historias-header-name">{currentStory.proName}</span>
-                <span style={{ fontSize: '10px', background: storyPlanTheme.badgeBg, color: storyPlanTheme.badgeColor, padding: '1px 7px', borderRadius: '10px', fontWeight: 900 }}>
+                <span style={{ fontSize: '10px', background: storyPlanTheme.badgeBg, color: storyPlanTheme.badgeColor, padding: '2px 8px', borderRadius: '10px', fontWeight: 900, boxShadow: '0 2px 6px rgba(0,0,0,0.3)' }}>
                   {storyPlanTheme.badge}
                 </span>
                 {isVideoStory && (
@@ -347,7 +356,9 @@ export default function HistoriasViewerModal({
                   </span>
                 )}
               </div>
-              <span className="historias-header-spec">⚡ {currentStory.proCategory} • ⭐ {currentStory.proRating || currentStory.rating || 5.0}</span>
+              <span className="historias-header-spec" style={{ color: 'rgba(255,255,255,0.9)' }}>
+                ⚡ {currentStory.proCategory} {currentStory.proRating ? `• ⭐ ${currentStory.proRating}` : ''}
+              </span>
             </div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -382,11 +393,11 @@ export default function HistoriasViewerModal({
 
         {/* Story Media (Image or Video) */}
         <div className="historias-viewer-image-container">
-          {/* Sello '⭐ Top Profesional' para VIP o 5 Estrellas */}
-          {(storyPlanTheme.id === 'vip' || Number(currentStory.proRating || currentStory.rating || 5.0) >= 4.8) && !isPaused && (
+          {/* Sello '⭐ Top Profesional' exclusivamente para usuarios con Plan VIP */}
+          {storyPlanTheme.id === 'vip' && !isPaused && (
             <div style={{
               position: 'absolute',
-              top: '75px',
+              top: '85px',
               left: '16px',
               background: 'linear-gradient(135deg, #F59E0B 0%, #D97706 50%, #F26000 100%)',
               color: '#FFFFFF',

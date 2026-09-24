@@ -181,6 +181,9 @@ export default function SubirHistoriaModal({ isOpen, onClose, userData, onStoryU
     const avatar = userData?.avatarUrl || userData?.photoURL || userData?.profilePhoto || activeUser?.photoURL || storedUser?.avatarUrl || storedUser?.photoURL || 'https://randomuser.me/api/portraits/men/32.jpg';
     const category = isClient ? 'Cliente Satisfecho 🤝' : (userData?.especialidad || userData?.category || userData?.specEs || storedUser?.especialidad || storedUser?.category || 'Profesional Registrado');
 
+    const proPlan = isClient ? 'cliente' : (userData?.plan || userData?.planName || userData?.subscription || storedUser?.plan || storedUser?.planName || storedUser?.subscription || 'estandar');
+    const proRating = Number(userData?.rating || storedUser?.rating || 5.0);
+
     setIsUploading(true)
     setErrorMsg('')
 
@@ -190,6 +193,8 @@ export default function SubirHistoriaModal({ isOpen, onClose, userData, onStoryU
         proName: name,
         proAvatar: avatar,
         proCategory: category,
+        proPlan: proPlan,
+        proRating: proRating,
         mediaType: mediaType,
         imageUrl: mediaType === 'image' ? mediaPreview : null,
         videoUrl: mediaType === 'video' ? mediaPreview : null,
