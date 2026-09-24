@@ -439,32 +439,48 @@ export default function HomePage({ lang, navigate, userRole }) {
   const hideTimerRef = useRef(null);
   const lastEventIdRef = useRef(null);
 
-  // Escuchador en TIEMPO REAL para notificaciones verdaderas: Reseñas, Likes y Contratos completados
+  // Escuchador en TIEMPO REAL para notificaciones verdaderas: Historias (Likes/Reacciones) y Trabajo Finalizado (Reseñas/Estrellas)
   useEffect(() => {
     let ordersEvents = [];
     let likesEvents = [];
+    let cycleInterval = null;
+    let eventListRef = [];
+    let eventIndex = 0;
+
+    const showEvent = (eventObj) => {
+      if (!eventObj || !eventObj.text) return;
+      lastEventIdRef.current = eventObj.id;
+      setCurrentLiveToastText(eventObj.text);
+      setShowLiveToast(true);
+
+      if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
+      hideTimerRef.current = setTimeout(() => {
+        setShowLiveToast(false);
+      }, 5500);
+    };
 
     const processEvents = () => {
       const allEvents = [...ordersEvents, ...likesEvents];
       allEvents.sort((a, b) => b.timestamp - a.timestamp);
+      eventListRef = allEvents;
 
       if (allEvents.length > 0) {
         const latest = allEvents[0];
-        if (latest.id === lastEventIdRef.current) return;
-        lastEventIdRef.current = latest.id;
-
-        setCurrentLiveToastText(latest.text);
-        setShowLiveToast(true);
-
-        // Auto-desaparecer automáticamente tras 5 segundos (5000 ms)
-        if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
-        hideTimerRef.current = setTimeout(() => {
-          setShowLiveToast(false);
-        }, 5000);
+        if (latest.id !== lastEventIdRef.current) {
+          showEvent(latest);
+        }
       }
     };
 
-    // 1. Escuchar Contratos Completados y Reseñas en 'orders'
+    // Rotación automática continua cada 12 segundos si hay eventos en la lista
+    cycleInterval = setInterval(() => {
+      if (eventListRef.length > 0) {
+        eventIndex = (eventIndex + 1) % eventListRef.length;
+        showEvent(eventListRef[eventIndex]);
+      }
+    }, 12000);
+
+    // 1. Escuchar Contratos Completados, Reseñas y Calificación de Estrellas en Trabajo Finalizado
     const qOrders = query(collection(db, 'orders'), limit(30));
     const unsubOrders = onSnapshot(qOrders, (snapshot) => {
       if (!snapshot.empty) {
@@ -484,16 +500,21 @@ export default function HomePage({ lang, navigate, userRole }) {
             const spec = d.specEs || d.specialty || d.category || 'Servicio';
             const city = d.city || d.provincia || d.location || 'República Dominicana';
             const isReview = d.rated || (d.ratingScore && Number(d.ratingScore) > 0);
-            const stars = d.ratingScore ? `⭐ ${d.ratingScore}` : '⭐ 5.0';
+            const scoreVal = d.ratingScore ? Number(d.ratingScore) : 5;
 
-            const text = isReview 
-              ? `💬 ${client} en ${city} dejó una reseña ${stars} a ${pro} (${spec})`
-              : `✅ ${client} en ${city} completó un contrato con ${pro} (${spec})`;
+            let text = '';
+            if (isReview && d.ratingComment?.trim()) {
+              text = `💬 ${client} en ${city} dejó una reseña ⭐ ${scoreVal} a ${pro} (${spec})`;
+            } else if (isReview) {
+              text = `⭐ ${client} en ${city} dio ${scoreVal} estrellas a ${pro} (${spec}) en Trabajo Finalizado`;
+            } else {
+              text = `✅ ${client} en ${city} finalizó un trabajo con ${pro} (${spec})`;
+            }
 
             const rawTime = d.updatedAt || d.completedAt || d.ratedAt || d.createdAt;
-            const timestamp = rawTime ? new Date(rawTime.seconds ? rawTime.seconds * 1000 : rawTime).getTime() : 0;
+            const timestamp = rawTime ? new Date(rawTime.seconds ? rawTime.seconds * 1000 : rawTime).getTime() : Date.now();
 
-            return { id: `order_${d.id}_${d.updatedAt || d.ratedAt || d.status}`, text, timestamp };
+            return { id: `order_${d.id}_${d.updatedAt || d.ratedAt || d.status || scoreVal}`, text, timestamp };
           });
 
         processEvents();
@@ -502,7 +523,7 @@ export default function HomePage({ lang, navigate, userRole }) {
       console.log('Realtime orders listener notice:', error);
     });
 
-    // 2. Escuchar Me Gusta (Likes) en 'likes'
+    // 2. Escuchar Me Gusta (Likes) y Reacciones a Historias en 'likes'
     const qLikes = query(collection(db, 'likes'), limit(30));
     const unsubLikes = onSnapshot(qLikes, (snapshot) => {
       if (!snapshot.empty) {
@@ -511,15 +532,24 @@ export default function HomePage({ lang, navigate, userRole }) {
           .map(d => {
             const client = d.clientName || d.client || 'Un cliente';
             const pro = d.proName || d.pro || 'un profesional';
-            const spec = d.specEs || d.specialty || 'Servicio';
+            const spec = d.specEs || d.specialty || d.category || 'Servicio';
             const city = d.city || d.provincia || d.location || 'República Dominicana';
+            const type = d.type || 'profile_like';
+            const reactionName = d.reactionName || d.reactionIcon || 'Reacción';
 
-            const text = `❤️ ${client} en ${city} dio me gusta al perfil de ${pro} (${spec})`;
+            let text = '';
+            if (type === 'story_like') {
+              text = `📸 ${client} en ${city} dio me gusta a la Historia de ${pro} (${spec})`;
+            } else if (type === 'story_reaction') {
+              text = `💬 ${client} en ${city} reaccionó "${reactionName}" a la Historia de ${pro} (${spec})`;
+            } else {
+              text = `❤️ ${client} en ${city} dio me gusta al perfil de ${pro} (${spec})`;
+            }
 
             const rawTime = d.createdAt;
-            const timestamp = rawTime ? new Date(rawTime.seconds ? rawTime.seconds * 1000 : rawTime).getTime() : 0;
+            const timestamp = rawTime ? new Date(rawTime.seconds ? rawTime.seconds * 1000 : rawTime).getTime() : Date.now();
 
-            return { id: `like_${d.id}`, text, timestamp };
+            return { id: `like_${d.id}_${type}`, text, timestamp };
           });
 
         processEvents();
@@ -532,6 +562,7 @@ export default function HomePage({ lang, navigate, userRole }) {
       unsubOrders();
       unsubLikes();
       if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
+      if (cycleInterval) clearInterval(cycleInterval);
     };
   }, []);
 

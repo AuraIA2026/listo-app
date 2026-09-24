@@ -230,6 +230,7 @@ export default function HistoriasViewerModal({
         const city = userData?.ciudad || userData?.municipio || 'Santo Domingo'
 
         await addDoc(collection(db, 'likes'), {
+          type: 'story_like',
           clientName: clientName,
           proId: proId,
           proName: proName,
@@ -260,6 +261,21 @@ export default function HistoriasViewerModal({
     try {
       const clientName = userData?.name || userData?.displayName || 'Un cliente'
       const proId = currentStory.proId || 'pro_unknown'
+      const proName = currentStory.proName || 'un profesional'
+      const specEs = currentStory.proCategory || 'Servicio'
+      const city = userData?.ciudad || userData?.municipio || 'Santo Domingo'
+
+      await addDoc(collection(db, 'likes'), {
+        type: 'story_reaction',
+        reactionName: displayLabel,
+        reactionIcon: reactionValue,
+        clientName: clientName,
+        proId: proId,
+        proName: proName,
+        specEs: specEs,
+        city: city,
+        createdAt: serverTimestamp()
+      })
 
       await addDoc(collection(db, 'notificaciones'), {
         userId: proId,
