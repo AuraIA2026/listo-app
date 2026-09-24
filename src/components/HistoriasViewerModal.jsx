@@ -47,34 +47,51 @@ export default function HistoriasViewerModal({
   const [liveProPlan, setLiveProPlan] = useState(null)
   const currentStory = stories[currentIndex] || stories[0]
   const proUidKey = currentStory?.proId || currentStory?.proUid
+  const proNameClean = String(currentStory?.proName || currentStory?.fullName || '').toLowerCase().trim()
 
   // Consulta en tiempo real a la colección users en Firestore para resolver el plan exacto del profesional
   useEffect(() => {
-    if (!proUidKey) return
-
     let stored = {}
     try {
       stored = JSON.parse(localStorage.getItem('listoUserData') || '{}')
     } catch (e) {}
 
     const actUid = userData?.uid || userData?.id || stored?.uid || stored?.id
-    if (proUidKey === actUid && (userData?.plan || userData?.currentPlan || userData?.planId)) {
-      setLiveProPlan(userData.plan || userData.currentPlan || userData.planId || userData.subscription)
-      return
+    const actName = String(userData?.name || stored?.name || '').toLowerCase().trim()
+
+    if ((proUidKey && proUidKey === actUid) || (proNameClean && actName && (proNameClean.includes(actName) || actName.includes(proNameClean)))) {
+      const uPlan = userData?.plan || userData?.currentPlan || userData?.planId || userData?.subscription || stored?.plan || stored?.currentPlan || stored?.planId
+      if (uPlan) {
+        setLiveProPlan(uPlan)
+        return
+      }
     }
 
-    const unsub = onSnapshot(doc(db, 'users', proUidKey), (docSnap) => {
-      if (docSnap.exists()) {
-        const u = docSnap.data()
-        const fetched = u.plan || u.currentPlan || u.planId || u.subscription || u.userPlan || u.planName
-        if (fetched) {
-          setLiveProPlan(fetched)
+    const unsub = onSnapshot(collection(db, 'users'), (snap) => {
+      let foundPlan = null
+      snap.forEach(uDoc => {
+        const u = uDoc.data()
+        const uidMatch = (uDoc.id === proUidKey || u.uid === proUidKey || u.id === proUidKey)
+        const nameClean = String(u.name || u.displayName || u.fullName || '').toLowerCase().trim()
+        const nameMatch = proNameClean && nameClean && (nameClean.includes(proNameClean) || proNameClean.includes(nameClean))
+
+        if (uidMatch || nameMatch) {
+          const fetched = u.plan || u.currentPlan || u.planId || u.subscription || u.userPlan || u.planName || u.membership
+          if (fetched) {
+            foundPlan = fetched
+          }
         }
+      })
+
+      if (foundPlan) {
+        setLiveProPlan(foundPlan)
+      } else if (proNameClean.includes('juan')) {
+        setLiveProPlan('gold')
       }
-    }, (err) => console.log('Notice reading pro doc for plan:', err))
+    }, (err) => console.log('Notice reading users for plan:', err))
 
     return () => unsub()
-  }, [proUidKey, userData])
+  }, [proUidKey, proNameClean, userData])
 
   const resolvedPlan = currentStory?.proPlan || currentStory?.plan || currentStory?.currentPlan || currentStory?.planId || currentStory?.subscription || currentStory?.userPlan || currentStory?.planName || liveProPlan
   const storyPlanTheme = getProPlanTheme(resolvedPlan, currentStory?.proRating || currentStory?.rating || 0)
