@@ -534,18 +534,11 @@ export default function HistoriasViewerModal({
           <div className="historias-nav-touch-right" onClick={handleNextStory} />
         </div>
 
-        {/* Caption Box Overlay */}
-        {currentStory.caption && (
-          <div className={`historias-caption-box ${isPaused ? 'hidden-on-pause' : ''}`}>
-            <p className="historias-caption-text">{currentStory.caption}</p>
-          </div>
-        )}
-
         {/* Copied Notice Banner */}
         {shareNotice && (
           <div style={{
             position: 'absolute',
-            bottom: '125px',
+            bottom: '180px',
             left: '50%',
             transform: 'translateX(-50%)',
             background: 'rgba(16, 185, 129, 0.95)',
@@ -560,8 +553,15 @@ export default function HistoriasViewerModal({
           </div>
         )}
 
-        {/* Bottom Actions Container (Reactions + Contratar, Like, Share) */}
+        {/* Bottom Actions Container (Caption + Views + Reactions + Contratar, Like, Share) */}
         <div className={`historias-bottom-container ${isPaused ? 'hidden-on-pause' : ''}`}>
+
+          {/* Caption Box Overlay */}
+          {currentStory.caption && (
+            <div className="historias-caption-box">
+              <p className="historias-caption-text">{currentStory.caption}</p>
+            </div>
+          )}
 
           {/* Contador de Vistas (Informativo y Privado sin comunicación directa) */}
           <div style={{
