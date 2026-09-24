@@ -313,11 +313,39 @@ export default function LoginPage({ lang, navigate }) {
       localStorage.setItem('listo_saved_password', password)
 
       // ── Leer datos completos del usuario en Firestore ──
-      const userDoc  = await getDoc(doc(db, 'users', uid))
-      const userData = userDoc.exists() ? userDoc.data() : {}
+      const userDocRef = doc(db, 'users', uid)
+      const userDocSnap = await getDoc(userDocRef)
+      let userData = userDocSnap.exists() ? userDocSnap.data() : {}
 
-      // ✅ FIX: usar "type" en lugar de "role"
-      const type = userData.type || 'client'  // "pro" o "client"
+      if (!userDocSnap.exists()) {
+        const expireDate = new Date()
+        expireDate.setDate(expireDate.getDate() + 90)
+
+        userData = {
+          name: result.user.displayName || (result.user.email ? result.user.email.split('@')[0] : 'Usuario'),
+          email: loginEmail,
+          phone: result.user.phoneNumber || '',
+          type: userType,
+          role: userType === 'pro' ? 'professional' : 'client',
+          createdAt: serverTimestamp(),
+        }
+
+        if (userType === 'pro') {
+          userData.plan = 'basico'
+          userData.contracts = 3
+          userData.planStatus = 'active'
+          userData.available = false
+          userData.planExpirationDate = expireDate.toISOString()
+        }
+
+        try {
+          await setDoc(userDocRef, userData, { merge: true })
+        } catch (e) {
+          console.warn("Could not create initial user doc on login:", e)
+        }
+      }
+
+      const type = userData.type || userType || 'client'
 
       // Todo OK → navegar con todos los datos del usuario
       navigate('home', {
@@ -436,7 +464,22 @@ export default function LoginPage({ lang, navigate }) {
             <p className="auth-sub">{T.sub}</p>
           </div>
 
-
+          <div className="user-type-toggle">
+            <button
+              type="button"
+              className={userType === 'client' ? 'active' : ''}
+              onClick={() => setUserType('client')}
+            >
+              👤 {T.asClient}
+            </button>
+            <button
+              type="button"
+              className={userType === 'pro' ? 'active' : ''}
+              onClick={() => setUserType('pro')}
+            >
+              ⚡ {T.asPro}
+            </button>
+          </div>
 
           <div className="auth-form">
             <div className="field">

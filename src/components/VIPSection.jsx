@@ -536,10 +536,10 @@ export default function VIPSection({
             backdropFilter: 'blur(4px)'
           }}>
             <span style={{ fontSize: '10px', fontWeight: '800', color: '#FFD700' }}>
-              ⚡ PROMO PRIMERA CITA
+              ⚡ SERVICIO DESTACADO
             </span>
             <span style={{ fontSize: '10px', fontWeight: '900', color: '#FFFFFF', background: '#F26000', padding: '2px 6px', borderRadius: '6px' }}>
-              RD$500 OFF
+              ¡GARANTIZADO!
             </span>
           </div>
 
@@ -596,7 +596,7 @@ export default function VIPSection({
                 background: 'linear-gradient(135deg, #FF7A1A, #F26000)',
                 color: 'white',
                 border: 'none',
-                borderRadius: '12px',
+                borderRadius: '22px',
                 padding: '10px 18px',
                 fontSize: '12px',
                 fontWeight: '900',

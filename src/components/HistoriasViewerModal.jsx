@@ -398,7 +398,7 @@ export default function HistoriasViewerModal({
               className="btn-historia-action contratar"
               onClick={handleContratarClick}
             >
-              <img src={recomendarIcon} alt="Contratar" style={{ width: '22px', height: '22px', objectFit: 'contain', filter: 'brightness(0) invert(1)' }} />
+              <img src={recomendarIcon} alt="Contratar" style={{ width: '22px', height: '22px', objectFit: 'contain' }} />
               Contratar
             </button>
 
@@ -407,7 +407,7 @@ export default function HistoriasViewerModal({
               onClick={handleLikeStory}
             >
               <img src={opinionesIcon} alt="Me gusta" style={{ width: '22px', height: '22px', objectFit: 'contain' }} />
-              {likedStories[currentStory.id] ? 'Me gusta' : 'Me gusta'}
+              Me gusta
             </button>
 
             <button

@@ -545,7 +545,7 @@
   background: linear-gradient(135deg, #FF7A1A 0%, #F26000 50%, #C24D00 100%);
   color: white;
   border: none;
-  border-radius: 0px;
+  border-radius: 22px;
   padding: 10px 8px;
   font-size: 13px;
   font-weight: 900;
@@ -572,7 +572,7 @@
   background: #ffffff;
   color: #F26000;
   border: 1.5px solid #F26000;
-  border-radius: 0px;
+  border-radius: 22px;
   padding: 10px 8px;
   font-size: 13px;
   font-weight: 800;
@@ -604,7 +604,7 @@
   -webkit-backdrop-filter: blur(8px);
   color: #ffffff;
   border: 1px solid rgba(255, 255, 255, 0.4);
-  border-radius: 0px;
+  border-radius: 20px;
   padding: 4px 10px;
   font-size: 11px;
   font-weight: 800;

@@ -664,7 +664,7 @@ export default function HomePage({ lang, navigate, userRole }) {
             nameEn: data.name || 'No name',
             specEs: catObj ? catObj.labelEs : 'Servicios Integrales',
             specEn: catObj ? catObj.labelEn : 'General services',
-            category: data.category || 'unknown',
+            category: data.category || data.especialidad || data.verificacion?.especialidad || '',
             rating: data.rating || 0.0,
             reviews: data.reviewCount || data.reviews || 0,
             location: finalLoc,

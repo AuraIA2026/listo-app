@@ -186,92 +186,191 @@ function UpdateBlocker({ lang }) {
 
 function SystemAlertModal({ alert, onClose, lang }) {
   if (!alert) return null;
+  const textLength = alert.text ? alert.text.length : 0;
+  const fontSize = textLength > 65 ? '12px' : textLength > 40 ? '13.5px' : '15px';
+
   return (
     <div style={{
       position: 'fixed', inset: 0, zIndex: 100000,
-      background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(10px)',
-      display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px',
+      background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(8px)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px',
       animation: 'fadeIn 0.3s'
     }}>
       <style>{`
-        @keyframes sysAlertPop {
-          0% { transform: scale(0.8) translateY(20px); opacity: 0; }
-          100% { transform: scale(1) translateY(0); opacity: 1; }
+        @keyframes sysAlertCirclePop {
+          0% { transform: scale(0.6) rotate(-8deg); opacity: 0; }
+          100% { transform: scale(1) rotate(0deg); opacity: 1; }
         }
-        @keyframes floatStar {
-          0%, 100% { transform: translateY(0px) rotate(0deg); }
-          50% { transform: translateY(-20px) rotate(180deg); }
+        @keyframes bellRingBounce {
+          0%, 100% { transform: scale(1) rotate(0deg); }
+          15% { transform: scale(1.15) rotate(12deg); }
+          30% { transform: scale(1.15) rotate(-12deg); }
+          45% { transform: scale(1.1) rotate(8deg); }
+          60% { transform: scale(1) rotate(0deg); }
         }
       `}</style>
       
+      {/* CÍRCULO ADHESIVO STICKER */}
       <div style={{
-        width: '100%', maxWidth: '400px',
-        background: 'linear-gradient(145deg, #F26000, #FF8C42)',
-        border: '1px solid rgba(255, 215, 0, 0.4)',
-        boxShadow: '0 24px 50px rgba(0,0,0,0.5), 0 0 30px rgba(242,96,0,0.4)',
-        borderRadius: '24px', overflow: 'hidden',
+        width: '340px',
+        height: '340px',
+        maxWidth: '90vw',
+        maxHeight: '90vw',
+        aspectRatio: '1 / 1',
+        background: 'linear-gradient(145deg, #FF7818 0%, #F25A00 55%, #D44800 100%)',
+        border: '6px solid #FFFFFF',
+        boxShadow: '0 20px 48px rgba(0,0,0,0.45), 0 0 30px rgba(242,90,0,0.5), inset 0 2px 6px rgba(255,255,255,0.4)',
+        borderRadius: '50%',
+        padding: '20px 18px 18px 18px',
         position: 'relative',
-        animation: 'sysAlertPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        textAlign: 'center',
+        boxSizing: 'border-box',
+        animation: 'sysAlertCirclePop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1)'
       }}>
 
+        {/* Esquina Doblada de Sticker (Peel effect en superior derecha) */}
         <div style={{
-          position: 'absolute', top: '-10%', right: '-10%',
-          fontSize: '150px', opacity: 0.15, color: '#FFD700',
-          animation: 'floatStar 8s ease-in-out infinite', pointerEvents: 'none',
-          textShadow: '0 0 20px rgba(255,215,0,0.8)'
-        }}>⭐</div>
-        
-        <div style={{
-          position: 'absolute', bottom: '-10%', left: '-5%',
-          fontSize: '80px', opacity: 0.15, color: '#FFD700',
-          animation: 'floatStar 6s ease-in-out infinite reverse', pointerEvents: 'none'
-        }}>⭐</div>
+          position: 'absolute',
+          top: '-2px',
+          right: '25px',
+          width: '0',
+          height: '0',
+          borderStyle: 'solid',
+          borderWidth: '0 38px 38px 0',
+          borderColor: 'transparent #FFFFFF transparent transparent',
+          filter: 'drop-shadow(-3px 3px 4px rgba(0,0,0,0.25))',
+          zIndex: 4,
+          pointerEvents: 'none'
+        }} />
 
+        {/* Brillo Glossy Diagonal */}
         <div style={{
-          padding: '30px 20px 10px',
-          textAlign: 'center', position: 'relative', zIndex: 2
+          position: 'absolute',
+          top: '-40%',
+          left: '-40%',
+          width: '180%',
+          height: '180%',
+          background: 'linear-gradient(135deg, rgba(255,255,255,0.28) 0%, rgba(255,255,255,0.06) 35%, transparent 60%)',
+          borderRadius: '50%',
+          pointerEvents: 'none'
+        }} />
+
+        {/* Insignia Sticker de Corazón Flotante a la Derecha */}
+        <div style={{
+          position: 'absolute',
+          right: '18px',
+          top: '52%',
+          transform: 'translateY(-50%) rotate(12deg)',
+          background: '#FFFFFF',
+          border: '2.5px solid #FFFFFF',
+          borderRadius: '16px',
+          padding: '4px 7px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.25)',
+          zIndex: 3,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontSize: '18px'
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', marginBottom: '20px' }}>
-            <h2 style={{ margin:0, fontSize:'22px', fontWeight:'900', color: '#FFF', textShadow: '0 2px 4px rgba(0,0,0,0.2)' }}>
-              Bienvenido a Listo Patrón
-            </h2>
-            <img src={logoBlanco} alt="Listo" style={{ height: '32px', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))' }} />
-          </div>
-
-          <div style={{
-            width:'72px', height:'72px', background:'rgba(255,255,255,0.2)',
-            borderRadius:'50%', display:'flex', alignItems:'center', justifyContent:'center',
-            fontSize:'36px', margin:'0 auto 16px',
-            boxShadow:'0 8px 16px rgba(0,0,0,0.2)'
-          }}>🔔</div>
+          💖
         </div>
-        
-        <div style={{ padding: '10px 24px 30px', textAlign: 'center', position: 'relative', zIndex: 2 }}>
+
+        {/* 1. Título Superior (2 líneas como en la imagen) */}
+        <div style={{ zIndex: 2, marginTop: '4px' }}>
+          <h2 style={{
+            margin: 0,
+            fontSize: '18px',
+            fontWeight: '900',
+            color: '#FFFFFF',
+            textShadow: '0 2px 5px rgba(0,0,0,0.4), 0 0 2px rgba(0,0,0,0.6)',
+            letterSpacing: '-0.3px',
+            lineHeight: 1.12
+          }}>
+            Bienvenido a<br />Listo Patrón
+          </h2>
+        </div>
+
+        {/* 2. Campana de Notificación al Centro */}
+        <div style={{
+          width: '52px',
+          height: '52px',
+          minHeight: '52px',
+          background: 'rgba(255, 225, 195, 0.4)',
+          backdropFilter: 'blur(4px)',
+          border: '2px solid rgba(255, 255, 255, 0.6)',
+          borderRadius: '50%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontSize: '26px',
+          boxShadow: '0 4px 14px rgba(0,0,0,0.18)',
+          zIndex: 2,
+          margin: '2px 0',
+          animation: 'bellRingBounce 2.5s infinite ease-in-out'
+        }}>
+          🔔
+        </div>
+
+        {/* 3. Mensaje de Notificación (Perfectamente centrado sin salirse) */}
+        <div style={{
+          zIndex: 2,
+          padding: '0 28px',
+          flex: 1,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          maxWidth: '260px',
+          maxHeight: '85px',
+          overflow: 'hidden'
+        }}>
           <p style={{
-            margin:'0 0 24px', fontSize:'17px', color:'#FFFFFF',
-            lineHeight:'1.6', fontWeight:'600', textShadow: '0 1px 2px rgba(0,0,0,0.2)'
+            margin: 0,
+            fontSize: fontSize,
+            color: '#3D1B00',
+            lineHeight: 1.28,
+            fontWeight: '900',
+            textShadow: '0 1px 0px rgba(255,255,255,0.4)',
+            WebkitLineClamp: 4,
+            WebkitBoxOrient: 'vertical',
+            display: '-webkit-box',
+            overflow: 'hidden'
           }}>
             {alert.text}
           </p>
-          
-          <button onClick={onClose} style={{
-            width:'100%', padding:'16px', borderRadius:'14px',
-            background: '#FFFFFF', color:'#F26000', fontSize:'18px', fontWeight:'900',
-            border:'none', cursor:'pointer',
-            boxShadow:'0 8px 16px rgba(0,0,0,0.2)',
-            transition:'transform 0.2s, background 0.2s'
-          }}
-          onMouseEnter={e => e.currentTarget.style.background = '#FFF5EE'}
-          onMouseLeave={e => e.currentTarget.style.background = '#FFFFFF'}
-          onMouseDown={e => e.currentTarget.style.transform = 'scale(0.97)'}
-          onMouseUp={e => e.currentTarget.style.transform = 'scale(1)'}
+        </div>
+
+        {/* 4. Botón de Confirmación Ovalado en el Pie del Círculo */}
+        <div style={{ width: '100%', zIndex: 2, marginBottom: '4px' }}>
+          <button
+            onClick={onClose}
+            style={{
+              width: '82%',
+              padding: '9px 16px',
+              borderRadius: '24px',
+              background: '#FFFFFF',
+              color: '#3D1B00',
+              fontSize: '14px',
+              fontWeight: '900',
+              border: '2.5px solid #FFDBB8',
+              cursor: 'pointer',
+              boxShadow: '0 6px 18px rgba(0,0,0,0.25)',
+              transition: 'all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)'
+            }}
+            onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.04)'}
+            onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+            onMouseDown={e => e.currentTarget.style.transform = 'scale(0.95)'}
           >
             {lang === 'es' ? '¡Entendido, gracias!' : 'Got it!'}
           </button>
         </div>
+
       </div>
     </div>
-  )
+  );
 }
 
 export default function App() {

@@ -217,7 +217,10 @@ export default function BtnHamburguesa({ onClose, navigate, lang = 'es', activeV
                   <h4 className="pp-name">{userData?.name || 'Socio'}</h4>
                   <p className="pp-role">
                     {userData?.rating && userData?.reviews && userData?.reviews > 0 ? `⭐ ${Number(userData.rating).toFixed(1)} ` : ''}
-                    {userData?.category ? `🔧 ${userData.category.toUpperCase()}` : '🔧 PROFESIONAL'}
+                    {(() => {
+                      const displayCat = userData?.category || userData?.especialidad || userData?.verificacion?.especialidad;
+                      return displayCat ? `🔧 ${displayCat.toUpperCase()}` : '🔧 PROFESIONAL';
+                    })()}
                   </p>
                 </div>
                 <button className="pp-edit-btn" onClick={() => setShowEditModal(true)}>✏️ Editar</button>

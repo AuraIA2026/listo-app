@@ -223,6 +223,9 @@ export default function VerificacionPage({ onBack }) {
         );
 
         const firestoreUpdateTask = updateDoc(doc(db, "users", uid), {
+          category: form.especialidad || "",
+          especialidad: form.especialidad || "",
+          experiencia: form.experiencia || "",
           verificacion: {
             ...form,
             docs: {

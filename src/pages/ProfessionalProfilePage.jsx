@@ -282,7 +282,7 @@ const formatFirstNameAndInitial = (fullName) => {
 }
 
 const formatProfession = (category) => {
-  if (!category) return ''
+  if (!category || String(category).toLowerCase() === 'unknown' || String(category).toLowerCase() === 'desconocido') return ''
   return category.charAt(0).toUpperCase() + category.slice(1).toLowerCase()
 }
 
@@ -687,7 +687,7 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
         }}>
           <div className="pro-card-overlay-text">
             <span className="pro-card-overlay-name">{formatFirstNameAndInitial(displayPro.name)}</span>
-            <span className="pro-card-overlay-profession">{formatProfession(displayPro.category || displayPro.categoryEs || displayPro.specEs)}</span>
+            <span className="pro-card-overlay-profession">{formatProfession(displayPro.category || displayPro.especialidad || displayPro.verificacion?.especialidad || displayPro.categoryEs || displayPro.specEs)}</span>
           </div>
         </div>
 

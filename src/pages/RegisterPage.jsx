@@ -121,6 +121,8 @@ export default function RegisterPage({ lang, navigate }) {
             resultUser = loginRes.user
           } catch (loginErr) {
             setErrors({ general: 'email-already-in-use' })
+            isRegisteringRef.current = false
+            setLoading(false)
             return
           }
         } else {
@@ -146,20 +148,34 @@ export default function RegisterPage({ lang, navigate }) {
         console.warn("Could not write to localStorage:", e)
       }
 
+      const expireDate = new Date()
+      expireDate.setDate(expireDate.getDate() + 90)
+
+      const userPayload = {
+        name: cleanName,
+        email: cleanEmail,
+        phone: cleanPhone,
+        type: userType, // 'client' o 'pro'
+        role: userType === 'pro' ? 'professional' : 'client',
+        createdAt: serverTimestamp(),
+      }
+
+      if (userType === 'pro') {
+        userPayload.plan = 'basico'
+        userPayload.contracts = 3
+        userPayload.planStatus = 'active'
+        userPayload.available = false
+        userPayload.planExpirationDate = expireDate.toISOString()
+      }
+
       // Guardar en Firestore
       try {
-        await setDoc(doc(db, 'users', userId), {
-          name: cleanName,
-          email: cleanEmail,
-          phone: cleanPhone,
-          type: 'client',
-          createdAt: serverTimestamp(),
-        }, { merge: true })
+        await setDoc(doc(db, 'users', userId), userPayload, { merge: true })
       } catch (e) {
         console.error("Error setting user doc in Firestore:", e)
       }
 
-      // También guardar con email como key para face login (paso secundario protegido)
+      // También guardar con email como key para mapeo rápido
       try {
         const emailKey = cleanEmail.replace(/[^a-zA-Z0-9]/g, '_')
         await setDoc(doc(db, 'users', emailKey), { uid: userId }, { merge: true })
@@ -169,7 +185,10 @@ export default function RegisterPage({ lang, navigate }) {
 
       // Mensaje Automático de Bienvenida
       try {
-        const welcomeText = `¡Hola ${cleanName.split(' ')[0]}! Bienvenido a Listo Patrón. Estamos felices de tenerte aquí. Explora nuestro directorio y contrata a los mejores profesionales de confianza para tus proyectos hoy mismo.`
+        const welcomeText = userType === 'pro'
+          ? `¡Hola ${cleanName.split(' ')[0]}! Bienvenido a Listo Patrón como Profesional. Entra a tu Perfil, completa tus datos de Verificación y postúlate para recibir clientes.`
+          : `¡Hola ${cleanName.split(' ')[0]}! Bienvenido a Listo Patrón. Estamos felices de tenerte aquí. Explora nuestro directorio y contrata a los mejores profesionales hoy mismo.`
+
         await addDoc(collection(db, 'notificaciones'), {
           userId: userId,
           type: 'system',
@@ -191,6 +210,8 @@ export default function RegisterPage({ lang, navigate }) {
         msg = lang === 'es' ? 'El formato del correo no es válido.' : 'Invalid email format.'
       } else if (err.code === 'auth/weak-password') {
         msg = lang === 'es' ? 'La contraseña debe ser de al menos 6 caracteres.' : 'Password is too weak.'
+      } else if (err.code === 'auth/network-request-failed') {
+        msg = lang === 'es' ? 'Error de conexión. Verifica tu internet.' : 'Network error. Check internet connection.'
       }
       setErrors({ general: msg })
     } finally {
@@ -297,7 +318,22 @@ export default function RegisterPage({ lang, navigate }) {
             <p className="auth-sub">{T.sub}</p>
           </div>
 
-
+          <div className="user-type-toggle">
+            <button
+              type="button"
+              className={userType === 'client' ? 'active' : ''}
+              onClick={() => setUserType('client')}
+            >
+              👤 {T.asClient}
+            </button>
+            <button
+              type="button"
+              className={userType === 'pro' ? 'active' : ''}
+              onClick={() => setUserType('pro')}
+            >
+              ⚡ {T.asPro}
+            </button>
+          </div>
 
           <div className="auth-form">
             <div className="field">

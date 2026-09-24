@@ -709,7 +709,7 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
           prosList.push({
             id:         docSnap.id,
             name:       data.name       || 'Sin nombre',
-            category:   data.category   || 'unknown',
+            category:   data.category   || data.especialidad || data.verificacion?.especialidad || '',
             rating:     realRating,
             reviews:    reviewsCount,
             location:   data.verificacion?.municipio || data.verificacion?.provincia || data.city || data.location || 'República Dominicana',

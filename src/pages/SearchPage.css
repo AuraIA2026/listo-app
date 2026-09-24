@@ -339,7 +339,7 @@
 .card-actions { display: flex; gap: 8px; justify-content: space-between; width: 100%; }
 .btn-profile { 
   flex: 1; text-align: center; background: white; border: 1.5px solid #E5E7EB; color: #4B5563; 
-  padding: 8px 4px; border-radius: 12px; font-weight: 700; font-size: 12px; cursor: pointer; 
+  padding: 8px 4px; border-radius: 22px; font-weight: 700; font-size: 12px; cursor: pointer; 
   transition: all 0.2s;
 }
 .btn-profile:hover { background: #F3F4F6; border-color: #D1D5DB; }
@@ -347,7 +347,7 @@
 
 .btn-book { 
   flex: 1; text-align: center; background: linear-gradient(135deg, var(--mamey), #FF8533); 
-  color: white; border: none; padding: 8px 4px; border-radius: 12px; font-weight: 800; font-size: 12px; 
+  color: white; border: none; padding: 8px 4px; border-radius: 22px; font-weight: 800; font-size: 12px; 
   cursor: pointer; box-shadow: 0 4px 12px rgba(242,96,0,0.3); transition: all 0.2s;
 }
 .btn-book:hover { box-shadow: 0 6px 16px rgba(242,96,0,0.4); filter: brightness(1.05); transform: translateY(-1px); }
@@ -420,13 +420,13 @@
 .premium-review-text strong { color: #0F172A; font-style: normal; display: block; margin-bottom: 2px; }
 .premium-actions { display: flex; gap: 12px; margin-top: 6px; }
 .premium-btn-book {
-  flex: 2; padding: 14px; border-radius: 8px; font-weight: 900; font-size: 15px;
+  flex: 2; padding: 14px; border-radius: 22px; font-weight: 900; font-size: 15px;
   border: none; cursor: pointer; color: white; text-align: center;
   transition: all 0.2s;
 }
 .premium-btn-book:active { transform: scale(0.96); }
 .premium-btn-profile {
-  flex: 1; padding: 14px; border-radius: 8px; font-weight: 800; font-size: 14px;
+  flex: 1; padding: 14px; border-radius: 22px; font-weight: 800; font-size: 14px;
   background: white; border: 2px solid #E2E8F0; color: #475569; cursor: pointer; text-align: center;
   transition: all 0.2s;
 }

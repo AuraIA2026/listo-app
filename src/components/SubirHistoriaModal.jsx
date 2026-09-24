@@ -205,6 +205,10 @@ export default function SubirHistoriaModal({ isOpen, onClose, userData, onStoryU
           <span>¡Muestra la calidad de tu trabajo a toda la comunidad de Listo Patrón!</span>
         </div>
 
+        <div style={{ background: '#FFFBEB', border: '1px solid #FCD34D', padding: '9px 12px', borderRadius: '12px', fontSize: '11.5px', color: '#92400E', fontWeight: 600, lineHeight: 1.4 }}>
+          ⚠️ <strong>Regla de la comunidad:</strong> Las historias son solo para mostrar tus resultados. No compartas teléfonos, enlaces ni anuncios externos; los clientes te contactarán directo por tu perfil de Listo Patrón.
+        </div>
+
         {errorMsg && (
           <div style={{ padding: '10px 12px', background: '#FEF2F2', color: '#EF4444', borderRadius: '12px', fontSize: '12.5px', fontWeight: 700, border: '1px solid #FECACA' }}>
             ⚠️ {errorMsg}
