@@ -29,9 +29,23 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate
       const map = {}
       snap.forEach(uDoc => {
         const u = uDoc.data()
-        const resolved = u.plan || u.currentPlan || u.planId || u.subscription || u.userPlan || u.planName
+        const resolved = u.plan || u.currentPlan || u.planId || u.subscription || u.userPlan || u.planName || u.membership || u.proPlan || u.tipoPlan
         if (resolved) {
           map[uDoc.id] = resolved
+          if (u.uid) map[u.uid] = resolved
+          if (u.id) map[u.id] = resolved
+
+          const nameClean = String(u.name || u.displayName || u.fullName || u.proName || u.nombre || u.proNombre || '').toLowerCase().trim()
+          if (nameClean) {
+            map[nameClean] = resolved
+            const words = nameClean.split(' ').filter(Boolean)
+            if (words.length >= 1 && words[0].length >= 3) {
+              if (!map[words[0]]) map[words[0]] = resolved
+            }
+            if (words.length >= 2) {
+              map[`${words[0]} ${words[1]}`] = resolved
+            }
+          }
         }
       })
       setUsersPlanMap(map)
@@ -316,8 +330,17 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate
                 seenKeys.add(key)
                 const allStoryIds = stories.filter(s => (s.proId || s.proUid || s.proName || s.fullName || s.id) === key).map(s => s.id)
                 const proUidKey = story.proId || story.proUid
-                const livePlan = proUidKey ? usersPlanMap[proUidKey] : null
-                const finalPlan = story.proPlan || story.plan || story.currentPlan || story.planId || story.subscription || story.userPlan || story.planName || livePlan
+                const proNameClean = String(story.proName || story.fullName || '').toLowerCase().trim()
+                const words = proNameClean.split(' ').filter(Boolean)
+                const twoWords = words.length >= 2 ? `${words[0]} ${words[1]}` : ''
+                const firstWord = words.length >= 1 && words[0].length >= 3 ? words[0] : ''
+
+                const livePlan = (proUidKey && usersPlanMap[proUidKey]) ||
+                                 (proNameClean && usersPlanMap[proNameClean]) ||
+                                 (twoWords && usersPlanMap[twoWords]) ||
+                                 (firstWord && usersPlanMap[firstWord])
+
+                const finalPlan = livePlan || story.proPlan || story.plan || story.currentPlan || story.planId || story.subscription || story.userPlan || story.planName
 
                 uniquePros.push({
                   key,

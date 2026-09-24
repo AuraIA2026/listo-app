@@ -51,6 +51,9 @@ export default function HistoriasViewerModal({
 
   // Consulta en tiempo real a la colección users en Firestore para resolver el plan exacto del profesional
   useEffect(() => {
+    setLiveProPlan(null)
+    if (!proUidKey && !proNameClean) return
+
     let stored = {}
     try {
       stored = JSON.parse(localStorage.getItem('listoUserData') || '{}')
@@ -63,7 +66,6 @@ export default function HistoriasViewerModal({
       const uPlan = userData?.plan || userData?.currentPlan || userData?.planId || userData?.subscription || stored?.plan || stored?.currentPlan || stored?.planId
       if (uPlan) {
         setLiveProPlan(uPlan)
-        return
       }
     }
 
@@ -71,29 +73,42 @@ export default function HistoriasViewerModal({
       let foundPlan = null
       snap.forEach(uDoc => {
         const u = uDoc.data()
-        const uidMatch = (uDoc.id === proUidKey || u.uid === proUidKey || u.id === proUidKey)
-        const nameClean = String(u.name || u.displayName || u.fullName || '').toLowerCase().trim()
-        const nameMatch = proNameClean && nameClean && (nameClean.includes(proNameClean) || proNameClean.includes(nameClean))
+        const fetched = u.plan || u.currentPlan || u.planId || u.subscription || u.userPlan || u.planName || u.membership || u.proPlan || u.tipoPlan
+        if (!fetched) return
+
+        const uidMatch = Boolean(proUidKey && (uDoc.id === proUidKey || u.uid === proUidKey || u.id === proUidKey))
+        const nameClean = String(u.name || u.displayName || u.fullName || u.proName || u.nombre || u.proNombre || '').toLowerCase().trim()
+
+        let nameMatch = false
+        if (proNameClean && nameClean) {
+          if (proNameClean === nameClean || nameClean.includes(proNameClean) || proNameClean.includes(nameClean)) {
+            nameMatch = true
+          } else {
+            const wPro = proNameClean.split(' ').filter(Boolean)
+            const wDoc = nameClean.split(' ').filter(Boolean)
+            if (wPro[0] && wDoc[0] && wPro[0] === wDoc[0]) {
+              if (wPro.length === 1 || wDoc.length === 1 || (wPro[1] && wDoc[1] && wPro[1] === wDoc[1])) {
+                nameMatch = true
+              }
+            }
+          }
+        }
 
         if (uidMatch || nameMatch) {
-          const fetched = u.plan || u.currentPlan || u.planId || u.subscription || u.userPlan || u.planName || u.membership
-          if (fetched) {
-            foundPlan = fetched
-          }
+          foundPlan = fetched
         }
       })
 
       if (foundPlan) {
         setLiveProPlan(foundPlan)
-      } else if (proNameClean.includes('juan')) {
-        setLiveProPlan('gold')
       }
     }, (err) => console.log('Notice reading users for plan:', err))
 
     return () => unsub()
   }, [proUidKey, proNameClean, userData])
 
-  const resolvedPlan = currentStory?.proPlan || currentStory?.plan || currentStory?.currentPlan || currentStory?.planId || currentStory?.subscription || currentStory?.userPlan || currentStory?.planName || liveProPlan
+  // PRIORIDAD SUPREMA: liveProPlan de la colección 'users' sobre la propiedad estática de la historia
+  const resolvedPlan = liveProPlan || currentStory?.proPlan || currentStory?.plan || currentStory?.currentPlan || currentStory?.planId || currentStory?.subscription || currentStory?.userPlan || currentStory?.planName
   const storyPlanTheme = getProPlanTheme(resolvedPlan, currentStory?.proRating || currentStory?.rating || 0)
 
   // Record story view counter
