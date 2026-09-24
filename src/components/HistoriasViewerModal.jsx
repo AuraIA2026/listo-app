@@ -589,18 +589,28 @@ export default function HistoriasViewerModal({
             </span>
           </div>
           
-          {/* Fast Reaction Emojis Bar (1-Tap Custom Listo Emojis + WhatsApp Emojis) */}
+          {/* Fast Reaction Emojis Bar (WhatsApp Style - All 19 Custom PNG Emojis) */}
           <div className="historias-reactions-bar">
             {[
-              { id: 'like', name: 'Me gusta', icon: '/emoji/like.png', isPng: true },
-              { id: 'trato', name: 'Trato Hecho', icon: '/emoji/trato hecho.png', isPng: true },
-              { id: 'estrellas', name: '5 Estrellas', icon: '/emoji/5 estrella.png', isPng: true },
-              { id: 'contratar', name: 'Contratar', icon: '/emoji/contratar.png', isPng: true },
-              { id: 'listo', name: 'Listo Patrón', icon: '/emoji/listo patron.png', isPng: true },
-              { id: 'corazon', name: 'Amor', icon: '❤️', isPng: false },
-              { id: 'fuego', name: 'Fuego', icon: '🔥', isPng: false },
-              { id: 'aplauso', name: 'Aplausos', icon: '👏', isPng: false },
-              { id: 'cien', name: '100%', icon: '💯', isPng: false }
+              { id: 'like', name: 'Me gusta', icon: '/emoji/like.png' },
+              { id: 'trato', name: 'Trato Hecho', icon: '/emoji/trato hecho.png' },
+              { id: 'estrellas', name: '5 Estrellas', icon: '/emoji/5 estrella.png' },
+              { id: 'contratar', name: 'Contratar', icon: '/emoji/contratar.png' },
+              { id: 'listo', name: 'Listo Patrón', icon: '/emoji/listo patron.png' },
+              { id: 'listo2', name: 'Listo Patrón 2', icon: '/emoji/listo patron 2.png' },
+              { id: 'e1', name: 'Emoji 1', icon: '/emoji/1.png' },
+              { id: 'e2', name: 'Emoji 2', icon: '/emoji/2.png' },
+              { id: 'e3', name: 'Emoji 3', icon: '/emoji/3.png' },
+              { id: 'e4', name: 'Emoji 4', icon: '/emoji/4.png' },
+              { id: 'e5', name: 'Emoji 5', icon: '/emoji/5.png' },
+              { id: 'e6', name: 'Emoji 6', icon: '/emoji/6.png' },
+              { id: 'e7', name: 'Emoji 7', icon: '/emoji/7.png' },
+              { id: 'e8', name: 'Emoji 8', icon: '/emoji/8.png' },
+              { id: 'e9', name: 'Emoji 9', icon: '/emoji/9.png' },
+              { id: 'e10', name: 'Emoji 10', icon: '/emoji/10.png' },
+              { id: 'e11', name: 'Emoji 11', icon: '/emoji/11.png' },
+              { id: 'e12', name: 'Emoji 12', icon: '/emoji/12.png' },
+              { id: 'e13', name: 'Emoji 13', icon: '/emoji/13.png' }
             ].map((item) => (
               <button
                 key={item.id}
@@ -608,11 +618,7 @@ export default function HistoriasViewerModal({
                 onClick={(e) => handleEmojiReaction(e, item)}
                 title={item.name}
               >
-                {item.isPng ? (
-                  <img src={item.icon} alt={item.name} className="emoji-png-icon" />
-                ) : (
-                  <span>{item.icon}</span>
-                )}
+                <img src={item.icon} alt={item.name} className="emoji-png-icon" />
               </button>
             ))}
           </div>
