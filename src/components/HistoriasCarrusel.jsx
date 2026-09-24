@@ -29,7 +29,7 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate
       const map = {}
       snap.forEach(uDoc => {
         const u = uDoc.data()
-        const resolved = u.plan || u.currentPlan || u.planId || u.subscription || u.userPlan || u.planName || u.membership || u.proPlan || u.tipoPlan
+        const resolved = u.currentPlan || u.planId || u.plan || u.membership || u.proPlan || u.subscription || u.userPlan || u.planName || u.tipoPlan || u.tier
         if (resolved) {
           map[uDoc.id] = resolved
           if (u.uid) map[u.uid] = resolved
@@ -38,13 +38,6 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate
           const nameClean = String(u.name || u.displayName || u.fullName || u.proName || u.nombre || u.proNombre || '').toLowerCase().trim()
           if (nameClean) {
             map[nameClean] = resolved
-            const words = nameClean.split(' ').filter(Boolean)
-            if (words.length >= 1 && words[0].length >= 3) {
-              if (!map[words[0]]) map[words[0]] = resolved
-            }
-            if (words.length >= 2) {
-              map[`${words[0]} ${words[1]}`] = resolved
-            }
           }
         }
       })
@@ -336,11 +329,9 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate
                 const firstWord = words.length >= 1 && words[0].length >= 3 ? words[0] : ''
 
                 const livePlan = (proUidKey && usersPlanMap[proUidKey]) ||
-                                 (proNameClean && usersPlanMap[proNameClean]) ||
-                                 (twoWords && usersPlanMap[twoWords]) ||
-                                 (firstWord && usersPlanMap[firstWord])
+                                 (proNameClean && usersPlanMap[proNameClean])
 
-                const finalPlan = livePlan || story.proPlan || story.plan || story.currentPlan || story.planId || story.subscription || story.userPlan || story.planName
+                const finalPlan = livePlan || story.proPlan || story.plan || story.currentPlan || story.planId || story.membership || story.subscription || story.userPlan || story.planName
 
                 uniquePros.push({
                   key,

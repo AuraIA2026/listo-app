@@ -20,7 +20,7 @@ export function getProPlanTheme(planNameRaw, rating = 0) {
       borderColor: '#3B82F6',
       badgeBg: 'linear-gradient(135deg, #1E40AF, #3B82F6)',
       badgeColor: '#FFFFFF',
-      headerGradient: 'linear-gradient(to bottom, rgba(30, 64, 175, 0.9) 0%, rgba(59, 130, 246, 0.5) 75%, rgba(0,0,0,0) 100%)',
+      headerGradient: 'linear-gradient(to bottom, rgba(30, 64, 175, 0.95) 0%, rgba(59, 130, 246, 0.6) 75%, rgba(0,0,0,0) 100%)',
       headerBorder: '1px solid rgba(59, 130, 246, 0.35)',
       headerGlow: '0 8px 25px rgba(59, 130, 246, 0.3)',
       price: 'RD$0',
@@ -42,7 +42,7 @@ export function getProPlanTheme(planNameRaw, rating = 0) {
       borderColor: '#F26000',
       badgeBg: 'linear-gradient(135deg, #F26000, #FF7A1A)',
       badgeColor: '#FFFFFF',
-      headerGradient: 'linear-gradient(to bottom, rgba(242, 96, 0, 0.9) 0%, rgba(255, 122, 26, 0.5) 75%, rgba(0,0,0,0) 100%)',
+      headerGradient: 'linear-gradient(to bottom, rgba(242, 96, 0, 0.95) 0%, rgba(255, 122, 26, 0.6) 75%, rgba(0,0,0,0) 100%)',
       headerBorder: '1px solid rgba(242, 96, 0, 0.45)',
       headerGlow: '0 8px 25px rgba(242, 96, 0, 0.4)',
       price: 'RD$2,500',
@@ -52,11 +52,11 @@ export function getProPlanTheme(planNameRaw, rating = 0) {
   }
 
   // 3. Plan Platinum / Activo (Azul-Plateado - RD$1,500)
-  if (plan.includes('platinum') || plan.includes('activo')) {
+  if (plan.includes('platinum') || plan.includes('platino') || plan.includes('activo')) {
     return {
       id: 'platinum',
       name: 'Plan Platinum',
-      tag: 'ACTIVO',
+      tag: 'PLATINUM',
       badge: '🥈 SOCIO PLATINUM',
       color: '#38BDF8',
       bgGradient: 'linear-gradient(135deg, #475569 0%, #64748B 50%, #38BDF8 100%)',
@@ -64,7 +64,7 @@ export function getProPlanTheme(planNameRaw, rating = 0) {
       borderColor: '#38BDF8',
       badgeBg: 'linear-gradient(135deg, #475569, #38BDF8)',
       badgeColor: '#FFFFFF',
-      headerGradient: 'linear-gradient(to bottom, rgba(15, 118, 110, 0.9) 0%, rgba(56, 189, 248, 0.5) 75%, rgba(0,0,0,0) 100%)',
+      headerGradient: 'linear-gradient(to bottom, rgba(15, 118, 110, 0.95) 0%, rgba(56, 189, 248, 0.6) 75%, rgba(0,0,0,0) 100%)',
       headerBorder: '1px solid rgba(56, 189, 248, 0.45)',
       headerGlow: '0 8px 25px rgba(56, 189, 248, 0.4)',
       price: 'RD$1,500',
@@ -74,11 +74,11 @@ export function getProPlanTheme(planNameRaw, rating = 0) {
   }
 
   // 4. Plan Gold / Popular (Dorado - RD$1,000)
-  if (plan.includes('gold') || plan.includes('popular')) {
+  if (plan.includes('gold') || plan.includes('popular') || plan.includes('oro')) {
     return {
       id: 'gold',
       name: 'Plan Gold',
-      tag: 'POPULAR',
+      tag: 'GOLD',
       badge: '🥇 SOCIO GOLD',
       color: '#EAB308',
       bgGradient: 'linear-gradient(135deg, #D97706 0%, #EAB308 100%)',
@@ -86,7 +86,7 @@ export function getProPlanTheme(planNameRaw, rating = 0) {
       borderColor: '#EAB308',
       badgeBg: 'linear-gradient(135deg, #D97706, #EAB308)',
       badgeColor: '#FFFFFF',
-      headerGradient: 'linear-gradient(to bottom, rgba(217, 119, 6, 0.9) 0%, rgba(234, 179, 8, 0.5) 75%, rgba(0,0,0,0) 100%)',
+      headerGradient: 'linear-gradient(to bottom, rgba(217, 119, 6, 0.95) 0%, rgba(234, 179, 8, 0.6) 75%, rgba(0,0,0,0) 100%)',
       headerBorder: '1px solid rgba(234, 179, 8, 0.45)',
       headerGlow: '0 8px 25px rgba(234, 179, 8, 0.4)',
       price: 'RD$1,000',
@@ -96,7 +96,7 @@ export function getProPlanTheme(planNameRaw, rating = 0) {
   }
 
   // 5. Plan Estándar / Básico (Verde - RD$500)
-  if (plan.includes('estandar') || plan.includes('estándar') || plan.includes('basico') || plan.includes('básico')) {
+  if (plan.includes('estandar') || plan.includes('estándar') || plan.includes('basico') || plan.includes('básico') || plan.includes('standard')) {
     return {
       id: 'estandar',
       name: 'Plan Estándar',
@@ -108,7 +108,7 @@ export function getProPlanTheme(planNameRaw, rating = 0) {
       borderColor: '#10B981',
       badgeBg: 'linear-gradient(135deg, #059669, #10B981)',
       badgeColor: '#FFFFFF',
-      headerGradient: 'linear-gradient(to bottom, rgba(5, 150, 105, 0.9) 0%, rgba(16, 185, 129, 0.5) 75%, rgba(0,0,0,0) 100%)',
+      headerGradient: 'linear-gradient(to bottom, rgba(5, 150, 105, 0.95) 0%, rgba(16, 185, 129, 0.6) 75%, rgba(0,0,0,0) 100%)',
       headerBorder: '1px solid rgba(16, 185, 129, 0.45)',
       headerGlow: '0 8px 25px rgba(16, 185, 129, 0.4)',
       price: 'RD$500',
@@ -130,7 +130,7 @@ export function getProPlanTheme(planNameRaw, rating = 0) {
       borderColor: '#F26000',
       badgeBg: 'linear-gradient(135deg, #F26000, #FF7A1A)',
       badgeColor: '#FFFFFF',
-      headerGradient: 'linear-gradient(to bottom, rgba(242, 96, 0, 0.9) 0%, rgba(255, 122, 26, 0.5) 75%, rgba(0,0,0,0) 100%)',
+      headerGradient: 'linear-gradient(to bottom, rgba(242, 96, 0, 0.95) 0%, rgba(255, 122, 26, 0.6) 75%, rgba(0,0,0,0) 100%)',
       headerBorder: '1px solid rgba(242, 96, 0, 0.45)',
       headerGlow: '0 8px 25px rgba(242, 96, 0, 0.4)',
       price: 'RD$2,500',
@@ -143,7 +143,7 @@ export function getProPlanTheme(planNameRaw, rating = 0) {
     return {
       id: 'platinum',
       name: 'Plan Platinum',
-      tag: 'ACTIVO',
+      tag: 'PLATINUM',
       badge: '🥈 SOCIO PLATINUM',
       color: '#38BDF8',
       bgGradient: 'linear-gradient(135deg, #475569 0%, #64748B 50%, #38BDF8 100%)',
@@ -151,7 +151,7 @@ export function getProPlanTheme(planNameRaw, rating = 0) {
       borderColor: '#38BDF8',
       badgeBg: 'linear-gradient(135deg, #475569, #38BDF8)',
       badgeColor: '#FFFFFF',
-      headerGradient: 'linear-gradient(to bottom, rgba(15, 118, 110, 0.9) 0%, rgba(56, 189, 248, 0.5) 75%, rgba(0,0,0,0) 100%)',
+      headerGradient: 'linear-gradient(to bottom, rgba(15, 118, 110, 0.95) 0%, rgba(56, 189, 248, 0.6) 75%, rgba(0,0,0,0) 100%)',
       headerBorder: '1px solid rgba(56, 189, 248, 0.45)',
       headerGlow: '0 8px 25px rgba(56, 189, 248, 0.4)',
       price: 'RD$1,500',
@@ -164,7 +164,7 @@ export function getProPlanTheme(planNameRaw, rating = 0) {
     return {
       id: 'gold',
       name: 'Plan Gold',
-      tag: 'POPULAR',
+      tag: 'GOLD',
       badge: '🥇 SOCIO GOLD',
       color: '#EAB308',
       bgGradient: 'linear-gradient(135deg, #D97706 0%, #EAB308 100%)',
@@ -172,7 +172,7 @@ export function getProPlanTheme(planNameRaw, rating = 0) {
       borderColor: '#EAB308',
       badgeBg: 'linear-gradient(135deg, #D97706, #EAB308)',
       badgeColor: '#FFFFFF',
-      headerGradient: 'linear-gradient(to bottom, rgba(217, 119, 6, 0.9) 0%, rgba(234, 179, 8, 0.5) 75%, rgba(0,0,0,0) 100%)',
+      headerGradient: 'linear-gradient(to bottom, rgba(217, 119, 6, 0.95) 0%, rgba(234, 179, 8, 0.6) 75%, rgba(0,0,0,0) 100%)',
       headerBorder: '1px solid rgba(234, 179, 8, 0.45)',
       headerGlow: '0 8px 25px rgba(234, 179, 8, 0.4)',
       price: 'RD$1,000',
@@ -193,7 +193,7 @@ export function getProPlanTheme(planNameRaw, rating = 0) {
     borderColor: '#10B981',
     badgeBg: 'linear-gradient(135deg, #059669, #10B981)',
     badgeColor: '#FFFFFF',
-    headerGradient: 'linear-gradient(to bottom, rgba(5, 150, 105, 0.9) 0%, rgba(16, 185, 129, 0.5) 75%, rgba(0,0,0,0) 100%)',
+    headerGradient: 'linear-gradient(to bottom, rgba(5, 150, 105, 0.95) 0%, rgba(16, 185, 129, 0.6) 75%, rgba(0,0,0,0) 100%)',
     headerBorder: '1px solid rgba(16, 185, 129, 0.45)',
     headerGlow: '0 8px 25px rgba(16, 185, 129, 0.4)',
     price: 'RD$500',
@@ -201,3 +201,4 @@ export function getProPlanTheme(planNameRaw, rating = 0) {
     ratingRange: '0 - 3.9'
   }
 }
+

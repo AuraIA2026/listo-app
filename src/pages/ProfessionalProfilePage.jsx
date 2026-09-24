@@ -933,7 +933,12 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
       <HistoriasViewerModal
         isOpen={showStoryViewer}
         onClose={() => setShowStoryViewer(false)}
-        stories={proStories}
+        stories={proStories.map(s => ({
+          proPlan: displayPro.currentPlan || displayPro.planId || displayPro.plan || displayPro.membership || displayPro.subscription || displayPro.proPlan || s.proPlan,
+          proRating: displayPro.rating || s.proRating,
+          proCategory: displayPro.category || displayPro.especialidad || displayPro.categoryEs || s.proCategory,
+          ...s
+        }))}
         userData={userData}
         navigate={navigate}
       />

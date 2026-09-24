@@ -62,8 +62,9 @@ export default function HistoriasViewerModal({
     const actUid = userData?.uid || userData?.id || stored?.uid || stored?.id
     const actName = String(userData?.name || stored?.name || '').toLowerCase().trim()
 
-    if ((proUidKey && proUidKey === actUid) || (proNameClean && actName && (proNameClean.includes(actName) || actName.includes(proNameClean)))) {
-      const uPlan = userData?.plan || userData?.currentPlan || userData?.planId || userData?.subscription || stored?.plan || stored?.currentPlan || stored?.planId
+    // 1. Si la historia pertenece al usuario activo o se tienen sus datos directos
+    if ((proUidKey && proUidKey === actUid) || (proNameClean && actName && (proNameClean === actName || actName.includes(proNameClean) || proNameClean.includes(actName)))) {
+      const uPlan = userData?.currentPlan || userData?.planId || userData?.plan || userData?.membership || userData?.proPlan || userData?.subscription || userData?.userPlan || userData?.planName || userData?.tipoPlan || stored?.currentPlan || stored?.planId || stored?.plan || stored?.membership || stored?.proPlan || stored?.subscription || stored?.userPlan || stored?.planName || stored?.tipoPlan
       if (uPlan) {
         setLiveProPlan(uPlan)
       }
@@ -73,29 +74,23 @@ export default function HistoriasViewerModal({
       let foundPlan = null
       snap.forEach(uDoc => {
         const u = uDoc.data()
-        const fetched = u.plan || u.currentPlan || u.planId || u.subscription || u.userPlan || u.planName || u.membership || u.proPlan || u.tipoPlan
+        const fetched = u.currentPlan || u.planId || u.plan || u.membership || u.proPlan || u.subscription || u.userPlan || u.planName || u.tipoPlan || u.tier
         if (!fetched) return
 
+        // Coincidencia exacta por UID
         const uidMatch = Boolean(proUidKey && (uDoc.id === proUidKey || u.uid === proUidKey || u.id === proUidKey))
-        const nameClean = String(u.name || u.displayName || u.fullName || u.proName || u.nombre || u.proNombre || '').toLowerCase().trim()
 
-        let nameMatch = false
-        if (proNameClean && nameClean) {
-          if (proNameClean === nameClean || nameClean.includes(proNameClean) || proNameClean.includes(nameClean)) {
-            nameMatch = true
-          } else {
-            const wPro = proNameClean.split(' ').filter(Boolean)
-            const wDoc = nameClean.split(' ').filter(Boolean)
-            if (wPro[0] && wDoc[0] && wPro[0] === wDoc[0]) {
-              if (wPro.length === 1 || wDoc.length === 1 || (wPro[1] && wDoc[1] && wPro[1] === wDoc[1])) {
-                nameMatch = true
-              }
-            }
-          }
+        if (uidMatch) {
+          foundPlan = fetched
+          return
         }
 
-        if (uidMatch || nameMatch) {
-          foundPlan = fetched
+        // Coincidencia por Nombre completo solo si no tenemos UID match aún
+        if (!foundPlan && proNameClean) {
+          const nameClean = String(u.name || u.displayName || u.fullName || u.proName || u.nombre || u.proNombre || '').toLowerCase().trim()
+          if (nameClean && nameClean === proNameClean) {
+            foundPlan = fetched
+          }
         }
       })
 
@@ -108,7 +103,7 @@ export default function HistoriasViewerModal({
   }, [proUidKey, proNameClean, userData])
 
   // PRIORIDAD SUPREMA: liveProPlan de la colección 'users' sobre la propiedad estática de la historia
-  const resolvedPlan = liveProPlan || currentStory?.proPlan || currentStory?.plan || currentStory?.currentPlan || currentStory?.planId || currentStory?.subscription || currentStory?.userPlan || currentStory?.planName
+  const resolvedPlan = liveProPlan || currentStory?.proPlan || currentStory?.plan || currentStory?.currentPlan || currentStory?.planId || currentStory?.membership || currentStory?.subscription || currentStory?.userPlan || currentStory?.planName
   const storyPlanTheme = getProPlanTheme(resolvedPlan, currentStory?.proRating || currentStory?.rating || 0)
 
   // Record story view counter
