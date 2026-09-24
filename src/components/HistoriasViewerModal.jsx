@@ -600,10 +600,18 @@ export default function HistoriasViewerModal({
           {/* Main Action Buttons */}
           <div className="historias-bottom-bar">
             <button
-              className="btn-historia-action contratar"
+              className="btn-historia-action perfil"
+              onClick={handleProClick}
+            >
+              <span style={{ fontSize: '15px' }}>👤</span>
+              Ver Perfil
+            </button>
+
+            <button
+              className="btn-historia-action contratar-filled"
               onClick={handleContratarClick}
             >
-              <img src={recomendarIcon} alt="Contratar" style={{ width: '22px', height: '22px', objectFit: 'contain' }} />
+              <span style={{ fontSize: '15px' }}>⚡</span>
               Contratar
             </button>
 
@@ -611,7 +619,7 @@ export default function HistoriasViewerModal({
               className={`btn-historia-action like ${likedStories[currentStory.id] ? 'liked' : ''}`}
               onClick={handleLikeStory}
             >
-              <img src={opinionesIcon} alt="Me gusta" style={{ width: '22px', height: '22px', objectFit: 'contain' }} />
+              <img src={opinionesIcon} alt="Me gusta" style={{ width: '18px', height: '18px', objectFit: 'contain' }} />
               Me gusta
             </button>
 
@@ -619,7 +627,7 @@ export default function HistoriasViewerModal({
               className="btn-historia-action share"
               onClick={handleShareStory}
             >
-              <img src={compartirIcon} alt="Compartir" style={{ width: '22px', height: '22px', objectFit: 'contain' }} />
+              <img src={compartirIcon} alt="Compartir" style={{ width: '18px', height: '18px', objectFit: 'contain' }} />
               Compartir
             </button>
           </div>

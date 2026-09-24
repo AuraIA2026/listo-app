@@ -588,55 +588,81 @@
   transform: scale(0.9);
 }
 
-/* Barra de Botones Principales (CONTRATAR, ME GUSTA, COMPARTIR) */
+/* Barra de Botones Principales (VER PERFIL, CONTRATAR, ME GUSTA, COMPARTIR) */
 .historias-bottom-bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: 6px;
 }
 
 .btn-historia-action {
   flex: 1;
-  height: 44px;
-  border-radius: 22px;
+  height: 42px;
+  border-radius: 21px;
   border: none;
-  font-size: 13px;
+  font-size: 11.5px;
   font-weight: 800;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 4px;
   cursor: pointer;
   transition: all 0.2s ease;
+  padding: 0 6px;
+  white-space: nowrap;
 }
 
 .btn-historia-action:active {
-  transform: scale(0.96);
+  transform: scale(0.95);
 }
 
-.btn-historia-action.contratar,
+/* Botón Ver Perfil */
+.btn-historia-action.perfil {
+  background: #FFFFFF !important;
+  color: #F26000 !important;
+  border: 2px solid #F26000 !important;
+  font-weight: 800 !important;
+  font-size: 11.5px !important;
+  box-shadow: 0 4px 12px rgba(242, 96, 0, 0.25) !important;
+}
+
+.btn-historia-action.perfil:hover {
+  background: #FFF5EE !important;
+  transform: translateY(-1px);
+}
+
+/* Botón Contratar (Naranja Relleno) */
+.btn-historia-action.contratar-filled {
+  background: linear-gradient(135deg, #F26000 0%, #FF7A1A 100%) !important;
+  color: #FFFFFF !important;
+  border: 1px solid #FF7A1A !important;
+  font-weight: 900 !important;
+  font-size: 12px !important;
+  box-shadow: 0 4px 16px rgba(242, 96, 0, 0.5) !important;
+}
+
+.btn-historia-action.contratar-filled:hover {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+}
+
+/* Botones Me gusta y Compartir */
 .btn-historia-action.like,
 .btn-historia-action.share {
-  background: rgba(255, 255, 255, 0.15);
-  color: #ffffff;
+  background: rgba(255, 255, 255, 0.15) !important;
+  color: #ffffff !important;
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+  font-size: 11px !important;
   box-shadow: none;
 }
 
-.btn-historia-action.like.liked,
-.btn-historia-action:active {
+.btn-historia-action.like.liked {
   background: linear-gradient(135deg, #F26000, #FF7A1A) !important;
   color: #ffffff !important;
   border: 1px solid #FF7A1A !important;
   box-shadow: 0 4px 16px rgba(242, 96, 0, 0.6) !important;
-  transform: scale(0.95);
-}
-
-.btn-historia-action.like.liked img,
-.btn-historia-action:active img {
-  filter: brightness(0) invert(1) !important;
 }
 
 /* ==========================================================================
