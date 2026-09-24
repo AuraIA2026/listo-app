@@ -26,6 +26,7 @@ export default function HistoriasViewerModal({
   
   const timerRef = useRef(null)
   const pressTimerRef = useRef(null)
+  const recordedViewsRef = useRef(new Set())
 
   useEffect(() => {
     setCurrentIndex(initialIndex)
@@ -43,6 +44,57 @@ export default function HistoriasViewerModal({
   }, [])
 
   const currentStory = stories[currentIndex] || stories[0]
+
+  // Record story view counter
+  useEffect(() => {
+    if (!isOpen || !currentStory || !currentStory.id) return
+
+    if (!recordedViewsRef.current.has(currentStory.id)) {
+      recordedViewsRef.current.add(currentStory.id)
+      try {
+        const storyRef = doc(db, 'historias', currentStory.id)
+        updateDoc(storyRef, { viewsCount: increment(1) }).catch(err => console.log('Views count update notice:', err))
+      } catch (e) {}
+    }
+  }, [currentIndex, isOpen, currentStory])
+
+  let storedUser = {}
+  try {
+    storedUser = JSON.parse(localStorage.getItem('listoUserData') || '{}')
+  } catch (e) {}
+
+  const activeUid = userData?.uid || userData?.id || storedUser?.uid || storedUser?.id || localStorage.getItem('listo_user_uid')
+  const isOwner = Boolean(
+    currentStory && (
+      currentStory.proId === activeUid ||
+      currentStory.proUid === activeUid ||
+      userData?.email === 'listopatron.app@gmail.com'
+    )
+  )
+
+  const handleDeleteStory = async (e) => {
+    if (e) e.stopPropagation()
+    if (!currentStory || !currentStory.id) return
+
+    const confirmDelete = window.confirm('🗑️ ¿Estás seguro de que deseas eliminar esta historia de tu perfil?')
+    if (!confirmDelete) return
+
+    try {
+      const storyRef = doc(db, 'historias', currentStory.id)
+      await updateDoc(storyRef, { status: 'deleted', deletedAt: new Date().toISOString() })
+      alert('🗑️ Historia eliminada correctamente.')
+
+      if (stories.length <= 1) {
+        onClose()
+      } else {
+        handleNextStory()
+      }
+    } catch (err) {
+      console.error('Error deleting story:', err)
+      alert('No se pudo eliminar la historia. Inténtalo de nuevo.')
+    }
+  }
+
   const isVideoStory = currentStory?.mediaType === 'video' || Boolean(currentStory?.videoUrl) || String(currentStory?.imageUrl || '').endsWith('.mp4')
   const storyDuration = isVideoStory ? (currentStory?.videoDuration ? currentStory.videoDuration * 1000 : 15000) : 5000
 
@@ -292,9 +344,34 @@ export default function HistoriasViewerModal({
               <span className="historias-header-spec">⚡ {currentStory.proCategory} • Entrega 5★</span>
             </div>
           </div>
-          <button className="historias-close-btn" onClick={onClose} title="Cerrar">
-            ✕
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            {isOwner && (
+              <button
+                onClick={handleDeleteStory}
+                style={{
+                  background: 'rgba(239, 68, 68, 0.85)',
+                  border: '1px solid rgba(255, 255, 255, 0.3)',
+                  color: '#FFFFFF',
+                  borderRadius: '50%',
+                  width: '34px',
+                  height: '34px',
+                  fontSize: '15px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: '0 4px 12px rgba(239, 68, 68, 0.4)',
+                  transition: 'transform 0.2s ease'
+                }}
+                title="Eliminar esta historia de tu perfil"
+              >
+                🗑️
+              </button>
+            )}
+            <button className="historias-close-btn" onClick={onClose} title="Cerrar">
+              ✕
+            </button>
+          </div>
         </div>
 
         {/* Story Media (Image or Video) */}
@@ -387,6 +464,26 @@ export default function HistoriasViewerModal({
 
         {/* Bottom Actions Container (Reactions + Contratar, Like, Share) */}
         <div className={`historias-bottom-container ${isPaused ? 'hidden-on-pause' : ''}`}>
+
+          {/* Contador de Vistas (Informativo y Privado sin comunicación directa) */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '6px 12px',
+            background: 'rgba(15, 23, 42, 0.85)',
+            backdropFilter: 'blur(8px)',
+            borderRadius: '16px',
+            border: '1px solid rgba(255, 255, 255, 0.15)',
+            margin: '0 2px 2px 2px'
+          }}>
+            <span style={{ fontSize: '12px', fontWeight: 800, color: '#F8FAFC', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              👁️ {currentStory.viewsCount || 1} { (currentStory.viewsCount === 1) ? 'persona ha visto tu historia' : 'personas han visto tu historia' }
+            </span>
+            <span style={{ fontSize: '10px', color: '#94A3B8', fontWeight: 700 }}>
+              🔒 Registro Privado
+            </span>
+          </div>
           
           {/* Fast Reaction Emojis Bar (1-Tap) */}
           <div className="historias-reactions-bar">
