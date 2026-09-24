@@ -21,8 +21,27 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate
 
   const isProUser = isPro || userData?.role === 'pro' || userData?.type === 'pro' || localStorage.getItem('forceListoPro') === 'true'
 
+  // Mapa en tiempo real de planes de usuarios en Firestore para garantizar que cada historia muestre su plan real
+  const [usersPlanMap, setUsersPlanMap] = useState({})
+
+  useEffect(() => {
+    const unsubscribeUsers = onSnapshot(collection(db, 'users'), (snap) => {
+      const map = {}
+      snap.forEach(uDoc => {
+        const u = uDoc.data()
+        const resolved = u.plan || u.currentPlan || u.planId || u.subscription || u.userPlan || u.planName
+        if (resolved) {
+          map[uDoc.id] = resolved
+        }
+      })
+      setUsersPlanMap(map)
+    }, (err) => console.log('Notice reading users for plan map:', err))
+
+    return () => unsubscribeUsers()
+  }, [])
+
   // Regla de Bienvenida (Grace Period): Pro de planes Gold, Platinum o VIP registrados en los últimos 30 días pueden subir 1 historia gratis
-  const userPlanRaw = String(userData?.plan || userData?.planName || userData?.subscription || '').toLowerCase()
+  const userPlanRaw = String(userData?.plan || userData?.currentPlan || userData?.planId || userData?.planName || userData?.subscription || '').toLowerCase()
   const userCreatedAt = userData?.createdAt ? new Date(userData.createdAt).getTime() : 0
   const isWithin30Days = userCreatedAt > 0 ? (Date.now() - userCreatedAt <= 30 * 24 * 60 * 60 * 1000) : true
   const isGoldOrAbove = userPlanRaw.includes('gold') || userPlanRaw.includes('platinum') || userPlanRaw.includes('vip') || userPlanRaw.includes('élite')
@@ -292,16 +311,20 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate
             const seenKeys = new Set()
 
             stories.forEach((story, idx) => {
-              const key = story.proId || story.proName || story.fullName || story.id
+              const key = story.proId || story.proUid || story.proName || story.fullName || story.id
               if (!seenKeys.has(key)) {
                 seenKeys.add(key)
-                const allStoryIds = stories.filter(s => (s.proId || s.proName || s.fullName || s.id) === key).map(s => s.id)
+                const allStoryIds = stories.filter(s => (s.proId || s.proUid || s.proName || s.fullName || s.id) === key).map(s => s.id)
+                const proUidKey = story.proId || story.proUid
+                const livePlan = proUidKey ? usersPlanMap[proUidKey] : null
+                const finalPlan = story.proPlan || story.plan || story.currentPlan || story.planId || story.subscription || story.userPlan || story.planName || livePlan
+
                 uniquePros.push({
                   key,
                   firstIndex: idx,
                   proName: story.proName || story.fullName,
                   proAvatar: story.proAvatar,
-                  proPlan: story.proPlan || story.plan || story.subscription,
+                  proPlan: finalPlan,
                   proRating: story.proRating || story.rating || story.calificacion || 5.0,
                   allStoryIds
                 })

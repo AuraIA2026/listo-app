@@ -44,11 +44,40 @@ export default function HistoriasViewerModal({
     }
   }, [])
 
+  const [liveProPlan, setLiveProPlan] = useState(null)
   const currentStory = stories[currentIndex] || stories[0]
-  const storyPlanTheme = getProPlanTheme(
-    currentStory?.proPlan || currentStory?.plan || currentStory?.subscription,
-    currentStory?.proRating || currentStory?.rating || 0
-  )
+  const proUidKey = currentStory?.proId || currentStory?.proUid
+
+  // Consulta en tiempo real a la colección users en Firestore para resolver el plan exacto del profesional
+  useEffect(() => {
+    if (!proUidKey) return
+
+    let stored = {}
+    try {
+      stored = JSON.parse(localStorage.getItem('listoUserData') || '{}')
+    } catch (e) {}
+
+    const actUid = userData?.uid || userData?.id || stored?.uid || stored?.id
+    if (proUidKey === actUid && (userData?.plan || userData?.currentPlan || userData?.planId)) {
+      setLiveProPlan(userData.plan || userData.currentPlan || userData.planId || userData.subscription)
+      return
+    }
+
+    const unsub = onSnapshot(doc(db, 'users', proUidKey), (docSnap) => {
+      if (docSnap.exists()) {
+        const u = docSnap.data()
+        const fetched = u.plan || u.currentPlan || u.planId || u.subscription || u.userPlan || u.planName
+        if (fetched) {
+          setLiveProPlan(fetched)
+        }
+      }
+    }, (err) => console.log('Notice reading pro doc for plan:', err))
+
+    return () => unsub()
+  }, [proUidKey, userData])
+
+  const resolvedPlan = currentStory?.proPlan || currentStory?.plan || currentStory?.currentPlan || currentStory?.planId || currentStory?.subscription || currentStory?.userPlan || currentStory?.planName || liveProPlan
+  const storyPlanTheme = getProPlanTheme(resolvedPlan, currentStory?.proRating || currentStory?.rating || 0)
 
   // Record story view counter
   useEffect(() => {
