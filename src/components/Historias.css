@@ -558,16 +558,24 @@
   pointer-events: none;
 }
 
-/* Barra de Reacciones Rapidas con Emojis (1-Tap) */
+/* Barra de Reacciones Rápidas con Emojis (Estilo WhatsApp) */
 .historias-reactions-bar {
   display: flex;
   align-items: center;
-  justify-content: space-around;
-  background: rgba(255, 255, 255, 0.12);
-  backdrop-filter: blur(12px);
+  gap: 6px;
+  background: rgba(15, 23, 42, 0.88);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 25px;
-  padding: 6px 10px;
+  border-radius: 28px;
+  padding: 6px 12px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+.historias-reactions-bar::-webkit-scrollbar {
+  display: none;
 }
 
 .btn-emoji-reaction {
@@ -576,8 +584,12 @@
   font-size: 22px;
   cursor: pointer;
   transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
-  padding: 4px 8px;
+  padding: 4px 6px;
   border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
 .btn-emoji-reaction:hover {
@@ -586,6 +598,18 @@
 
 .btn-emoji-reaction:active {
   transform: scale(0.9);
+}
+
+.emoji-png-icon {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.3));
+  transition: transform 0.2s ease;
+}
+
+.btn-emoji-reaction:hover .emoji-png-icon {
+  transform: scale(1.15);
 }
 
 /* Barra de Botones Principales (VER PERFIL, CONTRATAR, ME GUSTA, COMPARTIR) */

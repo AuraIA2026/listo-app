@@ -250,20 +250,22 @@ export default function HistoriasViewerModal({
     }, 1200)
   }
 
-  const handleEmojiReaction = async (e, emoji) => {
+  const handleEmojiReaction = async (e, reactionObj) => {
     if (e) e.stopPropagation()
-    triggerFloatingReaction(emoji)
+    const reactionValue = typeof reactionObj === 'object' ? reactionObj.icon : reactionObj
+    const displayLabel = typeof reactionObj === 'object' ? (reactionObj.name || 'Reacción') : reactionObj
+
+    triggerFloatingReaction(reactionValue)
 
     try {
       const clientName = userData?.name || userData?.displayName || 'Un cliente'
       const proId = currentStory.proId || 'pro_unknown'
-      const proName = currentStory.proName || 'un profesional'
 
       await addDoc(collection(db, 'notificaciones'), {
         userId: proId,
         type: 'system',
-        title: `Reacción ${emoji} en tu Historia`,
-        text: `¡${clientName} reaccionó ${emoji} a tu historia de trabajo "${currentStory.proCategory}"!`,
+        title: `Reacción ${displayLabel} en tu Historia`,
+        text: `¡${clientName} reaccionó "${displayLabel}" a tu historia de trabajo de ${currentStory.proCategory}!`,
         date: new Date().toISOString(),
         read: false
       })
@@ -360,7 +362,11 @@ export default function HistoriasViewerModal({
                 100% { opacity: 0; transform: translate(-50%, -100%) scale(1.8); }
               }
             `}</style>
-            {floatingReaction}
+            {typeof floatingReaction === 'string' && (floatingReaction.startsWith('/emoji/') || floatingReaction.endsWith('.png')) ? (
+              <img src={floatingReaction} alt="Reacción" style={{ width: '95px', height: '95px', objectFit: 'contain', filter: 'drop-shadow(0 6px 20px rgba(242,96,0,0.6))' }} />
+            ) : (
+              <span>{floatingReaction}</span>
+            )}
           </div>
         )}
 
@@ -583,16 +589,30 @@ export default function HistoriasViewerModal({
             </span>
           </div>
           
-          {/* Fast Reaction Emojis Bar (1-Tap) */}
+          {/* Fast Reaction Emojis Bar (1-Tap Custom Listo Emojis + WhatsApp Emojis) */}
           <div className="historias-reactions-bar">
-            {['❤️', '🔥', '👏', '💯', '⭐'].map((emoji) => (
+            {[
+              { id: 'like', name: 'Me gusta', icon: '/emoji/like.png', isPng: true },
+              { id: 'trato', name: 'Trato Hecho', icon: '/emoji/trato hecho.png', isPng: true },
+              { id: 'estrellas', name: '5 Estrellas', icon: '/emoji/5 estrella.png', isPng: true },
+              { id: 'contratar', name: 'Contratar', icon: '/emoji/contratar.png', isPng: true },
+              { id: 'listo', name: 'Listo Patrón', icon: '/emoji/listo patron.png', isPng: true },
+              { id: 'corazon', name: 'Amor', icon: '❤️', isPng: false },
+              { id: 'fuego', name: 'Fuego', icon: '🔥', isPng: false },
+              { id: 'aplauso', name: 'Aplausos', icon: '👏', isPng: false },
+              { id: 'cien', name: '100%', icon: '💯', isPng: false }
+            ].map((item) => (
               <button
-                key={emoji}
+                key={item.id}
                 className="btn-emoji-reaction"
-                onClick={(e) => handleEmojiReaction(e, emoji)}
-                title={`Reaccionar ${emoji}`}
+                onClick={(e) => handleEmojiReaction(e, item)}
+                title={item.name}
               >
-                {emoji}
+                {item.isPng ? (
+                  <img src={item.icon} alt={item.name} className="emoji-png-icon" />
+                ) : (
+                  <span>{item.icon}</span>
+                )}
               </button>
             ))}
           </div>
