@@ -655,11 +655,11 @@ function EditRequestScreen({ lang, user, onBack }) {
           </div>
           {lang === 'es' ? (
             <>
-              No coloques publicidad, teléfonos ni redes sociales en tu perfil o portada. No colocar fotos con números de teléfono. Los tratos deben realizarse únicamente dentro de <strong>Listo Patrón</strong>.
+              No coloques publicidad, teléfonos ni redes sociales en tu perfil o portada. Las fotos con publicidad no serán aceptadas. Los tratos deben realizarse únicamente dentro de <strong>Listo Patrón</strong>.
             </>
           ) : (
             <>
-              Do not place advertising, phone numbers, or social media links on your profile or cover. Do not upload photos with phone numbers. Deals must be conducted solely within <strong>Listo Patrón</strong>.
+              Do not place advertising, phone numbers, or social media links on your profile or cover. Photos with advertising will not be accepted. Deals must be conducted solely within <strong>Listo Patrón</strong>.
             </>
           )}
         </div>
