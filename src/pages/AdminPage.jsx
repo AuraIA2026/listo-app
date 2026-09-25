@@ -510,6 +510,8 @@ export default function AdminPage({ navigate }) {
   const [confirm, setConfirm]   = useState(null); // { type, obj }
   const [viewDocs, setViewDocs] = useState(null); // Usuario a inspeccionar documentos
   const [viewProStats, setViewProStats] = useState(null); // Modal avanzado de central de mando
+  const [viewStory, setViewStory] = useState(null); // Modal inspector de historias
+  const [viewEditRequest, setViewEditRequest] = useState(null); // Modal inspector de cambios de datos
   const [psFilter, setPsFilter] = useState('all'); // Filtros rápidos
   const [psLimit, setPsLimit] = useState(20); // Paginación
   const [isAuthenticated, setIsAuthenticated] = useState(true); // Cambiado a true para evitar contraseña por ahora
@@ -1286,7 +1288,7 @@ export default function AdminPage({ navigate }) {
                   )}
 
                   {(story.imageUrl || story.videoUrl) && (
-                    <div style={{ marginTop: '12px', textAlign: 'center' }}>
+                    <div style={{ marginTop: '12px', textAlign: 'center', cursor: 'pointer' }} onClick={() => setViewStory(story)}>
                       {story.mediaType === 'video' || story.videoUrl ? (
                         <video 
                           src={story.videoUrl || story.imageUrl} 
@@ -1303,20 +1305,27 @@ export default function AdminPage({ navigate }) {
                     </div>
                   )}
 
-                  <div className="cc-actions" style={{ marginTop: '14px', display: 'flex', gap: '8px' }}>
+                  <div className="cc-actions" style={{ marginTop: '14px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                    <button 
+                      className="cc-btn remind" 
+                      onClick={() => setViewStory(story)}
+                      style={{ background: '#3B82F6', color: '#fff', border: 'none', fontWeight: 800, fontSize: '12px', flex: '1 1 100%' }}
+                    >
+                      🔎 Inspeccionar en Ventana Aparte
+                    </button>
                     {isPending && (
                       <>
                         <button 
                           className="cc-btn paid" 
                           onClick={() => setConfirm({ type: 'approve_story', obj: story })}
-                          style={{ fontWeight: 800, fontSize: '12px' }}
+                          style={{ fontWeight: 800, fontSize: '12px', flex: 1 }}
                         >
                           ✅ Aprobar y Publicar
                         </button>
                         <button 
                           className="cc-btn block" 
                           onClick={() => setConfirm({ type: 'reject_story', obj: story })}
-                          style={{ fontWeight: 800, fontSize: '12px' }}
+                          style={{ fontWeight: 800, fontSize: '12px', flex: 1 }}
                         >
                           ❌ Rechazar
                         </button>
@@ -1326,7 +1335,7 @@ export default function AdminPage({ navigate }) {
                       <button 
                         className="cc-btn block" 
                         onClick={() => setConfirm({ type: 'reject_story', obj: story })}
-                        style={{ fontWeight: 800, fontSize: '12px' }}
+                        style={{ fontWeight: 800, fontSize: '12px', flex: 1 }}
                       >
                         🔴 Desactivar
                       </button>
@@ -1335,7 +1344,7 @@ export default function AdminPage({ navigate }) {
                       <button 
                         className="cc-btn paid" 
                         onClick={() => setConfirm({ type: 'approve_story', obj: story })}
-                        style={{ fontWeight: 800, fontSize: '12px' }}
+                        style={{ fontWeight: 800, fontSize: '12px', flex: 1 }}
                       >
                         ✅ Reactivar
                       </button>
@@ -1345,7 +1354,7 @@ export default function AdminPage({ navigate }) {
                       onClick={() => setConfirm({ type: 'delete_story', obj: story })}
                       style={{ flex: '0.4', fontSize: '12px' }}
                     >
-                      🗑️ Borrar
+                      🗑️
                     </button>
                   </div>
                 </div>
@@ -1409,9 +1418,100 @@ export default function AdminPage({ navigate }) {
               </div>
 
               <div style={{display:'flex', gap:10}}>
-                <button onClick={() => setConfirm({type:'approve_verif', obj: viewDocs})} style={{flex:1, background:'#10B981', color:'#fff', padding:14, borderRadius:12, border:'none', fontSize:14, fontWeight:800, cursor:'pointer'}}>✅ APROBAR</button>
+                <button onClick={() => setConfirm({type:'approve_verif', obj: viewDocs})} style={{flex:1, background:'#10B981', color:'#fff', padding:14, borderRadius:12, border:'none', fontSize:14, fontWeight:800, cursor:'pointer'}}>✅ ACTIVAR PERFIL</button>
                 <button onClick={() => setConfirm({type:'reject_verif', obj: viewDocs})} style={{flex:1, background:'#EF4444', color:'#fff', padding:14, borderRadius:12, border:'none', fontSize:14, fontWeight:800, cursor:'pointer'}}>❌ RECHAZAR</button>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── MODAL INSPECTOR DE HISTORIA EN VENTANA APARTE ── */}
+        {viewStory && (
+          <div style={{position:'fixed', inset:0, background:'rgba(0,0,0,0.85)', zIndex:999, display:'flex', flexDirection:'column', backdropFilter:'blur(10px)', padding:16}} onClick={() => setViewStory(null)}>
+            <div style={{
+              background:'var(--surface)', width:'100%', maxWidth:540, margin:'auto', borderRadius:24,
+              overflow:'hidden', border:'1px solid rgba(242,96,0,0.3)', boxShadow:'0 25px 50px -12px rgba(0,0,0,0.5)',
+              display:'flex', flexDirection:'column', maxHeight:'92vh', animation:'scaleUp .3s cubic-bezier(0.16, 1, 0.3, 1)'
+            }} onClick={e => e.stopPropagation()}>
+              
+              {/* Header Modal */}
+              <div style={{background:'linear-gradient(135deg, #111827, #1E293B)', padding:'18px 20px', color:'#fff', display:'flex', alignItems:'center', justifyContent:'space-between', borderBottom:'1px solid rgba(255,255,255,0.1)'}}>
+                <div style={{display:'flex', alignItems:'center', gap:12}}>
+                  <img 
+                    src={viewStory.proAvatar || 'https://randomuser.me/api/portraits/men/32.jpg'} 
+                    alt={viewStory.proName} 
+                    style={{width:44, height:44, borderRadius:'50%', objectFit:'cover', border:'2px solid var(--brand)'}}
+                  />
+                  <div>
+                    <h3 style={{fontFamily:'var(--display)', fontSize:16, fontWeight:800, margin:0, color:'#fff'}}>{viewStory.proName || 'Profesional'}</h3>
+                    <span style={{fontSize:12, color:'rgba(255,255,255,0.7)'}}>⚡ {viewStory.proCategory || 'Historia de Trabajo'} · {fmtDate(viewStory.createdAt)}</span>
+                  </div>
+                </div>
+                <button onClick={() => setViewStory(null)} style={{background:'rgba(255,255,255,0.1)', border:'none', color:'#fff', width:36, height:36, borderRadius:'50%', fontSize:18, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center'}}>✕</button>
+              </div>
+
+              {/* Body Media Preview Container */}
+              <div style={{padding:20, overflowY:'auto', background:'#090D16', flex:1, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center'}}>
+                {(viewStory.imageUrl || viewStory.videoUrl) ? (
+                  viewStory.mediaType === 'video' || viewStory.videoUrl ? (
+                    <video 
+                      src={viewStory.videoUrl || viewStory.imageUrl} 
+                      controls 
+                      autoPlay 
+                      style={{width:'100%', maxHeight:'420px', borderRadius:16, objectFit:'contain', background:'#000', boxShadow:'0 10px 30px rgba(0,0,0,0.5)'}} 
+                    />
+                  ) : (
+                    <img 
+                      src={viewStory.imageUrl} 
+                      alt="Historia Completa" 
+                      style={{width:'100%', maxHeight:'420px', borderRadius:16, objectFit:'contain', background:'#000', boxShadow:'0 10px 30px rgba(0,0,0,0.5)'}} 
+                    />
+                  )
+                ) : (
+                  <div style={{padding:40, color:'var(--muted)', textAlign:'center'}}>Sin multimedia adjunta</div>
+                )}
+
+                {viewStory.caption && (
+                  <div style={{width:'100%', background:'rgba(255,255,255,0.06)', padding:'14px 18px', borderRadius:14, marginTop:16, borderLeft:'4px solid var(--brand)', color:'#F1F5F9', fontSize:14, lineHeight:1.5}}>
+                    💬 "{viewStory.caption}"
+                  </div>
+                )}
+              </div>
+
+              {/* Footer Acciones */}
+              <div style={{padding:'16px 20px', background:'var(--surface)', borderTop:'1px solid var(--border)', display:'flex', gap:10}}>
+                <button 
+                  onClick={() => {
+                    const storyToApprove = viewStory;
+                    setViewStory(null);
+                    setConfirm({ type: 'approve_story', obj: storyToApprove });
+                  }} 
+                  style={{flex:1, background:'#10B981', color:'#fff', padding:'14px', borderRadius:14, border:'none', fontSize:13, fontWeight:800, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:6, boxShadow:'0 4px 12px rgba(16,185,129,0.3)'}}
+                >
+                  ✅ Aprobar y Publicar
+                </button>
+                <button 
+                  onClick={() => {
+                    const storyToReject = viewStory;
+                    setViewStory(null);
+                    setConfirm({ type: 'reject_story', obj: storyToReject });
+                  }} 
+                  style={{flex:1, background:'#EF4444', color:'#fff', padding:'14px', borderRadius:14, border:'none', fontSize:13, fontWeight:800, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:6, boxShadow:'0 4px 12px rgba(239,68,68,0.3)'}}
+                >
+                  ❌ Rechazar
+                </button>
+                <button 
+                  onClick={() => {
+                    const storyToDelete = viewStory;
+                    setViewStory(null);
+                    setConfirm({ type: 'delete_story', obj: storyToDelete });
+                  }} 
+                  style={{background:'var(--surface2)', color:'var(--muted)', border:'1px solid var(--border)', padding:'14px 18px', borderRadius:14, fontSize:13, fontWeight:700, cursor:'pointer'}}
+                >
+                  🗑️
+                </button>
+              </div>
+
             </div>
           </div>
         )}
@@ -1856,7 +1956,7 @@ export default function AdminPage({ navigate }) {
                 <div style={{display:'flex', gap:8, marginBottom:12}}>
                   {viewProStats.planStatus === 'inactive' || !viewProStats.approved ? (
                     <button className="cc-btn paid" style={{background:'#10B981', color:'#fff', flex:1}} onClick={() => setConfirm({type:'unblock', obj:viewProStats})}>
-                      ✅ Reactivar Perfil
+                      ✅ Activar Perfil
                     </button>
                   ) : (
                     <button className="cc-btn block" style={{background:'#EF4444', color:'#fff', flex:1}} onClick={() => setConfirm({type:'block', obj:viewProStats})}>
@@ -2002,7 +2102,10 @@ export default function AdminPage({ navigate }) {
                           </div>
                         )}
 
-                        <div style={{display:'flex', gap:8}}>
+                        <div style={{display:'flex', gap:8, flexWrap:'wrap'}}>
+                          <button className="cc-btn remind" style={{flex:'1 1 100%', fontSize:12, padding:10, background:'#3B82F6', color:'#fff', border:'none', fontWeight:800}} onClick={() => setViewEditRequest(req)}>
+                             🔎 Inspeccionar en Ventana Aparte
+                          </button>
                           <button className="cc-btn paid" style={{flex:1, fontSize:12, padding:10}} onClick={() => setConfirm({type:'approve_edit', obj: req})}>
                              ✅ APROBAR
                           </button>
@@ -2014,6 +2117,158 @@ export default function AdminPage({ navigate }) {
                   </div>
                )
             })}
+          </div>
+        )}
+
+        {/* ── MODAL INSPECTOR DE CAMBIO DE DATOS / PERFIL EN VENTANA APARTE ── */}
+        {viewEditRequest && (
+          <div style={{position:'fixed', inset:0, background:'rgba(0,0,0,0.85)', zIndex:999, display:'flex', flexDirection:'column', backdropFilter:'blur(10px)', padding:16}} onClick={() => setViewEditRequest(null)}>
+            <div style={{
+              background:'var(--surface)', width:'100%', maxWidth:540, margin:'auto', borderRadius:24,
+              overflow:'hidden', border:'1px solid rgba(59,130,246,0.3)', boxShadow:'0 25px 50px -12px rgba(0,0,0,0.5)',
+              display:'flex', flexDirection:'column', maxHeight:'92vh', animation:'scaleUp .3s cubic-bezier(0.16, 1, 0.3, 1)'
+            }} onClick={e => e.stopPropagation()}>
+
+              {/* Header Modal */}
+              <div style={{background:'linear-gradient(135deg, #1E293B, #0F172A)', padding:'18px 20px', color:'#fff', display:'flex', alignItems:'center', justifyContent:'space-between', borderBottom:'1px solid rgba(255,255,255,0.1)'}}>
+                <div>
+                  <div style={{fontSize:11, fontWeight:800, color:'#3B82F6', textTransform:'uppercase', letterSpacing:1, marginBottom:2}}>
+                    Inspector de Solicitud de Edición
+                  </div>
+                  <h3 style={{fontFamily:'var(--display)', fontSize:18, fontWeight:800, margin:0, color:'#fff'}}>
+                    {viewEditRequest.userName || 'Profesional'}
+                  </h3>
+                  <span style={{fontSize:12, color:'rgba(255,255,255,0.6)'}}>
+                    {fmtDate(viewEditRequest.createdAt)}
+                  </span>
+                </div>
+                <button onClick={() => setViewEditRequest(null)} style={{background:'rgba(255,255,255,0.1)', border:'none', color:'#fff', width:36, height:36, borderRadius:'50%', fontSize:18, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center'}}>✕</button>
+              </div>
+
+              {/* Body Content */}
+              <div style={{padding:20, overflowY:'auto', flex:1}}>
+                {(() => {
+                  const req = viewEditRequest;
+                  const u = users.find(x => x.id === req.userId || x.uid === req.userId);
+                  const isMedia = ['photo', 'cover', 'work_photo'].includes(req.type);
+
+                  return (
+                    <div>
+                      {/* Notice Banner */}
+                      <div style={{background:'rgba(242,96,0,0.08)', border:'1px solid rgba(242,96,0,0.2)', padding:'12px 14px', borderRadius:14, marginBottom:16, fontSize:12, color:'var(--text)', lineHeight:1.4}}>
+                        <strong>🛡️ Política de Seguridad Listo Patrón:</strong> No coloques publicidad, teléfonos ni redes sociales en tu perfil o portada. Las fotos con publicidad no serán aceptadas.
+                      </div>
+
+                      {isMedia ? (
+                        <div style={{background:'var(--surface2)', padding:16, borderRadius:16, border:'1px solid var(--border)', textAlign:'center'}}>
+                          {req.type === 'photo' && (
+                            <div>
+                              <div style={{fontSize:12, fontWeight:700, color:'var(--muted)', marginBottom:12, textTransform:'uppercase'}}>Comparación de Foto de Perfil</div>
+                              <div style={{display:'flex', gap:16, justifyContent:'center', alignItems:'center'}}>
+                                <div style={{flex:1, textAlign:'center'}}>
+                                  <span style={{fontSize:11, color:'var(--muted)', display:'block', marginBottom:6, fontWeight:700}}>Actual</span>
+                                  <img src={u?.photoURL || 'https://via.placeholder.com/120?text=Vacio'} style={{width:110, height:110, borderRadius:'50%', objectFit:'cover', border:'2px solid var(--border)', boxShadow:'0 4px 10px rgba(0,0,0,0.1)'}} alt="Actual"/>
+                                </div>
+                                <div style={{fontSize:24, color:'var(--brand)'}}>➔</div>
+                                <div style={{flex:1, textAlign:'center'}}>
+                                  <span style={{fontSize:11, color:'#10B981', display:'block', marginBottom:6, fontWeight:800}}>Nueva Propuesta</span>
+                                  <img src={req.requestedChanges?.photoURL} style={{width:110, height:110, borderRadius:'50%', objectFit:'cover', border:'3px solid #10B981', boxShadow:'0 6px 16px rgba(16,185,129,0.3)'}} alt="Nueva"/>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+
+                          {req.type === 'cover' && (
+                            <div>
+                              <div style={{fontSize:12, fontWeight:700, color:'var(--muted)', marginBottom:12, textTransform:'uppercase'}}>Comparación de Foto de Portada</div>
+                              <div style={{display:'flex', flexDirection:'column', gap:16}}>
+                                <div>
+                                  <span style={{fontSize:11, color:'var(--muted)', display:'block', marginBottom:6, fontWeight:700, textAlign:'left'}}>Portada Actual</span>
+                                  <img src={u?.coverURL || 'https://via.placeholder.com/400x160?text=Sin+Portada'} style={{width:'100%', height:140, borderRadius:12, objectFit:'cover', border:'2px solid var(--border)'}} alt="Actual"/>
+                                </div>
+                                <div>
+                                  <span style={{fontSize:11, color:'#10B981', display:'block', marginBottom:6, fontWeight:800, textAlign:'left'}}>Nueva Portada Propuesta</span>
+                                  <img src={req.requestedChanges?.coverURL} style={{width:'100%', height:140, borderRadius:12, objectFit:'cover', border:'3px solid #10B981', boxShadow:'0 6px 16px rgba(16,185,129,0.3)'}} alt="Nueva"/>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+
+                          {req.type === 'work_photo' && (
+                            <div>
+                              <div style={{fontSize:12, fontWeight:700, color:'var(--muted)', marginBottom:12, textTransform:'uppercase'}}>Nueva Foto de Galería de Trabajo</div>
+                              {(() => {
+                                const newPhotos = req.requestedChanges?.photos || [];
+                                const addedPhoto = newPhotos[newPhotos.length - 1];
+                                return addedPhoto ? (
+                                  <img src={addedPhoto} style={{width:'100%', maxHeight:260, borderRadius:16, objectFit:'contain', border:'3px solid #10B981', background:'#000'}} alt="Work"/>
+                                ) : <p>No se pudo cargar la imagen</p>;
+                              })()}
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <div style={{background:'var(--surface)', border:'1px solid var(--border)', borderRadius:16, overflow:'hidden', boxShadow:'0 4px 12px rgba(0,0,0,0.03)'}}>
+                          <div style={{background:'var(--surface2)', padding:'10px 14px', fontSize:12, fontWeight:800, color:'var(--muted)', borderBottom:'1px solid var(--border)', textTransform:'uppercase'}}>
+                            Comparativa de Campos Modificados
+                          </div>
+                          <div style={{padding:14}}>
+                            <table style={{width:'100%', fontSize:13, borderCollapse:'collapse'}}>
+                              <thead>
+                                <tr style={{borderBottom:'2px solid var(--border)', textAlign:'left', color:'var(--muted)', fontSize:11, textTransform:'uppercase'}}>
+                                  <th style={{padding:'8px 4px'}}>Campo</th>
+                                  <th style={{padding:'8px 4px'}}>Valor Actual</th>
+                                  <th style={{padding:'8px 4px', color:'#10B981'}}>Solicitado</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {Object.keys(req.requestedChanges || {}).map(key => {
+                                  const oldVal = u?.[key] || 'Sin especificar';
+                                  const newVal = req.requestedChanges[key];
+                                  if (oldVal === newVal) return null;
+                                  return (
+                                    <tr key={key} style={{borderBottom:'1px solid var(--border)'}}>
+                                      <td style={{padding:'10px 4px', fontWeight:700, color:'var(--text)', textTransform:'capitalize'}}>{key}</td>
+                                      <td style={{padding:'10px 4px', color:'var(--muted)', textDecoration:'line-through'}}>{String(oldVal)}</td>
+                                      <td style={{padding:'10px 4px', color:'#10B981', fontWeight:800}}>{String(newVal)}</td>
+                                    </tr>
+                                  );
+                                })}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
+              </div>
+
+              {/* Footer Acciones */}
+              <div style={{padding:'16px 20px', background:'var(--surface)', borderTop:'1px solid var(--border)', display:'flex', gap:10}}>
+                <button 
+                  onClick={() => {
+                    const reqToApprove = viewEditRequest;
+                    setViewEditRequest(null);
+                    setConfirm({ type: 'approve_edit', obj: reqToApprove });
+                  }} 
+                  style={{flex:1, background:'#10B981', color:'#fff', padding:'14px', borderRadius:14, border:'none', fontSize:13, fontWeight:800, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:6, boxShadow:'0 4px 12px rgba(16,185,129,0.3)'}}
+                >
+                  ✅ Aprobar Cambios
+                </button>
+                <button 
+                  onClick={() => {
+                    const reqToReject = viewEditRequest;
+                    setViewEditRequest(null);
+                    setConfirm({ type: 'reject_edit', obj: reqToReject });
+                  }} 
+                  style={{flex:1, background:'#EF4444', color:'#fff', padding:'14px', borderRadius:14, border:'none', fontSize:13, fontWeight:800, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:6, boxShadow:'0 4px 12px rgba(239,68,68,0.3)'}}
+                >
+                  ❌ Rechazar Solicitud
+                </button>
+              </div>
+
+            </div>
           </div>
         )}
 
