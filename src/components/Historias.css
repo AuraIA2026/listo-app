@@ -92,6 +92,10 @@
   box-shadow: 0 2px 10px rgba(242, 96, 0, 0.4);
   letter-spacing: 0.4px;
   text-transform: uppercase;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
 }
 
 /* ── PISTA DE DESPLAZAMIENTO ── */
