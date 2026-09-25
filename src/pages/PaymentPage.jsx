@@ -215,8 +215,7 @@ export default function PaymentPage({ lang = 'es', navigate, professional }) {
   // Validaciones
   const canConfirmCash = method === 'cash'
   const canConfirmTransfer = method === 'transfer' && selectedBank && transferAmount > 0 && depositorName.trim() !== '' && receiptUploaded
-  const canConfirmCard = method === 'card' && cardName.trim() !== '' && cardNumber.replace(/\s/g, '').length >= 15 && cardExp.trim().length === 5 && cardCvv.trim().length >= 3
-  const canConfirm = canConfirmCash || canConfirmTransfer || canConfirmCard
+  const canConfirm = canConfirmCash || canConfirmTransfer
 
   return (
     <div className="payment-page">
@@ -274,18 +273,6 @@ export default function PaymentPage({ lang = 'es', navigate, professional }) {
                 <p className="pay-method-desc">{T.transferDesc}</p>
               </div>
               <div className={`pay-method-radio ${method === 'transfer' ? 'checked' : ''}`} />
-            </button>
-
-            <button
-              className={`pay-method-card ${method === 'card' ? 'selected' : ''}`}
-              onClick={() => { setMethod('card'); setSelectedBank(null); }}
-            >
-              <div className="pay-method-icon card-icon">💳</div>
-              <div className="pay-method-info">
-                <p className="pay-method-name">{T.cardTitle}</p>
-                <p className="pay-method-desc">{T.cardDesc}</p>
-              </div>
-              <div className={`pay-method-radio ${method === 'card' ? 'checked' : ''}`} />
             </button>
           </div>
         </div>
@@ -362,77 +349,7 @@ export default function PaymentPage({ lang = 'es', navigate, professional }) {
 
 
 
-        {method === 'card' && (
-          <div className="pay-section fade-up">
-            <h3 className="pay-section-title">Detalles de la Tarjeta</h3>
-            <div className="transfer-manual-box" style={{ background: 'white', borderRadius: '18px', padding: '20px', border: '1.5px solid rgba(0,0,0,0.06)', boxShadow: '0 4px 16px rgba(0,0,0,0.04)', textAlign: 'left' }}>
-              <label style={{ display: 'block', fontFamily: 'var(--font-display)', fontSize: '13.5px', fontWeight: 700, color: 'var(--black)', marginBottom: '8px' }}>Nombre en la Tarjeta</label>
-              <input 
-                type="text" 
-                style={{ width: '100%', padding: '14px 16px', borderRadius: '12px', border: '1.5px solid #eee', background: '#FAFAFA', fontFamily: 'var(--font-body)', fontSize: '15px', color: 'var(--black)', boxSizing: 'border-box', marginBottom: '16px', outline: 'none' }}
-                placeholder="Ej. Juan Pérez"
-                value={cardName}
-                onChange={e => setCardName(e.target.value)}
-              />
-
-              <label style={{ display: 'block', fontFamily: 'var(--font-display)', fontSize: '13.5px', fontWeight: 700, color: 'var(--black)', marginBottom: '8px' }}>Número de Tarjeta</label>
-              <input 
-                type="tel" 
-                style={{ width: '100%', padding: '14px 16px', borderRadius: '12px', border: '1.5px solid #eee', background: '#FAFAFA', fontFamily: 'var(--font-body)', fontSize: '15px', color: 'var(--black)', boxSizing: 'border-box', marginBottom: '16px', outline: 'none' }}
-                placeholder="0000 0000 0000 0000"
-                maxLength={19}
-                value={cardNumber}
-                onChange={e => {
-                  let v = e.target.value.replace(/\s+/g, '').replace(/[^0-9]/gi, '')
-                  let parts = []
-                  for (let i = 0; i < v.length; i += 4) {
-                    parts.push(v.substring(i, i + 4))
-                  }
-                  setCardNumber(parts.join(' '))
-                }}
-              />
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
-                <div>
-                  <label style={{ display: 'block', fontFamily: 'var(--font-display)', fontSize: '13.5px', fontWeight: 700, color: 'var(--black)', marginBottom: '8px' }}>Vencimiento</label>
-                  <input 
-                    type="tel" 
-                    style={{ width: '100%', padding: '14px 16px', borderRadius: '12px', border: '1.5px solid #eee', background: '#FAFAFA', fontFamily: 'var(--font-body)', fontSize: '15px', color: 'var(--black)', boxSizing: 'border-box', outline: 'none' }}
-                    placeholder="MM/AA"
-                    maxLength={5}
-                    value={cardExp}
-                    onChange={e => {
-                      let val = e.target.value
-                      let clean = val.replace(/\D/g, '')
-                      if (clean.length === 1 && clean > '1') clean = '0' + clean
-                      if (clean.length >= 2) {
-                        let m = parseInt(clean.substring(0,2), 10)
-                        if (m < 1) m = 1
-                        if (m > 12) m = 12
-                        clean = (m < 10 ? '0' + m : String(m)) + clean.substring(2)
-                      }
-                      if (clean.length > 2) setCardExp(clean.substring(0,2) + '/' + clean.substring(2,4))
-                      else setCardExp(clean)
-                    }}
-                  />
-                </div>
-                <div>
-                  <label style={{ display: 'block', fontFamily: 'var(--font-display)', fontSize: '13.5px', fontWeight: 700, color: 'var(--black)', marginBottom: '8px' }}>CVV</label>
-                  <input 
-                    type="tel" 
-                    style={{ width: '100%', padding: '14px 16px', borderRadius: '12px', border: '1.5px solid #eee', background: '#FAFAFA', fontFamily: 'var(--font-body)', fontSize: '15px', color: 'var(--black)', boxSizing: 'border-box', outline: 'none' }}
-                    placeholder="123"
-                    maxLength={4}
-                    value={cardCvv}
-                    onChange={e => setCardCvv(e.target.value.replace(/[^0-9]/g, ''))}
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {(method === 'transfer' || method === 'card') && (
+        {method === 'transfer' && (
           <div className="pay-section pay-summary fade-up">
             <h3 className="pay-section-title">{T.summary}</h3>
             <div className="summary-rows">
