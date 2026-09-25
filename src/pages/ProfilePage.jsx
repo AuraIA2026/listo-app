@@ -639,6 +639,31 @@ function EditRequestScreen({ lang, user, onBack }) {
     <div className="sub-screen" style={{display:'flex', flexDirection:'column', height:'100%', background:'#FAFAFA'}}>
       <ScreenHeader title={lang==='es' ? 'Cambio de Datos' : 'Request Data Change'} onBack={onBack} />
       <div style={{flex: 1, overflowY: 'auto', padding: '20px'}}>
+        <div style={{
+          background: '#FEF2F2',
+          border: '1.5px solid #FCA5A5',
+          borderRadius: '14px',
+          padding: '14px 16px',
+          marginBottom: '16px',
+          fontSize: '13px',
+          color: '#991B1B',
+          lineHeight: '1.55',
+          boxShadow: '0 2px 10px rgba(239, 68, 68, 0.08)'
+        }}>
+          <div style={{ fontWeight: '900', marginBottom: '6px', fontSize: '13.5px', color: '#991B1B', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <span>⚠️</span> <span>{lang === 'es' ? 'Importante:' : 'Important:'}</span>
+          </div>
+          {lang === 'es' ? (
+            <>
+              No coloques publicidad, teléfonos ni redes sociales en tu perfil o portada. No colocar fotos con números de teléfono. Los tratos deben realizarse únicamente dentro de <strong>Listo Patrón</strong>.
+            </>
+          ) : (
+            <>
+              Do not place advertising, phone numbers, or social media links on your profile or cover. Do not upload photos with phone numbers. Deals must be conducted solely within <strong>Listo Patrón</strong>.
+            </>
+          )}
+        </div>
+
         <div style={{background: '#FFFBEB', border: '1px solid #FDE68A', borderRadius: '12px', padding: '12px', marginBottom: '20px', fontSize: '13px', color: '#92400E', lineHeight: '1.5'}}>
           💡 Por seguridad, como tu perfil ya está activo, cualquier cambio principal debe ser aprobado por la administración (demora hasta 72 horas laborales).
         </div>
