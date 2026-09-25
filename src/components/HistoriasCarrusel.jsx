@@ -104,13 +104,22 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate
     const qStories = query(collection(db, 'historias'))
     const unsubscribe = onSnapshot(qStories, (snapshot) => {
       const fetched = []
-      const now = new Date().getTime()
+      const now = Date.now()
 
       snapshot.forEach(doc => {
         const data = doc.data()
-        const expiresTime = data.expiresAt ? new Date(data.expiresAt).getTime() : now + 86400000
         const isApproved = data.status === 'approved' || data.moderated === true
-        if (expiresTime > now - 86400000 && isApproved) {
+        
+        // Calcular tiempo exacto de expiración (24 horas)
+        let expiresTime = 0
+        if (data.expiresAt) {
+          expiresTime = new Date(data.expiresAt).getTime()
+        } else if (data.createdAt) {
+          expiresTime = new Date(data.createdAt).getTime() + (24 * 60 * 60 * 1000)
+        }
+
+        // Historia válida ÚNICAMENTE dentro de sus 24 horas (expiresTime > now)
+        if (isApproved && expiresTime > now) {
           fetched.push({ id: doc.id, ...data })
         }
       })

@@ -1031,10 +1031,13 @@ export default function AdminPage({ navigate }) {
       }
 
       if (type === 'approve_story') {
+        const nowTime = new Date()
+        const expiresAt = new Date(nowTime.getTime() + 24 * 60 * 60 * 1000).toISOString()
         await updateDoc(doc(db, 'historias', obj.id), {
           status: 'approved',
           moderated: true,
-          approvedAt: new Date().toISOString()
+          approvedAt: nowTime.toISOString(),
+          expiresAt: expiresAt
         });
         if (obj.proId && !obj.proId.startsWith('anon_') && !obj.proId.startsWith('pro_')) {
           await addDoc(collection(db, 'notificaciones'), {

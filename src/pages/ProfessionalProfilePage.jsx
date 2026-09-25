@@ -335,12 +335,20 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
 
     const qStories = query(collection(db, 'historias'), where('proId', '==', proUid))
     const unsub = onSnapshot(qStories, (snapshot) => {
-      const now = new Date().getTime()
+      const now = Date.now()
       const list = []
       snapshot.forEach(docSnap => {
         const data = docSnap.data()
-        const expiresTime = data.expiresAt ? new Date(data.expiresAt).getTime() : now + 86400000
-        if (expiresTime > now - 86400000) {
+        const isApproved = data.status === 'approved' || data.moderated === true
+        
+        let expiresTime = 0
+        if (data.expiresAt) {
+          expiresTime = new Date(data.expiresAt).getTime()
+        } else if (data.createdAt) {
+          expiresTime = new Date(data.createdAt).getTime() + (24 * 60 * 60 * 1000)
+        }
+
+        if (isApproved && expiresTime > now) {
           list.push({ id: docSnap.id, ...data })
         }
       })

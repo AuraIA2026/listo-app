@@ -428,6 +428,26 @@ export default function HistoriasViewerModal({
                 <span style={{ fontSize: '10px', background: storyPlanTheme.badgeBg, color: storyPlanTheme.badgeColor, padding: '2px 8px', borderRadius: '10px', fontWeight: 900, boxShadow: '0 2px 6px rgba(0,0,0,0.3)' }}>
                   {storyPlanTheme.badge}
                 </span>
+                {(() => {
+                  let expiresMs = 0
+                  if (currentStory?.expiresAt) {
+                    expiresMs = new Date(currentStory.expiresAt).getTime()
+                  } else if (currentStory?.createdAt) {
+                    expiresMs = new Date(currentStory.createdAt).getTime() + (24 * 60 * 60 * 1000)
+                  } else {
+                    expiresMs = Date.now() + (24 * 60 * 60 * 1000)
+                  }
+                  const remainingMs = expiresMs - Date.now()
+                  if (remainingMs <= 0) return null
+                  const h = Math.floor(remainingMs / (1000 * 60 * 60))
+                  const m = Math.floor((remainingMs % (1000 * 60 * 60)) / (1000 * 60))
+                  const timeStr = h >= 1 ? `${h}h` : `${m}m`
+                  return (
+                    <span style={{ fontSize: '10px', background: 'rgba(245, 158, 11, 0.25)', border: '1px solid rgba(245, 158, 11, 0.6)', color: '#FBBF24', padding: '2px 8px', borderRadius: '10px', fontWeight: 900 }}>
+                      ⏱️ {timeStr} restantes
+                    </span>
+                  )
+                })()}
                 {isVideoStory && (
                   <span style={{ fontSize: '10px', background: 'rgba(255,255,255,0.2)', color: 'white', padding: '1px 6px', borderRadius: '10px', fontWeight: 700 }}>
                     🎥 Video
