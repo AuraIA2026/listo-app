@@ -5,6 +5,9 @@ import { CATEGORIES, FILTERS, ALL_SUBCATEGORIES, PROVINCES_LIST } from '../categ
 import LocalesCarrusel from '../locales/LocalesCarrusel'  // ✅ importado
 import VIPSection, { isProVip } from '../components/VIPSection'
 import HistoriasCarrusel from '../components/HistoriasCarrusel'
+import HistoriasViewerModal from '../components/HistoriasViewerModal'
+import StoryAvatar from '../components/StoryAvatar'
+import { useStories } from '../hooks/useStories'
 import ProPlanAlertWidget from '../components/ProPlanAlertWidget'
 import PlanSelectionModal from '../components/PlanSelectionModal'
 import EstimadorPreciosModal from '../components/EstimadorPreciosModal'
@@ -563,8 +566,17 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
   const [showPlanModal,     setShowPlanModal]     = useState(false)
   const [showEstimadorModal, setShowEstimadorModal] = useState(false)
   const [showSolicitudExpress, setShowSolicitudExpress] = useState(false)
-  const [showCalcModal,      setShowCalcModal]      = useState(false)
   const [viewMode,           setViewMode]          = useState('list') // 'list' | 'map'
+  
+  // Hook para historias de 24h activas en tiempo real
+  const { stories: allStories, getProStoryData } = useStories()
+  const [storyViewerOpen, setStoryViewerOpen] = useState(false)
+  const [activeStoryIndex, setActiveStoryIndex] = useState(0)
+
+  const handleOpenStoryViewer = (index) => {
+    setActiveStoryIndex(index)
+    setStoryViewerOpen(true)
+  }
   
   useEffect(() => {
     if (initialCategory) {
@@ -872,6 +884,8 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
         sectionSub={lang === 'es' ? 'Profesionales preparados para cumplir todas tus necesidades' : 'Professionals ready to fulfill all your needs'}
         showSeeAll={false}
         strictVipOnly={true}
+        getProStoryData={getProStoryData}
+        onOpenStory={handleOpenStoryViewer}
       />
 
       <PromoBanner lang={lang} userRole={userRole} />
@@ -1028,9 +1042,12 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
           const isPremium = isVip || isPlatinum
 
           if (isPremium) {
+            const sData = getProStoryData(pro)
+            const hasStory = Boolean(sData && sData.stories && sData.stories.length > 0)
+
             return (
               <div key={pro.id} className="pro-card-premium" style={{ animationDelay:`${i * 0.06}s` }} onClick={() => navigate('proProfile', pro)}>
-                <div className="premium-photo-wrap">
+                <div className="premium-photo-wrap" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   {isPlatinum && <div className="premium-badges-top">
                     <span className="premium-amz-badge" style={{background: 'linear-gradient(135deg, #B0BEC5, #78909C)'}}>💎 Selección Platinum</span>
                     <span className="premium-amz-badge badge-urgent" style={{background: '#E11D48'}}>🔥 Alta demanda</span>
@@ -1040,10 +1057,46 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
                     <span className="premium-amz-badge badge-urgent" style={{background: '#E11D48'}}>⚡ Responde al instante</span>
                   </div>}
                   
-                  {pro.photoURL
-                    ? <img src={pro.photoURL} alt={pro.name} className="premium-photo" loading="lazy" decoding="async" />
-                    : <div className="premium-avatar" style={{ background: avatarColors[(Array.from(pro.id).reduce((acc, char) => acc + char.charCodeAt(0), 0)) % avatarColors.length] }}>{pro.avatar}</div>
-                  }
+                  <StoryAvatar 
+                    pro={pro}
+                    src={pro.photoURL || pro.img}
+                    alt={pro.name}
+                    size={120}
+                    storyData={sData}
+                    onOpenStory={handleOpenStoryViewer}
+                    fallbackAvatar={pro.avatar}
+                  />
+
+                  {hasStory && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleOpenStoryViewer(sData.firstIndex)
+                      }}
+                      style={{
+                        position: 'absolute',
+                        top: '12px',
+                        right: '12px',
+                        background: sData.isAllSeen ? 'rgba(30, 41, 59, 0.85)' : 'linear-gradient(135deg, #F26000, #FF007A)',
+                        color: 'white',
+                        border: '1.5px solid white',
+                        borderRadius: '16px',
+                        padding: '4px 10px',
+                        fontSize: '11px',
+                        fontWeight: '900',
+                        cursor: 'pointer',
+                        zIndex: 12,
+                        boxShadow: '0 4px 12px rgba(242,96,0,0.5)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px'
+                      }}
+                    >
+                      <span>📸</span>
+                      <span>{lang === 'es' ? 'Historia 24h' : 'Story'}</span>
+                    </button>
+                  )}
+
                   {pro.rating && pro.rating > 0 && pro.reviews > 0 && (
                     <div style={{ position: 'absolute', bottom: '16px', right: '16px', background: 'rgba(26, 26, 46, 0.85)', backdropFilter: 'blur(4px)', borderRadius: '8px', padding: '4px 8px', display: 'flex', alignItems: 'center', gap: '4px', border: '1.5px solid #FFD700', boxShadow: '0 4px 10px rgba(0,0,0,0.15)', zIndex: 10 }}>
                       <span style={{ fontSize: '11px', color: '#FFD700', fontWeight: 'bold' }}>⭐</span>
@@ -1113,13 +1166,52 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
             )
           }
 
+          const sDataStd = getProStoryData(pro)
+          const hasStoryStd = Boolean(sDataStd && sDataStd.stories && sDataStd.stories.length > 0)
+
           return (
             <div key={pro.id} className={`pro-card ${isTopRated ? 'top-rated' : ''}`} style={{ animationDelay:`${i * 0.06}s` }}>
-              <div className="card-photo">
-                {pro.photoURL
-                  ? <img src={pro.photoURL} alt={pro.name} className="pro-photo" loading="lazy" decoding="async" />
-                  : <div className="pro-avatar-big" style={{ background: avatarColors[(Array.from(pro.id).reduce((acc, char) => acc + char.charCodeAt(0), 0)) % avatarColors.length] }}>{pro.avatar}</div>
-                }
+              <div className="card-photo" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <StoryAvatar 
+                  pro={pro}
+                  src={pro.photoURL}
+                  alt={pro.name}
+                  size={90}
+                  storyData={sDataStd}
+                  onOpenStory={handleOpenStoryViewer}
+                  fallbackAvatar={pro.avatar}
+                />
+
+                {hasStoryStd && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      handleOpenStoryViewer(sDataStd.firstIndex)
+                    }}
+                    style={{
+                      position: 'absolute',
+                      top: '10px',
+                      left: '10px',
+                      background: sDataStd.isAllSeen ? 'rgba(30, 41, 59, 0.85)' : 'linear-gradient(135deg, #F26000, #FF007A)',
+                      color: 'white',
+                      border: '1.5px solid white',
+                      borderRadius: '14px',
+                      padding: '3px 8px',
+                      fontSize: '10px',
+                      fontWeight: '900',
+                      cursor: 'pointer',
+                      zIndex: 12,
+                      boxShadow: '0 3px 10px rgba(242,96,0,0.5)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '3px'
+                    }}
+                  >
+                    <span>📸</span>
+                    <span>{lang === 'es' ? 'Historia' : 'Story'}</span>
+                  </button>
+                )}
+
                 {pro.rating && pro.rating > 0 && pro.reviews > 0 && (
                   <div style={{ position: 'absolute', bottom: '12px', right: '12px', background: 'rgba(26, 26, 46, 0.85)', backdropFilter: 'blur(4px)', borderRadius: '8px', padding: '4px 8px', display: 'flex', alignItems: 'center', gap: '4px', border: '1.5px solid #FFD700', boxShadow: '0 4px 10px rgba(0,0,0,0.15)', zIndex: 10 }}>
                     <span style={{ fontSize: '11px', color: '#FFD700', fontWeight: 'bold' }}>⭐</span>
@@ -1247,6 +1339,20 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
           navigate={navigate}
         />
       )}
+
+      {/* Modal Visor de Historias en pantalla completa para profesional seleccionado */}
+      <HistoriasViewerModal
+        isOpen={storyViewerOpen}
+        onClose={() => setStoryViewerOpen(false)}
+        stories={allStories}
+        initialIndex={activeStoryIndex}
+        userData={userData}
+        onHirePro={(proId) => {
+          const proObj = (professionals || []).find(p => p.id === proId) || { id: proId };
+          navigate('proProfile', proObj);
+        }}
+        navigate={navigate}
+      />
     </div>
   )
 }

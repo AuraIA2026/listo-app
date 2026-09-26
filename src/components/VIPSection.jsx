@@ -182,10 +182,13 @@ export const getProPlanBadge = (pro, lang = 'es') => {
   return { text, badgeClass };
 }
 
-function VIPProCard({ pro, lang, navigate }) {
+function VIPProCard({ pro, lang, navigate, getProStoryData, onOpenStory }) {
   const cardRef = React.useRef(null)
   const [isInView, setIsInView] = React.useState(false)
   const [animKey, setAnimKey] = React.useState(0)
+
+  const storyData = getProStoryData ? getProStoryData(pro) : null
+  const hasStory = Boolean(storyData && storyData.stories && storyData.stories.length > 0)
 
   React.useEffect(() => {
     if (!('IntersectionObserver' in window)) {
@@ -236,6 +239,7 @@ function VIPProCard({ pro, lang, navigate }) {
           src={pro.img || pro.photoURL} 
           alt={pro.nameEs || pro.name} 
           className="vip-photo-large"
+          style={hasStory ? { border: '3px solid transparent', outline: '3px solid #F26000' } : {}}
         />
         <div className="vip-photo-gradient" />
 
@@ -260,6 +264,40 @@ function VIPProCard({ pro, lang, navigate }) {
             }} 
           />
         </div>
+
+        {/* SI TIENE HISTORIA EN VIVO 24H: BADGE DESTACADO */}
+        {hasStory && (
+          <button
+            className="vip-photo-story-badge-btn"
+            onClick={(e) => {
+              e.stopPropagation()
+              if (onOpenStory) onOpenStory(storyData.firstIndex)
+            }}
+            style={{
+              position: 'absolute',
+              top: '46px',
+              left: '12px',
+              background: storyData.isAllSeen 
+                ? 'rgba(30, 41, 59, 0.85)' 
+                : 'linear-gradient(135deg, #F26000 0%, #FF007A 50%, #7928CA 100%)',
+              color: '#FFFFFF',
+              border: '2px solid #FFFFFF',
+              borderRadius: '20px',
+              padding: '5px 12px',
+              fontSize: '11px',
+              fontWeight: '900',
+              cursor: 'pointer',
+              zIndex: 6,
+              boxShadow: storyData.isAllSeen ? '0 2px 8px rgba(0,0,0,0.4)' : '0 4px 15px rgba(242, 96, 0, 0.6), 0 0 10px rgba(255, 0, 122, 0.5)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '5px'
+            }}
+          >
+            <span style={{ fontSize: '13px' }}>📸</span>
+            <span>{lang === 'es' ? 'Ver Historia 24h' : 'View 24h Story'}</span>
+          </button>
+        )}
 
         {/* DISPONIBLE Y BOTÓN "VER PERFIL" SOBRE LA FOTO */}
         <div style={{ position: 'absolute', top: '46px', right: '12px', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '5px', zIndex: 4 }}>
@@ -383,7 +421,9 @@ export default function VIPSection({
   sectionTitle,
   sectionSub,
   showSeeAll = true,
-  strictVipOnly = false
+  strictVipOnly = false,
+  getProStoryData,
+  onOpenStory
 }) {
   const filterVipOnly = strictVipOnly || Boolean(sectionSub);
 
@@ -616,6 +656,8 @@ export default function VIPSection({
             pro={pro}
             lang={lang}
             navigate={navigate}
+            getProStoryData={getProStoryData}
+            onOpenStory={onOpenStory}
           />
         ))}
       </div>

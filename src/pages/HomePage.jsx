@@ -7,6 +7,9 @@ import TutorialTour, { useTour } from '../components/TutorialTour'
 import VIPSection from '../components/VIPSection'
 import LuckyWheelModal from '../components/LuckyWheelModal'
 import HistoriasCarrusel from '../components/HistoriasCarrusel'
+import HistoriasViewerModal from '../components/HistoriasViewerModal'
+import StoryAvatar from '../components/StoryAvatar'
+import { useStories } from '../hooks/useStories'
 import PlanSelectionModal from '../components/PlanSelectionModal'
 
 import SolicitudExpressModal from '../components/SolicitudExpressModal'
@@ -766,6 +769,16 @@ export default function HomePage({ lang, navigate, userRole }) {
     fetchPros()
   }, [])
 
+  // Hook para historias de 24h activas en tiempo real
+  const { stories: allStories, getProStoryData } = useStories()
+  const [storyViewerOpen, setStoryViewerOpen] = useState(false)
+  const [activeStoryIndex, setActiveStoryIndex] = useState(0)
+
+  const handleOpenStoryViewer = (index) => {
+    setActiveStoryIndex(index)
+    setStoryViewerOpen(true)
+  }
+
   const allProsToUse = allProsReal.filter(p => !userData?.blockedUsers?.includes(p.id))
   const featuredProsToUse = featuredReal.filter(p => !userData?.blockedUsers?.includes(p.id))
   const specs = ['todos', ...new Set(allProsToUse.filter(p=>p.specEs).map(p => p.specEs))]
@@ -1367,7 +1380,13 @@ export default function HomePage({ lang, navigate, userRole }) {
       )}
 
       {/* ── PRIMER ESPACIO PRINCIPAL: CARRUSEL DE TARJETAS VERTICALES DE DOBLE ALTO ── */}
-      <VIPSection realVipPros={featuredProsToUse} lang={lang} navigate={navigate} />
+      <VIPSection 
+        realVipPros={featuredProsToUse} 
+        lang={lang} 
+        navigate={navigate} 
+        getProStoryData={getProStoryData}
+        onOpenStory={handleOpenStoryViewer}
+      />
 
       {/* ── BANNER ÉPICO VIP: "CONOCE NUESTROS PROFESIONALES VIP" (ANIMACIÓN LLAMATIVA) ── */}
       {!isPro && (
@@ -1673,27 +1692,65 @@ export default function HomePage({ lang, navigate, userRole }) {
         </div>
         <div className="featured-scroll">
           {featuredProsToUse.length > 0 ? (
-            featuredProsToUse.map((pro, i) => (
-              <div key={i} className="featured-card" style={{ animationDelay: `${i * 0.08}s` }} onClick={() => navigate('booking', { professional: pro })}>
-                {pro.badge && <span className={`featured-badge badge-${pro.badge.toLowerCase()}`}>{pro.badge}</span>}
-                {pro.img ? (
-                   <img src={pro.img} alt={pro.nameEs} className="featured-img" />
-                ) : (
-                   <div className="featured-img" style={{background:'#FF8533',display:'flex',justifyContent:'center',alignItems:'center',color:'white',fontSize:24,fontWeight:'bold'}}>{pro.avatar}</div>
-                )}
-                <div className="featured-info">
-                  <p className="featured-name">{pro.nameEs}</p>
-                  <p className="featured-spec">{lang === 'es' ? pro.specEs : pro.specEn}</p>
-                  <StarRating rating={pro.rating} />
-                  {pro.reviews && pro.reviews > 0 ? (
-                    <p className="featured-reviews">{pro.reviews} {lang === 'es' ? 'reseñas' : 'reviews'}</p>
-                  ) : null}
-                  <p className="featured-price" style={{ color: '#008F39', fontSize: '13px', fontWeight: 'bold' }}>
-                    🤝 {lang === 'es' ? 'A convenir' : 'To agree'}
-                  </p>
+            featuredProsToUse.map((pro, i) => {
+              const sData = getProStoryData(pro)
+              const hasStory = Boolean(sData && sData.stories && sData.stories.length > 0)
+
+              return (
+                <div key={i} className="featured-card" style={{ animationDelay: `${i * 0.08}s` }} onClick={() => navigate('booking', { professional: pro })}>
+                  {pro.badge && <span className={`featured-badge badge-${pro.badge.toLowerCase()}`}>{pro.badge}</span>}
+                  
+                  <div style={{ position: 'relative', display: 'flex', justifyContent: 'center', width: '100%', marginTop: '6px' }}>
+                    <StoryAvatar 
+                      pro={pro}
+                      src={pro.img}
+                      alt={pro.nameEs}
+                      size={96}
+                      storyData={sData}
+                      onOpenStory={handleOpenStoryViewer}
+                      fallbackAvatar={pro.avatar}
+                    />
+                  </div>
+
+                  <div className="featured-info">
+                    <p className="featured-name">{pro.nameEs}</p>
+                    <p className="featured-spec">{lang === 'es' ? pro.specEs : pro.specEn}</p>
+                    <StarRating rating={pro.rating} />
+                    {pro.reviews && pro.reviews > 0 ? (
+                      <p className="featured-reviews">{pro.reviews} {lang === 'es' ? 'reseñas' : 'reviews'}</p>
+                    ) : null}
+                    {hasStory && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleOpenStoryViewer(sData.firstIndex)
+                        }}
+                        style={{
+                          marginTop: '4px',
+                          background: sData.isAllSeen ? 'rgba(30, 41, 59, 0.85)' : 'linear-gradient(135deg, #F26000, #FF007A)',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '12px',
+                          padding: '3px 9px',
+                          fontSize: '10.5px',
+                          fontWeight: '900',
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          boxShadow: '0 2px 8px rgba(242, 96, 0, 0.4)'
+                        }}
+                      >
+                        📸 {lang === 'es' ? 'Ver Historia 24h' : 'View Story'}
+                      </button>
+                    )}
+                    <p className="featured-price" style={{ color: '#008F39', fontSize: '13px', fontWeight: 'bold' }}>
+                      🤝 {lang === 'es' ? 'A convenir' : 'To agree'}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            ))
+              )
+            })
           ) : (
             <div style={{ padding: '20px', color: 'var(--gray)', fontSize: '14px', textAlign: 'center', width: '100%' }}>
               {lang === 'es' ? 'Aún no hay profesionales destacados.' : 'No featured professionals yet.'}
@@ -1718,28 +1775,61 @@ export default function HomePage({ lang, navigate, userRole }) {
             </div>
             <div className="all-pros-grid">
               {filteredPros.length > 0 ? (
-                filteredPros.map((pro, i) => (
-                  <div key={i} className="pro-list-card" style={{ animationDelay: `${i * 0.05}s` }} onClick={() => navigate('booking', { professional: pro })}>
-                    <div className="pro-list-img-wrap">
-                      {pro.img ? (
-                         <img src={pro.img} alt={pro.nameEs} className="pro-list-img" />
-                      ) : (
-                         <div style={{width: 80, height: 80, borderRadius: 12, background: '#FF8533', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28, fontWeight: 'bold'}}>{pro.avatar}</div>
-                      )}
-                      <span className={`pro-avail-dot${pro.avail ? ' online' : ''}`} />
-                      {i % 4 === 0 && <span className="cat-flash-badge" style={{top: '-8px', right: '-8px', animation: 'ecom-pop 1s infinite alternate'}}>⚡ {lang === 'es' ? 'RÁPIDO' : 'FAST'}</span>}
+                filteredPros.map((pro, i) => {
+                  const sData = getProStoryData(pro)
+                  const hasStory = Boolean(sData && sData.stories && sData.stories.length > 0)
+
+                  return (
+                    <div key={i} className="pro-list-card" style={{ animationDelay: `${i * 0.05}s` }} onClick={() => navigate('booking', { professional: pro })}>
+                      <div className="pro-list-img-wrap" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <StoryAvatar 
+                          pro={pro}
+                          src={pro.img}
+                          alt={pro.nameEs}
+                          size={70}
+                          storyData={sData}
+                          onOpenStory={handleOpenStoryViewer}
+                          fallbackAvatar={pro.avatar}
+                        />
+                        <span className={`pro-avail-dot${pro.avail ? ' online' : ''}`} />
+                        {i % 4 === 0 && <span className="cat-flash-badge" style={{top: '-8px', right: '-8px', animation: 'ecom-pop 1s infinite alternate'}}>⚡ {lang === 'es' ? 'RÁPIDO' : 'FAST'}</span>}
+                      </div>
+                      <div className="pro-list-info">
+                        <p className="pro-list-name">{pro.nameEs}</p>
+                        <p className="pro-list-spec">{pro.specEs}</p>
+                        <StarRating rating={pro.rating} />
+                        {hasStory && (
+                          <span 
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleOpenStoryViewer(sData.firstIndex)
+                            }}
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '3px',
+                              marginTop: '3px',
+                              background: sData.isAllSeen ? 'rgba(30, 41, 59, 0.85)' : 'linear-gradient(135deg, #F26000, #FF007A)',
+                              color: 'white',
+                              fontSize: '9.5px',
+                              fontWeight: '900',
+                              padding: '2px 8px',
+                              borderRadius: '10px',
+                              cursor: 'pointer',
+                              boxShadow: '0 2px 6px rgba(242,96,0,0.3)'
+                            }}
+                          >
+                            📸 {lang === 'es' ? 'Ver Historia 24h' : 'View Story'}
+                          </span>
+                        )}
+                        <p className="pro-list-price" style={{ color: '#008F39', fontSize: '13px', fontWeight: 'bold', marginTop: '4px' }}>
+                          🤝 {lang === 'es' ? 'A convenir' : 'To agree'}
+                        </p>
+                      </div>
+                      <button className="pro-list-book">{lang === 'es' ? 'Contratar' : 'Hire'}</button>
                     </div>
-                    <div className="pro-list-info">
-                      <p className="pro-list-name">{pro.nameEs}</p>
-                      <p className="pro-list-spec">{pro.specEs}</p>
-                      <StarRating rating={pro.rating} />
-                      <p className="pro-list-price" style={{ color: '#008F39', fontSize: '13px', fontWeight: 'bold', marginTop: '4px' }}>
-                        🤝 {lang === 'es' ? 'A convenir' : 'To agree'}
-                      </p>
-                    </div>
-                    <button className="pro-list-book">{lang === 'es' ? 'Contratar' : 'Hire'}</button>
-                  </div>
-                ))
+                  )
+                })
               ) : (
                 <div style={{ padding: '40px 20px', color: 'var(--gray)', fontSize: '15px', textAlign: 'center', gridColumn: '1 / -1' }}>
                   {lang === 'es' ? '🔍 No se encontraron profesionales en esta categoría.' : '🔍 No professionals found in this category.'}
@@ -1925,6 +2015,20 @@ export default function HomePage({ lang, navigate, userRole }) {
           userProfile={userData} 
         />
       )}
+
+      {/* Modal Visor de Historias en pantalla completa para profesional seleccionado */}
+      <HistoriasViewerModal
+        isOpen={storyViewerOpen}
+        onClose={() => setStoryViewerOpen(false)}
+        stories={allStories}
+        initialIndex={activeStoryIndex}
+        userData={userData}
+        onHirePro={(proId) => {
+          const proObj = (allProsToUse || []).find(p => p.id === proId) || { id: proId };
+          navigate('proProfile', proObj);
+        }}
+        navigate={navigate}
+      />
 
     </div>
   )
