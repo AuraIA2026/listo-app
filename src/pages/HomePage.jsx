@@ -1316,8 +1316,66 @@ export default function HomePage({ lang, navigate, userRole }) {
           </div>
         </div>
 
-        <button className="amz-nav-pill active" onClick={() => setShowFlashOfferModal(true)}>
-          ⚡ Ofertas Relámpago
+        <style>{`
+          @keyframes lightningPulse {
+            0%, 100% { transform: scale(1) rotate(0deg); filter: drop-shadow(0 0 4px #FFD700); }
+            50% { transform: scale(1.22) rotate(8deg); filter: drop-shadow(0 0 16px #FFD700); }
+          }
+          @keyframes mameyCircleGlow {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(242, 96, 0, 0.8), 0 4px 14px rgba(242, 96, 0, 0.4); }
+            50% { box-shadow: 0 0 0 8px rgba(242, 96, 0, 0), 0 4px 14px rgba(242, 96, 0, 0.4); }
+          }
+        `}</style>
+
+        {/* ── BOTÓN CÍRCULO MAMEY DE OFERTAS RELÁMPAGO CON RAYO AMARILLO ANIMADO ── */}
+        <button
+          onClick={() => setShowFlashOfferModal(true)}
+          title={lang === 'es' ? 'Toca para ver Ofertas Relámpago (60s)' : 'Tap for Flash Deals (60s)'}
+          style={{
+            width: '42px',
+            height: '42px',
+            borderRadius: '50%',
+            background: 'linear-gradient(135deg, #FF7A1A 0%, #F26000 100%)',
+            border: '2px solid #FFD700',
+            animation: 'mameyCircleGlow 2s infinite',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justify: 'center',
+            position: 'relative',
+            flexShrink: 0,
+            outline: 'none',
+            padding: 0
+          }}
+          onMouseDown={e => e.currentTarget.style.transform = 'scale(0.92)'}
+          onMouseUp={e => e.currentTarget.style.transform = 'scale(1)'}
+        >
+          <span style={{
+            fontSize: '22px',
+            color: '#FFD700',
+            animation: 'lightningPulse 1.2s infinite ease-in-out',
+            display: 'inline-block',
+            lineHeight: 1
+          }}>
+            ⚡
+          </span>
+
+          <span style={{
+            position: 'absolute',
+            top: '-3px',
+            right: '-4px',
+            background: '#FFD700',
+            color: '#1A1A2E',
+            fontSize: '8.5px',
+            fontWeight: '900',
+            borderRadius: '10px',
+            padding: '1px 5px',
+            border: '1px solid #F26000',
+            boxShadow: '0 2px 6px rgba(0,0,0,0.4)',
+            zIndex: 3
+          }}>
+            HOT
+          </span>
         </button>
 
         {/* ── BOTONES CÍRCULO GPS RADAR Y RE-CONTRATAR CON ORBITAL (UBICADOS EN LA CINTA SUPERIOR) ── */}
