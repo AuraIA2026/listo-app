@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { detectGpsLocation } from '../utils/gpsLocation'
 
 const CATEGORY_FILTERS = [
@@ -47,12 +47,49 @@ const SAMPLE_PROS_BY_CAT = {
 }
 
 export default function GpsRadarWidget({ pros = [], navigate, lang = 'es' }) {
-  const [isOpen, setIsOpen] = useState(true) // Desplegable toggle
+  const [isExpanded, setIsExpanded] = useState(false) // Desplegado solo al pulsar el círculo
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedPro, setSelectedPro] = useState(null)
   const [userLocation, setUserLocation] = useState(null)
   const [isScanning, setIsScanning] = useState(false)
+  const [countdown, setCountdown] = useState(3)
+
+  const inactivityTimerRef = useRef(null)
+  const countdownIntervalRef = useRef(null)
+
+  // Reset 3-second inactivity auto-collapse timer
+  const resetInactivityTimer = useCallback(() => {
+    if (inactivityTimerRef.current) clearTimeout(inactivityTimerRef.current)
+    if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current)
+
+    setCountdown(3)
+
+    let currentSec = 3
+    countdownIntervalRef.current = setInterval(() => {
+      currentSec -= 1
+      if (currentSec >= 0) {
+        setCountdown(currentSec)
+      }
+    }, 1000)
+
+    inactivityTimerRef.current = setTimeout(() => {
+      setIsExpanded(false)
+    }, 3000)
+  }, [])
+
+  useEffect(() => {
+    if (isExpanded) {
+      resetInactivityTimer()
+    } else {
+      if (inactivityTimerRef.current) clearTimeout(inactivityTimerRef.current)
+      if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current)
+    }
+    return () => {
+      if (inactivityTimerRef.current) clearTimeout(inactivityTimerRef.current)
+      if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current)
+    }
+  }, [isExpanded, resetInactivityTimer])
 
   useEffect(() => {
     if ('geolocation' in navigator) {
@@ -68,6 +105,7 @@ export default function GpsRadarWidget({ pros = [], navigate, lang = 'es' }) {
 
   const handleScanGps = async (e) => {
     if (e) e.stopPropagation()
+    resetInactivityTimer()
     setIsScanning(true)
     try {
       const loc = await detectGpsLocation()
@@ -83,7 +121,6 @@ export default function GpsRadarWidget({ pros = [], navigate, lang = 'es' }) {
   const getFilteredPros = () => {
     let filtered = []
 
-    // 1. Filter real pros provided in props if available
     if (pros && pros.length > 0) {
       filtered = pros.filter(pro => {
         const cat = (pro.category || pro.specEs || pro.specEn || '').toLowerCase()
@@ -97,7 +134,6 @@ export default function GpsRadarWidget({ pros = [], navigate, lang = 'es' }) {
       })
     }
 
-    // 2. If filtered real pros is empty or small, supplement with sample pros tailored to the category
     if (filtered.length === 0) {
       if (selectedCategory !== 'all' && SAMPLE_PROS_BY_CAT[selectedCategory]) {
         filtered = SAMPLE_PROS_BY_CAT[selectedCategory]
@@ -113,7 +149,6 @@ export default function GpsRadarWidget({ pros = [], navigate, lang = 'es' }) {
           { id: 'radar_generic', name: 'Socio Verificado', category: `Especialista en ${searchQuery}`, rating: 5.0, photoURL: 'https://randomuser.me/api/portraits/men/32.jpg', dist: '1.1 km', angle: 45, radiusRatio: 0.35 }
         ]
       } else {
-        // Fallback default set for 'all'
         filtered = [
           { id: 'radar_1', name: 'Juan Pérez', category: 'Plomero Máster', rating: 5.0, photoURL: 'https://randomuser.me/api/portraits/men/32.jpg', dist: '1.2 km', angle: 45, radiusRatio: 0.35 },
           { id: 'radar_2', name: 'María González', category: 'Electricista 24/7', rating: 4.9, photoURL: 'https://randomuser.me/api/portraits/women/44.jpg', dist: '2.1 km', angle: 125, radiusRatio: 0.55 },
@@ -130,119 +165,195 @@ export default function GpsRadarWidget({ pros = [], navigate, lang = 'es' }) {
   const availablePros = getFilteredPros()
 
   return (
-    <div style={{
-      margin: '0 16px 20px',
-      background: 'linear-gradient(145deg, #0F172A 0%, #1E293B 100%)',
-      borderRadius: '24px',
-      padding: '16px',
-      boxShadow: '0 12px 32px rgba(15, 23, 42, 0.4)',
-      border: '1.5px solid rgba(242, 96, 0, 0.3)',
-      position: 'relative',
-      overflow: 'hidden',
-      color: '#FFFFFF',
-      transition: 'all 0.3s ease'
-    }}>
-      {/* Header Bar - Tap to Toggle Desplegable */}
-      <div 
-        onClick={() => setIsOpen(!isOpen)}
-        style={{ 
-          display: 'flex', 
-          justify: 'space-between', 
-          alignItems: 'center', 
-          cursor: 'pointer',
-          userSelect: 'none',
-          paddingBottom: isOpen ? '12px' : '0px'
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <div style={{
-            width: '36px',
-            height: '36px',
-            borderRadius: '12px',
-            background: 'linear-gradient(135deg, #F26000, #FF7A1A)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '18px',
-            boxShadow: '0 4px 12px rgba(242, 96, 0, 0.4)'
-          }}>
-            🗺️
-          </div>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '900', color: '#FFFFFF', letterSpacing: '-0.3px' }}>
-                {lang === 'es' ? 'Modo Radar GPS' : 'GPS Radar Mode'}
-              </h3>
-              <span style={{ fontSize: '9.5px', background: 'rgba(34, 197, 94, 0.2)', color: '#4ADE80', border: '1px solid rgba(34, 197, 94, 0.4)', padding: '2px 7px', borderRadius: '12px', fontWeight: '900', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#4ADE80', animation: 'radarPulse 1.5s infinite' }} />
-                {availablePros.length} {lang === 'es' ? 'CERCA' : 'NEARBY'}
-              </span>
-            </div>
-            <p style={{ margin: '2px 0 0', fontSize: '11px', color: '#94A3B8', fontWeight: '600' }}>
-              {selectedCategory !== 'all' 
-                ? `${lang === 'es' ? 'Mostrando solo' : 'Showing only'}: ${CATEGORY_FILTERS.find(c => c.id === selectedCategory)?.labelEs}`
-                : (lang === 'es' ? 'Toca para abrir/cerrar mapa radar' : 'Tap to expand/collapse radar map')}
-            </p>
-          </div>
-        </div>
+    <div style={{ margin: '0 16px 20px', position: 'relative' }}>
+      <style>{`
+        @keyframes radarCirclePulse {
+          0% { box-shadow: 0 0 0 0 rgba(242, 96, 0, 0.7), 0 8px 20px rgba(15, 23, 42, 0.5); }
+          70% { box-shadow: 0 0 0 14px rgba(242, 96, 0, 0), 0 8px 20px rgba(15, 23, 42, 0.5); }
+          100% { box-shadow: 0 0 0 0 rgba(242, 96, 0, 0), 0 8px 20px rgba(15, 23, 42, 0.5); }
+        }
+        @keyframes radarBeamSweep {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+        @keyframes proBlipPulse {
+          0%, 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.6); }
+          50% { box-shadow: 0 0 0 8px rgba(34, 197, 94, 0); }
+        }
+      `}</style>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+      {/* ESTADO 1: BOTÓN DE RADAR EN FORMA DE CÍRCULO CON EFECTO RADAR PULSE */}
+      {!isExpanded && (
+        <div style={{ display: 'flex', justifyContent: 'center', margin: '10px 0' }}>
           <button
-            onClick={handleScanGps}
-            disabled={isScanning}
+            onClick={() => setIsExpanded(true)}
+            title={lang === 'es' ? 'Toca para desplegar el Mapa Radar GPS' : 'Tap to expand GPS Radar Map'}
             style={{
-              background: 'linear-gradient(135deg, #F26000, #FF7A1A)',
-              color: '#FFFFFF',
-              border: 'none',
-              borderRadius: '16px',
-              padding: '6px 12px',
-              fontSize: '11px',
-              fontWeight: '900',
+              width: '74px',
+              height: '74px',
+              borderRadius: '50%',
+              background: 'linear-gradient(135deg, #0F172A 0%, #1E293B 100%)',
+              border: '2.5px solid #F26000',
+              animation: 'radarCirclePulse 2s infinite',
               cursor: 'pointer',
-              boxShadow: '0 4px 10px rgba(242, 96, 0, 0.4)',
               display: 'flex',
+              flexDirection: 'column',
               alignItems: 'center',
-              gap: '4px'
+              justifyContent: 'center',
+              position: 'relative',
+              boxShadow: '0 8px 24px rgba(242, 96, 0, 0.35)',
+              transition: 'transform 0.2s ease',
+              outline: 'none'
             }}
+            onMouseDown={e => e.currentTarget.style.transform = 'scale(0.92)'}
+            onMouseUp={e => e.currentTarget.style.transform = 'scale(1)'}
           >
-            <span style={{ fontSize: '12px', animation: isScanning ? 'spin 1s linear infinite' : 'none' }}>
-              {isScanning ? '🔄' : '🎯'}
+            {/* Rotating Beam inside Circle */}
+            <div style={{
+              position: 'absolute',
+              width: '100%',
+              height: '100%',
+              borderRadius: '50%',
+              background: 'conic-gradient(from 0deg at 50% 50%, rgba(242, 96, 0, 0.4) 0deg, transparent 60deg, transparent 360deg)',
+              animation: 'radarBeamSweep 3s linear infinite',
+              pointerEvents: 'none'
+            }} />
+
+            <span style={{ fontSize: '26px', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))', zIndex: 2 }}>
+              🗺️
             </span>
-            {isScanning ? (lang === 'es' ? 'Escaneando...' : 'Scanning...') : (lang === 'es' ? 'Escanear' : 'Scan')}
+            <span style={{ fontSize: '9px', fontWeight: '900', color: '#FF7A1A', letterSpacing: '0.2px', zIndex: 2, marginTop: '1px' }}>
+              RADAR GPS
+            </span>
+            <span style={{
+              position: 'absolute',
+              top: '-3px',
+              right: '-3px',
+              background: '#22C55E',
+              color: '#FFFFFF',
+              fontSize: '9px',
+              fontWeight: '900',
+              borderRadius: '10px',
+              padding: '1px 6px',
+              border: '1.5px solid #0F172A',
+              boxShadow: '0 2px 6px rgba(0,0,0,0.4)',
+              zIndex: 3
+            }}>
+              {availablePros.length}
+            </span>
           </button>
-
-          {/* Expand / Collapse Indicator Arrow */}
-          <span style={{
-            fontSize: '14px',
-            color: '#FF9E66',
-            fontWeight: 'bold',
-            transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-            transition: 'transform 0.3s ease',
-            marginLeft: '2px'
-          }}>
-            ▼
-          </span>
         </div>
-      </div>
+      )}
 
-      {/* DESPLEGABLE BODY CONTENT */}
-      {isOpen && (
-        <div style={{ animation: 'pwaBannerSlideUp 0.3s ease' }}>
-          {/* SEARCH INPUT FOR SPECIFIC PROFESSIONAL (EJ. PLOMERO, MECÁNICO, CERRAJERO) */}
-          <div style={{ marginBottom: '12px', position: 'relative' }}>
+      {/* ESTADO 2: VENTANA COMPLETA DESPLEGADA (CON TIMER DE 3 SEGUNDOS DE INACTIVIDAD) */}
+      {isExpanded && (
+        <div
+          onMouseMove={resetInactivityTimer}
+          onTouchStart={resetInactivityTimer}
+          onClick={resetInactivityTimer}
+          style={{
+            background: 'linear-gradient(145deg, #0F172A 0%, #1E293B 100%)',
+            borderRadius: '24px',
+            padding: '16px',
+            boxShadow: '0 16px 40px rgba(15, 23, 42, 0.6)',
+            border: '2px solid #F26000',
+            position: 'relative',
+            overflow: 'hidden',
+            color: '#FFFFFF',
+            animation: 'pwaBannerSlideUp 0.35 cubic-bezier(0.175, 0.885, 0.32, 1.275)'
+          }}
+        >
+          {/* Header Window with Inactivity Timer Badge & Close Button */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{
+                width: '34px',
+                height: '34px',
+                borderRadius: '50%',
+                background: 'linear-gradient(135deg, #F26000, #FF7A1A)',
+                display: 'flex',
+                alignItems: 'center',
+                justify: 'center',
+                fontSize: '18px',
+                boxShadow: '0 4px 12px rgba(242, 96, 0, 0.4)'
+              }}>
+                🗺️
+              </div>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '15px', fontWeight: '900', color: '#FFFFFF' }}>
+                  {lang === 'es' ? 'Modo Radar GPS' : 'GPS Radar Mode'}
+                </h3>
+                <p style={{ margin: '1px 0 0', fontSize: '10.5px', color: '#94A3B8', fontWeight: '600' }}>
+                  {lang === 'es' ? `Cierra solo si no interactúas (${countdown}s)` : `Auto-collapses in ${countdown}s`}
+                </p>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <button
+                onClick={handleScanGps}
+                disabled={isScanning}
+                style={{
+                  background: 'linear-gradient(135deg, #F26000, #FF7A1A)',
+                  color: '#FFFFFF',
+                  border: 'none',
+                  borderRadius: '14px',
+                  padding: '5px 10px',
+                  fontSize: '11px',
+                  fontWeight: '900',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px'
+                }}
+              >
+                <span style={{ fontSize: '12px', animation: isScanning ? 'spin 1s linear infinite' : 'none' }}>
+                  {isScanning ? '🔄' : '🎯'}
+                </span>
+                {isScanning ? '...' : (lang === 'es' ? 'Escanear' : 'Scan')}
+              </button>
+
+              <button
+                onClick={() => setIsExpanded(false)}
+                style={{
+                  background: 'rgba(255, 255, 255, 0.1)',
+                  color: '#FF9E66',
+                  border: '1px solid rgba(242, 96, 0, 0.4)',
+                  borderRadius: '50%',
+                  width: '28px',
+                  height: '28px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  fontWeight: 'bold',
+                  fontSize: '13px'
+                }}
+                title={lang === 'es' ? 'Convertir en círculo' : 'Minimize to circle'}
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+
+          {/* Buscador de especialidad */}
+          <div style={{ marginBottom: '10px', position: 'relative' }}>
             <input
               type="text"
-              placeholder={lang === 'es' ? '🔍 Buscar por especialidad (ej. Plomero, Cerrajero, Mecánico...)' : '🔍 Search by service (e.g. Plumber, Locksmith...)'}
+              placeholder={lang === 'es' ? '🔍 Buscar por especialidad (ej. Plomero, Cerrajero...)' : '🔍 Search service...'}
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => {
+                resetInactivityTimer()
+                setSearchQuery(e.target.value)
+              }}
               style={{
                 width: '100%',
-                padding: '9px 36px 9px 12px',
-                borderRadius: '14px',
+                padding: '8px 32px 8px 12px',
+                borderRadius: '12px',
                 border: '1.5px solid rgba(242, 96, 0, 0.4)',
-                background: 'rgba(15, 23, 42, 0.8)',
+                background: 'rgba(15, 23, 42, 0.85)',
                 color: '#FFFFFF',
-                fontSize: '12px',
+                fontSize: '11.5px',
                 fontWeight: '700',
                 outline: 'none',
                 boxSizing: 'border-box'
@@ -250,7 +361,10 @@ export default function GpsRadarWidget({ pros = [], navigate, lang = 'es' }) {
             />
             {searchQuery && (
               <button
-                onClick={() => setSearchQuery('')}
+                onClick={() => {
+                  resetInactivityTimer()
+                  setSearchQuery('')
+                }}
                 style={{
                   position: 'absolute',
                   right: '10px',
@@ -259,9 +373,8 @@ export default function GpsRadarWidget({ pros = [], navigate, lang = 'es' }) {
                   background: 'none',
                   border: 'none',
                   color: '#94A3B8',
-                  fontSize: '14px',
-                  cursor: 'pointer',
-                  fontWeight: 'bold'
+                  fontSize: '13px',
+                  cursor: 'pointer'
                 }}
               >
                 ✕
@@ -269,13 +382,13 @@ export default function GpsRadarWidget({ pros = [], navigate, lang = 'es' }) {
             )}
           </div>
 
-          {/* CATEGORY CHIP FILTERS */}
+          {/* Chips de filtro por categoría */}
           <div style={{
             display: 'flex',
-            gap: '6px',
+            gap: '5px',
             overflowX: 'auto',
-            paddingBottom: '10px',
-            marginBottom: '12px',
+            paddingBottom: '8px',
+            marginBottom: '10px',
             scrollbarWidth: 'none'
           }}>
             {CATEGORY_FILTERS.map(cat => {
@@ -284,22 +397,21 @@ export default function GpsRadarWidget({ pros = [], navigate, lang = 'es' }) {
                 <button
                   key={cat.id}
                   onClick={() => {
+                    resetInactivityTimer()
                     setSelectedCategory(cat.id)
                     setSearchQuery('')
                   }}
                   style={{
                     whiteSpace: 'nowrap',
-                    padding: '5px 11px',
-                    borderRadius: '16px',
-                    fontSize: '11px',
+                    padding: '4px 10px',
+                    borderRadius: '14px',
+                    fontSize: '10.5px',
                     fontWeight: isSelected ? '900' : '700',
                     border: isSelected ? '1.5px solid #F26000' : '1px solid rgba(255, 255, 255, 0.15)',
                     background: isSelected ? 'linear-gradient(135deg, #F26000, #FF7A1A)' : 'rgba(30, 41, 59, 0.8)',
                     color: isSelected ? '#FFFFFF' : '#CBD5E1',
                     cursor: 'pointer',
-                    flexShrink: 0,
-                    boxShadow: isSelected ? '0 4px 10px rgba(242, 96, 0, 0.4)' : 'none',
-                    transition: 'all 0.2s ease'
+                    flexShrink: 0
                   }}
                 >
                   {lang === 'es' ? cat.labelEs : cat.labelEn}
@@ -308,12 +420,12 @@ export default function GpsRadarWidget({ pros = [], navigate, lang = 'es' }) {
             })}
           </div>
 
-          {/* Dynamic Radar Display Box */}
+          {/* Contenedor del Mapa Radar Dynamic */}
           <div style={{
             position: 'relative',
             width: '100%',
-            height: '240px',
-            borderRadius: '20px',
+            height: '230px',
+            borderRadius: '18px',
             background: 'radial-gradient(circle, #1E293B 0%, #090D16 100%)',
             border: '1px solid rgba(242, 96, 0, 0.25)',
             display: 'flex',
@@ -323,9 +435,9 @@ export default function GpsRadarWidget({ pros = [], navigate, lang = 'es' }) {
             boxShadow: 'inset 0 0 30px rgba(0,0,0,0.8)'
           }}>
             {/* Concentric Radar Distance Rings */}
-            <div style={{ position: 'absolute', width: '210px', height: '210px', borderRadius: '50%', border: '1px dashed rgba(242, 96, 0, 0.25)' }} />
-            <div style={{ position: 'absolute', width: '150px', height: '150px', borderRadius: '50%', border: '1px solid rgba(242, 96, 0, 0.35)' }} />
-            <div style={{ position: 'absolute', width: '90px', height: '90px', borderRadius: '50%', border: '1px dashed rgba(242, 96, 0, 0.45)' }} />
+            <div style={{ position: 'absolute', width: '200px', height: '200px', borderRadius: '50%', border: '1px dashed rgba(242, 96, 0, 0.25)' }} />
+            <div style={{ position: 'absolute', width: '140px', height: '140px', borderRadius: '50%', border: '1px solid rgba(242, 96, 0, 0.35)' }} />
+            <div style={{ position: 'absolute', width: '80px', height: '80px', borderRadius: '50%', border: '1px dashed rgba(242, 96, 0, 0.45)' }} />
 
             {/* Crosshair Axes Lines */}
             <div style={{ position: 'absolute', width: '100%', height: '1px', background: 'rgba(242, 96, 0, 0.2)' }} />
@@ -334,31 +446,15 @@ export default function GpsRadarWidget({ pros = [], navigate, lang = 'es' }) {
             {/* Radar Scanner Rotating Beam */}
             <div style={{
               position: 'absolute',
-              width: '240px',
-              height: '240px',
+              width: '230px',
+              height: '230px',
               borderRadius: '50%',
               background: 'conic-gradient(from 0deg at 50% 50%, rgba(242, 96, 0, 0.35) 0deg, rgba(242, 96, 0, 0) 60deg, transparent 360deg)',
               animation: 'radarBeamSweep 4s linear infinite',
               pointerEvents: 'none'
             }} />
 
-            <style>{`
-              @keyframes radarBeamSweep {
-                from { transform: rotate(0deg); }
-                to { transform: rotate(360deg); }
-              }
-              @keyframes radarPulse {
-                0% { transform: scale(0.95); opacity: 0.6; }
-                50% { transform: scale(1.15); opacity: 1; }
-                100% { transform: scale(0.95); opacity: 0.6; }
-              }
-              @keyframes proBlipPulse {
-                0%, 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.6); }
-                50% { box-shadow: 0 0 0 8px rgba(34, 197, 94, 0); }
-              }
-            `}</style>
-
-            {/* Center User Location Pin */}
+            {/* Center User Pin */}
             <div style={{
               position: 'absolute',
               zIndex: 10,
@@ -368,28 +464,28 @@ export default function GpsRadarWidget({ pros = [], navigate, lang = 'es' }) {
               pointerEvents: 'none'
             }}>
               <div style={{
-                width: '16px',
-                height: '16px',
+                width: '14px',
+                height: '14px',
                 borderRadius: '50%',
                 background: '#F26000',
-                border: '3px solid #FFFFFF',
-                boxShadow: '0 0 16px #F26000, 0 0 8px rgba(255,255,255,0.8)'
+                border: '2.5px solid #FFFFFF',
+                boxShadow: '0 0 14px #F26000'
               }} />
-              <span style={{ fontSize: '9px', fontWeight: 900, color: '#FF7A1A', background: 'rgba(15, 23, 42, 0.9)', padding: '1px 6px', borderRadius: '8px', marginTop: '2px', border: '1px solid rgba(242,96,0,0.4)' }}>
+              <span style={{ fontSize: '8.5px', fontWeight: 900, color: '#FF7A1A', background: 'rgba(15, 23, 42, 0.9)', padding: '1px 5px', borderRadius: '6px', marginTop: '2px' }}>
                 TÚ
               </span>
             </div>
 
-            {/* Distance Badges */}
-            <span style={{ position: 'absolute', top: '18px', right: '22px', fontSize: '9px', color: '#64748B', fontWeight: 800 }}>5 km</span>
-            <span style={{ position: 'absolute', top: '48px', right: '52px', fontSize: '9px', color: '#64748B', fontWeight: '800' }}>3 km</span>
-            <span style={{ position: 'absolute', top: '78px', right: '82px', fontSize: '9px', color: '#64748B', fontWeight: '800' }}>1 km</span>
+            {/* Distance Markers */}
+            <span style={{ position: 'absolute', top: '16px', right: '20px', fontSize: '8.5px', color: '#64748B', fontWeight: 800 }}>5 km</span>
+            <span style={{ position: 'absolute', top: '44px', right: '48px', fontSize: '8.5px', color: '#64748B', fontWeight: '800' }}>3 km</span>
+            <span style={{ position: 'absolute', top: '72px', right: '76px', fontSize: '8.5px', color: '#64748B', fontWeight: '800' }}>1 km</span>
 
-            {/* Nearby Professional Radar Dots/Avatars */}
+            {/* Professional Radar Pins */}
             {availablePros.map((pro, index) => {
               const angleDeg = pro.angle !== undefined ? pro.angle : (index * 60 + 30)
               const radRatio = pro.radiusRatio !== undefined ? pro.radiusRatio : (0.35 + (index * 0.15))
-              const distPx = radRatio * 105
+              const distPx = radRatio * 100
 
               const angleRad = (angleDeg * Math.PI) / 180
               const x = Math.cos(angleRad) * distPx
@@ -402,6 +498,7 @@ export default function GpsRadarWidget({ pros = [], navigate, lang = 'es' }) {
                   key={pro.id || index}
                   onClick={(e) => {
                     e.stopPropagation()
+                    resetInactivityTimer()
                     setSelectedPro(pro)
                   }}
                   style={{
@@ -414,15 +511,14 @@ export default function GpsRadarWidget({ pros = [], navigate, lang = 'es' }) {
                   title={`${pro.name || pro.nameEs} • ${pro.category || pro.specEs}`}
                 >
                   <div style={{
-                    width: isSelected ? '46px' : '36px',
-                    height: isSelected ? '46px' : '36px',
+                    width: isSelected ? '44px' : '34px',
+                    height: isSelected ? '44px' : '34px',
                     borderRadius: '50%',
                     border: isSelected ? '3px solid #F26000' : '2px solid #22C55E',
                     overflow: 'hidden',
                     background: '#1E293B',
-                    boxShadow: isSelected ? '0 0 18px rgba(242, 96, 0, 0.9)' : '0 4px 10px rgba(0,0,0,0.5)',
-                    animation: isSelected ? 'none' : 'proBlipPulse 2.5s infinite',
-                    transition: 'all 0.25s ease'
+                    boxShadow: isSelected ? '0 0 16px rgba(242, 96, 0, 0.9)' : '0 4px 10px rgba(0,0,0,0.5)',
+                    animation: isSelected ? 'none' : 'proBlipPulse 2.5s infinite'
                   }}>
                     <img
                       src={pro.photoURL || pro.img || 'https://randomuser.me/api/portraits/men/32.jpg'}
@@ -433,17 +529,16 @@ export default function GpsRadarWidget({ pros = [], navigate, lang = 'es' }) {
 
                   <span style={{
                     position: 'absolute',
-                    bottom: '-12px',
+                    bottom: '-11px',
                     left: '50%',
                     transform: 'translateX(-50%)',
-                    fontSize: '8.5px',
+                    fontSize: '8px',
                     fontWeight: 900,
                     background: isSelected ? '#F26000' : 'rgba(15, 23, 42, 0.95)',
                     color: '#FFFFFF',
-                    padding: '1px 5px',
-                    borderRadius: '6px',
+                    padding: '1px 4px',
+                    borderRadius: '5px',
                     whiteSpace: 'nowrap',
-                    boxShadow: '0 2px 6px rgba(0,0,0,0.4)',
                     border: '1px solid rgba(255,255,255,0.2)'
                   }}>
                     {pro.dist || `${(1.0 + index * 0.6).toFixed(1)} km`}
@@ -453,74 +548,54 @@ export default function GpsRadarWidget({ pros = [], navigate, lang = 'es' }) {
             })}
           </div>
 
-          {/* Selected Pro Quick Card Overlay */}
+          {/* Tarjeta de profesional seleccionado */}
           {selectedPro && (
             <div style={{
-              marginTop: '12px',
+              marginTop: '10px',
               background: 'rgba(30, 41, 59, 0.95)',
               backdropFilter: 'blur(8px)',
-              borderRadius: '16px',
-              padding: '12px 14px',
+              borderRadius: '14px',
+              padding: '10px 12px',
               border: '1.5px solid #F26000',
               display: 'flex',
               alignItems: 'center',
               justify: 'space-between',
-              gap: '12px',
-              animation: 'pwaBannerSlideUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
+              gap: '10px'
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1, minWidth: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1, minWidth: 0 }}>
                 <img
                   src={selectedPro.photoURL || selectedPro.img || 'https://randomuser.me/api/portraits/men/32.jpg'}
                   alt={selectedPro.name || selectedPro.nameEs}
-                  style={{ width: '42px', height: '42px', borderRadius: '50%', objectFit: 'cover', border: '2px solid #F26000', flexShrink: 0 }}
+                  style={{ width: '38px', height: '38px', borderRadius: '50%', objectFit: 'cover', border: '2px solid #F26000', flexShrink: 0 }}
                 />
                 <div style={{ minWidth: 0 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <h4 style={{ margin: 0, fontSize: '13.5px', fontWeight: 900, color: '#FFFFFF', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <h4 style={{ margin: 0, fontSize: '13px', fontWeight: 900, color: '#FFFFFF', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                       {selectedPro.name || selectedPro.nameEs}
                     </h4>
-                    <span style={{ fontSize: '10px', color: '#FFD700', fontWeight: 900 }}>⭐ 5.0</span>
+                    <span style={{ fontSize: '9.5px', color: '#FFD700', fontWeight: 900 }}>⭐ 5.0</span>
                   </div>
-                  <p style={{ margin: '2px 0 0', fontSize: '11px', color: '#F26000', fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  <p style={{ margin: '1px 0 0', fontSize: '10.5px', color: '#F26000', fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     ⚡ {selectedPro.category || selectedPro.specEs || 'Profesional Listo'}
-                  </p>
-                  <p style={{ margin: '2px 0 0', fontSize: '10px', color: '#94A3B8', fontWeight: 600 }}>
-                    📍 {selectedPro.dist || 'A 1.2 km de ti'} • Respuesta en ~10m
                   </p>
                 </div>
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', flexShrink: 0 }}>
+              <div style={{ display: 'flex', gap: '6px', flexShrink: 0 }}>
                 <button
                   onClick={() => navigate('booking', { professional: selectedPro })}
                   style={{
                     background: 'linear-gradient(135deg, #F26000, #FF7A1A)',
                     color: '#FFFFFF',
                     border: 'none',
-                    borderRadius: '14px',
-                    padding: '6px 12px',
-                    fontSize: '11px',
-                    fontWeight: 900,
-                    cursor: 'pointer',
-                    boxShadow: '0 4px 10px rgba(242, 96, 0, 0.4)'
-                  }}
-                >
-                  ⚡ Contactar
-                </button>
-                <button
-                  onClick={() => navigate('proProfile', selectedPro)}
-                  style={{
-                    background: 'none',
-                    color: '#CBD5E1',
-                    border: '1px solid #475569',
-                    borderRadius: '14px',
-                    padding: '5px 12px',
+                    borderRadius: '12px',
+                    padding: '5px 10px',
                     fontSize: '10.5px',
-                    fontWeight: 800,
+                    fontWeight: 900,
                     cursor: 'pointer'
                   }}
                 >
-                  👤 Ver Perfil
+                  ⚡ Contactar
                 </button>
               </div>
             </div>
