@@ -7,6 +7,7 @@ import { ReportModal } from './ChatPage'
 import CallModal from '../components/CallModal'
 import FloatingChat from '../components/FloatingChat'
 import ReciboDigitalModal from '../components/ReciboDigitalModal'
+import MantenimientoPreventivoModal from '../components/MantenimientoPreventivoModal'
 
 const txt = {
   es: {
@@ -549,6 +550,7 @@ export default function OrdersPage({ lang = 'es', navigate, userData, userRole }
   const [chatTarget,     setChatTarget]     = useState(null)
   const [workDoneOrder,  setWorkDoneOrder]  = useState(null)  // modal Listo Patrón
   const [reciboModalOrder, setReciboModalOrder] = useState(null)
+  const [showMantenimientoModal, setShowMantenimientoModal] = useState(false)
 
   useEffect(() => {
     if (!auth.currentUser || !userRole) { setLoading(false); return }
@@ -834,6 +836,11 @@ export default function OrdersPage({ lang = 'es', navigate, userData, userRole }
               )}
               {o.status==='done' && !o.rated && userRole!=='pro' && (o.paymentStatus==='approved'||o.paymentStatus==='pending_cash') && <button className="oc-btn review" onClick={()=>setReviewOrder(o)}>{T.review}</button>}
               {o.status==='done' && o.rated && <span className="oc-rated">⭐ {T.rated}</span>}
+              {o.status==='done' && userRole !== 'pro' && (
+                <button className="oc-btn track" style={{ background:'#FFF7ED', color:'#C2410C', border:'1px solid #FFEDD5', marginTop:4, fontWeight:'bold' }} onClick={()=>setShowMantenimientoModal(true)}>
+                  📅 {lang==='es'?'Agenda Preventiva':'Preventive Schedule'}
+                </button>
+              )}
               {o.status!=='cancelled' && userRole !== 'pro' && <button className="oc-btn rebook" onClick={()=>navigate('search')}>{T.rebook}</button>}
             </div>
             
@@ -897,6 +904,14 @@ export default function OrdersPage({ lang = 'es', navigate, userData, userRole }
           order={reciboModalOrder}
           lang={lang}
           onClose={() => setReciboModalOrder(null)}
+        />
+      )}
+      {showMantenimientoModal && (
+        <MantenimientoPreventivoModal
+          lang={lang}
+          onClose={() => setShowMantenimientoModal(false)}
+          navigate={navigate}
+          userProfile={userData}
         />
       )}
       <div style={{ height:80 }} />

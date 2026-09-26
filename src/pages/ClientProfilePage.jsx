@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore'
 import { db } from '../firebase'
 import './ClientProfilePage.css'
+import MantenimientoPreventivoModal from '../components/MantenimientoPreventivoModal'
 
 const txt = {
   es: {
@@ -73,6 +74,7 @@ export default function ClientProfilePage({ lang = 'es', navigate, userData, onE
   const [orders,    setOrders]    = useState([])
   const [reviews,   setReviews]   = useState([])
   const [loading,   setLoading]   = useState(true)
+  const [showMantenimientoModal, setShowMantenimientoModal] = useState(false)
 
   const displayName  = userData?.name  || 'Usuario'
   const displayEmail = userData?.email || ''
@@ -179,10 +181,32 @@ export default function ClientProfilePage({ lang = 'es', navigate, userData, onE
         </div>
       </div>
 
-      {/* BOTON EDITAR */}
-      <div style={{ padding: '0 16px 16px' }}>
+      {/* BOTON EDITAR & BOTON AGENDA MANTENIMIENTO */}
+      <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
         <button className="client-edit-btn" onClick={() => onEditProfile ? onEditProfile() : navigate('profile')}>
           ✏️ {T.editProfile}
+        </button>
+
+        <button 
+          onClick={() => setShowMantenimientoModal(true)} 
+          style={{ 
+            width: '100%', 
+            padding: '12px 16px', 
+            borderRadius: '16px', 
+            background: 'linear-gradient(135deg, #FFF7ED 0%, #FFEDD5 100%)', 
+            border: '1.5px solid #FDBA74', 
+            color: '#C2410C', 
+            fontWeight: 900, 
+            fontSize: '14px', 
+            cursor: 'pointer', 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center', 
+            gap: '8px', 
+            boxShadow: '0 4px 12px rgba(242, 96, 0, 0.12)' 
+          }}
+        >
+          📅 {lang === 'es' ? 'Mi Agenda de Mantenimiento Preventivo' : 'My Maintenance Schedule'}
         </button>
       </div>
 
@@ -312,6 +336,15 @@ export default function ClientProfilePage({ lang = 'es', navigate, userData, onE
         )}
 
       </div>
+
+      {showMantenimientoModal && (
+        <MantenimientoPreventivoModal
+          lang={lang}
+          onClose={() => setShowMantenimientoModal(false)}
+          navigate={navigate}
+          userProfile={userData}
+        />
+      )}
 
       <div style={{ height: 80 }} />
     </div>
