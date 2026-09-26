@@ -421,7 +421,7 @@ export default function BookingPage({ lang = 'es', navigate, professional, userD
                     <>
                       <p className="map-picker-hint">📌 Tu ubicación exacta.</p>
                       <MapContainer center={mapCenter} zoom={16} style={{ height:'220px', width:'100%', borderRadius:'16px', zIndex:0, boxShadow: '0 8px 24px rgba(0,0,0,0.1)' }}>
-                        <TileLayer url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png" />
+                        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
                         <MapCenterUpdater center={mapCenter} />
                         <MapSelector onLocationSelect={handleMapSelect} />
                         {addressCoords && <Marker position={addressCoords} icon={customIcon} />}

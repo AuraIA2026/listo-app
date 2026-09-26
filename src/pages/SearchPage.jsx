@@ -970,7 +970,7 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
       {viewMode === 'map' ? (
         <div style={{ margin: '0 16px 20px', height: '450px', borderRadius: '20px', overflow: 'hidden', boxShadow: '0 8px 30px rgba(0,0,0,0.15)', border: '2px solid #F26000' }}>
           <MapContainer center={[18.7357, -70.1627]} zoom={9} style={{ height: '100%', width: '100%' }}>
-            <TileLayer url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png" />
+            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
             {filtered.map(pro => {
               const lat = pro.coords?.lat || 18.4861 + (Math.random() * 0.1 - 0.05)
               const lng = pro.coords?.lng || -69.9312 + (Math.random() * 0.1 - 0.05)
