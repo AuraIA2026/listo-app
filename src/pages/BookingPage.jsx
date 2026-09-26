@@ -50,6 +50,19 @@ export default function BookingPage({ lang = 'es', navigate, professional, userD
   const [showMap,       setShowMap]       = useState(false)
   const [mapCenter,     setMapCenter]     = useState(null)
   const [mapLoading,    setMapLoading]    = useState(false)
+
+  // ── DIRECCIONES GUARDADAS (CASA, OFICINA, CASA DE MAMÁ) ──
+  const [savedAddresses, setSavedAddresses] = useState(() => {
+    try {
+      const stored = localStorage.getItem('listo_saved_addresses')
+      if (stored) return JSON.parse(stored)
+    } catch(e) {}
+    return [
+      { label: 'Casa', icon: '🏠', address: 'Santiago, D.N. (República Dominicana)' },
+      { label: 'Oficina', icon: '🏢', address: 'Av. 27 de Febrero, Santo Domingo' },
+      { label: 'Casa de Mamá', icon: '👵', address: 'La Vega Centro, República Dominicana' }
+    ]
+  })
   
   // Real-time slots
   const [realBusySlots, setRealBusySlots] = useState([])
@@ -409,10 +422,78 @@ export default function BookingPage({ lang = 'es', navigate, professional, userD
             <h2 className="step-title">{T.step2}</h2>
             <div className="detail-field">
               <label>📍 {T.address}</label>
-              <div style={{ display:'flex', gap:'8px', marginBottom:'10px' }}>
+
+              {/* ── CHIPS DE DIRECCIONES GUARDADAS (CASA, OFICINA, CASA DE MAMÁ) ── */}
+              <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '8px', marginBottom: '8px', scrollbarWidth: 'none' }}>
+                {savedAddresses.map((loc, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => {
+                      setAddress(loc.address)
+                      if (loc.coords) {
+                        setAddressCoords(loc.coords)
+                        setMapCenter([loc.coords.lat, loc.coords.lng])
+                      }
+                    }}
+                    style={{
+                      whiteSpace: 'nowrap',
+                      padding: '7px 13px',
+                      borderRadius: '16px',
+                      fontSize: '12px',
+                      fontWeight: '800',
+                      border: address === loc.address ? '1.5px solid #F26000' : '1.5px solid #E2E8F0',
+                      background: address === loc.address ? '#FEF3EC' : '#FFFFFF',
+                      color: address === loc.address ? '#F26000' : '#334155',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      boxShadow: '0 2px 6px rgba(0,0,0,0.04)',
+                      flexShrink: 0,
+                      transition: 'all 0.15s ease'
+                    }}
+                  >
+                    <span>{loc.icon || '📍'}</span>
+                    <span>{loc.label}</span>
+                  </button>
+                ))}
+              </div>
+
+              <div style={{ display:'flex', gap:'8px', marginBottom:'8px' }}>
                 <input type="text" placeholder={T.addressPlaceholder} value={address} onChange={e => setAddress(e.target.value)} style={{ flex:1 }} />
                 <button className="btn-map-toggle" onClick={() => setShowMap(!showMap)} title="Marcar ubicación en el mapa">🗺️ Mapa</button>
               </div>
+
+              {address.trim().length > 3 && !savedAddresses.some(sa => sa.address.toLowerCase() === address.toLowerCase()) && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    const newLabel = prompt(lang === 'es' ? 'Nombre para esta dirección (Ej. Casa, Trabajo, Playa):' : 'Label for this address (e.g. Home, Work):', 'Mi Ubicación')
+                    if (newLabel && newLabel.trim()) {
+                      const newLoc = { label: newLabel.trim(), icon: '📍', address: address, coords: addressCoords }
+                      const updated = [...savedAddresses, newLoc]
+                      setSavedAddresses(updated)
+                      try { localStorage.setItem('listo_saved_addresses', JSON.stringify(updated)) } catch(e) {}
+                    }
+                  }}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: '#F26000',
+                    fontSize: '11.5px',
+                    fontWeight: '800',
+                    cursor: 'pointer',
+                    padding: '0 0 10px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px'
+                  }}
+                >
+                  <span>➕</span>
+                  <span>{lang === 'es' ? 'Guardar esta dirección para la próxima' : 'Save this address for next time'}</span>
+                </button>
+              )}
               {showMap && (
                 <div className="map-picker-container fade-up">
                   {mapLoading ? (

@@ -386,6 +386,33 @@ export default function HomePage({ lang, navigate, userRole }) {
   const [featuredReal, setFeaturedReal] = useState([])
   const [showLuckyWheel, setShowLuckyWheel] = useState(false)
   const [claimedCoupon, setClaimedCoupon]   = useState(null)
+  const [lastHiredPro, setLastHiredPro]     = useState(null)
+
+  useEffect(() => {
+    if (!userData?.uid) return
+    const fetchLastOrder = async () => {
+      try {
+        const q = query(
+          collection(db, 'orders'),
+          where('clientId', '==', userData.uid),
+          limit(10)
+        )
+        const snap = await getDocs(q)
+        if (!snap.empty) {
+          const completed = snap.docs
+            .map(d => ({ id: d.id, ...d.data() }))
+            .filter(d => d.status === 'done' || d.status === 'completed' || d.status === 'finalizado')
+          if (completed.length > 0) {
+            completed.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0))
+            setLastHiredPro(completed[0])
+          }
+        }
+      } catch (e) {
+        console.log("Notice fetching last order: ", e)
+      }
+    }
+    fetchLastOrder()
+  }, [userData?.uid])
 
   useEffect(() => {
     if (localStorage.getItem('open_tombola_trigger') === 'true') {
@@ -1332,6 +1359,84 @@ export default function HomePage({ lang, navigate, userRole }) {
           </button>
         ))}
       </div>
+
+      {/* ── TARJETA RE-CONTRATACIÓN RÁPIDA 1-CLIC ── */}
+      {!isPro && lastHiredPro && (
+        <div 
+          className="rebook-card-container fade-up"
+          style={{
+            margin: '0 16px 18px',
+            background: 'linear-gradient(135deg, #1E1B4B 0%, #312E81 100%)',
+            borderRadius: '20px',
+            padding: '14px 16px',
+            color: '#FFFFFF',
+            boxShadow: '0 8px 24px rgba(49, 46, 129, 0.35)',
+            border: '1.5px solid rgba(255, 255, 255, 0.15)',
+            display: 'flex',
+            alignItems: 'center',
+            justify: 'space-between',
+            gap: '12px'
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1, minWidth: 0 }}>
+            <div style={{ position: 'relative', flexShrink: 0 }}>
+              <img 
+                src={lastHiredPro.proPhotoURL || lastHiredPro.photoURL || 'https://randomuser.me/api/portraits/men/32.jpg'} 
+                alt={lastHiredPro.proName} 
+                style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover', border: '2px solid #F26000' }} 
+              />
+              <span style={{ position: 'absolute', bottom: '-2px', right: '-2px', background: '#F26000', color: '#FFF', fontSize: '10px', borderRadius: '50%', width: '18px', height: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>
+                🔄
+              </span>
+            </div>
+            <div style={{ minWidth: 0 }}>
+              <span style={{ fontSize: '10px', background: 'rgba(242, 96, 0, 0.25)', color: '#FF9E66', padding: '2px 8px', borderRadius: '10px', fontWeight: '800', border: '1px solid rgba(242, 96, 0, 0.4)' }}>
+                ⚡ RE-CONTRATACIÓN 1-CLIC
+              </span>
+              <h4 style={{ margin: '3px 0 0', fontSize: '14px', fontWeight: '900', color: '#FFFFFF', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                ¿Necesitas a {lastHiredPro.proName}?
+              </h4>
+              <p style={{ margin: '1px 0 0', fontSize: '11.5px', color: '#C7D2FE', fontWeight: '600', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {lastHiredPro.proSpecialty || 'Socio contratado anteriormente'}
+              </p>
+            </div>
+          </div>
+
+          <button
+            onClick={() => {
+              const proToBook = {
+                id: lastHiredPro.proId,
+                name: lastHiredPro.proName,
+                nameEs: lastHiredPro.proName,
+                category: lastHiredPro.proSpecialty,
+                specEs: lastHiredPro.proSpecialty,
+                photoURL: lastHiredPro.proPhotoURL || lastHiredPro.photoURL,
+                img: lastHiredPro.proPhotoURL || lastHiredPro.photoURL,
+                avatar: (lastHiredPro.proName || 'P').charAt(0).toUpperCase()
+              };
+              navigate('booking', { professional: proToBook });
+            }}
+            style={{
+              background: 'linear-gradient(135deg, #F26000 0%, #FF7A1A 100%)',
+              color: '#FFFFFF',
+              border: 'none',
+              borderRadius: '16px',
+              padding: '9px 14px',
+              fontSize: '12px',
+              fontWeight: '900',
+              cursor: 'pointer',
+              boxShadow: '0 4px 12px rgba(242, 96, 0, 0.4)',
+              flexShrink: 0,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px'
+            }}
+          >
+            <span>⚡</span>
+            <span>Volver a Contratar</span>
+          </button>
+        </div>
+      )}
 
       {/* ── SECCIÓN: CATEGORÍAS POR "PROBLEMAS REALES" DE LA VIDA DIARIA ── */}
       {!isPro && (
