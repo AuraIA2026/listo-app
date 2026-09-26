@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import {
   collection, query, where, orderBy, onSnapshot,
-  addDoc, serverTimestamp, doc, setDoc, getDoc,
+  addDoc, serverTimestamp, doc, setDoc, getDoc, getDocs,
   updateDoc, deleteDoc, arrayUnion
 } from 'firebase/firestore'
 import { auth, db } from '../firebase'
@@ -109,6 +109,7 @@ export default function ChatPage({ lang = 'es', navigate, professional, userData
   const [selectedMsgId, setSelectedMsgId] = useState(null) // Para opciones de borrar/copiar
   const [chatBlocked, setChatBlocked] = useState(false)
   const [blockedBy, setBlockedBy] = useState(null)
+  const [requireHirePro, setRequireHirePro] = useState(null)
   
   const messagesEndRef = useRef(null)
   const inputRef = useRef(null)
@@ -201,6 +202,25 @@ export default function ChatPage({ lang = 'es', navigate, professional, userData
   // ── Abrir o crear conversación ────────────────────────────────────────────
   const openOrCreateChat = async (otherId, otherData) => {
     if (!me) return
+
+    const isSupport = (otherData?.email && String(otherData.email).toLowerCase().trim() === SUPPORT_EMAIL) || otherId === 'support'
+    const isAdmin = userData?.role === 'admin'
+
+    if (!isSupport && !isAdmin) {
+      try {
+        const q1 = query(collection(db, 'orders'), where('clientId', '==', me.uid), where('proId', '==', otherId))
+        const q2 = query(collection(db, 'orders'), where('proId', '==', me.uid), where('clientId', '==', otherId))
+        const [snap1, snap2] = await Promise.all([getDocs(q1), getDocs(q2)])
+
+        if (snap1.empty && snap2.empty) {
+          setRequireHirePro({ uid: otherId, ...otherData })
+          return
+        }
+      } catch (err) {
+        console.error('Error verificando órdenes:', err)
+      }
+    }
+
     const chatId = getChatId(me.uid, otherId)
     const chatRef = doc(db, 'chats', chatId)
     const snap = await getDoc(chatRef)
@@ -611,6 +631,41 @@ export default function ChatPage({ lang = 'es', navigate, professional, userData
       )}
 
       {showReport && <ReportModal lang={lang} otherUser={otherUser} onClose={() => setShowReport(false)} onBlock={handleBlockUser} />}
+
+      {requireHirePro && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 99999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+          <div style={{ background: '#fff', borderRadius: 24, padding: '28px 24px', width: '100%', maxWidth: 360, textAlign: 'center', boxShadow: '0 20px 40px rgba(0,0,0,0.25)' }}>
+            <div style={{ width: 60, height: 60, borderRadius: '50%', background: '#FFF3EC', color: '#F26000', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28, margin: '0 auto 16px', boxShadow: '0 4px 12px rgba(242,96,0,0.15)' }}>🔒</div>
+            <h3 style={{ margin: '0 0 8px', fontSize: 19, color: '#1A1A2E', fontWeight: 800 }}>
+              {lang === 'es' ? 'Contratación requerida' : 'Booking Required'}
+            </h3>
+            <p style={{ fontSize: 14, color: '#64748B', lineHeight: 1.5, margin: '0 0 20px' }}>
+              {lang === 'es' 
+                ? `Para chatear con ${requireHirePro.name || 'este profesional'}, primero debes contratar sus servicios.`
+                : `To chat with ${requireHirePro.name || 'this professional'}, you must first book their services.`}
+            </p>
+            <button 
+              onClick={() => {
+                const targetPro = requireHirePro
+                setRequireHirePro(null)
+                if (navigate) navigate('booking', targetPro)
+              }}
+              style={{ width: '100%', padding: '14px', borderRadius: 16, border: 'none', background: 'linear-gradient(135deg, #F26000, #C24D00)', color: '#fff', fontWeight: 'bold', fontSize: 15, cursor: 'pointer', boxShadow: '0 6px 18px rgba(242,96,0,0.3)', marginBottom: 10 }}
+            >
+              📅 {lang === 'es' ? 'Contratar a este profesional' : 'Book this professional'}
+            </button>
+            <button 
+              onClick={() => {
+                setRequireHirePro(null)
+                setActiveChatId(null)
+              }}
+              style={{ width: '100%', padding: '12px', borderRadius: 14, border: 'none', background: '#F1F5F9', color: '#64748B', fontWeight: 'bold', fontSize: 14, cursor: 'pointer' }}
+            >
+              {lang === 'es' ? 'Volver' : 'Go back'}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

@@ -328,6 +328,7 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
   const [pendingRequests, setPendingRequests] = useState([])
   const [proStories, setProStories] = useState([])
   const [showStoryViewer, setShowStoryViewer] = useState(false)
+  const [hasHiredPro, setHasHiredPro] = useState(false)
 
   useEffect(() => {
     const proUid = displayPro.uid || displayPro.id
@@ -390,9 +391,11 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
         const fetchedReviews = []
         const fetchedEvidences = []
         let photoIdCounter = 1
-
         snapshot.forEach(doc => {
           const d = doc.data()
+          if (userData?.uid && d.clientId === userData.uid) {
+            setHasHiredPro(true)
+          }
           if (d.rated === true || typeof d.ratingScore === 'number') {
             fetchedReviews.push({
               id: doc.id,
@@ -757,11 +760,11 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
             <button className="edit-avatar-btn" onClick={(e) => { e.stopPropagation(); setShowPhotoOptions(true); }} title="Cambiar Foto de Perfil">
               ✏️
             </button>
-          ) : (
+          ) : hasHiredPro ? (
             <button className="pro-chat-floating-btn" onClick={(e) => { e.stopPropagation(); navigate('chat', displayPro); }} title="Enviar mensaje">
               💬
             </button>
-          )}
+          ) : null}
         </div>
 
         <div className="pro-info-main">
