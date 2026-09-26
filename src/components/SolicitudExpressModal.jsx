@@ -119,7 +119,7 @@ export default function SolicitudExpressModal({ lang = 'es', onClose, onSuccess,
                       onClick={() => setCategory(cat.id)}
                     >
                       <span className="express-cat-icon">{cat.icon}</span>
-                      <span className="express-cat-label">{lang === 'es' ? cat.nameEs : cat.nameEn}</span>
+                      <span className="express-cat-label">{lang === 'es' ? (cat.labelEs || cat.nameEs) : (cat.labelEn || cat.nameEn)}</span>
                     </button>
                   ))}
                 </div>
@@ -131,9 +131,14 @@ export default function SolicitudExpressModal({ lang = 'es', onClose, onSuccess,
                     value={province} 
                     onChange={(e) => setProvince(e.target.value)}
                   >
-                    {PROVINCES_LIST.map((prov) => (
-                      <option key={prov} value={prov}>{prov}</option>
-                    ))}
+                    {PROVINCES_LIST.map((prov) => {
+                      const label = typeof prov === 'object' ? (lang === 'es' ? prov.labelEs : prov.labelEn) : prov
+                      const val = typeof prov === 'object' ? prov.labelEs : prov
+                      const key = typeof prov === 'object' ? prov.id : prov
+                      return (
+                        <option key={key} value={val}>{label}</option>
+                      )
+                    })}
                   </select>
                 </div>
 
@@ -162,7 +167,7 @@ export default function SolicitudExpressModal({ lang = 'es', onClose, onSuccess,
             {step === 2 && (
               <div className="express-step-body fade-in">
                 <div className="express-selected-summary">
-                  <span>{selectedCategoryObj.icon} <strong>{lang === 'es' ? selectedCategoryObj.nameEs : selectedCategoryObj.nameEn}</strong></span>
+                  <span>{selectedCategoryObj?.icon || '🔧'} <strong>{lang === 'es' ? (selectedCategoryObj?.labelEs || selectedCategoryObj?.nameEs || 'Servicio') : (selectedCategoryObj?.labelEn || selectedCategoryObj?.nameEn || 'Service')}</strong></span>
                   <span>📍 {province} {sector ? `(${sector})` : ''}</span>
                 </div>
 
@@ -239,7 +244,7 @@ export default function SolicitudExpressModal({ lang = 'es', onClose, onSuccess,
                 <div className="express-confirm-box">
                   <div className="confirm-row">
                     <span className="confirm-label">⚡ {lang === 'es' ? 'Servicio:' : 'Service:'}</span>
-                    <span className="confirm-val">{selectedCategoryObj.icon} {lang === 'es' ? selectedCategoryObj.nameEs : selectedCategoryObj.nameEn}</span>
+                    <span className="confirm-val">{selectedCategoryObj?.icon || '🔧'} {lang === 'es' ? (selectedCategoryObj?.labelEs || selectedCategoryObj?.nameEs || 'Servicio') : (selectedCategoryObj?.labelEn || selectedCategoryObj?.nameEn || 'Service')}</span>
                   </div>
                   <div className="confirm-row">
                     <span className="confirm-label">📍 {lang === 'es' ? 'Ubicación:' : 'Location:'}</span>
