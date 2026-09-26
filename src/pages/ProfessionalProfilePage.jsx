@@ -341,6 +341,10 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
   const [hasHiredPro, setHasHiredPro] = useState(false)
   const [showGuaranteeModal, setShowGuaranteeModal] = useState(false)
 
+  const handleBookClick = () => {
+    if (navigate) navigate('booking', displayPro)
+  }
+
   useEffect(() => {
     const proUid = displayPro.uid || displayPro.id
     if (!proUid) return
