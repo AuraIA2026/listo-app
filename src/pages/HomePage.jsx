@@ -12,7 +12,8 @@ import PlanSelectionModal from '../components/PlanSelectionModal'
 import BtnHamburguesa from '../components/BtnHamburguesa'
 import BtnHamburguesaUsuario from '../components/BtnHamburguesaUsuario'
 import { useUserData } from '../useUserData'
-import { CATEGORIES, ALL_SUBCATEGORIES } from '../categories'
+import { CATEGORIES, ALL_SUBCATEGORIES, PROVINCES_LIST } from '../categories'
+import ProPlanAlertWidget from '../components/ProPlanAlertWidget'
 
 import mecanico   from '../assets/pros/Mecanico.jpg'
 import mecanico1  from '../assets/pros/Mecanico1.jpg'
@@ -1222,6 +1223,35 @@ export default function HomePage({ lang, navigate, userRole }) {
         <button className="amz-nav-pill" onClick={() => navigate('search', { catToSelect: 'ninera' })}>
           👶 Niñeras
         </button>
+      </div>
+
+      {/* ── ALERTA INTELIGENTE DE PLAN Y CONTRATOS PARA PROFESIONALES ── */}
+      <ProPlanAlertWidget userData={userData} onOpenPlanModal={() => setShowPlanModal(true)} />
+
+      {/* ── BARRA DE SELECCIÓN RÁPIDA DE PROVINCIA Y SECTOR ── */}
+      <div style={{ margin: '0 16px 14px', overflowX: 'auto', display: 'flex', gap: '8px', scrollbarWidth: 'none' }}>
+        {PROVINCES_LIST.map(prov => (
+          <button
+            key={prov.id}
+            onClick={() => navigate('search', { provinceToSelect: prov.id })}
+            style={{
+              whiteSpace: 'nowrap',
+              padding: '7px 14px',
+              borderRadius: '20px',
+              fontSize: '12.5px',
+              fontWeight: '800',
+              border: '1.5px solid #E2E8F0',
+              background: '#FFFFFF',
+              color: '#334155',
+              cursor: 'pointer',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+              flexShrink: 0,
+              transition: 'all 0.2s ease'
+            }}
+          >
+            {lang === 'es' ? prov.labelEs : prov.labelEn}
+          </button>
+        ))}
       </div>
 
       {/* ── BOTÓN / PANEL SOCIO "¡HOLA, SOCIO!" (UBICADO ARRIBA DE PROFESIONALES DESTACADOS) ── */}

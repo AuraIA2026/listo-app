@@ -1,10 +1,12 @@
 import { useState, useEffect, useRef } from 'react'
 import { collection, query, where, getDocs, doc, getDoc, addDoc, serverTimestamp } from 'firebase/firestore'
 import { db } from '../firebase'
-import { CATEGORIES, FILTERS, ALL_SUBCATEGORIES } from '../categories'
+import { CATEGORIES, FILTERS, ALL_SUBCATEGORIES, PROVINCES_LIST } from '../categories'
 import LocalesCarrusel from '../locales/LocalesCarrusel'  // ✅ importado
 import VIPSection, { isProVip } from '../components/VIPSection'
 import HistoriasCarrusel from '../components/HistoriasCarrusel'
+import ProPlanAlertWidget from '../components/ProPlanAlertWidget'
+import PlanSelectionModal from '../components/PlanSelectionModal'
 import recomendarIcon from '../assets/icons/recomendar.png'
 import opinionesIcon from '../assets/icons/opiniones.png'
 import compartirIcon from '../assets/icons/compartir.png'
@@ -541,16 +543,21 @@ function ProDelMes({ lang, navigate, userRole }) {
   )
 }
 
-export default function SearchPage({ lang = 'es', navigate, initialCategory = 'all', userRole = 'client', userData }) {
+export default function SearchPage({ lang = 'es', navigate, initialCategory = 'all', initialProvince = 'all', userRole = 'client', userData }) {
   const [activeCategory,    setActiveCategory]    = useState(initialCategory || 'all')
   const [activeSubcategory, setActiveSubcategory] = useState('all')
   const [openCategory,      setOpenCategory]      = useState(null)
+  const [activeProvince,    setActiveProvince]    = useState(initialProvince || 'all')
+  const [showPlanModal,     setShowPlanModal]     = useState(false)
   
   useEffect(() => {
     if (initialCategory) {
       setActiveCategory(initialCategory)
     }
-  }, [initialCategory])
+    if (initialProvince) {
+      setActiveProvince(initialProvince)
+    }
+  }, [initialCategory, initialProvince])
   const [search,            setSearch]            = useState('')
   const [quickFilter,       setQuickFilter]       = useState('all')
   const [sortBy,            setSortBy]            = useState('all')
@@ -763,12 +770,17 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
       const matchCat   = activeCategory === 'all' || mappedCat === activeCategory || mappedCat === activeSubcategory || isSubInMain
       const matchSearch = p.name.toLowerCase().includes(search.toLowerCase()) || p.location.toLowerCase().includes(search.toLowerCase())
       
+      const matchProvince = activeProvince === 'all' || 
+        p.location.toLowerCase().includes(activeProvince.toLowerCase()) ||
+        (p.verificacion?.provincia && p.verificacion.provincia.toLowerCase().includes(activeProvince.toLowerCase())) ||
+        (p.verificacion?.municipio && p.verificacion.municipio.toLowerCase().includes(activeProvince.toLowerCase()))
+      
       let matchPill = true
       if (quickFilter === 'available') matchPill = p.available === true
       if (quickFilter === 'topRated') matchPill = Number(p.rating || 0) >= 4.8
       if (quickFilter === 'premium') matchPill = (p.currentPlan || '').toLowerCase().includes('vip') || (p.currentPlan || '').toLowerCase().includes('platinum') || (p.currentPlan || '').toLowerCase().includes('elite')
 
-      return matchCat && matchSearch && matchPill
+      return matchCat && matchSearch && matchPill && matchProvince
     })
     .sort((a, b) => {
       if (sortBy === 'topRated') return b.rating - a.rating
@@ -835,6 +847,9 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
       <PromoBanner lang={lang} userRole={userRole} />
       <ProDelMes lang={lang} navigate={navigate} userRole={userRole} />
 
+      {/* ── ALERTA INTELIGENTE DE PLAN Y CONTRATOS PARA PROFESIONALES ── */}
+      <ProPlanAlertWidget userData={userData} onOpenPlanModal={() => setShowPlanModal(true)} />
+
       <div className="pill-filters">
         <button className={`pill-btn ${quickFilter === 'all' ? 'active' : ''}`} onClick={() => setQuickFilter('all')}>
           🌐 {lang === 'es' ? 'Todos' : 'All'}
@@ -848,6 +863,33 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
         <button className={`pill-btn ${quickFilter === 'premium' ? 'active' : ''}`} onClick={() => setQuickFilter('premium')}>
           💎 {lang === 'es' ? 'Premium' : 'Premium'}
         </button>
+      </div>
+
+      {/* ── FILTRO POR PROVINCIA Y SECTOR (UBICACIÓN EXACTA) ── */}
+      <div className="province-filters-scroll" style={{ display: 'flex', gap: '8px', overflowX: 'auto', padding: '0 16px 14px', scrollbarWidth: 'none' }}>
+        {PROVINCES_LIST.map(prov => (
+          <button 
+            key={prov.id} 
+            className={`pill-btn ${activeProvince === prov.id ? 'active' : ''}`}
+            onClick={() => setActiveProvince(prov.id)}
+            style={{
+              whiteSpace: 'nowrap',
+              padding: '7px 14px',
+              borderRadius: '20px',
+              fontSize: '12px',
+              fontWeight: '800',
+              border: activeProvince === prov.id ? 'none' : '1.5px solid #E2E8F0',
+              background: activeProvince === prov.id ? '#1E293B' : '#FFFFFF',
+              color: activeProvince === prov.id ? '#FFFFFF' : '#475569',
+              boxShadow: activeProvince === prov.id ? '0 4px 12px rgba(30, 41, 59, 0.25)' : 'none',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease',
+              flexShrink: 0
+            }}
+          >
+            {lang === 'es' ? prov.labelEs : prov.labelEn}
+          </button>
+        ))}
       </div>
 
       <div className="categories-wrapper">
@@ -1097,6 +1139,13 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
       )}
 
       <div style={{ height: 80 }} />
+
+      {/* Modal de Renovación de Plan para Profesional */}
+      <PlanSelectionModal 
+        isOpen={showPlanModal} 
+        onClose={() => setShowPlanModal(false)} 
+        proInfo={userData} 
+      />
     </div>
   )
 }

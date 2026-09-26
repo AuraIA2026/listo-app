@@ -747,7 +747,7 @@ export default function App() {
       {currentPage === 'landing'      && <LandingPage  {...commonProps} />}
       {currentPage === 'home'         && <HomePage     {...userProps} />}
       {currentPage === 'services'     && <ServicesPage {...userProps} />}
-      {currentPage === 'search'       && <SearchPage   {...userProps} initialCategory={selectedPro?.catToSelect || 'all'} />}
+      {currentPage === 'search'       && <SearchPage   {...userProps} initialCategory={selectedPro?.catToSelect || 'all'} initialProvince={selectedPro?.provinceToSelect || 'all'} />}
       {currentPage === 'orders'       && <OrdersPage   {...userProps} />}
       {currentPage === 'login'        && <LoginPage    {...commonProps} />}
       {currentPage === 'register'     && <RegisterPage {...commonProps} />}

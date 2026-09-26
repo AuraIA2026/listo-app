@@ -9,6 +9,21 @@ export const FILTERS = [
   { id: 'exclusivo',       icon: '💎', labelEs: 'Exclusivo',       labelEn: 'Exclusive' },
 ]
 
+export const PROVINCES_LIST = [
+  { id: 'all', labelEs: '📍 Todas las zonas', labelEn: '📍 All locations' },
+  { id: 'santo domingo', labelEs: '📍 Santo Domingo / D.N.', labelEn: '📍 Santo Domingo / D.N.' },
+  { id: 'santiago', labelEs: '📍 Santiago de los Caballeros', labelEn: '📍 Santiago' },
+  { id: 'la vega', labelEs: '📍 La Vega / Jarabacoa', labelEn: '📍 La Vega / Jarabacoa' },
+  { id: 'san cristóbal', labelEs: '📍 San Cristóbal / Haina', labelEn: '📍 San Cristobal' },
+  { id: 'bávaro', labelEs: '📍 Bávaro / Punta Cana', labelEn: '📍 Punta Cana / Bávaro' },
+  { id: 'puerto plata', labelEs: '📍 Puerto Plata / Sosúa', labelEn: '📍 Puerto Plata' },
+  { id: 'san pedro', labelEs: '📍 San Pedro de Macorís', labelEn: '📍 San Pedro' },
+  { id: 'la romana', labelEs: '📍 La Romana / Casa de Campo', labelEn: '📍 La Romana' },
+  { id: 'espaillat', labelEs: '📍 Moca / Espaillat', labelEn: '📍 Moca / Espaillat' },
+  { id: 'peravia', labelEs: '📍 Baní / Peravia', labelEn: '📍 Baní' },
+  { id: 'duarte', labelEs: '📍 San Francisco de Macorís', labelEn: '📍 San Francisco' },
+]
+
 export const PLANS = {
   basico: {
     id: 'basico',
