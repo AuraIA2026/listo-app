@@ -1751,6 +1751,48 @@ export default function HomePage({ lang, navigate, userRole }) {
 
       {!isPro && (
         <>
+          {sections.map((sec, idx) => {
+            // Colores temáticos extraidos de los Planes VIP/Platinum/Gold/Basico para dar forma
+            const amzThemes = [
+              { bg: 'linear-gradient(145deg, #EFF6FF 0%, #DBEAFE 100%)', color: '#1E3A8A', card: '#FFF' }, // VIP Blue
+              { bg: 'linear-gradient(145deg, #FFFBEB 0%, #FEF3C7 100%)', color: '#92400E', card: '#FFF' }, // Gold Orange
+              { bg: 'linear-gradient(145deg, #F8FAFC 0%, #F1F5F9 100%)', color: '#334155', card: '#FFF' }, // Básico Silver
+              { bg: 'linear-gradient(145deg, #FDF4FF 0%, #FCE7F3 100%)', color: '#831843', card: '#FFF' }, // Pink
+              { bg: 'linear-gradient(145deg, #F0FDF4 0%, #DCFCE7 100%)', color: '#166534', card: '#FFF' }, // Green
+              { bg: 'linear-gradient(145deg, #FEF2F2 0%, #FEE2E2 100%)', color: '#991B1B', card: '#FFF' }, // Red
+              { bg: 'linear-gradient(145deg, #FAF5FF 0%, #F3E8FF 100%)', color: '#4C1D95', card: '#FFF' }, // Purple
+            ];
+            const theme = amzThemes[idx % amzThemes.length];
+
+            return (
+              <section key={sec.id} className="hp-service-section reveal" style={{ background: theme.bg }}>
+                <div className="hp-sec-header amz-sec-header">
+                  <h2 className="hp-sec-title amz-sec-title" style={{ color: theme.color, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    {sec.image ? <img src={sec.image} alt={sec.titleEs} style={{ width: '24px', height: '24px', objectFit: 'contain' }} /> : sec.icon} 
+                    {lang === 'es' ? sec.titleEs : sec.titleEn}
+                  </h2>
+                  <button className="hp-see-all amz-see-all" style={{ color: theme.color }} onClick={() => navigate('search')}>
+                    {lang === 'es' ? 'Ver todo' : 'See all'} ›
+                  </button>
+                </div>
+                <div className="hp-service-cards amz-cards-scroll">
+                  {sec.services.map((s, i) => (
+                    <div key={i} className="hp-svc-card amz-bento-card" style={{ background: theme.card }} onClick={() => navigate('booking', { specialty: sec.id })}>
+                      <div className="hp-svc-img-wrap">
+                        {s.tag && <span className="hp-svc-tag">{s.tag}</span>}
+                        <img src={s.img} alt={s.nameEs} className="hp-svc-img" />
+                      </div>
+                      <div className="hp-svc-info">
+                        <p className="hp-svc-name">{lang === 'es' ? s.nameEs : s.nameEn}</p>
+                        <p className="hp-svc-price">{s.price}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            );
+          })}
+
           <section ref={allProsRef} className={`all-pros-section${allProsVisible ? ' reveal' : ''}`}>
             <div className="hp-sec-header" style={{ marginBottom: 12 }}>
               <h2 className="hp-sec-title">👥 {lang === 'es' ? 'Todos los Profesionales' : 'All Professionals'}</h2>
@@ -1818,48 +1860,6 @@ export default function HomePage({ lang, navigate, userRole }) {
               )}
             </div>
           </section>
-
-          {sections.map((sec, idx) => {
-            // Colores temáticos extraidos de los Planes VIP/Platinum/Gold/Basico para dar forma
-            const amzThemes = [
-              { bg: 'linear-gradient(145deg, #EFF6FF 0%, #DBEAFE 100%)', color: '#1E3A8A', card: '#FFF' }, // VIP Blue
-              { bg: 'linear-gradient(145deg, #FFFBEB 0%, #FEF3C7 100%)', color: '#92400E', card: '#FFF' }, // Gold Orange
-              { bg: 'linear-gradient(145deg, #F8FAFC 0%, #F1F5F9 100%)', color: '#334155', card: '#FFF' }, // Básico Silver
-              { bg: 'linear-gradient(145deg, #FDF4FF 0%, #FCE7F3 100%)', color: '#831843', card: '#FFF' }, // Pink
-              { bg: 'linear-gradient(145deg, #F0FDF4 0%, #DCFCE7 100%)', color: '#166534', card: '#FFF' }, // Green
-              { bg: 'linear-gradient(145deg, #FEF2F2 0%, #FEE2E2 100%)', color: '#991B1B', card: '#FFF' }, // Red
-              { bg: 'linear-gradient(145deg, #FAF5FF 0%, #F3E8FF 100%)', color: '#4C1D95', card: '#FFF' }, // Purple
-            ];
-            const theme = amzThemes[idx % amzThemes.length];
-
-            return (
-              <section key={sec.id} className="hp-service-section reveal" style={{ background: theme.bg }}>
-                <div className="hp-sec-header amz-sec-header">
-                  <h2 className="hp-sec-title amz-sec-title" style={{ color: theme.color, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    {sec.image ? <img src={sec.image} alt={sec.titleEs} style={{ width: '24px', height: '24px', objectFit: 'contain' }} /> : sec.icon} 
-                    {lang === 'es' ? sec.titleEs : sec.titleEn}
-                  </h2>
-                  <button className="hp-see-all amz-see-all" style={{ color: theme.color }} onClick={() => navigate('search')}>
-                    {lang === 'es' ? 'Ver todo' : 'See all'} ›
-                  </button>
-                </div>
-                <div className="hp-service-cards amz-cards-scroll">
-                  {sec.services.map((s, i) => (
-                    <div key={i} className="hp-svc-card amz-bento-card" style={{ background: theme.card }} onClick={() => navigate('booking', { specialty: sec.id })}>
-                      <div className="hp-svc-img-wrap">
-                        {s.tag && <span className="hp-svc-tag">{s.tag}</span>}
-                        <img src={s.img} alt={s.nameEs} className="hp-svc-img" />
-                      </div>
-                      <div className="hp-svc-info">
-                        <p className="hp-svc-name">{lang === 'es' ? s.nameEs : s.nameEn}</p>
-                        <p className="hp-svc-price">{s.price}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </section>
-            );
-          })}
 
           <section ref={catListRef} className={`cat-list-section${catListVisible ? ' reveal' : ''}`}>
             <div className="hp-sec-header">
