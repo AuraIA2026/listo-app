@@ -1067,36 +1067,6 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
                     fallbackAvatar={pro.avatar}
                   />
 
-                  {hasStory && (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        handleOpenStoryViewer(sData.firstIndex)
-                      }}
-                      style={{
-                        position: 'absolute',
-                        top: '12px',
-                        right: '12px',
-                        background: sData.isAllSeen ? 'rgba(30, 41, 59, 0.85)' : 'linear-gradient(135deg, #F26000, #FF007A)',
-                        color: 'white',
-                        border: '1.5px solid white',
-                        borderRadius: '16px',
-                        padding: '4px 10px',
-                        fontSize: '11px',
-                        fontWeight: '900',
-                        cursor: 'pointer',
-                        zIndex: 12,
-                        boxShadow: '0 4px 12px rgba(242,96,0,0.5)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '4px'
-                      }}
-                    >
-                      <span>📸</span>
-                      <span>{lang === 'es' ? 'Historia 24h' : 'Story'}</span>
-                    </button>
-                  )}
-
                   {pro.rating && pro.rating > 0 && pro.reviews > 0 && (
                     <div style={{ position: 'absolute', bottom: '16px', right: '16px', background: 'rgba(26, 26, 46, 0.85)', backdropFilter: 'blur(4px)', borderRadius: '8px', padding: '4px 8px', display: 'flex', alignItems: 'center', gap: '4px', border: '1.5px solid #FFD700', boxShadow: '0 4px 10px rgba(0,0,0,0.15)', zIndex: 10 }}>
                       <span style={{ fontSize: '11px', color: '#FFD700', fontWeight: 'bold' }}>⭐</span>
@@ -1181,36 +1151,6 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
                   onOpenStory={handleOpenStoryViewer}
                   fallbackAvatar={pro.avatar}
                 />
-
-                {hasStoryStd && (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      handleOpenStoryViewer(sDataStd.firstIndex)
-                    }}
-                    style={{
-                      position: 'absolute',
-                      top: '10px',
-                      left: '10px',
-                      background: sDataStd.isAllSeen ? 'rgba(30, 41, 59, 0.85)' : 'linear-gradient(135deg, #F26000, #FF007A)',
-                      color: 'white',
-                      border: '1.5px solid white',
-                      borderRadius: '14px',
-                      padding: '3px 8px',
-                      fontSize: '10px',
-                      fontWeight: '900',
-                      cursor: 'pointer',
-                      zIndex: 12,
-                      boxShadow: '0 3px 10px rgba(242,96,0,0.5)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '3px'
-                    }}
-                  >
-                    <span>📸</span>
-                    <span>{lang === 'es' ? 'Historia' : 'Story'}</span>
-                  </button>
-                )}
 
                 {pro.rating && pro.rating > 0 && pro.reviews > 0 && (
                   <div style={{ position: 'absolute', bottom: '12px', right: '12px', background: 'rgba(26, 26, 46, 0.85)', backdropFilter: 'blur(4px)', borderRadius: '8px', padding: '4px 8px', display: 'flex', alignItems: 'center', gap: '4px', border: '1.5px solid #FFD700', boxShadow: '0 4px 10px rgba(0,0,0,0.15)', zIndex: 10 }}>

@@ -1,5 +1,6 @@
 import React from 'react'
 import './VIPSection.css'
+import StoryAvatar from './StoryAvatar'
 import { CATEGORIES, ALL_SUBCATEGORIES } from '../categories'
 
 import mecanico1  from '../assets/pros/Mecanico1.jpg'
@@ -265,38 +266,28 @@ function VIPProCard({ pro, lang, navigate, getProStoryData, onOpenStory }) {
           />
         </div>
 
-        {/* SI TIENE HISTORIA EN VIVO 24H: BADGE DESTACADO */}
+        {/* SI TIENE HISTORIA EN VIVO 24H: MOSTRAR EL CÍRCULO CON ANILLO DE LA HISTORIA SOBRE LA FOTO (ESTILO INSTAGRAM) */}
         {hasStory && (
-          <button
-            className="vip-photo-story-badge-btn"
-            onClick={(e) => {
-              e.stopPropagation()
-              if (onOpenStory) onOpenStory(storyData.firstIndex)
-            }}
+          <div 
             style={{
               position: 'absolute',
-              top: '46px',
-              left: '12px',
-              background: storyData.isAllSeen 
-                ? 'rgba(30, 41, 59, 0.85)' 
-                : 'linear-gradient(135deg, #F26000 0%, #FF007A 50%, #7928CA 100%)',
-              color: '#FFFFFF',
-              border: '2px solid #FFFFFF',
-              borderRadius: '20px',
-              padding: '5px 12px',
-              fontSize: '11px',
-              fontWeight: '900',
-              cursor: 'pointer',
-              zIndex: 6,
-              boxShadow: storyData.isAllSeen ? '0 2px 8px rgba(0,0,0,0.4)' : '0 4px 15px rgba(242, 96, 0, 0.6), 0 0 10px rgba(255, 0, 122, 0.5)',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '5px'
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -45%)',
+              zIndex: 10,
+              filter: 'drop-shadow(0 8px 24px rgba(0,0,0,0.65))'
             }}
           >
-            <span style={{ fontSize: '13px' }}>📸</span>
-            <span>{lang === 'es' ? 'Ver Historia 24h' : 'View 24h Story'}</span>
-          </button>
+            <StoryAvatar 
+              pro={pro}
+              src={pro.img || pro.photoURL}
+              alt={pro.nameEs || pro.name}
+              size={84}
+              storyData={storyData}
+              onOpenStory={onOpenStory}
+              fallbackAvatar={(pro.nameEs || pro.name || 'P').charAt(0)}
+            />
+          </div>
         )}
 
         {/* DISPONIBLE Y BOTÓN "VER PERFIL" SOBRE LA FOTO */}

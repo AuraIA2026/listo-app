@@ -1719,31 +1719,6 @@ export default function HomePage({ lang, navigate, userRole }) {
                     {pro.reviews && pro.reviews > 0 ? (
                       <p className="featured-reviews">{pro.reviews} {lang === 'es' ? 'reseñas' : 'reviews'}</p>
                     ) : null}
-                    {hasStory && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          handleOpenStoryViewer(sData.firstIndex)
-                        }}
-                        style={{
-                          marginTop: '4px',
-                          background: sData.isAllSeen ? 'rgba(30, 41, 59, 0.85)' : 'linear-gradient(135deg, #F26000, #FF007A)',
-                          color: 'white',
-                          border: 'none',
-                          borderRadius: '12px',
-                          padding: '3px 9px',
-                          fontSize: '10.5px',
-                          fontWeight: '900',
-                          cursor: 'pointer',
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '4px',
-                          boxShadow: '0 2px 8px rgba(242, 96, 0, 0.4)'
-                        }}
-                      >
-                        📸 {lang === 'es' ? 'Ver Historia 24h' : 'View Story'}
-                      </button>
-                    )}
                     <p className="featured-price" style={{ color: '#008F39', fontSize: '13px', fontWeight: 'bold' }}>
                       🤝 {lang === 'es' ? 'A convenir' : 'To agree'}
                     </p>
@@ -1798,30 +1773,6 @@ export default function HomePage({ lang, navigate, userRole }) {
                         <p className="pro-list-name">{pro.nameEs}</p>
                         <p className="pro-list-spec">{pro.specEs}</p>
                         <StarRating rating={pro.rating} />
-                        {hasStory && (
-                          <span 
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              handleOpenStoryViewer(sData.firstIndex)
-                            }}
-                            style={{
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: '3px',
-                              marginTop: '3px',
-                              background: sData.isAllSeen ? 'rgba(30, 41, 59, 0.85)' : 'linear-gradient(135deg, #F26000, #FF007A)',
-                              color: 'white',
-                              fontSize: '9.5px',
-                              fontWeight: '900',
-                              padding: '2px 8px',
-                              borderRadius: '10px',
-                              cursor: 'pointer',
-                              boxShadow: '0 2px 6px rgba(242,96,0,0.3)'
-                            }}
-                          >
-                            📸 {lang === 'es' ? 'Ver Historia 24h' : 'View Story'}
-                          </span>
-                        )}
                         <p className="pro-list-price" style={{ color: '#008F39', fontSize: '13px', fontWeight: 'bold', marginTop: '4px' }}>
                           🤝 {lang === 'es' ? 'A convenir' : 'To agree'}
                         </p>
