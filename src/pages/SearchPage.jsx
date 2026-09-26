@@ -9,6 +9,7 @@ import ProPlanAlertWidget from '../components/ProPlanAlertWidget'
 import PlanSelectionModal from '../components/PlanSelectionModal'
 import EstimadorPreciosModal from '../components/EstimadorPreciosModal'
 import SolicitudExpressModal from '../components/SolicitudExpressModal'
+import CalculadoraMaterialesModal from '../components/CalculadoraMaterialesModal'
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 import L from 'leaflet'
@@ -562,6 +563,7 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
   const [showPlanModal,     setShowPlanModal]     = useState(false)
   const [showEstimadorModal, setShowEstimadorModal] = useState(false)
   const [showSolicitudExpress, setShowSolicitudExpress] = useState(false)
+  const [showCalcModal,      setShowCalcModal]      = useState(false)
   const [viewMode,           setViewMode]          = useState('list') // 'list' | 'map'
   
   useEffect(() => {
@@ -900,6 +902,9 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
         <button className="pill-btn" onClick={() => setShowEstimadorModal(true)} style={{ background: '#ECFDF5', color: '#059669', borderColor: '#A7F3D0', fontWeight: '800' }}>
           📊 {lang === 'es' ? 'Precios RD$' : 'RD$ Prices'}
         </button>
+        <button className="pill-btn" onClick={() => setShowCalcModal(true)} style={{ background: '#F0FDF4', color: '#059669', borderColor: '#BBF7D0', fontWeight: '900' }}>
+          🧰 {lang === 'es' ? 'Calculadora RD$' : 'Calculator RD$'}
+        </button>
         <button className="pill-btn" onClick={() => setShowSolicitudExpress(true)} style={{ background: 'linear-gradient(135deg, #FFF7ED, #FFEDD5)', color: '#C2410C', borderColor: '#FDBA74', fontWeight: '900' }}>
           ⚡ {lang === 'es' ? 'Cotización Flash' : 'Flash Quote'}
         </button>
@@ -1231,6 +1236,15 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
           lang={lang} 
           onClose={() => setShowSolicitudExpress(false)} 
           userProfile={userData} 
+        />
+      )}
+
+      {/* Modal de Calculadora de Materiales en RD$ */}
+      {showCalcModal && (
+        <CalculadoraMaterialesModal
+          lang={lang}
+          onClose={() => setShowCalcModal(false)}
+          navigate={navigate}
         />
       )}
     </div>

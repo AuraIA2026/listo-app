@@ -1,0 +1,198 @@
+.ba-gallery-container {
+  background: #FFFFFF;
+  border-radius: 24px;
+  padding: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  margin: 16px 0;
+  border: 1px solid #E2E8F0;
+}
+
+.ba-gallery-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.ba-gallery-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #F26000 0%, #FF8533 100%);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  box-shadow: 0 6px 16px rgba(242, 96, 0, 0.35);
+  flex-shrink: 0;
+}
+
+.ba-gallery-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 900;
+  color: #0F172A;
+  letter-spacing: -0.3px;
+}
+
+.ba-gallery-sub {
+  margin: 2px 0 0;
+  font-size: 13px;
+  color: #64748B;
+  font-weight: 500;
+}
+
+.ba-gallery-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Card Individual */
+.ba-card {
+  background: #F8FAFC;
+  border: 1.5px solid #E2E8F0;
+  border-radius: 20px;
+  padding: 14px;
+  overflow: hidden;
+}
+
+.ba-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.ba-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 900;
+  color: #1E293B;
+}
+
+.ba-pro-badge {
+  font-size: 11px;
+  font-weight: 800;
+  color: #C2410C;
+  background: #FFF7ED;
+  padding: 4px 10px;
+  border-radius: 10px;
+  border: 1px solid #FFEDD5;
+}
+
+/* Contenedor Interactivo con Slider */
+.ba-image-container {
+  position: relative;
+  width: 100%;
+  height: 240px;
+  border-radius: 16px;
+  overflow: hidden;
+  user-select: none;
+  cursor: ew-resize;
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1);
+}
+
+.ba-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+}
+
+.ba-img-after {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.ba-before-wrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  overflow: hidden;
+  z-index: 2;
+  border-right: 2px solid #FFFFFF;
+}
+
+.ba-before-wrapper .ba-img-before {
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Labels */
+.ba-label {
+  position: absolute;
+  top: 12px;
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+  z-index: 4;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(4px);
+}
+
+.ba-label-before {
+  left: 12px;
+  background: rgba(15, 23, 42, 0.85);
+  color: #FFFFFF;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.ba-label-after {
+  right: 12px;
+  background: rgba(242, 96, 0, 0.9);
+  color: #FFFFFF;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* Handle Divisorio Deslizable */
+.ba-handle {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: #FFFFFF;
+  z-index: 5;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
+}
+
+.ba-handle-line {
+  flex: 1;
+  width: 2px;
+  background: #FFFFFF;
+}
+
+.ba-handle-button {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #F26000;
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 900;
+  box-shadow: 0 4px 14px rgba(242, 96, 0, 0.6), 0 0 0 3px rgba(255, 255, 255, 0.9);
+}
+
+.ba-instruction {
+  margin-top: 10px;
+  text-align: center;
+  font-size: 11px;
+  color: #64748B;
+  font-weight: 600;
+}
