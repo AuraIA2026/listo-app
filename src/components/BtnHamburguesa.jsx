@@ -3,6 +3,7 @@ import { getAuth, updateProfile } from 'firebase/auth'
 import { doc, updateDoc, collection, addDoc, serverTimestamp, query, where, getDocs } from 'firebase/firestore'
 import { db } from '../firebase'
 import { useUserData } from '../useUserData'
+import ZonaCoberturaModal from './ZonaCoberturaModal'
 import './BtnHamburguesa.css'
 import '../pages/PaymentPage.css'
 
@@ -84,6 +85,7 @@ export default function BtnHamburguesa({ onClose, navigate, lang = 'es', activeV
   const [section, setSection] = useState('main')
   const [openSection, setOpenSection] = useState('stats')
   const [showEditModal, setShowEditModal] = useState(false)
+  const [showCoberturaModal, setShowCoberturaModal] = useState(false)
   const [computedStats, setComputedStats] = useState({ completed: 0, requests: 0, pending: 0 })
 
   const auth = getAuth()
@@ -256,6 +258,14 @@ export default function BtnHamburguesa({ onClose, navigate, lang = 'es', activeV
                 </span>
               </div>
 
+              {/* Opción de Cambiar Ciudad y Zona de Cobertura */}
+              <div className="pp-row-item" onClick={() => setShowCoberturaModal(true)}>
+                <span className="pp-row-icon">🗺️</span>
+                <span className="pp-row-text">
+                  {lang === 'es' ? 'Mi Zona y Ciudad de Cobertura' : 'My Work Area & City'}
+                </span>
+              </div>
+
               <div style={{ height: '14px' }} />
 
               {/* Puntos de Servicio Highlight */}
@@ -327,6 +337,14 @@ export default function BtnHamburguesa({ onClose, navigate, lang = 'es', activeV
           userData={userData} 
           onSave={handleSaveProfile} 
           onCancel={() => setShowEditModal(false)} 
+        />
+      )}
+
+      {showCoberturaModal && (
+        <ZonaCoberturaModal 
+          lang={lang} 
+          onClose={() => setShowCoberturaModal(false)} 
+          userData={userData} 
         />
       )}
     </div>

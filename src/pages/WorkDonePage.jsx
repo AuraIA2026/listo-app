@@ -3,6 +3,7 @@ import { collection, query, where, getDocs, updateDoc, doc, getDoc, addDoc, serv
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage'
 import { db, storage } from '../firebase'
 import listoLogo from '../assets/logo listo blanco.png'
+import ReciboDigitalModal from '../components/ReciboDigitalModal'
 
 const compressImage = (file) => new Promise((resolve, reject) => {
   const reader = new FileReader()
@@ -62,6 +63,7 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
   const [latestOrder, setLatestOrder] = useState(null)
   const [isUploading, setIsUploading] = useState(false)
   const [quejaTexto, setQuejaTexto] = useState('')
+  const [showReciboModal, setShowReciboModal] = useState(false)
   const [pendingRequests, setPendingRequests] = useState([])
 
   useEffect(() => {
@@ -564,6 +566,14 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
           <div style={s.successIcon}>✓</div>
           <h2 style={s.successTitle}>¡Trabajo registrado!</h2>
           <p style={s.successSub}>Tu evaluación fue enviada correctamente.</p>
+          
+          <button 
+            style={{ ...s.btnPrimary, background: 'linear-gradient(135deg, #10B981, #059669)', marginBottom: '10px' }} 
+            onClick={() => setShowReciboModal(true)}
+          >
+            🧾 {lang === 'es' ? 'Generar Comprobante Listo' : 'Generate Listo Receipt'}
+          </button>
+
           {!isPro && hasMoreUnrated ? (
             <button style={s.btnPrimary} onClick={resetForm}>
               Registrar otro
@@ -574,6 +584,14 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
             </button>
           )}
         </div>
+
+        {showReciboModal && (
+          <ReciboDigitalModal 
+            lang={lang} 
+            onClose={() => setShowReciboModal(false)} 
+            orderData={latestOrder || { proName, clientName: finalUserData?.name, montoFinal: formData.montoFinal || formData.montoAcordado }} 
+          />
+        )}
       </div>
     )
   }

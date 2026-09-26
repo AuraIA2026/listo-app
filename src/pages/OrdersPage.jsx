@@ -6,6 +6,7 @@ import './OrdersPage.css'
 import { ReportModal } from './ChatPage'
 import CallModal from '../components/CallModal'
 import FloatingChat from '../components/FloatingChat'
+import ReciboDigitalModal from '../components/ReciboDigitalModal'
 
 const txt = {
   es: {
@@ -547,6 +548,7 @@ export default function OrdersPage({ lang = 'es', navigate, userData, userRole }
   const [unread,         setUnread]         = useState(0)
   const [chatTarget,     setChatTarget]     = useState(null)
   const [workDoneOrder,  setWorkDoneOrder]  = useState(null)  // modal Listo Patrón
+  const [reciboModalOrder, setReciboModalOrder] = useState(null)
 
   useEffect(() => {
     if (!auth.currentUser || !userRole) { setLoading(false); return }
@@ -740,6 +742,15 @@ export default function OrdersPage({ lang = 'es', navigate, userData, userRole }
           </button>
         )
       )}
+      {o.status==='done' && (
+        <button 
+          className="oc-btn track" 
+          style={{ background:'#F8FAFC', color:'#334155', border:'1px solid #CBD5E1', marginTop:4, width:'100%', fontWeight:'bold' }}
+          onClick={()=>setReciboModalOrder(o)}
+        >
+          🧾 {lang==='es'?'Ver Comprobante / Recibo':'View Digital Receipt'}
+        </button>
+      )}
       {o.status==='done' && !o.rated && userRole!=='pro' && (o.paymentStatus==='approved'||o.paymentStatus==='pending_cash') && <button className="oc-btn review" onClick={()=>setReviewOrder(o)}>{T.review}</button>}
       {o.status==='done' && o.rated && <span className="oc-rated">⭐ {T.rated}</span>}
     </div>
@@ -880,6 +891,13 @@ export default function OrdersPage({ lang = 'es', navigate, userData, userRole }
       )}
       {chatTarget && chatTarget.uid && (
         <FloatingChat otherUid={chatTarget.uid} otherName={chatTarget.name} otherColor={chatTarget.color} otherPhone={chatTarget.phone} lang={lang} onClose={()=>setChatTarget(null)} />
+      )}
+      {reciboModalOrder && (
+        <ReciboDigitalModal
+          order={reciboModalOrder}
+          lang={lang}
+          onClose={() => setReciboModalOrder(null)}
+        />
       )}
       <div style={{ height:80 }} />
     </div>

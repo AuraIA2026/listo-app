@@ -1,0 +1,360 @@
+.recibo-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(8px);
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.recibo-modal-content {
+  background: #F8FAFC;
+  border-radius: 28px;
+  width: 100%;
+  max-width: 640px;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+  padding: 24px;
+}
+
+.recibo-close-btn {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  background: #E2E8F0;
+  border: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  font-size: 16px;
+  color: #475569;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  z-index: 10;
+}
+
+.recibo-close-btn:hover {
+  background: #CBD5E1;
+  color: #0F172A;
+}
+
+/* Documento Factura */
+.recibo-paper {
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 28px;
+  border: 1px solid #E2E8F0;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  position: relative;
+}
+
+.recibo-header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.recibo-brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.recibo-logo {
+  width: 58px;
+  height: 58px;
+  object-fit: contain;
+  border-radius: 14px;
+  background: #F26000;
+  padding: 4px;
+}
+
+.recibo-company-name {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 900;
+  color: #0F172A;
+  letter-spacing: -0.3px;
+}
+
+.recibo-company-sub {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: #64748B;
+  font-weight: 600;
+}
+
+.recibo-company-link {
+  display: inline-block;
+  margin-top: 4px;
+  font-size: 12px;
+  color: #F26000;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.recibo-invoice-badge {
+  text-align: right;
+}
+
+.badge-tag {
+  display: inline-block;
+  background: #FFF7ED;
+  color: #C2410C;
+  border: 1px solid #FFEDD5;
+  font-size: 10px;
+  font-weight: 900;
+  padding: 3px 8px;
+  border-radius: 8px;
+  letter-spacing: 0.5px;
+}
+
+.invoice-num {
+  margin: 4px 0 0;
+  font-size: 18px;
+  font-weight: 900;
+  color: #0F172A;
+}
+
+.invoice-date {
+  margin: 2px 0 0;
+  font-size: 11px;
+  color: #64748B;
+}
+
+.recibo-divider-line {
+  height: 2px;
+  background: linear-gradient(90deg, #F26000, #FF8533, #CBD5E1);
+  margin: 20px 0;
+  border-radius: 2px;
+}
+
+.recibo-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.recibo-info-block {
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 14px;
+  padding: 14px;
+}
+
+.info-block-title {
+  margin: 0 0 8px;
+  font-size: 11px;
+  font-weight: 900;
+  color: #F26000;
+  letter-spacing: 0.5px;
+}
+
+.info-line {
+  margin: 0 0 4px;
+  font-size: 13px;
+  color: #334155;
+}
+
+.info-line strong {
+  color: #0F172A;
+}
+
+/* Tabla */
+.recibo-table-wrap {
+  margin-bottom: 20px;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid #E2E8F0;
+}
+
+.recibo-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.recibo-table th {
+  background: #0F172A;
+  color: #ffffff;
+  padding: 12px 14px;
+  font-size: 11px;
+  font-weight: 800;
+  text-align: left;
+  letter-spacing: 0.5px;
+}
+
+.recibo-table td {
+  padding: 14px;
+  color: #1E293B;
+  border-top: 1px solid #E2E8F0;
+}
+
+/* Totales */
+.recibo-totals-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.recibo-guarantee-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #F0FDF4;
+  border: 1px solid #BBF7D0;
+  border-radius: 14px;
+  padding: 10px 14px;
+  max-width: 320px;
+}
+
+.recibo-guarantee-box span {
+  font-size: 24px;
+}
+
+.recibo-guarantee-box strong {
+  display: block;
+  font-size: 12px;
+  color: #166534;
+}
+
+.recibo-guarantee-box p {
+  margin: 2px 0 0;
+  font-size: 11px;
+  color: #15803D;
+}
+
+.recibo-total-box {
+  background: #FFF7ED;
+  border: 2px solid #F26000;
+  border-radius: 16px;
+  padding: 12px 18px;
+  text-align: right;
+}
+
+.total-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 900;
+  color: #C2410C;
+}
+
+.total-amount {
+  display: block;
+  font-size: 22px;
+  font-weight: 900;
+  color: #F26000;
+}
+
+/* Footer oficial */
+.recibo-footer-official {
+  border-top: 1px dashed #CBD5E1;
+  padding-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  font-size: 12px;
+  color: #64748B;
+}
+
+.footer-contact {
+  display: flex;
+  justify-content: space-between;
+}
+
+.footer-contact p {
+  margin: 0;
+}
+
+.footer-socials {
+  text-align: center;
+}
+
+.social-label {
+  display: block;
+  font-weight: 800;
+  color: #334155;
+  margin-bottom: 6px;
+}
+
+.social-icons-row {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.social-icons-row a {
+  color: #475569;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 12px;
+  background: #F1F5F9;
+  padding: 4px 10px;
+  border-radius: 10px;
+  transition: all 0.2s;
+}
+
+.social-icons-row a:hover {
+  color: #F26000;
+  background: #FFF7ED;
+}
+
+/* Actions bar */
+.recibo-actions-bar {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.recibo-btn {
+  flex: 1;
+  padding: 14px;
+  border-radius: 16px;
+  border: none;
+  font-size: 14px;
+  font-weight: 900;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.recibo-btn.print {
+  background: #1E293B;
+  color: #ffffff;
+}
+
+.recibo-btn.whatsapp {
+  background: linear-gradient(135deg, #25D366 0%, #16A34A 100%);
+  color: #ffffff;
+  box-shadow: 0 8px 20px rgba(37, 211, 102, 0.35);
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .recibo-paper, .recibo-paper * {
+    visibility: visible;
+  }
+  .recibo-paper {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    border: none;
+    box-shadow: none;
+  }
+}
