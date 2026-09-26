@@ -1278,6 +1278,11 @@ export default function HomePage({ lang, navigate, userRole }) {
         <button className="amz-nav-pill active" onClick={() => navigate('search')}>
           ⚡ Ofertas Relámpago
         </button>
+
+        {/* ── BOTÓN CÍRCULO GPS RADAR (UBICADO EN LA CINTA DEBAJO/DESPUÉS DE OFERTAS RELÁMPAGO) ── */}
+        {!isPro && (
+          <GpsRadarWidget pros={allProsToUse} navigate={navigate} lang={lang} />
+        )}
         <button className="amz-nav-pill" onClick={() => navigate('search', { catToSelect: 'mecanico' })}>
           🔧 Mecánicos
         </button>
@@ -1579,10 +1584,6 @@ export default function HomePage({ lang, navigate, userRole }) {
         </section>
       )}
 
-      {/* ── SECCIÓN: MODO RADAR GPS ("PROFESIONALES CERCA DE MÍ") ── */}
-      {!isPro && (
-        <GpsRadarWidget pros={allProsToUse} navigate={navigate} lang={lang} />
-      )}
 
       {/* ── BOTÓN / PANEL SOCIO "¡HOLA, SOCIO!" (UBICADO ARRIBA DE PROFESIONALES DESTACADOS) ── */}
       {isPro && (

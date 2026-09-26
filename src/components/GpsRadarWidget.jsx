@@ -47,7 +47,7 @@ const SAMPLE_PROS_BY_CAT = {
 }
 
 export default function GpsRadarWidget({ pros = [], navigate, lang = 'es' }) {
-  const [isExpanded, setIsExpanded] = useState(false) // Desplegado solo al pulsar el círculo
+  const [isExpanded, setIsExpanded] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedPro, setSelectedPro] = useState(null)
@@ -165,12 +165,12 @@ export default function GpsRadarWidget({ pros = [], navigate, lang = 'es' }) {
   const availablePros = getFilteredPros()
 
   return (
-    <div style={{ margin: '0 16px 20px', position: 'relative' }}>
+    <div style={{ display: 'inline-flex', alignItems: 'center', flexShrink: 0, position: 'relative' }}>
       <style>{`
-        @keyframes radarCirclePulse {
-          0% { box-shadow: 0 0 0 0 rgba(242, 96, 0, 0.7), 0 8px 20px rgba(15, 23, 42, 0.5); }
-          70% { box-shadow: 0 0 0 14px rgba(242, 96, 0, 0), 0 8px 20px rgba(15, 23, 42, 0.5); }
-          100% { box-shadow: 0 0 0 0 rgba(242, 96, 0, 0), 0 8px 20px rgba(15, 23, 42, 0.5); }
+        @keyframes radarRibbonPulse {
+          0% { box-shadow: 0 0 0 0 rgba(242, 96, 0, 0.7); }
+          70% { box-shadow: 0 0 0 10px rgba(242, 96, 0, 0); }
+          100% { box-shadow: 0 0 0 0 rgba(242, 96, 0, 0); }
         }
         @keyframes radarBeamSweep {
           from { transform: rotate(0deg); }
@@ -182,424 +182,444 @@ export default function GpsRadarWidget({ pros = [], navigate, lang = 'es' }) {
         }
       `}</style>
 
-      {/* ESTADO 1: BOTÓN DE RADAR EN FORMA DE CÍRCULO CON EFECTO RADAR PULSE */}
-      {!isExpanded && (
-        <div style={{ display: 'flex', justifyContent: 'center', margin: '10px 0' }}>
-          <button
-            onClick={() => setIsExpanded(true)}
-            title={lang === 'es' ? 'Toca para desplegar el Mapa Radar GPS' : 'Tap to expand GPS Radar Map'}
-            style={{
-              width: '74px',
-              height: '74px',
-              borderRadius: '50%',
-              background: 'linear-gradient(135deg, #0F172A 0%, #1E293B 100%)',
-              border: '2.5px solid #F26000',
-              animation: 'radarCirclePulse 2s infinite',
-              cursor: 'pointer',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              position: 'relative',
-              boxShadow: '0 8px 24px rgba(242, 96, 0, 0.35)',
-              transition: 'transform 0.2s ease',
-              outline: 'none'
-            }}
-            onMouseDown={e => e.currentTarget.style.transform = 'scale(0.92)'}
-            onMouseUp={e => e.currentTarget.style.transform = 'scale(1)'}
-          >
-            {/* Rotating Beam inside Circle */}
-            <div style={{
-              position: 'absolute',
-              width: '100%',
-              height: '100%',
-              borderRadius: '50%',
-              background: 'conic-gradient(from 0deg at 50% 50%, rgba(242, 96, 0, 0.4) 0deg, transparent 60deg, transparent 360deg)',
-              animation: 'radarBeamSweep 3s linear infinite',
-              pointerEvents: 'none'
-            }} />
+      {/* COMPACT CIRCLE BUTTON INLINE IN THE RIBBON */}
+      <button
+        onClick={() => setIsExpanded(true)}
+        title={lang === 'es' ? 'Toca para abrir Radar GPS en pantalla' : 'Tap to open GPS Radar'}
+        style={{
+          width: '42px',
+          height: '42px',
+          borderRadius: '50%',
+          background: 'linear-gradient(135deg, #0F172A 0%, #1E293B 100%)',
+          border: '2px solid #F26000',
+          animation: 'radarRibbonPulse 2s infinite',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justify: 'center',
+          position: 'relative',
+          boxShadow: '0 4px 14px rgba(242, 96, 0, 0.4)',
+          flexShrink: 0,
+          outline: 'none',
+          padding: 0
+        }}
+        onMouseDown={e => e.currentTarget.style.transform = 'scale(0.92)'}
+        onMouseUp={e => e.currentTarget.style.transform = 'scale(1)'}
+      >
+        {/* Rotating Beam inside Circle */}
+        <div style={{
+          position: 'absolute',
+          width: '100%',
+          height: '100%',
+          borderRadius: '50%',
+          background: 'conic-gradient(from 0deg at 50% 50%, rgba(242, 96, 0, 0.5) 0deg, transparent 60deg, transparent 360deg)',
+          animation: 'radarBeamSweep 3s linear infinite',
+          pointerEvents: 'none'
+        }} />
 
-            <span style={{ fontSize: '26px', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))', zIndex: 2 }}>
-              🗺️
-            </span>
-            <span style={{ fontSize: '9px', fontWeight: '900', color: '#FF7A1A', letterSpacing: '0.2px', zIndex: 2, marginTop: '1px' }}>
-              RADAR GPS
-            </span>
-            <span style={{
-              position: 'absolute',
-              top: '-3px',
-              right: '-3px',
-              background: '#22C55E',
-              color: '#FFFFFF',
-              fontSize: '9px',
-              fontWeight: '900',
-              borderRadius: '10px',
-              padding: '1px 6px',
-              border: '1.5px solid #0F172A',
-              boxShadow: '0 2px 6px rgba(0,0,0,0.4)',
-              zIndex: 3
-            }}>
-              {availablePros.length}
-            </span>
-          </button>
-        </div>
-      )}
+        <span style={{ fontSize: '19px', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))', zIndex: 2 }}>
+          🗺️
+        </span>
 
-      {/* ESTADO 2: VENTANA COMPLETA DESPLEGADA (CON TIMER DE 3 SEGUNDOS DE INACTIVIDAD) */}
+        <span style={{
+          position: 'absolute',
+          top: '-3px',
+          right: '-4px',
+          background: '#22C55E',
+          color: '#FFFFFF',
+          fontSize: '8.5px',
+          fontWeight: '900',
+          borderRadius: '10px',
+          padding: '1px 5px',
+          border: '1px solid #0F172A',
+          boxShadow: '0 2px 6px rgba(0,0,0,0.4)',
+          zIndex: 3
+        }}>
+          {availablePros.length}
+        </span>
+      </button>
+
+      {/* OVERLAY MODAL / EXPANDED RADAR WINDOW (FULL DISPLAY WITH 3s AUTO-COLLAPSE) */}
       {isExpanded && (
         <div
-          onMouseMove={resetInactivityTimer}
-          onTouchStart={resetInactivityTimer}
-          onClick={resetInactivityTimer}
+          onClick={() => setIsExpanded(false)}
           style={{
-            background: 'linear-gradient(145deg, #0F172A 0%, #1E293B 100%)',
-            borderRadius: '24px',
-            padding: '16px',
-            boxShadow: '0 16px 40px rgba(15, 23, 42, 0.6)',
-            border: '2px solid #F26000',
-            position: 'relative',
-            overflow: 'hidden',
-            color: '#FFFFFF',
-            animation: 'pwaBannerSlideUp 0.35 cubic-bezier(0.175, 0.885, 0.32, 1.275)'
-          }}
-        >
-          {/* Header Window with Inactivity Timer Badge & Close Button */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <div style={{
-                width: '34px',
-                height: '34px',
-                borderRadius: '50%',
-                background: 'linear-gradient(135deg, #F26000, #FF7A1A)',
-                display: 'flex',
-                alignItems: 'center',
-                justify: 'center',
-                fontSize: '18px',
-                boxShadow: '0 4px 12px rgba(242, 96, 0, 0.4)'
-              }}>
-                🗺️
-              </div>
-              <div>
-                <h3 style={{ margin: 0, fontSize: '15px', fontWeight: '900', color: '#FFFFFF' }}>
-                  {lang === 'es' ? 'Modo Radar GPS' : 'GPS Radar Mode'}
-                </h3>
-                <p style={{ margin: '1px 0 0', fontSize: '10.5px', color: '#94A3B8', fontWeight: '600' }}>
-                  {lang === 'es' ? `Cierra solo si no interactúas (${countdown}s)` : `Auto-collapses in ${countdown}s`}
-                </p>
-              </div>
-            </div>
-
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <button
-                onClick={handleScanGps}
-                disabled={isScanning}
-                style={{
-                  background: 'linear-gradient(135deg, #F26000, #FF7A1A)',
-                  color: '#FFFFFF',
-                  border: 'none',
-                  borderRadius: '14px',
-                  padding: '5px 10px',
-                  fontSize: '11px',
-                  fontWeight: '900',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px'
-                }}
-              >
-                <span style={{ fontSize: '12px', animation: isScanning ? 'spin 1s linear infinite' : 'none' }}>
-                  {isScanning ? '🔄' : '🎯'}
-                </span>
-                {isScanning ? '...' : (lang === 'es' ? 'Escanear' : 'Scan')}
-              </button>
-
-              <button
-                onClick={() => setIsExpanded(false)}
-                style={{
-                  background: 'rgba(255, 255, 255, 0.1)',
-                  color: '#FF9E66',
-                  border: '1px solid rgba(242, 96, 0, 0.4)',
-                  borderRadius: '50%',
-                  width: '28px',
-                  height: '28px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  cursor: 'pointer',
-                  fontWeight: 'bold',
-                  fontSize: '13px'
-                }}
-                title={lang === 'es' ? 'Convertir en círculo' : 'Minimize to circle'}
-              >
-                ✕
-              </button>
-            </div>
-          </div>
-
-          {/* Buscador de especialidad */}
-          <div style={{ marginBottom: '10px', position: 'relative' }}>
-            <input
-              type="text"
-              placeholder={lang === 'es' ? '🔍 Buscar por especialidad (ej. Plomero, Cerrajero...)' : '🔍 Search service...'}
-              value={searchQuery}
-              onChange={(e) => {
-                resetInactivityTimer()
-                setSearchQuery(e.target.value)
-              }}
-              style={{
-                width: '100%',
-                padding: '8px 32px 8px 12px',
-                borderRadius: '12px',
-                border: '1.5px solid rgba(242, 96, 0, 0.4)',
-                background: 'rgba(15, 23, 42, 0.85)',
-                color: '#FFFFFF',
-                fontSize: '11.5px',
-                fontWeight: '700',
-                outline: 'none',
-                boxSizing: 'border-box'
-              }}
-            />
-            {searchQuery && (
-              <button
-                onClick={() => {
-                  resetInactivityTimer()
-                  setSearchQuery('')
-                }}
-                style={{
-                  position: 'absolute',
-                  right: '10px',
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  background: 'none',
-                  border: 'none',
-                  color: '#94A3B8',
-                  fontSize: '13px',
-                  cursor: 'pointer'
-                }}
-              >
-                ✕
-              </button>
-            )}
-          </div>
-
-          {/* Chips de filtro por categoría */}
-          <div style={{
-            display: 'flex',
-            gap: '5px',
-            overflowX: 'auto',
-            paddingBottom: '8px',
-            marginBottom: '10px',
-            scrollbarWidth: 'none'
-          }}>
-            {CATEGORY_FILTERS.map(cat => {
-              const isSelected = selectedCategory === cat.id
-              return (
-                <button
-                  key={cat.id}
-                  onClick={() => {
-                    resetInactivityTimer()
-                    setSelectedCategory(cat.id)
-                    setSearchQuery('')
-                  }}
-                  style={{
-                    whiteSpace: 'nowrap',
-                    padding: '4px 10px',
-                    borderRadius: '14px',
-                    fontSize: '10.5px',
-                    fontWeight: isSelected ? '900' : '700',
-                    border: isSelected ? '1.5px solid #F26000' : '1px solid rgba(255, 255, 255, 0.15)',
-                    background: isSelected ? 'linear-gradient(135deg, #F26000, #FF7A1A)' : 'rgba(30, 41, 59, 0.8)',
-                    color: isSelected ? '#FFFFFF' : '#CBD5E1',
-                    cursor: 'pointer',
-                    flexShrink: 0
-                  }}
-                >
-                  {lang === 'es' ? cat.labelEs : cat.labelEn}
-                </button>
-              )
-            })}
-          </div>
-
-          {/* Contenedor del Mapa Radar Dynamic */}
-          <div style={{
-            position: 'relative',
-            width: '100%',
-            height: '230px',
-            borderRadius: '18px',
-            background: 'radial-gradient(circle, #1E293B 0%, #090D16 100%)',
-            border: '1px solid rgba(242, 96, 0, 0.25)',
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(0, 0, 0, 0.65)',
+            backdropFilter: 'blur(6px)',
+            zIndex: 99999,
             display: 'flex',
             alignItems: 'center',
             justify: 'center',
-            overflow: 'hidden',
-            boxShadow: 'inset 0 0 30px rgba(0,0,0,0.8)'
-          }}>
-            {/* Concentric Radar Distance Rings */}
-            <div style={{ position: 'absolute', width: '200px', height: '200px', borderRadius: '50%', border: '1px dashed rgba(242, 96, 0, 0.25)' }} />
-            <div style={{ position: 'absolute', width: '140px', height: '140px', borderRadius: '50%', border: '1px solid rgba(242, 96, 0, 0.35)' }} />
-            <div style={{ position: 'absolute', width: '80px', height: '80px', borderRadius: '50%', border: '1px dashed rgba(242, 96, 0, 0.45)' }} />
-
-            {/* Crosshair Axes Lines */}
-            <div style={{ position: 'absolute', width: '100%', height: '1px', background: 'rgba(242, 96, 0, 0.2)' }} />
-            <div style={{ position: 'absolute', height: '100%', width: '1px', background: 'rgba(242, 96, 0, 0.2)' }} />
-
-            {/* Radar Scanner Rotating Beam */}
-            <div style={{
-              position: 'absolute',
-              width: '230px',
-              height: '230px',
-              borderRadius: '50%',
-              background: 'conic-gradient(from 0deg at 50% 50%, rgba(242, 96, 0, 0.35) 0deg, rgba(242, 96, 0, 0) 60deg, transparent 360deg)',
-              animation: 'radarBeamSweep 4s linear infinite',
-              pointerEvents: 'none'
-            }} />
-
-            {/* Center User Pin */}
-            <div style={{
-              position: 'absolute',
-              zIndex: 10,
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              pointerEvents: 'none'
-            }}>
-              <div style={{
-                width: '14px',
-                height: '14px',
-                borderRadius: '50%',
-                background: '#F26000',
-                border: '2.5px solid #FFFFFF',
-                boxShadow: '0 0 14px #F26000'
-              }} />
-              <span style={{ fontSize: '8.5px', fontWeight: 900, color: '#FF7A1A', background: 'rgba(15, 23, 42, 0.9)', padding: '1px 5px', borderRadius: '6px', marginTop: '2px' }}>
-                TÚ
-              </span>
-            </div>
-
-            {/* Distance Markers */}
-            <span style={{ position: 'absolute', top: '16px', right: '20px', fontSize: '8.5px', color: '#64748B', fontWeight: 800 }}>5 km</span>
-            <span style={{ position: 'absolute', top: '44px', right: '48px', fontSize: '8.5px', color: '#64748B', fontWeight: '800' }}>3 km</span>
-            <span style={{ position: 'absolute', top: '72px', right: '76px', fontSize: '8.5px', color: '#64748B', fontWeight: '800' }}>1 km</span>
-
-            {/* Professional Radar Pins */}
-            {availablePros.map((pro, index) => {
-              const angleDeg = pro.angle !== undefined ? pro.angle : (index * 60 + 30)
-              const radRatio = pro.radiusRatio !== undefined ? pro.radiusRatio : (0.35 + (index * 0.15))
-              const distPx = radRatio * 100
-
-              const angleRad = (angleDeg * Math.PI) / 180
-              const x = Math.cos(angleRad) * distPx
-              const y = Math.sin(angleRad) * distPx
-
-              const isSelected = selectedPro?.id === pro.id
-
-              return (
-                <div
-                  key={pro.id || index}
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    resetInactivityTimer()
-                    setSelectedPro(pro)
-                  }}
-                  style={{
-                    position: 'absolute',
-                    transform: `translate(${x}px, ${y}px)`,
-                    cursor: 'pointer',
-                    zIndex: isSelected ? 30 : 20,
-                    transition: 'all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)'
-                  }}
-                  title={`${pro.name || pro.nameEs} • ${pro.category || pro.specEs}`}
-                >
-                  <div style={{
-                    width: isSelected ? '44px' : '34px',
-                    height: isSelected ? '44px' : '34px',
-                    borderRadius: '50%',
-                    border: isSelected ? '3px solid #F26000' : '2px solid #22C55E',
-                    overflow: 'hidden',
-                    background: '#1E293B',
-                    boxShadow: isSelected ? '0 0 16px rgba(242, 96, 0, 0.9)' : '0 4px 10px rgba(0,0,0,0.5)',
-                    animation: isSelected ? 'none' : 'proBlipPulse 2.5s infinite'
-                  }}>
-                    <img
-                      src={pro.photoURL || pro.img || 'https://randomuser.me/api/portraits/men/32.jpg'}
-                      alt={pro.name || pro.nameEs}
-                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                    />
-                  </div>
-
-                  <span style={{
-                    position: 'absolute',
-                    bottom: '-11px',
-                    left: '50%',
-                    transform: 'translateX(-50%)',
-                    fontSize: '8px',
-                    fontWeight: 900,
-                    background: isSelected ? '#F26000' : 'rgba(15, 23, 42, 0.95)',
-                    color: '#FFFFFF',
-                    padding: '1px 4px',
-                    borderRadius: '5px',
-                    whiteSpace: 'nowrap',
-                    border: '1px solid rgba(255,255,255,0.2)'
-                  }}>
-                    {pro.dist || `${(1.0 + index * 0.6).toFixed(1)} km`}
-                  </span>
+            padding: '16px'
+          }}
+        >
+          <div
+            onClick={(e) => {
+              e.stopPropagation()
+              resetInactivityTimer()
+            }}
+            onMouseMove={resetInactivityTimer}
+            onTouchStart={resetInactivityTimer}
+            style={{
+              width: '100%',
+              maxWidth: '420px',
+              background: 'linear-gradient(145deg, #0F172A 0%, #1E293B 100%)',
+              borderRadius: '24px',
+              padding: '18px 16px',
+              boxShadow: '0 20px 50px rgba(0, 0, 0, 0.8)',
+              border: '2px solid #F26000',
+              position: 'relative',
+              overflow: 'hidden',
+              color: '#FFFFFF',
+              animation: 'pwaBannerSlideUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
+            }}
+          >
+            {/* Header Window with Inactivity Timer Badge & Close Button */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div style={{
+                  width: '34px',
+                  height: '34px',
+                  borderRadius: '50%',
+                  background: 'linear-gradient(135deg, #F26000, #FF7A1A)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justify: 'center',
+                  fontSize: '18px',
+                  boxShadow: '0 4px 12px rgba(242, 96, 0, 0.4)'
+                }}>
+                  🗺️
                 </div>
-              )
-            })}
-          </div>
-
-          {/* Tarjeta de profesional seleccionado */}
-          {selectedPro && (
-            <div style={{
-              marginTop: '10px',
-              background: 'rgba(30, 41, 59, 0.95)',
-              backdropFilter: 'blur(8px)',
-              borderRadius: '14px',
-              padding: '10px 12px',
-              border: '1.5px solid #F26000',
-              display: 'flex',
-              alignItems: 'center',
-              justify: 'space-between',
-              gap: '10px'
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1, minWidth: 0 }}>
-                <img
-                  src={selectedPro.photoURL || selectedPro.img || 'https://randomuser.me/api/portraits/men/32.jpg'}
-                  alt={selectedPro.name || selectedPro.nameEs}
-                  style={{ width: '38px', height: '38px', borderRadius: '50%', objectFit: 'cover', border: '2px solid #F26000', flexShrink: 0 }}
-                />
-                <div style={{ minWidth: 0 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <h4 style={{ margin: 0, fontSize: '13px', fontWeight: 900, color: '#FFFFFF', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                      {selectedPro.name || selectedPro.nameEs}
-                    </h4>
-                    <span style={{ fontSize: '9.5px', color: '#FFD700', fontWeight: 900 }}>⭐ 5.0</span>
-                  </div>
-                  <p style={{ margin: '1px 0 0', fontSize: '10.5px', color: '#F26000', fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    ⚡ {selectedPro.category || selectedPro.specEs || 'Profesional Listo'}
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '15px', fontWeight: '900', color: '#FFFFFF' }}>
+                    {lang === 'es' ? 'Modo Radar GPS' : 'GPS Radar Mode'}
+                  </h3>
+                  <p style={{ margin: '1px 0 0', fontSize: '10.5px', color: '#94A3B8', fontWeight: '600' }}>
+                    {lang === 'es' ? `Cierra sin interacción (${countdown}s)` : `Auto-collapses in ${countdown}s`}
                   </p>
                 </div>
               </div>
 
-              <div style={{ display: 'flex', gap: '6px', flexShrink: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <button
-                  onClick={() => navigate('booking', { professional: selectedPro })}
+                  onClick={handleScanGps}
+                  disabled={isScanning}
                   style={{
                     background: 'linear-gradient(135deg, #F26000, #FF7A1A)',
                     color: '#FFFFFF',
                     border: 'none',
-                    borderRadius: '12px',
+                    borderRadius: '14px',
                     padding: '5px 10px',
-                    fontSize: '10.5px',
-                    fontWeight: 900,
-                    cursor: 'pointer'
+                    fontSize: '11px',
+                    fontWeight: '900',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px'
                   }}
                 >
-                  ⚡ Contactar
+                  <span style={{ fontSize: '12px', animation: isScanning ? 'spin 1s linear infinite' : 'none' }}>
+                    {isScanning ? '🔄' : '🎯'}
+                  </span>
+                  {isScanning ? '...' : (lang === 'es' ? 'Escanear' : 'Scan')}
+                </button>
+
+                <button
+                  onClick={() => setIsExpanded(false)}
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.1)',
+                    color: '#FF9E66',
+                    border: '1px solid rgba(242, 96, 0, 0.4)',
+                    borderRadius: '50%',
+                    width: '28px',
+                    height: '28px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justify: 'center',
+                    cursor: 'pointer',
+                    fontWeight: 'bold',
+                    fontSize: '13px'
+                  }}
+                  title={lang === 'es' ? 'Cerrar Radar' : 'Close Radar'}
+                >
+                  ✕
                 </button>
               </div>
             </div>
-          )}
+
+            {/* Buscador por especialidad */}
+            <div style={{ marginBottom: '10px', position: 'relative' }}>
+              <input
+                type="text"
+                placeholder={lang === 'es' ? '🔍 Buscar por especialidad (ej. Plomero, Cerrajero...)' : '🔍 Search service...'}
+                value={searchQuery}
+                onChange={(e) => {
+                  resetInactivityTimer()
+                  setSearchQuery(e.target.value)
+                }}
+                style={{
+                  width: '100%',
+                  padding: '8px 32px 8px 12px',
+                  borderRadius: '12px',
+                  border: '1.5px solid rgba(242, 96, 0, 0.4)',
+                  background: 'rgba(15, 23, 42, 0.85)',
+                  color: '#FFFFFF',
+                  fontSize: '11.5px',
+                  fontWeight: '700',
+                  outline: 'none',
+                  boxSizing: 'border-box'
+                }}
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => {
+                    resetInactivityTimer()
+                    setSearchQuery('')
+                  }}
+                  style={{
+                    position: 'absolute',
+                    right: '10px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    background: 'none',
+                    border: 'none',
+                    color: '#94A3B8',
+                    fontSize: '13px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+
+            {/* Chips de filtro por categoría */}
+            <div style={{
+              display: 'flex',
+              gap: '5px',
+              overflowX: 'auto',
+              paddingBottom: '8px',
+              marginBottom: '10px',
+              scrollbarWidth: 'none'
+            }}>
+              {CATEGORY_FILTERS.map(cat => {
+                const isSelected = selectedCategory === cat.id
+                return (
+                  <button
+                    key={cat.id}
+                    onClick={() => {
+                      resetInactivityTimer()
+                      setSelectedCategory(cat.id)
+                      setSearchQuery('')
+                    }}
+                    style={{
+                      whiteSpace: 'nowrap',
+                      padding: '4px 10px',
+                      borderRadius: '14px',
+                      fontSize: '10.5px',
+                      fontWeight: isSelected ? '900' : '700',
+                      border: isSelected ? '1.5px solid #F26000' : '1px solid rgba(255, 255, 255, 0.15)',
+                      background: isSelected ? 'linear-gradient(135deg, #F26000, #FF7A1A)' : 'rgba(30, 41, 59, 0.8)',
+                      color: isSelected ? '#FFFFFF' : '#CBD5E1',
+                      cursor: 'pointer',
+                      flexShrink: 0
+                    }}
+                  >
+                    {lang === 'es' ? cat.labelEs : cat.labelEn}
+                  </button>
+                )
+              })}
+            </div>
+
+            {/* Contenedor del Mapa Radar Dynamic */}
+            <div style={{
+              position: 'relative',
+              width: '100%',
+              height: '230px',
+              borderRadius: '18px',
+              background: 'radial-gradient(circle, #1E293B 0%, #090D16 100%)',
+              border: '1px solid rgba(242, 96, 0, 0.25)',
+              display: 'flex',
+              alignItems: 'center',
+              justify: 'center',
+              overflow: 'hidden',
+              boxShadow: 'inset 0 0 30px rgba(0,0,0,0.8)'
+            }}>
+              {/* Concentric Radar Distance Rings */}
+              <div style={{ position: 'absolute', width: '200px', height: '200px', borderRadius: '50%', border: '1px dashed rgba(242, 96, 0, 0.25)' }} />
+              <div style={{ position: 'absolute', width: '140px', height: '140px', borderRadius: '50%', border: '1px solid rgba(242, 96, 0, 0.35)' }} />
+              <div style={{ position: 'absolute', width: '80px', height: '80px', borderRadius: '50%', border: '1px dashed rgba(242, 96, 0, 0.45)' }} />
+
+              {/* Crosshair Axes Lines */}
+              <div style={{ position: 'absolute', width: '100%', height: '1px', background: 'rgba(242, 96, 0, 0.2)' }} />
+              <div style={{ position: 'absolute', height: '100%', width: '1px', background: 'rgba(242, 96, 0, 0.2)' }} />
+
+              {/* Radar Scanner Rotating Beam */}
+              <div style={{
+                position: 'absolute',
+                width: '230px',
+                height: '230px',
+                borderRadius: '50%',
+                background: 'conic-gradient(from 0deg at 50% 50%, rgba(242, 96, 0, 0.35) 0deg, rgba(242, 96, 0, 0) 60deg, transparent 360deg)',
+                animation: 'radarBeamSweep 4s linear infinite',
+                pointerEvents: 'none'
+              }} />
+
+              {/* Center User Pin */}
+              <div style={{
+                position: 'absolute',
+                zIndex: 10,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                pointerEvents: 'none'
+              }}>
+                <div style={{
+                  width: '14px',
+                  height: '14px',
+                  borderRadius: '50%',
+                  background: '#F26000',
+                  border: '2.5px solid #FFFFFF',
+                  boxShadow: '0 0 14px #F26000'
+                }} />
+                <span style={{ fontSize: '8.5px', fontWeight: 900, color: '#FF7A1A', background: 'rgba(15, 23, 42, 0.9)', padding: '1px 5px', borderRadius: '6px', marginTop: '2px' }}>
+                  TÚ
+                </span>
+              </div>
+
+              {/* Distance Markers */}
+              <span style={{ position: 'absolute', top: '16px', right: '20px', fontSize: '8.5px', color: '#64748B', fontWeight: 800 }}>5 km</span>
+              <span style={{ position: 'absolute', top: '44px', right: '48px', fontSize: '8.5px', color: '#64748B', fontWeight: '800' }}>3 km</span>
+              <span style={{ position: 'absolute', top: '72px', right: '76px', fontSize: '8.5px', color: '#64748B', fontWeight: '800' }}>1 km</span>
+
+              {/* Professional Radar Pins */}
+              {availablePros.map((pro, index) => {
+                const angleDeg = pro.angle !== undefined ? pro.angle : (index * 60 + 30)
+                const radRatio = pro.radiusRatio !== undefined ? pro.radiusRatio : (0.35 + (index * 0.15))
+                const distPx = radRatio * 100
+
+                const angleRad = (angleDeg * Math.PI) / 180
+                const x = Math.cos(angleRad) * distPx
+                const y = Math.sin(angleRad) * distPx
+
+                const isSelected = selectedPro?.id === pro.id
+
+                return (
+                  <div
+                    key={pro.id || index}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      resetInactivityTimer()
+                      setSelectedPro(pro)
+                    }}
+                    style={{
+                      position: 'absolute',
+                      transform: `translate(${x}px, ${y}px)`,
+                      cursor: 'pointer',
+                      zIndex: isSelected ? 30 : 20,
+                      transition: 'all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)'
+                    }}
+                    title={`${pro.name || pro.nameEs} • ${pro.category || pro.specEs}`}
+                  >
+                    <div style={{
+                      width: isSelected ? '44px' : '34px',
+                      height: isSelected ? '44px' : '34px',
+                      borderRadius: '50%',
+                      border: isSelected ? '3px solid #F26000' : '2px solid #22C55E',
+                      overflow: 'hidden',
+                      background: '#1E293B',
+                      boxShadow: isSelected ? '0 0 16px rgba(242, 96, 0, 0.9)' : '0 4px 10px rgba(0,0,0,0.5)',
+                      animation: isSelected ? 'none' : 'proBlipPulse 2.5s infinite'
+                    }}>
+                      <img
+                        src={pro.photoURL || pro.img || 'https://randomuser.me/api/portraits/men/32.jpg'}
+                        alt={pro.name || pro.nameEs}
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                      />
+                    </div>
+
+                    <span style={{
+                      position: 'absolute',
+                      bottom: '-11px',
+                      left: '50%',
+                      transform: 'translateX(-50%)',
+                      fontSize: '8px',
+                      fontWeight: 900,
+                      background: isSelected ? '#F26000' : 'rgba(15, 23, 42, 0.95)',
+                      color: '#FFFFFF',
+                      padding: '1px 4px',
+                      borderRadius: '5px',
+                      whiteSpace: 'nowrap',
+                      border: '1px solid rgba(255,255,255,0.2)'
+                    }}>
+                      {pro.dist || `${(1.0 + index * 0.6).toFixed(1)} km`}
+                    </span>
+                  </div>
+                )
+              })}
+            </div>
+
+            {/* Tarjeta de profesional seleccionado */}
+            {selectedPro && (
+              <div style={{
+                marginTop: '10px',
+                background: 'rgba(30, 41, 59, 0.95)',
+                backdropFilter: 'blur(8px)',
+                borderRadius: '14px',
+                padding: '10px 12px',
+                border: '1.5px solid #F26000',
+                display: 'flex',
+                alignItems: 'center',
+                justify: 'space-between',
+                gap: '10px'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1, minWidth: 0 }}>
+                  <img
+                    src={selectedPro.photoURL || selectedPro.img || 'https://randomuser.me/api/portraits/men/32.jpg'}
+                    alt={selectedPro.name || selectedPro.nameEs}
+                    style={{ width: '38px', height: '38px', borderRadius: '50%', objectFit: 'cover', border: '2px solid #F26000', flexShrink: 0 }}
+                  />
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <h4 style={{ margin: 0, fontSize: '13px', fontWeight: 900, color: '#FFFFFF', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {selectedPro.name || selectedPro.nameEs}
+                      </h4>
+                      <span style={{ fontSize: '9.5px', color: '#FFD700', fontWeight: 900 }}>⭐ 5.0</span>
+                    </div>
+                    <p style={{ margin: '1px 0 0', fontSize: '10.5px', color: '#F26000', fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      ⚡ {selectedPro.category || selectedPro.specEs || 'Profesional Listo'}
+                    </p>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: '6px', flexShrink: 0 }}>
+                  <button
+                    onClick={() => {
+                      setIsExpanded(false)
+                      navigate('booking', { professional: selectedPro })
+                    }}
+                    style={{
+                      background: 'linear-gradient(135deg, #F26000, #FF7A1A)',
+                      color: '#FFFFFF',
+                      border: 'none',
+                      borderRadius: '12px',
+                      padding: '5px 10px',
+                      fontSize: '10.5px',
+                      fontWeight: 900,
+                      cursor: 'pointer'
+                    }}
+                  >
+                    ⚡ Contactar
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>
