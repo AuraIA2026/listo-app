@@ -566,6 +566,7 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
   const [showPlanModal,     setShowPlanModal]     = useState(false)
   const [showEstimadorModal, setShowEstimadorModal] = useState(false)
   const [showSolicitudExpress, setShowSolicitudExpress] = useState(false)
+  const [showCalcModal,     setShowCalcModal]     = useState(false)
   const [viewMode,           setViewMode]          = useState('list') // 'list' | 'map'
   
   // Hook para historias de 24h activas en tiempo real
