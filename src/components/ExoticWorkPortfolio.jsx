@@ -1,9 +1,18 @@
 import { useState } from 'react'
 import './ExoticWorkPortfolio.css'
 
-export default function ExoticWorkPortfolio({ lang = 'es', photos = [], proName = '', proCategory = '', onHireClick }) {
+export default function ExoticWorkPortfolio({ lang = 'es', photos = [], proName = '', proCategory = '', onHireClick, isOwnProfile = false, onUploadPhoto = null }) {
   const [activeFilter, setActiveFilter] = useState('all')
   const [selectedWork, setSelectedWork] = useState(null)
+
+  const handleUploadTrigger = () => {
+    const el = document.getElementById('pro-work-upload')
+    if (el) {
+      el.click()
+    } else if (onUploadPhoto) {
+      onUploadPhoto()
+    }
+  }
 
   // Opciones de demostración enriquecidas si el profesional aún tiene pocas fotos
   const demoWorks = [
@@ -106,6 +115,12 @@ export default function ExoticWorkPortfolio({ lang = 'es', photos = [], proName 
               : 'Explore real job executions with dates, locations, and technical specifications.'}
           </p>
         </div>
+
+        {isOwnProfile && (
+          <button className="exotic-upload-btn" onClick={handleUploadTrigger}>
+            <span>➕</span> {lang === 'es' ? 'Agregar Trabajo al Álbum' : 'Add Work to Album'}
+          </button>
+        )}
       </div>
 
       {/* FILTROS RÁPIDOS ELEGANTES */}
@@ -138,6 +153,18 @@ export default function ExoticWorkPortfolio({ lang = 'es', photos = [], proName 
 
       {/* MASONRY / GRID DE FOTOS EXÓTICAS */}
       <div className="exotic-grid">
+        {isOwnProfile && (
+          <div className="exotic-card upload-card" onClick={handleUploadTrigger}>
+            <div className="upload-card-inner">
+              <span className="upload-big-icon">📸➕</span>
+              <h4>{lang === 'es' ? 'Subir Nuevo Trabajo' : 'Upload New Work'}</h4>
+              <p>{lang === 'es' ? 'Añade fotos de tus trabajos realizados con fecha y especificaciones para ganar más contrataciones.' : 'Add photos of completed jobs to get more clients.'}</p>
+              <button className="btn-upload-action" type="button">
+                ➕ {lang === 'es' ? 'Seleccionar Fotos' : 'Select Photos'}
+              </button>
+            </div>
+          </div>
+        )}
         {filteredWorks.map((work) => (
           <div 
             key={work.id} 

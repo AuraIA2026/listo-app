@@ -169,6 +169,8 @@ function PhotoGrid({ photos, lang, isOwnProfile, onUploadPhoto, onDeletePhoto, h
         proName={proName}
         proCategory={proCategory}
         onHireClick={onHireClick}
+        isOwnProfile={isOwnProfile}
+        onUploadPhoto={onUploadPhoto}
       />
 
       <div className="photos-grid-title-wrap">
