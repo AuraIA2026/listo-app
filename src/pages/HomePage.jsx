@@ -1017,30 +1017,6 @@ export default function HomePage({ lang, navigate, userRole }) {
                 style={{ flex: 1, border: 'none', background: 'transparent', height: '100%', outline: 'none', fontSize: '15px', fontWeight: '600', color: '#1a1a2e', padding: '16px 0', zIndex: 2 }}
               />
               
-              {/* Botón de Cámara Escáner Estilo Amazon */}
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  alert(lang === 'es' ? '📷 Escáner de foto / QR activado' : '📷 Photo / QR Scanner activated');
-                }}
-                title="Búsqueda por Foto / QR"
-                style={{
-                  background: 'rgba(0,0,0,0.05)',
-                  border: 'none',
-                  borderRadius: '50%',
-                  width: '34px',
-                  height: '34px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  cursor: 'pointer',
-                  marginRight: '6px',
-                  zIndex: 3
-                }}
-              >
-                <span style={{ fontSize: '16px' }}>📷</span>
-              </button>
-
               {/* Botón Icono Estratégico ⚡ Cotización Flash */}
               <button
                 onClick={(e) => {
