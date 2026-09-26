@@ -201,7 +201,7 @@ function PhotoGrid({ photos, lang, isOwnProfile, onUploadPhoto, onDeletePhoto, h
           return (
             <div key={photoId} className="photo-thumb-wrapper">
               <button className="photo-thumb" onClick={() => setLightbox({ url: photoUrl, caption })}>
-                <img src={photoUrl} alt={caption} />
+                <img src={photoUrl} alt={caption} loading="lazy" decoding="async" />
                 <div className="photo-overlay"><span>{caption}</span></div>
               </button>
               {isOwnProfile && !isMockPhoto && (

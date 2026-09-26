@@ -789,15 +789,29 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
       
       let matchPill = true
       if (quickFilter === 'available') matchPill = p.available === true
-      if (quickFilter === 'topRated') matchPill = Number(p.rating || 0) >= 4.8
+      if (quickFilter === 'topRated' || quickFilter === 'stars45') matchPill = Number(p.rating || 0) >= 4.5
       if (quickFilter === 'premium') matchPill = (p.currentPlan || '').toLowerCase().includes('vip') || (p.currentPlan || '').toLowerCase().includes('platinum') || (p.currentPlan || '').toLowerCase().includes('elite')
 
       return matchCat && matchSearch && matchPill && matchProvince
     })
     .sort((a, b) => {
-      if (sortBy === 'topRated') return b.rating - a.rating
-      if (sortBy === 'nearest')  return a.location.localeCompare(b.location)
-      return 0
+      if (quickFilter === 'mostHired' || sortBy === 'mostHired') {
+        const jobsA = (a.contractsUsed || 0) + (a.reviews || 0)
+        const jobsB = (b.contractsUsed || 0) + (b.reviews || 0)
+        return jobsB - jobsA
+      }
+      if (quickFilter === 'stars45' || quickFilter === 'topRated' || sortBy === 'topRated') {
+        return (b.rating || 0) - (a.rating || 0)
+      }
+      if (quickFilter === 'nearest' || sortBy === 'nearest') {
+        if (activeProvince !== 'all') {
+          const matchA = a.location.toLowerCase().includes(activeProvince.toLowerCase()) ? 1 : 0
+          const matchB = b.location.toLowerCase().includes(activeProvince.toLowerCase()) ? 1 : 0
+          if (matchA !== matchB) return matchB - matchA
+        }
+        return a.location.localeCompare(b.location)
+      }
+      return (b.rating || 0) - (a.rating || 0)
     })
 
   const vipProsList = professionals
@@ -866,11 +880,17 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
         <button className={`pill-btn ${quickFilter === 'all' ? 'active' : ''}`} onClick={() => setQuickFilter('all')}>
           🌐 {lang === 'es' ? 'Todos' : 'All'}
         </button>
+        <button className={`pill-btn ${quickFilter === 'stars45' ? 'active' : ''}`} onClick={() => setQuickFilter('stars45')}>
+          🌟 {lang === 'es' ? '4.5+ Estrellas' : '4.5+ Stars'}
+        </button>
+        <button className={`pill-btn ${quickFilter === 'mostHired' ? 'active' : ''}`} onClick={() => setQuickFilter('mostHired')}>
+          🔥 {lang === 'es' ? 'Más contratados' : 'Most hired'}
+        </button>
+        <button className={`pill-btn ${quickFilter === 'nearest' ? 'active' : ''}`} onClick={() => setQuickFilter('nearest')}>
+          📍 {lang === 'es' ? 'Más cercanos' : 'Nearest'}
+        </button>
         <button className={`pill-btn ${quickFilter === 'available' ? 'active' : ''}`} onClick={() => setQuickFilter('available')}>
           ⚡ {lang === 'es' ? 'Disponibles' : 'Available'}
-        </button>
-        <button className={`pill-btn ${quickFilter === 'topRated' ? 'active' : ''}`} onClick={() => setQuickFilter('topRated')}>
-          ⭐ {lang === 'es' ? 'Mejores' : 'Top Rated'}
         </button>
         <button className={`pill-btn ${quickFilter === 'premium' ? 'active' : ''}`} onClick={() => setQuickFilter('premium')}>
           💎 {lang === 'es' ? 'Premium' : 'Premium'}
@@ -1011,7 +1031,7 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
                   </div>}
                   
                   {pro.photoURL
-                    ? <img src={pro.photoURL} alt={pro.name} className="premium-photo" />
+                    ? <img src={pro.photoURL} alt={pro.name} className="premium-photo" loading="lazy" decoding="async" />
                     : <div className="premium-avatar" style={{ background: avatarColors[(Array.from(pro.id).reduce((acc, char) => acc + char.charCodeAt(0), 0)) % avatarColors.length] }}>{pro.avatar}</div>
                   }
                   {pro.rating && pro.rating > 0 && pro.reviews > 0 && (
@@ -1087,7 +1107,7 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
             <div key={pro.id} className={`pro-card ${isTopRated ? 'top-rated' : ''}`} style={{ animationDelay:`${i * 0.06}s` }}>
               <div className="card-photo">
                 {pro.photoURL
-                  ? <img src={pro.photoURL} alt={pro.name} className="pro-photo" />
+                  ? <img src={pro.photoURL} alt={pro.name} className="pro-photo" loading="lazy" decoding="async" />
                   : <div className="pro-avatar-big" style={{ background: avatarColors[(Array.from(pro.id).reduce((acc, char) => acc + char.charCodeAt(0), 0)) % avatarColors.length] }}>{pro.avatar}</div>
                 }
                 {pro.rating && pro.rating > 0 && pro.reviews > 0 && (
