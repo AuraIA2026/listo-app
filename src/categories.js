@@ -76,6 +76,7 @@ export const CATEGORIES = [
       { id: 'carpintero',    icon: '🪵', image: '/icons/carpintero1.webp', labelEs: 'Carpintero',       labelEn: 'Carpenter' },
       { id: 'herrero',       icon: '🛠️', labelEs: 'Herrero / Soldador',     labelEn: 'Welder' },
       { id: 'tapicero',      icon: '🛋️', labelEs: 'Tapicero',             labelEn: 'Upholstery' },
+      { id: 'sheetrock',     icon: '🏗️', labelEs: 'Instalación de Shirrok / Sheetrock', labelEn: 'Drywall / Sheetrock Installation' },
       { id: 'constructor',   icon: '🏗️', labelEs: 'Maestro Constructor',    labelEn: 'Master Builder' },
       { id: 'instalacion',   icon: '🔨', labelEs: 'Instalación General',    labelEn: 'General Installation' },
     ]
