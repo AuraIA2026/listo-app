@@ -154,8 +154,8 @@
 .hp-cat-label { font-size: 11px; font-weight: 600; color: #444; white-space: nowrap; }
 
 /* ── SEC HEADER ───────────────────────────────── */
-.hp-sec-header { display: flex; align-items: center; justify-content: space-between; padding: 0 16px; margin-bottom: 0px; margin-top: 0px; }
-.hp-sec-title  { font-size: 17px; font-weight: 800; color: #1A1A2E; }
+.hp-sec-header { display: flex; align-items: center; justify-content: space-between; padding: 0 16px; margin-bottom: 4px; margin-top: 6px; }
+.hp-sec-title  { font-size: 17px; font-weight: 800; color: #1A1A2E; margin: 0; }
 .hp-see-all {
   background: none; border: 1.5px solid #F26000; color: #F26000;
   border-radius: 0px; padding: 5px 12px; font-size: 12px; font-weight: 700;
@@ -168,7 +168,7 @@
 .star-num    { color: #666; font-size: 12px; font-weight: 600; }
 
 /* ── PROFESIONALES DESTACADOS ─────────────────── */
-.featured-section { margin: 0; opacity: 0; transform: translateY(30px); transition: opacity .6s ease, transform .6s ease; }
+.featured-section { margin: 6px 0; opacity: 0; transform: translateY(30px); transition: opacity .6s ease, transform .6s ease; }
 .featured-section.reveal { opacity: 1; transform: translateY(0); }
 .featured-scroll {
   display: flex;
@@ -373,7 +373,7 @@
 
 /* ── TESTIMONIOS CARRUSEL ─────────────────────── */
 .testimonials-section {
-  margin: 0 16px;
+  margin: 6px 16px;
   opacity: 0;
   transform: translateY(20px);
   transition: opacity 0.5s ease, transform 0.5s ease;

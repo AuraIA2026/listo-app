@@ -1546,7 +1546,7 @@ export default function HomePage({ lang, navigate, userRole }) {
 
       {/* ── SECCIÓN: CATEGORÍAS POR "PROBLEMAS REALES" DE LA VIDA DIARIA ── */}
       {!isPro && (
-        <section style={{ margin: '0 16px 20px' }}>
+        <section style={{ margin: '8px 16px 12px' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
             <div>
               <h2 style={{ fontSize: '18px', fontWeight: '900', color: '#1A1A2E', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
