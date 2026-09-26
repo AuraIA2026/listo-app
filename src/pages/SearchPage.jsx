@@ -1047,7 +1047,7 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
 
             return (
               <div key={pro.id} className="pro-card-premium" style={{ animationDelay:`${i * 0.06}s` }} onClick={() => navigate('proProfile', pro)}>
-                <div className="premium-photo-wrap" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div className="premium-photo-wrap" style={{ position: 'relative' }}>
                   {isPlatinum && <div className="premium-badges-top">
                     <span className="premium-amz-badge" style={{background: 'linear-gradient(135deg, #B0BEC5, #78909C)'}}>💎 Selección Platinum</span>
                     <span className="premium-amz-badge badge-urgent" style={{background: '#E11D48'}}>🔥 Alta demanda</span>
@@ -1057,15 +1057,34 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
                     <span className="premium-amz-badge badge-urgent" style={{background: '#E11D48'}}>⚡ Responde al instante</span>
                   </div>}
                   
-                  <StoryAvatar 
-                    pro={pro}
-                    src={pro.photoURL || pro.img}
-                    alt={pro.name}
-                    size={120}
-                    storyData={sData}
-                    onOpenStory={handleOpenStoryViewer}
-                    fallbackAvatar={pro.avatar}
+                  <img 
+                    src={pro.photoURL || pro.img} 
+                    alt={pro.name} 
+                    className="premium-photo" 
                   />
+
+                  {hasStory && (
+                    <div 
+                      style={{
+                        position: 'absolute',
+                        top: '50%',
+                        left: '50%',
+                        transform: 'translate(-50%, -50%)',
+                        zIndex: 12,
+                        filter: 'drop-shadow(0 8px 20px rgba(0,0,0,0.5))'
+                      }}
+                    >
+                      <StoryAvatar 
+                        pro={pro}
+                        src={pro.photoURL || pro.img}
+                        alt={pro.name}
+                        size={110}
+                        storyData={sData}
+                        onOpenStory={handleOpenStoryViewer}
+                        fallbackAvatar={pro.avatar || (pro.name || 'P').charAt(0)}
+                      />
+                    </div>
+                  )}
 
                   {pro.rating && pro.rating > 0 && pro.reviews > 0 && (
                     <div style={{ position: 'absolute', bottom: '16px', right: '16px', background: 'rgba(26, 26, 46, 0.85)', backdropFilter: 'blur(4px)', borderRadius: '8px', padding: '4px 8px', display: 'flex', alignItems: 'center', gap: '4px', border: '1.5px solid #FFD700', boxShadow: '0 4px 10px rgba(0,0,0,0.15)', zIndex: 10 }}>
@@ -1141,16 +1160,35 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
 
           return (
             <div key={pro.id} className={`pro-card ${isTopRated ? 'top-rated' : ''}`} style={{ animationDelay:`${i * 0.06}s` }}>
-              <div className="card-photo" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <StoryAvatar 
-                  pro={pro}
-                  src={pro.photoURL}
-                  alt={pro.name}
-                  size={90}
-                  storyData={sDataStd}
-                  onOpenStory={handleOpenStoryViewer}
-                  fallbackAvatar={pro.avatar}
+              <div className="card-photo" style={{ position: 'relative' }}>
+                <img 
+                  src={pro.photoURL || pro.img} 
+                  alt={pro.name} 
+                  className="pro-photo" 
                 />
+
+                {hasStoryStd && (
+                  <div 
+                    style={{
+                      position: 'absolute',
+                      top: '50%',
+                      left: '50%',
+                      transform: 'translate(-50%, -50%)',
+                      zIndex: 5,
+                      filter: 'drop-shadow(0 4px 10px rgba(0,0,0,0.5))'
+                    }}
+                  >
+                    <StoryAvatar 
+                      pro={pro}
+                      src={pro.photoURL || pro.img}
+                      alt={pro.name}
+                      size={76}
+                      storyData={sDataStd}
+                      onOpenStory={handleOpenStoryViewer}
+                      fallbackAvatar={pro.avatar || (pro.name || 'P').charAt(0)}
+                    />
+                  </div>
+                )}
 
                 {pro.rating && pro.rating > 0 && pro.reviews > 0 && (
                   <div style={{ position: 'absolute', bottom: '12px', right: '12px', background: 'rgba(26, 26, 46, 0.85)', backdropFilter: 'blur(4px)', borderRadius: '8px', padding: '4px 8px', display: 'flex', alignItems: 'center', gap: '4px', border: '1.5px solid #FFD700', boxShadow: '0 4px 10px rgba(0,0,0,0.15)', zIndex: 10 }}>

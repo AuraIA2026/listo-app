@@ -1700,16 +1700,31 @@ export default function HomePage({ lang, navigate, userRole }) {
                 <div key={i} className="featured-card" style={{ animationDelay: `${i * 0.08}s` }} onClick={() => navigate('booking', { professional: pro })}>
                   {pro.badge && <span className={`featured-badge badge-${pro.badge.toLowerCase()}`}>{pro.badge}</span>}
                   
-                  <div style={{ position: 'relative', display: 'flex', justifyContent: 'center', width: '100%', marginTop: '6px' }}>
-                    <StoryAvatar 
-                      pro={pro}
-                      src={pro.img}
-                      alt={pro.nameEs}
-                      size={96}
-                      storyData={sData}
-                      onOpenStory={handleOpenStoryViewer}
-                      fallbackAvatar={pro.avatar}
-                    />
+                  <div style={{ position: 'relative', width: '100%', overflow: 'hidden' }}>
+                    <img src={pro.img || pro.photoURL} alt={pro.nameEs} className="featured-img" />
+                    
+                    {hasStory && (
+                      <div 
+                        style={{
+                          position: 'absolute',
+                          top: '50%',
+                          left: '50%',
+                          transform: 'translate(-50%, -50%)',
+                          zIndex: 10,
+                          filter: 'drop-shadow(0 4px 14px rgba(0,0,0,0.6))'
+                        }}
+                      >
+                        <StoryAvatar 
+                          pro={pro}
+                          src={pro.img || pro.photoURL}
+                          alt={pro.nameEs}
+                          size={76}
+                          storyData={sData}
+                          onOpenStory={handleOpenStoryViewer}
+                          fallbackAvatar={pro.avatar || (pro.nameEs || 'P').charAt(0)}
+                        />
+                      </div>
+                    )}
                   </div>
 
                   <div className="featured-info">
@@ -1756,16 +1771,31 @@ export default function HomePage({ lang, navigate, userRole }) {
 
                   return (
                     <div key={i} className="pro-list-card" style={{ animationDelay: `${i * 0.05}s` }} onClick={() => navigate('booking', { professional: pro })}>
-                      <div className="pro-list-img-wrap" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <StoryAvatar 
-                          pro={pro}
-                          src={pro.img}
-                          alt={pro.nameEs}
-                          size={70}
-                          storyData={sData}
-                          onOpenStory={handleOpenStoryViewer}
-                          fallbackAvatar={pro.avatar}
-                        />
+                      <div className="pro-list-img-wrap" style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <img src={pro.img || pro.photoURL} alt={pro.nameEs} className="pro-list-img" />
+                        
+                        {hasStory && (
+                          <div 
+                            style={{
+                              position: 'absolute',
+                              top: '50%',
+                              left: '50%',
+                              transform: 'translate(-50%, -50%)',
+                              zIndex: 10,
+                              filter: 'drop-shadow(0 4px 10px rgba(0,0,0,0.5))'
+                            }}
+                          >
+                            <StoryAvatar 
+                              pro={pro}
+                              src={pro.img || pro.photoURL}
+                              alt={pro.nameEs}
+                              size={54}
+                              storyData={sData}
+                              onOpenStory={handleOpenStoryViewer}
+                              fallbackAvatar={pro.avatar || (pro.nameEs || 'P').charAt(0)}
+                            />
+                          </div>
+                        )}
                         <span className={`pro-avail-dot${pro.avail ? ' online' : ''}`} />
                         {i % 4 === 0 && <span className="cat-flash-badge" style={{top: '-8px', right: '-8px', animation: 'ecom-pop 1s infinite alternate'}}>⚡ {lang === 'es' ? 'RÁPIDO' : 'FAST'}</span>}
                       </div>

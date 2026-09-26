@@ -240,7 +240,6 @@ function VIPProCard({ pro, lang, navigate, getProStoryData, onOpenStory }) {
           src={pro.img || pro.photoURL} 
           alt={pro.nameEs || pro.name} 
           className="vip-photo-large"
-          style={hasStory ? { border: '3px solid transparent', outline: '3px solid #F26000' } : {}}
         />
         <div className="vip-photo-gradient" />
 
