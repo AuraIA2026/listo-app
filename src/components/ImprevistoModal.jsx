@@ -57,7 +57,7 @@ export default function ImprevistoModal({ lang = 'es', onClose, orderInfo, proNa
       `Hola equipo de Soporte, necesito asistencia inmediata durante mi servicio con ${proName || 'el profesional'}.\n` +
       `Orden ID: ${orderInfo?.id || 'Activa'}`
     )
-    window.open(`https://wa.me/18290000000?text=${text}`, '_blank')
+    window.open(`https://wa.me/18099090455?text=${text}`, '_blank')
   }
 
   return (
@@ -89,18 +89,29 @@ export default function ImprevistoModal({ lang = 'es', onClose, orderInfo, proNa
                 <span className="act-icon">💬</span>
                 <div>
                   <strong>{lang === 'es' ? 'WhatsApp Directo 24/7' : '24/7 Direct WhatsApp'}</strong>
-                  <span className="act-sub">{lang === 'es' ? 'Respuesta inmediata' : 'Immediate reply'}</span>
+                  <span className="act-sub">+1 (809) 909-0455</span>
                 </div>
               </button>
 
               <a 
-                href="tel:+18295550199" 
+                href="tel:+18099090455" 
                 className="imprevisto-act-btn phone"
               >
                 <span className="act-icon">📞</span>
                 <div>
-                  <strong>{lang === 'es' ? 'Llamada de Emergencia' : 'Emergency Call'}</strong>
-                  <span className="act-sub">+1 (829) 555-0199</span>
+                  <strong>{lang === 'es' ? 'Soporte Listo Patrón 24/7' : 'Listo Patrón 24/7 Support'}</strong>
+                  <span className="act-sub">+1 (809) 909-0455</span>
+                </div>
+              </a>
+
+              <a 
+                href="tel:911" 
+                className="imprevisto-act-btn emergency911"
+              >
+                <span className="act-icon">🚨</span>
+                <div>
+                  <strong>{lang === 'es' ? 'Emergencias Nacionales (911)' : 'National Emergency (911)'}</strong>
+                  <span className="act-sub">{lang === 'es' ? 'Llamada directa de auxilio policial/médico' : 'Direct emergency dispatch call'}</span>
                 </div>
               </a>
             </div>

@@ -116,6 +116,11 @@
   background: #EFF6FF;
 }
 
+.imprevisto-act-btn.emergency911 {
+  border-color: #EF4444;
+  background: #FEF2F2;
+}
+
 .act-icon {
   font-size: 24px;
 }
