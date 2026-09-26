@@ -1,9 +1,11 @@
 import { useState } from 'react'
 import './ExoticWorkPortfolio.css'
 
-export default function ExoticWorkPortfolio({ lang = 'es', photos = [], proName = '', proCategory = '', onHireClick, isOwnProfile = false, onUploadPhoto = null }) {
+export default function ExoticWorkPortfolio({ lang = 'es', photos = [], proName = '', proCategory = '', onHireClick, isOwnProfile = false, onUploadPhoto = null, onDeletePhoto = null }) {
   const [activeFilter, setActiveFilter] = useState('all')
   const [selectedWork, setSelectedWork] = useState(null)
+  const [editingWork, setEditingWork] = useState(null)
+  const [customWorks, setCustomWorks] = useState({})
 
   const handleUploadTrigger = () => {
     const el = document.getElementById('pro-work-upload')
@@ -94,7 +96,8 @@ export default function ExoticWorkPortfolio({ lang = 'es', photos = [], proName 
     }
   })
 
-  const allWorks = userWorks.length > 0 ? userWorks : demoWorks
+  const allWorksRaw = userWorks.length > 0 ? userWorks : demoWorks
+  const allWorks = allWorksRaw.map(w => customWorks[w.id] || w)
 
   const filteredWorks = activeFilter === 'all' 
     ? allWorks 
@@ -185,6 +188,36 @@ export default function ExoticWorkPortfolio({ lang = 'es', photos = [], proName 
               <div className="exotic-tag-badge">
                 {work.tag}
               </div>
+
+              {/* Botones de Editar / Borrar para el profesional */}
+              {isOwnProfile && (
+                <div className="exotic-card-pro-actions">
+                  <button 
+                    type="button"
+                    className="btn-card-edit" 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setEditingWork({ ...work });
+                    }}
+                    title="Editar información"
+                  >
+                    ✏️
+                  </button>
+                  <button 
+                    type="button"
+                    className="btn-card-delete" 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (window.confirm(lang === 'es' ? '¿Seguro que deseas eliminar esta foto de tu portafolio?' : 'Delete this photo from your portfolio?')) {
+                        if (onDeletePhoto) onDeletePhoto(work.img, true);
+                      }
+                    }}
+                    title="Eliminar foto"
+                  >
+                    🗑️
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Información detallada */}
@@ -263,6 +296,81 @@ export default function ExoticWorkPortfolio({ lang = 'es', photos = [], proName 
                   ⚡ {lang === 'es' ? `Contratar a ${proName || 'este Profesional'} para un trabajo similar` : 'Hire for a similar job'}
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL DE EDICIÓN DE TRABAJO */}
+      {editingWork && (
+        <div className="exotic-lightbox-overlay" onClick={() => setEditingWork(null)}>
+          <div className="exotic-lightbox-card" onClick={e => e.stopPropagation()} style={{ maxWidth: 440, padding: 24 }}>
+            <button className="exotic-lightbox-close" onClick={() => setEditingWork(null)}>✕</button>
+            <h3 style={{ margin: '0 0 16px', fontSize: 17, fontWeight: 900, color: '#0F172A' }}>
+              ✏️ {lang === 'es' ? 'Editar Detalles del Trabajo' : 'Edit Work Details'}
+            </h3>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div>
+                <label style={{ fontSize: 11, fontWeight: 700, color: '#64748B', display: 'block', marginBottom: 4 }}>
+                  {lang === 'es' ? 'Título del Trabajo' : 'Job Title'}
+                </label>
+                <input 
+                  type="text" 
+                  value={editingWork.title || ''} 
+                  onChange={e => setEditingWork({ ...editingWork, title: e.target.value })}
+                  style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '1px solid #CBD5E1', fontSize: 13, outline: 'none' }}
+                />
+              </div>
+
+              <div style={{ display: 'flex', gap: 10 }}>
+                <div style={{ flex: 1 }}>
+                  <label style={{ fontSize: 11, fontWeight: 700, color: '#64748B', display: 'block', marginBottom: 4 }}>
+                    {lang === 'es' ? 'Fecha' : 'Date'}
+                  </label>
+                  <input 
+                    type="text" 
+                    value={editingWork.dateStr || ''} 
+                    onChange={e => setEditingWork({ ...editingWork, dateStr: e.target.value })}
+                    style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '1px solid #CBD5E1', fontSize: 13, outline: 'none' }}
+                  />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <label style={{ fontSize: 11, fontWeight: 700, color: '#64748B', display: 'block', marginBottom: 4 }}>
+                    {lang === 'es' ? 'Ubicación' : 'Location'}
+                  </label>
+                  <input 
+                    type="text" 
+                    value={editingWork.location || ''} 
+                    onChange={e => setEditingWork({ ...editingWork, location: e.target.value })}
+                    style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '1px solid #CBD5E1', fontSize: 13, outline: 'none' }}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label style={{ fontSize: 11, fontWeight: 700, color: '#64748B', display: 'block', marginBottom: 4 }}>
+                  {lang === 'es' ? 'Descripción / Detalles Técnicos' : 'Description / Technical Details'}
+                </label>
+                <textarea 
+                  rows={3} 
+                  value={editingWork.description || ''} 
+                  onChange={e => setEditingWork({ ...editingWork, description: e.target.value })}
+                  style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '1px solid #CBD5E1', fontSize: 13, outline: 'none', resize: 'vertical' }}
+                />
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setCustomWorks(prev => ({ ...prev, [editingWork.id]: editingWork }))
+                  setEditingWork(null)
+                  alert(lang === 'es' ? '¡Detalles del trabajo actualizados!' : 'Work details updated!')
+                }}
+                style={{ width: '100%', padding: 14, borderRadius: 14, background: 'linear-gradient(135deg, #F26000, #C24D00)', color: '#fff', fontWeight: '800', fontSize: 14, border: 'none', cursor: 'pointer', marginTop: 8, boxShadow: '0 4px 12px rgba(242,96,0,0.3)' }}
+              >
+                Guardar Cambios ✓
+              </button>
             </div>
           </div>
         </div>
