@@ -692,10 +692,10 @@ export default function TrackingPage({ lang = 'es', navigate, professional, user
                 <span style={{ fontSize: '24px' }}>🛡️</span>
                 <div>
                   <p style={{ margin: 0, fontSize: '13px', fontWeight: 900, color: '#991B1B' }}>
-                    {lang === 'es' ? 'Garantía & Asistencia 24/7' : '24/7 Guarantee & Safety'}
+                    {lang === 'es' ? 'Soporte & Mediación 24/7' : '24/7 Support & Mediation'}
                   </p>
                   <p style={{ margin: '2px 0 0', fontSize: '11px', color: '#7F1D1D' }}>
-                    {lang === 'es' ? 'Protección en vivo ante cualquier imprevisto' : 'Live protection for any situation'}
+                    {lang === 'es' ? 'Asistencia en vivo ante cualquier imprevisto' : 'Live assistance for any situation'}
                   </p>
                 </div>
               </div>

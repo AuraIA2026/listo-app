@@ -486,8 +486,8 @@ export default function BookingPage({ lang = 'es', navigate, professional, userD
               <div className="trust-badge">
                 <span className="trust-icon" style={{ background: '#ECFDF5', color: '#10B981' }}>🛡️</span>
                 <div>
-                  <h4>{lang === 'es' ? 'Garantía Listo Patrón' : 'Listo Patrón Guarantee'}</h4>
-                  <p>{lang === 'es' ? 'Cobertura antiproblemas.' : 'Covered against issues.'}</p>
+                  <h4>{lang === 'es' ? 'Respaldo y Mediación' : 'Support & Mediation'}</h4>
+                  <p>{lang === 'es' ? 'Soporte 24/7 en tu servicio.' : '24/7 Service Support.'}</p>
                 </div>
               </div>
             </div>

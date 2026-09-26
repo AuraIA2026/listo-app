@@ -1010,41 +1010,48 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
       />
 
       {/* Modal de Cobertura de Garantía 24h */}
+      {/* Modal de Asistencia y Mediación Listo Patrón 24h */}
       {showGuaranteeModal && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 99999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }} onClick={() => setShowGuaranteeModal(false)}>
-          <div style={{ background: '#fff', borderRadius: 24, padding: '28px 24px', width: '100%', maxWidth: 400, textAlign: 'left', boxShadow: '0 20px 40px rgba(0,0,0,0.25)', maxHeight: '90vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
+          <div style={{ background: '#fff', borderRadius: 24, padding: '28px 24px', width: '100%', maxWidth: 420, textAlign: 'left', boxShadow: '0 20px 40px rgba(0,0,0,0.25)', maxHeight: '90vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
             <div style={{ width: 52, height: 52, borderRadius: '50%', background: '#FFF3EC', color: '#F26000', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26, marginBottom: 16 }}>🛡️</div>
             <h3 style={{ margin: '0 0 8px', fontSize: 18, color: '#1A1A2E', fontWeight: 800 }}>
-              {lang === 'es' ? 'Garantía Listo Patrón 24h' : 'Listo Patrón 24h Guarantee'}
+              {lang === 'es' ? 'Respaldo y Mediación Listo Patrón' : 'Listo Patrón Support & Mediation'}
             </h3>
             <p style={{ fontSize: 13, color: '#64748B', lineHeight: 1.5, margin: '0 0 16px' }}>
               {lang === 'es' 
-                ? 'Tu tranquilidad es nuestra prioridad. Todos los servicios contratados a través de Listo Patrón cuentan con cobertura directa durante las primeras 24 horas.' 
-                : 'Your peace of mind is our priority. All services booked through Listo Patrón are covered.'}
+                ? 'Facilitamos una contratación transparente. Los servicios reservados a través de Listo Patrón cuentan con soporte de mediación directa durante las primeras 24 horas.' 
+                : 'We facilitate transparent bookings with direct support mediation during the first 24 hours.'}
             </p>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 20 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 16 }}>
               <div style={{ background: '#F8FAFC', padding: 12, borderRadius: 14, border: '1px solid #E2E8F0', display: 'flex', gap: 10 }}>
                 <span style={{ fontSize: 18 }}>✅</span>
                 <div>
-                  <h4 style={{ margin: 0, fontSize: 13, color: '#1E293B', fontWeight: 700 }}>{lang === 'es' ? 'Identidad Validada' : 'Verified Identity'}</h4>
-                  <p style={{ margin: '2px 0 0', fontSize: '11px', color: '#64748B' }}>{lang === 'es' ? 'Cédula de identidad oficial auditada por Central de Mando.' : 'Official ID audited by Central Command.'}</p>
+                  <h4 style={{ margin: 0, fontSize: 13, color: '#1E293B', fontWeight: 700 }}>{lang === 'es' ? 'Identidad Auditada' : 'Audited Identity'}</h4>
+                  <p style={{ margin: '2px 0 0', fontSize: '11px', color: '#64748B' }}>{lang === 'es' ? 'Cédula oficial del profesional auditada y registrada por Central de Mando.' : 'Official ID audited by Central Command.'}</p>
                 </div>
               </div>
               <div style={{ background: '#F8FAFC', padding: 12, borderRadius: 14, border: '1px solid #E2E8F0', display: 'flex', gap: 10 }}>
                 <span style={{ fontSize: 18 }}>🛠️</span>
                 <div>
-                  <h4 style={{ margin: 0, fontSize: 13, color: '#1E293B', fontWeight: 700 }}>{lang === 'es' ? 'Revisión sin Costo Extra' : 'Free Correction'}</h4>
-                  <p style={{ margin: '2px 0 0', fontSize: '11px', color: '#64748B' }}>{lang === 'es' ? 'Si el trabajo presenta algún detalle técnico, el profesional asistirá a resolverlo sin cargo adicional.' : 'Free correction if any issue arises.'}</p>
+                  <h4 style={{ margin: 0, fontSize: 13, color: '#1E293B', fontWeight: 700 }}>{lang === 'es' ? 'Revisión por el Profesional' : 'Pro Revision Agreement'}</h4>
+                  <p style={{ margin: '2px 0 0', fontSize: '11px', color: '#64748B' }}>{lang === 'es' ? 'El profesional independiente se compromete a solucionar cualquier detalle de mano de obra sin cargo extra en 24h.' : 'Independent pro agrees to correct labor issues without extra charge.'}</p>
                 </div>
               </div>
               <div style={{ background: '#F8FAFC', padding: 12, borderRadius: 14, border: '1px solid #E2E8F0', display: 'flex', gap: 10 }}>
                 <span style={{ fontSize: 18 }}>📞</span>
                 <div>
-                  <h4 style={{ margin: 0, fontSize: 13, color: '#1E293B', fontWeight: 700 }}>{lang === 'es' ? 'Soporte Humano Directo' : 'Direct Human Support'}</h4>
-                  <p style={{ margin: '2px 0 0', fontSize: '11px', color: '#64748B' }}>{lang === 'es' ? 'Nuestro equipo de soporte está disponible vía WhatsApp y correo para cualquier aclaración.' : 'Direct support via WhatsApp & email.'}</p>
+                  <h4 style={{ margin: 0, fontSize: 13, color: '#1E293B', fontWeight: 700 }}>{lang === 'es' ? 'Soporte y Mediación Directa' : 'Direct Support & Mediation'}</h4>
+                  <p style={{ margin: '2px 0 0', fontSize: '11px', color: '#64748B' }}>{lang === 'es' ? 'Nuestro equipo asiste vía WhatsApp para canalizar reclamos y facilitar soluciones.' : 'Our team assists via WhatsApp to route claims & solutions.'}</p>
                 </div>
               </div>
+            </div>
+
+            <div style={{ background: '#FFFBEB', border: '1px solid #FDE68A', padding: '10px 12px', borderRadius: 12, marginBottom: 20 }}>
+              <p style={{ margin: 0, fontSize: '11px', color: '#B45309', lineHeight: 1.4, fontStyle: 'italic' }}>
+                ⚖️ <strong>{lang === 'es' ? 'Términos de la Plataforma:' : 'Platform Terms:'}</strong> {lang === 'es' ? 'Listo Patrón es una plataforma tecnológica de conexión e intermediación entre usuarios y profesionales independientes. La ejecución física del servicio y cualquier garantía técnica o de materiales es responsabilidad exclusiva del profesional contratado.' : 'Listo Patrón is a technological platform connecting clients and independent pros. Physical execution & damages are the sole responsibility of the hired professional.'}
+              </p>
             </div>
 
             <button 

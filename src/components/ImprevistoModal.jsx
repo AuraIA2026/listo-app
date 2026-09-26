@@ -34,7 +34,7 @@ export default function ImprevistoModal({ lang = 'es', onClose, orderInfo, proNa
           type: 'support_ticket_created',
           title: lang === 'es' ? '🚨 Reporte de Imprevisto Recibido' : '🚨 Incident Report Received',
           text: lang === 'es'
-            ? 'El equipo de Soporte y Garantía Listo Patrón ha recibido tu alerta 24/7. Te contactaremos de inmediato.'
+            ? 'El equipo de Soporte y Mediación Listo Patrón ha recibido tu alerta 24/7. Te contactaremos de inmediato.'
             : 'Listo Patrón 24/7 Support has received your alert. We will contact you immediately.',
           read: false,
           icon: '🛡️',
@@ -74,7 +74,7 @@ export default function ImprevistoModal({ lang = 'es', onClose, orderInfo, proNa
                   {lang === 'es' ? 'Protocolo de Imprevistos y Seguridad 24/7' : '24/7 Safety & Incident Protocol'}
                 </h3>
                 <p className="imprevisto-sub">
-                  {lang === 'es' ? 'Garantía Listo Patrón para tu tranquilidad' : 'Listo Patrón Guarantee for your peace of mind'}
+                  {lang === 'es' ? 'Soporte y Mediación Listo Patrón para tu tranquilidad' : 'Listo Patrón Support & Mediation for your peace of mind'}
                 </p>
               </div>
             </div>

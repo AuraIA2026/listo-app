@@ -38,7 +38,7 @@ export default function ReciboDigitalModal({ lang = 'es', onClose, orderData }) 
       `💰 *Monto Total:* RD$ ${amountStr}\n` +
       `💳 *Forma de Pago:* ${paymentMethod}\n` +
       `----------------------------------------\n` +
-      `🛡️ *Garantía Listo Patrón 24h Activa*\n` +
+      `🛡️ *Respaldo y Mediación Listo Patrón 24h*\n` +
       `🌐 *Web:* https://www.listopatron.com.do/\n` +
       `📞 *Central 24/7:* +1 (809) 909-0455`
     )
@@ -121,8 +121,8 @@ export default function ReciboDigitalModal({ lang = 'es', onClose, orderData }) 
             <div className="recibo-guarantee-box">
               <span>🛡️</span>
               <div>
-                <strong>Garantía de Satisfacción Listo Patrón 24h</strong>
-                <p>Trabajo cubierto ante cualquier imprevisto técnico.</p>
+                <strong>Respaldo y Mediación Listo Patrón 24h</strong>
+                <p>Soporte de mediación directa con el profesional contratado.</p>
               </div>
             </div>
             <div className="recibo-total-box">
