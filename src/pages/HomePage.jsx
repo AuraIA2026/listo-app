@@ -1468,6 +1468,143 @@ export default function HomePage({ lang, navigate, userRole }) {
         ))}
       </div>
 
+      {/* ── PANEL DE HISTORIAS DE TRABAJO (24H EN VIVO) ── */}
+      <HistoriasCarrusel 
+        userData={userData} 
+        isPro={isPro} 
+        onHirePro={(proId) => {
+          const proObj = (allProsToUse || []).find(p => p.id === proId) || { id: proId };
+          navigate('proProfile', proObj);
+        }} 
+        navigate={navigate} 
+      />
+
+      {/* ── BOTÓN / PANEL SOCIO "¡HOLA, SOCIO!" (UBICADO DEBAJO DEL PANEL DE HISTORIAS) ── */}
+      {isPro && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0px', margin: '10px 16px 14px' }}>
+          <div 
+            style={{ 
+              padding: '16px 18px', 
+              background: 'linear-gradient(135deg, #ffffff 0%, #fff7f0 100%)', 
+              borderRadius: '20px', 
+              boxShadow: '0 8px 24px rgba(242, 96, 0, 0.12)', 
+              border: '1.5px solid rgba(242, 96, 0, 0.18)',
+              position: 'relative',
+              overflow: 'hidden'
+            }}
+          >
+             <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '4px', background: 'linear-gradient(90deg, #FF7A1A, #F26000, #E65100)' }} />
+
+             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                 <h2 style={{ fontSize: '18px', fontWeight: '900', margin: 0, color: '#1A1A2E' }}>👋 ¡Hola, Socio!</h2>
+                 <span style={{ fontSize: '10px', fontWeight: '800', background: 'rgba(242, 96, 0, 0.12)', color: '#F26000', padding: '3px 8px', borderRadius: '12px', border: '1px solid rgba(242, 96, 0, 0.25)' }}>
+                   ⭐ PANEL PRO
+                 </span>
+               </div>
+
+               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                 <span style={{ fontSize: '11px', fontWeight: '700', color: isAvailable ? '#16A34A' : '#64748B' }}>
+                   {isAvailable ? '🟢 En línea' : '⚫ Desconectado'}
+                 </span>
+                 <div 
+                   onClick={toggleAvailability}
+                   style={{ 
+                     width: '50px', height: '28px', borderRadius: '14px', 
+                     background: isAvailable ? (isLowContracts && showLowContractWarning ? '#EF4444' : 'linear-gradient(135deg, #22C55E, #16A34A)') : '#CBD5E1', 
+                     position: 'relative', cursor: 'pointer', transition: 'all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
+                     opacity: profileComplete ? 1 : 0.6,
+                     boxShadow: isAvailable ? '0 2px 8px rgba(34, 197, 94, 0.35)' : 'none'
+                   }}
+                 >
+                   <div style={{
+                     width: '22px', height: '22px', borderRadius: '50%', background: 'white',
+                     position: 'absolute', top: '3px', left: isAvailable ? '25px' : '3px',
+                     transition: 'left 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)', boxShadow: '0 2px 6px rgba(0,0,0,0.25)'
+                   }} />
+                 </div>
+               </div>
+             </div>
+             
+             {!profileComplete ? (
+               <div 
+                 onClick={() => {
+                   navigate('profile', { screen: 'verification' });
+                   openWebPlanPage();
+                 }} 
+                 className="warning-pulse-banner"
+                 style={{ padding: '12px 14px', background: '#FEF2F2', borderRadius: '14px', border: '1.5px solid #FECACA', marginTop: '8px', cursor: 'pointer' }}
+               >
+                 <p style={{ margin: '0 0 4px', fontSize: '12.5px', color: '#991B1B', fontWeight: 'bold' }}>
+                   ⚠️ Tu perfil está incompleto (presiona aquí para verificar).
+                 </p>
+                 <p style={{ margin: 0, fontSize: '11.5px', color: '#B91C1C', lineHeight: 1.4 }}>
+                   No puedes recibir pedidos. Cuando termines de completar tu perfil y verificación, actívate.
+                 </p>
+               </div>
+             ) : (
+                 <div 
+                   onClick={(e) => openWebPlanPage(e)}
+                   className={(isExpired || !isAvailable || (isAvailable && isLowContracts && showLowContractWarning)) ? "warning-pulse-banner" : ""}
+                  style={{ 
+                    background: (isExpired || !isAvailable || (isAvailable && isLowContracts && showLowContractWarning)) ? '#FEF2F2' : 'rgba(34, 197, 94, 0.08)', 
+                    padding: '10px 14px', 
+                    borderRadius: '12px', 
+                    border: `1.5px solid ${(isExpired || !isAvailable || (isAvailable && isLowContracts && showLowContractWarning)) ? '#FECACA' : 'rgba(34, 197, 94, 0.2)'}`, 
+                    marginTop: '6px',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                    boxShadow: (isExpired || !isAvailable || (isAvailable && isLowContracts && showLowContractWarning)) ? '0 2px 8px rgba(220, 38, 38, 0.12)' : 'none'
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-1px)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; }}
+                  title={lang === 'es' ? 'Haz clic para ir a nuestra plataforma web y adquirir tu plan' : 'Click to open web platform'}
+                >
+                  <p style={{ 
+                    color: (isExpired || !isAvailable || (isAvailable && isLowContracts && showLowContractWarning)) ? '#B91C1C' : (isAvailable ? '#15803D' : '#64748B'), 
+                    fontSize: '12.5px', 
+                    margin: 0, 
+                    fontWeight: '700'
+                  }}>
+                    {isExpired
+                      ? '🔴 Perfil inactivo. Actualízalo en nuestra web.'
+                      : (isAvailable 
+                          ? (isLowContracts && showLowContractWarning
+                              ? (isNative 
+                                  ? '🔴 Solo te queda un contrato. Para adquirir o mejorar tu plan, ingresa a nuestra plataforma web.'
+                                  : '🔴 Solo te queda un contrato. Adquiere tu plan en nuestra web para recibir clientes.')
+                              : '🟢 Estás visible para clientes cercanos. ¡Listo para recibir solicitudes!') 
+                          : '⚫ Estás en modo ausente. Actívate cuando desees recibir solicitudes.')}
+                  </p>
+                </div>
+              )}
+          </div>
+        </div>
+      )}
+
+      {/* ── CINTA / ANUNCIO LARGO Y FINO INVITANDO A LA TIENDA WEB (DEBAJO DE HISTORIAS) ── */}
+      <div 
+        className="store-ribbon-banner"
+        onClick={() => window.open('https://listopatron.com.do/?page=shop', '_blank')}
+        title={lang === 'es' ? 'Visitar la Tienda Web de Listo Patrón' : 'Visit Listo Patrón Web Store'}
+        style={{ marginBottom: '14px' }}
+      >
+        <div className="store-ribbon-content">
+          <span className="store-ribbon-icon">🛍️</span>
+          <div className="store-ribbon-text-group">
+            <p className="store-ribbon-title">
+              {lang === 'es' ? <>Equípate en nuestra tienda <strong>Listo Patrón</strong></> : <>Equip yourself at <strong>Listo Patrón</strong> Store</>}
+            </p>
+            <p className="store-ribbon-sub">
+              {lang === 'es' ? 'Herramientas, equipos e insumos de seguridad con envío rápido a todo el país' : 'Tools, safety gear & supplies with fast nationwide shipping'}
+            </p>
+          </div>
+        </div>
+        <button className="store-ribbon-btn">
+          🛒 {lang === 'es' ? 'Visitar Tienda ›' : 'Visit Store ›'}
+        </button>
+      </div>
+
       {/* ── CARRUSEL DE TARJETAS VERTICALES DE PROFESIONALES DESTACADOS (UBICADO JUSTO DEBAJO DE LA BARRA DE UBICACIÓN) ── */}
       <VIPSection 
         realVipPros={featuredProsToUse} 
@@ -1627,108 +1764,7 @@ export default function HomePage({ lang, navigate, userRole }) {
       )}
 
 
-      {/* ── BOTÓN / PANEL SOCIO "¡HOLA, SOCIO!" (UBICADO ARRIBA DE PROFESIONALES DESTACADOS) ── */}
-      {isPro && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0px', margin: '0 16px 18px' }}>
-          <div 
-            style={{ 
-              padding: '16px 18px', 
-              background: 'linear-gradient(135deg, #ffffff 0%, #fff7f0 100%)', 
-              borderRadius: '20px', 
-              boxShadow: '0 8px 24px rgba(242, 96, 0, 0.12)', 
-              border: '1.5px solid rgba(242, 96, 0, 0.18)',
-              position: 'relative',
-              overflow: 'hidden'
-            }}
-          >
-             <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '4px', background: 'linear-gradient(90deg, #FF7A1A, #F26000, #E65100)' }} />
 
-             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                 <h2 style={{ fontSize: '18px', fontWeight: '900', margin: 0, color: '#1A1A2E' }}>👋 ¡Hola, Socio!</h2>
-                 <span style={{ fontSize: '10px', fontWeight: '800', background: 'rgba(242, 96, 0, 0.12)', color: '#F26000', padding: '3px 8px', borderRadius: '12px', border: '1px solid rgba(242, 96, 0, 0.25)' }}>
-                   ⭐ PANEL PRO
-                 </span>
-               </div>
-
-               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                 <span style={{ fontSize: '11px', fontWeight: '700', color: isAvailable ? '#16A34A' : '#64748B' }}>
-                   {isAvailable ? '🟢 En línea' : '⚫ Desconectado'}
-                 </span>
-                 <div 
-                   onClick={toggleAvailability}
-                   style={{ 
-                     width: '50px', height: '28px', borderRadius: '14px', 
-                     background: isAvailable ? (isLowContracts && showLowContractWarning ? '#EF4444' : 'linear-gradient(135deg, #22C55E, #16A34A)') : '#CBD5E1', 
-                     position: 'relative', cursor: 'pointer', transition: 'all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
-                     opacity: profileComplete ? 1 : 0.6,
-                     boxShadow: isAvailable ? '0 2px 8px rgba(34, 197, 94, 0.35)' : 'none'
-                   }}
-                 >
-                   <div style={{
-                     width: '22px', height: '22px', borderRadius: '50%', background: 'white',
-                     position: 'absolute', top: '3px', left: isAvailable ? '25px' : '3px',
-                     transition: 'left 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)', boxShadow: '0 2px 6px rgba(0,0,0,0.25)'
-                   }} />
-                 </div>
-               </div>
-             </div>
-             
-             {!profileComplete ? (
-               <div 
-                 onClick={() => {
-                   navigate('profile', { screen: 'verification' });
-                   openWebPlanPage();
-                 }} 
-                 className="warning-pulse-banner"
-                 style={{ padding: '12px 14px', background: '#FEF2F2', borderRadius: '14px', border: '1.5px solid #FECACA', marginTop: '8px', cursor: 'pointer' }}
-               >
-                 <p style={{ margin: '0 0 4px', fontSize: '12.5px', color: '#991B1B', fontWeight: 'bold' }}>
-                   ⚠️ Tu perfil está incompleto (presiona aquí para verificar).
-                 </p>
-                 <p style={{ margin: 0, fontSize: '11.5px', color: '#B91C1C', lineHeight: 1.4 }}>
-                   No puedes recibir pedidos. Cuando termines de completar tu perfil y verificación, actívate.
-                 </p>
-               </div>
-             ) : (
-                 <div 
-                   onClick={(e) => openWebPlanPage(e)}
-                   className={(isExpired || !isAvailable || (isAvailable && isLowContracts && showLowContractWarning)) ? "warning-pulse-banner" : ""}
-                  style={{ 
-                    background: (isExpired || !isAvailable || (isAvailable && isLowContracts && showLowContractWarning)) ? '#FEF2F2' : 'rgba(34, 197, 94, 0.08)', 
-                    padding: '10px 14px', 
-                    borderRadius: '12px', 
-                    border: `1.5px solid ${(isExpired || !isAvailable || (isAvailable && isLowContracts && showLowContractWarning)) ? '#FECACA' : 'rgba(34, 197, 94, 0.2)'}`, 
-                    marginTop: '6px',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease',
-                    boxShadow: (isExpired || !isAvailable || (isAvailable && isLowContracts && showLowContractWarning)) ? '0 2px 8px rgba(220, 38, 38, 0.12)' : 'none'
-                  }}
-                  onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-1px)'; }}
-                  onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; }}
-                  title={lang === 'es' ? 'Haz clic para ir a nuestra plataforma web y adquirir tu plan' : 'Click to open web platform'}
-                >
-                  <p style={{ 
-                    color: (isExpired || !isAvailable || (isAvailable && isLowContracts && showLowContractWarning)) ? '#B91C1C' : (isAvailable ? '#15803D' : '#64748B'), 
-                    fontSize: '12.5px', 
-                    margin: 0, 
-                    fontWeight: '700'
-                  }}>
-                    {isExpired
-                      ? '🔴 Perfil inactivo. Actualízalo en nuestra web.'
-                      : (isAvailable 
-                          ? (isLowContracts && showLowContractWarning
-                              ? (isNative 
-                                  ? '🔴 Solo te queda un contrato. Para adquirir o mejorar tu plan, ingresa a nuestra plataforma web.'
-                                  : '🔴 Solo te queda un contrato. Adquiere tu plan en nuestra web para recibir clientes.')
-                              : '🟢 Estás visible para clientes cercanos. ¡Listo para recibir solicitudes!') 
-                          : '⚫ Estás en modo ausente. Actívate cuando desees recibir solicitudes.')}
-                  </p>
-                </div>
-              )}
-          </div>
-        </div>
-      )}
 
 
       {/* ── BANNER ÉPICO VIP: "CONOCE NUESTROS PROFESIONALES VIP" (ANIMACIÓN LLAMATIVA) ── */}
@@ -1852,27 +1888,7 @@ export default function HomePage({ lang, navigate, userRole }) {
 
 
 
-      {/* ── CINTA / ANUNCIO LARGO Y FINO INVITANDO A LA TIENDA WEB ── */}
-      <div 
-        className="store-ribbon-banner"
-        onClick={() => window.open('https://listopatron.com.do/?page=shop', '_blank')}
-        title={lang === 'es' ? 'Visitar la Tienda Web de Listo Patrón' : 'Visit Listo Patrón Web Store'}
-      >
-        <div className="store-ribbon-content">
-          <span className="store-ribbon-icon">🛍️</span>
-          <div className="store-ribbon-text-group">
-            <p className="store-ribbon-title">
-              {lang === 'es' ? <>Equípate en nuestra tienda <strong>Listo Patrón</strong></> : <>Equip yourself at <strong>Listo Patrón</strong> Store</>}
-            </p>
-            <p className="store-ribbon-sub">
-              {lang === 'es' ? 'Herramientas, equipos e insumos de seguridad con envío rápido a todo el país' : 'Tools, safety gear & supplies with fast nationwide shipping'}
-            </p>
-          </div>
-        </div>
-        <button className="store-ribbon-btn">
-          🛒 {lang === 'es' ? 'Visitar Tienda ›' : 'Visit Store ›'}
-        </button>
-      </div>
+
 
 
       {!isPro && (
