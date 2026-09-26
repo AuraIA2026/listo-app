@@ -5,6 +5,7 @@ import { CATEGORIES, ALL_SUBCATEGORIES } from '../categories'
 import { useUserData } from '../useUserData'
 import logoListo from '../assets/logo_listo.png'
 import HistoriasViewerModal from '../components/HistoriasViewerModal'
+import BeforeAfterSlider from '../components/BeforeAfterSlider'
 import './ProfessionalProfilePage.css'
 
 const txt = {
@@ -160,6 +161,24 @@ function PhotoGrid({ photos, lang, isOwnProfile, onUploadPhoto, onDeletePhoto, h
             <p style={{ fontWeight: 'bold', margin: 0, color: '#333' }}>{T.noPhotos}</p>
          </div>
       )}
+
+      {/* Comparativa Antes / Después */}
+      <div style={{ marginBottom: '20px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+          <h3 style={{ margin: 0, fontSize: '15px', fontWeight: '800', color: '#1A1A2E' }}>
+            ↔ {lang === 'es' ? 'Comparativa Antes y Después' : 'Before & After Comparison'}
+          </h3>
+          <span style={{ fontSize: '11px', color: '#F26000', fontWeight: '700', background: '#FFF3EC', padding: '3px 8px', borderRadius: '100px' }}>
+            {lang === 'es' ? 'Desliza para comparar' : 'Slide to compare'}
+          </span>
+        </div>
+        <BeforeAfterSlider 
+          beforeImg={photos[1] ? (typeof photos[1] === 'string' ? photos[1] : photos[1].url) : 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=800&q=80'}
+          afterImg={photos[0] ? (typeof photos[0] === 'string' ? photos[0] : photos[0].url) : 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=800&q=80'}
+          beforeLabel={lang === 'es' ? 'Antes del Servicio' : 'Before'}
+          afterLabel={lang === 'es' ? 'Resultado Listo Patrón' : 'After'}
+        />
+      </div>
 
       <div className="photos-grid-title-wrap">
         <h2 className="photos-grid-title">{T.photos}</h2>
@@ -329,6 +348,7 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
   const [proStories, setProStories] = useState([])
   const [showStoryViewer, setShowStoryViewer] = useState(false)
   const [hasHiredPro, setHasHiredPro] = useState(false)
+  const [showGuaranteeModal, setShowGuaranteeModal] = useState(false)
 
   useEffect(() => {
     const proUid = displayPro.uid || displayPro.id
@@ -774,8 +794,43 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
               {displayPro.available ? T.available : T.busy}
             </span>
             <span className="pro-verified-badge">✓ {T.verifiedPro}</span>
+            <span className="pro-verified-badge" style={{ background: '#ECFDF5', color: '#059669', borderColor: '#A7F3D0' }}>🪪 {lang === 'es' ? 'Cédula Validada' : 'ID Verified'}</span>
+            <span className="pro-verified-badge" onClick={() => setShowGuaranteeModal(true)} style={{ background: '#FFF3EC', color: '#F26000', borderColor: '#FFD4B0', cursor: 'pointer' }}>🛡️ {lang === 'es' ? 'Garantía 24h' : '24h Guarantee'}</span>
           </div>
         </div>
+      </div>
+
+      {/* Banner interactivo de Garantía de Satisfacción 24h */}
+      <div 
+        onClick={() => setShowGuaranteeModal(true)}
+        style={{
+          margin: '12px 16px 0',
+          background: 'linear-gradient(135deg, #1E293B, #0F172A)',
+          borderRadius: '16px',
+          padding: '14px 18px',
+          color: '#fff',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          cursor: 'pointer',
+          boxShadow: '0 6px 18px rgba(15, 23, 42, 0.25)',
+          border: '1px solid rgba(255,255,255,0.1)'
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <span style={{ fontSize: '26px' }}>🛡️</span>
+          <div>
+            <p style={{ margin: 0, fontWeight: '900', fontSize: '13px', color: '#F26000', letterSpacing: '0.3px' }}>
+              {lang === 'es' ? 'GARANTÍA LISTO PATRÓN (24 HORAS)' : 'LISTO PATRON 24H GUARANTEE'}
+            </p>
+            <p style={{ margin: '2px 0 0', fontSize: '11px', color: '#94A3B8' }}>
+              {lang === 'es' ? 'Trabajo cubierto y protegido sin costo si surge algún detalle.' : 'Work fully covered and protected at no extra cost.'}
+            </p>
+          </div>
+        </div>
+        <span style={{ fontSize: '12px', fontWeight: '800', background: 'rgba(242,96,0,0.2)', color: '#FF7A1A', padding: '6px 12px', borderRadius: '100px', whiteSpace: 'nowrap', border: '1px solid rgba(242,96,0,0.4)' }}>
+          {lang === 'es' ? 'Ver Cobertura →' : 'Details →'}
+        </span>
       </div>
 
       {/* Stats */}
@@ -953,6 +1008,54 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
         userData={userData}
         navigate={navigate}
       />
+
+      {/* Modal de Cobertura de Garantía 24h */}
+      {showGuaranteeModal && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 99999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }} onClick={() => setShowGuaranteeModal(false)}>
+          <div style={{ background: '#fff', borderRadius: 24, padding: '28px 24px', width: '100%', maxWidth: 400, textAlign: 'left', boxShadow: '0 20px 40px rgba(0,0,0,0.25)', maxHeight: '90vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
+            <div style={{ width: 52, height: 52, borderRadius: '50%', background: '#FFF3EC', color: '#F26000', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26, marginBottom: 16 }}>🛡️</div>
+            <h3 style={{ margin: '0 0 8px', fontSize: 18, color: '#1A1A2E', fontWeight: 800 }}>
+              {lang === 'es' ? 'Garantía Listo Patrón 24h' : 'Listo Patrón 24h Guarantee'}
+            </h3>
+            <p style={{ fontSize: 13, color: '#64748B', lineHeight: 1.5, margin: '0 0 16px' }}>
+              {lang === 'es' 
+                ? 'Tu tranquilidad es nuestra prioridad. Todos los servicios contratados a través de Listo Patrón cuentan con cobertura directa durante las primeras 24 horas.' 
+                : 'Your peace of mind is our priority. All services booked through Listo Patrón are covered.'}
+            </p>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 20 }}>
+              <div style={{ background: '#F8FAFC', padding: 12, borderRadius: 14, border: '1px solid #E2E8F0', display: 'flex', gap: 10 }}>
+                <span style={{ fontSize: 18 }}>✅</span>
+                <div>
+                  <h4 style={{ margin: 0, fontSize: 13, color: '#1E293B', fontWeight: 700 }}>{lang === 'es' ? 'Identidad Validada' : 'Verified Identity'}</h4>
+                  <p style={{ margin: '2px 0 0', fontSize: '11px', color: '#64748B' }}>{lang === 'es' ? 'Cédula de identidad oficial auditada por Central de Mando.' : 'Official ID audited by Central Command.'}</p>
+                </div>
+              </div>
+              <div style={{ background: '#F8FAFC', padding: 12, borderRadius: 14, border: '1px solid #E2E8F0', display: 'flex', gap: 10 }}>
+                <span style={{ fontSize: 18 }}>🛠️</span>
+                <div>
+                  <h4 style={{ margin: 0, fontSize: 13, color: '#1E293B', fontWeight: 700 }}>{lang === 'es' ? 'Revisión sin Costo Extra' : 'Free Correction'}</h4>
+                  <p style={{ margin: '2px 0 0', fontSize: '11px', color: '#64748B' }}>{lang === 'es' ? 'Si el trabajo presenta algún detalle técnico, el profesional asistirá a resolverlo sin cargo adicional.' : 'Free correction if any issue arises.'}</p>
+                </div>
+              </div>
+              <div style={{ background: '#F8FAFC', padding: 12, borderRadius: 14, border: '1px solid #E2E8F0', display: 'flex', gap: 10 }}>
+                <span style={{ fontSize: 18 }}>📞</span>
+                <div>
+                  <h4 style={{ margin: 0, fontSize: 13, color: '#1E293B', fontWeight: 700 }}>{lang === 'es' ? 'Soporte Humano Directo' : 'Direct Human Support'}</h4>
+                  <p style={{ margin: '2px 0 0', fontSize: '11px', color: '#64748B' }}>{lang === 'es' ? 'Nuestro equipo de soporte está disponible vía WhatsApp y correo para cualquier aclaración.' : 'Direct support via WhatsApp & email.'}</p>
+                </div>
+              </div>
+            </div>
+
+            <button 
+              onClick={() => setShowGuaranteeModal(false)}
+              style={{ width: '100%', padding: '14px', borderRadius: 16, border: 'none', background: 'linear-gradient(135deg, #F26000, #C24D00)', color: '#fff', fontWeight: 'bold', fontSize: 14, cursor: 'pointer', boxShadow: '0 4px 14px rgba(242,96,0,0.3)' }}
+            >
+              Entendido 👍
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

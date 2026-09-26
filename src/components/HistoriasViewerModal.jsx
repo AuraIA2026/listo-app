@@ -516,6 +516,34 @@ export default function HistoriasViewerModal({
             </div>
           )}
 
+          {/* Offer Sticker (Sticker de Oferta Flash 24h) */}
+          {currentStory?.offerSticker && (
+            <div style={{
+              position: 'absolute',
+              top: '80px',
+              right: '16px',
+              background: 'linear-gradient(135deg, #EF4444, #F26000)',
+              color: '#FFFFFF',
+              padding: '6px 14px',
+              borderRadius: '20px',
+              fontSize: '12px',
+              fontWeight: '900',
+              zIndex: 30,
+              boxShadow: '0 6px 20px rgba(239, 68, 68, 0.6), 0 0 12px rgba(242, 96, 0, 0.5)',
+              border: '2px solid #FFFFFF',
+              animation: 'stickerPulse 1.6s ease-in-out infinite alternate',
+              letterSpacing: '0.4px'
+            }}>
+              <style>{`
+                @keyframes stickerPulse {
+                  0% { transform: scale(0.96) rotate(-2deg); }
+                  100% { transform: scale(1.06) rotate(2deg); }
+                }
+              `}</style>
+              {currentStory.offerSticker}
+            </div>
+          )}
+
           {isVideoStory ? (
             <video
               src={currentStory.videoUrl || currentStory.imageUrl}

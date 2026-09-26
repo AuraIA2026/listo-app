@@ -18,6 +18,7 @@ export default function SubirHistoriaModal({ isOpen, onClose, userData, onStoryU
   const videoRef = useRef(null)
 
   const [caption, setCaption] = useState('')
+  const [offerSticker, setOfferSticker] = useState('none')
   const [isUploading, setIsUploading] = useState(false)
   const [errorMsg, setErrorMsg] = useState('')
   const [warningMsg, setWarningMsg] = useState('')
@@ -202,6 +203,7 @@ export default function SubirHistoriaModal({ isOpen, onClose, userData, onStoryU
         trimEnd: mediaType === 'video' ? trimEnd : 15,
         videoDuration: mediaType === 'video' ? (selectedSegmentDuration || 15) : 15,
         caption: caption.trim() || (isClient ? 'Excelente servicio solicitado en Listo Patrón ⚡' : 'Trabajo realizado con calidad Listo Patrón ⚡'),
+        offerSticker: offerSticker !== 'none' ? offerSticker : null,
         likesCount: 0,
         is5StarVerified: !isClient,
         ratingBadge: isClient ? '⭐ Cliente Listo' : '⭐⭐⭐⭐⭐ Entrega 5 Estrellas',
@@ -430,6 +432,41 @@ export default function SubirHistoriaModal({ isOpen, onClose, userData, onStoryU
                 {tag}
               </button>
             ))}
+          </div>
+
+          {/* Sticker de Oferta Flash 24h */}
+          <div style={{ marginTop: '12px' }}>
+            <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, color: '#334155', marginBottom: '6px' }}>
+              🏷️ Sticker de Oferta Flash 24h (Opcional):
+            </label>
+            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+              {[
+                { id: 'none', label: 'Sin sticker' },
+                { id: '🔥 Oferta 15% OFF', label: '🔥 Oferta 15% OFF' },
+                { id: '⚡ Disponible Hoy', label: '⚡ Disponible Hoy' },
+                { id: '🎁 Descuento Especial', label: '🎁 Descuento Especial' },
+                { id: '⭐ Trabajo Garantizado', label: '⭐ Trabajo Garantizado' },
+              ].map(stk => (
+                <button
+                  key={stk.id}
+                  type="button"
+                  onClick={() => setOfferSticker(stk.id)}
+                  style={{
+                    background: offerSticker === stk.id ? 'linear-gradient(135deg, #F26000, #EF4444)' : '#F1F5F9',
+                    color: offerSticker === stk.id ? '#FFFFFF' : '#475569',
+                    border: offerSticker === stk.id ? '1px solid #F26000' : '1px solid #CBD5E1',
+                    borderRadius: '14px',
+                    padding: '4px 10px',
+                    fontSize: '11px',
+                    fontWeight: 800,
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  {stk.label}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 

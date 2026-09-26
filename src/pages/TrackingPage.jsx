@@ -12,6 +12,7 @@ import vanImg from '../assets/van_topdown.png'
 import { ReportModal } from './ChatPage'
 import CallModal from '../components/CallModal'
 import FloatingChat from '../components/FloatingChat'
+import { getGoogleCalendarUrl, downloadIcsFile } from '../utils/calendarUtils'
 
 delete L.Icon.Default.prototype._getIconUrl
 L.Icon.Default.mergeOptions({
@@ -642,7 +643,22 @@ export default function TrackingPage({ lang = 'es', navigate, professional, user
                   {userRole !== 'pro' && <div className="tracking-pro-rating">★ {pro.rating}<span className="tracking-verified">✓ {lang==='es'?'Verificado':'Verified'}</span></div>}
                 </div>
               </div>
-              <div className="tracking-pro-actions">
+              <div className="tracking-pro-actions" style={{ display: 'flex', gap: '6px' }}>
+                <button 
+                  className="track-action-btn" 
+                  onClick={() => {
+                    const url = getGoogleCalendarUrl({
+                      title: `Servicio con ${pro.name} (${pro.category})`,
+                      description: `Cita de servicio reservada en Listo Patrón con ${pro.name}.`,
+                      location: 'República Dominicana'
+                    })
+                    window.open(url, '_blank')
+                  }}
+                  title="Guardar en Google Calendar"
+                  style={{ background: '#EFF6FF', color: '#2563EB', border: '1px solid #BFDBFE' }}
+                >
+                  📅
+                </button>
                 <button className="track-action-btn call" onClick={() => setShowChat(true)} style={{ opacity: pro.phone ? 1 : 0.4 }}>📞</button>
                 <button className="track-action-btn chat" onClick={() => setShowChat(true)}>💬</button>
               </div>

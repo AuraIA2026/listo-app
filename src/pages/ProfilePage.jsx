@@ -1002,12 +1002,31 @@ export default function ProfilePage({ lang, setLang, navigate, onLogout, initial
         {userRole === 'pro' && (
           <div className="pro-performance-dash">
             <div className="perf-header">
-              <span className="perf-title">📈 {lang==='es' ? 'Rendimiento' : 'Performance'}</span>
+              <span className="perf-title">📈 {lang==='es' ? 'Rendimiento e Ingresos' : 'Performance & Earnings'}</span>
               <span className="perf-badge">🚀 TOP {Math.max(1, Math.floor((6 - (userData?.rating || 0)) * 10))}%</span>
             </div>
             <div className="perf-bar-bg">
               <div className="perf-bar-fill" style={{ width: `${Math.min(((userData?.rating || 0.0) / 5) * 100, 100)}%` }} />
             </div>
+
+            {/* Métrica de Ingresos y Trabajos */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', margin: '12px 0', textAlign: 'center' }}>
+              <div style={{ background: 'rgba(255,255,255,0.06)', borderRadius: '12px', padding: '8px 4px', border: '1px solid rgba(255,255,255,0.08)' }}>
+                <span style={{ fontSize: '10px', color: '#94A3B8', display: 'block' }}>{lang === 'es' ? 'Completados' : 'Completed'}</span>
+                <span style={{ fontSize: '16px', fontWeight: '900', color: '#fff' }}>{userData?.contractsUsed || ordersCount || 0}</span>
+              </div>
+              <div style={{ background: 'rgba(255,255,255,0.06)', borderRadius: '12px', padding: '8px 4px', border: '1px solid rgba(255,255,255,0.08)' }}>
+                <span style={{ fontSize: '10px', color: '#94A3B8', display: 'block' }}>{lang === 'es' ? 'Ingresos Est.' : 'Est. Earnings'}</span>
+                <span style={{ fontSize: '13.5px', fontWeight: '900', color: '#34D399' }}>
+                  RD$ {((userData?.contractsUsed || ordersCount || 0) * 1800).toLocaleString()}
+                </span>
+              </div>
+              <div style={{ background: 'rgba(255,255,255,0.06)', borderRadius: '12px', padding: '8px 4px', border: '1px solid rgba(255,255,255,0.08)' }}>
+                <span style={{ fontSize: '10px', color: '#94A3B8', display: 'block' }}>{lang === 'es' ? 'Respuesta' : 'Response'}</span>
+                <span style={{ fontSize: '16px', fontWeight: '900', color: '#FF7A1A' }}>98%</span>
+              </div>
+            </div>
+
             <p className="perf-sub">{lang==='es' ? '¡Tu perfil destaca sobre los demás!' : 'Your profile stands out!'} {lang==='es' ? 'Mantén el buen servicio.' : 'Keep up the good work.'}</p>
             
             {(!hideUpgrade && (!userData?.planId || userData?.planId === 'basico' || userData?.currentPlan === 'basico' || localStorage.getItem('showUpgradeOverride_Listo_' + userData?.uid) === 'true')) && (

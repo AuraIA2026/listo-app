@@ -7,10 +7,20 @@ import VIPSection, { isProVip } from '../components/VIPSection'
 import HistoriasCarrusel from '../components/HistoriasCarrusel'
 import ProPlanAlertWidget from '../components/ProPlanAlertWidget'
 import PlanSelectionModal from '../components/PlanSelectionModal'
+import EstimadorPreciosModal from '../components/EstimadorPreciosModal'
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
+import 'leaflet/dist/leaflet.css'
+import L from 'leaflet'
 import recomendarIcon from '../assets/icons/recomendar.png'
 import opinionesIcon from '../assets/icons/opiniones.png'
 import compartirIcon from '../assets/icons/compartir.png'
 import './SearchPage.css'
+
+const customProIcon = new L.Icon({
+  iconUrl: 'https://cdn-icons-png.flaticon.com/512/3203/3203071.png',
+  iconSize: [36, 36],
+  iconAnchor: [18, 36],
+})
 
 const txt = {
   es: {
@@ -549,6 +559,8 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
   const [openCategory,      setOpenCategory]      = useState(null)
   const [activeProvince,    setActiveProvince]    = useState(initialProvince || 'all')
   const [showPlanModal,     setShowPlanModal]     = useState(false)
+  const [showEstimadorModal, setShowEstimadorModal] = useState(false)
+  const [viewMode,           setViewMode]          = useState('list') // 'list' | 'map'
   
   useEffect(() => {
     if (initialCategory) {
@@ -850,7 +862,7 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
       {/* ── ALERTA INTELIGENTE DE PLAN Y CONTRATOS PARA PROFESIONALES ── */}
       <ProPlanAlertWidget userData={userData} onOpenPlanModal={() => setShowPlanModal(true)} />
 
-      <div className="pill-filters">
+      <div className="pill-filters" style={{ display: 'flex', gap: '8px', overflowX: 'auto', alignItems: 'center' }}>
         <button className={`pill-btn ${quickFilter === 'all' ? 'active' : ''}`} onClick={() => setQuickFilter('all')}>
           🌐 {lang === 'es' ? 'Todos' : 'All'}
         </button>
@@ -862,6 +874,12 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
         </button>
         <button className={`pill-btn ${quickFilter === 'premium' ? 'active' : ''}`} onClick={() => setQuickFilter('premium')}>
           💎 {lang === 'es' ? 'Premium' : 'Premium'}
+        </button>
+        <button className="pill-btn" onClick={() => setShowEstimadorModal(true)} style={{ background: '#ECFDF5', color: '#059669', borderColor: '#A7F3D0', fontWeight: '800' }}>
+          📊 {lang === 'es' ? 'Precios RD$' : 'RD$ Prices'}
+        </button>
+        <button className="pill-btn" onClick={() => setViewMode(v => v === 'list' ? 'map' : 'list')} style={{ background: viewMode==='map' ? '#F26000' : '#1E293B', color: '#fff', border: 'none', fontWeight: '800' }}>
+          {viewMode === 'list' ? '🗺️ Mapa GPS' : '📋 Lista'}
         </button>
       </div>
 
@@ -924,7 +942,34 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
         {!loading && <span className="results-count">{filtered.length} {T.results}</span>}
       </div>
 
-      {loading ? (
+      {viewMode === 'map' ? (
+        <div style={{ margin: '0 16px 20px', height: '450px', borderRadius: '20px', overflow: 'hidden', boxShadow: '0 8px 30px rgba(0,0,0,0.15)', border: '2px solid #F26000' }}>
+          <MapContainer center={[18.7357, -70.1627]} zoom={9} style={{ height: '100%', width: '100%' }}>
+            <TileLayer url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png" />
+            {filtered.map(pro => {
+              const lat = pro.coords?.lat || 18.4861 + (Math.random() * 0.1 - 0.05)
+              const lng = pro.coords?.lng || -69.9312 + (Math.random() * 0.1 - 0.05)
+              return (
+                <Marker key={pro.id} position={[lat, lng]} icon={customProIcon}>
+                  <Popup>
+                    <div style={{ textAlign: 'center', padding: '6px' }}>
+                      <h4 style={{ margin: '0 0 4px', fontSize: '14px', fontWeight: '800', color: '#1A1A2E' }}>{pro.name}</h4>
+                      <p style={{ margin: '0 0 6px', fontSize: '12px', color: '#F26000', fontWeight: '700' }}>{pro.category}</p>
+                      <p style={{ margin: '0 0 8px', fontSize: '11px', color: '#64748B' }}>📍 {pro.location}</p>
+                      <button 
+                        onClick={() => navigate('proProfile', pro)}
+                        style={{ background: '#F26000', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '12px', fontSize: '11px', fontWeight: '800', cursor: 'pointer' }}
+                      >
+                        Ver Perfil →
+                      </button>
+                    </div>
+                  </Popup>
+                </Marker>
+              )
+            })}
+          </MapContainer>
+        </div>
+      ) : loading ? (
         <div className="professionals-grid">
           {[1,2,3,4,5,6,7,8].map(n => (
             <div key={n} className="skeleton-card pro-card-skel">
@@ -1145,6 +1190,14 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
         isOpen={showPlanModal} 
         onClose={() => setShowPlanModal(false)} 
         proInfo={userData} 
+      />
+
+      {/* Modal de Estimador de Precios en RD$ */}
+      <EstimadorPreciosModal 
+        isOpen={showEstimadorModal} 
+        onClose={() => setShowEstimadorModal(false)} 
+        lang={lang}
+        onSelectCategory={(cat) => setSearch(cat)}
       />
     </div>
   )
