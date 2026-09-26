@@ -34,6 +34,8 @@ import EditarLocal            from './locales/EditarLocal'
 import NotificacionPage       from './pages/Notificacionpage'
 import PoliciesPage           from './pages/PoliciesPage'
 import LandingPage            from './pages/LandingPage'
+import PwaInstallBanner       from './components/PwaInstallBanner'
+import { sendBrowserNotification } from './utils/notifications'
 import logoBlanco             from './assets/logo listo blanco.png'
 import './App.css'
 
@@ -578,6 +580,10 @@ export default function App() {
           banneredChatIds.current.add(chatId)
           playMsgSound()
           setChatBanner({ sender: senderName, text: lastMsg.text || '📎 Mensaje', chatId })
+          sendBrowserNotification(`💬 Mensaje de ${senderName}`, {
+            body: lastMsg.text || 'Tienes un nuevo mensaje en Listo Patrón',
+            url: '/orders'
+          })
         })
         unsubMap.set(chatId, unsubMsg)
       })
@@ -608,6 +614,10 @@ export default function App() {
         updateDoc(doc(db, 'notificaciones', docSnap.id), { read: true }).catch(() => {})
         playJobDoneSound()
         setJobDoneAlert({ notifId: docSnap.id, orderId: d.orderId || null, title: d.title, text: d.text })
+        sendBrowserNotification(d.title || '🎉 ¡Trabajo Terminado!', {
+          body: d.text || 'El profesional ha completado el servicio.',
+          url: '/orders'
+        })
       })
     })
     return () => unsub()
@@ -639,6 +649,10 @@ export default function App() {
         } catch(e){}
 
         setSystemAlert({ id: toShow.id, title: toShow.title, text: toShow.text });
+        sendBrowserNotification(toShow.title || '🔔 Notificación de Listo Patrón', {
+          body: toShow.text || 'Tienes una nueva notificación.',
+          url: '/notificaciones'
+        })
       }
     })
     return () => unsub()
@@ -670,6 +684,10 @@ export default function App() {
             setNotifiedOrderIds(prev => {
               if (!prev.has(newest.id)) {
                 alertActiveRef.current = true; startAlertSound(); setAlertOrder(newest)
+                sendBrowserNotification('🚨 NUEVA SOLICITUD DE TRABAJO', {
+                  body: `${newest.pro} te ha solicitado para ${newest.specialty}.`,
+                  url: '/orders'
+                })
                 const nextSet = new Set(prev); nextSet.add(newest.id); return nextSet
               }
               return prev
@@ -697,6 +715,10 @@ export default function App() {
             setNotifiedOrderIds(prev => {
               if (!prev.has(newest.id + '_accepted')) {
                 setAlertOrder({ ...newest, isUserAlert: true })
+                sendBrowserNotification('✅ ¡Pedido Aceptado!', {
+                  body: `${newest.pro} ha aceptado tu solicitud de ${newest.specialty}.`,
+                  url: '/tracking'
+                })
                 const nextSet = new Set(prev); nextSet.add(newest.id + '_accepted'); return nextSet
               }
               return prev
@@ -773,7 +795,7 @@ export default function App() {
 
       {showBottom && <BottomNav currentPage={currentPage} navigate={navigate} lang={lang} userData={userData} />}
 
-
+      <PwaInstallBanner />
 
       {userData?.bonusMessage && (
         <BonusMessageModal bonus={userData.bonusMessage} userId={userData.uid} onClose={() => {}} />

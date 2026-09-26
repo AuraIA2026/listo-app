@@ -518,29 +518,49 @@ export default function HistoriasViewerModal({
 
           {/* Offer Sticker (Sticker de Oferta Flash 24h) */}
           {currentStory?.offerSticker && (
-            <div style={{
-              position: 'absolute',
-              top: '80px',
-              right: '16px',
-              background: 'linear-gradient(135deg, #EF4444, #F26000)',
-              color: '#FFFFFF',
-              padding: '6px 14px',
-              borderRadius: '20px',
-              fontSize: '12px',
-              fontWeight: '900',
-              zIndex: 30,
-              boxShadow: '0 6px 20px rgba(239, 68, 68, 0.6), 0 0 12px rgba(242, 96, 0, 0.5)',
-              border: '2px solid #FFFFFF',
-              animation: 'stickerPulse 1.6s ease-in-out infinite alternate',
-              letterSpacing: '0.4px'
-            }}>
+            <div 
+              onClick={handleContratarClick}
+              style={{
+                position: 'absolute',
+                top: '80px',
+                right: '16px',
+                background: 'linear-gradient(135deg, #EF4444, #F26000)',
+                color: '#FFFFFF',
+                padding: '8px 16px',
+                borderRadius: '24px',
+                fontSize: '12px',
+                fontWeight: '900',
+                zIndex: 35,
+                boxShadow: '0 6px 22px rgba(239, 68, 68, 0.7), 0 0 16px rgba(242, 96, 0, 0.6)',
+                border: '2px solid #FFFFFF',
+                animation: 'stickerPulse 1.6s ease-in-out infinite alternate',
+                letterSpacing: '0.4px',
+                cursor: 'pointer',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '4px'
+              }}
+              title="Toca para solicitar esta oferta directamente"
+            >
               <style>{`
                 @keyframes stickerPulse {
                   0% { transform: scale(0.96) rotate(-2deg); }
                   100% { transform: scale(1.06) rotate(2deg); }
                 }
               `}</style>
-              {currentStory.offerSticker}
+              <span>{currentStory.offerSticker}</span>
+              <span style={{
+                background: '#FFFFFF',
+                color: '#DC2626',
+                fontSize: '10px',
+                padding: '2px 8px',
+                borderRadius: '12px',
+                fontWeight: '900',
+                boxShadow: '0 2px 6px rgba(0,0,0,0.2)'
+              }}>
+                ⚡ Solicitar esta Oferta ›
+              </span>
             </div>
           )}
 

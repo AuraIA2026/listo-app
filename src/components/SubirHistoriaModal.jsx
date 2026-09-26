@@ -439,9 +439,11 @@ export default function SubirHistoriaModal({ isOpen, onClose, userData, onStoryU
             <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, color: '#334155', marginBottom: '6px' }}>
               🏷️ Sticker de Oferta Flash 24h (Opcional):
             </label>
-            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+            
+            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '8px' }}>
               {[
                 { id: 'none', label: 'Sin sticker' },
+                { id: '🔥 Oferta del día - RD$ 500 off', label: '🔥 Oferta del día - RD$ 500 off' },
                 { id: '🔥 Oferta 15% OFF', label: '🔥 Oferta 15% OFF' },
                 { id: '⚡ Disponible Hoy', label: '⚡ Disponible Hoy' },
                 { id: '🎁 Descuento Especial', label: '🎁 Descuento Especial' },
@@ -467,6 +469,22 @@ export default function SubirHistoriaModal({ isOpen, onClose, userData, onStoryU
                 </button>
               ))}
             </div>
+
+            <input
+              type="text"
+              value={offerSticker === 'none' ? '' : offerSticker}
+              onChange={(e) => setOfferSticker(e.target.value || 'none')}
+              placeholder="O escribe tu oferta personalizada (ej: 🔥 Oferta del día - RD$ 500 off)"
+              style={{
+                width: '100%',
+                padding: '8px 12px',
+                borderRadius: '10px',
+                border: '1.5px solid #CBD5E1',
+                fontSize: '12px',
+                fontWeight: 700,
+                outline: 'none'
+              }}
+            />
           </div>
         </div>
 
