@@ -5,7 +5,7 @@ import { CATEGORIES, ALL_SUBCATEGORIES } from '../categories'
 import { useUserData } from '../useUserData'
 import logoListo from '../assets/logo_listo.png'
 import HistoriasViewerModal from '../components/HistoriasViewerModal'
-import BeforeAfterSlider from '../components/BeforeAfterSlider'
+import ExoticWorkPortfolio from '../components/ExoticWorkPortfolio'
 import './ProfessionalProfilePage.css'
 
 const txt = {
@@ -162,23 +162,14 @@ function PhotoGrid({ photos, lang, isOwnProfile, onUploadPhoto, onDeletePhoto, h
          </div>
       )}
 
-      {/* Comparativa Antes / Después */}
-      <div style={{ marginBottom: '20px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
-          <h3 style={{ margin: 0, fontSize: '15px', fontWeight: '800', color: '#1A1A2E' }}>
-            ↔ {lang === 'es' ? 'Comparativa Antes y Después' : 'Before & After Comparison'}
-          </h3>
-          <span style={{ fontSize: '11px', color: '#F26000', fontWeight: '700', background: '#FFF3EC', padding: '3px 8px', borderRadius: '100px' }}>
-            {lang === 'es' ? 'Desliza para comparar' : 'Slide to compare'}
-          </span>
-        </div>
-        <BeforeAfterSlider 
-          beforeImg={photos[1] ? (typeof photos[1] === 'string' ? photos[1] : photos[1].url) : 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=800&q=80'}
-          afterImg={photos[0] ? (typeof photos[0] === 'string' ? photos[0] : photos[0].url) : 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=800&q=80'}
-          beforeLabel={lang === 'es' ? 'Antes del Servicio' : 'Before'}
-          afterLabel={lang === 'es' ? 'Resultado Listo Patrón' : 'After'}
-        />
-      </div>
+      {/* Álbum Exótico de Trabajos Realizados */}
+      <ExoticWorkPortfolio 
+        lang={lang}
+        photos={photos}
+        proName={name}
+        proCategory={category}
+        onHireClick={onBook}
+      />
 
       <div className="photos-grid-title-wrap">
         <h2 className="photos-grid-title">{T.photos}</h2>
