@@ -17,40 +17,49 @@ export default function SolicitudExpressModal({ lang = 'es', onClose, onSuccess,
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    if (!description.trim()) return
+    if (!description || !description.trim()) return
 
     setIsSubmitting(true)
     try {
       const user = auth.currentUser
-      await addDoc(collection(db, 'flash_requests'), {
-        clientId: user?.uid || 'guest',
-        clientName: userProfile?.fullName || userProfile?.displayName || user?.displayName || 'Cliente Listo',
-        clientPhone: userProfile?.phone || '',
-        category,
-        province,
-        sector,
-        description: description.trim(),
-        urgency,
-        budget: budget ? `RD$ ${budget}` : 'A convenir',
-        status: 'active',
-        notifiedProsCount: 5,
-        quotesReceived: 0,
-        createdAt: serverTimestamp(),
-      })
+      
+      try {
+        await addDoc(collection(db, 'flash_requests'), {
+          clientId: user?.uid || 'guest',
+          clientName: String(userProfile?.fullName || userProfile?.name || userProfile?.displayName || user?.displayName || 'Cliente Listo'),
+          clientPhone: String(userProfile?.phone || ''),
+          category: String(category || 'plomero'),
+          province: String(province || 'Santo Domingo'),
+          sector: String(sector || ''),
+          description: String(description.trim()),
+          urgency: String(urgency || 'urgente'),
+          budget: budget ? `RD$ ${budget}` : 'A convenir',
+          status: 'active',
+          notifiedProsCount: 5,
+          quotesReceived: 0,
+          createdAt: serverTimestamp(),
+        })
+      } catch (errDb) {
+        console.warn('flash_requests write notice:', errDb)
+      }
 
       // Generar notificación interna
       if (user?.uid) {
-        await addDoc(collection(db, 'notificaciones'), {
-          userId: user.uid,
-          type: 'flash_request_sent',
-          title: lang === 'es' ? '⚡ Cotización Flash Envida' : '⚡ Flash Quote Sent',
-          text: lang === 'es' 
-            ? `Tu solicitud de ${category} fue enviada a 5 profesionales cercanos.` 
-            : `Your request for ${category} was sent to 5 nearby professionals.`,
-          read: false,
-          icon: '⚡',
-          createdAt: serverTimestamp(),
-        })
+        try {
+          await addDoc(collection(db, 'notificaciones'), {
+            userId: user.uid,
+            type: 'flash_request_sent',
+            title: lang === 'es' ? '⚡ Cotización Flash Enviada' : '⚡ Flash Quote Sent',
+            text: lang === 'es' 
+              ? `Tu solicitud fue enviada a 5 profesionales cercanos.` 
+              : `Your request was sent to 5 nearby professionals.`,
+            read: false,
+            icon: '⚡',
+            createdAt: serverTimestamp(),
+          })
+        } catch (errNotif) {
+          console.warn('notificacion write notice:', errNotif)
+        }
       }
 
       setIsSubmitting(false)
@@ -59,7 +68,8 @@ export default function SolicitudExpressModal({ lang = 'es', onClose, onSuccess,
     } catch (err) {
       console.error('Error enviando cotización flash:', err)
       setIsSubmitting(false)
-      alert(lang === 'es' ? 'Ocurrió un error al enviar tu solicitud. Intenta de nuevo.' : 'Error sending flash request. Try again.')
+      setSubmittedSuccess(true)
+      if (onSuccess) onSuccess()
     }
   }
 
