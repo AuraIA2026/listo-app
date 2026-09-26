@@ -20,6 +20,7 @@ import { CATEGORIES, ALL_SUBCATEGORIES, PROVINCES_LIST } from '../categories'
 import { detectGpsLocation } from '../utils/gpsLocation'
 import ProPlanAlertWidget from '../components/ProPlanAlertWidget'
 import GpsRadarWidget from '../components/GpsRadarWidget'
+import RebookCircleWidget from '../components/RebookCircleWidget'
 import LightningOfferBannerModal from '../components/LightningOfferBannerModal'
 
 import mecanico   from '../assets/pros/Mecanico.jpg'
@@ -1319,9 +1320,12 @@ export default function HomePage({ lang, navigate, userRole }) {
           ⚡ Ofertas Relámpago
         </button>
 
-        {/* ── BOTÓN CÍRCULO GPS RADAR (UBICADO EN LA CINTA DEBAJO/DESPUÉS DE OFERTAS RELÁMPAGO) ── */}
+        {/* ── BOTONES CÍRCULO GPS RADAR Y RE-CONTRATAR CON ORBITAL (UBICADOS EN LA CINTA SUPERIOR) ── */}
         {!isPro && (
-          <GpsRadarWidget pros={allProsToUse} navigate={navigate} lang={lang} />
+          <>
+            <GpsRadarWidget pros={allProsToUse} navigate={navigate} lang={lang} />
+            <RebookCircleWidget hiredProsList={hiredProsList} navigate={navigate} lang={lang} />
+          </>
         )}
         <button className="amz-nav-pill" onClick={() => navigate('search', { catToSelect: 'mecanico' })}>
           🔧 Mecánicos
@@ -1478,188 +1482,6 @@ export default function HomePage({ lang, navigate, userRole }) {
           )}
         </div>
       </section>
-
-      {/* ── TARJETA RE-CONTRATACIÓN RÁPIDA 1-CLIC (CÍRCULOS DE TODOS LOS PROFESIONALES CONTRATADOS) ── */}
-      {!isPro && (hiredProsList.length > 0 || lastHiredPro) && (
-        <div 
-          className="rebook-card-container fade-up"
-          style={{
-            margin: '0 16px 18px',
-            background: 'linear-gradient(135deg, #1E1B4B 0%, #312E81 100%)',
-            borderRadius: '20px',
-            padding: '16px',
-            color: '#FFFFFF',
-            boxShadow: '0 8px 24px rgba(49, 46, 129, 0.35)',
-            border: '1.5px solid rgba(255, 255, 255, 0.15)',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '12px'
-          }}
-        >
-          {/* Header Bar */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ fontSize: '10px', background: 'rgba(242, 96, 0, 0.25)', color: '#FF9E66', padding: '3px 10px', borderRadius: '12px', fontWeight: '800', border: '1px solid rgba(242, 96, 0, 0.4)' }}>
-                ⚡ RE-CONTRATACIÓN 1-CLIC
-              </span>
-              <span style={{ fontSize: '11px', color: '#A5B4FC', fontWeight: '700' }}>
-                ({hiredProsList.length} {hiredProsList.length === 1 ? 'socio contratado' : 'socios contratados'})
-              </span>
-            </div>
-            <span style={{ fontSize: '10.5px', color: '#C7D2FE', fontWeight: '600' }}>
-              Toca un círculo para contratar
-            </span>
-          </div>
-
-          {/* Carrusel Horizontal de Círculos de Todos los Profesionales Contratados */}
-          <div style={{
-            display: 'flex',
-            gap: '14px',
-            overflowX: 'auto',
-            paddingBottom: '4px',
-            scrollbarWidth: 'none',
-            alignItems: 'center'
-          }}>
-            {hiredProsList.map((item, idx) => {
-              const activePro = selectedRebookPro || hiredProsList[0]
-              const isSelected = (activePro?.proId && activePro.proId === item.proId) || (activePro?.proName && activePro.proName === item.proName) || (!selectedRebookPro && idx === 0)
-
-              return (
-                <div
-                  key={item.id || item.proId || idx}
-                  onClick={() => setSelectedRebookPro(item)}
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    cursor: 'pointer',
-                    flexShrink: 0,
-                    transition: 'transform 0.2s ease'
-                  }}
-                  title={`Toca para volver a contratar a ${item.proName}`}
-                >
-                  <div style={{ position: 'relative' }}>
-                    <img 
-                      src={item.proPhotoURL || item.photoURL || 'https://randomuser.me/api/portraits/men/32.jpg'} 
-                      alt={item.proName} 
-                      style={{ 
-                        width: '54px', 
-                        height: '54px', 
-                        borderRadius: '50%', 
-                        objectFit: 'cover', 
-                        border: isSelected ? '3px solid #F26000' : '2px solid rgba(255,255,255,0.4)',
-                        boxShadow: isSelected ? '0 0 16px rgba(242, 96, 0, 0.9)' : '0 2px 8px rgba(0,0,0,0.3)',
-                        transition: 'all 0.2s ease'
-                      }} 
-                    />
-                    <span style={{ 
-                      position: 'absolute', 
-                      bottom: '-2px', 
-                      right: '-2px', 
-                      background: isSelected ? '#F26000' : '#475569', 
-                      color: '#FFF', 
-                      fontSize: '10px', 
-                      borderRadius: '50%', 
-                      width: '18px', 
-                      height: '18px', 
-                      display: 'flex', 
-                      alignItems: 'center', 
-                      justifyContent: 'center', 
-                      fontWeight: 'bold',
-                      border: '1.5px solid #1E1B4B'
-                    }}>
-                      🔄
-                    </span>
-                  </div>
-
-                  <span style={{ 
-                    fontSize: '11px', 
-                    fontWeight: isSelected ? '900' : '700', 
-                    color: isSelected ? '#FFFFFF' : '#C7D2FE',
-                    marginTop: '4px',
-                    maxWidth: '68px',
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    textAlign: 'center'
-                  }}>
-                    {item.proName?.split(' ')[0]}
-                  </span>
-                  
-                  <span style={{ 
-                    fontSize: '9.5px', 
-                    color: '#93C5FD', 
-                    fontWeight: '600',
-                    maxWidth: '68px',
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis'
-                  }}>
-                    {item.proSpecialty?.split(' ')[0] || 'Socio'}
-                  </span>
-                </div>
-              )
-            })}
-          </div>
-
-          {/* Tarjeta Detalle del Profesional Seleccionado con Botón Volver a Contratar */}
-          {selectedRebookPro && (
-            <div style={{
-              background: 'rgba(255, 255, 255, 0.08)',
-              borderRadius: '14px',
-              padding: '10px 12px',
-              display: 'flex',
-              alignItems: 'center',
-              justify: 'space-between',
-              gap: '10px',
-              border: '1px solid rgba(255, 255, 255, 0.12)'
-            }}>
-              <div style={{ minWidth: 0, flex: 1 }}>
-                <h4 style={{ margin: 0, fontSize: '13.5px', fontWeight: '900', color: '#FFFFFF', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                  ¿Necesitas a {selectedRebookPro.proName}?
-                </h4>
-                <p style={{ margin: '2px 0 0', fontSize: '11px', color: '#C7D2FE', fontWeight: '600', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                  ⚡ {selectedRebookPro.proSpecialty || 'Socio contratado anteriormente'}
-                </p>
-              </div>
-
-              <button
-                onClick={() => {
-                  const proToBook = {
-                    id: selectedRebookPro.proId,
-                    name: selectedRebookPro.proName,
-                    nameEs: selectedRebookPro.proName,
-                    category: selectedRebookPro.proSpecialty,
-                    specEs: selectedRebookPro.proSpecialty,
-                    photoURL: selectedRebookPro.proPhotoURL || selectedRebookPro.photoURL,
-                    img: selectedRebookPro.proPhotoURL || selectedRebookPro.photoURL,
-                    avatar: (selectedRebookPro.proName || 'P').charAt(0).toUpperCase()
-                  };
-                  navigate('booking', { professional: proToBook });
-                }}
-                style={{
-                  background: 'linear-gradient(135deg, #F26000 0%, #FF7A1A 100%)',
-                  color: '#FFFFFF',
-                  border: 'none',
-                  borderRadius: '14px',
-                  padding: '8px 14px',
-                  fontSize: '12px',
-                  fontWeight: '900',
-                  cursor: 'pointer',
-                  boxShadow: '0 4px 12px rgba(242, 96, 0, 0.4)',
-                  flexShrink: 0,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px'
-                }}
-              >
-                <span>⚡</span>
-                <span>Volver a Contratar</span>
-              </button>
-            </div>
-          )}
-        </div>
-      )}
 
       {/* ── LO QUE DICEN NUESTROS CLIENTES (UBICADO DEBAJO DE LA BARRA DE RE-CONTRATACIÓN 1-CLIC) ── */}
       <TestimonialsCarousel lang={lang} navigate={navigate} />
