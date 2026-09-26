@@ -112,6 +112,21 @@ export default function ReciboDigitalModal({ lang = 'es', onClose, orderData }) 
                   <td>{paymentMethod}</td>
                   <td style={{ textAlign: 'right', fontWeight: '800' }}>RD$ {amountStr}</td>
                 </tr>
+                {(orderData?.tipAmount > 0 || orderData?.propina > 0) && (
+                  <tr style={{ background: '#FFF3EC' }}>
+                    <td>
+                      <strong style={{ color: '#C24D00' }}>🎁 Propina al Profesional (100% Directa)</strong>
+                      <br />
+                      <span style={{ fontSize: '11px', color: '#883A00' }}>
+                        Recompensa por servicio de calidad
+                      </span>
+                    </td>
+                    <td>-</td>
+                    <td style={{ textAlign: 'right', fontWeight: '800', color: '#C24D00' }}>
+                      RD$ {(orderData?.tipAmount || orderData?.propina).toLocaleString()}
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>

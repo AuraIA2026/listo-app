@@ -8,6 +8,7 @@ import SubirHistoriaModal from '../components/SubirHistoriaModal'
 import VerificacionPage    from './VerificacionPage'
 import RegistroClientePage from './RegistroClientePage'
 import PlanSelectionModal from '../components/PlanSelectionModal'
+import ProFinanzasModal from '../components/ProFinanzasModal'
 
 
 const txt = {
@@ -90,6 +91,7 @@ const txt = {
 }
 
 const menuItems = [
+  { icon: '📊', labelEs: 'Mis Ganancias y Finanzas (RD$)', labelEn: 'My Earnings & Financials', action: 'finances' },
   { icon: '🛡️', labelEs: 'Verificación Profesional',  labelEn: 'Professional Verification', action: 'verification' },
   { icon: '📋', labelEs: 'Mis pedidos',                labelEn: 'My orders',                 action: 'orders' },
   { icon: '❤️', labelEs: 'Favoritos',                  labelEn: 'Favorites',                 action: 'favorites' },
@@ -729,6 +731,7 @@ export default function ProfilePage({ lang, setLang, navigate, onLogout, initial
   const [ordersCount, setOrdersCount] = useState(0)
   const [showSubirHistoria, setShowSubirHistoria] = useState(false)
   const [showPlanModal, setShowPlanModal] = useState(false)
+  const [showFinanzasModal, setShowFinanzasModal] = useState(false)
   const [hideUpgrade, setHideUpgrade] = useState(() => localStorage.getItem('hideUpgrade_Listo_' + (userData?.uid || 'guest')) === 'true')
 
   useEffect(() => {
@@ -820,6 +823,7 @@ export default function ProfilePage({ lang, setLang, navigate, onLogout, initial
   }
 
   const handleMenu = (action) => {
+    if (action === 'finances') { setShowFinanzasModal(true); return }
     if (action === 'orders') { navigate('orders'); return }
     if (action === 'clientProfile') { 
       if (userRole === 'pro') {
@@ -1029,6 +1033,29 @@ export default function ProfilePage({ lang, setLang, navigate, onLogout, initial
 
             <p className="perf-sub">{lang==='es' ? '¡Tu perfil destaca sobre los demás!' : 'Your profile stands out!'} {lang==='es' ? 'Mantén el buen servicio.' : 'Keep up the good work.'}</p>
             
+            <button 
+              onClick={() => setShowFinanzasModal(true)}
+              style={{
+                width: '100%',
+                margin: '10px 0 0',
+                padding: '12px 14px',
+                borderRadius: '14px',
+                background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
+                color: '#fff',
+                fontWeight: '800',
+                fontSize: '13px',
+                border: 'none',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                boxShadow: '0 4px 14px rgba(16,185,129,0.35)'
+              }}
+            >
+              <span>📊</span> {lang === 'es' ? 'Ver Dashboard de Ganancias y Propinas' : 'View Earnings & Tips Dashboard'}
+            </button>
+            
             {(!hideUpgrade && (!userData?.planId || userData?.planId === 'basico' || userData?.currentPlan === 'basico' || localStorage.getItem('showUpgradeOverride_Listo_' + userData?.uid) === 'true')) && (
               <div style={{ position: 'relative', marginTop: '12px' }}>
                 <button data-tour="comprar-plan" className="perf-action" onClick={(e) => {
@@ -1154,7 +1181,7 @@ export default function ProfilePage({ lang, setLang, navigate, onLogout, initial
         )}
 
         {menuItems
-          .filter(item => item.action !== 'verification' || userRole === 'pro')
+          .filter(item => (item.action !== 'verification' || userRole === 'pro') && (item.action !== 'finances' || userRole === 'pro'))
           .map((item, i) => {
             let btnClass = 'profile-menu-item '
             if (item.action === 'verification') {
@@ -1240,6 +1267,14 @@ export default function ProfilePage({ lang, setLang, navigate, onLogout, initial
 
       {showLogout && <LogoutModal lang={lang} onConfirm={handleLogout} onCancel={() => setShowLogout(false)} />}
       {showDelete && <DeleteAccountModal lang={lang} onConfirm={handleDeleteAccount} onCancel={() => setShowDelete(false)} />}
+
+      {showFinanzasModal && (
+        <ProFinanzasModal 
+          lang={lang} 
+          onClose={() => setShowFinanzasModal(false)} 
+          proUserData={userData} 
+        />
+      )}
 
       <PlanSelectionModal 
         isOpen={showPlanModal} 

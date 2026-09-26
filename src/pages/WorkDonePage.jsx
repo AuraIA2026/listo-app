@@ -338,6 +338,8 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
         finalComment = "Servicio completado."
       }
 
+      const tipVal = parseFloat(formData.propina || 0)
+
       // Actualizar Firestore orders
       await updateDoc(doc(db, 'orders', latestOrder.id), {
         rated: true,
@@ -346,19 +348,26 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
         reviewerName: finalUserData?.name || 'Cliente',
         checkoutMontoAcordado: formData.montoAcordado || '',
         checkoutMontoFinal: formData.montoFinal || '',
-        checkoutFormaPago: formData.formaPago || ''
+        checkoutFormaPago: formData.formaPago || '',
+        tipAmount: tipVal,
+        propina: tipVal
       })
 
       // Notificar al profesional con push nativo y otorgar progreso/contrato gratis
       if (latestOrder.proId) {
+        let notifText = lang==='es' ? `Recibiste ${formData.calificacion} estrellas por Trabajo Listo.` : `You received a ${formData.calificacion} star rating.`
+        if (tipVal > 0) {
+          notifText += lang==='es' ? ` 🎁 ¡Además recibiste RD$ ${tipVal} de propina!` : ` 🎁 Plus you received a RD$ ${tipVal} tip!`
+        }
+
         await addDoc(collection(db, 'notificaciones'), {
           userId:    latestOrder.proId,
           orderId:   latestOrder.id,
           type:      'new_review',
-          title:     lang==='es' ? '⭐ ¡Nueva Reseña!' : '⭐ New Review!',
-          text:      lang==='es' ? `Recibiste ${formData.calificacion} estrellas por Trabajo Listo.` : `You received a ${formData.calificacion} star rating.`,
+          title:     tipVal > 0 ? (lang==='es' ? '⭐ ¡Reseña + 🎁 Propina Recibida!' : '⭐ Review + 🎁 Tip Received!') : (lang==='es' ? '⭐ ¡Nueva Reseña!' : '⭐ New Review!'),
+          text:      notifText,
           read:      false,
-          icon:      '⭐',
+          icon:      tipVal > 0 ? '🎁' : '⭐',
           createdAt: serverTimestamp()
         })
 
@@ -911,6 +920,47 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
                 <input type="text" name="gastosAdicionales" placeholder="Ej: materiales extra..."
                   value={formData.gastosAdicionales} onChange={handleChange}
                   style={s.input} />
+              </div>
+
+              {/* 🎁 Selector de Propina Digital */}
+              <div style={{ marginTop: '16px', background: 'linear-gradient(135deg, #FFF3EC 0%, #FFE4D6 100%)', padding: '14px', borderRadius: '16px', border: '1.5px solid #FFD4B0' }}>
+                <p style={{ margin: '0 0 4px', fontSize: '13px', fontWeight: '800', color: '#C24D00', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <span>🎁</span> {lang === 'es' ? 'Propina al Profesional (Opcional)' : 'Tip the Professional (Optional)'}
+                </p>
+                <p style={{ margin: '0 0 10px', fontSize: '11px', color: '#883A00' }}>
+                  {lang === 'es' ? 'Recompensa su buen servicio. El 100% de la propina va directo al técnico.' : '100% of the tip goes directly to the technician.'}
+                </p>
+                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                  {[0, 100, 200, 500].map(val => (
+                    <button
+                      key={val}
+                      type="button"
+                      onClick={() => setFormData({ ...formData, propina: val })}
+                      style={{
+                        flex: 1,
+                        minWidth: '65px',
+                        padding: '8px 10px',
+                        borderRadius: '12px',
+                        border: formData.propina === val ? '2px solid #F26000' : '1px solid #FFC299',
+                        background: formData.propina === val ? '#F26000' : '#ffffff',
+                        color: formData.propina === val ? '#ffffff' : '#C24D00',
+                        fontWeight: '800',
+                        fontSize: '12px',
+                        cursor: 'pointer',
+                        boxShadow: formData.propina === val ? '0 4px 10px rgba(242,96,0,0.25)' : 'none',
+                        transition: 'all 0.2s'
+                      }}
+                    >
+                      {val === 0 ? (lang === 'es' ? 'Sin propina' : 'No tip') : `RD$ ${val}`}
+                    </button>
+                  ))}
+                </div>
+                {formData.propina > 0 && (
+                  <div style={{ marginTop: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12px', fontWeight: '800', color: '#059669', background: '#ECFDF5', padding: '8px 12px', borderRadius: '10px', border: '1px solid #A7F3D0' }}>
+                    <span>Total con propina incluida:</span>
+                    <span>RD$ {(parseFloat(formData.montoFinal || formData.montoAcordado || 0) + formData.propina).toLocaleString()}</span>
+                  </div>
+                )}
               </div>
             </div>
 
