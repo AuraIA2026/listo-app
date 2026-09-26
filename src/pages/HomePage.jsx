@@ -1917,61 +1917,6 @@ export default function HomePage({ lang, navigate, userRole }) {
         }} 
       />
 
-      {/* ── BOTÓN FLOTANTE ESTRATÉGICO: COTIZACIÓN FLASH EXPRESS ⚡ ── */}
-      {!isPro && (
-        <div
-          onClick={() => setShowSolicitudExpress(true)}
-          style={{
-            position: 'fixed',
-            bottom: '88px',
-            right: '18px',
-            zIndex: 9999,
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            background: 'linear-gradient(135deg, #F26000 0%, #FF8533 100%)',
-            color: '#FFFFFF',
-            padding: '10px 16px 10px 12px',
-            borderRadius: '24px',
-            boxShadow: '0 8px 24px rgba(242, 96, 0, 0.45), 0 2px 6px rgba(0,0,0,0.15)',
-            border: '2px solid rgba(255, 255, 255, 0.25)',
-            cursor: 'pointer',
-            transition: 'transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)',
-            animation: 'flashPulseGlow 2.5s infinite'
-          }}
-          onMouseDown={(e) => e.currentTarget.style.transform = 'scale(0.92)'}
-          onMouseUp={(e) => e.currentTarget.style.transform = 'scale(1)'}
-          onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
-          title={lang === 'es' ? 'Solicitar Cotización Flash (3 Pasos)' : 'Flash Quote (3 Steps)'}
-        >
-          <style>{`
-            @keyframes flashPulseGlow {
-              0%, 100% { box-shadow: 0 8px 24px rgba(242, 96, 0, 0.45), 0 0 0 0 rgba(242, 96, 0, 0.4); }
-              50% { box-shadow: 0 8px 28px rgba(242, 96, 0, 0.65), 0 0 0 8px rgba(242, 96, 0, 0); }
-            }
-          `}</style>
-          <div 
-            style={{
-              width: '32px',
-              height: '32px',
-              borderRadius: '10px',
-              background: 'rgba(255, 255, 255, 0.25)',
-              display: 'flex',
-              alignItems: 'center',
-              justify: 'center',
-              fontSize: '18px',
-              fontWeight: 'bold',
-              boxShadow: 'inset 0 1px 2px rgba(255,255,255,0.4)'
-            }}
-          >
-            ⚡
-          </div>
-          <span style={{ fontSize: '13px', fontWeight: 900, letterSpacing: '0.02em', whiteSpace: 'nowrap' }}>
-            {lang === 'es' ? 'Cotización Flash' : 'Flash Quote'}
-          </span>
-        </div>
-      )}
-
       {/* Modal de Cotización Flash Express 3 Pasos */}
       {showSolicitudExpress && (
         <SolicitudExpressModal 
