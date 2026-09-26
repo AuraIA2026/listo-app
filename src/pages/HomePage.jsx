@@ -1512,6 +1512,9 @@ export default function HomePage({ lang, navigate, userRole }) {
         </div>
       )}
 
+      {/* ── LO QUE DICEN NUESTROS CLIENTES (UBICADO DEBAJO DE LA BARRA DE RE-CONTRATACIÓN 1-CLIC) ── */}
+      <TestimonialsCarousel lang={lang} navigate={navigate} />
+
       {/* ── SECCIÓN: CATEGORÍAS POR "PROBLEMAS REALES" DE LA VIDA DIARIA ── */}
       {!isPro && (
         <section style={{ margin: '0 16px 20px' }}>
@@ -1732,9 +1735,6 @@ export default function HomePage({ lang, navigate, userRole }) {
           </div>
         </div>
       )}
-
-      {/* ── LO QUE DICEN NUESTROS CLIENTES (TESTIMONIALS CAROUSEL - MOVIDO ARRIBA) ── */}
-      <TestimonialsCarousel lang={lang} navigate={navigate} />
 
       {!isPro && (
         <div className="hp-cats-scroll">
