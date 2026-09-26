@@ -153,13 +153,15 @@ export default function SolicitudExpressModal({ lang = 'es', onClose, onSuccess,
                   />
                 </div>
 
-                <button 
-                  type="button" 
-                  className="express-next-btn"
-                  onClick={() => setStep(2)}
-                >
-                  {lang === 'es' ? 'Siguiente Paso ➔' : 'Next Step ➔'}
-                </button>
+                <div className="express-btn-row">
+                  <button 
+                    type="button" 
+                    className="express-next-btn"
+                    onClick={() => setStep(2)}
+                  >
+                    {lang === 'es' ? 'Siguiente Paso ➔' : 'Next Step ➔'}
+                  </button>
+                </div>
               </div>
             )}
 
