@@ -126,7 +126,7 @@ function ReviewCard({ review }) {
   )
 }
 
-function PhotoGrid({ photos, lang, isOwnProfile, onUploadPhoto, onDeletePhoto, hasPendingWork }) {
+function PhotoGrid({ photos, lang, isOwnProfile, onUploadPhoto, onDeletePhoto, hasPendingWork, proName = '', proCategory = '', onHireClick }) {
   const T = txt[lang]
   const [lightbox, setLightbox] = useState(null)
 
@@ -166,9 +166,9 @@ function PhotoGrid({ photos, lang, isOwnProfile, onUploadPhoto, onDeletePhoto, h
       <ExoticWorkPortfolio 
         lang={lang}
         photos={photos}
-        proName={name}
-        proCategory={category}
-        onHireClick={onBook}
+        proName={proName}
+        proCategory={proCategory}
+        onHireClick={onHireClick}
       />
 
       <div className="photos-grid-title-wrap">
@@ -867,6 +867,9 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
             onUploadPhoto={handleWorkUpload}
             onDeletePhoto={handleDeleteWorkPhoto}
             hasPendingWork={hasPendingWork}
+            proName={displayPro.name}
+            proCategory={displayPro.category || displayPro.especialidad || displayPro.categoryEs || ''}
+            onHireClick={handleBookClick}
           />
         )}
 
