@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { collection, query, where, getDocs, doc, getDoc, addDoc, serverTimestamp } from 'firebase/firestore'
 import { db } from '../firebase'
 import { CATEGORIES, FILTERS, ALL_SUBCATEGORIES, PROVINCES_LIST } from '../categories'
+import { detectGpsLocation } from '../utils/gpsLocation'
 import LocalesCarrusel from '../locales/LocalesCarrusel'  // ✅ importado
 import VIPSection, { isProVip } from '../components/VIPSection'
 import HistoriasCarrusel from '../components/HistoriasCarrusel'
@@ -563,6 +564,25 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
   const [activeSubcategory, setActiveSubcategory] = useState('all')
   const [openCategory,      setOpenCategory]      = useState(null)
   const [activeProvince,    setActiveProvince]    = useState(initialProvince || 'all')
+  const [isLocatingGps,     setIsLocatingGps]     = useState(false)
+
+  const handleDetectGps = async () => {
+    setIsLocatingGps(true)
+    try {
+      const location = await detectGpsLocation()
+      setActiveProvince(location.provinceId)
+      setToastMessage(lang === 'es' 
+        ? `📍 GPS Detectado: ${location.provinceLabel}. Mostrando profesionales cercanos.` 
+        : `📍 GPS Detected: ${location.provinceLabel}. Showing nearby professionals.`
+      )
+      setShowToast(true)
+      setTimeout(() => setShowToast(false), 4000)
+    } catch (err) {
+      alert(`⚠️ ${err.message || 'No se pudo obtener la ubicación por GPS.'}`)
+    } finally {
+      setIsLocatingGps(false)
+    }
+  }
   const [showPlanModal,     setShowPlanModal]     = useState(false)
   const [showEstimadorModal, setShowEstimadorModal] = useState(false)
   const [showSolicitudExpress, setShowSolicitudExpress] = useState(false)
@@ -928,8 +948,38 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
         </button>
       </div>
 
-      {/* ── FILTRO POR PROVINCIA Y SECTOR (UBICACIÓN EXACTA) ── */}
-      <div className="province-filters-scroll" style={{ display: 'flex', gap: '8px', overflowX: 'auto', padding: '0 16px 14px', scrollbarWidth: 'none' }}>
+      {/* ── FILTRO POR PROVINCIA Y SECTOR (UBICACIÓN EXACTA CON GPS 1-CLIC) ── */}
+      <div className="province-filters-scroll" style={{ display: 'flex', gap: '8px', overflowX: 'auto', padding: '0 16px 14px', scrollbarWidth: 'none', alignItems: 'center' }}>
+        <button
+          onClick={handleDetectGps}
+          disabled={isLocatingGps}
+          style={{
+            whiteSpace: 'nowrap',
+            padding: '7px 16px',
+            borderRadius: '20px',
+            fontSize: '12px',
+            fontWeight: '900',
+            border: '1.5px solid #F26000',
+            background: isLocatingGps ? '#FEF3EC' : 'linear-gradient(135deg, #FF7A1A, #F26000)',
+            color: isLocatingGps ? '#F26000' : '#FFFFFF',
+            boxShadow: '0 4px 12px rgba(242, 96, 0, 0.35)',
+            cursor: isLocatingGps ? 'wait' : 'pointer',
+            flexShrink: 0,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            transition: 'all 0.2s ease'
+          }}
+          title={lang === 'es' ? 'Detectar mi provincia y zona automáticamente por GPS' : 'Detect GPS location'}
+        >
+          <span style={{ fontSize: '14px', animation: isLocatingGps ? 'spin 1s linear infinite' : 'none' }}>
+            {isLocatingGps ? '🔄' : '🎯'}
+          </span>
+          {isLocatingGps 
+            ? (lang === 'es' ? 'Detectando GPS...' : 'Detecting GPS...') 
+            : (lang === 'es' ? 'Mi Ubicación GPS' : 'My GPS Location')}
+        </button>
+
         {PROVINCES_LIST.map(prov => (
           <button 
             key={prov.id} 

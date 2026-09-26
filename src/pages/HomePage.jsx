@@ -17,6 +17,7 @@ import BtnHamburguesa from '../components/BtnHamburguesa'
 import BtnHamburguesaUsuario from '../components/BtnHamburguesaUsuario'
 import { useUserData } from '../useUserData'
 import { CATEGORIES, ALL_SUBCATEGORIES, PROVINCES_LIST } from '../categories'
+import { detectGpsLocation } from '../utils/gpsLocation'
 import ProPlanAlertWidget from '../components/ProPlanAlertWidget'
 
 import mecanico   from '../assets/pros/Mecanico.jpg'
@@ -664,6 +665,20 @@ export default function HomePage({ lang, navigate, userRole }) {
     return () => { clearInterval(t); };
   }, [lang, searchPlaceholders.length]);
 
+  const [isLocatingGps, setIsLocatingGps] = useState(false)
+
+  const handleDetectGps = async () => {
+    setIsLocatingGps(true)
+    try {
+      const location = await detectGpsLocation()
+      navigate('search', { provinceToSelect: location.provinceId })
+    } catch (err) {
+      alert(`⚠️ ${err.message || 'No se pudo obtener la ubicación por GPS.'}`)
+    } finally {
+      setIsLocatingGps(false)
+    }
+  }
+
   const [activeView, setActiveView] = useState(localStorage.getItem('listo_active_view') || null)
 
   useEffect(() => {
@@ -1250,8 +1265,38 @@ export default function HomePage({ lang, navigate, userRole }) {
       {/* ── ALERTA INTELIGENTE DE PLAN Y CONTRATOS PARA PROFESIONALES ── */}
       <ProPlanAlertWidget userData={userData} onOpenPlanModal={() => setShowPlanModal(true)} />
 
-      {/* ── BARRA DE SELECCIÓN RÁPIDA DE PROVINCIA Y SECTOR ── */}
-      <div style={{ margin: '0 16px 14px', overflowX: 'auto', display: 'flex', gap: '8px', scrollbarWidth: 'none' }}>
+      {/* ── BARRA DE SELECCIÓN RÁPIDA DE PROVINCIA Y SECTOR (CON BOTÓN 1-CLIC GPS) ── */}
+      <div style={{ margin: '0 16px 14px', overflowX: 'auto', display: 'flex', gap: '8px', scrollbarWidth: 'none', alignItems: 'center' }}>
+        <button
+          onClick={handleDetectGps}
+          disabled={isLocatingGps}
+          style={{
+            whiteSpace: 'nowrap',
+            padding: '7px 16px',
+            borderRadius: '20px',
+            fontSize: '12.5px',
+            fontWeight: '900',
+            border: '1.5px solid #F26000',
+            background: isLocatingGps ? '#FEF3EC' : 'linear-gradient(135deg, #FF7A1A, #F26000)',
+            color: isLocatingGps ? '#F26000' : '#FFFFFF',
+            boxShadow: '0 4px 12px rgba(242, 96, 0, 0.35)',
+            cursor: isLocatingGps ? 'wait' : 'pointer',
+            flexShrink: 0,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            transition: 'all 0.2s ease'
+          }}
+          title={lang === 'es' ? 'Detectar mi provincia y zona automáticamente por GPS' : 'Detect GPS location'}
+        >
+          <span style={{ fontSize: '14px', animation: isLocatingGps ? 'spin 1s linear infinite' : 'none' }}>
+            {isLocatingGps ? '🔄' : '🎯'}
+          </span>
+          {isLocatingGps 
+            ? (lang === 'es' ? 'Detectando GPS...' : 'Detecting GPS...') 
+            : (lang === 'es' ? 'Mi Ubicación GPS' : 'My GPS Location')}
+        </button>
+
         {PROVINCES_LIST.map(prov => (
           <button
             key={prov.id}
