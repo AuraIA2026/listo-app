@@ -1041,6 +1041,35 @@ export default function HomePage({ lang, navigate, userRole }) {
                 <span style={{ fontSize: '16px' }}>📷</span>
               </button>
 
+              {/* Botón Icono Estratégico ⚡ Cotización Flash */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowSolicitudExpress(true);
+                }}
+                title={lang === 'es' ? 'Cotización Flash Express 3 Pasos ⚡' : '3-Step Flash Quote ⚡'}
+                style={{
+                  background: 'linear-gradient(135deg, #F26000 0%, #FF8533 100%)',
+                  border: 'none',
+                  borderRadius: '12px',
+                  width: '36px',
+                  height: '36px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justify: 'center',
+                  cursor: 'pointer',
+                  marginRight: '6px',
+                  boxShadow: '0 4px 12px rgba(242, 96, 0, 0.4)',
+                  zIndex: 3,
+                  transition: 'transform 0.15s'
+                }}
+                onMouseDown={(e) => e.currentTarget.style.transform = 'scale(0.92)'}
+                onMouseUp={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+              >
+                <span style={{ fontSize: '18px', color: '#FFF' }}>⚡</span>
+              </button>
+
               <button 
                 onClick={(e) => {
                   e.stopPropagation();
@@ -1097,59 +1126,7 @@ export default function HomePage({ lang, navigate, userRole }) {
         )}
       </div>
 
-      {/* ── BOTÓN TARJETA COTIZACIÓN FLASH EXPRESS 3 PASOS ── */}
-      {!isPro && (
-        <div 
-          style={{
-            margin: '12px 16px 4px',
-            background: 'linear-gradient(135deg, #1E293B 0%, #0F172A 100%)',
-            borderRadius: '22px',
-            padding: '16px',
-            display: 'flex',
-            alignItems: 'center',
-            justify: 'space-between',
-            boxShadow: '0 10px 25px rgba(15, 23, 42, 0.25)',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
-            cursor: 'pointer',
-            transition: 'transform 0.2s'
-          }}
-          onClick={() => setShowSolicitudExpress(true)}
-          onMouseDown={(e) => e.currentTarget.style.transform = 'scale(0.98)'}
-          onMouseUp={(e) => e.currentTarget.style.transform = 'scale(1)'}
-          onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-            <div 
-              style={{
-                width: '48px',
-                height: '48px',
-                borderRadius: '16px',
-                background: 'linear-gradient(135deg, #F26000 0%, #FF8533 100%)',
-                display: 'flex',
-                alignItems: 'center',
-                justify: 'center',
-                fontSize: '26px',
-                boxShadow: '0 4px 14px rgba(242, 96, 0, 0.4)',
-                flexShrink: 0
-              }}
-            >
-              ⚡
-            </div>
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <h3 style={{ margin: 0, fontSize: '15px', fontWeight: 900, color: '#FFFFFF' }}>
-                  {lang === 'es' ? 'Cotización Flash Express 3 Pasos' : '3-Step Flash Quote'}
-                </h3>
-                <span style={{ background: '#F26000', color: '#fff', fontSize: '10px', fontWeight: 900, padding: '2px 6px', borderRadius: '10px' }}>⚡ 5km</span>
-              </div>
-              <p style={{ margin: '2px 0 0', fontSize: '12px', color: '#94A3B8' }}>
-                {lang === 'es' ? 'Notifica a los 5 profesionales verificados más cercanos' : 'Notify 5 nearest verified pros'}
-              </p>
-            </div>
-          </div>
-          <span style={{ fontSize: '20px', color: '#F26000', fontWeight: 900 }}>➔</span>
-        </div>
-      )}
+
 
       {/* ── CARRUSEL DE HISTORIAS DE TRABAJOS REALIZADOS (STORIES 24H) ── */}
       <HistoriasCarrusel 
@@ -1963,6 +1940,61 @@ export default function HomePage({ lang, navigate, userRole }) {
           setShowPlanModal(false);
         }} 
       />
+
+      {/* ── BOTÓN FLOTANTE ESTRATÉGICO: COTIZACIÓN FLASH EXPRESS ⚡ ── */}
+      {!isPro && (
+        <div
+          onClick={() => setShowSolicitudExpress(true)}
+          style={{
+            position: 'fixed',
+            bottom: '88px',
+            right: '18px',
+            zIndex: 9999,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            background: 'linear-gradient(135deg, #F26000 0%, #FF8533 100%)',
+            color: '#FFFFFF',
+            padding: '10px 16px 10px 12px',
+            borderRadius: '24px',
+            boxShadow: '0 8px 24px rgba(242, 96, 0, 0.45), 0 2px 6px rgba(0,0,0,0.15)',
+            border: '2px solid rgba(255, 255, 255, 0.25)',
+            cursor: 'pointer',
+            transition: 'transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)',
+            animation: 'flashPulseGlow 2.5s infinite'
+          }}
+          onMouseDown={(e) => e.currentTarget.style.transform = 'scale(0.92)'}
+          onMouseUp={(e) => e.currentTarget.style.transform = 'scale(1)'}
+          onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+          title={lang === 'es' ? 'Solicitar Cotización Flash (3 Pasos)' : 'Flash Quote (3 Steps)'}
+        >
+          <style>{`
+            @keyframes flashPulseGlow {
+              0%, 100% { box-shadow: 0 8px 24px rgba(242, 96, 0, 0.45), 0 0 0 0 rgba(242, 96, 0, 0.4); }
+              50% { box-shadow: 0 8px 28px rgba(242, 96, 0, 0.65), 0 0 0 8px rgba(242, 96, 0, 0); }
+            }
+          `}</style>
+          <div 
+            style={{
+              width: '32px',
+              height: '32px',
+              borderRadius: '10px',
+              background: 'rgba(255, 255, 255, 0.25)',
+              display: 'flex',
+              alignItems: 'center',
+              justify: 'center',
+              fontSize: '18px',
+              fontWeight: 'bold',
+              boxShadow: 'inset 0 1px 2px rgba(255,255,255,0.4)'
+            }}
+          >
+            ⚡
+          </div>
+          <span style={{ fontSize: '13px', fontWeight: 900, letterSpacing: '0.02em', whiteSpace: 'nowrap' }}>
+            {lang === 'es' ? 'Cotización Flash' : 'Flash Quote'}
+          </span>
+        </div>
+      )}
 
       {/* Modal de Cotización Flash Express 3 Pasos */}
       {showSolicitudExpress && (
