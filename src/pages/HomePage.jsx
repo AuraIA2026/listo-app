@@ -19,6 +19,7 @@ import { useUserData } from '../useUserData'
 import { CATEGORIES, ALL_SUBCATEGORIES, PROVINCES_LIST } from '../categories'
 import { detectGpsLocation } from '../utils/gpsLocation'
 import ProPlanAlertWidget from '../components/ProPlanAlertWidget'
+import GpsRadarWidget from '../components/GpsRadarWidget'
 
 import mecanico   from '../assets/pros/Mecanico.jpg'
 import mecanico1  from '../assets/pros/Mecanico1.jpg'
@@ -56,6 +57,17 @@ const topHomeCategories = [
   { id: 'ninera',      icon:'👶', image: '/icons/ninera.webp', labelEs:'Niñera',        labelEn:'Nanny' },
   { id: 'refrigeracion',icon:'❄️', labelEs:'Refrigeración', labelEn:'A/C' },
   { id: 'limpieza_hogar',icon:'🧹', image: '/icons/limpieza.webp', labelEs:'Limpieza',     labelEn:'Cleaning' },
+]
+
+const REAL_PROBLEMS = [
+  { id: 'plomero', icon: '🚰', tag: 'URGENTE', labelEs: 'Se me desbordó la tubería', labelEn: 'Overflowing pipe emergency', descEs: 'Plomero 24/7 a tu puerta' },
+  { id: 'mecanico', icon: '🚗', tag: 'EN RUTA', labelEs: 'Mi carro no enciende', labelEn: 'Car won\'t start', descEs: 'Mecánico móvil a domicilio' },
+  { id: 'electricista', icon: '⚡', tag: 'SIN LUZ', labelEs: 'Se fue la luz en la casa', labelEn: 'Power outage at home', descEs: 'Electricista para emergencias' },
+  { id: 'cerrajero', icon: '🔑', tag: 'LLAVES', labelEs: 'Me quedé fuera de la casa', labelEn: 'Locked out of home', descEs: 'Cerrajero abre sin daño' },
+  { id: 'refrigeracion', icon: '❄️', tag: 'A/C', labelEs: 'El aire acondicionado gotea', labelEn: 'A/C is leaking', descEs: 'Técnico en refrigeración' },
+  { id: 'limpieza_hogar', icon: '🧹', tag: 'HOGAR', labelEs: 'Necesito limpieza profunda', labelEn: 'Need deep cleaning', descEs: 'Personal de limpieza experto' },
+  { id: 'pintor', icon: '🎨', tag: 'PARED', labelEs: 'Quiero pintar una pared', labelEn: 'Want to paint a wall', descEs: 'Pintor profesional' },
+  { id: 'ninera', icon: '👶', tag: 'CUIDADO', labelEs: 'Necesito niñera de urgencia', labelEn: 'Need urgent nanny', descEs: 'Niñeras verificadas' },
 ]
 
 const featuredStatic = [
@@ -1320,6 +1332,75 @@ export default function HomePage({ lang, navigate, userRole }) {
           </button>
         ))}
       </div>
+
+      {/* ── SECCIÓN: CATEGORÍAS POR "PROBLEMAS REALES" DE LA VIDA DIARIA ── */}
+      {!isPro && (
+        <section style={{ margin: '0 16px 20px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+            <div>
+              <h2 style={{ fontSize: '18px', fontWeight: '900', color: '#1A1A2E', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                🚨 {lang === 'es' ? '¿Qué problema tienes hoy?' : 'What problem do you have today?'}
+              </h2>
+              <p style={{ margin: '3px 0 0', fontSize: '12px', color: '#64748B', fontWeight: '600' }}>
+                {lang === 'es' ? 'Toca tu emergencia y te conectamos al instante con el especialista' : 'Tap your emergency to connect instantly'}
+              </p>
+            </div>
+            <span style={{ background: '#F26000', color: '#FFFFFF', fontSize: '10px', fontWeight: '900', padding: '4px 9px', borderRadius: '12px', flexShrink: 0 }}>
+              ⚡ 1-CLIC
+            </span>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px' }}>
+            {REAL_PROBLEMS.map((prob) => (
+              <div
+                key={prob.id}
+                onClick={() => navigate('search', { catToSelect: prob.id })}
+                style={{
+                  background: 'linear-gradient(135deg, #FFFFFF 0%, #FFF7F2 100%)',
+                  borderRadius: '16px',
+                  padding: '14px 12px',
+                  border: '1.5px solid rgba(242, 96, 0, 0.2)',
+                  boxShadow: '0 4px 14px rgba(242, 96, 0, 0.08)',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justify: 'space-between',
+                  transition: 'transform 0.15s ease, boxShadow 0.15s ease'
+                }}
+                onMouseDown={e => e.currentTarget.style.transform = 'scale(0.97)'}
+                onMouseUp={e => e.currentTarget.style.transform = 'scale(1)'}
+                onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+              >
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                    <span style={{ fontSize: '28px', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.15))' }}>{prob.icon}</span>
+                    <span style={{ fontSize: '9px', fontWeight: '900', background: '#FEF3EC', color: '#F26000', border: '1px solid rgba(242, 96, 0, 0.3)', padding: '2px 7px', borderRadius: '10px' }}>
+                      {prob.tag}
+                    </span>
+                  </div>
+                  <h3 style={{ fontSize: '13.5px', fontWeight: '900', color: '#1A1A2E', margin: '0 0 4px', lineHeight: 1.25 }}>
+                    "{lang === 'es' ? prob.labelEs : prob.labelEn}"
+                  </h3>
+                  <p style={{ fontSize: '11px', color: '#64748B', margin: 0, fontWeight: '600' }}>
+                    {prob.descEs}
+                  </p>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '10px', paddingTop: '8px', borderTop: '1px dashed rgba(242, 96, 0, 0.15)' }}>
+                  <span style={{ fontSize: '11.5px', fontWeight: '800', color: '#F26000', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    ⚡ Contactar socio
+                  </span>
+                  <span style={{ fontSize: '14px', color: '#F26000', fontWeight: 'bold' }}>›</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* ── SECCIÓN: MODO RADAR GPS ("PROFESIONALES CERCA DE MÍ") ── */}
+      {!isPro && (
+        <GpsRadarWidget pros={allProsToUse} navigate={navigate} lang={lang} />
+      )}
 
       {/* ── BOTÓN / PANEL SOCIO "¡HOLA, SOCIO!" (UBICADO ARRIBA DE PROFESIONALES DESTACADOS) ── */}
       {isPro && (
