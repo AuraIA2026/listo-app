@@ -21,7 +21,6 @@ import { detectGpsLocation } from '../utils/gpsLocation'
 import ProPlanAlertWidget from '../components/ProPlanAlertWidget'
 import GpsRadarWidget from '../components/GpsRadarWidget'
 import RebookCircleWidget from '../components/RebookCircleWidget'
-import LightningOfferBannerModal from '../components/LightningOfferBannerModal'
 
 import mecanico   from '../assets/pros/Mecanico.jpg'
 import mecanico1  from '../assets/pros/Mecanico1.jpg'
@@ -391,7 +390,6 @@ export default function HomePage({ lang, navigate, userRole }) {
   const [lastHiredPro, setLastHiredPro]     = useState(null)
   const [hiredProsList, setHiredProsList]   = useState([])
   const [selectedRebookPro, setSelectedRebookPro] = useState(null)
-  const [showFlashOfferModal, setShowFlashOfferModal] = useState(true)
 
   useEffect(() => {
     if (!userData?.uid) return
@@ -2117,14 +2115,6 @@ export default function HomePage({ lang, navigate, userRole }) {
           navigate('proProfile', proObj);
         }}
         navigate={navigate}
-      />
-
-      {/* Banner Flotante de Ofertas Relámpago (Aparece al entrar a la app y dura 60 segundos) */}
-      <LightningOfferBannerModal 
-        isOpen={showFlashOfferModal} 
-        onClose={() => setShowFlashOfferModal(false)} 
-        navigate={navigate} 
-        lang={lang} 
       />
 
     </div>
