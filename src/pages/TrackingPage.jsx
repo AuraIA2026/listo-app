@@ -12,6 +12,7 @@ import vanImg from '../assets/van_topdown.png'
 import { ReportModal } from './ChatPage'
 import CallModal from '../components/CallModal'
 import FloatingChat from '../components/FloatingChat'
+import ImprevistoModal from '../components/ImprevistoModal'
 import { getGoogleCalendarUrl, downloadIcsFile } from '../utils/calendarUtils'
 
 delete L.Icon.Default.prototype._getIconUrl
@@ -290,6 +291,7 @@ export default function TrackingPage({ lang = 'es', navigate, professional, user
   const [showArrivingAlert, setShowArrivingAlert] = useState(false)
   const [alertDismissed, setAlertDismissed] = useState(false)
   const [paymentStatus, setPaymentStatus] = useState(professional?.paymentStatus || null)
+  const [showImprevistoModal, setShowImprevistoModal] = useState(false)
 
   // Audio llegada y notificación
   const arrivingAudioRef    = useRef(null)
@@ -659,9 +661,61 @@ export default function TrackingPage({ lang = 'es', navigate, professional, user
                 >
                   📅
                 </button>
+                <button 
+                  className="track-action-btn" 
+                  onClick={() => setShowImprevistoModal(true)}
+                  title="Asistencia & Garantía 24/7"
+                  style={{ background: '#FEF2F2', color: '#DC2626', border: '1px solid #FECACA', fontWeight: 'bold' }}
+                >
+                  🛡️
+                </button>
                 <button className="track-action-btn call" onClick={() => setShowChat(true)} style={{ opacity: pro.phone ? 1 : 0.4 }}>📞</button>
                 <button className="track-action-btn chat" onClick={() => setShowChat(true)}>💬</button>
               </div>
+            </div>
+
+            {/* Banner de Garantía & Asistencia 24/7 */}
+            <div 
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justify: 'space-between',
+                background: 'linear-gradient(135deg, #FEF2F2 0%, #FFF1F2 100%)',
+                border: '1.5px solid #FECACA',
+                borderRadius: '16px',
+                padding: '12px 14px',
+                margin: '14px 0 10px',
+                gap: '10px'
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span style={{ fontSize: '24px' }}>🛡️</span>
+                <div>
+                  <p style={{ margin: 0, fontSize: '13px', fontWeight: 900, color: '#991B1B' }}>
+                    {lang === 'es' ? 'Garantía & Asistencia 24/7' : '24/7 Guarantee & Safety'}
+                  </p>
+                  <p style={{ margin: '2px 0 0', fontSize: '11px', color: '#7F1D1D' }}>
+                    {lang === 'es' ? 'Protección en vivo ante cualquier imprevisto' : 'Live protection for any situation'}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowImprevistoModal(true)}
+                style={{
+                  background: '#DC2626',
+                  color: '#ffffff',
+                  border: 'none',
+                  borderRadius: '12px',
+                  padding: '8px 12px',
+                  fontSize: '12px',
+                  fontWeight: 900,
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 10px rgba(220, 38, 38, 0.3)',
+                  whiteSpace: 'nowrap'
+                }}
+              >
+                🚨 {lang === 'es' ? 'Reportar' : 'Report'}
+              </button>
             </div>
 
             <div className="tracking-steps">
@@ -738,6 +792,15 @@ export default function TrackingPage({ lang = 'es', navigate, professional, user
           lang={lang} 
           onClose={() => setShowChat(false)} 
           zIndex={5000}
+        />
+      )}
+
+      {showImprevistoModal && (
+        <ImprevistoModal 
+          lang={lang} 
+          onClose={() => setShowImprevistoModal(false)} 
+          orderInfo={professional} 
+          proName={pro.name} 
         />
       )}
     </div>

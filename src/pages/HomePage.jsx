@@ -9,6 +9,7 @@ import LuckyWheelModal from '../components/LuckyWheelModal'
 import HistoriasCarrusel from '../components/HistoriasCarrusel'
 import PlanSelectionModal from '../components/PlanSelectionModal'
 
+import SolicitudExpressModal from '../components/SolicitudExpressModal'
 import BtnHamburguesa from '../components/BtnHamburguesa'
 import BtnHamburguesaUsuario from '../components/BtnHamburguesaUsuario'
 import { useUserData } from '../useUserData'
@@ -362,6 +363,7 @@ export default function HomePage({ lang, navigate, userRole }) {
   const [showHamburguesa, setShowHamburguesa] = useState(false)
   const [homeSearch, setHomeSearch] = useState('')
   const [showDropdown, setShowDropdown] = useState(false)
+  const [showSolicitudExpress, setShowSolicitudExpress] = useState(false)
 
   // ── ESTADOS TEMU / AMAZON FEATURES ──
   const [allProsReal, setAllProsReal] = useState([])
@@ -1094,6 +1096,60 @@ export default function HomePage({ lang, navigate, userRole }) {
           </div>
         )}
       </div>
+
+      {/* ── BOTÓN TARJETA COTIZACIÓN FLASH EXPRESS 3 PASOS ── */}
+      {!isPro && (
+        <div 
+          style={{
+            margin: '12px 16px 4px',
+            background: 'linear-gradient(135deg, #1E293B 0%, #0F172A 100%)',
+            borderRadius: '22px',
+            padding: '16px',
+            display: 'flex',
+            alignItems: 'center',
+            justify: 'space-between',
+            boxShadow: '0 10px 25px rgba(15, 23, 42, 0.25)',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            cursor: 'pointer',
+            transition: 'transform 0.2s'
+          }}
+          onClick={() => setShowSolicitudExpress(true)}
+          onMouseDown={(e) => e.currentTarget.style.transform = 'scale(0.98)'}
+          onMouseUp={(e) => e.currentTarget.style.transform = 'scale(1)'}
+          onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+            <div 
+              style={{
+                width: '48px',
+                height: '48px',
+                borderRadius: '16px',
+                background: 'linear-gradient(135deg, #F26000 0%, #FF8533 100%)',
+                display: 'flex',
+                alignItems: 'center',
+                justify: 'center',
+                fontSize: '26px',
+                boxShadow: '0 4px 14px rgba(242, 96, 0, 0.4)',
+                flexShrink: 0
+              }}
+            >
+              ⚡
+            </div>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <h3 style={{ margin: 0, fontSize: '15px', fontWeight: 900, color: '#FFFFFF' }}>
+                  {lang === 'es' ? 'Cotización Flash Express 3 Pasos' : '3-Step Flash Quote'}
+                </h3>
+                <span style={{ background: '#F26000', color: '#fff', fontSize: '10px', fontWeight: 900, padding: '2px 6px', borderRadius: '10px' }}>⚡ 5km</span>
+              </div>
+              <p style={{ margin: '2px 0 0', fontSize: '12px', color: '#94A3B8' }}>
+                {lang === 'es' ? 'Notifica a los 5 profesionales verificados más cercanos' : 'Notify 5 nearest verified pros'}
+              </p>
+            </div>
+          </div>
+          <span style={{ fontSize: '20px', color: '#F26000', fontWeight: 900 }}>➔</span>
+        </div>
+      )}
 
       {/* ── CARRUSEL DE HISTORIAS DE TRABAJOS REALIZADOS (STORIES 24H) ── */}
       <HistoriasCarrusel 
@@ -1907,6 +1963,15 @@ export default function HomePage({ lang, navigate, userRole }) {
           setShowPlanModal(false);
         }} 
       />
+
+      {/* Modal de Cotización Flash Express 3 Pasos */}
+      {showSolicitudExpress && (
+        <SolicitudExpressModal 
+          lang={lang} 
+          onClose={() => setShowSolicitudExpress(false)} 
+          userProfile={userData} 
+        />
+      )}
 
     </div>
   )

@@ -8,6 +8,7 @@ import HistoriasCarrusel from '../components/HistoriasCarrusel'
 import ProPlanAlertWidget from '../components/ProPlanAlertWidget'
 import PlanSelectionModal from '../components/PlanSelectionModal'
 import EstimadorPreciosModal from '../components/EstimadorPreciosModal'
+import SolicitudExpressModal from '../components/SolicitudExpressModal'
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 import L from 'leaflet'
@@ -560,6 +561,7 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
   const [activeProvince,    setActiveProvince]    = useState(initialProvince || 'all')
   const [showPlanModal,     setShowPlanModal]     = useState(false)
   const [showEstimadorModal, setShowEstimadorModal] = useState(false)
+  const [showSolicitudExpress, setShowSolicitudExpress] = useState(false)
   const [viewMode,           setViewMode]          = useState('list') // 'list' | 'map'
   
   useEffect(() => {
@@ -898,6 +900,9 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
         <button className="pill-btn" onClick={() => setShowEstimadorModal(true)} style={{ background: '#ECFDF5', color: '#059669', borderColor: '#A7F3D0', fontWeight: '800' }}>
           📊 {lang === 'es' ? 'Precios RD$' : 'RD$ Prices'}
         </button>
+        <button className="pill-btn" onClick={() => setShowSolicitudExpress(true)} style={{ background: 'linear-gradient(135deg, #FFF7ED, #FFEDD5)', color: '#C2410C', borderColor: '#FDBA74', fontWeight: '900' }}>
+          ⚡ {lang === 'es' ? 'Cotización Flash' : 'Flash Quote'}
+        </button>
         <button className="pill-btn" onClick={() => setViewMode(v => v === 'list' ? 'map' : 'list')} style={{ background: viewMode==='map' ? '#F26000' : '#1E293B', color: '#fff', border: 'none', fontWeight: '800' }}>
           {viewMode === 'list' ? '🗺️ Mapa GPS' : '📋 Lista'}
         </button>
@@ -1219,6 +1224,15 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
         lang={lang}
         onSelectCategory={(cat) => setSearch(cat)}
       />
+
+      {/* Modal de Solicitud Cotización Flash 3 Pasos */}
+      {showSolicitudExpress && (
+        <SolicitudExpressModal 
+          lang={lang} 
+          onClose={() => setShowSolicitudExpress(false)} 
+          userProfile={userData} 
+        />
+      )}
     </div>
   )
 }
