@@ -71,7 +71,7 @@ export default function StoryAvatar({
       }}
       title={`📸 Ver Historia de ${pro?.name || pro?.nameEs || 'Profesional'} (24h)`}
     >
-      {/* Anillo Degradado estilo Instagram (Naranja - Rosa - Violeta) */}
+      {/* Anillo Degradado Ultra Resplandeciente (Dorado - Naranja - Neón - Rosa) */}
       <div 
         style={{
           position: 'absolute',
@@ -80,9 +80,11 @@ export default function StoryAvatar({
           padding: `${ringPadding}px`,
           background: isAllSeen
             ? 'rgba(148, 163, 184, 0.5)'
-            : 'linear-gradient(45deg, #F26000 0%, #FF007A 45%, #7928CA 75%, #FF7A1A 100%)',
-          boxShadow: isAllSeen ? 'none' : '0 4px 16px rgba(242, 96, 0, 0.6), 0 0 12px rgba(255, 0, 122, 0.5)',
-          animation: isAllSeen ? 'none' : 'ringRotateAnim 3.5s linear infinite',
+            : 'linear-gradient(45deg, #FFD700 0%, #F26000 25%, #FF007A 50%, #00F0FF 75%, #FFD700 100%)',
+          boxShadow: isAllSeen 
+            ? 'none' 
+            : '0 0 16px #FFD700, 0 0 30px #F26000, 0 0 45px #FF007A, inset 0 0 12px #FFD700',
+          animation: isAllSeen ? 'none' : 'ringRotateAnim 3.2s linear infinite, resplandorGlowPulse 1.8s ease-in-out infinite alternate',
           zIndex: 1
         }}
       >
@@ -90,6 +92,24 @@ export default function StoryAvatar({
           @keyframes ringRotateAnim {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
+          }
+          @keyframes resplandorGlowPulse {
+            0% {
+              box-shadow: 0 0 14px #FFD700, 0 0 28px #F26000, 0 0 42px #FF007A, inset 0 0 10px #FFD700;
+              filter: brightness(1);
+            }
+            50% {
+              box-shadow: 0 0 24px #FFD700, 0 0 48px #FF7A1A, 0 0 70px #FF007A, 0 0 90px #00F0FF, inset 0 0 20px #FFD700;
+              filter: brightness(1.3);
+            }
+            100% {
+              box-shadow: 0 0 14px #FFD700, 0 0 28px #F26000, 0 0 42px #FF007A, inset 0 0 10px #FFD700;
+              filter: brightness(1);
+            }
+          }
+          @keyframes storyBadgePulse {
+            0%, 100% { transform: translateX(-50%) scale(1); filter: drop-shadow(0 2px 6px rgba(0,0,0,0.6)); }
+            50% { transform: translateX(-50%) scale(1.15); filter: drop-shadow(0 0 12px #FFD700); }
           }
         `}</style>
         {/* Borde blanco interno separador */}
@@ -140,6 +160,31 @@ export default function StoryAvatar({
           </div>
         )}
       </div>
+
+      {/* Badge resplandeciente HISTORIA en la parte inferior */}
+      {!isAllSeen && (
+        <span
+          style={{
+            position: 'absolute',
+            bottom: '-6px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            background: 'linear-gradient(135deg, #FFD700, #F26000)',
+            color: '#1A1A2E',
+            fontSize: `${Math.max(8, Math.floor(size * 0.15))}px`,
+            fontWeight: '900',
+            padding: '1px 6px',
+            borderRadius: '10px',
+            letterSpacing: '0.3px',
+            whiteSpace: 'nowrap',
+            border: '1.5px solid #FFFFFF',
+            zIndex: 3,
+            animation: 'storyBadgePulse 1.5s ease-in-out infinite'
+          }}
+        >
+          🔥 HISTORIA
+        </span>
+      )}
     </div>
   )
 }
