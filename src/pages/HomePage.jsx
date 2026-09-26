@@ -1619,6 +1619,71 @@ export default function HomePage({ lang, navigate, userRole }) {
         onOpenStory={handleOpenStoryViewer}
       />
 
+      {/* ── SECCIÓN PROFESIONALES DESTACADOS (UBICADA ARRIBA) ── */}
+      <section ref={featuredRef} className={`featured-section${featuredVisible ? ' reveal' : ''}`}>
+        <div className="hp-sec-header">
+          <h2 className="hp-sec-title">⭐ {lang === 'es' ? 'Profesionales Destacados' : 'Featured Professionals'}</h2>
+          <button className="hp-see-all" onClick={() => navigate('search')}>{lang === 'es' ? 'Ver todos' : 'See all'}</button>
+        </div>
+        <div className="featured-scroll">
+          {featuredProsToUse.length > 0 ? (
+            featuredProsToUse.map((pro, i) => {
+              const sData = getProStoryData(pro)
+              const hasStory = Boolean(sData && sData.stories && sData.stories.length > 0)
+
+              return (
+                <div key={i} className="featured-card" style={{ animationDelay: `${i * 0.08}s` }} onClick={() => navigate('booking', { professional: pro })}>
+                  {pro.badge && <span className={`featured-badge badge-${pro.badge.toLowerCase()}`}>{pro.badge}</span>}
+                  
+                  <div style={{ position: 'relative', width: '100%', overflow: 'hidden' }}>
+                    <img src={pro.img || pro.photoURL} alt={pro.nameEs} className="featured-img" />
+                    
+                    {hasStory && (
+                      <div 
+                        style={{
+                          position: 'absolute',
+                          top: '50%',
+                          left: '50%',
+                          transform: 'translate(-50%, -50%)',
+                          zIndex: 10,
+                          filter: 'drop-shadow(0 4px 14px rgba(0,0,0,0.6))'
+                        }}
+                      >
+                        <StoryAvatar 
+                          pro={pro}
+                          src={pro.img || pro.photoURL}
+                          alt={pro.nameEs}
+                          size={76}
+                          storyData={sData}
+                          onOpenStory={handleOpenStoryViewer}
+                          fallbackAvatar={pro.avatar || (pro.nameEs || 'P').charAt(0)}
+                        />
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="featured-info">
+                    <p className="featured-name">{pro.nameEs}</p>
+                    <p className="featured-spec">{lang === 'es' ? pro.specEs : pro.specEn}</p>
+                    <StarRating rating={pro.rating} />
+                    {pro.reviews && pro.reviews > 0 ? (
+                      <p className="featured-reviews">{pro.reviews} {lang === 'es' ? 'reseñas' : 'reviews'}</p>
+                    ) : null}
+                    <p className="featured-price" style={{ color: '#008F39', fontSize: '13px', fontWeight: 'bold' }}>
+                      🤝 {lang === 'es' ? 'A convenir' : 'To agree'}
+                    </p>
+                  </div>
+                </div>
+              )
+            })
+          ) : (
+            <div style={{ padding: '20px', color: 'var(--gray)', fontSize: '14px', textAlign: 'center', width: '100%' }}>
+              {lang === 'es' ? 'Aún no hay profesionales destacados.' : 'No featured professionals yet.'}
+            </div>
+          )}
+        </div>
+      </section>
+
       {/* ── BANNER ÉPICO VIP: "CONOCE NUESTROS PROFESIONALES VIP" (ANIMACIÓN LLAMATIVA) ── */}
       {!isPro && (
         <div 
@@ -1916,69 +1981,6 @@ export default function HomePage({ lang, navigate, userRole }) {
         </button>
       </div>
 
-      <section ref={featuredRef} className={`featured-section${featuredVisible ? ' reveal' : ''}`}>
-        <div className="hp-sec-header">
-          <h2 className="hp-sec-title">⭐ {lang === 'es' ? 'Profesionales Destacados' : 'Featured Professionals'}</h2>
-          <button className="hp-see-all" onClick={() => navigate('search')}>{lang === 'es' ? 'Ver todos' : 'See all'}</button>
-        </div>
-        <div className="featured-scroll">
-          {featuredProsToUse.length > 0 ? (
-            featuredProsToUse.map((pro, i) => {
-              const sData = getProStoryData(pro)
-              const hasStory = Boolean(sData && sData.stories && sData.stories.length > 0)
-
-              return (
-                <div key={i} className="featured-card" style={{ animationDelay: `${i * 0.08}s` }} onClick={() => navigate('booking', { professional: pro })}>
-                  {pro.badge && <span className={`featured-badge badge-${pro.badge.toLowerCase()}`}>{pro.badge}</span>}
-                  
-                  <div style={{ position: 'relative', width: '100%', overflow: 'hidden' }}>
-                    <img src={pro.img || pro.photoURL} alt={pro.nameEs} className="featured-img" />
-                    
-                    {hasStory && (
-                      <div 
-                        style={{
-                          position: 'absolute',
-                          top: '50%',
-                          left: '50%',
-                          transform: 'translate(-50%, -50%)',
-                          zIndex: 10,
-                          filter: 'drop-shadow(0 4px 14px rgba(0,0,0,0.6))'
-                        }}
-                      >
-                        <StoryAvatar 
-                          pro={pro}
-                          src={pro.img || pro.photoURL}
-                          alt={pro.nameEs}
-                          size={76}
-                          storyData={sData}
-                          onOpenStory={handleOpenStoryViewer}
-                          fallbackAvatar={pro.avatar || (pro.nameEs || 'P').charAt(0)}
-                        />
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="featured-info">
-                    <p className="featured-name">{pro.nameEs}</p>
-                    <p className="featured-spec">{lang === 'es' ? pro.specEs : pro.specEn}</p>
-                    <StarRating rating={pro.rating} />
-                    {pro.reviews && pro.reviews > 0 ? (
-                      <p className="featured-reviews">{pro.reviews} {lang === 'es' ? 'reseñas' : 'reviews'}</p>
-                    ) : null}
-                    <p className="featured-price" style={{ color: '#008F39', fontSize: '13px', fontWeight: 'bold' }}>
-                      🤝 {lang === 'es' ? 'A convenir' : 'To agree'}
-                    </p>
-                  </div>
-                </div>
-              )
-            })
-          ) : (
-            <div style={{ padding: '20px', color: 'var(--gray)', fontSize: '14px', textAlign: 'center', width: '100%' }}>
-              {lang === 'es' ? 'Aún no hay profesionales destacados.' : 'No featured professionals yet.'}
-            </div>
-          )}
-        </div>
-      </section>
 
       {!isPro && (
         <>
