@@ -10,6 +10,7 @@ import HistoriasCarrusel from '../components/HistoriasCarrusel'
 import HistoriasViewerModal from '../components/HistoriasViewerModal'
 import StoryAvatar from '../components/StoryAvatar'
 import { useStories } from '../hooks/useStories'
+import { getProPlanTheme } from '../planTheme'
 import PlanSelectionModal from '../components/PlanSelectionModal'
 
 import SolicitudExpressModal from '../components/SolicitudExpressModal'
@@ -1614,6 +1615,7 @@ export default function HomePage({ lang, navigate, userRole }) {
             featuredProsToUse.map((pro, i) => {
               const sData = getProStoryData(pro)
               const hasStory = Boolean(sData && sData.stories && sData.stories.length > 0)
+              const planTheme = getProPlanTheme(pro.currentPlan || pro.planName || pro.plan || pro.planId || pro.membership, pro.rating)
 
               return (
                 <div key={i} className="featured-card" style={{ animationDelay: `${i * 0.08}s` }} onClick={() => navigate('booking', { professional: pro })}>
@@ -1632,7 +1634,7 @@ export default function HomePage({ lang, navigate, userRole }) {
                           style={{
                             position: 'absolute',
                             inset: 0,
-                            background: 'radial-gradient(circle at center, rgba(255, 122, 26, 0.75) 0%, rgba(242, 96, 0, 0.45) 55%, rgba(15, 23, 42, 0.5) 100%)',
+                            background: `radial-gradient(circle at center, ${planTheme.color}AA 0%, ${planTheme.color}33 55%, rgba(15, 23, 42, 0.45) 100%)`,
                             backdropFilter: 'blur(3px)',
                             zIndex: 4,
                             pointerEvents: 'none'
@@ -1645,7 +1647,7 @@ export default function HomePage({ lang, navigate, userRole }) {
                             left: '50%',
                             transform: 'translate(-50%, -52%)',
                             zIndex: 10,
-                            filter: 'drop-shadow(0 8px 24px rgba(0,0,0,0.7))'
+                            filter: `drop-shadow(0 8px 24px ${planTheme.color}88)`
                           }}
                           onClick={(e) => {
                             e.stopPropagation()

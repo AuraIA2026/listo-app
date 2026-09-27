@@ -1,4 +1,5 @@
 import React from 'react'
+import { getProPlanTheme } from '../planTheme'
 
 export default function StoryAvatar({
   pro,
@@ -21,6 +22,10 @@ export default function StoryAvatar({
     }
   }
 
+  // Obtener el tema exacto del plan del profesional (VIP, Platinum, Gold, Estándar, Cliente)
+  const planRaw = pro?.currentPlan || pro?.planId || pro?.plan || pro?.planName || pro?.membership || pro?.verificacion?.plan
+  const theme = getProPlanTheme(planRaw, pro?.rating)
+
   // Si no tiene historia activa, renderizamos la imagen normal sin anillo
   if (!hasStory) {
     return (
@@ -42,7 +47,7 @@ export default function StoryAvatar({
         {src ? (
           <img src={src} alt={alt || 'Foto'} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
         ) : (
-          <div style={{ width: '100%', height: '100%', background: 'linear-gradient(135deg, #FF7A1A, #F26000)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: `${Math.max(12, Math.floor(size * 0.4))}px` }}>
+          <div style={{ width: '100%', height: '100%', background: theme.bgGradient || 'linear-gradient(135deg, #FF7A1A, #F26000)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: `${Math.max(12, Math.floor(size * 0.4))}px` }}>
             {fallbackAvatar}
           </div>
         )}
@@ -50,9 +55,9 @@ export default function StoryAvatar({
     )
   }
 
-  // Si TIENE HISTORIA: Anillo degradado grueso estilo Instagram / TikTok sobre la foto
-  const ringPadding = 4
-  const outerSize = size + (ringPadding * 2) + 6
+  // Si TIENE HISTORIA: Anillo degradado del color del plan del profesional
+  const ringPadding = 3.5
+  const outerSize = size + (ringPadding * 2) + 5
 
   return (
     <div 
@@ -71,7 +76,7 @@ export default function StoryAvatar({
       }}
       title={`📸 Ver Historia de ${pro?.name || pro?.nameEs || pro?.displayName || 'Usuario'} (24h)`}
     >
-      {/* Anillo Degradado Ultra Resplandeciente (Dorado - Naranja - Neón - Rosa) */}
+      {/* Anillo Degradado Resplandeciente armónico del Color del Plan */}
       <div 
         style={{
           position: 'absolute',
@@ -80,11 +85,11 @@ export default function StoryAvatar({
           padding: `${ringPadding}px`,
           background: isAllSeen
             ? 'rgba(148, 163, 184, 0.6)'
-            : 'linear-gradient(45deg, #FFD700 0%, #F26000 25%, #FF007A 50%, #00F0FF 75%, #FFD700 100%)',
+            : (theme.ringGradient || 'linear-gradient(45deg, #FF7A1A 0%, #F26000 50%, #FFD700 100%)'),
           boxShadow: isAllSeen 
             ? 'none' 
-            : '0 0 16px #FFD700, 0 0 30px #F26000, 0 0 45px #FF007A, inset 0 0 12px #FFD700',
-          animation: isAllSeen ? 'none' : 'ringRotateAnim 3.2s linear infinite, resplandorGlowPulse 1.8s ease-in-out infinite alternate',
+            : `0 0 12px ${theme.color || '#F26000'}, 0 0 22px rgba(0,0,0,0.25)`,
+          animation: isAllSeen ? 'none' : 'ringRotateAnim 4.5s linear infinite',
           zIndex: 1
         }}
       >
@@ -93,23 +98,9 @@ export default function StoryAvatar({
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
           }
-          @keyframes resplandorGlowPulse {
-            0% {
-              box-shadow: 0 0 14px #FFD700, 0 0 28px #F26000, 0 0 42px #FF007A, inset 0 0 10px #FFD700;
-              filter: brightness(1);
-            }
-            50% {
-              box-shadow: 0 0 24px #FFD700, 0 0 48px #FF7A1A, 0 0 70px #FF007A, 0 0 90px #00F0FF, inset 0 0 20px #FFD700;
-              filter: brightness(1.3);
-            }
-            100% {
-              box-shadow: 0 0 14px #FFD700, 0 0 28px #F26000, 0 0 42px #FF007A, inset 0 0 10px #FFD700;
-              filter: brightness(1);
-            }
-          }
           @keyframes storyBadgePulse {
-            0%, 100% { transform: translateX(-50%) scale(1); filter: drop-shadow(0 2px 6px rgba(0,0,0,0.6)); }
-            50% { transform: translateX(-50%) scale(1.15); filter: drop-shadow(0 0 12px #FFD700); }
+            0%, 100% { transform: translateX(-50%) scale(1); }
+            50% { transform: translateX(-50%) scale(1.08); }
           }
         `}</style>
         {/* Borde blanco interno separador */}
@@ -147,7 +138,7 @@ export default function StoryAvatar({
             style={{ 
               width: '100%', 
               height: '100%', 
-              background: 'linear-gradient(135deg, #FF7A1A, #F26000)', 
+              background: theme.bgGradient || 'linear-gradient(135deg, #FF7A1A, #F26000)', 
               color: 'white', 
               display: 'flex', 
               alignItems: 'center', 
@@ -161,27 +152,27 @@ export default function StoryAvatar({
         )}
       </div>
 
-      {/* Badge resplandeciente HISTORIA en la parte inferior */}
+      {/* Badge resplandeciente HISTORIA del color del plan */}
       <span
         style={{
           position: 'absolute',
-          bottom: '-6px',
+          bottom: '-5px',
           left: '50%',
           transform: 'translateX(-50%)',
           background: isAllSeen
             ? 'linear-gradient(135deg, #64748B, #475569)'
-            : 'linear-gradient(135deg, #FFD700 0%, #F26000 100%)',
-          color: isAllSeen ? '#FFFFFF' : '#1A1A2E',
-          fontSize: `${Math.max(9, Math.floor(size * 0.15))}px`,
+            : (theme.badgeBg || 'linear-gradient(135deg, #F26000 0%, #FF7A1A 100%)'),
+          color: isAllSeen ? '#FFFFFF' : (theme.badgeColor || '#FFFFFF'),
+          fontSize: `${Math.max(8.5, Math.floor(size * 0.14))}px`,
           fontWeight: '900',
-          padding: '2px 8px',
+          padding: '2px 7px',
           borderRadius: '12px',
           letterSpacing: '0.4px',
           whiteSpace: 'nowrap',
           border: '1.5px solid #FFFFFF',
           zIndex: 5,
-          boxShadow: isAllSeen ? '0 2px 6px rgba(0,0,0,0.3)' : '0 0 10px rgba(255,215,0,0.8), 0 2px 8px rgba(242,96,0,0.6)',
-          animation: isAllSeen ? 'none' : 'storyBadgePulse 1.5s ease-in-out infinite'
+          boxShadow: isAllSeen ? '0 2px 6px rgba(0,0,0,0.3)' : `0 2px 8px ${theme.color || 'rgba(242,96,0,0.6)'}`,
+          animation: isAllSeen ? 'none' : 'storyBadgePulse 2s ease-in-out infinite'
         }}
       >
         🔥 HISTORIA

@@ -1,6 +1,7 @@
 import React from 'react'
 import './VIPSection.css'
 import StoryAvatar from './StoryAvatar'
+import { getProPlanTheme } from '../planTheme'
 import { CATEGORIES, ALL_SUBCATEGORIES } from '../categories'
 
 import mecanico1  from '../assets/pros/Mecanico1.jpg'
@@ -279,44 +280,47 @@ function VIPProCard({ pro, lang, navigate, getProStoryData, onOpenStory }) {
         </div>
 
         {/* SI TIENE HISTORIA EN VIVO 24H: MOSTRAR EL CÍRCULO CON ANILLO DE LA HISTORIA SOBRE LA FOTO (ESTILO INSTAGRAM) */}
-        {hasStory && (
-          <>
-            <div 
-              style={{
-                position: 'absolute',
-                inset: 0,
-                background: 'radial-gradient(circle at center, rgba(255, 122, 26, 0.75) 0%, rgba(242, 96, 0, 0.45) 55%, rgba(15, 23, 42, 0.5) 100%)',
-                backdropFilter: 'blur(3px)',
-                zIndex: 4,
-                pointerEvents: 'none'
-              }}
-            />
-            <div 
-              style={{
-                position: 'absolute',
-                top: '50%',
-                left: '50%',
-                transform: 'translate(-50%, -48%)',
-                zIndex: 10,
-                filter: 'drop-shadow(0 8px 24px rgba(0,0,0,0.7))'
-              }}
-              onClick={(e) => {
-                e.stopPropagation()
-                onOpenStory && onOpenStory(storyData.firstIndex)
-              }}
-            >
-              <StoryAvatar 
-                pro={pro}
-                src={pro.img || pro.photoURL}
-                alt={pro.nameEs || pro.name}
-                size={84}
-                storyData={storyData}
-                onOpenStory={onOpenStory}
-                fallbackAvatar={(pro.nameEs || pro.name || 'P').charAt(0)}
+        {hasStory && (() => {
+          const planTheme = getProPlanTheme(pro.currentPlan || pro.planName || pro.plan || pro.planId, pro.rating);
+          return (
+            <>
+              <div 
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  background: `radial-gradient(circle at center, ${planTheme.color}AA 0%, ${planTheme.color}33 55%, rgba(15, 23, 42, 0.45) 100%)`,
+                  backdropFilter: 'blur(3px)',
+                  zIndex: 4,
+                  pointerEvents: 'none'
+                }}
               />
-            </div>
-          </>
-        )}
+              <div 
+                style={{
+                  position: 'absolute',
+                  top: '50%',
+                  left: '50%',
+                  transform: 'translate(-50%, -48%)',
+                  zIndex: 10,
+                  filter: `drop-shadow(0 8px 24px ${planTheme.color}88)`
+                }}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onOpenStory && onOpenStory(storyData.firstIndex)
+                }}
+              >
+                <StoryAvatar 
+                  pro={pro}
+                  src={pro.img || pro.photoURL}
+                  alt={pro.nameEs || pro.name}
+                  size={84}
+                  storyData={storyData}
+                  onOpenStory={onOpenStory}
+                  fallbackAvatar={(pro.nameEs || pro.name || 'P').charAt(0)}
+                />
+              </div>
+            </>
+          );
+        })()}
 
         {/* DISPONIBLE Y BOTÓN "VER PERFIL" SOBRE LA FOTO */}
         <div style={{ position: 'absolute', top: '46px', right: '12px', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '5px', zIndex: 4 }}>

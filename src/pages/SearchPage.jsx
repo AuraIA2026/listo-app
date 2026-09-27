@@ -9,6 +9,7 @@ import HistoriasCarrusel from '../components/HistoriasCarrusel'
 import HistoriasViewerModal from '../components/HistoriasViewerModal'
 import StoryAvatar from '../components/StoryAvatar'
 import { useStories } from '../hooks/useStories'
+import { getProPlanTheme } from '../planTheme'
 import ProPlanAlertWidget from '../components/ProPlanAlertWidget'
 import PlanSelectionModal from '../components/PlanSelectionModal'
 import EstimadorPreciosModal from '../components/EstimadorPreciosModal'
@@ -1115,44 +1116,47 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
                     className="premium-photo" 
                   />
 
-                  {hasStory && (
-                    <>
-                      <div 
-                        style={{
-                          position: 'absolute',
-                          inset: 0,
-                          background: 'radial-gradient(circle at center, rgba(255, 122, 26, 0.75) 0%, rgba(242, 96, 0, 0.45) 55%, rgba(15, 23, 42, 0.5) 100%)',
-                          backdropFilter: 'blur(3px)',
-                          zIndex: 4,
-                          pointerEvents: 'none'
-                        }}
-                      />
-                      <div 
-                        style={{
-                          position: 'absolute',
-                          top: '50%',
-                          left: '50%',
-                          transform: 'translate(-50%, -50%)',
-                          zIndex: 12,
-                          filter: 'drop-shadow(0 8px 24px rgba(0,0,0,0.7))'
-                        }}
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          handleOpenStoryViewer(sData.firstIndex)
-                        }}
-                      >
-                        <StoryAvatar 
-                          pro={pro}
-                          src={pro.photoURL || pro.img}
-                          alt={pro.name}
-                          size={110}
-                          storyData={sData}
-                          onOpenStory={handleOpenStoryViewer}
-                          fallbackAvatar={pro.avatar || (pro.name || 'P').charAt(0)}
+                  {hasStory && (() => {
+                    const planTheme = getProPlanTheme(pro.currentPlan || pro.planName || pro.plan || pro.planId, pro.rating);
+                    return (
+                      <>
+                        <div 
+                          style={{
+                            position: 'absolute',
+                            inset: 0,
+                            background: `radial-gradient(circle at center, ${planTheme.color}AA 0%, ${planTheme.color}33 55%, rgba(15, 23, 42, 0.45) 100%)`,
+                            backdropFilter: 'blur(3px)',
+                            zIndex: 4,
+                            pointerEvents: 'none'
+                          }}
                         />
-                      </div>
-                    </>
-                  )}
+                        <div 
+                          style={{
+                            position: 'absolute',
+                            top: '50%',
+                            left: '50%',
+                            transform: 'translate(-50%, -50%)',
+                            zIndex: 12,
+                            filter: `drop-shadow(0 8px 24px ${planTheme.color}88)`
+                          }}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleOpenStoryViewer(sData.firstIndex)
+                          }}
+                        >
+                          <StoryAvatar 
+                            pro={pro}
+                            src={pro.photoURL || pro.img}
+                            alt={pro.name}
+                            size={110}
+                            storyData={sData}
+                            onOpenStory={handleOpenStoryViewer}
+                            fallbackAvatar={pro.avatar || (pro.name || 'P').charAt(0)}
+                          />
+                        </div>
+                      </>
+                    );
+                  })()}
 
                   {pro.rating && pro.rating > 0 && pro.reviews > 0 && (
                     <div style={{ position: 'absolute', bottom: '16px', right: '16px', background: 'rgba(26, 26, 46, 0.85)', backdropFilter: 'blur(4px)', borderRadius: '8px', padding: '4px 8px', display: 'flex', alignItems: 'center', gap: '4px', border: '1.5px solid #FFD700', boxShadow: '0 4px 10px rgba(0,0,0,0.15)', zIndex: 10 }}>
@@ -1262,44 +1266,47 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
                   className="pro-photo" 
                 />
 
-                {hasStoryStd && (
-                  <>
-                    <div 
-                      style={{
-                        position: 'absolute',
-                        inset: 0,
-                        background: 'radial-gradient(circle at center, rgba(255, 122, 26, 0.75) 0%, rgba(242, 96, 0, 0.45) 55%, rgba(15, 23, 42, 0.5) 100%)',
-                        backdropFilter: 'blur(3px)',
-                        zIndex: 4,
-                        pointerEvents: 'none'
-                      }}
-                    />
-                    <div 
-                      style={{
-                        position: 'absolute',
-                        top: '50%',
-                        left: '50%',
-                        transform: 'translate(-50%, -50%)',
-                        zIndex: 10,
-                        filter: 'drop-shadow(0 8px 24px rgba(0,0,0,0.7))'
-                      }}
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        handleOpenStoryViewer(sDataStd.firstIndex)
-                      }}
-                    >
-                      <StoryAvatar 
-                        pro={pro}
-                        src={pro.photoURL || pro.img}
-                        alt={pro.name}
-                        size={76}
-                        storyData={sDataStd}
-                        onOpenStory={handleOpenStoryViewer}
-                        fallbackAvatar={pro.avatar || (pro.name || 'P').charAt(0)}
+                {hasStoryStd && (() => {
+                  const planTheme = getProPlanTheme(pro.currentPlan || pro.planName || pro.plan || pro.planId, pro.rating);
+                  return (
+                    <>
+                      <div 
+                        style={{
+                          position: 'absolute',
+                          inset: 0,
+                          background: `radial-gradient(circle at center, ${planTheme.color}AA 0%, ${planTheme.color}33 55%, rgba(15, 23, 42, 0.45) 100%)`,
+                          backdropFilter: 'blur(3px)',
+                          zIndex: 4,
+                          pointerEvents: 'none'
+                        }}
                       />
-                    </div>
-                  </>
-                )}
+                      <div 
+                        style={{
+                          position: 'absolute',
+                          top: '50%',
+                          left: '50%',
+                          transform: 'translate(-50%, -50%)',
+                          zIndex: 10,
+                          filter: `drop-shadow(0 8px 24px ${planTheme.color}88)`
+                        }}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleOpenStoryViewer(sDataStd.firstIndex)
+                        }}
+                      >
+                        <StoryAvatar 
+                          pro={pro}
+                          src={pro.photoURL || pro.img}
+                          alt={pro.name}
+                          size={76}
+                          storyData={sDataStd}
+                          onOpenStory={handleOpenStoryViewer}
+                          fallbackAvatar={pro.avatar || (pro.name || 'P').charAt(0)}
+                        />
+                      </div>
+                    </>
+                  );
+                })()}
 
                 {pro.rating && pro.rating > 0 && pro.reviews > 0 && (
                   <div style={{ position: 'absolute', top: '6px', right: '6px', background: 'rgba(26, 26, 46, 0.85)', backdropFilter: 'blur(4px)', borderRadius: '8px', padding: '3px 6px', display: 'flex', alignItems: 'center', gap: '4px', border: '1.5px solid #FFD700', boxShadow: '0 4px 10px rgba(0,0,0,0.15)', zIndex: 10 }}>
