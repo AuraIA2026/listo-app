@@ -1627,26 +1627,42 @@ export default function HomePage({ lang, navigate, userRole }) {
                     </div>
                     
                     {hasStory && (
-                      <div 
-                        style={{
-                          position: 'absolute',
-                          top: '50%',
-                          left: '50%',
-                          transform: 'translate(-50%, -50%)',
-                          zIndex: 10,
-                          filter: 'drop-shadow(0 4px 14px rgba(0,0,0,0.6))'
-                        }}
-                      >
-                        <StoryAvatar 
-                          pro={pro}
-                          src={pro.img || pro.photoURL}
-                          alt={pro.nameEs}
-                          size={76}
-                          storyData={sData}
-                          onOpenStory={handleOpenStoryViewer}
-                          fallbackAvatar={pro.avatar || (pro.nameEs || 'P').charAt(0)}
+                      <>
+                        <div 
+                          style={{
+                            position: 'absolute',
+                            inset: 0,
+                            background: 'radial-gradient(circle at center, rgba(255, 122, 26, 0.75) 0%, rgba(242, 96, 0, 0.45) 55%, rgba(15, 23, 42, 0.5) 100%)',
+                            backdropFilter: 'blur(3px)',
+                            zIndex: 4,
+                            pointerEvents: 'none'
+                          }}
                         />
-                      </div>
+                        <div 
+                          style={{
+                            position: 'absolute',
+                            top: '50%',
+                            left: '50%',
+                            transform: 'translate(-50%, -52%)',
+                            zIndex: 10,
+                            filter: 'drop-shadow(0 8px 24px rgba(0,0,0,0.7))'
+                          }}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleOpenStoryViewer(sData.firstIndex)
+                          }}
+                        >
+                          <StoryAvatar 
+                            pro={pro}
+                            src={pro.img || pro.photoURL}
+                            alt={pro.nameEs}
+                            size={76}
+                            storyData={sData}
+                            onOpenStory={handleOpenStoryViewer}
+                            fallbackAvatar={pro.avatar || (pro.nameEs || 'P').charAt(0)}
+                          />
+                        </div>
+                      </>
                     )}
                   </div>
 

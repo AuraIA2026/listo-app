@@ -280,26 +280,42 @@ function VIPProCard({ pro, lang, navigate, getProStoryData, onOpenStory }) {
 
         {/* SI TIENE HISTORIA EN VIVO 24H: MOSTRAR EL CÍRCULO CON ANILLO DE LA HISTORIA SOBRE LA FOTO (ESTILO INSTAGRAM) */}
         {hasStory && (
-          <div 
-            style={{
-              position: 'absolute',
-              top: '50%',
-              left: '50%',
-              transform: 'translate(-50%, -45%)',
-              zIndex: 10,
-              filter: 'drop-shadow(0 8px 24px rgba(0,0,0,0.65))'
-            }}
-          >
-            <StoryAvatar 
-              pro={pro}
-              src={pro.img || pro.photoURL}
-              alt={pro.nameEs || pro.name}
-              size={84}
-              storyData={storyData}
-              onOpenStory={onOpenStory}
-              fallbackAvatar={(pro.nameEs || pro.name || 'P').charAt(0)}
+          <>
+            <div 
+              style={{
+                position: 'absolute',
+                inset: 0,
+                background: 'radial-gradient(circle at center, rgba(255, 122, 26, 0.75) 0%, rgba(242, 96, 0, 0.45) 55%, rgba(15, 23, 42, 0.5) 100%)',
+                backdropFilter: 'blur(3px)',
+                zIndex: 4,
+                pointerEvents: 'none'
+              }}
             />
-          </div>
+            <div 
+              style={{
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -48%)',
+                zIndex: 10,
+                filter: 'drop-shadow(0 8px 24px rgba(0,0,0,0.7))'
+              }}
+              onClick={(e) => {
+                e.stopPropagation()
+                onOpenStory && onOpenStory(storyData.firstIndex)
+              }}
+            >
+              <StoryAvatar 
+                pro={pro}
+                src={pro.img || pro.photoURL}
+                alt={pro.nameEs || pro.name}
+                size={84}
+                storyData={storyData}
+                onOpenStory={onOpenStory}
+                fallbackAvatar={(pro.nameEs || pro.name || 'P').charAt(0)}
+              />
+            </div>
+          </>
         )}
 
         {/* DISPONIBLE Y BOTÓN "VER PERFIL" SOBRE LA FOTO */}

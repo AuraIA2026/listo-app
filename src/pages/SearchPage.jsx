@@ -1116,26 +1116,42 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
                   />
 
                   {hasStory && (
-                    <div 
-                      style={{
-                        position: 'absolute',
-                        top: '50%',
-                        left: '50%',
-                        transform: 'translate(-50%, -50%)',
-                        zIndex: 12,
-                        filter: 'drop-shadow(0 8px 20px rgba(0,0,0,0.5))'
-                      }}
-                    >
-                      <StoryAvatar 
-                        pro={pro}
-                        src={pro.photoURL || pro.img}
-                        alt={pro.name}
-                        size={110}
-                        storyData={sData}
-                        onOpenStory={handleOpenStoryViewer}
-                        fallbackAvatar={pro.avatar || (pro.name || 'P').charAt(0)}
+                    <>
+                      <div 
+                        style={{
+                          position: 'absolute',
+                          inset: 0,
+                          background: 'radial-gradient(circle at center, rgba(255, 122, 26, 0.75) 0%, rgba(242, 96, 0, 0.45) 55%, rgba(15, 23, 42, 0.5) 100%)',
+                          backdropFilter: 'blur(3px)',
+                          zIndex: 4,
+                          pointerEvents: 'none'
+                        }}
                       />
-                    </div>
+                      <div 
+                        style={{
+                          position: 'absolute',
+                          top: '50%',
+                          left: '50%',
+                          transform: 'translate(-50%, -50%)',
+                          zIndex: 12,
+                          filter: 'drop-shadow(0 8px 24px rgba(0,0,0,0.7))'
+                        }}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleOpenStoryViewer(sData.firstIndex)
+                        }}
+                      >
+                        <StoryAvatar 
+                          pro={pro}
+                          src={pro.photoURL || pro.img}
+                          alt={pro.name}
+                          size={110}
+                          storyData={sData}
+                          onOpenStory={handleOpenStoryViewer}
+                          fallbackAvatar={pro.avatar || (pro.name || 'P').charAt(0)}
+                        />
+                      </div>
+                    </>
                   )}
 
                   {pro.rating && pro.rating > 0 && pro.reviews > 0 && (
@@ -1247,26 +1263,42 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
                 />
 
                 {hasStoryStd && (
-                  <div 
-                    style={{
-                      position: 'absolute',
-                      top: '50%',
-                      left: '50%',
-                      transform: 'translate(-50%, -50%)',
-                      zIndex: 5,
-                      filter: 'drop-shadow(0 4px 10px rgba(0,0,0,0.5))'
-                    }}
-                  >
-                    <StoryAvatar 
-                      pro={pro}
-                      src={pro.photoURL || pro.img}
-                      alt={pro.name}
-                      size={76}
-                      storyData={sDataStd}
-                      onOpenStory={handleOpenStoryViewer}
-                      fallbackAvatar={pro.avatar || (pro.name || 'P').charAt(0)}
+                  <>
+                    <div 
+                      style={{
+                        position: 'absolute',
+                        inset: 0,
+                        background: 'radial-gradient(circle at center, rgba(255, 122, 26, 0.75) 0%, rgba(242, 96, 0, 0.45) 55%, rgba(15, 23, 42, 0.5) 100%)',
+                        backdropFilter: 'blur(3px)',
+                        zIndex: 4,
+                        pointerEvents: 'none'
+                      }}
                     />
-                  </div>
+                    <div 
+                      style={{
+                        position: 'absolute',
+                        top: '50%',
+                        left: '50%',
+                        transform: 'translate(-50%, -50%)',
+                        zIndex: 10,
+                        filter: 'drop-shadow(0 8px 24px rgba(0,0,0,0.7))'
+                      }}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleOpenStoryViewer(sDataStd.firstIndex)
+                      }}
+                    >
+                      <StoryAvatar 
+                        pro={pro}
+                        src={pro.photoURL || pro.img}
+                        alt={pro.name}
+                        size={76}
+                        storyData={sDataStd}
+                        onOpenStory={handleOpenStoryViewer}
+                        fallbackAvatar={pro.avatar || (pro.name || 'P').charAt(0)}
+                      />
+                    </div>
+                  </>
                 )}
 
                 {pro.rating && pro.rating > 0 && pro.reviews > 0 && (
