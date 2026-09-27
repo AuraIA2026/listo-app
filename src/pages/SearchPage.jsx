@@ -4,7 +4,7 @@ import { db } from '../firebase'
 import { CATEGORIES, FILTERS, ALL_SUBCATEGORIES, PROVINCES_LIST } from '../categories'
 import { detectGpsLocation } from '../utils/gpsLocation'
 import LocalesCarrusel from '../locales/LocalesCarrusel'  // ✅ importado
-import VIPSection, { isProVip } from '../components/VIPSection'
+import VIPSection, { isProVip, getProTier } from '../components/VIPSection'
 import HistoriasCarrusel from '../components/HistoriasCarrusel'
 import HistoriasViewerModal from '../components/HistoriasViewerModal'
 import StoryAvatar from '../components/StoryAvatar'
@@ -1087,26 +1087,23 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
           const mainCat   = CATEGORIES.find(c => c.id === mappedCat || c.subcategories.some(s => s.id === mappedCat))
           const isTopRated = Number(pro.rating || 0) >= 4.8;
           
-          const planStr = (pro.currentPlan || '').toLowerCase()
-          const isVip = planStr.includes('vip') || planStr.includes('elite') || planStr.includes('ilimitado')
-          const isPlatinum = planStr.includes('platinum') || planStr.includes('platino')
-          const isPremium = isVip || isPlatinum
+          const proTier = getProTier(pro);
+          const isVip = proTier === 'vip';
+          const isPlatinum = proTier === 'platinum';
+          const isGold = proTier === 'gold';
 
-          if (isPremium) {
+          // ── FOTOS GRANDES RESERVADAS EXCLUSIVAMENTE PARA PROFESIONALES VIP ──
+          if (isVip) {
             const sData = getProStoryData(pro)
             const hasStory = Boolean(sData && sData.stories && sData.stories.length > 0)
 
             return (
               <div key={pro.id} className="pro-card-premium" style={{ animationDelay:`${i * 0.06}s` }} onClick={() => navigate('proProfile', pro)}>
                 <div className="premium-photo-wrap" style={{ position: 'relative' }}>
-                  {isPlatinum && <div className="premium-badges-top">
-                    <span className="premium-amz-badge" style={{background: 'linear-gradient(135deg, #B0BEC5, #78909C)'}}>💎 Selección Platinum</span>
-                    <span className="premium-amz-badge badge-urgent" style={{background: '#E11D48'}}>🔥 Alta demanda</span>
-                  </div>}
-                  {isVip && <div className="premium-badges-top">
+                  <div className="premium-badges-top">
                     <span className="premium-amz-badge" style={{background: 'linear-gradient(135deg, #FF6B00, #FF3D00)'}}>✨ Exclusivo VIP</span>
                     <span className="premium-amz-badge badge-urgent" style={{background: '#E11D48'}}>⚡ Responde al instante</span>
-                  </div>}
+                  </div>
                   
                   <img 
                     src={pro.photoURL || pro.img} 
@@ -1168,6 +1165,7 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
                     <p className="premium-cat">
                       {(subCat?.image || mainCat?.image) ? <img src={subCat?.image || mainCat?.image} style={{ width: '16px', height: '16px', objectFit: 'contain', verticalAlign: 'middle', marginRight: '4px' }} alt="" /> : (subCat?.icon || mainCat?.icon || '🔧')} 
                       {lang === 'es' ? (subCat?.labelEs || mainCat?.labelEs || pro.category) : (subCat?.labelEn || mainCat?.labelEn || pro.category)}
+                      <span style={{marginLeft: '6px', fontSize: '10px', textTransform: 'uppercase', background: 'linear-gradient(135deg, #FF6B00, #FF3D00)', color: '#fff', padding: '2px 8px', borderRadius: '6px', fontWeight: '900', boxShadow: '0 2px 8px rgba(255,107,0,0.4)', textShadow: '0 1px 2px rgba(0,0,0,0.3)'}}>✨ VIP</span>
                     </p>
                   </div>
                   <div style={{ textAlign: 'right' }}>
@@ -1198,20 +1196,49 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
                   <button className="premium-btn-profile" onClick={(e) => { e.stopPropagation(); navigate('proProfile', pro); }}>
                     👤 {T.profile}
                   </button>
-                  <button className="premium-btn-book" onClick={(e) => { e.stopPropagation(); navigate('booking', pro); }} style={{ background: isVip ? 'linear-gradient(135deg, #FF6B00, #FF3D00)' : 'linear-gradient(135deg, #B0BEC5, #78909C)', boxShadow: isVip ? '0 4px 15px rgba(255, 107, 0, 0.4)' : '0 4px 15px rgba(120, 144, 156, 0.4)' }}>
-                    {isVip ? '✨' : '💎'} {lang === 'es' ? 'Contratar' : 'Hire'}
+                  <button className="premium-btn-book" onClick={(e) => { e.stopPropagation(); navigate('booking', pro); }} style={{ background: 'linear-gradient(135deg, #FF6B00, #FF3D00)', boxShadow: '0 4px 15px rgba(255, 107, 0, 0.4)' }}>
+                    ✨ {lang === 'es' ? 'Contratar' : 'Hire'}
                   </button>
                 </div>
               </div>
             )
           }
 
+          // ── PROFESIONALES NO VIP (PLATINUM, GOLD, ESTÁNDAR) ──
           const sDataStd = getProStoryData(pro)
           const hasStoryStd = Boolean(sDataStd && sDataStd.stories && sDataStd.stories.length > 0)
 
+          let cardTierClass = 'standard-card';
+          let badgeMarkup = null;
+          let btnBookClass = 'btn-book standard-plan';
+          let btnBookIcon = '🔹';
+
+          if (isPlatinum) {
+            cardTierClass = 'platinum-card';
+            badgeMarkup = <span className="pro-tier-badge badge-platinum">💎 PLATINUM</span>;
+            btnBookClass = 'btn-book platinum-plan';
+            btnBookIcon = '💎';
+          } else if (isGold) {
+            cardTierClass = 'gold-card';
+            badgeMarkup = <span className="pro-tier-badge badge-gold">⭐ GOLD</span>;
+            btnBookClass = 'btn-book gold-plan';
+            btnBookIcon = '⭐';
+          } else {
+            cardTierClass = 'standard-card';
+            badgeMarkup = <span className="pro-tier-badge badge-standard">🔹 ESTÁNDAR</span>;
+            btnBookClass = 'btn-book standard-plan';
+            btnBookIcon = '🔹';
+          }
+
           return (
-            <div key={pro.id} className={`pro-card ${isTopRated ? 'top-rated' : ''}`} style={{ animationDelay:`${i * 0.06}s` }}>
+            <div key={pro.id} className={`pro-card ${cardTierClass} ${isTopRated ? 'top-rated' : ''}`} style={{ animationDelay:`${i * 0.06}s` }}>
               <div className="card-photo" style={{ position: 'relative' }}>
+                {badgeMarkup && (
+                  <div style={{ position: 'absolute', top: '8px', left: '8px', zIndex: 6 }}>
+                    {badgeMarkup}
+                  </div>
+                )}
+
                 <img 
                   src={pro.photoURL || pro.img} 
                   alt={pro.name} 
@@ -1270,13 +1297,6 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
                 <p className="pro-cat">
                   {(subCat?.image || mainCat?.image) ? <img src={subCat?.image || mainCat?.image} style={{ width: '16px', height: '16px', objectFit: 'contain', verticalAlign: 'middle', marginRight: '4px' }} alt="" /> : (subCat?.icon || mainCat?.icon || '🔧')}{' '}
                   {lang === 'es' ? (subCat?.labelEs || mainCat?.labelEs || pro.category) : (subCat?.labelEn || mainCat?.labelEn || pro.category)}
-                  {(() => {
-                    const planStr = (pro.currentPlan || '').toLowerCase();
-                    if (planStr.includes('vip') || planStr.includes('elite') || planStr.includes('ilimitado')) return <span style={{marginLeft: '6px', fontSize: '10px', textTransform: 'uppercase', background: 'linear-gradient(135deg, #FF6B00, #FF3D00)', color: '#fff', padding: '2px 8px', borderRadius: '6px', fontWeight: '900', boxShadow: '0 2px 8px rgba(255,107,0,0.4)', textShadow: '0 1px 2px rgba(0,0,0,0.3)'}}>✨ VIP</span>;
-                    if (planStr.includes('gold')) return <span style={{marginLeft: '6px', fontSize: '10px', textTransform: 'uppercase', background: 'linear-gradient(135deg, #FFD700, #FFA500)', color: '#1a1a2e', padding: '2px 8px', borderRadius: '6px', fontWeight: '900', boxShadow: '0 2px 8px rgba(255,215,0,0.4)'}}>⭐ GOLD</span>;
-                    if (planStr.includes('platinum') || planStr.includes('platino')) return <span style={{marginLeft: '6px', fontSize: '10px', textTransform: 'uppercase', background: 'linear-gradient(135deg, #B0BEC5, #78909C)', color: '#fff', padding: '2px 8px', borderRadius: '6px', fontWeight: '900', boxShadow: '0 2px 8px rgba(120,144,156,0.4)'}}>💎 PLATINUM</span>;
-                    return null;
-                  })()}
                 </p>
                 <p className="pro-location">📍 {pro.location}</p>
                 <div className="pro-meta">
@@ -1290,32 +1310,10 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
                 </span>
                 <div className="card-actions">
                   <button className="btn-profile" onClick={() => navigate('proProfile', pro)}>👤 {T.profile}</button>
-                  {(() => {
-                    const plan = (pro.currentPlan || '').toLowerCase();
-                    const isGold = plan.includes('gold');
-                    const isPlatinum = plan.includes('platinum') || plan.includes('platino');
-                    const isVip = plan.includes('vip') || plan.includes('elite') || plan.includes('ilimitado');
-
-                    let btnClass = 'btn-book';
-                    let btnIcon = '';
-                    if (isVip) {
-                      btnClass += ' vip-plan';
-                      btnIcon = <span className="anim-icon">💎</span>;
-                    } else if (isPlatinum) {
-                      btnClass += ' platinum-plan';
-                      btnIcon = <span className="anim-icon">💎</span>;
-                    } else if (isGold) {
-                      btnClass += ' gold-plan';
-                      btnIcon = <span className="anim-icon">⭐</span>;
-                    }
-                    
-                    return (
-                      <button className={btnClass} onClick={() => navigate('booking', pro)}>
-                        {btnIcon && <span style={{marginRight: '4px'}}>{btnIcon}</span>}
-                        {T.book}
-                      </button>
-                    )
-                  })()}
+                  <button className={btnBookClass} onClick={() => navigate('booking', pro)}>
+                    <span style={{ marginRight: '4px' }}>{btnBookIcon}</span>
+                    {T.book}
+                  </button>
                 </div>
               </div>
             </div>

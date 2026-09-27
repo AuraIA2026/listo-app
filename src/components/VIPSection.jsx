@@ -110,8 +110,8 @@ const innerPhotos = [
   { img: cerrajero1, titleEs: 'Roberto Núñez — Cerrajero VIP', titleEn: 'Roberto Núñez — VIP Locksmith', badge: '🔑 Cerrajería VIP' }
 ]
 
-export const isProVip = (pro) => {
-  if (!pro) return false;
+export const getProTier = (pro) => {
+  if (!pro) return 'standard';
   const rawPlan = String(
     pro.currentPlan || 
     pro.planName || 
@@ -126,7 +126,27 @@ export const isProVip = (pro) => {
     ''
   ).toLowerCase().trim();
 
-  return rawPlan.includes('vip') || rawPlan.includes('ilimitado') || rawPlan.includes('elite');
+  if (rawPlan.includes('vip') || rawPlan.includes('ilimitado') || rawPlan.includes('elite')) {
+    return 'vip';
+  }
+  if (rawPlan.includes('platinum') || rawPlan.includes('platino')) {
+    return 'platinum';
+  }
+  if (rawPlan.includes('gold') || rawPlan.includes('oro')) {
+    return 'gold';
+  }
+  if (rawPlan.includes('standard') || rawPlan.includes('estandar') || rawPlan.includes('estándar')) {
+    return 'standard';
+  }
+  if (rawPlan.includes('basico') || rawPlan.includes('básico') || rawPlan.includes('basic')) {
+    return 'basico';
+  }
+
+  return 'standard';
+};
+
+export const isProVip = (pro) => {
+  return getProTier(pro) === 'vip';
 };
 
 export const getProPlanBadge = (pro, lang = 'es') => {
@@ -411,15 +431,15 @@ export default function VIPSection({
   sectionTitle,
   sectionSub,
   showSeeAll = true,
-  strictVipOnly = false,
+  strictVipOnly = true,
   getProStoryData,
   onOpenStory
 }) {
-  const filterVipOnly = strictVipOnly || Boolean(sectionSub);
+  const filterVipOnly = true;
 
   // Filtrar la lista de profesionales reales según el contexto (Inicio vs Buscar VIP)
   const realFiltered = (realVipPros || []).filter(pro => {
-    if (filterVipOnly && !isProVip(pro)) return false
+    if (!isProVip(pro)) return false
     const nRev = Number(pro.reviews !== undefined ? pro.reviews : (pro.reviewsCount || 0))
     const eRate = nRev > 0 ? Number(pro.rating || 0) : 0.0
     return nRev > 0 && eRate >= 4.9
@@ -428,7 +448,7 @@ export default function VIPSection({
   const rawProsList = realFiltered.length > 0 ? realFiltered : demoVipPros
   const displayPros = rawProsList.filter(pro => {
     if (String(pro.id || '').startsWith('vip_')) return true
-    if (filterVipOnly && !isProVip(pro)) return false
+    if (!isProVip(pro)) return false
     const nRev = Number(pro.reviews !== undefined ? pro.reviews : (pro.reviewsCount || 0))
     const eRate = nRev > 0 ? Number(pro.rating || 0) : 0.0
     return nRev > 0 && eRate >= 4.9
