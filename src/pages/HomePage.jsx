@@ -1992,7 +1992,7 @@ export default function HomePage({ lang, navigate, userRole }) {
                           </div>
                         )}
                         <span className={`pro-avail-dot${pro.avail ? ' online' : ''}`} />
-                        {i % 4 === 0 && <span className="cat-flash-badge" style={{top: '-8px', right: '-8px', animation: 'ecom-pop 1s infinite alternate'}}>⚡ {lang === 'es' ? 'RÁPIDO' : 'FAST'}</span>}
+                        {i % 4 === 0 && <span className="cat-flash-badge" style={{top: '-8px', left: '-8px', animation: 'ecom-pop 1s infinite alternate'}}>⚡ {lang === 'es' ? 'RÁPIDO' : 'FAST'}</span>}
                       </div>
                       <div className="pro-list-info">
                         <p className="pro-list-name">{pro.nameEs}</p>

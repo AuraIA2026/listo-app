@@ -181,21 +181,37 @@ html {
 /* ── BRAND LOGO WATERMARK BADGE FOR CARDS & PHOTOS ── */
 .listo-brand-watermark {
   position: absolute;
-  top: 8px;
-  right: 8px;
+  top: 6px;
+  right: 6px;
   z-index: 9;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.45));
+  filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.45));
   pointer-events: none;
   transition: transform 0.2s ease;
 }
 
 .listo-brand-watermark-img {
-  height: 28px;
-  width: 28px;
+  height: 22px;
+  width: 22px;
   object-fit: contain;
   border-radius: 50%;
+  border: 1.5px solid #FFFFFF;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
   display: block;
+}
+
+/* Para avatares pequeños en listas (Todos los Profesionales) */
+.pro-list-img-wrap .listo-brand-watermark {
+  top: -2px;
+  right: -2px;
+  z-index: 12;
+}
+
+.pro-list-img-wrap .listo-brand-watermark-img {
+  height: 14px;
+  width: 14px;
+  border: 1.5px solid #FFFFFF;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
 }
