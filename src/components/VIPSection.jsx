@@ -266,7 +266,7 @@ function VIPProCard({ pro, lang, navigate, getProStoryData, onOpenStory }) {
         />
         <div className="vip-photo-gradient" />
 
-        {/* BADGES Y LOGO LISTO EN LA PARTE SUPERIOR DE LA FOTO */}
+        {/* BADGES EN LA PARTE SUPERIOR DE LA FOTO */}
         <div className="vip-top-badges">
           {(() => {
             const planInfo = getProPlanBadge(pro, lang);
@@ -276,16 +276,6 @@ function VIPProCard({ pro, lang, navigate, getProStoryData, onOpenStory }) {
               </span>
             );
           })()}
-          <img 
-            src={logoListo} 
-            alt="Listo Patrón Logo" 
-            style={{ 
-              height: '28px', 
-              width: 'auto', 
-              objectFit: 'contain',
-              filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' 
-            }} 
-          />
         </div>
 
         {/* SI TIENE HISTORIA EN VIVO 24H: MOSTRAR EL CÍRCULO CON ANILLO DE LA HISTORIA SOBRE LA FOTO (ESTILO INSTAGRAM) */}
