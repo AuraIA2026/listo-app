@@ -1622,6 +1622,10 @@ export default function HomePage({ lang, navigate, userRole }) {
                   <div style={{ position: 'relative', width: '100%', overflow: 'hidden' }}>
                     <img src={pro.img || pro.photoURL} alt={pro.nameEs} className="featured-img" />
                     
+                    <div className="listo-brand-watermark">
+                      <img src={logoListo} alt="Listo Patrón" className="listo-brand-watermark-img" />
+                    </div>
+                    
                     {hasStory && (
                       <div 
                         style={{
@@ -1837,36 +1841,48 @@ export default function HomePage({ lang, navigate, userRole }) {
           </div>
           <div className="amz-bento-grid">
             <div className="amz-bento-item" onClick={() => navigate('search', { catToSelect: 'mecanico' })}>
-              <div className="amz-bento-img-wrap">
+              <div className="amz-bento-img-wrap" style={{ position: 'relative' }}>
                 <span className="amz-bento-item-tag">🔥 MÁS VENDIDO</span>
                 <img src={mecanico1} alt="Mecánico" className="amz-bento-img" />
+                <div className="listo-brand-watermark">
+                  <img src={logoListo} alt="Listo Patrón" className="listo-brand-watermark-img" />
+                </div>
               </div>
               <p className="amz-bento-item-title">{lang === 'es' ? 'Diagnóstico Vehicular' : 'Auto Diagnostic'}</p>
               <p className="amz-bento-item-sub">🤝 {lang === 'es' ? 'A convenir' : 'To agree'}</p>
             </div>
 
             <div className="amz-bento-item" onClick={() => navigate('search', { catToSelect: 'electricista' })}>
-              <div className="amz-bento-img-wrap">
+              <div className="amz-bento-img-wrap" style={{ position: 'relative' }}>
                 <span className="amz-bento-item-tag">⚡ 24/7 URGENTE</span>
                 <img src={electrica1} alt="Electricista" className="amz-bento-img" />
+                <div className="listo-brand-watermark">
+                  <img src={logoListo} alt="Listo Patrón" className="listo-brand-watermark-img" />
+                </div>
               </div>
               <p className="amz-bento-item-title">{lang === 'es' ? 'Instalación Eléctrica' : 'Electrical Install'}</p>
               <p className="amz-bento-item-sub">🤝 {lang === 'es' ? 'A convenir' : 'To agree'}</p>
             </div>
 
             <div className="amz-bento-item" onClick={() => navigate('search', { catToSelect: 'plomero' })}>
-              <div className="amz-bento-img-wrap">
+              <div className="amz-bento-img-wrap" style={{ position: 'relative' }}>
                 <span className="amz-bento-item-tag">🛡️ GARANTIZADO</span>
                 <img src={plomero} alt="Plomero" className="amz-bento-img" />
+                <div className="listo-brand-watermark">
+                  <img src={logoListo} alt="Listo Patrón" className="listo-brand-watermark-img" />
+                </div>
               </div>
               <p className="amz-bento-item-title">{lang === 'es' ? 'Reparación de Tubería' : 'Pipe Repair'}</p>
               <p className="amz-bento-item-sub">🤝 {lang === 'es' ? 'A convenir' : 'To agree'}</p>
             </div>
 
             <div className="amz-bento-item" onClick={() => navigate('search', { catToSelect: 'cerrajero' })}>
-              <div className="amz-bento-img-wrap">
+              <div className="amz-bento-img-wrap" style={{ position: 'relative' }}>
                 <span className="amz-bento-item-tag">🔑 POPULAR</span>
                 <img src={cerrajero1} alt="Cerrajero" className="amz-bento-img" />
+                <div className="listo-brand-watermark">
+                  <img src={logoListo} alt="Listo Patrón" className="listo-brand-watermark-img" />
+                </div>
               </div>
               <p className="amz-bento-item-title">{lang === 'es' ? 'Apertura de Puertas' : 'Door Opening'}</p>
               <p className="amz-bento-item-sub">🤝 {lang === 'es' ? 'A convenir' : 'To agree'}</p>
@@ -1909,9 +1925,12 @@ export default function HomePage({ lang, navigate, userRole }) {
                 <div className="hp-service-cards amz-cards-scroll">
                   {sec.services.map((s, i) => (
                     <div key={i} className="hp-svc-card amz-bento-card" style={{ background: theme.card }} onClick={() => navigate('booking', { specialty: sec.id })}>
-                      <div className="hp-svc-img-wrap">
+                      <div className="hp-svc-img-wrap" style={{ position: 'relative' }}>
                         {s.tag && <span className="hp-svc-tag">{s.tag}</span>}
                         <img src={s.img} alt={s.nameEs} className="hp-svc-img" />
+                        <div className="listo-brand-watermark">
+                          <img src={logoListo} alt="Listo Patrón" className="listo-brand-watermark-img" />
+                        </div>
                       </div>
                       <div className="hp-svc-info">
                         <p className="hp-svc-name">{lang === 'es' ? s.nameEs : s.nameEn}</p>
@@ -1946,6 +1965,9 @@ export default function HomePage({ lang, navigate, userRole }) {
                     <div key={i} className="pro-list-card" style={{ animationDelay: `${i * 0.05}s` }} onClick={() => navigate('booking', { professional: pro })}>
                       <div className="pro-list-img-wrap" style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         <img src={pro.img || pro.photoURL} alt={pro.nameEs} className="pro-list-img" />
+                        <div className="listo-brand-watermark">
+                          <img src={logoListo} alt="Listo Patrón" className="listo-brand-watermark-img" />
+                        </div>
                         
                         {hasStory && (
                           <div 

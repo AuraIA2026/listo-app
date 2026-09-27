@@ -177,3 +177,31 @@ html {
   margin: 0;
   box-shadow: none;
 }
+
+/* ── BRAND LOGO WATERMARK BADGE FOR CARDS & PHOTOS ── */
+.listo-brand-watermark {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 9;
+  background: rgba(15, 23, 42, 0.78);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 8px;
+  padding: 3px 7px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  pointer-events: none;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.listo-brand-watermark-img {
+  height: 18px;
+  width: auto;
+  max-width: 68px;
+  object-fit: contain;
+  filter: drop-shadow(0 1px 3px rgba(0,0,0,0.6));
+}

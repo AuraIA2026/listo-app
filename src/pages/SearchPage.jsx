@@ -20,6 +20,7 @@ import L from 'leaflet'
 import recomendarIcon from '../assets/icons/recomendar.png'
 import opinionesIcon from '../assets/icons/opiniones.png'
 import compartirIcon from '../assets/icons/compartir.png'
+import logoListo from '../assets/logo_listo.png'
 import './SearchPage.css'
 
 const customProIcon = new L.Icon({
@@ -1100,6 +1101,9 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
             return (
               <div key={pro.id} className="pro-card-premium" style={{ animationDelay:`${i * 0.06}s` }} onClick={() => navigate('proProfile', pro)}>
                 <div className="premium-photo-wrap" style={{ position: 'relative' }}>
+                  <div className="listo-brand-watermark" style={{ top: '12px', right: '12px' }}>
+                    <img src={logoListo} alt="Listo Patrón" className="listo-brand-watermark-img" />
+                  </div>
                   <div className="premium-badges-top">
                     <span className="premium-amz-badge" style={{background: 'linear-gradient(135deg, #FF6B00, #FF3D00)'}}>✨ Exclusivo VIP</span>
                     <span className="premium-amz-badge badge-urgent" style={{background: '#E11D48'}}>⚡ Responde al instante</span>
@@ -1233,6 +1237,9 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
           return (
             <div key={pro.id} className={`pro-card ${cardTierClass} ${isTopRated ? 'top-rated' : ''}`} style={{ animationDelay:`${i * 0.06}s` }}>
               <div className="card-photo" style={{ position: 'relative' }}>
+                <div className="listo-brand-watermark">
+                  <img src={logoListo} alt="Listo Patrón" className="listo-brand-watermark-img" />
+                </div>
                 <img 
                   src={pro.photoURL || pro.img} 
                   alt={pro.name} 
