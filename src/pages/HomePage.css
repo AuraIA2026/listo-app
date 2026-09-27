@@ -1184,11 +1184,11 @@
   border: 1px solid rgba(242, 96, 0, 0.4);
   border-left: 4px solid #F26000;
   border-radius: 0px;
-  padding: 10px 14px;
+  padding: 8px 10px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 8px;
   cursor: pointer;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
   position: relative;
@@ -1205,13 +1205,13 @@
 .store-ribbon-content {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   flex: 1;
   min-width: 0;
 }
 
 .store-ribbon-icon {
-  font-size: 22px;
+  font-size: 20px;
   flex-shrink: 0;
   animation: storeCartBounce 2.5s infinite ease-in-out;
 }
@@ -1225,17 +1225,24 @@
   display: flex;
   flex-direction: column;
   min-width: 0;
+  flex: 1;
 }
 
 .store-ribbon-title {
-  font-size: 13.5px;
+  font-size: 12.5px;
   font-weight: 900;
   color: #FFFFFF;
   margin: 0;
-  line-height: 1.2;
+  line-height: 1.25;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+@media (max-width: 400px) {
+  .store-ribbon-title {
+    font-size: 11.5px;
+  }
 }
 
 .store-ribbon-title strong {
@@ -1243,10 +1250,10 @@
 }
 
 .store-ribbon-sub {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
   color: #CBD5E1;
-  margin: 2px 0 0;
+  margin: 1px 0 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1257,8 +1264,8 @@
   color: #FFFFFF;
   border: none;
   border-radius: 0px;
-  padding: 8px 14px;
-  font-size: 12px;
+  padding: 6px 10px;
+  font-size: 11.5px;
   font-weight: 900;
   cursor: pointer;
   flex-shrink: 0;
