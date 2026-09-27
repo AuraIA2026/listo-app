@@ -17,6 +17,15 @@ export default function SubirHistoriaModal({ isOpen, onClose, userData, onStoryU
   const [isVideoMuted, setIsVideoMuted] = useState(false)
   const videoRef = useRef(null)
 
+  // Editor de imágenes
+  const [originalImageSrc, setOriginalImageSrc] = useState(null)
+  const [isEditingPhoto, setIsEditingPhoto] = useState(false)
+  const [editRotation, setEditRotation] = useState(0)
+  const [editFilter, setEditFilter] = useState('normal')
+  const [editBrightness, setEditBrightness] = useState(100)
+  const [editContrast, setEditContrast] = useState(100)
+  const [editZoom, setEditZoom] = useState(1.0)
+
   const [caption, setCaption] = useState('')
   const [offerSticker, setOfferSticker] = useState('none')
   const [isUploading, setIsUploading] = useState(false)
@@ -24,6 +33,66 @@ export default function SubirHistoriaModal({ isOpen, onClose, userData, onStoryU
   const [warningMsg, setWarningMsg] = useState('')
 
   if (!isOpen) return null
+
+  // Función de procesamiento en Canvas para aplicar rotación, filtros y ajustes de imagen
+  const applyPhotoEdits = (rawSrc, rotation, filterName, brightness, contrast, zoom) => {
+    if (!rawSrc) return
+    const img = new Image()
+    img.crossOrigin = 'anonymous'
+    img.onload = () => {
+      const canvas = document.createElement('canvas')
+      const MAX_DIM = 900
+      let w = img.width
+      let h = img.height
+
+      if (w > h) {
+        if (w > MAX_DIM) {
+          h = Math.round((h * MAX_DIM) / w)
+          w = MAX_DIM
+        }
+      } else {
+        if (h > MAX_DIM) {
+          w = Math.round((w * MAX_DIM) / h)
+          h = MAX_DIM
+        }
+      }
+
+      const isQuarterRotated = rotation === 90 || rotation === 270
+      canvas.width = isQuarterRotated ? h : w
+      canvas.height = isQuarterRotated ? w : h
+
+      const ctx = canvas.getContext('2d')
+
+      let filterParts = []
+      if (brightness !== 100) filterParts.push(`brightness(${brightness}%)`)
+      if (contrast !== 100) filterParts.push(`contrast(${contrast}%)`)
+
+      if (filterName === 'vivid') {
+        filterParts.push('saturate(150%) contrast(110%)')
+      } else if (filterName === 'warm') {
+        filterParts.push('sepia(35%) brightness(105%)')
+      } else if (filterName === 'bw') {
+        filterParts.push('grayscale(100%)')
+      } else if (filterName === 'vintage') {
+        filterParts.push('sepia(45%) contrast(120%) brightness(95%)')
+      }
+
+      if (filterParts.length > 0 && ctx.filter !== undefined) {
+        ctx.filter = filterParts.join(' ')
+      }
+
+      ctx.save()
+      ctx.translate(canvas.width / 2, canvas.height / 2)
+      ctx.rotate((rotation * Math.PI) / 180)
+      ctx.scale(zoom, zoom)
+      ctx.drawImage(img, -w / 2, -h / 2, w, h)
+      ctx.restore()
+
+      const outputBase64 = canvas.toDataURL('image/jpeg', 0.75)
+      setMediaPreview(outputBase64)
+    }
+    img.src = rawSrc
+  }
 
   const handleFileChange = (e) => {
     const file = e.target.files[0]
@@ -40,6 +109,7 @@ export default function SubirHistoriaModal({ isOpen, onClose, userData, onStoryU
 
     if (file.type.startsWith('video/')) {
       setMediaType('video')
+      setIsEditingPhoto(false)
 
       // Check raw file size limit for Firestore base64 storage (max 12MB)
       if (file.size > 12 * 1024 * 1024) {
@@ -47,13 +117,11 @@ export default function SubirHistoriaModal({ isOpen, onClose, userData, onStoryU
         return
       }
 
-      // Convert video file to persistent Data URL (base64) so it saves permanently in Firestore
       const reader = new FileReader()
       reader.onload = (event) => {
         const base64Video = event.target.result
         setMediaPreview(base64Video)
 
-        // Calculate video duration & default 15s trim window
         const tempVideo = document.createElement('video')
         tempVideo.src = base64Video
         tempVideo.onloadedmetadata = () => {
@@ -76,35 +144,14 @@ export default function SubirHistoriaModal({ isOpen, onClose, userData, onStoryU
       setMediaType('image')
       const reader = new FileReader()
       reader.onload = (event) => {
-        const img = new Image()
-        img.onload = () => {
-          // Compress image to max 800px & 0.65 quality to ensure payload is <200KB
-          const canvas = document.createElement('canvas')
-          const MAX_DIM = 800
-          let width = img.width
-          let height = img.height
-
-          if (width > height) {
-            if (width > MAX_DIM) {
-              height = Math.round((height * MAX_DIM) / width)
-              width = MAX_DIM
-            }
-          } else {
-            if (height > MAX_DIM) {
-              width = Math.round((width * MAX_DIM) / height)
-              height = MAX_DIM
-            }
-          }
-
-          canvas.width = width
-          canvas.height = height
-
-          const ctx = canvas.getContext('2d')
-          ctx.drawImage(img, 0, 0, width, height)
-          const compressedBase64 = canvas.toDataURL('image/jpeg', 0.65)
-          setMediaPreview(compressedBase64)
-        }
-        img.src = event.target.result
+        const rawBase64 = event.target.result
+        setOriginalImageSrc(rawBase64)
+        setEditRotation(0)
+        setEditFilter('normal')
+        setEditBrightness(100)
+        setEditContrast(100)
+        setEditZoom(1.0)
+        applyPhotoEdits(rawBase64, 0, 'normal', 100, 100, 1.0)
       }
       reader.readAsDataURL(file)
     } else {
@@ -346,7 +393,7 @@ export default function SubirHistoriaModal({ isOpen, onClose, userData, onStoryU
           </div>
         )}
 
-        <div style={{ display: 'flex', justifyContent: 'center', width: '100%', margin: '4px 0' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', margin: '4px 0', gap: '10px' }}>
           <label className="subir-historia-preview-area">
             <input
               type="file"
@@ -387,6 +434,197 @@ export default function SubirHistoriaModal({ isOpen, onClose, userData, onStoryU
               </div>
             )}
           </label>
+
+          {/* Interactive Photo Editor Toolbar & Expanded Controls */}
+          {mediaType === 'image' && mediaPreview && (
+            <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'center' }}>
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'center' }}>
+                <button
+                  type="button"
+                  onClick={() => setIsEditingPhoto(!isEditingPhoto)}
+                  style={{
+                    background: isEditingPhoto ? 'linear-gradient(135deg, #F26000, #FF7A1A)' : '#F1F5F9',
+                    color: isEditingPhoto ? '#FFFFFF' : '#334155',
+                    border: isEditingPhoto ? '1px solid #F26000' : '1px solid #CBD5E1',
+                    borderRadius: '20px',
+                    padding: '6px 14px',
+                    fontSize: '12px',
+                    fontWeight: 800,
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '5px',
+                    boxShadow: isEditingPhoto ? '0 4px 12px rgba(242, 96, 0, 0.3)' : 'none'
+                  }}
+                >
+                  <span>🎨</span> {isEditingPhoto ? 'Cerrar Edición' : 'Editar Foto (Filtros, Giro, Brillo)'}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    const nextRot = (editRotation + 90) % 360
+                    setEditRotation(nextRot)
+                    applyPhotoEdits(originalImageSrc, nextRot, editFilter, editBrightness, editContrast, editZoom)
+                  }}
+                  style={{
+                    background: '#F1F5F9',
+                    color: '#334155',
+                    border: '1px solid #CBD5E1',
+                    borderRadius: '20px',
+                    padding: '6px 12px',
+                    fontSize: '12px',
+                    fontWeight: 800,
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px'
+                  }}
+                  title="Rotar 90 grados"
+                >
+                  <span>🔄</span> Rotar {editRotation}°
+                </button>
+              </div>
+
+              {/* Panel extendido de edición de imagen */}
+              {isEditingPhoto && (
+                <div 
+                  style={{
+                    width: '100%',
+                    background: '#0F172A',
+                    color: '#FFFFFF',
+                    borderRadius: '16px',
+                    padding: '14px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '12px',
+                    border: '1px solid rgba(242, 96, 0, 0.4)',
+                    boxShadow: '0 4px 16px rgba(0,0,0,0.3)',
+                    boxSizing: 'border-box'
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: '13px', fontWeight: 800, color: '#FF7A1A' }}>
+                      🛠️ Panel de Edición de Foto
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditRotation(0)
+                        setEditFilter('normal')
+                        setEditBrightness(100)
+                        setEditContrast(100)
+                        setEditZoom(1.0)
+                        applyPhotoEdits(originalImageSrc, 0, 'normal', 100, 100, 1.0)
+                      }}
+                      style={{
+                        background: 'rgba(255,255,255,0.12)',
+                        border: 'none',
+                        color: '#CBD5E1',
+                        borderRadius: '10px',
+                        padding: '3px 8px',
+                        fontSize: '11px',
+                        fontWeight: 700,
+                        cursor: 'pointer'
+                      }}
+                    >
+                      ↺ Restablecer
+                    </button>
+                  </div>
+
+                  {/* Filtros de color estilo Instagram */}
+                  <div>
+                    <label style={{ fontSize: '11.5px', fontWeight: 700, color: '#94A3B8', display: 'block', marginBottom: '6px' }}>
+                      🎨 Filtros de color:
+                    </label>
+                    <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '4px' }}>
+                      {[
+                        { id: 'normal', name: 'Original' },
+                        { id: 'vivid', name: '✨ Vívido' },
+                        { id: 'warm', name: '☀️ Cálido' },
+                        { id: 'bw', name: '🖤 B/N' },
+                        { id: 'vintage', name: '🌅 Atardecer' }
+                      ].map(f => (
+                        <button
+                          key={f.id}
+                          type="button"
+                          onClick={() => {
+                            setEditFilter(f.id)
+                            applyPhotoEdits(originalImageSrc, editRotation, f.id, editBrightness, editContrast, editZoom)
+                          }}
+                          style={{
+                            background: editFilter === f.id ? 'linear-gradient(135deg, #F26000, #FF7A1A)' : 'rgba(255,255,255,0.1)',
+                            color: editFilter === f.id ? '#FFFFFF' : '#CBD5E1',
+                            border: editFilter === f.id ? '1px solid #F26000' : '1px solid rgba(255,255,255,0.2)',
+                            borderRadius: '12px',
+                            padding: '4px 10px',
+                            fontSize: '11px',
+                            fontWeight: 800,
+                            cursor: 'pointer',
+                            whiteSpace: 'nowrap'
+                          }}
+                        >
+                          {f.name}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Deslizadores de Brillo, Contraste y Zoom */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '11.5px' }}>
+                      <span style={{ color: '#CBD5E1', fontWeight: 700 }}>☀️ Brillo: <strong>{editBrightness}%</strong></span>
+                      <input
+                        type="range"
+                        min="50"
+                        max="150"
+                        value={editBrightness}
+                        onChange={(e) => {
+                          const val = Number(e.target.value)
+                          setEditBrightness(val)
+                          applyPhotoEdits(originalImageSrc, editRotation, editFilter, val, editContrast, editZoom)
+                        }}
+                        style={{ width: '55%', accentColor: '#F26000' }}
+                      />
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '11.5px' }}>
+                      <span style={{ color: '#CBD5E1', fontWeight: 700 }}>🌓 Contraste: <strong>{editContrast}%</strong></span>
+                      <input
+                        type="range"
+                        min="50"
+                        max="150"
+                        value={editContrast}
+                        onChange={(e) => {
+                          const val = Number(e.target.value)
+                          setEditContrast(val)
+                          applyPhotoEdits(originalImageSrc, editRotation, editFilter, editBrightness, val, editZoom)
+                        }}
+                        style={{ width: '55%', accentColor: '#F26000' }}
+                      />
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '11.5px' }}>
+                      <span style={{ color: '#CBD5E1', fontWeight: 700 }}>🔍 Zoom / Encuadre: <strong>{editZoom.toFixed(1)}x</strong></span>
+                      <input
+                        type="range"
+                        min="1.0"
+                        max="1.8"
+                        step="0.05"
+                        value={editZoom}
+                        onChange={(e) => {
+                          const val = Number(e.target.value)
+                          setEditZoom(val)
+                          applyPhotoEdits(originalImageSrc, editRotation, editFilter, editBrightness, editContrast, val)
+                        }}
+                        style={{ width: '55%', accentColor: '#F26000' }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         <div>
