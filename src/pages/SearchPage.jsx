@@ -1233,12 +1233,6 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
           return (
             <div key={pro.id} className={`pro-card ${cardTierClass} ${isTopRated ? 'top-rated' : ''}`} style={{ animationDelay:`${i * 0.06}s` }}>
               <div className="card-photo" style={{ position: 'relative' }}>
-                {badgeMarkup && (
-                  <div style={{ position: 'absolute', top: '8px', left: '8px', zIndex: 6 }}>
-                    {badgeMarkup}
-                  </div>
-                )}
-
                 <img 
                   src={pro.photoURL || pro.img} 
                   alt={pro.name} 
@@ -1269,14 +1263,19 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
                 )}
 
                 {pro.rating && pro.rating > 0 && pro.reviews > 0 && (
-                  <div style={{ position: 'absolute', bottom: '12px', right: '12px', background: 'rgba(26, 26, 46, 0.85)', backdropFilter: 'blur(4px)', borderRadius: '8px', padding: '4px 8px', display: 'flex', alignItems: 'center', gap: '4px', border: '1.5px solid #FFD700', boxShadow: '0 4px 10px rgba(0,0,0,0.15)', zIndex: 10 }}>
-                    <span style={{ fontSize: '11px', color: '#FFD700', fontWeight: 'bold' }}>⭐</span>
-                    <span style={{ fontSize: '11px', color: 'white', fontWeight: '900' }}>{Number(pro.rating).toFixed(1)}</span>
+                  <div style={{ position: 'absolute', top: '6px', right: '6px', background: 'rgba(26, 26, 46, 0.85)', backdropFilter: 'blur(4px)', borderRadius: '8px', padding: '3px 6px', display: 'flex', alignItems: 'center', gap: '4px', border: '1.5px solid #FFD700', boxShadow: '0 4px 10px rgba(0,0,0,0.15)', zIndex: 10 }}>
+                    <span style={{ fontSize: '10px', color: '#FFD700', fontWeight: 'bold' }}>⭐</span>
+                    <span style={{ fontSize: '10px', color: 'white', fontWeight: '900' }}>{Number(pro.rating).toFixed(1)}</span>
                   </div>
                 )}
-                <span className={`status-badge ${pro.available ? 'avail' : 'busy'}`}>
-                  {pro.available ? T.available : T.busy}
-                </span>
+
+                {/* CONTENEDOR INFERIOR: PLAN ENCIMA DEL BOTÓN DISPONIBLE */}
+                <div className="card-photo-overlay-bottom">
+                  {badgeMarkup}
+                  <span className={`status-badge ${pro.available ? 'avail' : 'busy'}`}>
+                    {pro.available ? T.available : T.busy}
+                  </span>
+                </div>
               </div>
               <div className="card-interaction-row" onClick={(e) => e.stopPropagation()}>
                 <button className={`interaction-btn ${likedPros[pro.id] ? 'active' : ''}`} onClick={(e) => toggleLike(pro.id, e)}>

@@ -354,18 +354,41 @@
 .btn-book:active { transform: scale(0.94); box-shadow: 0 2px 6px rgba(242,96,0,0.3); }
 
 /* ESTILOS DE PLANES Y BADGES POR TIER (PLATINUM, GOLD, ESTÁNDAR) */
+.card-photo-overlay-bottom {
+  position: absolute;
+  bottom: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  z-index: 8;
+  width: max-content;
+  max-width: 95%;
+  pointer-events: none;
+}
+
+.card-photo-overlay-bottom .status-badge {
+  position: static;
+  transform: none;
+  margin: 0;
+  pointer-events: auto;
+}
+
 .pro-tier-badge {
-  font-size: 10px;
+  font-size: 9.5px;
   font-weight: 900;
-  padding: 4px 8px;
+  padding: 3px 8px;
   border-radius: 6px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.35);
   display: inline-flex;
   align-items: center;
   gap: 4px;
   backdrop-filter: blur(4px);
+  pointer-events: auto;
 }
 
 .pro-tier-badge.badge-platinum {
