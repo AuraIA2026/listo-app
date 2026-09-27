@@ -1468,18 +1468,7 @@ export default function HomePage({ lang, navigate, userRole }) {
         ))}
       </div>
 
-      {/* ── PANEL DE HISTORIAS DE TRABAJO (24H EN VIVO) ── */}
-      <HistoriasCarrusel 
-        userData={userData} 
-        isPro={isPro} 
-        onHirePro={(proId) => {
-          const proObj = (allProsToUse || []).find(p => p.id === proId) || { id: proId };
-          navigate('proProfile', proObj);
-        }} 
-        navigate={navigate} 
-      />
-
-      {/* ── BOTÓN / PANEL SOCIO "¡HOLA, SOCIO!" (UBICADO DEBAJO DEL PANEL DE HISTORIAS) ── */}
+      {/* ── BOTÓN / PANEL SOCIO "¡HOLA, SOCIO!" (UBICADO DEBAJO DEL PANEL DE HISTORIAS DE ARRIBA) ── */}
       {isPro && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0px', margin: '10px 16px 14px' }}>
           <div 
