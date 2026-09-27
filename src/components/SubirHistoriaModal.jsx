@@ -222,6 +222,18 @@ export default function SubirHistoriaModal({ isOpen, onClose, userData, onStoryU
     } catch (e) {}
 
     const activeUser = auth.currentUser;
+    const isProfileComplete = Boolean(
+      userData?.profileComplete ||
+      (
+        (userData?.name || userData?.displayName || userData?.fullName || storedUser?.name || activeUser?.displayName) &&
+        (userData?.phone || userData?.telefono || userData?.phoneNumber || storedUser?.phone)
+      )
+    )
+
+    if (!isProfileComplete) {
+      setErrorMsg('🔒 Solo los usuarios con su Perfil Completo (Nombre y Teléfono) pueden publicar historias. Por favor completa tu perfil en la sección de usuario.')
+      return
+    }
     const activeUid = activeUser?.uid || userData?.uid || userData?.id || storedUser?.uid || storedUser?.id || localStorage.getItem('listo_user_uid') || `pro_${Date.now()}`;
     const isClient = !(userData?.role === 'pro' || userData?.type === 'pro' || storedUser?.role === 'pro' || storedUser?.type === 'pro')
 

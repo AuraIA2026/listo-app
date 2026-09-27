@@ -14,12 +14,23 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate
   const [uploadModalOpen, setUploadModalOpen] = useState(false)
   const [has5StarContract, setHas5StarContract] = useState(false)
   const [showLockNotice, setShowLockNotice] = useState(false)
+  const [showIncompleteProfileNotice, setShowIncompleteProfileNotice] = useState(false)
 
   const trackRef = useRef(null)
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(true)
 
   const isProUser = isPro || userData?.role === 'pro' || userData?.type === 'pro' || localStorage.getItem('forceListoPro') === 'true'
+
+  // Verificación estricta de Perfil Completo (Nombre y Teléfono requeridos para Clientes y Profesionales)
+  const isProfileComplete = Boolean(
+    userData?.profileComplete ||
+    (
+      (userData?.name || userData?.displayName || userData?.fullName || userData?.proName) &&
+      (userData?.phone || userData?.telefono || userData?.phoneNumber) &&
+      (!isProUser || userData?.category || userData?.especialidad || userData?.verificacion?.estado === 'aprobada' || userData?.verificacion?.estado === 'verificado')
+    )
+  )
 
   // Mapa en tiempo real de planes de usuarios en Firestore para garantizar que cada historia muestre su plan real
   const [usersPlanMap, setUsersPlanMap] = useState({})
@@ -54,7 +65,8 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate
   const isGoldOrAbove = userPlanRaw.includes('gold') || userPlanRaw.includes('platinum') || userPlanRaw.includes('vip') || userPlanRaw.includes('élite')
   const isGracePeriodEligible = isProUser && isGoldOrAbove && isWithin30Days
 
-  const canPublishStory = !isProUser || has5StarContract || isGracePeriodEligible
+  // ÚNICAMENTE usuarios con Perfil Completo pueden publicar historias
+  const canPublishStory = isProfileComplete && (!isProUser || has5StarContract || isGracePeriodEligible)
 
   // Real-time verification if the professional has at least one 4-5 star completed contract
   useEffect(() => {
@@ -174,6 +186,10 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate
   }
 
   const handleAddStoryClick = () => {
+    if (!isProfileComplete) {
+      setShowIncompleteProfileNotice(true)
+      return
+    }
     if (canPublishStory) {
       setUploadModalOpen(true)
     } else {
@@ -225,7 +241,7 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate
               </div>
             </div>
             <span className="historia-label pro-label">
-              {canPublishStory ? 'Tu Historia' : '⭐ 5 Estrellas'}
+              {!isProfileComplete ? '🔒 Completar' : (canPublishStory ? 'Tu Historia' : '⭐ 5 Estrellas')}
             </span>
           </div>
 
@@ -396,6 +412,67 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate
               }}
             >
               ⭐ ¡Entendido, a dar un servicio de 5 Estrellas!
+            </button>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {/* Exotic Floating Lock Notice Modal for Incomplete Profile */}
+      {showIncompleteProfileNotice && createPortal(
+        <div className="subir-historia-modal-overlay" onClick={() => setShowIncompleteProfileNotice(false)}>
+          <div 
+            className="subir-historia-modal-card" 
+            onClick={e => e.stopPropagation()} 
+            style={{ 
+              textAlign: 'center', 
+              padding: '28px 22px', 
+              background: 'linear-gradient(145deg, #0F172A 0%, #1E1B4B 50%, #0F172A 100%)',
+              border: '1.5px solid rgba(239, 68, 68, 0.5)',
+              boxShadow: '0 25px 60px rgba(0, 0, 0, 0.85), 0 0 35px rgba(239, 68, 68, 0.25)',
+              borderRadius: '24px',
+              color: '#FFFFFF'
+            }}
+          >
+            <div style={{ position: 'relative', display: 'inline-block', margin: '0 auto 12px' }}>
+              <div style={{ fontSize: '54px', filter: 'drop-shadow(0 0 16px rgba(239, 68, 68, 0.6))' }}>
+                📝
+              </div>
+              <span style={{ position: 'absolute', bottom: '-4px', right: '-8px', fontSize: '20px' }}>🔒</span>
+            </div>
+
+            <div style={{ display: 'inline-block', background: 'rgba(239, 68, 68, 0.2)', border: '1px solid #EF4444', padding: '4px 12px', borderRadius: '20px', fontSize: '11px', fontWeight: '900', color: '#F87171', letterSpacing: '0.5px', marginBottom: '10px' }}>
+              🔒 PERFIL INCOMPLETO
+            </div>
+
+            <h3 style={{ margin: '0 0 10px 0', fontSize: '19px', fontWeight: '900', color: '#FFFFFF' }}>
+              ¡Completa tu Perfil para publicar Historias!
+            </h3>
+
+            <p style={{ fontSize: '13.5px', color: '#CBD5E1', lineHeight: 1.6, marginBottom: '22px' }}>
+              Para garantizar la seguridad, autenticidad y confianza en la comunidad de Listo Patrón, <strong style={{ color: '#F87171' }}>solo los usuarios con su Perfil Completo (Nombre y Teléfono)</strong> pueden publicar Historias de Trabajo de 24h.
+            </p>
+
+            <button
+              onClick={() => {
+                setShowIncompleteProfileNotice(false)
+                if (navigate) navigate('profile')
+              }}
+              style={{
+                width: '100%',
+                padding: '14px',
+                borderRadius: '16px',
+                border: 'none',
+                background: 'linear-gradient(135deg, #F26000 0%, #FF7A1A 100%)',
+                color: '#ffffff',
+                fontWeight: '900',
+                fontSize: '14.5px',
+                cursor: 'pointer',
+                boxShadow: '0 6px 20px rgba(242, 96, 0, 0.5)',
+                transition: 'all 0.2s ease'
+              }}
+            >
+              👉 ¡Ir a Completar mi Perfil Ahora!
             </button>
           </div>
         </div>,
