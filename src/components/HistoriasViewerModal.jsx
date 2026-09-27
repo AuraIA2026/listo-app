@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { db } from '../firebase'
-import { collection, addDoc, doc, updateDoc, increment, serverTimestamp, onSnapshot } from 'firebase/firestore'
+import { collection, addDoc, doc, updateDoc, deleteDoc, increment, serverTimestamp, onSnapshot } from 'firebase/firestore'
 import recomendarIcon from '../assets/icons/recomendar.png'
 import opinionesIcon from '../assets/icons/opiniones.png'
 import compartirIcon from '../assets/icons/compartir.png'
@@ -125,11 +125,15 @@ export default function HistoriasViewerModal({
   } catch (e) {}
 
   const activeUid = userData?.uid || userData?.id || storedUser?.uid || storedUser?.id || localStorage.getItem('listo_user_uid')
+  const activeNameClean = String(userData?.name || userData?.displayName || userData?.fullName || storedUser?.name || '').toLowerCase().trim()
+  const storyProNameClean = String(currentStory?.proName || currentStory?.fullName || '').toLowerCase().trim()
+
   const isOwner = Boolean(
     currentStory && (
-      currentStory.proId === activeUid ||
-      currentStory.proUid === activeUid ||
-      userData?.email === 'listopatron.app@gmail.com'
+      (activeUid && (currentStory.proId === activeUid || currentStory.proUid === activeUid || currentStory.userId === activeUid)) ||
+      (activeNameClean && storyProNameClean && (activeNameClean === storyProNameClean || activeNameClean.includes(storyProNameClean) || storyProNameClean.includes(activeNameClean))) ||
+      userData?.email === 'listopatron.app@gmail.com' ||
+      userData?.role === 'admin'
     )
   )
 
@@ -137,13 +141,21 @@ export default function HistoriasViewerModal({
     if (e) e.stopPropagation()
     if (!currentStory || !currentStory.id) return
 
-    const confirmDelete = window.confirm('🗑️ ¿Estás seguro de que deseas eliminar esta historia de tu perfil?')
+    const confirmDelete = window.confirm('🗑️ ¿Estás seguro de que deseas eliminar esta historia de tu perfil antes de que transcurran las 24 horas?')
     if (!confirmDelete) return
 
     try {
       const storyRef = doc(db, 'historias', currentStory.id)
-      await updateDoc(storyRef, { status: 'deleted', deletedAt: new Date().toISOString() })
-      alert('🗑️ Historia eliminada correctamente.')
+      await updateDoc(storyRef, { 
+        status: 'deleted', 
+        moderated: false,
+        deletedAt: new Date().toISOString(),
+        expiresAt: new Date(0).toISOString()
+      })
+
+      deleteDoc(storyRef).catch(() => {})
+
+      alert('🗑️ Tu historia ha sido eliminada correctamente de la plataforma.')
 
       if (stories.length <= 1) {
         onClose()
@@ -152,7 +164,14 @@ export default function HistoriasViewerModal({
       }
     } catch (err) {
       console.error('Error deleting story:', err)
-      alert('No se pudo eliminar la historia. Inténtalo de nuevo.')
+      try {
+        await deleteDoc(doc(db, 'historias', currentStory.id))
+        alert('🗑️ Historia eliminada correctamente.')
+        if (stories.length <= 1) onClose()
+        else handleNextStory()
+      } catch (e2) {
+        alert('No se pudo eliminar la historia. Inténtalo de nuevo.')
+      }
     }
   }
 
@@ -464,21 +483,22 @@ export default function HistoriasViewerModal({
               <button
                 onClick={handleDeleteStory}
                 style={{
-                  background: 'rgba(239, 68, 68, 0.85)',
-                  border: '1px solid rgba(255, 255, 255, 0.3)',
+                  background: 'linear-gradient(135deg, #EF4444 0%, #DC2626 100%)',
+                  border: '1.5px solid rgba(255, 255, 255, 0.6)',
                   color: '#FFFFFF',
                   borderRadius: '50%',
-                  width: '34px',
-                  height: '34px',
-                  fontSize: '15px',
+                  width: '36px',
+                  height: '36px',
+                  fontSize: '16px',
                   cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  boxShadow: '0 4px 12px rgba(239, 68, 68, 0.4)',
-                  transition: 'transform 0.2s ease'
+                  boxShadow: '0 0 14px rgba(239, 68, 68, 0.85), 0 4px 12px rgba(0, 0, 0, 0.4)',
+                  transition: 'transform 0.2s ease',
+                  zIndex: 35
                 }}
-                title="Eliminar esta historia de tu perfil"
+                title="🗑️ Eliminar tu historia antes de las 24 horas"
               >
                 🗑️
               </button>
