@@ -51,8 +51,8 @@ export default function StoryAvatar({
   }
 
   // Si TIENE HISTORIA: Anillo degradado grueso estilo Instagram / TikTok sobre la foto
-  const ringPadding = 3.5
-  const outerSize = size + (ringPadding * 2) + 4
+  const ringPadding = 4
+  const outerSize = size + (ringPadding * 2) + 6
 
   return (
     <div 
@@ -69,7 +69,7 @@ export default function StoryAvatar({
         flexShrink: 0,
         ...style
       }}
-      title={`📸 Ver Historia de ${pro?.name || pro?.nameEs || 'Profesional'} (24h)`}
+      title={`📸 Ver Historia de ${pro?.name || pro?.nameEs || pro?.displayName || 'Usuario'} (24h)`}
     >
       {/* Anillo Degradado Ultra Resplandeciente (Dorado - Naranja - Neón - Rosa) */}
       <div 
@@ -79,7 +79,7 @@ export default function StoryAvatar({
           borderRadius: '50%',
           padding: `${ringPadding}px`,
           background: isAllSeen
-            ? 'rgba(148, 163, 184, 0.5)'
+            ? 'rgba(148, 163, 184, 0.6)'
             : 'linear-gradient(45deg, #FFD700 0%, #F26000 25%, #FF007A 50%, #00F0FF 75%, #FFD700 100%)',
           boxShadow: isAllSeen 
             ? 'none' 
@@ -162,29 +162,30 @@ export default function StoryAvatar({
       </div>
 
       {/* Badge resplandeciente HISTORIA en la parte inferior */}
-      {!isAllSeen && (
-        <span
-          style={{
-            position: 'absolute',
-            bottom: '-6px',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            background: 'linear-gradient(135deg, #FFD700, #F26000)',
-            color: '#1A1A2E',
-            fontSize: `${Math.max(8, Math.floor(size * 0.15))}px`,
-            fontWeight: '900',
-            padding: '1px 6px',
-            borderRadius: '10px',
-            letterSpacing: '0.3px',
-            whiteSpace: 'nowrap',
-            border: '1.5px solid #FFFFFF',
-            zIndex: 3,
-            animation: 'storyBadgePulse 1.5s ease-in-out infinite'
-          }}
-        >
-          🔥 HISTORIA
-        </span>
-      )}
+      <span
+        style={{
+          position: 'absolute',
+          bottom: '-6px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          background: isAllSeen
+            ? 'linear-gradient(135deg, #64748B, #475569)'
+            : 'linear-gradient(135deg, #FFD700 0%, #F26000 100%)',
+          color: isAllSeen ? '#FFFFFF' : '#1A1A2E',
+          fontSize: `${Math.max(9, Math.floor(size * 0.15))}px`,
+          fontWeight: '900',
+          padding: '2px 8px',
+          borderRadius: '12px',
+          letterSpacing: '0.4px',
+          whiteSpace: 'nowrap',
+          border: '1.5px solid #FFFFFF',
+          zIndex: 5,
+          boxShadow: isAllSeen ? '0 2px 6px rgba(0,0,0,0.3)' : '0 0 10px rgba(255,215,0,0.8), 0 2px 8px rgba(242,96,0,0.6)',
+          animation: isAllSeen ? 'none' : 'storyBadgePulse 1.5s ease-in-out infinite'
+        }}
+      >
+        🔥 HISTORIA
+      </span>
     </div>
   )
 }

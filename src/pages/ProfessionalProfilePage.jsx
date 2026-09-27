@@ -5,6 +5,8 @@ import { CATEGORIES, ALL_SUBCATEGORIES } from '../categories'
 import { useUserData } from '../useUserData'
 import logoListo from '../assets/logo_listo.png'
 import HistoriasViewerModal from '../components/HistoriasViewerModal'
+import StoryAvatar from '../components/StoryAvatar'
+import { useStories } from '../hooks/useStories'
 import ExoticWorkPortfolio from '../components/ExoticWorkPortfolio'
 import './ProfessionalProfilePage.css'
 
@@ -342,6 +344,12 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
   const [showStoryViewer, setShowStoryViewer] = useState(false)
   const [hasHiredPro, setHasHiredPro] = useState(false)
   const [showGuaranteeModal, setShowGuaranteeModal] = useState(false)
+
+  const { getProStoryData } = useStories()
+  const fetchedStoryData = getProStoryData(displayPro)
+  const proStoryData = (proStories && proStories.length > 0)
+    ? { stories: proStories, firstIndex: 0, isAllSeen: false, count: proStories.length }
+    : fetchedStoryData
 
   const handleBookClick = () => {
     if (navigate) navigate('booking', displayPro)
@@ -773,48 +781,34 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
       <div className="pro-info-section">
         <div 
           className="pro-avatar-wrap" 
-          onClick={proStories.length > 0 ? () => setShowStoryViewer(true) : (isOwnProfile ? () => setShowPhotoOptions(true) : undefined)} 
+          onClick={proStoryData?.stories?.length > 0 ? () => setShowStoryViewer(true) : (isOwnProfile ? () => setShowPhotoOptions(true) : undefined)} 
           style={{ 
-            cursor: (proStories.length > 0 || isOwnProfile) ? 'pointer' : 'default', 
-            position: 'relative',
-            padding: proStories.length > 0 ? '4px' : '0',
-            background: proStories.length > 0 ? 'linear-gradient(45deg, #F26000 0%, #FF7A1A 25%, #E11D48 50%, #C084FC 75%, #F43F5E 100%)' : 'transparent',
-            borderRadius: '50%',
-            boxShadow: proStories.length > 0 ? '0 4px 16px rgba(242, 96, 0, 0.4)' : 'none',
-            transition: 'all 0.3s ease'
+            cursor: (proStoryData?.stories?.length > 0 || isOwnProfile) ? 'pointer' : 'default', 
+            position: 'relative'
           }}
         >
-          {(displayPro.photoURL || displayPro.profilePhoto || displayPro.img || displayPro.verificacion?.docs?.selfie) ? (
-            <img 
-              src={displayPro.photoURL || displayPro.profilePhoto || displayPro.img || displayPro.verificacion?.docs?.selfie} 
-              alt={displayPro.name} 
-              className="pro-avatar-large" 
-              style={{ objectFit: 'cover', objectPosition: displayPro.avatarPos || 'center center', border: proStories.length > 0 ? '3px solid #FFFFFF' : 'none' }} 
-            />
-          ) : (
-            <div className="pro-avatar-large" style={{ background: proColor, border: proStories.length > 0 ? '3px solid #FFFFFF' : 'none' }}>
-              {displayPro.avatar || pro.avatar || (displayPro.name ? displayPro.name.substring(0,2).toUpperCase() : 'P')}
-            </div>
-          )}
-
-          {proStories.length > 0 && (
-            <span style={{ position: 'absolute', top: '-6px', right: '-6px', background: 'linear-gradient(135deg, #F26000, #FF7A1A)', color: '#fff', fontSize: '10px', fontWeight: '900', padding: '2px 8px', borderRadius: '12px', border: '2px solid #FFF', boxShadow: '0 2px 8px rgba(0,0,0,0.3)', zIndex: 10 }}>
-              📸 24h
-            </span>
-          )}
+          <StoryAvatar
+            pro={displayPro}
+            src={displayPro.photoURL || displayPro.profilePhoto || displayPro.img || displayPro.verificacion?.docs?.selfie}
+            alt={displayPro.name}
+            size={96}
+            storyData={proStoryData}
+            onOpenStory={() => setShowStoryViewer(true)}
+            fallbackAvatar={displayPro.avatar || pro.avatar || (displayPro.name ? displayPro.name.substring(0,2).toUpperCase() : 'P')}
+          />
 
           {hasPendingPhoto && (
-            <span style={{ position: 'absolute', bottom: '-8px', left: '50%', transform: 'translateX(-50%)', background: '#F59E0B', color: '#fff', fontSize: '9px', fontWeight: '800', padding: '2px 7px', borderRadius: '10px', whiteSpace: 'nowrap', zIndex: 10, boxShadow: '0 2px 6px rgba(0,0,0,0.2)' }}>
+            <span style={{ position: 'absolute', bottom: '-10px', left: '50%', transform: 'translateX(-50%)', background: '#F59E0B', color: '#fff', fontSize: '9px', fontWeight: '800', padding: '2px 7px', borderRadius: '10px', whiteSpace: 'nowrap', zIndex: 12, boxShadow: '0 2px 6px rgba(0,0,0,0.2)' }}>
               ⏳ {lang === 'es' ? 'En revisión' : 'Pending'}
             </span>
           )}
 
           {isOwnProfile ? (
-            <button className="edit-avatar-btn" onClick={(e) => { e.stopPropagation(); setShowPhotoOptions(true); }} title="Cambiar Foto de Perfil">
+            <button className="edit-avatar-btn" onClick={(e) => { e.stopPropagation(); setShowPhotoOptions(true); }} title="Cambiar Foto de Perfil" style={{ zIndex: 15 }}>
               ✏️
             </button>
           ) : hasHiredPro ? (
-            <button className="pro-chat-floating-btn" onClick={(e) => { e.stopPropagation(); navigate('chat', displayPro); }} title="Enviar mensaje">
+            <button className="pro-chat-floating-btn" onClick={(e) => { e.stopPropagation(); navigate('chat', displayPro); }} title="Enviar mensaje" style={{ zIndex: 15 }}>
               💬
             </button>
           ) : null}
@@ -1192,6 +1186,18 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
             </button>
           </div>
         </div>
+      )}
+
+      {showStoryViewer && proStoryData?.stories?.length > 0 && (
+        <HistoriasViewerModal
+          isOpen={showStoryViewer}
+          onClose={() => setShowStoryViewer(false)}
+          stories={proStoryData.stories}
+          initialIndex={0}
+          userData={userData}
+          onHirePro={() => handleBookClick()}
+          navigate={navigate}
+        />
       )}
     </div>
   )

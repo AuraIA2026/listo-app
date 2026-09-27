@@ -3,6 +3,9 @@ import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firesto
 import { db } from '../firebase'
 import './ClientProfilePage.css'
 import MantenimientoPreventivoModal from '../components/MantenimientoPreventivoModal'
+import StoryAvatar from '../components/StoryAvatar'
+import HistoriasViewerModal from '../components/HistoriasViewerModal'
+import { useStories } from '../hooks/useStories'
 
 const txt = {
   es: {
@@ -75,6 +78,10 @@ export default function ClientProfilePage({ lang = 'es', navigate, userData, onE
   const [reviews,   setReviews]   = useState([])
   const [loading,   setLoading]   = useState(true)
   const [showMantenimientoModal, setShowMantenimientoModal] = useState(false)
+  const [showStoryViewer, setShowStoryViewer] = useState(false)
+
+  const { getProStoryData } = useStories()
+  const clientStoryData = getProStoryData(userData)
 
   // ── DIRECCIONES GUARDADAS (CASA, OFICINA, CASA DE MAMÁ) ──
   const [savedAddresses, setSavedAddresses] = useState(() => {
@@ -182,13 +189,16 @@ export default function ClientProfilePage({ lang = 'es', navigate, userData, onE
 
       {/* INFO PRINCIPAL */}
       <div className="client-info-section">
-        <div className="client-avatar-wrap">
-          <div className="client-avatar-large" style={photoURL ? { padding:0, overflow:'hidden' } : { background: avatarColor }}>
-            {photoURL
-              ? <img src={photoURL} alt="perfil" style={{ width:'100%', height:'100%', objectFit:'cover' }} />
-              : <span>{initials}</span>
-            }
-          </div>
+        <div className="client-avatar-wrap" onClick={clientStoryData?.stories?.length > 0 ? () => setShowStoryViewer(true) : undefined} style={{ cursor: clientStoryData?.stories?.length > 0 ? 'pointer' : 'default' }}>
+          <StoryAvatar
+            pro={userData}
+            src={photoURL}
+            alt={displayName}
+            size={96}
+            storyData={clientStoryData}
+            onOpenStory={() => setShowStoryViewer(true)}
+            fallbackAvatar={initials}
+          />
         </div>
         <div className="client-info-main">
           <div className="client-name-row">
@@ -518,6 +528,17 @@ export default function ClientProfilePage({ lang = 'es', navigate, userData, onE
           onClose={() => setShowMantenimientoModal(false)}
           navigate={navigate}
           userProfile={userData}
+        />
+      )}
+
+      {showStoryViewer && clientStoryData?.stories?.length > 0 && (
+        <HistoriasViewerModal
+          isOpen={showStoryViewer}
+          onClose={() => setShowStoryViewer(false)}
+          stories={clientStoryData.stories}
+          initialIndex={clientStoryData.firstIndex || 0}
+          userData={userData}
+          navigate={navigate}
         />
       )}
 

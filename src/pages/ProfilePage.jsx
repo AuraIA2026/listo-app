@@ -9,6 +9,9 @@ import VerificacionPage    from './VerificacionPage'
 import RegistroClientePage from './RegistroClientePage'
 import PlanSelectionModal from '../components/PlanSelectionModal'
 import ProFinanzasModal from '../components/ProFinanzasModal'
+import StoryAvatar from '../components/StoryAvatar'
+import HistoriasViewerModal from '../components/HistoriasViewerModal'
+import { useStories } from '../hooks/useStories'
 
 
 const txt = {
@@ -730,9 +733,13 @@ export default function ProfilePage({ lang, setLang, navigate, onLogout, initial
   const [photoStatus, setPhotoStatus] = useState(null)
   const [ordersCount, setOrdersCount] = useState(0)
   const [showSubirHistoria, setShowSubirHistoria] = useState(false)
+  const [showStoryViewer, setShowStoryViewer] = useState(false)
   const [showPlanModal, setShowPlanModal] = useState(false)
   const [showFinanzasModal, setShowFinanzasModal] = useState(false)
   const [hideUpgrade, setHideUpgrade] = useState(() => localStorage.getItem('hideUpgrade_Listo_' + (userData?.uid || 'guest')) === 'true')
+
+  const { getProStoryData } = useStories()
+  const userStoryData = getProStoryData(userData)
 
   useEffect(() => {
     if (!userData?.uid) return
@@ -903,14 +910,17 @@ export default function ProfilePage({ lang, setLang, navigate, onLogout, initial
       <input ref={cameraInputRef} type="file" accept="image/*" capture="user" style={{ display:'none' }} onChange={handleFileSelected} />
 
       <div className="profile-header">
-        <div className="profile-avatar-wrap" onClick={() => setShowPhoto(true)} style={{ cursor: 'pointer' }}>
-          <div className="profile-avatar" style={photoURL ? { padding:0, overflow:'hidden' } : {}}>
-            {photoURL
-              ? <img src={photoURL} alt="perfil" style={{ width:'100%', height:'100%', objectFit:'cover' }} />
-              : initials
-            }
-          </div>
-          <button className="profile-edit-btn" onClick={(e) => { e.stopPropagation(); setShowPhoto(true); }} disabled={photoStatus==='saving'}>
+        <div className="profile-avatar-wrap" onClick={userStoryData?.stories?.length > 0 ? () => setShowStoryViewer(true) : () => setShowPhoto(true)} style={{ cursor: 'pointer', position: 'relative' }}>
+          <StoryAvatar
+            pro={userData}
+            src={photoURL}
+            alt={displayName}
+            size={92}
+            storyData={userStoryData}
+            onOpenStory={() => setShowStoryViewer(true)}
+            fallbackAvatar={initials}
+          />
+          <button className="profile-edit-btn" onClick={(e) => { e.stopPropagation(); setShowPhoto(true); }} disabled={photoStatus==='saving'} style={{ zIndex: 15 }}>
             {photoStatus === 'saving' ? '⏳' : '✏️'}
           </button>
         </div>
@@ -1284,6 +1294,17 @@ export default function ProfilePage({ lang, setLang, navigate, onLogout, initial
           setShowPlanModal(false);
         }} 
       />
+
+      {showStoryViewer && userStoryData?.stories?.length > 0 && (
+        <HistoriasViewerModal
+          isOpen={showStoryViewer}
+          onClose={() => setShowStoryViewer(false)}
+          stories={userStoryData.stories}
+          initialIndex={userStoryData.firstIndex || 0}
+          userData={userData}
+          navigate={navigate}
+        />
+      )}
     </div>
   )
 }
