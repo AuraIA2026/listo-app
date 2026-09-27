@@ -117,71 +117,14 @@ export function getProPlanTheme(planNameRaw, rating = 0) {
     }
   }
 
-  // 6. Evaluación secundaria solo si NO hay nombre explícito de plan en los datos
-  if (r >= 4.8) {
-    return {
-      id: 'vip',
-      name: 'Plan VIP',
-      tag: 'ÉLITE',
-      badge: '💎 SOCIO VIP ÉLITE',
-      color: '#F26000',
-      bgGradient: 'linear-gradient(135deg, #F26000 0%, #FF7A1A 100%)',
-      ringGradient: 'linear-gradient(45deg, #F26000 0%, #FF7A1A 50%, #F59E0B 100%)',
-      borderColor: '#F26000',
-      badgeBg: 'linear-gradient(135deg, #F26000, #FF7A1A)',
-      badgeColor: '#FFFFFF',
-      headerGradient: 'linear-gradient(to bottom, rgba(242, 96, 0, 0.95) 0%, rgba(255, 122, 26, 0.6) 75%, rgba(0,0,0,0) 100%)',
-      headerBorder: '1px solid rgba(242, 96, 0, 0.45)',
-      headerGlow: '0 8px 25px rgba(242, 96, 0, 0.4)',
-      price: 'RD$2,500',
-      contractsLimit: '∞',
-      ratingRange: '4.8 - 5.0'
-    }
+  // 6. Evaluación por campos booleanos de objeto si están presentes
+  if (planNameRaw && typeof planNameRaw === 'object') {
+    if (planNameRaw.isVip || planNameRaw.isVIP) return getProPlanTheme('vip', rating)
+    if (planNameRaw.isPlatinum) return getProPlanTheme('platinum', rating)
+    if (planNameRaw.isGold) return getProPlanTheme('gold', rating)
   }
 
-  if (r >= 4.5) {
-    return {
-      id: 'platinum',
-      name: 'Plan Platinum',
-      tag: 'PLATINUM',
-      badge: '🥈 SOCIO PLATINUM',
-      color: '#38BDF8',
-      bgGradient: 'linear-gradient(135deg, #475569 0%, #64748B 50%, #38BDF8 100%)',
-      ringGradient: 'linear-gradient(45deg, #64748B 0%, #94A3B8 50%, #38BDF8 100%)',
-      borderColor: '#38BDF8',
-      badgeBg: 'linear-gradient(135deg, #475569, #38BDF8)',
-      badgeColor: '#FFFFFF',
-      headerGradient: 'linear-gradient(to bottom, rgba(15, 118, 110, 0.95) 0%, rgba(56, 189, 248, 0.6) 75%, rgba(0,0,0,0) 100%)',
-      headerBorder: '1px solid rgba(56, 189, 248, 0.45)',
-      headerGlow: '0 8px 25px rgba(56, 189, 248, 0.4)',
-      price: 'RD$1,500',
-      contractsLimit: '12',
-      ratingRange: '4.5 - 4.7'
-    }
-  }
-
-  if (r >= 4.0) {
-    return {
-      id: 'gold',
-      name: 'Plan Gold',
-      tag: 'GOLD',
-      badge: '🥇 SOCIO GOLD',
-      color: '#EAB308',
-      bgGradient: 'linear-gradient(135deg, #D97706 0%, #EAB308 100%)',
-      ringGradient: 'linear-gradient(45deg, #EAB308 0%, #F59E0B 50%, #D97706 100%)',
-      borderColor: '#EAB308',
-      badgeBg: 'linear-gradient(135deg, #D97706, #EAB308)',
-      badgeColor: '#FFFFFF',
-      headerGradient: 'linear-gradient(to bottom, rgba(217, 119, 6, 0.95) 0%, rgba(234, 179, 8, 0.6) 75%, rgba(0,0,0,0) 100%)',
-      headerBorder: '1px solid rgba(234, 179, 8, 0.45)',
-      headerGlow: '0 8px 25px rgba(234, 179, 8, 0.4)',
-      price: 'RD$1,000',
-      contractsLimit: '8',
-      ratingRange: '4.0 - 4.7'
-    }
-  }
-
-  // Fallback: Plan Estándar (Verde)
+  // Default: Plan Estándar (Verde Esmeralda #10B981)
   return {
     id: 'estandar',
     name: 'Plan Estándar',

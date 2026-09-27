@@ -1124,8 +1124,7 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
                           style={{
                             position: 'absolute',
                             inset: 0,
-                            background: `radial-gradient(circle at center, ${planTheme.color}AA 0%, ${planTheme.color}33 55%, rgba(15, 23, 42, 0.45) 100%)`,
-                            backdropFilter: 'blur(3px)',
+                            background: `radial-gradient(circle at center, ${planTheme.color}22 0%, rgba(15, 23, 42, 0.25) 70%, rgba(0,0,0,0.5) 100%)`,
                             zIndex: 4,
                             pointerEvents: 'none'
                           }}
@@ -1137,7 +1136,7 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
                             left: '50%',
                             transform: 'translate(-50%, -50%)',
                             zIndex: 12,
-                            filter: `drop-shadow(0 8px 24px ${planTheme.color}88)`
+                            filter: `drop-shadow(0 4px 14px ${planTheme.color}55)`
                           }}
                           onClick={(e) => {
                             e.stopPropagation()
@@ -1274,8 +1273,7 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
                         style={{
                           position: 'absolute',
                           inset: 0,
-                          background: `radial-gradient(circle at center, ${planTheme.color}AA 0%, ${planTheme.color}33 55%, rgba(15, 23, 42, 0.45) 100%)`,
-                          backdropFilter: 'blur(3px)',
+                          background: `radial-gradient(circle at center, ${planTheme.color}22 0%, rgba(15, 23, 42, 0.25) 70%, rgba(0,0,0,0.5) 100%)`,
                           zIndex: 4,
                           pointerEvents: 'none'
                         }}
@@ -1287,7 +1285,7 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
                           left: '50%',
                           transform: 'translate(-50%, -50%)',
                           zIndex: 10,
-                          filter: `drop-shadow(0 8px 24px ${planTheme.color}88)`
+                          filter: `drop-shadow(0 4px 14px ${planTheme.color}55)`
                         }}
                         onClick={(e) => {
                           e.stopPropagation()

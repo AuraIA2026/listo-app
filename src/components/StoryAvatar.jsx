@@ -88,7 +88,7 @@ export default function StoryAvatar({
             : (theme.ringGradient || 'linear-gradient(45deg, #FF7A1A 0%, #F26000 50%, #FFD700 100%)'),
           boxShadow: isAllSeen 
             ? 'none' 
-            : `0 0 12px ${theme.color || '#F26000'}, 0 0 22px rgba(0,0,0,0.25)`,
+            : `0 0 8px ${theme.color}88, 0 2px 8px rgba(0,0,0,0.25)`,
           animation: isAllSeen ? 'none' : 'ringRotateAnim 4.5s linear infinite',
           zIndex: 1
         }}
