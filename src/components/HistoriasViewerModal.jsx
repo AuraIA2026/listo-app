@@ -125,15 +125,12 @@ export default function HistoriasViewerModal({
   } catch (e) {}
 
   const activeUid = userData?.uid || userData?.id || storedUser?.uid || storedUser?.id || localStorage.getItem('listo_user_uid')
-  const activeNameClean = String(userData?.name || userData?.displayName || userData?.fullName || storedUser?.name || '').toLowerCase().trim()
-  const storyProNameClean = String(currentStory?.proName || currentStory?.fullName || '').toLowerCase().trim()
+  const storyOwnerUid = currentStory?.proId || currentStory?.proUid || currentStory?.userId || currentStory?.uid
 
   const isOwner = Boolean(
     currentStory && (
-      (activeUid && (currentStory.proId === activeUid || currentStory.proUid === activeUid || currentStory.userId === activeUid)) ||
-      (activeNameClean && storyProNameClean && (activeNameClean === storyProNameClean || activeNameClean.includes(storyProNameClean) || storyProNameClean.includes(activeNameClean))) ||
-      userData?.email === 'listopatron.app@gmail.com' ||
-      userData?.role === 'admin'
+      (activeUid && storyOwnerUid && String(activeUid).trim() === String(storyOwnerUid).trim()) ||
+      (userData?.email === 'listopatron.app@gmail.com' || userData?.role === 'admin')
     )
   )
 
@@ -673,8 +670,9 @@ export default function HistoriasViewerModal({
             </div>
           )}
 
-          {/* Contador de Vistas (Informativo y Privado sin comunicación directa) */}
-          <div style={{
+          {/* Contador de Vistas (SOLO VISIBLE PARA EL DUEÑO DE LA HISTORIA) */}
+          {isOwner && (
+            <div style={{
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
@@ -692,6 +690,7 @@ export default function HistoriasViewerModal({
               🔒 Registro Privado
             </span>
           </div>
+          )}
           
           {/* Fast Reaction Emojis Bar (WhatsApp Style - All 19 Custom PNG Emojis) */}
           <div className="historias-reactions-bar">
