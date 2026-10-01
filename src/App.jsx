@@ -194,7 +194,7 @@ function SystemAlertModal({ alert, onClose, lang, onNavigateProfile }) {
                            (alert.text && (alert.text.includes('foto') || alert.text.includes('Historias') || alert.text.includes('aprobada')));
 
   const handleButtonClick = () => {
-    if (!isExpanded && isPhotoRejection) {
+    if (!isExpanded) {
       setIsExpanded(true);
     } else {
       onClose();
