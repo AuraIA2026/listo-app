@@ -183,7 +183,11 @@ export default function LoginPage({ lang, navigate }) {
     setErrors({})
     try {
       if (isNative) {
-        const result = await SignInWithApple.authorize({
+        const ApplePlugin = window.SignInWithApple || (typeof SignInWithApple !== 'undefined' ? SignInWithApple : null)
+        if (!ApplePlugin) {
+          throw new Error(lang === 'es' ? 'El inicio de sesión con Apple no está configurado en este dispositivo.' : 'Apple Sign In is not configured on this device.')
+        }
+        const result = await ApplePlugin.authorize({
           clientId: 'com.listopatron.app',
           redirectURI: 'https://listoapp-52b46.firebaseapp.com/__/auth/handler',
           scopes: 'email name'
@@ -216,7 +220,7 @@ export default function LoginPage({ lang, navigate }) {
         setLoading(false)
         return
       }
-      setErrors({ general: lang === 'es' ? 'Error al iniciar sesión con Apple' : 'Error signing in with Apple' })
+      setErrors({ general: lang === 'es' ? (err.message || 'Error al iniciar sesión con Apple') : (err.message || 'Error signing in with Apple') })
     }
     setLoading(false)
   }
@@ -280,10 +284,14 @@ export default function LoginPage({ lang, navigate }) {
         const cleanPhone = trimmedEmail.replace(/\D/g, '')
         
         // Buscar el usuario por su número de teléfono
-        // Construimos variantes por si se guardó con o sin formato
+        // Construimos variantes por si se guardó con o sin formato internacional
         const possiblePhones = [trimmedEmail, cleanPhone]
+        if (cleanPhone.length >= 8) {
+          possiblePhones.push(`+1${cleanPhone}`, `1${cleanPhone}`, `+${cleanPhone}`)
+        }
         if (cleanPhone.length === 10) {
           possiblePhones.push(`${cleanPhone.substring(0,3)}-${cleanPhone.substring(3,6)}-${cleanPhone.substring(6)}`)
+          possiblePhones.push(`+1 (${cleanPhone.substring(0,3)}) ${cleanPhone.substring(3,6)}-${cleanPhone.substring(6)}`)
         }
         
         const q = query(collection(db, 'users'), where('phone', 'in', possiblePhones))

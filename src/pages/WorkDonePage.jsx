@@ -905,11 +905,11 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
               <div style={s.field}>
                 <label style={s.label}>Forma de pago</label>
                 <div style={s.optRow}>
-                  {['Efectivo', 'Transferencia', 'Tarjeta'].map(opt => (
+                  {['Efectivo', 'Transferencia'].map(opt => (
                     <button key={opt} type="button"
                       style={formData.formaPago === opt ? s.optActive : s.opt}
                       onClick={() => setFormData({...formData, formaPago: opt})}>
-                      {opt === 'Efectivo' ? '💵' : opt === 'Transferencia' ? '🏦' : '💳'} {opt}
+                      {opt === 'Efectivo' ? '💵' : '🏦'} {opt}
                     </button>
                   ))}
                 </div>

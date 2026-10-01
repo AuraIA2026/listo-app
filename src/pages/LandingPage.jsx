@@ -1541,9 +1541,9 @@ export default function LandingPage({ navigate, lang }) {
         </div>
 
         <div className="why-app-card reveal stagger-5">
-          <div className="why-app-icon">💳</div>
-          <h3>Pago seguro</h3>
-          <p>Paga dentro de la app con tarjeta de crédito o débito. Protección garantizada.</p>
+          <div className="why-app-icon">💵</div>
+          <h3>Pago directo</h3>
+          <p>Paga directamente al profesional mediante transferencia bancaria o en efectivo. Sin complicaciones.</p>
         </div>
 
         <div className="why-app-card reveal stagger-6">

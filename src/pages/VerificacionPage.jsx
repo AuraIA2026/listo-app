@@ -19,9 +19,15 @@ const sections = [
   { n: 6, icon: "📋", color: "#EC4899", bg: "#FDF2F8", title: "Aceptación de Términos",    sub: "Confirma y acepta las condiciones" },
 ];
 
-// Comprime imagen a base64
+// Comprime imagen a base64 (o lee directamente si es PDF)
 const compressImage = (file) => new Promise((resolve, reject) => {
   const reader = new FileReader();
+  if (file.type === 'application/pdf' || (file.name && file.name.toLowerCase().endsWith('.pdf'))) {
+    reader.onload = (e) => resolve(e.target.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+    return;
+  }
   reader.onload = (e) => {
     const img = new Image();
     img.onload = () => {
@@ -43,8 +49,8 @@ const compressImage = (file) => new Promise((resolve, reject) => {
 
 const TERMS_PRO = [
   { title: '1. Naturaleza del Servicio', body: 'Listo Patrón es una plataforma tecnológica de intermediación digital que conecta usuarios con profesionales independientes.\n\nLa plataforma no participa en la ejecución de los servicios ofrecidos ni en los acuerdos comerciales entre las partes.\n\nEl profesional reconoce que actúa de manera independiente, sin que exista relación laboral, sociedad o representación con la plataforma.\n\nEl acuerdo de servicio, precios y condiciones son responsabilidad exclusiva entre el profesional y el usuario.\n\nEste acuerdo se rige por las leyes de la República Dominicana.' },
-  { title: '2. Modelo de Uso y Planes', body: 'Para utilizar la plataforma, el profesional deberá adquirir uno de los planes disponibles dentro de la aplicación.\n\nCada plan otorga una cantidad específica de servicios, contactos o contratos que el profesional podrá gestionar dentro de la plataforma.\n\nUna vez consumidos los beneficios del plan, el profesional deberá adquirir uno nuevo para continuar utilizando la plataforma.\n\nLos pagos de los planes deberán realizarse exclusivamente mediante métodos digitales habilitados por la plataforma (transferencia o tarjeta). No se aceptan pagos en efectivo para la compra de planes.\n\nLa plataforma podrá modificar los planes, precios y beneficios notificando previamente dentro de la aplicación.' },
-  { title: '3. Pagos por Servicios', body: 'Los pagos por los servicios realizados podrán efectuarse mediante:\n\n- Efectivo\n- Transferencia bancaria\n- Tarjeta (a través de la plataforma)\n\nCuando el pago se realice con tarjeta dentro de la aplicación, la plataforma actuará como facilitador del procesamiento del pago y podrá gestionar temporalmente los fondos antes de transferirlos al profesional.\n\nEn pagos realizados fuera de la plataforma (efectivo o transferencia directa), la plataforma no interviene en la transacción.' },
+  { title: '2. Modelo de Uso y Planes', body: 'Para utilizar la plataforma, el profesional deberá adquirir uno de los planes disponibles dentro de la aplicación.\n\nCada plan otorga una cantidad específica de servicios, contactos o contratos que el profesional podrá gestionar dentro de la plataforma.\n\nUna vez consumidos los beneficios del plan, el profesional deberá adquirir uno nuevo para continuar utilizando la plataforma.\n\nLos pagos de los planes deberán realizarse mediante transferencia bancaria. No se aceptan pagos en efectivo para la compra de planes.\n\nLa plataforma podrá modificar los planes, precios y beneficios notificando previamente dentro de la aplicación.' },
+  { title: '3. Pagos por Servicios', body: 'Los pagos por los servicios realizados entre el cliente y el profesional se realizarán exclusivamente mediante:\n\n- Efectivo\n- Transferencia bancaria directa\n\nLos usuarios pagarán el 100% del servicio directamente al profesional en efectivo o mediante transferencia. La plataforma no procesa ni cobra tarjetas de crédito para el pago de servicios.' },
   { title: '4. Responsabilidad del Profesional', body: 'El profesional es el único responsable por:\n- La calidad del servicio prestado\n- El cumplimiento de los acuerdos con el usuario\n- La veracidad de la información proporcionada\n- Su comportamiento dentro y fuera de la plataforma' },
   { title: '5. Sistema Disciplinario', body: 'Se consideran faltas graves:\n- Proporcionar información falsa\n- Conducta inapropiada hacia usuarios\n- Uso indebido de la plataforma\n- Actividades ilegales o fraudulentas\n\nPenalizaciones:\n- Primer strike: Advertencia formal\n- Segundo strike: Suspensión temporal\n- Tercer strike: Cancelación permanente e irreversible\n\nEn casos graves, la cancelación podrá ser inmediata sin previo aviso.' },
   { title: '6. Protección de Datos', body: 'El profesional autoriza el tratamiento de sus datos conforme a la Ley 172-13 sobre Protección de Datos de la República Dominicana.' },
@@ -191,7 +197,7 @@ export default function VerificacionPage({ onBack }) {
       if (uid) {
         // Función para subir a Storage con fallback automático a Base64 optimizado si hay error de permisos
         const uploadToStorage = async (base64, pathName) => {
-          if (!base64 || !base64.startsWith('data:image')) return base64; // Si ya es url o nulo
+          if (!base64 || (!base64.startsWith('data:image') && !base64.startsWith('data:application/pdf'))) return base64; // Si ya es url o nulo
           try {
             const storageRef = ref(storage, `verificaciones/${uid}/${pathName}_${Date.now()}.jpg`);
             
