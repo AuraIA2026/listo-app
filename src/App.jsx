@@ -233,7 +233,7 @@ function SystemAlertModal({ alert, onClose, lang, onNavigateProfile }) {
       `}</style>
       
       {!isExpanded ? (
-        /* ── VISTA 1: CÍRCULO STICKER INICIAL (FOTO 1) ── */
+        /* ── VISTA 1: CÍRCULO STICKER INICIAL ── */
         <div style={{
           width: '340px',
           height: '340px',
@@ -273,19 +273,6 @@ function SystemAlertModal({ alert, onClose, lang, onNavigateProfile }) {
             borderRadius: '50%', pointerEvents: 'none'
           }} />
 
-          {/* Insignia Sticker Corazón */}
-          <div style={{
-            position: 'absolute', right: '18px', top: '52%',
-            transform: 'translateY(-50%) rotate(12deg)',
-            background: '#FFFFFF', border: '2.5px solid #FFFFFF',
-            borderRadius: '16px', padding: '4px 7px',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.25)',
-            zIndex: 3, display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: '18px'
-          }}>
-            💖
-          </div>
-
           {/* Título Superior */}
           <div style={{ zIndex: 2, marginTop: '4px' }}>
             <h2 style={{
@@ -293,7 +280,7 @@ function SystemAlertModal({ alert, onClose, lang, onNavigateProfile }) {
               textShadow: '0 2px 5px rgba(0,0,0,0.4), 0 0 2px rgba(0,0,0,0.6)',
               letterSpacing: '-0.3px', lineHeight: 1.12
             }}>
-              Bienvenido a<br />Listo Patrón
+              {alert.title || 'Bienvenido a Listo Patrón'}
             </h2>
           </div>
 
@@ -348,15 +335,15 @@ function SystemAlertModal({ alert, onClose, lang, onNavigateProfile }) {
 
         </div>
       ) : (
-        /* ── VISTA 2: CUADRO EXPANDIDO (FOTO 2) ── */
+        /* ── VISTA 2: TARJETA CAPSULAR VERTICAL EXPANDIDA (FOTO 2) ── */
         <div style={{
-          width: '100%',
-          maxWidth: '380px',
-          background: 'linear-gradient(155deg, #FF7818 0%, #F25A00 50%, #D44800 100%)',
-          border: '5px solid #FFFFFF',
-          boxShadow: '0 25px 60px rgba(0,0,0,0.5), 0 0 40px rgba(242,90,0,0.6)',
-          borderRadius: '55px',
-          padding: '32px 24px 24px',
+          width: '92%',
+          maxWidth: '360px',
+          background: 'linear-gradient(160deg, #FF7000 0%, #F05500 55%, #D44000 100%)',
+          border: '4px solid #FFFFFF',
+          boxShadow: '0 25px 60px rgba(0,0,0,0.5), inset 0 2px 6px rgba(255,255,255,0.4)',
+          borderRadius: '65px',
+          padding: '34px 22px 28px',
           position: 'relative',
           display: 'flex',
           flexDirection: 'column',
@@ -367,25 +354,13 @@ function SystemAlertModal({ alert, onClose, lang, onNavigateProfile }) {
           maxHeight: '92vh',
           overflowY: 'auto'
         }}>
-          {/* Sticker Corazón Flotante */}
-          <div style={{
-            position: 'absolute', right: '20px', top: '24px',
-            transform: 'rotate(10deg)', background: '#FFFFFF',
-            border: '2.5px solid #FFFFFF', borderRadius: '20px',
-            padding: '6px 10px', boxShadow: '0 6px 16px rgba(0,0,0,0.25)',
-            zIndex: 4, display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: '22px'
-          }}>
-            💖
-          </div>
-
           {/* Icono de Campana Centro Top */}
           <div style={{
             width: '54px', height: '54px', minHeight: '54px',
-            background: 'rgba(255, 225, 195, 0.4)', backdropFilter: 'blur(4px)',
-            border: '2.5px solid rgba(255, 255, 255, 0.7)', borderRadius: '50%',
+            background: 'rgba(255, 215, 175, 0.45)', backdropFilter: 'blur(4px)',
+            border: '2px solid rgba(255, 255, 255, 0.7)', borderRadius: '50%',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: '28px', boxShadow: '0 6px 18px rgba(0,0,0,0.2)',
+            fontSize: '28px', boxShadow: '0 6px 16px rgba(0,0,0,0.2)',
             marginBottom: '16px'
           }}>
             🔔
@@ -394,30 +369,30 @@ function SystemAlertModal({ alert, onClose, lang, onNavigateProfile }) {
           {/* Título Oficial */}
           <h2 style={{
             margin: '0 0 16px', fontSize: '22px', fontWeight: '900', color: '#FFFFFF',
-            textShadow: '0 2px 8px rgba(0,0,0,0.4)', lineHeight: 1.2
+            textShadow: '0 2px 6px rgba(0,0,0,0.4)', lineHeight: 1.25, textAlign: 'center'
           }}>
             {alert.title || 'Bienvenido a Listo Patrón'}
           </h2>
 
           {/* Párrafos Completos con Formato Exacto */}
           <div style={{
-            color: '#3D1B00', fontSize: '14.5px', lineHeight: 1.5, fontWeight: '900',
-            textShadow: '0 1px 0px rgba(255,255,255,0.4)',
-            marginBottom: '24px', whiteSpace: 'pre-line', textAlign: 'center'
+            color: '#1E0500', fontSize: '15px', lineHeight: 1.48, fontWeight: '900',
+            textShadow: '0 1px 0px rgba(255,255,255,0.35)',
+            marginBottom: '28px', whiteSpace: 'pre-line', textAlign: 'center'
           }}>
             {alert.text}
           </div>
 
-          {/* Botón de Confirmación Ovalado abajo */}
+          {/* Botón de Confirmación Ovalado Abajo */}
           <div style={{ width: '100%', marginTop: 'auto' }}>
             <button
               onClick={handleButtonClick}
               style={{
-                width: '100%', padding: '14px 20px', borderRadius: '30px',
-                background: '#FFFFFF', color: '#3D1B00', fontSize: '16px',
-                fontWeight: '900', border: '3px solid #FFDBB8', cursor: 'pointer',
+                width: '100%', padding: '14px 20px', borderRadius: '32px',
+                background: '#FFFFFF', color: '#000000', fontSize: '16.5px',
+                fontWeight: '900', border: 'none', cursor: 'pointer',
                 boxShadow: '0 8px 24px rgba(0,0,0,0.3)',
-                transition: 'all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)'
+                transition: 'all 0.18s ease'
               }}
               onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.03)'}
               onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
