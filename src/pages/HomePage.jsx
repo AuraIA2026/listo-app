@@ -25,6 +25,7 @@ import RebookCircleWidget from '../components/RebookCircleWidget'
 import EmergencySirenCircleWidget from '../components/EmergencySirenCircleWidget'
 import StoreCircleWidget from '../components/StoreCircleWidget'
 import TombolaCircleWidget from '../components/TombolaCircleWidget'
+import VipCircleWidget from '../components/VipCircleWidget'
 import LightningOfferBannerModal from '../components/LightningOfferBannerModal'
 
 import mecanico   from '../assets/pros/Mecanico.jpg'
@@ -1395,12 +1396,13 @@ export default function HomePage({ lang, navigate, userRole }) {
           </span>
         </button>
 
-        {/* ── BOTONES CÍRCULO GPS RADAR, RE-CONTRATAR, SIRENA SOS, TIENDA Y TÓMBOLA (SIEMPRE VISIBLES PARA TODOS) ── */}
+        {/* ── BOTONES CÍRCULO GPS RADAR, RE-CONTRATAR, SIRENA SOS, TIENDA, TÓMBOLA Y VIP (SIEMPRE VISIBLES PARA TODOS) ── */}
         <GpsRadarWidget pros={allProsToUse} navigate={navigate} lang={lang} />
         <RebookCircleWidget hiredProsList={hiredProsList} navigate={navigate} lang={lang} />
         <EmergencySirenCircleWidget isExpanded={isProblemsExpanded} onToggle={() => setIsProblemsExpanded(prev => !prev)} lang={lang} />
         <StoreCircleWidget lang={lang} />
         <TombolaCircleWidget onOpenTombola={() => setShowLuckyWheel(true)} lang={lang} />
+        <VipCircleWidget navigate={navigate} lang={lang} />
         <button className="amz-nav-pill" onClick={() => navigate('search', { catToSelect: 'mecanico' })}>
           🔧 Mecánicos
         </button>
@@ -1718,53 +1720,6 @@ export default function HomePage({ lang, navigate, userRole }) {
 
 
 
-
-
-      {/* ── BANNER ÉPICO VIP: "CONOCE NUESTROS PROFESIONALES VIP" (ANIMACIÓN LLAMATIVA) ── */}
-      <div 
-        className="vip-explore-banner-card"
-        onClick={() => navigate('search')}
-      >
-        {/* Shimmer Light Wave Effect */}
-        <div className="vip-banner-shimmer" />
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1, minWidth: 0, zIndex: 2 }}>
-          <div className="vip-crown-icon-container">
-            <span className="vip-crown-icon-animated">👑</span>
-            <span className="vip-crown-star-glow">⭐</span>
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <span className="vip-banner-badge-tag">
-                ⭐ ÉLITE 5 ESTRELLAS
-              </span>
-              <span className="vip-banner-live-pulse" />
-            </div>
-            <h3 className="vip-banner-title">
-              {lang === 'es' ? 'Conoce nuestros Profesionales VIP' : 'Meet our VIP Professionals'}
-            </h3>
-            <p className="vip-banner-sub">
-              {lang === 'es' ? 'Especialistas verificados con garantía de calidad 100%' : 'Verified specialists with 100% quality guarantee'}
-            </p>
-          </div>
-        </div>
-
-        <div className="vip-banner-action-wrap">
-          <button className="vip-banner-btn">
-            ⚡ {lang === 'es' ? 'Explorar VIP ›' : 'Explore VIP ›'}
-          </button>
-          <button 
-            className="vip-banner-orders-link"
-            onClick={(e) => {
-              e.stopPropagation();
-              navigate('orders');
-            }}
-            title={lang === 'es' ? 'Ver mis pedidos' : 'View my orders'}
-          >
-            📦 {lang === 'es' ? 'Mis Pedidos' : 'Orders'}
-          </button>
-        </div>
-      </div>
 
       <div className="hp-cats-scroll">
         {topHomeCategories.map((c, i) => (
