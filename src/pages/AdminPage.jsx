@@ -640,6 +640,36 @@ export default function AdminPage({ navigate }) {
     }
   };
 
+  const handleDirectUnblock = async (targetUser) => {
+    if (!targetUser) return;
+    try {
+      await updateDoc(doc(db, 'users', targetUser.id), { 
+        planStatus: 'active', 
+        approved: true,
+        role: 'professional',
+        type: 'pro',
+        planExpirationDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+        available: true
+      });
+      if (targetUser.id) {
+        await addDoc(collection(db, 'notificaciones'), {
+          userId: targetUser.id,
+          type: 'system',
+          title: 'Hola, Bienvenido a Listo Patrón.',
+          text: `¿Listo para ofrecer tus servicios?\nSi vas a trabajar como profesional, activa tu perfil en dos simples pasos:\n1. Toca el menú de las tres líneas (☰) en la esquina superior derecha.\n2. Selecciona "Trabajar como profesional".\n¡Empieza a recibir clientes hoy mismo!`,
+          date: new Date().toISOString(),
+          createdAt: new Date().toISOString(),
+          read: false
+        }).catch(() => {});
+      }
+      showToast(`✅ ${targetUser.name || 'Usuario'} activado`);
+      setViewProStats(prev => prev ? { ...prev, planStatus: 'active', approved: true, available: true } : null);
+    } catch(e) {
+      console.error("Error activating user:", e);
+      showToast("❌ Error al activar usuario");
+    }
+  };
+
   /* Confirmar acciones reales con Firebase */
   const ejecutarConfirm = async () => {
     if (!confirm) return;
@@ -1978,7 +2008,7 @@ export default function AdminPage({ navigate }) {
                 {/* Suspensiones */}
                 <div style={{display:'flex', gap:8, marginBottom:12}}>
                   {viewProStats.planStatus === 'inactive' || !viewProStats.approved ? (
-                    <button className="cc-btn paid" style={{background:'#10B981', color:'#fff', flex:1}} onClick={() => setConfirm({type:'unblock', obj:viewProStats})}>
+                    <button className="cc-btn paid" style={{background:'#10B981', color:'#fff', flex:1}} onClick={() => handleDirectUnblock(viewProStats)}>
                       ✅ Activar Perfil
                     </button>
                   ) : (
