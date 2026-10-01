@@ -173,7 +173,7 @@ export default function HistoriasViewerModal({
   }
 
   const isVideoStory = currentStory?.mediaType === 'video' || Boolean(currentStory?.videoUrl) || String(currentStory?.imageUrl || '').endsWith('.mp4')
-  const storyDuration = isVideoStory ? (currentStory?.videoDuration ? currentStory.videoDuration * 1000 : 15000) : 5000
+  const storyDuration = isVideoStory ? (currentStory?.videoDuration ? currentStory.videoDuration * 1000 : 15000) : 4000
 
   // Auto-progress timer for stories (paused if user holds screen)
   useEffect(() => {

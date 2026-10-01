@@ -496,6 +496,32 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
         evidences: downloadedURLs,
         evidenceText: formData.experiencia
       })
+
+      // Publicar automáticamente las 3 historias de 4 segundos del trabajo finalizado en Firestore
+      for (let i = 0; i < Math.min(downloadedURLs.length, 3); i++) {
+        const photoUrl = downloadedURLs[i];
+        try {
+          await addDoc(collection(db, 'historias'), {
+            proId: latestOrder.proId || finalUserData?.uid || '',
+            proName: finalUserData?.name || latestOrder.proName || 'Profesional',
+            proAvatar: finalUserData?.profilePhoto || finalUserData?.photoURL || '',
+            proCategory: latestOrder.category || finalUserData?.category || 'Servicio',
+            proRating: finalUserData?.rating || 5.0,
+            proPlan: finalUserData?.currentPlan || finalUserData?.plan || 'Gratuito',
+            imageUrl: photoUrl,
+            caption: `📸 Trabajo finalizado de ${latestOrder.category || 'servicio'}: ${formData.experiencia || '¡Trabajo completado con excelencia!'}`,
+            status: 'approved',
+            moderated: true,
+            createdAt: new Date().toISOString(),
+            expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+            viewsCount: 1,
+            likesCount: 0,
+            mediaType: 'image'
+          });
+        } catch (errStory) {
+          console.error("Error al publicar historia de trabajo finalizado:", errStory);
+        }
+      }
       
       if (latestOrder.proId) {
         try {
@@ -505,7 +531,20 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
             const proData = proSnap.data();
             const currentCompleted = proData.completedContracts || 0;
             const newCompleted = currentCompleted + 1;
-            const proUpdate = { completedContracts: newCompleted };
+            const proUpdate = { 
+              completedContracts: newCompleted,
+              freeStories: (proData.freeStories || 0) + 3
+            };
+
+            await addDoc(collection(db, 'notificaciones'), {
+              userId: latestOrder.proId,
+              type: 'reward',
+              title: '📸 ¡HISTORIAS DE TRABAJO FINALIZADO PUBLICADAS!',
+              text: `Se han publicado automáticamente ${Math.min(downloadedURLs.length, 3)} historias de 4 segundos de tu trabajo completado en el carrusel de Historias en vivo.`,
+              read: false,
+              icon: '📸',
+              createdAt: serverTimestamp()
+            });
             
             if (newCompleted % 10 === 0) {
               proUpdate.contracts = (proData.contracts || 0) + 1;
