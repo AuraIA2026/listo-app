@@ -1,10 +1,25 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { db, auth } from '../firebase'
 import { collection, addDoc } from 'firebase/firestore'
 import './Historias.css'
 
 const QUICK_TAGS = ['#Plomería', '#Electricidad', '#Pintura', '#Mecánica', '#Catering', '#Reparación', '#Limpieza', '#TrabajoListo']
+
+const COLOR_PALETTE = [
+  '#FFFFFF', '#000000', '#F26000', '#EF4444', '#F59E0B', 
+  '#10B981', '#06B6D4', '#3B82F6', '#8B5CF6', '#EC4899'
+]
+
+const STICKER_PRESETS = [
+  { id: 'logo_listo', label: '⚡ Listo Patrón' },
+  { id: 'oficial_5s', label: '⭐ Trabajo 5 Estrellas' },
+  { id: 'oferta_flash', label: '🔥 Oferta 24h' },
+  { id: 'garantia', label: '🛡️ Garantizado' },
+  { id: 'cliente_ok', label: '🤝 Cliente Satisfecho' },
+  { id: 'herramientas', label: '🛠️ Calidad Profesional' },
+  { id: 'ubicacion', label: '📍 Santo Domingo, RD' }
+]
 
 export default function SubirHistoriaModal({ isOpen, onClose, userData, onStoryUploaded }) {
   const [mediaType, setMediaType] = useState('image') // 'image' | 'video'
@@ -17,14 +32,44 @@ export default function SubirHistoriaModal({ isOpen, onClose, userData, onStoryU
   const [isVideoMuted, setIsVideoMuted] = useState(false)
   const videoRef = useRef(null)
 
-  // Editor de imágenes
+  // Editor de fotos estilo WhatsApp Ultra-Mejorado
   const [originalImageSrc, setOriginalImageSrc] = useState(null)
-  const [isEditingPhoto, setIsEditingPhoto] = useState(false)
+  const [activeTool, setActiveTool] = useState(null) // null | 'crop' | 'bg' | 'filter' | 'draw' | 'text' | 'sticker'
+  
+  // 1. Encuadre, Recorte y Ajuste anti-cortado
+  const [cropMode, setCropMode] = useState('fit') // 'fit' (foto completa) | 'cover' (llenar 9:16) | '1:1' | '4:5' | '16:9'
+  const [bgStyle, setBgStyle] = useState('blur') // 'blur' (WhatsApp) | 'gradient' | 'dark' | 'light'
   const [editRotation, setEditRotation] = useState(0)
+  const [editFlipX, setEditFlipX] = useState(false)
+  const [editZoom, setEditZoom] = useState(1.0)
+  const [panX, setPanX] = useState(0)
+  const [panY, setPanY] = useState(0)
+  const [isPanning, setIsPanning] = useState(false)
+  const panStartRef = useRef({ x: 0, y: 0, initialPanX: 0, initialPanY: 0 })
+
+  // 2. Filtros y Ajustes de Color HD
   const [editFilter, setEditFilter] = useState('normal')
   const [editBrightness, setEditBrightness] = useState(100)
   const [editContrast, setEditContrast] = useState(100)
-  const [editZoom, setEditZoom] = useState(1.0)
+  const [editSaturate, setEditSaturate] = useState(100)
+
+  // 3. Pincel / Dibujo estilo WhatsApp
+  const [drawColor, setDrawColor] = useState('#F26000')
+  const [drawLineWidth, setDrawLineWidth] = useState(6)
+  const [strokesHistory, setStrokesHistory] = useState([])
+  const [isDrawing, setIsDrawing] = useState(false)
+  const drawCanvasRef = useRef(null)
+  const currentStrokeRef = useRef([])
+
+  // 4. Texto Superpuesto estilo WhatsApp
+  const [overlayText, setOverlayText] = useState('')
+  const [textColor, setTextColor] = useState('#FFFFFF')
+  const [textBgStyle, setTextBgStyle] = useState('solid') // 'solid' | 'transparent' | 'semi' | 'outline' | 'neon'
+  const [textFont, setTextFont] = useState('sans') // 'sans' | 'serif' | 'script' | 'typewriter' | 'impact'
+  const [textPos, setTextPos] = useState('center') // 'top' | 'center' | 'bottom'
+
+  // 5. Stickers / Emojis superpuestos
+  const [selectedStickers, setSelectedStickers] = useState([])
 
   const [caption, setCaption] = useState('')
   const [offerSticker, setOfferSticker] = useState('none')
@@ -32,66 +77,263 @@ export default function SubirHistoriaModal({ isOpen, onClose, userData, onStoryU
   const [errorMsg, setErrorMsg] = useState('')
   const [warningMsg, setWarningMsg] = useState('')
 
+  useEffect(() => {
+    if (mediaType === 'image' && originalImageSrc) {
+      renderMergedPreview()
+    }
+  }, [
+    originalImageSrc, cropMode, bgStyle, editRotation, editFlipX, editZoom, panX, panY,
+    editFilter, editBrightness, editContrast, editSaturate,
+    strokesHistory, overlayText, textColor, textBgStyle, textFont, textPos, selectedStickers
+  ])
+
   if (!isOpen) return null
 
-  // Función de procesamiento en Canvas para aplicar rotación, filtros y ajustes de imagen
-  const applyPhotoEdits = (rawSrc, rotation, filterName, brightness, contrast, zoom) => {
-    if (!rawSrc) return
+  // Renderiza la vista previa combinada en Canvas (Anti-cortado con Blur/Fit + Filtros + Dibujos + Texto + Stickers)
+  const renderMergedPreview = () => {
+    if (!originalImageSrc) return
     const img = new Image()
     img.crossOrigin = 'anonymous'
     img.onload = () => {
       const canvas = document.createElement('canvas')
-      const MAX_DIM = 900
-      let w = img.width
-      let h = img.height
+      
+      // Dimensiones estándar de Historia (9:16 -> 720 x 1280)
+      const targetW = 720
+      const targetH = 1280
 
-      if (w > h) {
-        if (w > MAX_DIM) {
-          h = Math.round((h * MAX_DIM) / w)
-          w = MAX_DIM
-        }
-      } else {
-        if (h > MAX_DIM) {
-          w = Math.round((w * MAX_DIM) / h)
-          h = MAX_DIM
-        }
-      }
-
-      const isQuarterRotated = rotation === 90 || rotation === 270
-      canvas.width = isQuarterRotated ? h : w
-      canvas.height = isQuarterRotated ? w : h
+      canvas.width = targetW
+      canvas.height = targetH
 
       const ctx = canvas.getContext('2d')
 
-      let filterParts = []
-      if (brightness !== 100) filterParts.push(`brightness(${brightness}%)`)
-      if (contrast !== 100) filterParts.push(`contrast(${contrast}%)`)
-
-      if (filterName === 'vivid') {
-        filterParts.push('saturate(150%) contrast(110%)')
-      } else if (filterName === 'warm') {
-        filterParts.push('sepia(35%) brightness(105%)')
-      } else if (filterName === 'bw') {
-        filterParts.push('grayscale(100%)')
-      } else if (filterName === 'vintage') {
-        filterParts.push('sepia(45%) contrast(120%) brightness(95%)')
+      // A) DIBUJAR FONDO ADAPTATIVO (Evita que la foto quede cortada)
+      if (bgStyle === 'blur') {
+        // Fondo desenfocado WhatsApp de la misma imagen
+        ctx.save()
+        if (ctx.filter !== undefined) {
+          ctx.filter = 'blur(24px) brightness(0.65) saturate(120%)'
+        }
+        const bgScale = Math.max(targetW / img.width, targetH / img.height)
+        const bgW = img.width * bgScale
+        const bgH = img.height * bgScale
+        ctx.drawImage(img, (targetW - bgW) / 2, (targetH - bgH) / 2, bgW, bgH)
+        ctx.restore()
+      } else if (bgStyle === 'gradient') {
+        // Degradado estilo Listo Patrón
+        const grad = ctx.createLinearGradient(0, 0, 0, targetH)
+        grad.addColorStop(0, '#0F172A')
+        grad.addColorStop(0.5, '#1E293B')
+        grad.addColorStop(1, '#F26000')
+        ctx.fillStyle = grad
+        ctx.fillRect(0, 0, targetW, targetH)
+      } else if (bgStyle === 'light') {
+        ctx.fillStyle = '#F8FAFC'
+        ctx.fillRect(0, 0, targetW, targetH)
+      } else {
+        // Fondo negro elegante por defecto
+        ctx.fillStyle = '#0B0F19'
+        ctx.fillRect(0, 0, targetW, targetH)
       }
 
+      // B) APLICAR FILTROS CSS A LA FOTO PRINCIPAL
+      let filterParts = []
+      if (editBrightness !== 100) filterParts.push(`brightness(${editBrightness}%)`)
+      if (editContrast !== 100) filterParts.push(`contrast(${editContrast}%)`)
+      if (editSaturate !== 100) filterParts.push(`saturate(${editSaturate}%)`)
+
+      if (editFilter === 'vivid') {
+        filterParts.push('saturate(165%) contrast(115%)')
+      } else if (editFilter === 'warm') {
+        filterParts.push('sepia(25%) brightness(105%) saturate(125%)')
+      } else if (editFilter === 'bw') {
+        filterParts.push('grayscale(100%) contrast(115%)')
+      } else if (editFilter === 'vintage') {
+        filterParts.push('sepia(45%) contrast(120%) brightness(95%)')
+      } else if (editFilter === 'cinema') {
+        filterParts.push('contrast(135%) saturate(85%) brightness(92%)')
+      } else if (editFilter === 'cold') {
+        filterParts.push('hue-rotate(180deg) saturate(110%)')
+      } else if (editFilter === 'neon') {
+        filterParts.push('saturate(200%) contrast(130%) hue-rotate(300deg)')
+      } else if (editFilter === 'hdr') {
+        filterParts.push('contrast(140%) brightness(110%) saturate(130%)')
+      }
+
+      ctx.save()
       if (filterParts.length > 0 && ctx.filter !== undefined) {
         ctx.filter = filterParts.join(' ')
       }
 
-      ctx.save()
-      ctx.translate(canvas.width / 2, canvas.height / 2)
-      ctx.rotate((rotation * Math.PI) / 180)
-      ctx.scale(zoom, zoom)
-      ctx.drawImage(img, -w / 2, -h / 2, w, h)
+      // C) DIBUJAR IMAGEN PRINCIPAL SEGÚN CROP MODE & TRANSFORMACIONES
+      ctx.translate(targetW / 2 + panX, targetH / 2 + panY)
+      ctx.rotate((editRotation * Math.PI) / 180)
+      ctx.scale(editFlipX ? -editZoom : editZoom, editZoom)
+
+      let drawW = targetW
+      let drawH = targetH
+
+      if (cropMode === 'fit') {
+        // Anti-cortado: la foto completa encaja dentro sin perder bordes
+        const scaleRatio = Math.min(targetW / img.width, targetH / img.height)
+        drawW = img.width * scaleRatio
+        drawH = img.height * scaleRatio
+      } else if (cropMode === 'cover') {
+        // Llenar 9:16 completo
+        const scaleRatio = Math.max(targetW / img.width, targetH / img.height)
+        drawW = img.width * scaleRatio
+        drawH = img.height * scaleRatio
+      } else if (cropMode === '1:1') {
+        // Cuadrado 1:1 en el centro
+        const boxSize = 700
+        const scaleRatio = Math.min(boxSize / img.width, boxSize / img.height)
+        drawW = img.width * scaleRatio
+        drawH = img.height * scaleRatio
+      } else if (cropMode === '4:5') {
+        // Retrato 4:5
+        const boxW = 700
+        const boxH = 875
+        const scaleRatio = Math.min(boxW / img.width, boxH / img.height)
+        drawW = img.width * scaleRatio
+        drawH = img.height * scaleRatio
+      } else if (cropMode === '16:9') {
+        // Paisaje 16:9
+        const boxW = 700
+        const boxH = 394
+        const scaleRatio = Math.min(boxW / img.width, boxH / img.height)
+        drawW = img.width * scaleRatio
+        drawH = img.height * scaleRatio
+      }
+
+      // Sombra suave bajo la foto si está en modo fit o marco
+      if (cropMode !== 'cover' && bgStyle !== 'blur') {
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.5)'
+        ctx.shadowBlur = 20
+      }
+
+      ctx.drawImage(img, -drawW / 2, -drawH / 2, drawW, drawH)
       ctx.restore()
 
-      const outputBase64 = canvas.toDataURL('image/jpeg', 0.75)
+      // Resetear filtro y sombras para capas superiores
+      if (ctx.filter !== undefined) ctx.filter = 'none'
+      ctx.shadowColor = 'transparent'
+      ctx.shadowBlur = 0
+
+      // D) DIBUJAR TRAZOS DE PINCEL
+      strokesHistory.forEach(stroke => {
+        if (!stroke.points || stroke.points.length === 0) return
+        ctx.beginPath()
+        ctx.strokeStyle = stroke.color
+        ctx.lineWidth = (stroke.width * targetW) / 360
+        ctx.lineCap = 'round'
+        ctx.lineJoin = 'round'
+
+        stroke.points.forEach((pt, idx) => {
+          const px = pt.x * targetW
+          const py = pt.y * targetH
+          if (idx === 0) ctx.moveTo(px, py)
+          else ctx.lineTo(px, py)
+        })
+        ctx.stroke()
+      })
+
+      // E) DIBUJAR STICKERS Y MARCAS
+      selectedStickers.forEach(stk => {
+        ctx.save()
+        const stkX = stk.x * targetW
+        const stkY = stk.y * targetH
+        ctx.font = '900 34px sans-serif'
+        ctx.textAlign = 'center'
+        ctx.textBaseline = 'middle'
+        
+        ctx.shadowColor = 'rgba(0,0,0,0.6)'
+        ctx.shadowBlur = 10
+
+        const metrics = ctx.measureText(stk.label)
+        const bgW = metrics.width + 28
+        const bgH = 48
+        
+        ctx.fillStyle = 'rgba(15, 23, 42, 0.88)'
+        ctx.beginPath()
+        if (ctx.roundRect) {
+          ctx.roundRect(stkX - bgW / 2, stkY - bgH / 2, bgW, bgH, 16)
+        } else {
+          ctx.rect(stkX - bgW / 2, stkY - bgH / 2, bgW, bgH)
+        }
+        ctx.fill()
+
+        ctx.strokeStyle = '#F26000'
+        ctx.lineWidth = 2
+        ctx.stroke()
+
+        ctx.fillStyle = '#FFFFFF'
+        ctx.fillText(stk.label, stkX, stkY)
+        ctx.restore()
+      })
+
+      // F) DIBUJAR TEXTO SUPERPUESTO ESTILO WHATSAPP
+      if (overlayText.trim()) {
+        ctx.save()
+        let fontName = 'sans-serif'
+        if (textFont === 'serif') fontName = 'Georgia, serif'
+        else if (textFont === 'script') fontName = 'cursive, sans-serif'
+        else if (textFont === 'typewriter') fontName = 'Courier New, monospace'
+        else if (textFont === 'impact') fontName = 'Impact, sans-serif'
+
+        ctx.font = `900 34px ${fontName}`
+        ctx.textAlign = 'center'
+        ctx.textBaseline = 'middle'
+
+        let textY = targetH / 2
+        if (textPos === 'top') textY = targetH * 0.20
+        if (textPos === 'bottom') textY = targetH * 0.80
+
+        const metrics = ctx.measureText(overlayText)
+        const textW = metrics.width + 34
+        const textH = 56
+
+        if (textBgStyle === 'solid') {
+          ctx.fillStyle = '#0F172A'
+          ctx.beginPath()
+          if (ctx.roundRect) {
+            ctx.roundRect(targetW / 2 - textW / 2, textY - textH / 2, textW, textH, 16)
+          } else {
+            ctx.rect(targetW / 2 - textW / 2, textY - textH / 2, textW, textH)
+          }
+          ctx.fill()
+          ctx.fillStyle = textColor
+        } else if (textBgStyle === 'semi') {
+          ctx.fillStyle = 'rgba(0, 0, 0, 0.65)'
+          ctx.beginPath()
+          if (ctx.roundRect) {
+            ctx.roundRect(targetW / 2 - textW / 2, textY - textH / 2, textW, textH, 16)
+          } else {
+            ctx.rect(targetW / 2 - textW / 2, textY - textH / 2, textW, textH)
+          }
+          ctx.fill()
+          ctx.fillStyle = textColor
+        } else if (textBgStyle === 'neon') {
+          ctx.shadowColor = textColor
+          ctx.shadowBlur = 20
+          ctx.fillStyle = textColor
+        } else if (textBgStyle === 'outline') {
+          ctx.strokeStyle = '#000000'
+          ctx.lineWidth = 7
+          ctx.strokeText(overlayText, targetW / 2, textY)
+          ctx.fillStyle = textColor
+        } else {
+          ctx.shadowColor = 'rgba(0,0,0,0.85)'
+          ctx.shadowBlur = 12
+          ctx.fillStyle = textColor
+        }
+
+        ctx.fillText(overlayText, targetW / 2, textY)
+        ctx.restore()
+      }
+
+      const outputBase64 = canvas.toDataURL('image/jpeg', 0.85)
       setMediaPreview(outputBase64)
     }
-    img.src = rawSrc
+    img.src = originalImageSrc
   }
 
   const handleFileChange = (e) => {
@@ -102,18 +344,16 @@ export default function SubirHistoriaModal({ isOpen, onClose, userData, onStoryU
     setWarningMsg('')
     setVideoDuration(null)
 
-    // Calculate file size label
     const sizeInMB = (file.size / (1024 * 1024)).toFixed(1)
     const szStr = file.size >= 1024 * 1024 ? `${sizeInMB} MB` : `${Math.round(file.size / 1024)} KB`
     setFileSizeStr(szStr)
 
     if (file.type.startsWith('video/')) {
       setMediaType('video')
-      setIsEditingPhoto(false)
+      setActiveTool(null)
 
-      // Check raw file size limit for Firestore base64 storage (max 12MB)
       if (file.size > 12 * 1024 * 1024) {
-        setErrorMsg(`⚠️ El archivo de video es demasiado pesado (${szStr}). Para garantizar velocidad y guardado sin fallos, selecciona un video de máximo 12MB.`)
+        setErrorMsg(`⚠️ El archivo de video es demasiado pesado (${szStr}). Selecciona un video de máximo 12MB.`)
         return
       }
 
@@ -134,7 +374,7 @@ export default function SubirHistoriaModal({ isOpen, onClose, userData, onStoryU
           setVideoDuration(Math.round(initialEnd))
 
           if (rawDur > 15) {
-            setWarningMsg(`✂️ Video de ${Math.round(rawDur)}s acortado automáticamente a los primeros 15s estilo WhatsApp. Usa la barra deslizante para recortar el segmento deseado.`)
+            setWarningMsg(`✂️ Video acortado automáticamente a los primeros 15s estilo WhatsApp. Usa la barra deslizante para elegir el segmento.`)
           }
         }
       }
@@ -146,16 +386,107 @@ export default function SubirHistoriaModal({ isOpen, onClose, userData, onStoryU
       reader.onload = (event) => {
         const rawBase64 = event.target.result
         setOriginalImageSrc(rawBase64)
+        
+        // Reset editor parameters - Anti-cortado fit por defecto
+        setCropMode('fit')
+        setBgStyle('blur')
         setEditRotation(0)
+        setEditFlipX(false)
+        setEditZoom(1.0)
+        setPanX(0)
+        setPanY(0)
         setEditFilter('normal')
         setEditBrightness(100)
         setEditContrast(100)
-        setEditZoom(1.0)
-        applyPhotoEdits(rawBase64, 0, 'normal', 100, 100, 1.0)
+        setEditSaturate(100)
+        setStrokesHistory([])
+        setOverlayText('')
+        setSelectedStickers([])
+        setActiveTool('crop') // Abre directamente la herramienta de encuadre para sugerir opciones
       }
       reader.readAsDataURL(file)
     } else {
       setErrorMsg('Por favor selecciona un archivo de imagen (JPG, PNG) o video (MP4, WEBM).')
+    }
+  }
+
+  // Lógica de Arrastre de Imagen en Modo Crop (Pan)
+  const handleStartPan = (e) => {
+    if (activeTool !== 'crop') return
+    setIsPanning(true)
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY
+    panStartRef.current = { x: clientX, y: clientY, initialPanX: panX, initialPanY: panY }
+  }
+
+  const handleMovePan = (e) => {
+    if (!isPanning || activeTool !== 'crop') return
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY
+    const deltaX = clientX - panStartRef.current.x
+    const deltaY = clientY - panStartRef.current.y
+    setPanX(panStartRef.current.initialPanX + deltaX)
+    setPanY(panStartRef.current.initialPanY + deltaY)
+  }
+
+  const handleEndPan = () => {
+    if (isPanning) setIsPanning(false)
+  }
+
+  // Lógica de Trazo de Pincel
+  const handleStartDraw = (e) => {
+    if (activeTool !== 'draw') return
+    setIsDrawing(true)
+    const rect = e.target.getBoundingClientRect()
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY
+    
+    const relX = (clientX - rect.left) / rect.width
+    const relY = (clientY - rect.top) / rect.height
+    
+    currentStrokeRef.current = [{ x: relX, y: relY }]
+  }
+
+  const handleMoveDraw = (e) => {
+    if (!isDrawing || activeTool !== 'draw') return
+    const rect = e.target.getBoundingClientRect()
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY
+
+    const relX = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width))
+    const relY = Math.max(0, Math.min(1, (clientY - rect.top) / rect.height))
+
+    currentStrokeRef.current.push({ x: relX, y: relY })
+  }
+
+  const handleEndDraw = () => {
+    if (!isDrawing || activeTool !== 'draw') return
+    setIsDrawing(false)
+    if (currentStrokeRef.current.length > 0) {
+      setStrokesHistory(prev => [
+        ...prev,
+        {
+          color: drawColor,
+          width: drawLineWidth,
+          points: [...currentStrokeRef.current]
+        }
+      ])
+    }
+    currentStrokeRef.current = []
+  }
+
+  const handleUndoStroke = () => {
+    setStrokesHistory(prev => prev.slice(0, -1))
+  }
+
+  const handleToggleSticker = (stkObj) => {
+    if (selectedStickers.some(s => s.id === stkObj.id)) {
+      setSelectedStickers(prev => prev.filter(s => s.id !== stkObj.id))
+    } else {
+      setSelectedStickers(prev => [
+        ...prev,
+        { ...stkObj, x: 0.5, y: 0.35 + prev.length * 0.12 }
+      ])
     }
   }
 
@@ -219,7 +550,7 @@ export default function SubirHistoriaModal({ isOpen, onClose, userData, onStoryU
     let storedUser = {}
     try {
       storedUser = JSON.parse(localStorage.getItem('listoUserData') || '{}')
-    } catch (e) {}
+    } catch (err) {}
 
     const activeUser = auth.currentUser;
     const isProfileComplete = Boolean(
@@ -269,12 +600,11 @@ export default function SubirHistoriaModal({ isOpen, onClose, userData, onStoryU
         status: 'pending',
         moderated: false,
         createdAt: new Date().toISOString(),
-        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() // 24 Horas
+        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
       }
 
       const docRef = await addDoc(collection(db, 'historias'), newStory)
 
-      // Alert Admin
       await addDoc(collection(db, 'notificaciones'), {
         userId: 'admin',
         type: 'new_story_review',
@@ -305,6 +635,8 @@ export default function SubirHistoriaModal({ isOpen, onClose, userData, onStoryU
   return createPortal(
     <div className="subir-historia-modal-overlay" onClick={onClose}>
       <div className="subir-historia-modal-card" onClick={(e) => e.stopPropagation()}>
+        
+        {/* Encabezado del Modal */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: '#0F172A' }}>
             📸 / 🎥 Publicar Historia de Trabajo
@@ -324,12 +656,8 @@ export default function SubirHistoriaModal({ isOpen, onClose, userData, onStoryU
         </div>
 
         <div style={{ background: 'linear-gradient(135deg, #FEF3C7, #FDE68A)', border: '1px solid #F59E0B', padding: '8px 12px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: '#B45309', fontWeight: 700 }}>
-          <span>⭐</span>
-          <span>¡Muestra la calidad de tu trabajo a toda la comunidad de Listo Patrón!</span>
-        </div>
-
-        <div style={{ background: '#FFFBEB', border: '1px solid #FCD34D', padding: '9px 12px', borderRadius: '12px', fontSize: '11.5px', color: '#92400E', fontWeight: 600, lineHeight: 1.4 }}>
-          ⚠️ <strong>Regla de la comunidad:</strong> Las historias son solo para mostrar tus resultados. No compartas teléfonos, enlaces ni anuncios externos; los clientes te contactarán directo por tu perfil de Listo Patrón.
+          <span>⚡</span>
+          <span>Editor estilo WhatsApp: Tu foto encaja 100% completa sin recortarse + Herramientas de edición.</span>
         </div>
 
         {errorMsg && (
@@ -344,40 +672,449 @@ export default function SubirHistoriaModal({ isOpen, onClose, userData, onStoryU
           </div>
         )}
 
-        {/* WhatsApp Video Editor Bar & Trimmer (rendered when video is selected) */}
+        {/* BARRA SUPERIOR DE HERRAMIENTAS ESTILO WHATSAPP (SI HAY IMAGEN O VIDEO) */}
+        {mediaPreview && (
+          <div className="wa-top-toolbar-full">
+            <span className="wa-toolbar-title">🛠️ Editor WhatsApp</span>
+
+            <div className="wa-tools-icons-row">
+              {mediaType === 'image' && (
+                <>
+                  {/* Tool 1: Recortar y Encuadre Anti-cortado */}
+                  <button
+                    type="button"
+                    className={`wa-tool-btn ${activeTool === 'crop' ? 'active' : ''}`}
+                    onClick={() => setActiveTool(activeTool === 'crop' ? null : 'crop')}
+                    title="Encuadre y Recorte Anti-Cortado"
+                  >
+                    ✂️ <span className="wa-tool-lbl">Encuadre</span>
+                  </button>
+
+                  {/* Tool 2: Estilos de Fondo */}
+                  <button
+                    type="button"
+                    className={`wa-tool-btn ${activeTool === 'bg' ? 'active' : ''}`}
+                    onClick={() => setActiveTool(activeTool === 'bg' ? null : 'bg')}
+                    title="Estilos de Fondo"
+                  >
+                    🌌 <span className="wa-tool-lbl">Fondo</span>
+                  </button>
+
+                  {/* Tool 3: Filtros de Color */}
+                  <button
+                    type="button"
+                    className={`wa-tool-btn ${activeTool === 'filter' ? 'active' : ''}`}
+                    onClick={() => setActiveTool(activeTool === 'filter' ? null : 'filter')}
+                    title="Filtros de Color HD"
+                  >
+                    🎨 <span className="wa-tool-lbl">Filtros</span>
+                  </button>
+
+                  {/* Tool 4: Pincel / Dibujo */}
+                  <button
+                    type="button"
+                    className={`wa-tool-btn ${activeTool === 'draw' ? 'active' : ''}`}
+                    onClick={() => setActiveTool(activeTool === 'draw' ? null : 'draw')}
+                    title="Dibujar con Pincel"
+                  >
+                    ✏️ <span className="wa-tool-lbl">Dibujar</span>
+                  </button>
+
+                  {/* Tool 5: Texto Superpuesto */}
+                  <button
+                    type="button"
+                    className={`wa-tool-btn ${activeTool === 'text' ? 'active' : ''}`}
+                    onClick={() => setActiveTool(activeTool === 'text' ? null : 'text')}
+                    title="Añadir Texto"
+                  >
+                    <span style={{ fontWeight: 900, fontFamily: 'serif' }}>Aa</span> <span className="wa-tool-lbl">Texto</span>
+                  </button>
+
+                  {/* Tool 6: Stickers */}
+                  <button
+                    type="button"
+                    className={`wa-tool-btn ${activeTool === 'sticker' ? 'active' : ''}`}
+                    onClick={() => setActiveTool(activeTool === 'sticker' ? null : 'sticker')}
+                    title="Stickers y Marcas"
+                  >
+                    😀 <span className="wa-tool-lbl">Sticker</span>
+                  </button>
+                </>
+              )}
+
+              {mediaType === 'video' && (
+                <span
+                  className="wa-tool-btn"
+                  onClick={() => setIsVideoMuted(!isVideoMuted)}
+                  title={isVideoMuted ? "Activar sonido" : "Silenciar"}
+                >
+                  {isVideoMuted ? '🔇 Silenciado' : '🔊 Con Audio'}
+                </span>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* PANEL EXPANDIBLE DE CADA HERRAMIENTA SELECCIONADA */}
+        {mediaType === 'image' && activeTool && (
+          <div className="wa-active-tool-panel">
+            
+            {/* 1. PANEL DE ENCUADRE Y ANTI-CORTADO */}
+            {activeTool === 'crop' && (
+              <div className="wa-panel-content">
+                <span className="wa-panel-title">✂️ Modo de Encuadre (Evita que la foto se corte)</span>
+                
+                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                  {[
+                    { id: 'fit', label: '🖼️ Foto Completa (WhatsApp Fit)' },
+                    { id: 'cover', label: '📱 Llenar 9:16' },
+                    { id: '1:1', label: '🔳 1:1 Cuadrado' },
+                    { id: '4:5', label: '📐 4:5 Retrato' },
+                    { id: '16:9', label: '↔️ 16:9 Paisaje' }
+                  ].map(m => (
+                    <button
+                      key={m.id}
+                      type="button"
+                      onClick={() => setCropMode(m.id)}
+                      className={`wa-chip-btn ${cropMode === m.id ? 'active' : ''}`}
+                    >
+                      {m.label}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="wa-slider-row">
+                  <span>🔍 Zoom: <strong>{editZoom.toFixed(1)}x</strong></span>
+                  <input
+                    type="range"
+                    min="1.0"
+                    max="3.0"
+                    step="0.05"
+                    value={editZoom}
+                    onChange={(e) => setEditZoom(parseFloat(e.target.value))}
+                    style={{ accentColor: '#F26000' }}
+                  />
+                </div>
+
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
+                  <button
+                    type="button"
+                    className="wa-action-btn"
+                    onClick={() => setEditRotation((prev) => (prev + 90) % 360)}
+                  >
+                    🔄 Rotar 90° ({editRotation}°)
+                  </button>
+
+                  <button
+                    type="button"
+                    className="wa-action-btn"
+                    onClick={() => setEditFlipX(!editFlipX)}
+                  >
+                    ↔️ Espejo ({editFlipX ? 'Si' : 'No'})
+                  </button>
+
+                  <button
+                    type="button"
+                    className="wa-action-btn secondary"
+                    onClick={() => {
+                      setCropMode('fit')
+                      setEditZoom(1.0)
+                      setPanX(0)
+                      setPanY(0)
+                      setEditRotation(0)
+                      setEditFlipX(false)
+                    }}
+                  >
+                    ↺ Restablecer
+                  </button>
+                </div>
+                <span style={{ fontSize: '11px', color: '#94A3B8', display: 'block', marginTop: '4px' }}>
+                  💡 Arrasta con el dedo o ratón la foto en la vista previa para ajustar el encuadre exacto.
+                </span>
+              </div>
+            )}
+
+            {/* 2. PANEL DE ESTILOS DE FONDO */}
+            {activeTool === 'bg' && (
+              <div className="wa-panel-content">
+                <span className="wa-panel-title">🌌 Estilo de Fondo (Para imágenes completas)</span>
+                
+                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                  {[
+                    { id: 'blur', label: '🌫️ Blur WhatsApp' },
+                    { id: 'gradient', label: '<ctrl42> Degradado Listo' },
+                    { id: 'dark', label: '⬛ Negro Elegante' },
+                    { id: 'light', label: '⚪ Blanco Puro' }
+                  ].map(b => (
+                    <button
+                      key={b.id}
+                      type="button"
+                      onClick={() => setBgStyle(b.id)}
+                      className={`wa-chip-btn ${bgStyle === b.id ? 'active' : ''}`}
+                    >
+                      {b.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* 3. PANEL DE FILTROS Y AJUSTES DE COLOR */}
+            {activeTool === 'filter' && (
+              <div className="wa-panel-content">
+                <span className="wa-panel-title">🎨 Filtros de Color HD Estilo WhatsApp</span>
+                
+                <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '4px' }}>
+                  {[
+                    { id: 'normal', name: 'Original' },
+                    { id: 'vivid', name: '✨ Vívido' },
+                    { id: 'warm', name: '☀️ Cálido' },
+                    { id: 'bw', name: '🖤 B/N' },
+                    { id: 'vintage', name: '🌅 Atardecer' },
+                    { id: 'cinema', name: '🍿 Cine' },
+                    { id: 'cold', name: '❄️ Frío' },
+                    { id: 'neon', name: '⚡ Neón' },
+                    { id: 'hdr', name: '📸 HDR Pro' }
+                  ].map(f => (
+                    <button
+                      key={f.id}
+                      type="button"
+                      onClick={() => setEditFilter(f.id)}
+                      className={`wa-chip-btn ${editFilter === f.id ? 'active' : ''}`}
+                    >
+                      {f.name}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="wa-slider-row">
+                  <span>☀️ Brillo: <strong>{editBrightness}%</strong></span>
+                  <input
+                    type="range"
+                    min="50"
+                    max="150"
+                    value={editBrightness}
+                    onChange={(e) => setEditBrightness(parseInt(e.target.value))}
+                    style={{ accentColor: '#F26000' }}
+                  />
+                </div>
+
+                <div className="wa-slider-row">
+                  <span>🌓 Contraste: <strong>{editContrast}%</strong></span>
+                  <input
+                    type="range"
+                    min="50"
+                    max="150"
+                    value={editContrast}
+                    onChange={(e) => setEditContrast(parseInt(e.target.value))}
+                    style={{ accentColor: '#F26000' }}
+                  />
+                </div>
+
+                <div className="wa-slider-row">
+                  <span>🎨 Saturación: <strong>{editSaturate}%</strong></span>
+                  <input
+                    type="range"
+                    min="0"
+                    max="200"
+                    value={editSaturate}
+                    onChange={(e) => setEditSaturate(parseInt(e.target.value))}
+                    style={{ accentColor: '#F26000' }}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* 4. PANEL DE DIBUJO CON PINCEL */}
+            {activeTool === 'draw' && (
+              <div className="wa-panel-content">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span className="wa-panel-title">✏️ Pincel de Dibujo Libre (Toca en la foto para dibujar)</span>
+                  {strokesHistory.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={handleUndoStroke}
+                      className="wa-action-btn secondary"
+                      style={{ padding: '3px 8px', fontSize: '11px' }}
+                    >
+                      ↩️ Deshacer Trazo
+                    </button>
+                  )}
+                </div>
+
+                {/* Paleta de Colores */}
+                <div style={{ display: 'flex', gap: '6px', alignItems: 'center', overflowX: 'auto' }}>
+                  {COLOR_PALETTE.map(c => (
+                    <span
+                      key={c}
+                      onClick={() => setDrawColor(c)}
+                      style={{
+                        width: '24px',
+                        height: '24px',
+                        borderRadius: '50%',
+                        backgroundColor: c,
+                        border: drawColor === c ? '3px solid #F26000' : '2px solid rgba(255,255,255,0.4)',
+                        cursor: 'pointer',
+                        flexShrink: 0,
+                        transform: drawColor === c ? 'scale(1.15)' : 'none',
+                        transition: 'all 0.2s ease'
+                      }}
+                    />
+                  ))}
+                </div>
+
+                {/* Grosor de Pincel */}
+                <div className="wa-slider-row">
+                  <span>🖌️ Grosor: <strong>{drawLineWidth}px</strong></span>
+                  <input
+                    type="range"
+                    min="3"
+                    max="24"
+                    value={drawLineWidth}
+                    onChange={(e) => setDrawLineWidth(parseInt(e.target.value))}
+                    style={{ accentColor: '#F26000' }}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* 5. PANEL DE TEXTO SUPERPUESTO */}
+            {activeTool === 'text' && (
+              <div className="wa-panel-content">
+                <span className="wa-panel-title">Aa Texto Superpuesto estilo WhatsApp</span>
+
+                <input
+                  type="text"
+                  value={overlayText}
+                  onChange={(e) => setOverlayText(e.target.value)}
+                  placeholder="Escribe el texto para la foto (ej: ¡Tubería lista! ⚡)"
+                  className="wa-text-input"
+                />
+
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                  {/* Estilo de Fondo de Texto */}
+                  <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                    {[
+                      { id: 'solid', label: '⬛ Relleno' },
+                      { id: 'semi', label: '🌫️ Semitransparente' },
+                      { id: 'outline', label: '🔲 Contorno' },
+                      { id: 'neon', label: '⚡ Neón' },
+                      { id: 'transparent', label: '✨ Sin fondo' }
+                    ].map(st => (
+                      <button
+                        key={st.id}
+                        type="button"
+                        onClick={() => setTextBgStyle(st.id)}
+                        className={`wa-chip-btn ${textBgStyle === st.id ? 'active' : ''}`}
+                        style={{ fontSize: '10.5px', padding: '3px 8px' }}
+                      >
+                        {st.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Tipografía de Texto */}
+                <div style={{ display: 'flex', gap: '4px', alignItems: 'center', flexWrap: 'wrap' }}>
+                  <span style={{ fontSize: '11px', color: '#CBD5E1', fontWeight: 700 }}>Fuente:</span>
+                  {[
+                    { id: 'sans', label: 'Sans' },
+                    { id: 'serif', label: 'Serif' },
+                    { id: 'script', label: 'Cursiva' },
+                    { id: 'typewriter', label: 'Máquina' },
+                    { id: 'impact', label: 'Impact' }
+                  ].map(f => (
+                    <button
+                      key={f.id}
+                      type="button"
+                      onClick={() => setTextFont(f.id)}
+                      className={`wa-chip-btn ${textFont === f.id ? 'active' : ''}`}
+                      style={{ fontSize: '10.5px' }}
+                    >
+                      {f.label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Posición del texto */}
+                <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                  <span style={{ fontSize: '11px', color: '#CBD5E1', fontWeight: 700 }}>Posición:</span>
+                  {[
+                    { id: 'top', label: '⬆️ Arriba' },
+                    { id: 'center', label: '↔️ Centro' },
+                    { id: 'bottom', label: '⬇️ Abajo' }
+                  ].map(pos => (
+                    <button
+                      key={pos.id}
+                      type="button"
+                      onClick={() => setTextPos(pos.id)}
+                      className={`wa-chip-btn ${textPos === pos.id ? 'active' : ''}`}
+                      style={{ fontSize: '10.5px' }}
+                    >
+                      {pos.label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Paleta de Color de Texto */}
+                <div style={{ display: 'flex', gap: '6px', alignItems: 'center', overflowX: 'auto' }}>
+                  <span style={{ fontSize: '11px', color: '#CBD5E1', fontWeight: 700 }}>Color:</span>
+                  {COLOR_PALETTE.map(c => (
+                    <span
+                      key={c}
+                      onClick={() => setTextColor(c)}
+                      style={{
+                        width: '22px',
+                        height: '22px',
+                        borderRadius: '50%',
+                        backgroundColor: c,
+                        border: textColor === c ? '3px solid #F26000' : '2px solid rgba(255,255,255,0.4)',
+                        cursor: 'pointer',
+                        flexShrink: 0,
+                        transform: textColor === c ? 'scale(1.15)' : 'none'
+                      }}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* 6. PANEL DE STICKERS Y MARCAS DE LISTO */}
+            {activeTool === 'sticker' && (
+              <div className="wa-panel-content">
+                <span className="wa-panel-title">😀 Stickers y Marcas de Listo Patrón</span>
+                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                  {STICKER_PRESETS.map(stk => {
+                    const isSel = selectedStickers.some(s => s.id === stk.id)
+                    return (
+                      <button
+                        key={stk.id}
+                        type="button"
+                        onClick={() => handleToggleSticker(stk)}
+                        className={`wa-chip-btn ${isSel ? 'active' : ''}`}
+                      >
+                        {isSel ? '✅ ' : '+ '}{stk.label}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Trimmer de Video (si se selecciona video) */}
         {mediaType === 'video' && mediaPreview && videoRawDuration > 0 && (
           <div className="wa-video-editor-wrapper">
-            {/* Top Toolbar WhatsApp Icons */}
             <div className="wa-top-toolbar">
               <span className="wa-top-icon" onClick={() => setIsVideoMuted(!isVideoMuted)} title={isVideoMuted ? "Activar sonido" : "Silenciar"}>
                 {isVideoMuted ? '🔇' : '🔊'}
               </span>
               <div className="wa-top-actions">
-                <span className="wa-tool-badge">🎵</span>
-                <span className="wa-tool-badge active">✂️ 15s</span>
-                <span className="wa-tool-badge">🏷️</span>
-                <span className="wa-tool-badge">Aa</span>
-                <span className="wa-tool-badge">✏️</span>
+                <span className="wa-tool-badge active">✂️ Recortar 15s</span>
               </div>
             </div>
 
-            {/* Trimmer Filmstrip Bar with handles */}
-            <div className="wa-filmstrip-bar">
-              <div className="wa-filmstrip-track">
-                <div 
-                  className="wa-filmstrip-highlight"
-                  style={{
-                    left: `${(trimStart / videoRawDuration) * 100}%`,
-                    width: `${Math.max(10, ((trimEnd - trimStart) / videoRawDuration) * 100)}%`
-                  }}
-                >
-                  <div className="wa-handle left">‹</div>
-                  <div className="wa-handle right">›</div>
-                </div>
-              </div>
-            </div>
-
-            {/* Trimmer Sliders */}
             <div className="wa-trimmer-controls">
               <div className="wa-trim-item">
                 <span>Inicio: <strong>{trimStart.toFixed(1)}s</strong></span>
@@ -405,13 +1142,28 @@ export default function SubirHistoriaModal({ isOpen, onClose, userData, onStoryU
           </div>
         )}
 
+        {/* ÁREA DE VISTA PREVIA INTERACTIVA (CON DRAG DE IMAGEN Y CANVAS DE DIBUJO) */}
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', margin: '4px 0', gap: '10px' }}>
-          <label className="subir-historia-preview-area">
+          <label
+            className="subir-historia-preview-area"
+            style={{
+              touchAction: (activeTool === 'draw' || activeTool === 'crop') ? 'none' : 'auto',
+              cursor: activeTool === 'crop' ? 'grab' : (activeTool === 'draw' ? 'crosshair' : 'pointer')
+            }}
+            onMouseDown={handleStartPan}
+            onMouseMove={handleMovePan}
+            onMouseUp={handleEndPan}
+            onMouseLeave={handleEndPan}
+            onTouchStart={handleStartPan}
+            onTouchMove={handleMovePan}
+            onTouchEnd={handleEndPan}
+          >
             <input
               type="file"
               accept="image/*,video/*"
               style={{ display: 'none' }}
               onChange={handleFileChange}
+              disabled={activeTool === 'draw' || activeTool === 'crop'}
             />
             {mediaPreview ? (
               mediaType === 'video' ? (
@@ -431,7 +1183,36 @@ export default function SubirHistoriaModal({ isOpen, onClose, userData, onStoryU
                   </span>
                 </div>
               ) : (
-                <img src={mediaPreview} alt="Vista previa del trabajo" className="subir-historia-preview-img" />
+                <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+                  <img
+                    src={mediaPreview}
+                    alt="Vista previa de historia edicion WhatsApp"
+                    className="subir-historia-preview-img"
+                  />
+
+                  {/* Capa de Dibujo interactivo transparente sobre la foto */}
+                  {activeTool === 'draw' && (
+                    <canvas
+                      ref={drawCanvasRef}
+                      onMouseDown={handleStartDraw}
+                      onMouseMove={handleMoveDraw}
+                      onMouseUp={handleEndDraw}
+                      onMouseLeave={handleEndDraw}
+                      onTouchStart={handleStartDraw}
+                      onTouchMove={handleMoveDraw}
+                      onTouchEnd={handleEndDraw}
+                      style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: '100%',
+                        cursor: 'crosshair',
+                        zIndex: 10
+                      }}
+                    />
+                  )}
+                </div>
               )
             ) : (
               <div style={{ textAlign: 'center', padding: '20px' }}>
@@ -441,204 +1222,14 @@ export default function SubirHistoriaModal({ isOpen, onClose, userData, onStoryU
                 </div>
                 <span style={{ fontSize: '13.5px', fontWeight: 800, color: '#F26000' }}>Toca para seleccionar Foto o Video</span>
                 <span style={{ fontSize: '11px', color: '#94A3B8', display: 'block', marginTop: '6px' }}>
-                  Formato Historia 9:16 estilo Instagram
+                  Foto completa sin recortar + Editor estilo WhatsApp
                 </span>
               </div>
             )}
           </label>
-
-          {/* Interactive Photo Editor Toolbar & Expanded Controls */}
-          {mediaType === 'image' && mediaPreview && (
-            <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'center' }}>
-              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'center' }}>
-                <button
-                  type="button"
-                  onClick={() => setIsEditingPhoto(!isEditingPhoto)}
-                  style={{
-                    background: isEditingPhoto ? 'linear-gradient(135deg, #F26000, #FF7A1A)' : '#F1F5F9',
-                    color: isEditingPhoto ? '#FFFFFF' : '#334155',
-                    border: isEditingPhoto ? '1px solid #F26000' : '1px solid #CBD5E1',
-                    borderRadius: '20px',
-                    padding: '6px 14px',
-                    fontSize: '12px',
-                    fontWeight: 800,
-                    cursor: 'pointer',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '5px',
-                    boxShadow: isEditingPhoto ? '0 4px 12px rgba(242, 96, 0, 0.3)' : 'none'
-                  }}
-                >
-                  <span>🎨</span> {isEditingPhoto ? 'Cerrar Edición' : 'Editar Foto (Filtros, Giro, Brillo)'}
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    const nextRot = (editRotation + 90) % 360
-                    setEditRotation(nextRot)
-                    applyPhotoEdits(originalImageSrc, nextRot, editFilter, editBrightness, editContrast, editZoom)
-                  }}
-                  style={{
-                    background: '#F1F5F9',
-                    color: '#334155',
-                    border: '1px solid #CBD5E1',
-                    borderRadius: '20px',
-                    padding: '6px 12px',
-                    fontSize: '12px',
-                    fontWeight: 800,
-                    cursor: 'pointer',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '4px'
-                  }}
-                  title="Rotar 90 grados"
-                >
-                  <span>🔄</span> Rotar {editRotation}°
-                </button>
-              </div>
-
-              {/* Panel extendido de edición de imagen */}
-              {isEditingPhoto && (
-                <div 
-                  style={{
-                    width: '100%',
-                    background: '#0F172A',
-                    color: '#FFFFFF',
-                    borderRadius: '16px',
-                    padding: '14px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '12px',
-                    border: '1px solid rgba(242, 96, 0, 0.4)',
-                    boxShadow: '0 4px 16px rgba(0,0,0,0.3)',
-                    boxSizing: 'border-box'
-                  }}
-                >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '13px', fontWeight: 800, color: '#FF7A1A' }}>
-                      🛠️ Panel de Edición de Foto
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setEditRotation(0)
-                        setEditFilter('normal')
-                        setEditBrightness(100)
-                        setEditContrast(100)
-                        setEditZoom(1.0)
-                        applyPhotoEdits(originalImageSrc, 0, 'normal', 100, 100, 1.0)
-                      }}
-                      style={{
-                        background: 'rgba(255,255,255,0.12)',
-                        border: 'none',
-                        color: '#CBD5E1',
-                        borderRadius: '10px',
-                        padding: '3px 8px',
-                        fontSize: '11px',
-                        fontWeight: 700,
-                        cursor: 'pointer'
-                      }}
-                    >
-                      ↺ Restablecer
-                    </button>
-                  </div>
-
-                  {/* Filtros de color estilo Instagram */}
-                  <div>
-                    <label style={{ fontSize: '11.5px', fontWeight: 700, color: '#94A3B8', display: 'block', marginBottom: '6px' }}>
-                      🎨 Filtros de color:
-                    </label>
-                    <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '4px' }}>
-                      {[
-                        { id: 'normal', name: 'Original' },
-                        { id: 'vivid', name: '✨ Vívido' },
-                        { id: 'warm', name: '☀️ Cálido' },
-                        { id: 'bw', name: '🖤 B/N' },
-                        { id: 'vintage', name: '🌅 Atardecer' }
-                      ].map(f => (
-                        <button
-                          key={f.id}
-                          type="button"
-                          onClick={() => {
-                            setEditFilter(f.id)
-                            applyPhotoEdits(originalImageSrc, editRotation, f.id, editBrightness, editContrast, editZoom)
-                          }}
-                          style={{
-                            background: editFilter === f.id ? 'linear-gradient(135deg, #F26000, #FF7A1A)' : 'rgba(255,255,255,0.1)',
-                            color: editFilter === f.id ? '#FFFFFF' : '#CBD5E1',
-                            border: editFilter === f.id ? '1px solid #F26000' : '1px solid rgba(255,255,255,0.2)',
-                            borderRadius: '12px',
-                            padding: '4px 10px',
-                            fontSize: '11px',
-                            fontWeight: 800,
-                            cursor: 'pointer',
-                            whiteSpace: 'nowrap'
-                          }}
-                        >
-                          {f.name}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Deslizadores de Brillo, Contraste y Zoom */}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '11.5px' }}>
-                      <span style={{ color: '#CBD5E1', fontWeight: 700 }}>☀️ Brillo: <strong>{editBrightness}%</strong></span>
-                      <input
-                        type="range"
-                        min="50"
-                        max="150"
-                        value={editBrightness}
-                        onChange={(e) => {
-                          const val = Number(e.target.value)
-                          setEditBrightness(val)
-                          applyPhotoEdits(originalImageSrc, editRotation, editFilter, val, editContrast, editZoom)
-                        }}
-                        style={{ width: '55%', accentColor: '#F26000' }}
-                      />
-                    </div>
-
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '11.5px' }}>
-                      <span style={{ color: '#CBD5E1', fontWeight: 700 }}>🌓 Contraste: <strong>{editContrast}%</strong></span>
-                      <input
-                        type="range"
-                        min="50"
-                        max="150"
-                        value={editContrast}
-                        onChange={(e) => {
-                          const val = Number(e.target.value)
-                          setEditContrast(val)
-                          applyPhotoEdits(originalImageSrc, editRotation, editFilter, editBrightness, val, editZoom)
-                        }}
-                        style={{ width: '55%', accentColor: '#F26000' }}
-                      />
-                    </div>
-
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '11.5px' }}>
-                      <span style={{ color: '#CBD5E1', fontWeight: 700 }}>🔍 Zoom / Encuadre: <strong>{editZoom.toFixed(1)}x</strong></span>
-                      <input
-                        type="range"
-                        min="1.0"
-                        max="1.8"
-                        step="0.05"
-                        value={editZoom}
-                        onChange={(e) => {
-                          const val = Number(e.target.value)
-                          setEditZoom(val)
-                          applyPhotoEdits(originalImageSrc, editRotation, editFilter, editBrightness, editContrast, val)
-                        }}
-                        style={{ width: '55%', accentColor: '#F26000' }}
-                      />
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
         </div>
 
+        {/* CAMPO DE DESCRIPCIÓN Y PILLS DE TAGS */}
         <div>
           <label style={{ fontSize: '13px', fontWeight: 700, color: '#334155', display: 'block', marginBottom: '6px' }}>
             Descripción del trabajo realizado:
@@ -738,6 +1329,7 @@ export default function SubirHistoriaModal({ isOpen, onClose, userData, onStoryU
           </div>
         </div>
 
+        {/* BOTONES DE ACCIÓN (CANCELAR / PUBLICAR) */}
         <div style={{ display: 'flex', gap: '10px', marginTop: '4px' }}>
           <button
             type="button"
