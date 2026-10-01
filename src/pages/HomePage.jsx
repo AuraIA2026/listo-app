@@ -1390,6 +1390,11 @@ export default function HomePage({ lang, navigate, userRole }) {
           }}>
             HOT
           </span>
+
+          {/* Sticker circular animado % OFF */}
+          <div className="historia-offer-badge-circle" style={{ top: '-6px', left: '-6px', right: 'auto' }}>
+            <span>% OFF</span>
+          </div>
         </button>
 
         {/* ── BOTONES CÍRCULO GPS RADAR Y RE-CONTRATAR CON ORBITAL (UBICADOS EN LA CINTA SUPERIOR) ── */}

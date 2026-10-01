@@ -266,6 +266,14 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate
 
                 const finalPlan = livePlan || story.proPlan || story.plan || story.currentPlan || story.planId || story.membership || story.subscription || story.userPlan || story.planName
 
+                // Detectar si el usuario o alguna de sus historias tiene una oferta activa
+                const proStories = stories.filter(s => (s.proId || s.proUid || s.proName || s.fullName || s.id) === key)
+                const offerStory = proStories.find(s => s.sticker || s.hasOffer || s.type === 'oferta_flash' || s.offerText)
+                const rawSticker = offerStory?.sticker || story.sticker || story.offerSticker || ''
+                const percentMatch = rawSticker.match(/\d+%/)?.[0]
+                const offerBadgeText = percentMatch ? `${percentMatch} OFF` : '% OFF'
+                const hasOffer = Boolean(offerStory || story.hasOffer || rawSticker || story.type === 'oferta_flash')
+
                 uniquePros.push({
                   key,
                   firstIndex: idx,
@@ -273,7 +281,10 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate
                   proAvatar: story.proAvatar,
                   proPlan: finalPlan,
                   proRating: story.proRating || story.rating || story.calificacion || 5.0,
-                  allStoryIds
+                  allStoryIds,
+                  hasOffer,
+                  offerBadgeText,
+                  rawSticker
                 })
               }
             })
@@ -306,6 +317,15 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate
                         className="historia-avatar"
                       />
                     </div>
+                    {/* STICKER CIRCULAR ANIMADO % OFF CUANDO EL USUARIO TIENE OFERTA */}
+                    {pro.hasOffer && (
+                      <div 
+                        className="historia-offer-badge-circle"
+                        title={pro.rawSticker || '¡Este usuario tiene una oferta activa!'}
+                      >
+                        <span>{pro.offerBadgeText}</span>
+                      </div>
+                    )}
                     {/* El distintivo de plan (GOLD, PLATINUM, VIP, BÁSICO) SIEMPRE permanece visible */}
                     <span 
                       className="historia-plan-badge-tag" 
