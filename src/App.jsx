@@ -393,27 +393,19 @@ function SystemAlertModal({ alert, onClose, lang, onNavigateProfile }) {
 
           {/* Título Oficial */}
           <h2 style={{
-            margin: '0 0 20px', fontSize: '24px', fontWeight: '900', color: '#FFFFFF',
+            margin: '0 0 16px', fontSize: '22px', fontWeight: '900', color: '#FFFFFF',
             textShadow: '0 2px 8px rgba(0,0,0,0.4)', lineHeight: 1.2
           }}>
-            Tu foto no fue aprobada
+            {alert.title || 'Bienvenido a Listo Patrón'}
           </h2>
 
           {/* Párrafos Completos con Formato Exacto */}
           <div style={{
-            color: '#3D1B00', fontSize: '15px', lineHeight: 1.45, fontWeight: '900',
+            color: '#3D1B00', fontSize: '14.5px', lineHeight: 1.5, fontWeight: '900',
             textShadow: '0 1px 0px rgba(255,255,255,0.4)',
-            display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '24px'
+            marginBottom: '24px', whiteSpace: 'pre-line', textAlign: 'center'
           }}>
-            <p style={{ margin: 0 }}>
-              Notamos que tu foto incluye números de teléfono, redes sociales o información publicitaria.
-            </p>
-            <p style={{ margin: 0 }}>
-              Por políticas de la plataforma, las fotos de perfil deben mostrar únicamente tu rostro, logo o imagen profesional limpia, sin datos de contacto ni anuncios.
-            </p>
-            <p style={{ margin: 0 }}>
-              Por favor, sube una nueva imagen para que podamos activar tu perfil de inmediato.
-            </p>
+            {alert.text}
           </div>
 
           {/* Botón de Confirmación Ovalado abajo */}

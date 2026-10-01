@@ -728,16 +728,16 @@ export default function AdminPage({ navigate }) {
 
         await updateDoc(doc(db, 'users', obj.id), payload);
 
-        // Notificar al usuario sobre su éxito en verificación
+        // Notificar al usuario sobre su éxito en activación / verificación
         await addDoc(collection(db, 'notificaciones'), {
           userId: obj.id,
           type: 'system',
-          title: '🚨 ¡Perfil Aprobado! 🎉',
-          text: 'Tu perfil ha sido aprobado por el administrador. ¡Ahora puedes postularte a un plan para recibir clientes!',
+          title: 'Hola, Bienvenido a Listo Patrón.',
+          text: `¿Listo para ofrecer tus servicios?\nSi vas a trabajar como profesional, activa tu perfil en dos simples pasos:\n1. Toca el menú de las tres líneas (☰) en la esquina superior derecha.\n2. Selecciona "Trabajar como profesional".\n¡Empieza a recibir clientes hoy mismo!`,
           date: new Date().toISOString(),
-          createdAt: new Date().toISOString(), // o serverTimestamp()
+          createdAt: new Date().toISOString(),
           read: false
-        });
+        }).catch(() => {});
 
         showToast(`🎉 ¡${obj.verificacion?.nombre || 'El usuario'} ahora es Profesional!`);
         setViewDocs(null); // Cerrar modal
@@ -783,6 +783,17 @@ export default function AdminPage({ navigate }) {
             planExpirationDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
             available: true
          });
+         if (obj.id) {
+           await addDoc(collection(db, 'notificaciones'), {
+              userId: obj.id,
+              type: 'system',
+              title: 'Hola, Bienvenido a Listo Patrón.',
+              text: `¿Listo para ofrecer tus servicios?\nSi vas a trabajar como profesional, activa tu perfil en dos simples pasos:\n1. Toca el menú de las tres líneas (☰) en la esquina superior derecha.\n2. Selecciona "Trabajar como profesional".\n¡Empieza a recibir clientes hoy mismo!`,
+              date: new Date().toISOString(),
+              createdAt: new Date().toISOString(),
+              read: false
+           }).catch(() => {});
+         }
          showToast(`✅ ${obj.name} activado`);
       }
       if (type === 'add_contract') {
