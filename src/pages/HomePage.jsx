@@ -22,6 +22,7 @@ import { detectGpsLocation } from '../utils/gpsLocation'
 import ProPlanAlertWidget from '../components/ProPlanAlertWidget'
 import GpsRadarWidget from '../components/GpsRadarWidget'
 import RebookCircleWidget from '../components/RebookCircleWidget'
+import EmergencySirenCircleWidget from '../components/EmergencySirenCircleWidget'
 import LightningOfferBannerModal from '../components/LightningOfferBannerModal'
 
 import mecanico   from '../assets/pros/Mecanico.jpg'
@@ -1392,9 +1393,10 @@ export default function HomePage({ lang, navigate, userRole }) {
           </span>
         </button>
 
-        {/* ── BOTONES CÍRCULO GPS RADAR Y RE-CONTRATAR CON ORBITAL (SIEMPRE VISIBLES PARA TODOS) ── */}
+        {/* ── BOTONES CÍRCULO GPS RADAR, RE-CONTRATAR Y SIRENA DE EMERGENCIA (SIEMPRE VISIBLES PARA TODOS) ── */}
         <GpsRadarWidget pros={allProsToUse} navigate={navigate} lang={lang} />
         <RebookCircleWidget hiredProsList={hiredProsList} navigate={navigate} lang={lang} />
+        <EmergencySirenCircleWidget isExpanded={isProblemsExpanded} onToggle={() => setIsProblemsExpanded(prev => !prev)} lang={lang} />
         <button className="amz-nav-pill" onClick={() => navigate('search', { catToSelect: 'mecanico' })}>
           🔧 Mecánicos
         </button>
@@ -1603,84 +1605,112 @@ export default function HomePage({ lang, navigate, userRole }) {
         </button>
       </div>
 
-      {/* ── BANNER FLOTANTE ANIMADO: CATEGORÍAS POR "PROBLEMAS REALES" DE LA VIDA DIARIA ── */}
-      <div className="emergency-floating-banner">
-        {/* Light wave shimmer effect */}
-        <div className="emergency-banner-shimmer" />
-
-        {/* Banner Header animado interactivo */}
+      {/* ── SECCIÓN DESPLEGABLE DE EMERGENCIAS (ACTIVADA DESDE EL CÍRCULO SIRENA BOMBERO EN LA BARRA SUPERIOR) ── */}
+      {isProblemsExpanded && (
         <div 
-          className="emergency-banner-header"
-          onClick={() => setIsProblemsExpanded(prev => !prev)}
-          title={isProblemsExpanded ? "Toca para plegar" : "Toca para desplegar 8 emergencias"}
+          className="emergency-floating-banner"
+          style={{
+            margin: '10px 16px 14px',
+            background: 'linear-gradient(135deg, #1A1A2E 0%, #2A1706 60%, #991B1B 100%)',
+            borderRadius: '20px',
+            border: '2px solid #EF4444',
+            boxShadow: '0 8px 30px rgba(239, 68, 68, 0.35)',
+            overflow: 'hidden',
+            animation: 'pwaBannerSlideUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
+          }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1, minWidth: 0 }}>
-            <span className="emergency-siren-anim">🚨</span>
-            <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-              <h2 style={{ fontSize: '16.5px', fontWeight: '900', color: '#FFFFFF', margin: 0, lineHeight: 1.2, textShadow: '0 2px 4px rgba(0,0,0,0.4)' }}>
-                {lang === 'es' ? '¿Qué problema tienes hoy?' : 'What problem do you have today?'}
-              </h2>
-              <p style={{ margin: '3px 0 0', fontSize: '11.5px', color: '#FFD700', fontWeight: '700' }}>
-                {isProblemsExpanded 
-                  ? (lang === 'es' ? 'Toca tu emergencia para conectar al instante' : 'Tap your emergency to connect instantly')
-                  : (lang === 'es' ? 'Toca para desplegar emergencias en 1-Clic ⚡' : 'Tap to deploy 1-Click emergencies ⚡')}
-              </p>
+          {/* Banner Header animado interactivo */}
+          <div 
+            className="emergency-banner-header"
+            onClick={() => setIsProblemsExpanded(false)}
+            title="Toca para ocultar emergencias"
+            style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'transparent' }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1, minWidth: 0 }}>
+              <span className="emergency-siren-anim" style={{ fontSize: '26px' }}>🚨</span>
+              <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+                <h2 style={{ fontSize: '16.5px', fontWeight: '900', color: '#FFFFFF', margin: 0, lineHeight: 1.2, textShadow: '0 2px 4px rgba(0,0,0,0.4)' }}>
+                  {lang === 'es' ? '¿Qué problema tienes hoy?' : 'What problem do you have today?'}
+                </h2>
+                <p style={{ margin: '3px 0 0', fontSize: '11.5px', color: '#FFD700', fontWeight: '700' }}>
+                  {lang === 'es' ? 'Toca tu emergencia para conectar al instante' : 'Tap your emergency to connect instantly'}
+                </p>
+              </div>
+            </div>
+
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsProblemsExpanded(false);
+              }}
+              style={{
+                background: 'rgba(255, 255, 255, 0.2)',
+                color: '#FFFFFF',
+                border: '1px solid rgba(255, 255, 255, 0.3)',
+                borderRadius: '50%',
+                width: '28px',
+                height: '28px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                fontWeight: 'bold',
+                fontSize: '13px'
+              }}
+            >
+              ✕
+            </button>
+          </div>
+
+          {/* Contenedor desplegado de emergencias */}
+          <div className="emergency-grid-container expanded">
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px' }}>
+              {REAL_PROBLEMS.map((prob) => (
+                <div
+                  key={prob.id}
+                  onClick={() => navigate('search', { catToSelect: prob.id })}
+                  style={{
+                    background: 'linear-gradient(135deg, #FFFFFF 0%, #FFF7F2 100%)',
+                    borderRadius: '16px',
+                    padding: '14px 12px',
+                    border: '1.5px solid rgba(242, 96, 0, 0.2)',
+                    boxShadow: '0 4px 14px rgba(242, 96, 0, 0.08)',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justify: 'space-between',
+                    transition: 'transform 0.15s ease, boxShadow 0.15s ease'
+                  }}
+                  onMouseDown={e => e.currentTarget.style.transform = 'scale(0.97)'}
+                  onMouseUp={e => e.currentTarget.style.transform = 'scale(1)'}
+                  onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+                >
+                  <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                      <span style={{ fontSize: '28px', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.15))' }}>{prob.icon}</span>
+                      <span style={{ fontSize: '9px', fontWeight: '900', background: '#FEF3EC', color: '#F26000', border: '1px solid rgba(242, 96, 0, 0.3)', padding: '2px 7px', borderRadius: '10px' }}>
+                        {prob.tag}
+                      </span>
+                    </div>
+                    <h3 style={{ fontSize: '13.5px', fontWeight: '900', color: '#1A1A2E', margin: '0 0 4px', lineHeight: 1.25 }}>
+                      "{lang === 'es' ? prob.labelEs : prob.labelEn}"
+                    </h3>
+                    <p style={{ fontSize: '11px', color: '#64748B', margin: 0, fontWeight: '600' }}>
+                      {prob.descEs}
+                    </p>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '10px', paddingTop: '8px', borderTop: '1px dashed rgba(242, 96, 0, 0.15)' }}>
+                    <span style={{ fontSize: '11.5px', fontWeight: '800', color: '#F26000', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      ⚡ Contactar socio
+                    </span>
+                    <span style={{ fontSize: '14px', color: '#F26000', fontWeight: 'bold' }}>›</span>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
-
-          <div className="emergency-banner-deploy-badge">
-            <span>{isProblemsExpanded ? '▲ PLEGAR' : '⚡ 1-CLIC DESPLEGAR ▼'}</span>
-          </div>
         </div>
-
-        {/* Contenedor colapsable/desplegable animado */}
-        <div className={`emergency-grid-container ${isProblemsExpanded ? 'expanded' : ''}`}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px' }}>
-            {REAL_PROBLEMS.map((prob) => (
-              <div
-                key={prob.id}
-                onClick={() => navigate('search', { catToSelect: prob.id })}
-                style={{
-                  background: 'linear-gradient(135deg, #FFFFFF 0%, #FFF7F2 100%)',
-                  borderRadius: '16px',
-                  padding: '14px 12px',
-                  border: '1.5px solid rgba(242, 96, 0, 0.2)',
-                  boxShadow: '0 4px 14px rgba(242, 96, 0, 0.08)',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justify: 'space-between',
-                  transition: 'transform 0.15s ease, boxShadow 0.15s ease'
-                }}
-                onMouseDown={e => e.currentTarget.style.transform = 'scale(0.97)'}
-                onMouseUp={e => e.currentTarget.style.transform = 'scale(1)'}
-                onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
-              >
-                <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                    <span style={{ fontSize: '28px', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.15))' }}>{prob.icon}</span>
-                    <span style={{ fontSize: '9px', fontWeight: '900', background: '#FEF3EC', color: '#F26000', border: '1px solid rgba(242, 96, 0, 0.3)', padding: '2px 7px', borderRadius: '10px' }}>
-                      {prob.tag}
-                    </span>
-                  </div>
-                  <h3 style={{ fontSize: '13.5px', fontWeight: '900', color: '#1A1A2E', margin: '0 0 4px', lineHeight: 1.25 }}>
-                    "{lang === 'es' ? prob.labelEs : prob.labelEn}"
-                  </h3>
-                  <p style={{ fontSize: '11px', color: '#64748B', margin: 0, fontWeight: '600' }}>
-                    {prob.descEs}
-                  </p>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '10px', paddingTop: '8px', borderTop: '1px dashed rgba(242, 96, 0, 0.15)' }}>
-                  <span style={{ fontSize: '11.5px', fontWeight: '800', color: '#F26000', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    ⚡ Contactar socio
-                  </span>
-                  <span style={{ fontSize: '14px', color: '#F26000', fontWeight: 'bold' }}>›</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
+      )}
 
 
 
