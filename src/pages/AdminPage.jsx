@@ -1150,8 +1150,8 @@ export default function AdminPage({ navigate }) {
   // Separemos los pagos en completados y pendientes
   const completedPayments = payments.filter(p => p.status === 'paid');
   const pendingPayments   = payments.filter(p => p.status === 'pending');
-  // Usuarios bloqueados/pendientes de aprobar (solo profesionales)
-  const blockedUsers      = users.filter(u => u.role === 'professional' && (!u.approved || u.planStatus === 'inactive'));
+  // Usuarios bloqueados explícitamente (solo los suspendidos/bloqueados reales)
+  const blockedUsers      = users.filter(u => u.isBlocked || u.isSuspended || u.blocked || u.status === 'blocked');
 
   const pendienteCount = pendingPayments.length;
   const bloqueadoCount = blockedUsers.length;
@@ -1892,7 +1892,7 @@ export default function AdminPage({ navigate }) {
                    if (psFilter === 'clients') return u.role !== 'professional' && u.type !== 'pro';
                    if (psFilter === 'pros') return u.role === 'professional' || u.type === 'pro';
                    if (psFilter === 'online') return (u.role === 'professional' || u.type === 'pro') && u.available;
-                   if (psFilter === 'suspended') return (u.role === 'professional' || u.type === 'pro') && (!u.approved || u.planStatus === 'inactive' || u.planStatus === 'expired');
+                   if (psFilter === 'suspended') return u.isBlocked || u.isSuspended || u.blocked || u.status === 'blocked';
                    return true;
                 })
                 .sort((a,b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0));
@@ -2005,15 +2005,15 @@ export default function AdminPage({ navigate }) {
                   </button>
                 </div>
 
-                {/* Suspensiones */}
+                {/* Suspensiones / Bloqueos */}
                 <div style={{display:'flex', gap:8, marginBottom:12}}>
-                  {viewProStats.planStatus === 'inactive' || !viewProStats.approved ? (
-                    <button className="cc-btn paid" style={{background:'#10B981', color:'#fff', flex:1}} onClick={() => handleDirectUnblock(viewProStats)}>
-                      ✅ Activar Perfil
+                  {viewProStats.isBlocked || viewProStats.isSuspended || viewProStats.blocked || viewProStats.status === 'blocked' ? (
+                    <button className="cc-btn paid" style={{background:'#10B981', color:'#fff', flex:1, padding: 12, fontWeight: 800}} onClick={() => handleDirectUnblock(viewProStats)}>
+                      ✅ Desbloquear / Activar Perfil
                     </button>
                   ) : (
-                    <button className="cc-btn block" style={{background:'#EF4444', color:'#fff', flex:1}} onClick={() => setConfirm({type:'block', obj:viewProStats})}>
-                      🔴 Suspender Perfil
+                    <button className="cc-btn block" style={{background:'#EF4444', color:'#fff', flex:1, padding: 12, fontWeight: 800}} onClick={() => setConfirm({type:'block', obj:viewProStats})}>
+                      🔴 Bloquear / Suspender Perfil
                     </button>
                   )}
                 </div>
