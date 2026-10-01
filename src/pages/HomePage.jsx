@@ -1595,103 +1595,6 @@ export default function HomePage({ lang, navigate, userRole }) {
         </button>
       </div>
 
-      {/* ── CARRUSEL DE TARJETAS VERTICALES DE PROFESIONALES DESTACADOS (UBICADO JUSTO DEBAJO DE LA BARRA DE UBICACIÓN) ── */}
-      <VIPSection 
-        realVipPros={featuredProsToUse} 
-        lang={lang} 
-        navigate={navigate} 
-        getProStoryData={getProStoryData}
-        onOpenStory={handleOpenStoryViewer}
-      />
-
-      {/* ── SECCIÓN PROFESIONALES DESTACADOS ── */}
-      <section ref={featuredRef} className={`featured-section${featuredVisible ? ' reveal' : ''}`}>
-        <div className="hp-sec-header">
-          <h2 className="hp-sec-title">⭐ {lang === 'es' ? 'Profesionales Destacados' : 'Featured Professionals'}</h2>
-          <button className="hp-see-all" onClick={() => navigate('search')}>{lang === 'es' ? 'Ver todos' : 'See all'}</button>
-        </div>
-        <div className="featured-scroll">
-          {featuredProsToUse.length > 0 ? (
-            featuredProsToUse.map((pro, i) => {
-              const sData = getProStoryData(pro)
-              const hasStory = Boolean(sData && sData.stories && sData.stories.length > 0)
-              const planTheme = getProPlanTheme(pro.currentPlan || pro.planName || pro.plan || pro.planId || pro.membership, pro.rating)
-
-              return (
-                <div key={i} className="featured-card" style={{ animationDelay: `${i * 0.08}s` }} onClick={() => navigate('booking', { professional: pro })}>
-                  {pro.badge && <span className={`featured-badge badge-${pro.badge.toLowerCase()}`}>{pro.badge}</span>}
-                  
-                  <div style={{ position: 'relative', width: '100%', overflow: 'hidden' }}>
-                    <img src={pro.img || pro.photoURL} alt={pro.nameEs} className="featured-img" />
-                    
-                    <div className="listo-brand-watermark">
-                      <img src={logoListo} alt="Listo Patrón" className="listo-brand-watermark-img" />
-                    </div>
-                    
-                    {hasStory && (
-                      <>
-                        <div 
-                          style={{
-                            position: 'absolute',
-                            inset: 0,
-                            background: `radial-gradient(circle at center, ${planTheme.color}22 0%, rgba(15, 23, 42, 0.25) 70%, rgba(0,0,0,0.5) 100%)`,
-                            zIndex: 4,
-                            pointerEvents: 'none'
-                          }}
-                        />
-                        <div 
-                          style={{
-                            position: 'absolute',
-                            top: '50%',
-                            left: '50%',
-                            transform: 'translate(-50%, -52%)',
-                            zIndex: 10,
-                            filter: `drop-shadow(0 4px 14px ${planTheme.color}55)`
-                          }}
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            handleOpenStoryViewer(sData.firstIndex)
-                          }}
-                        >
-                          <StoryAvatar 
-                            pro={pro}
-                            src={pro.img || pro.photoURL}
-                            alt={pro.nameEs}
-                            size={76}
-                            storyData={sData}
-                            onOpenStory={handleOpenStoryViewer}
-                            fallbackAvatar={pro.avatar || (pro.nameEs || 'P').charAt(0)}
-                          />
-                        </div>
-                      </>
-                    )}
-                  </div>
-
-                  <div className="featured-info">
-                    <p className="featured-name">{pro.nameEs}</p>
-                    <p className="featured-spec">{lang === 'es' ? pro.specEs : pro.specEn}</p>
-                    <StarRating rating={pro.rating} />
-                    {pro.reviews && pro.reviews > 0 ? (
-                      <p className="featured-reviews">{pro.reviews} {lang === 'es' ? 'reseñas' : 'reviews'}</p>
-                    ) : null}
-                    <p className="featured-price" style={{ color: '#008F39', fontSize: '13px', fontWeight: 'bold' }}>
-                      🤝 {lang === 'es' ? 'A convenir' : 'To agree'}
-                    </p>
-                  </div>
-                </div>
-              )
-            })
-          ) : (
-            <div style={{ padding: '20px', color: 'var(--gray)', fontSize: '14px', textAlign: 'center', width: '100%' }}>
-              {lang === 'es' ? 'Aún no hay profesionales destacados.' : 'No featured professionals yet.'}
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* ── LO QUE DICEN NUESTROS CLIENTES (UBICADO DEBAJO DE LA BARRA DE RE-CONTRATACIÓN 1-CLIC) ── */}
-      <TestimonialsCarousel lang={lang} navigate={navigate} />
-
       {/* ── BANNER FLOTANTE ANIMADO: CATEGORÍAS POR "PROBLEMAS REALES" DE LA VIDA DIARIA ── */}
       <div className="emergency-floating-banner">
         {/* Light wave shimmer effect */}
@@ -2056,6 +1959,103 @@ export default function HomePage({ lang, navigate, userRole }) {
               ))}
             </div>
           </section>
+
+      {/* ── CARRUSEL DE TARJETAS VERTICALES DE PROFESIONALES DESTACADOS ── */}
+      <VIPSection 
+        realVipPros={featuredProsToUse} 
+        lang={lang} 
+        navigate={navigate} 
+        getProStoryData={getProStoryData}
+        onOpenStory={handleOpenStoryViewer}
+      />
+
+      {/* ── SECCIÓN PROFESIONALES DESTACADOS ── */}
+      <section ref={featuredRef} className={`featured-section${featuredVisible ? ' reveal' : ''}`}>
+        <div className="hp-sec-header">
+          <h2 className="hp-sec-title">⭐ {lang === 'es' ? 'Profesionales Destacados' : 'Featured Professionals'}</h2>
+          <button className="hp-see-all" onClick={() => navigate('search')}>{lang === 'es' ? 'Ver todos' : 'See all'}</button>
+        </div>
+        <div className="featured-scroll">
+          {featuredProsToUse.length > 0 ? (
+            featuredProsToUse.map((pro, i) => {
+              const sData = getProStoryData(pro)
+              const hasStory = Boolean(sData && sData.stories && sData.stories.length > 0)
+              const planTheme = getProPlanTheme(pro.currentPlan || pro.planName || pro.plan || pro.planId || pro.membership, pro.rating)
+
+              return (
+                <div key={i} className="featured-card" style={{ animationDelay: `${i * 0.08}s` }} onClick={() => navigate('booking', { professional: pro })}>
+                  {pro.badge && <span className={`featured-badge badge-${pro.badge.toLowerCase()}`}>{pro.badge}</span>}
+                  
+                  <div style={{ position: 'relative', width: '100%', overflow: 'hidden' }}>
+                    <img src={pro.img || pro.photoURL} alt={pro.nameEs} className="featured-img" />
+                    
+                    <div className="listo-brand-watermark">
+                      <img src={logoListo} alt="Listo Patrón" className="listo-brand-watermark-img" />
+                    </div>
+                    
+                    {hasStory && (
+                      <>
+                        <div 
+                          style={{
+                            position: 'absolute',
+                            inset: 0,
+                            background: `radial-gradient(circle at center, ${planTheme.color}22 0%, rgba(15, 23, 42, 0.25) 70%, rgba(0,0,0,0.5) 100%)`,
+                            zIndex: 4,
+                            pointerEvents: 'none'
+                          }}
+                        />
+                        <div 
+                          style={{
+                            position: 'absolute',
+                            top: '50%',
+                            left: '50%',
+                            transform: 'translate(-50%, -52%)',
+                            zIndex: 10,
+                            filter: `drop-shadow(0 4px 14px ${planTheme.color}55)`
+                          }}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleOpenStoryViewer(sData.firstIndex)
+                          }}
+                        >
+                          <StoryAvatar 
+                            pro={pro}
+                            src={pro.img || pro.photoURL}
+                            alt={pro.nameEs}
+                            size={76}
+                            storyData={sData}
+                            onOpenStory={handleOpenStoryViewer}
+                            fallbackAvatar={pro.avatar || (pro.nameEs || 'P').charAt(0)}
+                          />
+                        </div>
+                      </>
+                    )}
+                  </div>
+
+                  <div className="featured-info">
+                    <p className="featured-name">{pro.nameEs}</p>
+                    <p className="featured-spec">{lang === 'es' ? pro.specEs : pro.specEn}</p>
+                    <StarRating rating={pro.rating} />
+                    {pro.reviews && pro.reviews > 0 ? (
+                      <p className="featured-reviews">{pro.reviews} {lang === 'es' ? 'reseñas' : 'reviews'}</p>
+                    ) : null}
+                    <p className="featured-price" style={{ color: '#008F39', fontSize: '13px', fontWeight: 'bold' }}>
+                      🤝 {lang === 'es' ? 'A convenir' : 'To agree'}
+                    </p>
+                  </div>
+                </div>
+              )
+            })
+          ) : (
+            <div style={{ padding: '20px', color: 'var(--gray)', fontSize: '14px', textAlign: 'center', width: '100%' }}>
+              {lang === 'es' ? 'Aún no hay profesionales destacados.' : 'No featured professionals yet.'}
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* ── LO QUE DICEN NUESTROS CLIENTES ── */}
+      <TestimonialsCarousel lang={lang} navigate={navigate} />
 
       <div style={{ height: 90 }} />
 
