@@ -387,13 +387,12 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
             
             if (newCompleted % 10 === 0) {
               proUpdate.contracts = (proData.contracts || 0) + 1;
-              proUpdate.spinsAvailable = (proData.spinsAvailable || 0) + 1;
               proUpdate.wheelProgress = 100;
               await addDoc(collection(db, 'notificaciones'), {
                 userId: latestOrder.proId,
                 type: 'reward',
-                title: '🎰 ¡RULETA Y CONTRATO GRATIS OTORGADOS!',
-                text: `¡Felicidades! Has completado ${newCompleted} trabajos y la Ruleta Listo Patrón se ha activado. Te acreditamos +1 contrato gratis automáticamente a tu saldo.`,
+                title: '🎰 ¡CONTRATO GRATIS OTORGADO POR 10 TRABAJOS!',
+                text: `¡Felicidades! Has completado ${newCompleted} trabajos. Te acreditamos +1 contrato gratis automáticamente a tu saldo.`,
                 read: false,
                 icon: '🎰',
                 createdAt: serverTimestamp()
@@ -401,20 +400,6 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
             } else {
               const currentProgress = proData.wheelProgress || 0;
               const nextProgress = currentProgress + 10;
-              // Si obtuvo 4 o 5 estrellas, le otorgamos 1 giro de ruleta
-              if (formData.calificacion >= 4) {
-                proUpdate.spinsAvailable = (proData.spinsAvailable || 0) + 1;
-                await addDoc(collection(db, 'notificaciones'), {
-                  userId: latestOrder.proId,
-                  type: 'reward',
-                  title: '🎰 ¡RULETA DESBLOQUEADA!',
-                  text: `¡Felicidades por tu excelente trabajo! Recibiste ${formData.calificacion} estrellas ⭐ y desbloqueaste 1 giro en la Ruleta Listo Patrón.`,
-                  read: false,
-                  icon: '🎰',
-                  createdAt: serverTimestamp()
-                });
-              }
-
               if (nextProgress >= 100) {
                 proUpdate.contracts = (proData.contracts || 0) + 1;
                 proUpdate.wheelProgress = nextProgress - 100;
@@ -430,6 +415,22 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
               } else {
                 proUpdate.wheelProgress = nextProgress;
               }
+            }
+
+            // REGLA ESTRICTA: El profesional SOLO gana 1 giro en la Tómbola si recibe 4 o 5 estrellas
+            if (formData.calificacion >= 4) {
+              proUpdate.has5StarContract = true;
+              proUpdate.completed5StarCount = (proData.completed5StarCount || 0) + 1;
+              proUpdate.spinsAvailable = (proData.spinsAvailable || 0) + 1;
+              await addDoc(collection(db, 'notificaciones'), {
+                userId: latestOrder.proId,
+                type: 'reward',
+                title: '🎰 ¡RULETA DESBLOQUEADA!',
+                text: `¡Felicidades por tu excelente trabajo! Recibiste ${formData.calificacion} estrellas ⭐ y desbloqueaste 1 giro en la Ruleta Listo Patrón.`,
+                read: false,
+                icon: '🎰',
+                createdAt: serverTimestamp()
+              });
             }
             await updateDoc(proRef, proUpdate);
           }
