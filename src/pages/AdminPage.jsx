@@ -748,6 +748,17 @@ export default function AdminPage({ navigate }) {
           'verificacion.estado': 'rechazada',
           'verificacion.fechaOculto': new Date().toISOString()
         });
+        if (obj.id) {
+          await addDoc(collection(db, 'notificaciones'), {
+            userId: obj.id,
+            type: 'system',
+            title: 'Tu foto no fue aprobada',
+            text: `Notamos que tu foto incluye números de teléfono, redes sociales o información publicitaria.\nPor políticas de la plataforma, las fotos de perfil deben mostrar únicamente tu rostro, logo o imagen\nprofesional limpia, sin datos de contacto ni anuncios.\nPor favor, sube una nueva imagen para que podamos activar tu perfil de inmediato.`,
+            date: new Date().toISOString(),
+            createdAt: new Date().toISOString(),
+            read: false
+          }).catch(() => {});
+        }
         showToast(`🔴 Postulación rechazada`);
         setViewDocs(null); // Cerrar modal
       }
@@ -982,9 +993,10 @@ export default function AdminPage({ navigate }) {
             await addDoc(collection(db, 'notificaciones'), {
                userId: targetUserId,
                type: 'system',
-               title: 'Cambio de Perfil Rechazado',
-               text: 'Hola, tu solicitud para actualizar tus datos o foto de perfil no fue aprobada por nuestros agentes. Intenta de nuevo con información válida.',
+               title: 'Tu foto no fue aprobada',
+               text: `Notamos que tu foto incluye números de teléfono, redes sociales o información publicitaria.\nPor políticas de la plataforma, las fotos de perfil deben mostrar únicamente tu rostro, logo o imagen\nprofesional limpia, sin datos de contacto ni anuncios.\nPor favor, sube una nueva imagen para que podamos activar tu perfil de inmediato.`,
                date: new Date().toISOString(),
+               createdAt: new Date().toISOString(),
                read: false
             });
          }
@@ -1064,8 +1076,8 @@ export default function AdminPage({ navigate }) {
           await addDoc(collection(db, 'notificaciones'), {
             userId: obj.proId,
             type: 'system',
-            title: 'ℹ️ Solicitud de Historia Rechazada',
-            text: 'Tu publicación en Historias fue revisada pero no fue aprobada por nuestro equipo de moderación.',
+            title: 'Tu foto no fue aprobada',
+            text: `Notamos que tu foto incluye números de teléfono, redes sociales o información publicitaria.\nPor políticas de la plataforma, las fotos de perfil deben mostrar únicamente tu rostro, logo o imagen\nprofesional limpia, sin datos de contacto ni anuncios.\nPor favor, sube una nueva imagen para que podamos activar tu perfil de inmediato.`,
             date: new Date().toISOString(),
             createdAt: new Date().toISOString(),
             read: false
