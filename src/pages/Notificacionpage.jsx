@@ -64,6 +64,7 @@ export default function NotificacionPage({ lang = 'es', navigate, userData }) {
   const [activeTab, setActiveTab] = useState('promos'); // 'promos' | 'notifs'
   const [filter, setFilter] = useState('all'); // 'all' | 'unread'
   const [realStoriesOffers, setRealStoriesOffers] = useState([]);
+  const [selectedNotif, setSelectedNotif] = useState(null);
 
   // Escuchar notificaciones del usuario
   useEffect(() => {
@@ -200,8 +201,6 @@ export default function NotificacionPage({ lang = 'es', navigate, userData }) {
       </div>
     );
   }
-
-  const [selectedNotif, setSelectedNotif] = useState(null);
 
   return (
     <div className="notifications-page">
