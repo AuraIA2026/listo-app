@@ -168,8 +168,8 @@
 .star-num    { color: #666; font-size: 12px; font-weight: 600; }
 
 /* ── PROFESIONALES DESTACADOS ─────────────────── */
-.featured-section { margin: 6px 0; opacity: 0; transform: translateY(30px); transition: opacity .6s ease, transform .6s ease; }
-.featured-section.reveal { opacity: 1; transform: translateY(0); }
+.featured-section { margin: 2px 0 6px; opacity: 1 !important; transform: none !important; }
+.featured-section.reveal { opacity: 1; transform: none; }
 .featured-scroll {
   display: flex;
   gap: 8px;
@@ -230,12 +230,8 @@
 .featured-price strong { color: #1A1A2E; font-size: 13px; }
 
 /* ── SERVICE SECTIONS ─────────────────────────── */
-.hp-service-section { margin-bottom: 2px; opacity: 0; transform: translateY(30px); transition: opacity .6s ease, transform .6s ease; }
-.hp-service-section.reveal {
-  opacity: 1; transform: translateY(0);
-  border-radius: 0px; margin: 2px 0; padding: 6px 0;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.06);
-}
+.hp-service-section { margin: 2px 0; padding: 6px 0; opacity: 1 !important; transform: none !important; border-radius: 0px; box-shadow: 0 4px 16px rgba(0,0,0,0.06); }
+.hp-service-section.reveal { opacity: 1; transform: none; }
 .amz-sec-header { margin-bottom: 6px; padding: 0 16px; }
 .amz-sec-title { font-size: 19px; font-weight: 900; }
 .amz-see-all {
@@ -299,11 +295,11 @@
 
 /* ── TODOS LOS PROFESIONALES ──────────────────── */
 .all-pros-section {
-  margin: 0; padding: 4px 16px; background: #fff;
+  margin: 2px 0; padding: 4px 16px; background: #fff;
   border-radius: 0px; box-shadow: 0 -4px 16px rgba(0,0,0,0.03);
-  opacity: 0; transform: translateY(40px); transition: opacity .7s ease, transform .7s ease;
+  opacity: 1 !important; transform: none !important;
 }
-.all-pros-section.reveal { opacity: 1; transform: translateY(0); }
+.all-pros-section.reveal { opacity: 1; transform: none; }
 .pros-count { font-size: 12px; color: #64748B; font-weight: 700; background: #F1F5F9; padding: 5px 12px; border-radius: 0px; }
 .pros-filter-scroll { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; padding-bottom: 10px; margin-top: 4px; }
 .pros-filter-scroll::-webkit-scrollbar { display: none; }
@@ -356,8 +352,8 @@
 .pro-list-book:hover { background: #C24D00; transform: scale(1.05); }
 
 /* ── LISTA DE CATEGORÍAS ──────────────────────── */
-.cat-list-section { margin: 0; padding: 12px 16px; background: #fff; opacity: 0; transform: translateY(40px); transition: opacity .6s ease, transform .6s ease; }
-.cat-list-section.reveal { opacity: 1; transform: translateY(0); }
+.cat-list-section { margin: 2px 0; padding: 12px 16px; background: #fff; opacity: 1 !important; transform: none !important; }
+.cat-list-section.reveal { opacity: 1; transform: none; }
 .cat-list { display: flex; flex-direction: column; }
 .cat-list-item {
   display: flex; align-items: center; gap: 14px; padding: 12px 4px;
@@ -373,14 +369,13 @@
 
 /* ── TESTIMONIOS CARRUSEL ─────────────────────── */
 .testimonials-section {
-  margin: 6px 16px;
-  opacity: 0;
-  transform: translateY(20px);
-  transition: opacity 0.5s ease, transform 0.5s ease;
+  margin: 2px 16px 4px;
+  opacity: 1 !important;
+  transform: none !important;
 }
 .testimonials-section.reveal {
   opacity: 1;
-  transform: translateY(0);
+  transform: none;
 }
 .testimonials-section .hp-sec-title {
   color: #1A1A2E;
