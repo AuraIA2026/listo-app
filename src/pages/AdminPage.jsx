@@ -2585,7 +2585,13 @@ export default function AdminPage({ navigate }) {
           <div className="confirm-overlay" onClick={() => {setConfirm(null); setBlockReason('');}}>
             <div className="confirm-modal" onClick={e => e.stopPropagation()}>
               <span className="cm-icon">
-                {confirm.type==='block' ? '🔴' : confirm.type==='delete_account' ? '💀' : confirm.type==='sub_contract' ? '➖' : confirm.type==='add_contract' ? '➕' : confirm.type==='unblock' ? '✅' : confirm.type==='delete_alert' ? '🗑️' : '💚'}
+                {confirm.type==='block' ? '🔴' :
+                 confirm.type==='delete_account'||confirm.type==='delete_story'||confirm.type==='delete_alert' ? '🗑️' :
+                 confirm.type==='sub_contract' ? '➖' :
+                 confirm.type==='add_contract' ? '➕' :
+                 confirm.type==='unblock'||confirm.type==='approve_verif'||confirm.type==='approve_edit'||confirm.type==='approve_story'||confirm.type==='paid' ? '✅' :
+                 confirm.type==='reject_payment'||confirm.type==='reject_verif'||confirm.type==='reject_edit'||confirm.type==='reject_story' ? '❌' :
+                 '💚'}
               </span>
                <h3 className="cm-title">
                 {confirm.type==='block'   ? '¿Suspender perfil?' :
@@ -2600,49 +2606,61 @@ export default function AdminPage({ navigate }) {
                  confirm.type==='approve_verif' ? '¿Aprobar Profesional?' :
                  confirm.type==='reject_verif' ? '¿Rechazar Verificación?' :
                  confirm.type==='resolve_report' ? '¿Marcar como resuelta?' :
-                 confirm.type==='approve_edit' ? '¿Aprobar cambios?' :
-                 confirm.type==='reject_edit' ? '¿Rechazar solicitud de edición?' :
+                 confirm.type==='approve_edit' ? '¿Aprobar cambios de perfil?' :
+                 confirm.type==='reject_edit' ? '¿Rechazar cambio de foto?' :
+                 confirm.type==='approve_story' ? '¿Aprobar y publicar foto?' :
+                 confirm.type==='reject_story' ? '¿Rechazar foto?' :
+                 confirm.type==='delete_story' ? '¿Eliminar foto?' :
+                 confirm.type==='paid' ? '¿Aprobar transferencia de plan?' :
                  confirm.type==='mark_read' ? '¿Marcar alerta como leída?' :
                  confirm.type==='delete_alert' ? '¿Eliminar alerta?' :
                  confirm.type==='mark_all_read' ? '¿Marcar todas las alertas como leídas?' :
-                 '¿Aprobar transferencia?'}
+                 '¿Confirmar acción?'}
               </h3>
               <p className="cm-sub">
                 {confirm.type==='block'
-                  ? `Estás a punto de suspender a ${confirm.obj.name} (${confirm.obj.service || 'Profesional'}). Quedará inactivo.`
+                  ? `Estás a punto de suspender a ${confirm.obj?.name || 'este perfil'}. Quedará inactivo.`
                   : confirm.type==='delete_account'
-                  ? `ATENCIÓN: Vas a borrar el perfil de ${confirm.obj.name} de manera definitiva e irreversible. Se eliminará de la base de datos de usuarios completamente.`
+                  ? `ATENCIÓN: Vas a borrar el perfil de ${confirm.obj?.name || 'este usuario'} de manera definitiva.`
                   : confirm.type==='unblock'
-                  ? `Se activará el perfil de ${confirm.obj.name} en el sistema.`
+                  ? `Se activará el perfil de ${confirm.obj?.name || 'este usuario'} en el sistema.`
                   : confirm.type==='add_contract'
-                  ? `Se agregará 1 contrato gratis a la cuenta de ${confirm.obj.name}.`
+                  ? `Se agregará 1 contrato gratis a la cuenta de ${confirm.obj?.name || 'este usuario'}.`
                   : confirm.type==='sub_contract'
-                  ? `Se quitará 1 contrato de la cuenta de ${confirm.obj.name}.`
+                  ? `Se quitará 1 contrato de la cuenta de ${confirm.obj?.name || 'este usuario'}.`
                   : confirm.type==='send_gift'
-                  ? `Se enviarán ${giftAmount} contratos a este usuario y saltará el confeti en su app.`
+                  ? `Se enviarán ${giftAmount} contratos a este usuario.`
                   : confirm.type==='send_notification'
-                  ? (notifyTarget === 'single' ? `Se enviará este mensaje directamente a la sección de notificaciones de la app del usuario.` : `🚨 ATENCIÓN: Estás a punto de enviar una DIFUSIÓN MASIVA. Todos los usuarios en la categoría seleccionada recibirán la notificación In-App al instante.`)
+                  ? (notifyTarget === 'single' ? `Se enviará este mensaje directamente al usuario.` : `🚨 Difusión masiva a todos los usuarios.`)
                   : confirm.type==='remind'
-                  ? `Se enviará una notificación In-App al celular de ${confirm.obj.name || confirm.obj.proName} recordándole que termine el proceso.`
+                  ? `Se enviará una notificación In-App a ${confirm.obj?.name || confirm.obj?.proName || 'este usuario'}.`
                   : confirm.type==='reject_payment'
-                  ? `El pago de la comisión de ${confirm.obj.proName} será rechazado.`
+                  ? `El pago de la comisión de ${confirm.obj?.proName || 'este profesional'} será rechazado.`
                   : confirm.type==='approve_verif'
-                  ? `El usuario ${confirm.obj.verificacion?.nombre || 'este perfil'} será promovido a Profesional Premium y se le recargarán contratos iniciales.`
+                  ? `El usuario ${confirm.obj?.verificacion?.nombre || confirm.obj?.name || 'este perfil'} será promovido a Profesional.`
                   : confirm.type==='reject_verif'
                   ? `Se rechazará esta verificación y el usuario tendrá que intentar de nuevo.`
                   : confirm.type==='resolve_report'
-                  ? `La queja de ${confirm.obj.reporterName} será archivada y se quitará de la lista de pendientes.`
+                  ? `La queja será archivada.`
                   : confirm.type==='approve_edit'
-                  ? `Los nuevos datos o foto sobrescribirán el perfil de ${confirm.obj.userName}.`
+                  ? `Los nuevos datos o foto sobrescribirán el perfil de ${confirm.obj?.userName || 'este usuario'}.`
                   : confirm.type==='reject_edit'
-                  ? `La solicitud será descartada y se enviará una notificación In-App al usuario.`
+                  ? `Se rechazará la foto y se enviará la notificación In-App al usuario indicando el motivo.`
+                  : confirm.type==='approve_story'
+                  ? `La foto de ${confirm.obj?.proName || 'trabajo'} será aprobada y publicada.`
+                  : confirm.type==='reject_story'
+                  ? `La foto de ${confirm.obj?.proName || 'trabajo'} será rechazada y se le enviará la notificación de políticas al usuario.`
+                  : confirm.type==='delete_story'
+                  ? `La foto de ${confirm.obj?.proName || 'trabajo'} será eliminada permanentemente.`
+                  : confirm.type==='paid'
+                  ? `Se marcará el pago como verificado y se agregará el plan a ${confirm.obj?.proName || 'este profesional'}.`
                   : confirm.type==='mark_read'
-                  ? `Se marcará esta alerta como leída para limpiar tu bandeja.`
+                  ? `Se marcará esta alerta como leída.`
                   : confirm.type==='delete_alert'
-                  ? `Esta alerta será borrada definitivamente del historial.`
+                  ? `Esta alerta será borrada del historial.`
                   : confirm.type==='mark_all_read'
-                  ? `Todas las alertas no leídas actualmente se marcarán como leídas de una sola vez.`
-                  : `Se marcará el pago como verificado y se agregará el plan a la cuenta de ${confirm.obj.proName}.`}
+                  ? `Todas las alertas se marcarán como leídas.`
+                  : `¿Deseas confirmar esta acción en el sistema?`}
               </p>
 
               {confirm.type === 'block' && (
@@ -2659,7 +2677,17 @@ export default function AdminPage({ navigate }) {
               )}
 
               <button
-                className={`cm-btn ${confirm.type==='block'||confirm.type==='delete_account'||confirm.type==='sub_contract'||confirm.type==='reject_payment'||confirm.type==='reject_verif'||confirm.type==='delete_alert'?'danger':'success'}`}
+                className={`cm-btn ${
+                  confirm.type==='block'||
+                  confirm.type==='delete_account'||
+                  confirm.type==='sub_contract'||
+                  confirm.type==='reject_payment'||
+                  confirm.type==='reject_verif'||
+                  confirm.type==='reject_edit'||
+                  confirm.type==='reject_story'||
+                  confirm.type==='delete_story'||
+                  confirm.type==='delete_alert' ? 'danger' : 'success'
+                }`}
                 disabled={confirm.type === 'block' && !blockReason.trim()}
                 onClick={ejecutarConfirm}>
                 {confirm.type==='block'   ? '🔴 Sí, suspender'    :
@@ -2675,11 +2703,15 @@ export default function AdminPage({ navigate }) {
                  confirm.type==='reject_verif' ? '❌ Sí, rechazar' :
                  confirm.type==='resolve_report' ? '✔️ Confirmar Resolución' :
                  confirm.type==='approve_edit' ? '✅ Aplicar Cambios' :
-                 confirm.type==='reject_edit' ? '❌ Rechazar Cambios' :
+                 confirm.type==='reject_edit' ? '❌ Rechazar Foto' :
+                 confirm.type==='approve_story' ? '✅ Aprobar y Publicar' :
+                 confirm.type==='reject_story' ? '❌ Rechazar Foto' :
+                 confirm.type==='delete_story' ? '🗑️ Eliminar Foto' :
+                 confirm.type==='paid' ? '💚 Confirmar validación' :
                  confirm.type==='mark_read' ? '✅ Marcar Leída' :
                  confirm.type==='delete_alert' ? '🗑️ Eliminar' :
                  confirm.type==='mark_all_read' ? '✅ Marcar todas' :
-                 '💚 Confirmar validación'}
+                 'Confirmar'}
               </button>
               <button className="cm-btn ghost" onClick={() => {setConfirm(null); setBlockReason('');}}>Cancelar</button>
             </div>
