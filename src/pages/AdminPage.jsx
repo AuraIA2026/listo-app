@@ -646,6 +646,10 @@ export default function AdminPage({ navigate }) {
       await updateDoc(doc(db, 'users', targetUser.id), { 
         planStatus: 'active', 
         approved: true,
+        isBlocked: false,
+        isSuspended: false,
+        blocked: false,
+        status: 'active',
         role: 'professional',
         type: 'pro',
         planExpirationDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
@@ -663,7 +667,7 @@ export default function AdminPage({ navigate }) {
         }).catch(() => {});
       }
       showToast(`✅ ${targetUser.name || 'Usuario'} activado`);
-      setViewProStats(prev => prev ? { ...prev, planStatus: 'active', approved: true, available: true } : null);
+      setViewProStats(prev => prev ? { ...prev, planStatus: 'active', approved: true, available: true, isBlocked: false, isSuspended: false, blocked: false, status: 'active' } : null);
     } catch(e) {
       console.error("Error activating user:", e);
       showToast("❌ Error al activar usuario");
@@ -797,9 +801,14 @@ export default function AdminPage({ navigate }) {
          await updateDoc(doc(db, 'users', obj.id), { 
             planStatus: 'inactive', 
             approved: false,
+            available: false,
+            isBlocked: true,
+            isSuspended: true,
+            status: 'blocked',
             blockReason: blockReason.trim()
          });
          showToast(`🔴 ${obj.name} marcado como suspendido`);
+         setViewProStats(prev => prev ? { ...prev, planStatus: 'inactive', approved: false, available: false, isBlocked: true, isSuspended: true, status: 'blocked' } : null);
          setBlockReason(''); // Resetear
       }
       if (type === 'reject_payment') {
@@ -2007,9 +2016,9 @@ export default function AdminPage({ navigate }) {
 
                 {/* Suspensiones / Bloqueos */}
                 <div style={{display:'flex', gap:8, marginBottom:12}}>
-                  {viewProStats.isBlocked || viewProStats.isSuspended || viewProStats.blocked || viewProStats.status === 'blocked' ? (
+                  {(!viewProStats.approved || viewProStats.planStatus === 'inactive' || viewProStats.isBlocked || viewProStats.isSuspended || viewProStats.blocked || viewProStats.status === 'blocked' || viewProStats.status === 'suspended' || viewProStats.status === 'inactive') ? (
                     <button className="cc-btn paid" style={{background:'#10B981', color:'#fff', flex:1, padding: 12, fontWeight: 800}} onClick={() => handleDirectUnblock(viewProStats)}>
-                      ✅ Desbloquear / Activar Perfil
+                      ✅ Activar Perfil
                     </button>
                   ) : (
                     <button className="cc-btn block" style={{background:'#EF4444', color:'#fff', flex:1, padding: 12, fontWeight: 800}} onClick={() => setConfirm({type:'block', obj:viewProStats})}>
