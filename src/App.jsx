@@ -186,15 +186,31 @@ function UpdateBlocker({ lang }) {
   )
 }
 
-function SystemAlertModal({ alert, onClose, lang }) {
+function SystemAlertModal({ alert, onClose, lang, onNavigateProfile }) {
   if (!alert) return null;
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  const isPhotoRejection = (alert.title && (alert.title.includes('Tu foto no fue aprobada') || alert.title.includes('Historia'))) || 
+                           (alert.text && (alert.text.includes('foto') || alert.text.includes('Historias') || alert.text.includes('aprobada')));
+
+  const handleButtonClick = () => {
+    if (!isExpanded && isPhotoRejection) {
+      setIsExpanded(true);
+    } else {
+      onClose();
+      if (isPhotoRejection && onNavigateProfile) {
+        onNavigateProfile();
+      }
+    }
+  };
+
   const textLength = alert.text ? alert.text.length : 0;
   const fontSize = textLength > 65 ? '12px' : textLength > 40 ? '13.5px' : '15px';
 
   return (
     <div style={{
       position: 'fixed', inset: 0, zIndex: 100000,
-      background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(8px)',
+      background: 'rgba(0,0,0,0.82)', backdropFilter: 'blur(8px)',
       display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px',
       animation: 'fadeIn 0.3s'
     }}>
@@ -202,6 +218,10 @@ function SystemAlertModal({ alert, onClose, lang }) {
         @keyframes sysAlertCirclePop {
           0% { transform: scale(0.6) rotate(-8deg); opacity: 0; }
           100% { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+        @keyframes sysAlertExpand {
+          0% { transform: scale(0.85); opacity: 0.5; }
+          100% { transform: scale(1); opacity: 1; }
         }
         @keyframes bellRingBounce {
           0%, 100% { transform: scale(1) rotate(0deg); }
@@ -212,165 +232,210 @@ function SystemAlertModal({ alert, onClose, lang }) {
         }
       `}</style>
       
-      {/* CÍRCULO ADHESIVO STICKER */}
-      <div style={{
-        width: '340px',
-        height: '340px',
-        maxWidth: '90vw',
-        maxHeight: '90vw',
-        aspectRatio: '1 / 1',
-        background: 'linear-gradient(145deg, #FF7818 0%, #F25A00 55%, #D44800 100%)',
-        border: '6px solid #FFFFFF',
-        boxShadow: '0 20px 48px rgba(0,0,0,0.45), 0 0 30px rgba(242,90,0,0.5), inset 0 2px 6px rgba(255,255,255,0.4)',
-        borderRadius: '50%',
-        padding: '20px 18px 18px 18px',
-        position: 'relative',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        textAlign: 'center',
-        boxSizing: 'border-box',
-        animation: 'sysAlertCirclePop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1)'
-      }}>
-
-        {/* Esquina Doblada de Sticker (Peel effect en superior derecha) */}
+      {!isExpanded ? (
+        /* ── VISTA 1: CÍRCULO STICKER INICIAL (FOTO 1) ── */
         <div style={{
-          position: 'absolute',
-          top: '-2px',
-          right: '25px',
-          width: '0',
-          height: '0',
-          borderStyle: 'solid',
-          borderWidth: '0 38px 38px 0',
-          borderColor: 'transparent #FFFFFF transparent transparent',
-          filter: 'drop-shadow(-3px 3px 4px rgba(0,0,0,0.25))',
-          zIndex: 4,
-          pointerEvents: 'none'
-        }} />
-
-        {/* Brillo Glossy Diagonal */}
-        <div style={{
-          position: 'absolute',
-          top: '-40%',
-          left: '-40%',
-          width: '180%',
-          height: '180%',
-          background: 'linear-gradient(135deg, rgba(255,255,255,0.28) 0%, rgba(255,255,255,0.06) 35%, transparent 60%)',
+          width: '340px',
+          height: '340px',
+          maxWidth: '90vw',
+          maxHeight: '90vw',
+          aspectRatio: '1 / 1',
+          background: 'linear-gradient(145deg, #FF7818 0%, #F25A00 55%, #D44800 100%)',
+          border: '6px solid #FFFFFF',
+          boxShadow: '0 20px 48px rgba(0,0,0,0.45), 0 0 30px rgba(242,90,0,0.5), inset 0 2px 6px rgba(255,255,255,0.4)',
           borderRadius: '50%',
-          pointerEvents: 'none'
-        }} />
-
-        {/* Insignia Sticker de Corazón Flotante a la Derecha */}
-        <div style={{
-          position: 'absolute',
-          right: '18px',
-          top: '52%',
-          transform: 'translateY(-50%) rotate(12deg)',
-          background: '#FFFFFF',
-          border: '2.5px solid #FFFFFF',
-          borderRadius: '16px',
-          padding: '4px 7px',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.25)',
-          zIndex: 3,
+          padding: '20px 18px 18px 18px',
+          position: 'relative',
           display: 'flex',
+          flexDirection: 'column',
           alignItems: 'center',
-          justifyContent: 'center',
-          fontSize: '18px'
+          justifyContent: 'space-between',
+          textAlign: 'center',
+          boxSizing: 'border-box',
+          animation: 'sysAlertCirclePop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1)'
         }}>
-          💖
-        </div>
 
-        {/* 1. Título Superior (2 líneas como en la imagen) */}
-        <div style={{ zIndex: 2, marginTop: '4px' }}>
+          {/* Esquina Doblada de Sticker */}
+          <div style={{
+            position: 'absolute', top: '-2px', right: '25px',
+            width: '0', height: '0', borderStyle: 'solid',
+            borderWidth: '0 38px 38px 0',
+            borderColor: 'transparent #FFFFFF transparent transparent',
+            filter: 'drop-shadow(-3px 3px 4px rgba(0,0,0,0.25))',
+            zIndex: 4, pointerEvents: 'none'
+          }} />
+
+          {/* Brillo Glossy Diagonal */}
+          <div style={{
+            position: 'absolute', top: '-40%', left: '-40%',
+            width: '180%', height: '180%',
+            background: 'linear-gradient(135deg, rgba(255,255,255,0.28) 0%, rgba(255,255,255,0.06) 35%, transparent 60%)',
+            borderRadius: '50%', pointerEvents: 'none'
+          }} />
+
+          {/* Insignia Sticker Corazón */}
+          <div style={{
+            position: 'absolute', right: '18px', top: '52%',
+            transform: 'translateY(-50%) rotate(12deg)',
+            background: '#FFFFFF', border: '2.5px solid #FFFFFF',
+            borderRadius: '16px', padding: '4px 7px',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.25)',
+            zIndex: 3, display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: '18px'
+          }}>
+            💖
+          </div>
+
+          {/* Título Superior */}
+          <div style={{ zIndex: 2, marginTop: '4px' }}>
+            <h2 style={{
+              margin: 0, fontSize: '18px', fontWeight: '900', color: '#FFFFFF',
+              textShadow: '0 2px 5px rgba(0,0,0,0.4), 0 0 2px rgba(0,0,0,0.6)',
+              letterSpacing: '-0.3px', lineHeight: 1.12
+            }}>
+              Bienvenido a<br />Listo Patrón
+            </h2>
+          </div>
+
+          {/* Campana */}
+          <div style={{
+            width: '52px', height: '52px', minHeight: '52px',
+            background: 'rgba(255, 225, 195, 0.4)', backdropFilter: 'blur(4px)',
+            border: '2px solid rgba(255, 255, 255, 0.6)', borderRadius: '50%',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: '26px', boxShadow: '0 4px 14px rgba(0,0,0,0.18)',
+            zIndex: 2, margin: '2px 0',
+            animation: 'bellRingBounce 2.5s infinite ease-in-out'
+          }}>
+            🔔
+          </div>
+
+          {/* Mensaje Corto */}
+          <div style={{
+            zIndex: 2, padding: '0 28px', flex: 1,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            maxWidth: '260px', maxHeight: '85px', overflow: 'hidden'
+          }}>
+            <p style={{
+              margin: 0, fontSize: fontSize, color: '#3D1B00',
+              lineHeight: 1.28, fontWeight: '900',
+              textShadow: '0 1px 0px rgba(255,255,255,0.4)',
+              WebkitLineClamp: 4, WebkitBoxOrient: 'vertical',
+              display: '-webkit-box', overflow: 'hidden'
+            }}>
+              {alert.text}
+            </p>
+          </div>
+
+          {/* Botón */}
+          <div style={{ width: '100%', zIndex: 2, marginBottom: '4px' }}>
+            <button
+              onClick={handleButtonClick}
+              style={{
+                width: '82%', padding: '9px 16px', borderRadius: '24px',
+                background: '#FFFFFF', color: '#3D1B00', fontSize: '14px',
+                fontWeight: '900', border: '2.5px solid #FFDBB8', cursor: 'pointer',
+                boxShadow: '0 6px 18px rgba(0,0,0,0.25)',
+                transition: 'all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)'
+              }}
+              onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.04)'}
+              onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+              onMouseDown={e => e.currentTarget.style.transform = 'scale(0.95)'}
+            >
+              {lang === 'es' ? '¡Entendido, gracias!' : 'Got it!'}
+            </button>
+          </div>
+
+        </div>
+      ) : (
+        /* ── VISTA 2: CUADRO EXPANDIDO (FOTO 2) ── */
+        <div style={{
+          width: '100%',
+          maxWidth: '380px',
+          background: 'linear-gradient(155deg, #FF7818 0%, #F25A00 50%, #D44800 100%)',
+          border: '5px solid #FFFFFF',
+          boxShadow: '0 25px 60px rgba(0,0,0,0.5), 0 0 40px rgba(242,90,0,0.6)',
+          borderRadius: '55px',
+          padding: '32px 24px 24px',
+          position: 'relative',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          textAlign: 'center',
+          boxSizing: 'border-box',
+          animation: 'sysAlertExpand 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
+          maxHeight: '92vh',
+          overflowY: 'auto'
+        }}>
+          {/* Sticker Corazón Flotante */}
+          <div style={{
+            position: 'absolute', right: '20px', top: '24px',
+            transform: 'rotate(10deg)', background: '#FFFFFF',
+            border: '2.5px solid #FFFFFF', borderRadius: '20px',
+            padding: '6px 10px', boxShadow: '0 6px 16px rgba(0,0,0,0.25)',
+            zIndex: 4, display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: '22px'
+          }}>
+            💖
+          </div>
+
+          {/* Icono de Campana Centro Top */}
+          <div style={{
+            width: '54px', height: '54px', minHeight: '54px',
+            background: 'rgba(255, 225, 195, 0.4)', backdropFilter: 'blur(4px)',
+            border: '2.5px solid rgba(255, 255, 255, 0.7)', borderRadius: '50%',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: '28px', boxShadow: '0 6px 18px rgba(0,0,0,0.2)',
+            marginBottom: '16px'
+          }}>
+            🔔
+          </div>
+
+          {/* Título Oficial */}
           <h2 style={{
-            margin: 0,
-            fontSize: '18px',
-            fontWeight: '900',
-            color: '#FFFFFF',
-            textShadow: '0 2px 5px rgba(0,0,0,0.4), 0 0 2px rgba(0,0,0,0.6)',
-            letterSpacing: '-0.3px',
-            lineHeight: 1.12
+            margin: '0 0 20px', fontSize: '24px', fontWeight: '900', color: '#FFFFFF',
+            textShadow: '0 2px 8px rgba(0,0,0,0.4)', lineHeight: 1.2
           }}>
-            Bienvenido a<br />Listo Patrón
+            Tu foto no fue aprobada
           </h2>
-        </div>
 
-        {/* 2. Campana de Notificación al Centro */}
-        <div style={{
-          width: '52px',
-          height: '52px',
-          minHeight: '52px',
-          background: 'rgba(255, 225, 195, 0.4)',
-          backdropFilter: 'blur(4px)',
-          border: '2px solid rgba(255, 255, 255, 0.6)',
-          borderRadius: '50%',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontSize: '26px',
-          boxShadow: '0 4px 14px rgba(0,0,0,0.18)',
-          zIndex: 2,
-          margin: '2px 0',
-          animation: 'bellRingBounce 2.5s infinite ease-in-out'
-        }}>
-          🔔
-        </div>
-
-        {/* 3. Mensaje de Notificación (Perfectamente centrado sin salirse) */}
-        <div style={{
-          zIndex: 2,
-          padding: '0 28px',
-          flex: 1,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          maxWidth: '260px',
-          maxHeight: '85px',
-          overflow: 'hidden'
-        }}>
-          <p style={{
-            margin: 0,
-            fontSize: fontSize,
-            color: '#3D1B00',
-            lineHeight: 1.28,
-            fontWeight: '900',
+          {/* Párrafos Completos con Formato Exacto */}
+          <div style={{
+            color: '#3D1B00', fontSize: '15px', lineHeight: 1.45, fontWeight: '900',
             textShadow: '0 1px 0px rgba(255,255,255,0.4)',
-            WebkitLineClamp: 4,
-            WebkitBoxOrient: 'vertical',
-            display: '-webkit-box',
-            overflow: 'hidden'
+            display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '24px'
           }}>
-            {alert.text}
-          </p>
-        </div>
+            <p style={{ margin: 0 }}>
+              Notamos que tu foto incluye números de teléfono, redes sociales o información publicitaria.
+            </p>
+            <p style={{ margin: 0 }}>
+              Por políticas de la plataforma, las fotos de perfil deben mostrar únicamente tu rostro, logo o imagen profesional limpia, sin datos de contacto ni anuncios.
+            </p>
+            <p style={{ margin: 0 }}>
+              Por favor, sube una nueva imagen para que podamos activar tu perfil de inmediato.
+            </p>
+          </div>
 
-        {/* 4. Botón de Confirmación Ovalado en el Pie del Círculo */}
-        <div style={{ width: '100%', zIndex: 2, marginBottom: '4px' }}>
-          <button
-            onClick={onClose}
-            style={{
-              width: '82%',
-              padding: '9px 16px',
-              borderRadius: '24px',
-              background: '#FFFFFF',
-              color: '#3D1B00',
-              fontSize: '14px',
-              fontWeight: '900',
-              border: '2.5px solid #FFDBB8',
-              cursor: 'pointer',
-              boxShadow: '0 6px 18px rgba(0,0,0,0.25)',
-              transition: 'all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)'
-            }}
-            onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.04)'}
-            onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
-            onMouseDown={e => e.currentTarget.style.transform = 'scale(0.95)'}
-          >
-            {lang === 'es' ? '¡Entendido, gracias!' : 'Got it!'}
-          </button>
+          {/* Botón de Confirmación Ovalado abajo */}
+          <div style={{ width: '100%', marginTop: 'auto' }}>
+            <button
+              onClick={handleButtonClick}
+              style={{
+                width: '100%', padding: '14px 20px', borderRadius: '30px',
+                background: '#FFFFFF', color: '#3D1B00', fontSize: '16px',
+                fontWeight: '900', border: '3px solid #FFDBB8', cursor: 'pointer',
+                boxShadow: '0 8px 24px rgba(0,0,0,0.3)',
+                transition: 'all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)'
+              }}
+              onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.03)'}
+              onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+              onMouseDown={e => e.currentTarget.style.transform = 'scale(0.96)'}
+            >
+              ¡Entendido, gracias!
+            </button>
+          </div>
         </div>
-
-      </div>
+      )}
     </div>
   );
 }
@@ -886,6 +951,7 @@ export default function App() {
         <SystemAlertModal 
           alert={systemAlert} 
           lang={lang} 
+          onNavigateProfile={() => navigate('profile')}
           onClose={() => {
             const currentId = systemAlert.id;
             setSystemAlert(null);
