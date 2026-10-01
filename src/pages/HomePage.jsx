@@ -23,6 +23,7 @@ import ProPlanAlertWidget from '../components/ProPlanAlertWidget'
 import GpsRadarWidget from '../components/GpsRadarWidget'
 import RebookCircleWidget from '../components/RebookCircleWidget'
 import EmergencySirenCircleWidget from '../components/EmergencySirenCircleWidget'
+import StoreCircleWidget from '../components/StoreCircleWidget'
 import LightningOfferBannerModal from '../components/LightningOfferBannerModal'
 
 import mecanico   from '../assets/pros/Mecanico.jpg'
@@ -1393,10 +1394,11 @@ export default function HomePage({ lang, navigate, userRole }) {
           </span>
         </button>
 
-        {/* ── BOTONES CÍRCULO GPS RADAR, RE-CONTRATAR Y SIRENA DE EMERGENCIA (SIEMPRE VISIBLES PARA TODOS) ── */}
+        {/* ── BOTONES CÍRCULO GPS RADAR, RE-CONTRATAR, SIRENA SOS Y TIENDA (SIEMPRE VISIBLES PARA TODOS) ── */}
         <GpsRadarWidget pros={allProsToUse} navigate={navigate} lang={lang} />
         <RebookCircleWidget hiredProsList={hiredProsList} navigate={navigate} lang={lang} />
         <EmergencySirenCircleWidget isExpanded={isProblemsExpanded} onToggle={() => setIsProblemsExpanded(prev => !prev)} lang={lang} />
+        <StoreCircleWidget lang={lang} />
         <button className="amz-nav-pill" onClick={() => navigate('search', { catToSelect: 'mecanico' })}>
           🔧 Mecánicos
         </button>
