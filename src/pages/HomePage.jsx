@@ -687,6 +687,8 @@ export default function HomePage({ lang, navigate, userRole }) {
 
   const [unreadNotifs, setUnreadNotifs] = useState(0)
 
+  const [photoRejectionNotif, setPhotoRejectionNotif] = useState(null)
+
   useEffect(() => {
     if (!userData?.uid) return
     const targetIds = userData.email === 'listopatron.app@gmail.com' ? [userData.uid, 'admin'] : [userData.uid]
@@ -696,6 +698,16 @@ export default function HomePage({ lang, navigate, userRole }) {
         return docSnap.data().type !== 'message';
       });
       setUnreadNotifs(appNotifs.length)
+
+      const rejectionDoc = snapshot.docs.find(docSnap => {
+        const data = docSnap.data();
+        return data.title === 'Tu foto no fue aprobada' || (data.text && data.text.includes('Tu foto no fue aprobada'));
+      });
+      if (rejectionDoc) {
+        setPhotoRejectionNotif({ id: rejectionDoc.id, ...rejectionDoc.data() });
+      } else {
+        setPhotoRejectionNotif(null);
+      }
     }, () => {})
     return () => unsubscribe()
   }, [userData])
@@ -2079,6 +2091,93 @@ export default function HomePage({ lang, navigate, userRole }) {
         navigate={navigate} 
         lang={lang} 
       />
+
+      {/* ── MODAL EMERGENTE EN PANTALLA COMPLETA: FOTO NO APROBADA ── */}
+      {photoRejectionNotif && (
+        <div 
+          onClick={async () => {
+            try { await updateDoc(doc(db, 'notificaciones', photoRejectionNotif.id), { read: true }); } catch(e){}
+            setPhotoRejectionNotif(null);
+          }}
+          style={{
+            position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.85)',
+            zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: 16, backdropFilter: 'blur(8px)'
+          }}
+        >
+          <div 
+            onClick={e => e.stopPropagation()} 
+            style={{
+              background: '#FFFFFF', width: '100%', maxWidth: 500, borderRadius: 24,
+              padding: 24, boxShadow: '0 25px 50px -12px rgba(239,68,68,0.4)',
+              border: '2px solid #EF4444', animation: 'scaleUp .3s cubic-bezier(0.16, 1, 0.3, 1)',
+              display: 'flex', flexDirection: 'column', gap: 16
+            }}
+          >
+            {/* Header del Modal */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #F1F5F9', paddingBottom: 14 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <div style={{ width: 44, height: 44, borderRadius: '50%', background: '#FEE2E2', color: '#DC2626', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, fontWeight: '900' }}>
+                  🚫
+                </div>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: 18, fontWeight: 900, color: '#991B1B', fontFamily: 'var(--font-display, sans-serif)' }}>
+                    {photoRejectionNotif.title || 'Tu foto no fue aprobada'}
+                  </h3>
+                  <span style={{ fontSize: 12, color: '#DC2626', fontWeight: 700 }}>Aviso importante de Administración</span>
+                </div>
+              </div>
+              <button 
+                onClick={async () => {
+                  try { await updateDoc(doc(db, 'notificaciones', photoRejectionNotif.id), { read: true }); } catch(e){}
+                  setPhotoRejectionNotif(null);
+                }}
+                style={{ background: '#F1F5F9', border: 'none', width: 34, height: 34, borderRadius: '50%', fontSize: 16, fontWeight: 700, cursor: 'pointer', color: '#64748B' }}
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Texto Completo del Mensaje con Saltos de Línea */}
+            <div style={{ background: '#FEF2F2', padding: '18px', borderRadius: 16, border: '1px solid #FECACA', color: '#7F1D1D', fontSize: 14.5, lineHeight: 1.6, whiteSpace: 'pre-line', fontWeight: 600 }}>
+              {photoRejectionNotif.text}
+            </div>
+
+            {/* Botones de Acción */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 4 }}>
+              <button
+                onClick={async () => {
+                  try { await updateDoc(doc(db, 'notificaciones', photoRejectionNotif.id), { read: true }); } catch(e){}
+                  setPhotoRejectionNotif(null);
+                  navigate('profile');
+                }}
+                style={{
+                  width: '100%', padding: '16px', borderRadius: 16,
+                  background: 'linear-gradient(135deg, #EF4444, #F26000)',
+                  color: '#FFFFFF', border: 'none', fontWeight: 900, fontSize: 15,
+                  cursor: 'pointer', boxShadow: '0 6px 20px rgba(239,68,68,0.4)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8
+                }}
+              >
+                📷 Subir Nueva Imagen Ahora
+              </button>
+              <button
+                onClick={async () => {
+                  try { await updateDoc(doc(db, 'notificaciones', photoRejectionNotif.id), { read: true }); } catch(e){}
+                  setPhotoRejectionNotif(null);
+                }}
+                style={{
+                  width: '100%', padding: '12px', borderRadius: 14,
+                  background: '#F1F5F9', color: '#475569', border: 'none',
+                  fontWeight: 700, fontSize: 13.5, cursor: 'pointer'
+                }}
+              >
+                Entendido, cerrar aviso ✓
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   )

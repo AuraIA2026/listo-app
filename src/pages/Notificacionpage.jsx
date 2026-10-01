@@ -201,6 +201,8 @@ export default function NotificacionPage({ lang = 'es', navigate, userData }) {
     );
   }
 
+  const [selectedNotif, setSelectedNotif] = useState(null);
+
   return (
     <div className="notifications-page">
       {/* Header */}
@@ -393,7 +395,15 @@ export default function NotificacionPage({ lang = 'es', navigate, userData }) {
           <div className="notifications-list">
             {filteredNotifs.length > 0 ? (
               filteredNotifs.map((notif) => (
-                <div key={notif.id} className={`notification-card ${!notif.read ? 'unread' : ''}`}>
+                <div 
+                  key={notif.id} 
+                  className={`notification-card ${!notif.read ? 'unread' : ''}`}
+                  onClick={() => {
+                    handleMarkAsRead(notif.id);
+                    setSelectedNotif(notif);
+                  }}
+                  style={{ cursor: 'pointer' }}
+                >
                   <div className="notification-content">
                     <div className="notification-header">
                       <span className="notification-icon">
@@ -401,14 +411,14 @@ export default function NotificacionPage({ lang = 'es', navigate, userData }) {
                       </span>
                       <div className="notification-text-wrapper">
                         {notif.title && <p className="notification-title" style={{ margin: '0 0 4px 0', fontWeight: '800', fontSize: '15px', color: '#1a1a2e' }}>{notif.title}</p>}
-                        <p className="notification-text">{notif.text}</p>
+                        <p className="notification-text" style={{ whiteSpace: 'pre-line', lineHeight: '1.5' }}>{notif.text}</p>
                         <span className="notification-time">{formatDate(notif)}</span>
                       </div>
                     </div>
                     {!notif.read && <div className="unread-indicator"></div>}
                   </div>
                   
-                  <div className="notification-actions">
+                  <div className="notification-actions" onClick={e => e.stopPropagation()}>
                     {!notif.read && (
                       <button className="action-btn read-btn" onClick={() => handleMarkAsRead(notif.id)} title={lang==='es'?'Marcar leída':'Mark read'}>
                         ✓
@@ -431,6 +441,70 @@ export default function NotificacionPage({ lang = 'es', navigate, userData }) {
             )}
           </div>
         </>
+      )}
+
+      {/* ── MODAL DETALLE DE NOTIFICACIÓN COMPLETA ── */}
+      {selectedNotif && (
+        <div 
+          className="notif-detail-overlay" 
+          onClick={() => setSelectedNotif(null)} 
+          style={{ 
+            position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.75)', 
+            zIndex: 99999, display: 'flex', alignItems: 'center', justifyContent: 'center', 
+            padding: 16, backdropFilter: 'blur(6px)' 
+          }}
+        >
+          <div 
+            className="notif-detail-modal" 
+            onClick={e => e.stopPropagation()} 
+            style={{ 
+              background: '#FFFFFF', width: '100%', maxWidth: 480, borderRadius: 24, 
+              padding: 24, boxShadow: '0 25px 50px -12px rgba(0,0,0,0.3)', 
+              display: 'flex', flexDirection: 'column', gap: 16, border: '1px solid #E2E8F0' 
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #F1F5F9', paddingBottom: 12 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <span style={{ fontSize: 32 }}>{getNotifIcon(selectedNotif)}</span>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: 17, fontWeight: 900, color: '#1E293B' }}>
+                    {selectedNotif.title || 'Notificación de la plataforma'}
+                  </h3>
+                  <span style={{ fontSize: 12, color: '#94A3B8' }}>{formatDate(selectedNotif)}</span>
+                </div>
+              </div>
+              <button 
+                onClick={() => setSelectedNotif(null)} 
+                style={{ background: '#F1F5F9', border: 'none', width: 36, height: 36, borderRadius: '50%', fontSize: 18, fontWeight: 700, cursor: 'pointer', color: '#64748B' }}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div style={{ background: '#F8FAFC', padding: '16px 18px', borderRadius: 16, border: '1px solid #E2E8F0', fontSize: 14.5, color: '#334155', lineHeight: 1.6, whiteSpace: 'pre-line', fontWeight: 500 }}>
+              {selectedNotif.text}
+            </div>
+
+            {(selectedNotif.title?.includes('Tu foto no fue aprobada') || (selectedNotif.text && selectedNotif.text.includes('foto'))) && (
+              <button
+                onClick={() => {
+                  setSelectedNotif(null);
+                  navigate('profile');
+                }}
+                style={{ width: '100%', padding: 14, borderRadius: 14, background: 'linear-gradient(135deg, #F26000, #EF4444)', color: '#FFF', border: 'none', fontWeight: 800, fontSize: 14, cursor: 'pointer', boxShadow: '0 4px 12px rgba(242,96,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
+              >
+                📷 Subir Nueva Imagen / Editar Perfil
+              </button>
+            )}
+
+            <button
+              onClick={() => setSelectedNotif(null)}
+              style={{ width: '100%', padding: 12, borderRadius: 14, background: '#F1F5F9', color: '#475569', border: 'none', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}
+            >
+              Entendido ✓
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );

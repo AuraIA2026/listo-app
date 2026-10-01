@@ -321,6 +321,8 @@ function WorkingTimer({ startedAt, lang, isPro, onFinish }) {
    MODAL NOTIFICACIONES
 ───────────────────────────────────────────── */
 function NotificacionesModal({ onClose, notifs, lang, onMarkAllRead, navigate, orders, onOpenOrder }) {
+  const [selectedNotif, setSelectedNotif] = useState(null)
+
   return (
     <div onClick={onClose} style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.5)', zIndex:1000000, display:'flex', alignItems:'flex-end', justifyContent:'center' }}>
       <div onClick={e => e.stopPropagation()} style={{ width:'100%', maxWidth:'480px', background:'#fff', borderRadius:'24px 24px 0 0', padding:'16px 20px 40px', animation:'slideUp .3s cubic-bezier(.32,1.2,.5,1)', maxHeight:'75vh', display:'flex', flexDirection:'column' }}>
@@ -339,6 +341,7 @@ function NotificacionesModal({ onClose, notifs, lang, onMarkAllRead, navigate, o
           ) : notifs.map((n, i) => {
             const isPago = isPaymentNotif(n.text), isNuevoPedido = isNewOrderNotif(n)
             const isReview = n.type === 'new_review' || (n.text || '').toLowerCase().includes('estrella')
+            const isPhotoRejection = (n.title && n.title.includes('Tu foto no fue aprobada')) || (n.text && n.text.includes('foto'))
             // Buscar relatedOrder relajando el filtro para incluir cualquier orden válida que coincida con orderId
             const relatedOrder = n.orderId ? orders.find(o => o.id===n.orderId) : null
             const isPaid = relatedOrder && ['approved', 'pending_cash', 'paid', 'verifying'].includes(relatedOrder.paymentStatus)
@@ -350,11 +353,15 @@ function NotificacionesModal({ onClose, notifs, lang, onMarkAllRead, navigate, o
                 : `${relatedOrder.proName || relatedOrder.pro || 'The professional'} finished the job. Payment completed!`
             }
 
-            const isClickable = isPago || isNuevoPedido || isReview || relatedOrder
+            const isClickable = true
             const handleClick = async () => {
               try { await updateDoc(doc(db,'notificaciones',n.id), { read:true }) } catch(e) {}
               
-              if (isNuevoPedido && n.orderId) { 
+              if (isPhotoRejection) {
+                onClose();
+                navigate('profile');
+              }
+              else if (isNuevoPedido && n.orderId) { 
                 onClose(); onOpenOrder(n.orderId) 
               }
               else if (isReview) { 
@@ -379,16 +386,24 @@ function NotificacionesModal({ onClose, notifs, lang, onMarkAllRead, navigate, o
                 } else {
                   navigate('tracking', { ...relatedOrder })
                 }
+              } else {
+                setSelectedNotif(n);
               }
             }
             return (
-              <div key={i} onClick={isClickable?handleClick:undefined} style={{ display:'flex', alignItems:'flex-start', gap:12, padding:12, borderRadius:12, marginBottom:8, background:n.read?'#fff':'#FFF3EC', border:n.read?'1px solid #f0f0f0':'1px solid #FFD580', cursor:isClickable?'pointer':'default', transition:'transform 0.15s' }}
-                onMouseEnter={e => { if (isClickable) e.currentTarget.style.transform='scale(1.01)' }}
+              <div key={i} onClick={handleClick} style={{ display:'flex', alignItems:'flex-start', gap:12, padding:12, borderRadius:12, marginBottom:8, background:n.read?'#fff':'#FFF3EC', border:n.read?'1px solid #f0f0f0':'1px solid #FFD580', cursor:'pointer', transition:'transform 0.15s' }}
+                onMouseEnter={e => { e.currentTarget.style.transform='scale(1.01)' }}
                 onMouseLeave={e => { e.currentTarget.style.transform='scale(1)' }}>
                 <span style={{ fontSize:22, flexShrink:0 }}>{n.icon||'🔔'}</span>
                 <div style={{ flex:1 }}>
-                  <p style={{ margin:'0 0 2px', fontSize:13, fontWeight:n.read?600:800, color:'#1A1A2E' }}>{displayText}</p>
+                  {n.title && <p style={{ margin:'0 0 4px', fontSize:14, fontWeight:800, color:'#991B1B' }}>{n.title}</p>}
+                  <p style={{ margin:'0 0 2px', fontSize:13, fontWeight:n.read?600:800, color:'#1A1A2E', whiteSpace:'pre-line', lineHeight:1.5 }}>{displayText}</p>
                   <p style={{ margin:0, fontSize:11, color:'#999' }}>{n.time}</p>
+                  {isPhotoRejection && (
+                    <div style={{ marginTop:8, display:'inline-flex', alignItems:'center', gap:6, background:'linear-gradient(135deg, #F26000, #EF4444)', color:'white', borderRadius:8, padding:'6px 12px', fontSize:12, fontWeight:700 }}>
+                      📷 Subir Nueva Foto / Editar Perfil →
+                    </div>
+                  )}
                   {isNuevoPedido&&n.orderId && <div style={{ marginTop:8, display:'inline-flex', alignItems:'center', gap:6, background:'#F26000', color:'white', borderRadius:8, padding:'6px 12px', fontSize:12, fontWeight:700 }}>📋 {lang==='es'?'Ver pedido →':'View order →'}</div>}
                   {isPago && relatedOrder && (
                     isPaid ? (
@@ -409,6 +424,21 @@ function NotificacionesModal({ onClose, notifs, lang, onMarkAllRead, navigate, o
         </div>
         <button onClick={onClose} style={{ width:'100%', background:'none', border:'none', color:'#999', fontSize:13, fontWeight:600, marginTop:14, cursor:'pointer', flexShrink:0 }}>{lang==='es'?'Cerrar':'Close'}</button>
       </div>
+
+      {/* Sub-Modal para mostrar mensaje largo si se selecciona */}
+      {selectedNotif && (
+        <div onClick={() => setSelectedNotif(null)} style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.7)', zIndex:1000005, display:'flex', alignItems:'center', justifyContent:'center', padding:16 }}>
+          <div onClick={e => e.stopPropagation()} style={{ background:'#fff', borderRadius:20, padding:24, width:'100%', maxWidth:420, display:'flex', flexDirection:'column', gap:14 }}>
+            <h3 style={{ margin:0, fontSize:18, fontWeight:800, color:'#1A1A2E' }}>{selectedNotif.title || 'Notificación'}</h3>
+            <div style={{ background:'#F8FAFC', padding:14, borderRadius:12, fontSize:14, lineHeight:1.6, whiteSpace:'pre-line', color:'#334155' }}>
+              {selectedNotif.text}
+            </div>
+            <button onClick={() => setSelectedNotif(null)} style={{ padding:12, borderRadius:12, background:'#F26000', color:'white', border:'none', fontWeight:700, cursor:'pointer' }}>
+              Entendido ✓
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
