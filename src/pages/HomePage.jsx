@@ -1390,20 +1390,11 @@ export default function HomePage({ lang, navigate, userRole }) {
           }}>
             HOT
           </span>
-
-          {/* Sticker circular animado % OFF */}
-          <div className="historia-offer-badge-circle" style={{ top: '-6px', left: '-6px', right: 'auto' }}>
-            <span>% OFF</span>
-          </div>
         </button>
 
-        {/* ── BOTONES CÍRCULO GPS RADAR Y RE-CONTRATAR CON ORBITAL (UBICADOS EN LA CINTA SUPERIOR) ── */}
-        {!isPro && (
-          <>
-            <GpsRadarWidget pros={allProsToUse} navigate={navigate} lang={lang} />
-            <RebookCircleWidget hiredProsList={hiredProsList} navigate={navigate} lang={lang} />
-          </>
-        )}
+        {/* ── BOTONES CÍRCULO GPS RADAR Y RE-CONTRATAR CON ORBITAL (SIEMPRE VISIBLES PARA TODOS) ── */}
+        <GpsRadarWidget pros={allProsToUse} navigate={navigate} lang={lang} />
+        <RebookCircleWidget hiredProsList={hiredProsList} navigate={navigate} lang={lang} />
         <button className="amz-nav-pill" onClick={() => navigate('search', { catToSelect: 'mecanico' })}>
           🔧 Mecánicos
         </button>
