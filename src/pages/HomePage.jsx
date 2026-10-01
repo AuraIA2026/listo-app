@@ -1693,229 +1693,219 @@ export default function HomePage({ lang, navigate, userRole }) {
       <TestimonialsCarousel lang={lang} navigate={navigate} />
 
       {/* ── BANNER FLOTANTE ANIMADO: CATEGORÍAS POR "PROBLEMAS REALES" DE LA VIDA DIARIA ── */}
-      {!isPro && (
-        <div className="emergency-floating-banner">
-          {/* Light wave shimmer effect */}
-          <div className="emergency-banner-shimmer" />
+      <div className="emergency-floating-banner">
+        {/* Light wave shimmer effect */}
+        <div className="emergency-banner-shimmer" />
 
-          {/* Banner Header animado interactivo */}
-          <div 
-            className="emergency-banner-header"
-            onClick={() => setIsProblemsExpanded(prev => !prev)}
-            title={isProblemsExpanded ? "Toca para plegar" : "Toca para desplegar 8 emergencias"}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1, minWidth: 0 }}>
-              <span className="emergency-siren-anim">🚨</span>
-              <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-                <h2 style={{ fontSize: '16.5px', fontWeight: '900', color: '#FFFFFF', margin: 0, lineHeight: 1.2, textShadow: '0 2px 4px rgba(0,0,0,0.4)' }}>
-                  {lang === 'es' ? '¿Qué problema tienes hoy?' : 'What problem do you have today?'}
-                </h2>
-                <p style={{ margin: '3px 0 0', fontSize: '11.5px', color: '#FFD700', fontWeight: '700' }}>
-                  {isProblemsExpanded 
-                    ? (lang === 'es' ? 'Toca tu emergencia para conectar al instante' : 'Tap your emergency to connect instantly')
-                    : (lang === 'es' ? 'Toca para desplegar emergencias en 1-Clic ⚡' : 'Tap to deploy 1-Click emergencies ⚡')}
-                </p>
-              </div>
-            </div>
-
-            <div className="emergency-banner-deploy-badge">
-              <span>{isProblemsExpanded ? '▲ PLEGAR' : '⚡ 1-CLIC DESPLEGAR ▼'}</span>
+        {/* Banner Header animado interactivo */}
+        <div 
+          className="emergency-banner-header"
+          onClick={() => setIsProblemsExpanded(prev => !prev)}
+          title={isProblemsExpanded ? "Toca para plegar" : "Toca para desplegar 8 emergencias"}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1, minWidth: 0 }}>
+            <span className="emergency-siren-anim">🚨</span>
+            <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+              <h2 style={{ fontSize: '16.5px', fontWeight: '900', color: '#FFFFFF', margin: 0, lineHeight: 1.2, textShadow: '0 2px 4px rgba(0,0,0,0.4)' }}>
+                {lang === 'es' ? '¿Qué problema tienes hoy?' : 'What problem do you have today?'}
+              </h2>
+              <p style={{ margin: '3px 0 0', fontSize: '11.5px', color: '#FFD700', fontWeight: '700' }}>
+                {isProblemsExpanded 
+                  ? (lang === 'es' ? 'Toca tu emergencia para conectar al instante' : 'Tap your emergency to connect instantly')
+                  : (lang === 'es' ? 'Toca para desplegar emergencias en 1-Clic ⚡' : 'Tap to deploy 1-Click emergencies ⚡')}
+              </p>
             </div>
           </div>
 
-          {/* Contenedor colapsable/desplegable animado */}
-          <div className={`emergency-grid-container ${isProblemsExpanded ? 'expanded' : ''}`}>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px' }}>
-              {REAL_PROBLEMS.map((prob) => (
-                <div
-                  key={prob.id}
-                  onClick={() => navigate('search', { catToSelect: prob.id })}
-                  style={{
-                    background: 'linear-gradient(135deg, #FFFFFF 0%, #FFF7F2 100%)',
-                    borderRadius: '16px',
-                    padding: '14px 12px',
-                    border: '1.5px solid rgba(242, 96, 0, 0.2)',
-                    boxShadow: '0 4px 14px rgba(242, 96, 0, 0.08)',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justify: 'space-between',
-                    transition: 'transform 0.15s ease, boxShadow 0.15s ease'
-                  }}
-                  onMouseDown={e => e.currentTarget.style.transform = 'scale(0.97)'}
-                  onMouseUp={e => e.currentTarget.style.transform = 'scale(1)'}
-                  onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
-                >
-                  <div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                      <span style={{ fontSize: '28px', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.15))' }}>{prob.icon}</span>
-                      <span style={{ fontSize: '9px', fontWeight: '900', background: '#FEF3EC', color: '#F26000', border: '1px solid rgba(242, 96, 0, 0.3)', padding: '2px 7px', borderRadius: '10px' }}>
-                        {prob.tag}
-                      </span>
-                    </div>
-                    <h3 style={{ fontSize: '13.5px', fontWeight: '900', color: '#1A1A2E', margin: '0 0 4px', lineHeight: 1.25 }}>
-                      "{lang === 'es' ? prob.labelEs : prob.labelEn}"
-                    </h3>
-                    <p style={{ fontSize: '11px', color: '#64748B', margin: 0, fontWeight: '600' }}>
-                      {prob.descEs}
-                    </p>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '10px', paddingTop: '8px', borderTop: '1px dashed rgba(242, 96, 0, 0.15)' }}>
-                    <span style={{ fontSize: '11.5px', fontWeight: '800', color: '#F26000', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      ⚡ Contactar socio
-                    </span>
-                    <span style={{ fontSize: '14px', color: '#F26000', fontWeight: 'bold' }}>›</span>
-                  </div>
-                </div>
-              ))}
-            </div>
+          <div className="emergency-banner-deploy-badge">
+            <span>{isProblemsExpanded ? '▲ PLEGAR' : '⚡ 1-CLIC DESPLEGAR ▼'}</span>
           </div>
         </div>
-      )}
+
+        {/* Contenedor colapsable/desplegable animado */}
+        <div className={`emergency-grid-container ${isProblemsExpanded ? 'expanded' : ''}`}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px' }}>
+            {REAL_PROBLEMS.map((prob) => (
+              <div
+                key={prob.id}
+                onClick={() => navigate('search', { catToSelect: prob.id })}
+                style={{
+                  background: 'linear-gradient(135deg, #FFFFFF 0%, #FFF7F2 100%)',
+                  borderRadius: '16px',
+                  padding: '14px 12px',
+                  border: '1.5px solid rgba(242, 96, 0, 0.2)',
+                  boxShadow: '0 4px 14px rgba(242, 96, 0, 0.08)',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justify: 'space-between',
+                  transition: 'transform 0.15s ease, boxShadow 0.15s ease'
+                }}
+                onMouseDown={e => e.currentTarget.style.transform = 'scale(0.97)'}
+                onMouseUp={e => e.currentTarget.style.transform = 'scale(1)'}
+                onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+              >
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                    <span style={{ fontSize: '28px', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.15))' }}>{prob.icon}</span>
+                    <span style={{ fontSize: '9px', fontWeight: '900', background: '#FEF3EC', color: '#F26000', border: '1px solid rgba(242, 96, 0, 0.3)', padding: '2px 7px', borderRadius: '10px' }}>
+                      {prob.tag}
+                    </span>
+                  </div>
+                  <h3 style={{ fontSize: '13.5px', fontWeight: '900', color: '#1A1A2E', margin: '0 0 4px', lineHeight: 1.25 }}>
+                    "{lang === 'es' ? prob.labelEs : prob.labelEn}"
+                  </h3>
+                  <p style={{ fontSize: '11px', color: '#64748B', margin: 0, fontWeight: '600' }}>
+                    {prob.descEs}
+                  </p>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '10px', paddingTop: '8px', borderTop: '1px dashed rgba(242, 96, 0, 0.15)' }}>
+                  <span style={{ fontSize: '11.5px', fontWeight: '800', color: '#F26000', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    ⚡ Contactar socio
+                  </span>
+                  <span style={{ fontSize: '14px', color: '#F26000', fontWeight: 'bold' }}>›</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
 
 
 
 
 
       {/* ── BANNER ÉPICO VIP: "CONOCE NUESTROS PROFESIONALES VIP" (ANIMACIÓN LLAMATIVA) ── */}
-      {!isPro && (
-        <div 
-          className="vip-explore-banner-card"
-          onClick={() => navigate('search')}
-        >
-          {/* Shimmer Light Wave Effect */}
-          <div className="vip-banner-shimmer" />
+      <div 
+        className="vip-explore-banner-card"
+        onClick={() => navigate('search')}
+      >
+        {/* Shimmer Light Wave Effect */}
+        <div className="vip-banner-shimmer" />
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1, minWidth: 0, zIndex: 2 }}>
-            <div className="vip-crown-icon-container">
-              <span className="vip-crown-icon-animated">👑</span>
-              <span className="vip-crown-star-glow">⭐</span>
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <span className="vip-banner-badge-tag">
-                  ⭐ ÉLITE 5 ESTRELLAS
-                </span>
-                <span className="vip-banner-live-pulse" />
-              </div>
-              <h3 className="vip-banner-title">
-                {lang === 'es' ? 'Conoce nuestros Profesionales VIP' : 'Meet our VIP Professionals'}
-              </h3>
-              <p className="vip-banner-sub">
-                {lang === 'es' ? 'Especialistas verificados con garantía de calidad 100%' : 'Verified specialists with 100% quality guarantee'}
-              </p>
-            </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1, minWidth: 0, zIndex: 2 }}>
+          <div className="vip-crown-icon-container">
+            <span className="vip-crown-icon-animated">👑</span>
+            <span className="vip-crown-star-glow">⭐</span>
           </div>
-
-          <div className="vip-banner-action-wrap">
-            <button className="vip-banner-btn">
-              ⚡ {lang === 'es' ? 'Explorar VIP ›' : 'Explore VIP ›'}
-            </button>
-            <button 
-              className="vip-banner-orders-link"
-              onClick={(e) => {
-                e.stopPropagation();
-                navigate('orders');
-              }}
-              title={lang === 'es' ? 'Ver mis pedidos' : 'View my orders'}
-            >
-              📦 {lang === 'es' ? 'Mis Pedidos' : 'Orders'}
-            </button>
+          <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span className="vip-banner-badge-tag">
+                ⭐ ÉLITE 5 ESTRELLAS
+              </span>
+              <span className="vip-banner-live-pulse" />
+            </div>
+            <h3 className="vip-banner-title">
+              {lang === 'es' ? 'Conoce nuestros Profesionales VIP' : 'Meet our VIP Professionals'}
+            </h3>
+            <p className="vip-banner-sub">
+              {lang === 'es' ? 'Especialistas verificados con garantía de calidad 100%' : 'Verified specialists with 100% quality guarantee'}
+            </p>
           </div>
         </div>
-      )}
 
-      {!isPro && (
-        <div className="hp-cats-scroll">
-          {topHomeCategories.map((c, i) => (
-            <div key={i} className="hp-cat-btn" onClick={() => navigate('search', { catToSelect: c.id || 'all' })}>
-              {i === 0 && <span className="cat-flash-badge">🔥 HOT</span>}
-              {i === 2 && <span className="cat-flash-badge" style={{background:'#10B981', boxShadow: '0 4px 8px rgba(16, 185, 129, 0.4)'}}>NUEVO</span>}
-              <div className="cat-icon-wrap">
-                {c.image ? (
-                  <img src={c.image} alt={c.labelEs} style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '10px' }} />
-                ) : (
-                  <span className="hp-cat-icon">{c.icon}</span>
-                )}
-              </div>
-              <span className="hp-cat-label">{lang === 'es' ? c.labelEs : c.labelEn}</span>
-            </div>
-          ))}
+        <div className="vip-banner-action-wrap">
+          <button className="vip-banner-btn">
+            ⚡ {lang === 'es' ? 'Explorar VIP ›' : 'Explore VIP ›'}
+          </button>
+          <button 
+            className="vip-banner-orders-link"
+            onClick={(e) => {
+              e.stopPropagation();
+              navigate('orders');
+            }}
+            title={lang === 'es' ? 'Ver mis pedidos' : 'View my orders'}
+          >
+            📦 {lang === 'es' ? 'Mis Pedidos' : 'Orders'}
+          </button>
         </div>
-      )}
+      </div>
+
+      <div className="hp-cats-scroll">
+        {topHomeCategories.map((c, i) => (
+          <div key={i} className="hp-cat-btn" onClick={() => navigate('search', { catToSelect: c.id || 'all' })}>
+            {i === 0 && <span className="cat-flash-badge">🔥 HOT</span>}
+            {i === 2 && <span className="cat-flash-badge" style={{background:'#10B981', boxShadow: '0 4px 8px rgba(16, 185, 129, 0.4)'}}>NUEVO</span>}
+            <div className="cat-icon-wrap">
+              {c.image ? (
+                <img src={c.image} alt={c.labelEs} style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '10px' }} />
+              ) : (
+                <span className="hp-cat-icon">{c.icon}</span>
+              )}
+            </div>
+            <span className="hp-cat-label">{lang === 'es' ? c.labelEs : c.labelEn}</span>
+          </div>
+        ))}
+      </div>
 
 
       {/* ── ESTRUCTURA VARIADA 1 ESTILO AMAZON: BENTO GRID CONTENEDOR 2x2 ── */}
-      {!isPro && (
-        <section className="amz-bento-section">
-          <div className="amz-bento-header">
-            <h2 className="amz-bento-title">
-              🛍️ {lang === 'es' ? 'Abarrotes y servicios con entrega hoy' : 'Same day services'}
-            </h2>
-            <button className="hp-see-all" onClick={() => navigate('search')}>
-              {lang === 'es' ? 'Ver todo' : 'See all'} ›
-            </button>
+      <section className="amz-bento-section">
+        <div className="amz-bento-header">
+          <h2 className="amz-bento-title">
+            🛍️ {lang === 'es' ? 'Abarrotes y servicios con entrega hoy' : 'Same day services'}
+          </h2>
+          <button className="hp-see-all" onClick={() => navigate('search')}>
+            {lang === 'es' ? 'Ver todo' : 'See all'} ›
+          </button>
+        </div>
+        <div className="amz-bento-grid">
+          <div className="amz-bento-item" onClick={() => navigate('search', { catToSelect: 'mecanico' })}>
+            <div className="amz-bento-img-wrap" style={{ position: 'relative' }}>
+              <span className="amz-bento-item-tag">🔥 MÁS VENDIDO</span>
+              <img src={mecanico1} alt="Mecánico" className="amz-bento-img" />
+              <div className="listo-brand-watermark">
+                <img src={logoListo} alt="Listo Patrón" className="listo-brand-watermark-img" />
+              </div>
+            </div>
+            <p className="amz-bento-item-title">{lang === 'es' ? 'Diagnóstico Vehicular' : 'Auto Diagnostic'}</p>
+            <p className="amz-bento-item-sub">🤝 {lang === 'es' ? 'A convenir' : 'To agree'}</p>
           </div>
-          <div className="amz-bento-grid">
-            <div className="amz-bento-item" onClick={() => navigate('search', { catToSelect: 'mecanico' })}>
-              <div className="amz-bento-img-wrap" style={{ position: 'relative' }}>
-                <span className="amz-bento-item-tag">🔥 MÁS VENDIDO</span>
-                <img src={mecanico1} alt="Mecánico" className="amz-bento-img" />
-                <div className="listo-brand-watermark">
-                  <img src={logoListo} alt="Listo Patrón" className="listo-brand-watermark-img" />
-                </div>
-              </div>
-              <p className="amz-bento-item-title">{lang === 'es' ? 'Diagnóstico Vehicular' : 'Auto Diagnostic'}</p>
-              <p className="amz-bento-item-sub">🤝 {lang === 'es' ? 'A convenir' : 'To agree'}</p>
-            </div>
 
-            <div className="amz-bento-item" onClick={() => navigate('search', { catToSelect: 'electricista' })}>
-              <div className="amz-bento-img-wrap" style={{ position: 'relative' }}>
-                <span className="amz-bento-item-tag">⚡ 24/7 URGENTE</span>
-                <img src={electrica1} alt="Electricista" className="amz-bento-img" />
-                <div className="listo-brand-watermark">
-                  <img src={logoListo} alt="Listo Patrón" className="listo-brand-watermark-img" />
-                </div>
+          <div className="amz-bento-item" onClick={() => navigate('search', { catToSelect: 'electricista' })}>
+            <div className="amz-bento-img-wrap" style={{ position: 'relative' }}>
+              <span className="amz-bento-item-tag">⚡ 24/7 URGENTE</span>
+              <img src={electrica1} alt="Electricista" className="amz-bento-img" />
+              <div className="listo-brand-watermark">
+                <img src={logoListo} alt="Listo Patrón" className="listo-brand-watermark-img" />
               </div>
-              <p className="amz-bento-item-title">{lang === 'es' ? 'Instalación Eléctrica' : 'Electrical Install'}</p>
-              <p className="amz-bento-item-sub">🤝 {lang === 'es' ? 'A convenir' : 'To agree'}</p>
             </div>
-
-            <div className="amz-bento-item" onClick={() => navigate('search', { catToSelect: 'plomero' })}>
-              <div className="amz-bento-img-wrap" style={{ position: 'relative' }}>
-                <span className="amz-bento-item-tag">🛡️ GARANTIZADO</span>
-                <img src={plomero} alt="Plomero" className="amz-bento-img" />
-                <div className="listo-brand-watermark">
-                  <img src={logoListo} alt="Listo Patrón" className="listo-brand-watermark-img" />
-                </div>
-              </div>
-              <p className="amz-bento-item-title">{lang === 'es' ? 'Reparación de Tubería' : 'Pipe Repair'}</p>
-              <p className="amz-bento-item-sub">🤝 {lang === 'es' ? 'A convenir' : 'To agree'}</p>
-            </div>
-
-            <div className="amz-bento-item" onClick={() => navigate('search', { catToSelect: 'cerrajero' })}>
-              <div className="amz-bento-img-wrap" style={{ position: 'relative' }}>
-                <span className="amz-bento-item-tag">🔑 POPULAR</span>
-                <img src={cerrajero1} alt="Cerrajero" className="amz-bento-img" />
-                <div className="listo-brand-watermark">
-                  <img src={logoListo} alt="Listo Patrón" className="listo-brand-watermark-img" />
-                </div>
-              </div>
-              <p className="amz-bento-item-title">{lang === 'es' ? 'Apertura de Puertas' : 'Door Opening'}</p>
-              <p className="amz-bento-item-sub">🤝 {lang === 'es' ? 'A convenir' : 'To agree'}</p>
-            </div>
+            <p className="amz-bento-item-title">{lang === 'es' ? 'Instalación Eléctrica' : 'Electrical Install'}</p>
+            <p className="amz-bento-item-sub">🤝 {lang === 'es' ? 'A convenir' : 'To agree'}</p>
           </div>
-        </section>
-      )}
+
+          <div className="amz-bento-item" onClick={() => navigate('search', { catToSelect: 'plomero' })}>
+            <div className="amz-bento-img-wrap" style={{ position: 'relative' }}>
+              <span className="amz-bento-item-tag">🛡️ GARANTIZADO</span>
+              <img src={plomero} alt="Plomero" className="amz-bento-img" />
+              <div className="listo-brand-watermark">
+                <img src={logoListo} alt="Listo Patrón" className="listo-brand-watermark-img" />
+              </div>
+            </div>
+            <p className="amz-bento-item-title">{lang === 'es' ? 'Reparación de Tubería' : 'Pipe Repair'}</p>
+            <p className="amz-bento-item-sub">🤝 {lang === 'es' ? 'A convenir' : 'To agree'}</p>
+          </div>
+
+          <div className="amz-bento-item" onClick={() => navigate('search', { catToSelect: 'cerrajero' })}>
+            <div className="amz-bento-img-wrap" style={{ position: 'relative' }}>
+              <span className="amz-bento-item-tag">🔑 POPULAR</span>
+              <img src={cerrajero1} alt="Cerrajero" className="amz-bento-img" />
+              <div className="listo-brand-watermark">
+                <img src={logoListo} alt="Listo Patrón" className="listo-brand-watermark-img" />
+              </div>
+            </div>
+            <p className="amz-bento-item-title">{lang === 'es' ? 'Apertura de Puertas' : 'Door Opening'}</p>
+            <p className="amz-bento-item-sub">🤝 {lang === 'es' ? 'A convenir' : 'To agree'}</p>
+          </div>
+        </div>
+      </section>
 
 
 
 
 
 
-      {!isPro && (
-        <>
-          {sections.map((sec, idx) => {
+      {sections.map((sec, idx) => {
             // Colores temáticos extraidos de los Planes VIP/Platinum/Gold/Basico para dar forma
             const amzThemes = [
               { bg: 'linear-gradient(145deg, #EFF6FF 0%, #DBEAFE 100%)', color: '#1E3A8A', card: '#FFF' }, // VIP Blue
@@ -2066,8 +2056,6 @@ export default function HomePage({ lang, navigate, userRole }) {
               ))}
             </div>
           </section>
-        </>
-      )}
 
       <div style={{ height: 90 }} />
 
