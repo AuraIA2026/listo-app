@@ -4,13 +4,13 @@ const PRIZES = [
   { id: 1, label: '+5%', percent: 5, color: '#2563EB', icon: '🔹' },
   { id: 2, label: '+10%', percent: 10, color: '#FF4500', icon: '⚡' },
   { id: 3, label: '+15%', percent: 15, color: '#7C3AED', icon: '🔮' },
-  { id: 4, label: 'HISTORIA GRATIS', isStory: true, percent: 0, color: '#EC4899', icon: '📸' },
+  { id: 4, label: 'HISTORIA GRATIS', lines: ['HISTORIA', 'GRATIS'], isStory: true, percent: 0, color: '#EC4899', icon: '📸' },
   { id: 5, label: '+20%', percent: 20, color: '#FF8C00', icon: '🎁' },
   { id: 6, label: '+30%', percent: 30, color: '#8B5CF6', icon: '💎' },
   { id: 7, label: '+50%', percent: 50, color: '#16A34A', icon: '🔥' },
   { id: 8, label: '+75%', percent: 75, color: '#D97706', icon: '🏆' },
-  { id: 9, label: '100% CONTRATO', percent: 100, isJackpot: true, color: '#DC2626', icon: '👑' },
-  { id: 10, label: 'HISTORIA GRATIS', isStory: true, percent: 0, color: '#F26000', icon: '📸' }
+  { id: 9, label: '100% CONTRATO', lines: ['100%', 'CONTRATO'], percent: 100, isJackpot: true, color: '#DC2626', icon: '👑' },
+  { id: 10, label: 'HISTORIA GRATIS', lines: ['HISTORIA', 'GRATIS'], isStory: true, percent: 0, color: '#F26000', icon: '📸' }
 ];
 
 // Synth click sound generation using Web Audio API
@@ -300,6 +300,8 @@ export default function LuckyWheelModal({
                     const textX = 50 + 33 * Math.cos((Math.PI * midAngle) / 180);
                     const textY = 50 + 33 * Math.sin((Math.PI * midAngle) / 180);
 
+                    const lines = prize.lines || (prize.label.includes(' ') ? prize.label.split(' ') : [prize.label]);
+
                     return (
                       <g key={prize.id}>
                         <path d={pathData} fill={prize.color} stroke="#111827" strokeWidth="0.8" />
@@ -307,14 +309,21 @@ export default function LuckyWheelModal({
                           x={textX}
                           y={textY}
                           fill="#FFFFFF"
-                          fontSize="3.2"
+                          fontSize={lines.length > 1 ? "2.5" : "3.2"}
                           fontWeight="900"
                           textAnchor="middle"
                           dominantBaseline="middle"
                           transform={`rotate(${midAngle + 90}, ${textX}, ${textY})`}
                           style={{ textShadow: '0 1px 2px rgba(0,0,0,0.8)' }}
                         >
-                          {prize.label}
+                          {lines.length > 1 ? (
+                            <>
+                              <tspan x={textX} dy="-0.65em">{lines[0]}</tspan>
+                              <tspan x={textX} dy="1.25em">{lines[1]}</tspan>
+                            </>
+                          ) : (
+                            prize.label
+                          )}
                         </text>
                       </g>
                     );
