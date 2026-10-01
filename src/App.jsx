@@ -335,72 +335,78 @@ function SystemAlertModal({ alert, onClose, lang, onNavigateProfile }) {
 
         </div>
       ) : (
-        /* ── VISTA 2: TARJETA CAPSULAR VERTICAL EXPANDIDA (FOTO 2) ── */
+        /* ── VISTA 2: TARJETA CAPSULAR VERTICAL EXPANDIDA (FOTO EXACTA) ── */
         <div style={{
-          width: '92%',
-          maxWidth: '360px',
-          background: 'linear-gradient(160deg, #FF7000 0%, #F05500 55%, #D44000 100%)',
-          border: '4px solid #FFFFFF',
-          boxShadow: '0 25px 60px rgba(0,0,0,0.5), inset 0 2px 6px rgba(255,255,255,0.4)',
-          borderRadius: '65px',
-          padding: '34px 22px 28px',
-          position: 'relative',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          textAlign: 'center',
-          boxSizing: 'border-box',
-          animation: 'sysAlertExpand 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
-          maxHeight: '92vh',
-          overflowY: 'auto'
+          width: '92%',
+          maxWidth: '350px',
+          animation: 'sysAlertExpand 0.4s cubic-bezier(0.16, 1, 0.3, 1)'
         }}>
-          {/* Icono de Campana Centro Top */}
+          {/* Tarjeta Naranja Cápsula Ovalada */}
           <div style={{
-            width: '54px', height: '54px', minHeight: '54px',
-            background: 'rgba(255, 215, 175, 0.45)', backdropFilter: 'blur(4px)',
-            border: '2px solid rgba(255, 255, 255, 0.7)', borderRadius: '50%',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: '28px', boxShadow: '0 6px 16px rgba(0,0,0,0.2)',
-            marginBottom: '16px'
+            width: '100%',
+            background: 'linear-gradient(165deg, #FF6F00 0%, #F15A00 50%, #D84400 100%)',
+            border: '5px solid #FFFFFF',
+            boxShadow: '0 25px 60px rgba(0,0,0,0.5), inset 0 2px 6px rgba(255,255,255,0.4)',
+            borderRadius: '75px',
+            padding: '32px 22px 28px',
+            position: 'relative',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            textAlign: 'center',
+            boxSizing: 'border-box',
+            maxHeight: '78vh',
+            overflowY: 'auto'
           }}>
-            🔔
+            {/* Icono de Campana Centro Top */}
+            <div style={{
+              width: '56px', height: '56px', minHeight: '56px',
+              background: 'rgba(255, 185, 120, 0.45)', backdropFilter: 'blur(4px)',
+              border: '2px solid rgba(255, 255, 255, 0.65)', borderRadius: '50%',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: '28px', boxShadow: '0 6px 16px rgba(0,0,0,0.2)',
+              marginBottom: '18px'
+            }}>
+              🔔
+            </div>
+
+            {/* Título Oficial */}
+            <h2 style={{
+              margin: '0 0 18px', fontSize: '23px', fontWeight: '900', color: '#FFFFFF',
+              textShadow: '0 2px 6px rgba(0,0,0,0.4)', lineHeight: 1.2, textAlign: 'center'
+            }}>
+              {alert.title || 'Bienvenido a Listo Patrón'}
+            </h2>
+
+            {/* Párrafos Completos con Formato Exacto */}
+            <div style={{
+              color: '#1A0400', fontSize: '15px', lineHeight: 1.48, fontWeight: '900',
+              textShadow: '0 1px 0px rgba(255,255,255,0.35)',
+              whiteSpace: 'pre-line', textAlign: 'center'
+            }}>
+              {alert.text}
+            </div>
           </div>
 
-          {/* Título Oficial */}
-          <h2 style={{
-            margin: '0 0 16px', fontSize: '22px', fontWeight: '900', color: '#FFFFFF',
-            textShadow: '0 2px 6px rgba(0,0,0,0.4)', lineHeight: 1.25, textAlign: 'center'
-          }}>
-            {alert.title || 'Bienvenido a Listo Patrón'}
-          </h2>
-
-          {/* Párrafos Completos con Formato Exacto */}
-          <div style={{
-            color: '#1E0500', fontSize: '15px', lineHeight: 1.48, fontWeight: '900',
-            textShadow: '0 1px 0px rgba(255,255,255,0.35)',
-            marginBottom: '28px', whiteSpace: 'pre-line', textAlign: 'center'
-          }}>
-            {alert.text}
-          </div>
-
-          {/* Botón de Confirmación Ovalado Abajo */}
-          <div style={{ width: '100%', marginTop: 'auto' }}>
-            <button
-              onClick={handleButtonClick}
-              style={{
-                width: '100%', padding: '14px 20px', borderRadius: '32px',
-                background: '#FFFFFF', color: '#000000', fontSize: '16.5px',
-                fontWeight: '900', border: 'none', cursor: 'pointer',
-                boxShadow: '0 8px 24px rgba(0,0,0,0.3)',
-                transition: 'all 0.18s ease'
-              }}
-              onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.03)'}
-              onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
-              onMouseDown={e => e.currentTarget.style.transform = 'scale(0.96)'}
-            >
-              ¡Entendido, gracias!
-            </button>
-          </div>
+          {/* Botón Blanco Independiente Debajo de la Cápsula */}
+          <button
+            onClick={handleButtonClick}
+            style={{
+              width: '100%', marginTop: '18px', padding: '14px 20px', borderRadius: '32px',
+              background: '#FFFFFF', color: '#000000', fontSize: '17px',
+              fontWeight: '900', border: 'none', cursor: 'pointer',
+              boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
+              transition: 'all 0.18s ease'
+            }}
+            onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.03)'}
+            onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+            onMouseDown={e => e.currentTarget.style.transform = 'scale(0.96)'}
+          >
+            ¡Entendido, gracias!
+          </button>
         </div>
       )}
     </div>
