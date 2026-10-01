@@ -1,16 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
 
 const PRIZES = [
-  { id: 1, label: '+1%', percent: 1, color: '#374151', icon: '🌱' },
-  { id: 2, label: '+5%', percent: 5, color: '#2563EB', icon: '🔹' },
-  { id: 3, label: '+10%', percent: 10, color: '#FF4500', icon: '⚡' },
-  { id: 4, label: '+15%', percent: 15, color: '#7C3AED', icon: '🔮' },
+  { id: 1, label: '+5%', percent: 5, color: '#2563EB', icon: '🔹' },
+  { id: 2, label: '+10%', percent: 10, color: '#FF4500', icon: '⚡' },
+  { id: 3, label: '+15%', percent: 15, color: '#7C3AED', icon: '🔮' },
+  { id: 4, label: 'HISTORIA GRATIS', isStory: true, percent: 0, color: '#EC4899', icon: '📸' },
   { id: 5, label: '+20%', percent: 20, color: '#FF8C00', icon: '🎁' },
-  { id: 6, label: '+30%', percent: 30, color: '#E11D48', icon: '💎' },
+  { id: 6, label: '+30%', percent: 30, color: '#8B5CF6', icon: '💎' },
   { id: 7, label: '+50%', percent: 50, color: '#16A34A', icon: '🔥' },
   { id: 8, label: '+75%', percent: 75, color: '#D97706', icon: '🏆' },
-  { id: 9, label: '100% GRATIS', percent: 100, isJackpot: true, color: '#DC2626', icon: '👑' },
-  { id: 10, label: '+5%', percent: 5, color: '#0284C7', icon: '🌟' }
+  { id: 9, label: '100% CONTRATO', percent: 100, isJackpot: true, color: '#DC2626', icon: '👑' },
+  { id: 10, label: 'HISTORIA GRATIS', isStory: true, percent: 0, color: '#F26000', icon: '📸' }
 ];
 
 // Synth click sound generation using Web Audio API
@@ -75,21 +75,21 @@ export default function LuckyWheelModal({
     if (spinning || wonPrize) return;
     setSpinning(true);
 
-    // TRUCO ESTILO LAS VEGAS (CICLO PROGRESIVO DE 3 TIROS):
-    // Tiro 1 (% bajo/inicial: +10% o +15%)
-    // Tiro 2 (% medio: +20% o +25%)
-    // Tiro 3 (¡EL GRAN GOLPE! 100% GRATIS / JACKPOT CONTRATO GANADO)
+    // TRUCO ESTILO LAS VEGAS (CICLO PROGRESIVO DE 4 TIROS CON HISTORIAS Y CONTRATOS):
     let prizeIndex;
-    const cycleIndex = (wheelSpinCount || 0) % 3;
+    const cycleIndex = (wheelSpinCount || 0) % 4;
     if (cycleIndex === 0) {
-      // Tiro 1: +10% o +15%
-      prizeIndex = Math.random() > 0.5 ? 0 : 1;
+      // Tiro 1: 📸 HISTORIA GRATIS
+      prizeIndex = 3; 
     } else if (cycleIndex === 1) {
-      // Tiro 2: +20% o +25%
-      prizeIndex = Math.random() > 0.5 ? 2 : 3;
+      // Tiro 2: +20% o +30%
+      prizeIndex = Math.random() > 0.5 ? 4 : 5;
+    } else if (cycleIndex === 2) {
+      // Tiro 3: 📸 HISTORIA GRATIS o +50%
+      prizeIndex = Math.random() > 0.5 ? 9 : 6;
     } else {
-      // Tiro 3: ¡JACKPOT! 100% GRATIS CONTRATO
-      prizeIndex = 8; // Index of '100% GRATIS'
+      // Tiro 4: ¡JACKPOT! 100% CONTRATO GRATIS
+      prizeIndex = 8;
     }
 
     const numSegments = PRIZES.length;
@@ -123,13 +123,16 @@ export default function LuckyWheelModal({
 
       playFanfareSound();
 
-      // Animar el progreso
-      const newTotal = animatedProgress + prize.percent;
-      setAnimatedProgress(newTotal >= 100 ? 100 : newTotal);
+      // Animar el progreso si otorga porcentaje
+      if (prize.percent > 0) {
+        const newTotal = animatedProgress + prize.percent;
+        setAnimatedProgress(newTotal >= 100 ? 100 : newTotal);
+      }
     }, 4400);
   };
 
-  const isContractWon = wonPrize && (wonPrize.isJackpot || (wheelProgress + wonPrize.percent) >= 100);
+  const isContractWon = wonPrize && (wonPrize.isJackpot || (wheelProgress + (wonPrize.percent || 0)) >= 100);
+  const isStoryWon = wonPrize && wonPrize.isStory;
 
   // Generar posiciones de luces LED alrededor de la ruleta
   const ledBulbs = Array.from({ length: 16 }).map((_, i) => {
@@ -356,25 +359,29 @@ export default function LuckyWheelModal({
           /* Pantalla Ganador de Premio Con Celebración */
           <div style={{ animation: 'popVictory 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards', padding: '10px 0' }}>
             <span style={{ fontSize: '58px', display: 'block', marginBottom: '8px', filter: 'drop-shadow(0 4px 10px rgba(255,215,0,0.5))' }}>
-              {isContractWon ? '👑' : wonPrize.icon}
+              {isStoryWon ? '📸' : (isContractWon ? '👑' : wonPrize.icon)}
             </span>
             <span style={{
               background: 'linear-gradient(135deg, #FFD700, #FFA500)', color: '#1A1A2E', padding: '5px 14px',
               borderRadius: '20px', fontSize: '11px', fontWeight: '900', boxShadow: '0 2px 8px rgba(255,215,0,0.4)'
             }}>
-              {isContractWon ? '¡CONTRATO 100% GANADO!' : '¡NUEVO PORCENTAJE SUMADO!'}
+              {isStoryWon ? '¡HISTORIA 24H GRATIS GANADA!' : (isContractWon ? '¡CONTRATO 100% GANADO!' : '¡NUEVO PORCENTAJE SUMADO!')}
             </span>
             
             <h2 style={{ color: '#FFFFFF', margin: '12px 0 4px', fontSize: '22px', fontWeight: '900', textShadow: '0 2px 8px rgba(0,0,0,0.5)' }}>
-              {isContractWon 
-                ? '¡Felicidades! Ganaste 1 Contrato Gratis' 
-                : `¡Sumaste ${wonPrize.label} a tu Barra!`}
+              {isStoryWon
+                ? '¡Felicidades! Ganaste 1 Historia Gratis'
+                : (isContractWon 
+                    ? '¡Felicidades! Ganaste 1 Contrato Gratis' 
+                    : `¡Sumaste ${wonPrize.label} a tu Barra!`)}
             </h2>
 
             <p style={{ color: '#E2E8F0', fontSize: '13px', margin: '0 0 16px', fontWeight: '600' }}>
-              {isContractWon 
-                ? 'Se ha añadido 1 contrato gratis a tu cuenta de Listo Patrón.' 
-                : `Tu progreso total acumulado ahora es de ${Math.min(wheelProgress + wonPrize.percent, 100)}%`}
+              {isStoryWon
+                ? 'Se ha añadido 1 crédito de historia gratis de 24 horas a tu saldo de publicaciones en Listo Patrón.'
+                : (isContractWon 
+                    ? 'Se ha añadido 1 contrato gratis a tu cuenta de Listo Patrón.' 
+                    : `Tu progreso total acumulado ahora es de ${Math.min(wheelProgress + wonPrize.percent, 100)}%`)}
             </p>
 
             {/* Barra Visual de Resultados */}
@@ -383,16 +390,18 @@ export default function LuckyWheelModal({
               borderRadius: '18px', padding: '14px', marginBottom: '20px',
               boxShadow: '0 4px 16px rgba(0,0,0,0.3)'
             }}>
-              <p style={{ margin: 0, color: '#93C5FD', fontSize: '11px', fontWeight: '800' }}>NUEVO PROGRESO ACUMULADO</p>
-              <p style={{ margin: '4px 0 0', color: '#FFD700', fontSize: '26px', fontWeight: '900', letterSpacing: '1px', textShadow: '0 0 10px rgba(255,215,0,0.6)' }}>
-                {Math.min(wheelProgress + wonPrize.percent, 100)}% / 100%
+              <p style={{ margin: 0, color: '#93C5FD', fontSize: '11px', fontWeight: '800' }}>
+                {isStoryWon ? 'NUEVA RECOMPENSA DESBLOQUEADA' : 'NUEVO PROGRESO ACUMULADO'}
+              </p>
+              <p style={{ margin: '4px 0 0', color: '#FFD700', fontSize: '24px', fontWeight: '900', letterSpacing: '1px', textShadow: '0 0 10px rgba(255,215,0,0.6)' }}>
+                {isStoryWon ? '+1 Historia Gratis 📸' : `${Math.min(wheelProgress + wonPrize.percent, 100)}% / 100%`}
               </p>
             </div>
 
             <button
               onClick={() => {
-                const totalPercent = wheelProgress + wonPrize.percent;
-                const earnedContract = wonPrize.isJackpot || totalPercent >= 100;
+                const totalPercent = wheelProgress + (wonPrize.percent || 0);
+                const earnedContract = !isStoryWon && (wonPrize.isJackpot || totalPercent >= 100);
                 const remainingProgress = totalPercent >= 100 ? (totalPercent - 100) : totalPercent;
                 
                 if (onClaimReward) {

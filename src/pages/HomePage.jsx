@@ -477,12 +477,31 @@ export default function HomePage({ lang, navigate, userRole }) {
       const currentContracts = userData.contracts || 0;
       const currentSpins = userData.spinsAvailable || 0;
       const currentSpinCount = userData.wheelSpinCount || 0;
+      const currentFreeStories = userData.freeStories || 0;
+
       const updatePayload = {
         wheelProgress: newProgress,
         spinsAvailable: Math.max(0, currentSpins - 1),
         wheelSpinCount: currentSpinCount + 1
       };
-      if (earnedContract) {
+
+      if (prize && prize.isStory) {
+        updatePayload.freeStories = currentFreeStories + 1;
+
+        await addDoc(collection(db, 'notificaciones'), {
+          userId: userData.uid,
+          type: 'reward',
+          title: '📸 ¡1 HISTORIA GRATIS OTORGADA!',
+          text: '¡Felicidades! Se ha acreditado +1 Historia Gratis de 24h a tu saldo en Listo Patrón.',
+          read: false,
+          icon: '📸',
+          createdAt: serverTimestamp()
+        });
+
+        alert(lang === 'es' 
+          ? "🎉 ¡FELICIDADES! Se ha acreditado +1 HISTORIA GRATIS a tu saldo de publicaciones." 
+          : "🎉 CONGRATULATIONS! +1 FREE STORY has been granted to your account.");
+      } else if (earnedContract) {
         updatePayload.contracts = currentContracts + 1;
         
         // Crear notificación oficial en Firestore
