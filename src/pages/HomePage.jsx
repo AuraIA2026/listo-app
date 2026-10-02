@@ -1422,27 +1422,6 @@ export default function HomePage({ lang, navigate, userRole }) {
         <StoreCircleWidget lang={lang} />
         <TombolaCircleWidget onOpenTombola={() => setShowLuckyWheel(true)} lang={lang} />
         <VipCircleWidget navigate={navigate} lang={lang} />
-        <button className="amz-nav-pill" onClick={() => navigate('search', { catToSelect: 'mecanico' })}>
-          🔧 Mecánicos
-        </button>
-        <button className="amz-nav-pill" onClick={() => navigate('search', { catToSelect: 'electricista' })}>
-          ⚡ Electricistas
-        </button>
-        <button className="amz-nav-pill" onClick={() => navigate('search', { catToSelect: 'plomero' })}>
-          🔩 Plomeros
-        </button>
-        <button className="amz-nav-pill" onClick={() => navigate('search', { catToSelect: 'cerrajero' })}>
-          🔑 Cerrajeros
-        </button>
-        <button className="amz-nav-pill" onClick={() => navigate('search', { catToSelect: 'pintor' })}>
-          🎨 Pintores
-        </button>
-        <button className="amz-nav-pill" onClick={() => navigate('search', { catToSelect: 'jardinero' })}>
-          🌿 Jardineros
-        </button>
-        <button className="amz-nav-pill" onClick={() => navigate('search', { catToSelect: 'ninera' })}>
-          👶 Niñeras
-        </button>
       </div>
 
       {/* ── ALERTA INTELIGENTE DE PLAN Y CONTRATOS PARA PROFESIONALES ── */}
