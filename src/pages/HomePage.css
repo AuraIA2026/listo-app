@@ -726,11 +726,15 @@
 /* Amazon Top Horizontal Nav Pill Carousel */
 .amz-top-nav-bar {
   display: flex;
-  gap: 10px;
-  padding: 6px 16px;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px;
   overflow-x: auto;
   overflow-y: visible;
   scrollbar-width: none;
+  -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x;
   background: #1A1A2E;
   margin-bottom: 0px;
   position: relative;

@@ -1279,8 +1279,24 @@ export default function HomePage({ lang, navigate, userRole }) {
         </div>
       </div>
 
-      {/* ── BARRA DE NAVEGACIÓN AMAZON PILLS CON FOTO DE PERFIL DELANTE (SOBRESALE DEL CUADRO) ── */}
-      <div className="amz-top-nav-bar" style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '6px 16px', overflow: 'visible' }}>
+      {/* ── BARRA DE NAVEGACIÓN DE CÍRCULOS (DESLIZABLE HORIZONTALMENTE DE IZQUIERDA A DERECHA Y VICEVERSA) ── */}
+      <div 
+        className="amz-top-nav-bar" 
+        style={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: '12px', 
+          padding: '8px 16px', 
+          overflowX: 'auto', 
+          overflowY: 'visible',
+          scrollbarWidth: 'none',
+          msOverflowStyle: 'none',
+          WebkitOverflowScrolling: 'touch',
+          touchAction: 'pan-x',
+          width: '100%',
+          boxSizing: 'border-box'
+        }}
+      >
         {/* Avatar del usuario que SOBRESALE un poco del cuadro azul/oscuro */}
         <div 
           onClick={() => {
