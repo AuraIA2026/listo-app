@@ -1120,14 +1120,23 @@ export default function AdminPage({ navigate }) {
       if (type === 'reject_story') {
         await updateDoc(doc(db, 'historias', obj.id), {
           status: 'rejected',
-          moderated: true
+          moderated: false,
+          approved: false,
+          rejectedAt: new Date().toISOString()
         });
+
+        // Limpiar notificaciones de admin referentes a esta historia
+        const notifsToDelete = alerts.filter(a => a.storyDocId === obj.id || (a.type === 'new_story_review' && a.storyDocId === obj.id));
+        for (const n of notifsToDelete) {
+          try { await deleteDoc(doc(db, 'notificaciones', n.id)); } catch(e){}
+        }
+
         if (obj.proId && !obj.proId.startsWith('anon_') && !obj.proId.startsWith('pro_')) {
           await addDoc(collection(db, 'notificaciones'), {
             userId: obj.proId,
             type: 'system',
-            title: 'Tu foto no fue aprobada',
-            text: `Notamos que tu foto incluye números de teléfono, redes sociales o información publicitaria.\nPor políticas de la plataforma, las fotos de perfil deben mostrar únicamente tu rostro, logo o imagen\nprofesional limpia, sin datos de contacto ni anuncios.\nPor favor, sube una nueva imagen para que podamos activar tu perfil de inmediato.`,
+            title: '📸 Historia de Trabajo no aprobada',
+            text: `Notamos que tu historia de trabajo no cumple con las políticas de contenido limpio de la plataforma.\nPor favor, sube una nueva imagen para que podamos publicarla de inmediato.`,
             date: new Date().toISOString(),
             createdAt: new Date().toISOString(),
             read: false
@@ -1312,9 +1321,9 @@ export default function AdminPage({ navigate }) {
               <div className="empty-admin"><p>No hay historias de trabajo registradas aún.</p></div>
             )}
             {storiesList.map((story, i) => {
-              const isPending = story.status === 'pending' || (!story.status && !story.moderated);
-              const isApproved = story.status === 'approved' || story.moderated === true;
-              const isRejected = story.status === 'rejected';
+              const isRejected = story.status === 'rejected' || story.moderated === 'rejected' || story.approved === false;
+              const isApproved = (story.status === 'approved' || story.approved === true) && !isRejected;
+              const isPending = !isApproved && !isRejected;
 
               return (
                 <div 

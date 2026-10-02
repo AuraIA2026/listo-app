@@ -110,7 +110,8 @@ export default function NotificacionPage({ lang = 'es', navigate, userData }) {
       const now = Date.now();
       snap.forEach(docSnap => {
         const d = docSnap.data();
-        const isApproved = d.status === 'approved' || d.moderated === true;
+        const isRejected = d.status === 'rejected' || d.moderated === 'rejected' || d.approved === false || d.rejected === true;
+        const isApproved = (d.status === 'approved' || d.approved === true || (d.moderated === true && d.status !== 'rejected')) && !isRejected;
         let expiresTime = 0;
         if (d.expiresAt) {
           expiresTime = new Date(d.expiresAt).getTime();
@@ -118,7 +119,7 @@ export default function NotificacionPage({ lang = 'es', navigate, userData }) {
           expiresTime = new Date(d.createdAt).getTime() + (24 * 60 * 60 * 1000);
         }
 
-        if (isApproved && expiresTime > now && d.offerSticker) {
+        if (isApproved && !isRejected && expiresTime > now && d.offerSticker) {
           list.push({
             id: docSnap.id,
             title: d.caption || 'Oferta especial de trabajo',

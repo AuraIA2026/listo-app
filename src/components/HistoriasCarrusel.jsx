@@ -120,7 +120,8 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate
 
       snapshot.forEach(doc => {
         const data = doc.data()
-        const isApproved = data.status === 'approved' || data.moderated === true
+        const isRejected = data.status === 'rejected' || data.moderated === 'rejected' || data.approved === false || data.rejected === true
+        const isApproved = (data.status === 'approved' || data.approved === true || (data.moderated === true && data.status !== 'rejected')) && !isRejected
         
         // Calcular tiempo exacto de expiración (24 horas)
         let expiresTime = 0
@@ -130,8 +131,8 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate
           expiresTime = new Date(data.createdAt).getTime() + (24 * 60 * 60 * 1000)
         }
 
-        // Historia válida ÚNICAMENTE dentro de sus 24 horas (expiresTime > now)
-        if (isApproved && expiresTime > now) {
+        // Historia válida ÚNICAMENTE dentro de sus 24 horas y aprobada sin rechazo
+        if (isApproved && !isRejected && expiresTime > now) {
           fetched.push({ id: doc.id, ...data })
         }
       })

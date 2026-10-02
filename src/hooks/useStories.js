@@ -22,7 +22,8 @@ export function useStories() {
 
       snapshot.forEach(doc => {
         const data = doc.data()
-        const isRejected = data.status === 'rejected' || data.moderated === 'rejected'
+        const isRejected = data.status === 'rejected' || data.moderated === 'rejected' || data.approved === false || data.rejected === true
+        const isApproved = (data.status === 'approved' || data.approved === true || (data.moderated === true && data.status !== 'rejected')) && !isRejected
         
         let expiresTime = 0
         if (data.expiresAt) {
@@ -33,7 +34,7 @@ export function useStories() {
           expiresTime = Date.now() + (24 * 60 * 60 * 1000)
         }
 
-        if (!isRejected && expiresTime > now) {
+        if (isApproved && !isRejected && expiresTime > now) {
           fetched.push({ id: doc.id, ...data })
         }
       })

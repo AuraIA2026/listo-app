@@ -365,7 +365,8 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
       const list = []
       snapshot.forEach(docSnap => {
         const data = docSnap.data()
-        const isApproved = data.status === 'approved' || data.moderated === true
+        const isRejected = data.status === 'rejected' || data.moderated === 'rejected' || data.approved === false || data.rejected === true
+        const isApproved = (data.status === 'approved' || data.approved === true || (data.moderated === true && data.status !== 'rejected')) && !isRejected
         
         let expiresTime = 0
         if (data.expiresAt) {
@@ -374,7 +375,7 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
           expiresTime = new Date(data.createdAt).getTime() + (24 * 60 * 60 * 1000)
         }
 
-        if (isApproved && expiresTime > now) {
+        if (isApproved && !isRejected && expiresTime > now) {
           list.push({ id: docSnap.id, ...data })
         }
       })
