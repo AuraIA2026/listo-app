@@ -512,6 +512,7 @@ export default function AdminPage({ navigate }) {
   const [viewProStats, setViewProStats] = useState(null); // Modal avanzado de central de mando
   const [viewStory, setViewStory] = useState(null); // Modal inspector de historias
   const [viewEditRequest, setViewEditRequest] = useState(null); // Modal inspector de cambios de datos
+  const [inspectZoomImage, setInspectZoomImage] = useState(null); // Fullscreen zoom image preview
   const [psFilter, setPsFilter] = useState('all'); // Filtros rápidos
   const [psLimit, setPsLimit] = useState(20); // Paginación
   const [isAuthenticated, setIsAuthenticated] = useState(true); // Cambiado a true para evitar contraseña por ahora
@@ -2191,33 +2192,33 @@ export default function AdminPage({ navigate }) {
           </div>
         )}
 
-        {/* ── MODAL INSPECTOR DE CAMBIO DE DATOS / PERFIL EN VENTANA APARTE ── */}
+        {/* ── MODAL INSPECTOR DE CAMBIO DE DATOS / PERFIL EN VENTANA APARTE (VISTA PREVIA GRANDE HD) ── */}
         {viewEditRequest && (
-          <div style={{position:'fixed', inset:0, background:'rgba(0,0,0,0.85)', zIndex:999, display:'flex', flexDirection:'column', backdropFilter:'blur(10px)', padding:16}} onClick={() => setViewEditRequest(null)}>
+          <div style={{position:'fixed', inset:0, background:'rgba(0,0,0,0.88)', zIndex:999, display:'flex', flexDirection:'column', backdropFilter:'blur(12px)', padding:'12px'}} onClick={() => setViewEditRequest(null)}>
             <div style={{
-              background:'var(--surface)', width:'100%', maxWidth:540, margin:'auto', borderRadius:24,
-              overflow:'hidden', border:'1px solid rgba(59,130,246,0.3)', boxShadow:'0 25px 50px -12px rgba(0,0,0,0.5)',
-              display:'flex', flexDirection:'column', maxHeight:'92vh', animation:'scaleUp .3s cubic-bezier(0.16, 1, 0.3, 1)'
+              background:'var(--surface)', width:'100%', maxWidth:780, margin:'auto', borderRadius:24,
+              overflow:'hidden', border:'1px solid rgba(59,130,246,0.4)', boxShadow:'0 25px 60px rgba(0,0,0,0.6)',
+              display:'flex', flexDirection:'column', maxHeight:'94vh', animation:'scaleUp .3s cubic-bezier(0.16, 1, 0.3, 1)'
             }} onClick={e => e.stopPropagation()}>
 
               {/* Header Modal */}
-              <div style={{background:'linear-gradient(135deg, #1E293B, #0F172A)', padding:'18px 20px', color:'#fff', display:'flex', alignItems:'center', justifyContent:'space-between', borderBottom:'1px solid rgba(255,255,255,0.1)'}}>
+              <div style={{background:'linear-gradient(135deg, #1E293B, #0F172A)', padding:'18px 22px', color:'#fff', display:'flex', alignItems:'center', justifyContent:'space-between', borderBottom:'1px solid rgba(255,255,255,0.1)'}}>
                 <div>
                   <div style={{fontSize:11, fontWeight:800, color:'#3B82F6', textTransform:'uppercase', letterSpacing:1, marginBottom:2}}>
-                    Inspector de Solicitud de Edición
+                    🔎 Inspector de Solicitud de Edición (Vista Previa Ampliada)
                   </div>
-                  <h3 style={{fontFamily:'var(--display)', fontSize:18, fontWeight:800, margin:0, color:'#fff'}}>
+                  <h3 style={{fontFamily:'var(--display)', fontSize:20, fontWeight:800, margin:0, color:'#fff'}}>
                     {viewEditRequest.userName || 'Profesional'}
                   </h3>
                   <span style={{fontSize:12, color:'rgba(255,255,255,0.6)'}}>
-                    {fmtDate(viewEditRequest.createdAt)}
+                    📅 Fecha de solicitud: {fmtDate(viewEditRequest.createdAt)}
                   </span>
                 </div>
-                <button onClick={() => setViewEditRequest(null)} style={{background:'rgba(255,255,255,0.1)', border:'none', color:'#fff', width:36, height:36, borderRadius:'50%', fontSize:18, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center'}}>✕</button>
+                <button onClick={() => setViewEditRequest(null)} style={{background:'rgba(255,255,255,0.15)', border:'none', color:'#fff', width:40, height:40, borderRadius:'50%', fontSize:20, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center'}}>✕</button>
               </div>
 
               {/* Body Content */}
-              <div style={{padding:20, overflowY:'auto', flex:1}}>
+              <div style={{padding:24, overflowY:'auto', flex:1}}>
                 {(() => {
                   const req = viewEditRequest;
                   const u = users.find(x => x.id === req.userId || x.uid === req.userId);
@@ -2226,24 +2227,37 @@ export default function AdminPage({ navigate }) {
                   return (
                     <div>
                       {/* Notice Banner */}
-                      <div style={{background:'rgba(242,96,0,0.08)', border:'1px solid rgba(242,96,0,0.2)', padding:'12px 14px', borderRadius:14, marginBottom:16, fontSize:12, color:'var(--text)', lineHeight:1.4}}>
-                        <strong>🛡️ Política de Seguridad Listo Patrón:</strong> No coloques publicidad, teléfonos ni redes sociales en tu perfil o portada. Las fotos con publicidad no serán aceptadas.
+                      <div style={{background:'rgba(242,96,0,0.08)', border:'1.5px solid rgba(242,96,0,0.3)', padding:'14px 16px', borderRadius:16, marginBottom:20, fontSize:13, color:'var(--text)', lineHeight:1.45}}>
+                        <strong>🛡️ Política de Seguridad Listo Patrón:</strong> Revisa que la foto no contenga números de teléfono, redes sociales ni anuncios publicitarios.
+                        <div style={{fontSize:11, color:'var(--brand)', fontWeight:800, marginTop:4}}>💡 Tip de Auditoría: Haz clic en cualquier foto para abrirla en Pantalla Completa HD.</div>
                       </div>
 
                       {isMedia ? (
-                        <div style={{background:'var(--surface2)', padding:16, borderRadius:16, border:'1px solid var(--border)', textAlign:'center'}}>
+                        <div style={{background:'var(--surface2)', padding:20, borderRadius:20, border:'1px solid var(--border)', textAlign:'center'}}>
                           {req.type === 'photo' && (
                             <div>
-                              <div style={{fontSize:12, fontWeight:700, color:'var(--muted)', marginBottom:12, textTransform:'uppercase'}}>Comparación de Foto de Perfil</div>
-                              <div style={{display:'flex', gap:16, justifyContent:'center', alignItems:'center'}}>
-                                <div style={{flex:1, textAlign:'center'}}>
-                                  <span style={{fontSize:11, color:'var(--muted)', display:'block', marginBottom:6, fontWeight:700}}>Actual</span>
-                                  <img src={u?.photoURL || 'https://via.placeholder.com/120?text=Vacio'} style={{width:110, height:110, borderRadius:'50%', objectFit:'cover', border:'2px solid var(--border)', boxShadow:'0 4px 10px rgba(0,0,0,0.1)'}} alt="Actual"/>
+                              <div style={{fontSize:13, fontWeight:800, color:'var(--muted)', marginBottom:16, textTransform:'uppercase', letterSpacing:0.5}}>Comparación de Foto de Perfil (Vista Previa HD)</div>
+                              <div style={{display:'flex', gap:24, justifyContent:'center', alignItems:'center', flexWrap:'wrap'}}>
+                                <div style={{flex:'1 1 200px', maxWidth:280, textAlign:'center'}}>
+                                  <span style={{fontSize:12, color:'var(--muted)', display:'block', marginBottom:8, fontWeight:800}}>Foto Actual</span>
+                                  <img 
+                                    src={u?.photoURL || 'https://via.placeholder.com/200?text=Sin+Foto'} 
+                                    onClick={() => u?.photoURL && setInspectZoomImage(u.photoURL)}
+                                    style={{width:200, height:200, borderRadius:'50%', objectFit:'cover', border:'3px solid var(--border)', boxShadow:'0 8px 20px rgba(0,0,0,0.15)', cursor:'pointer', margin:'0 auto'}} 
+                                    alt="Actual"
+                                    title="Haz clic para ampliar"
+                                  />
                                 </div>
-                                <div style={{fontSize:24, color:'var(--brand)'}}>➔</div>
-                                <div style={{flex:1, textAlign:'center'}}>
-                                  <span style={{fontSize:11, color:'#10B981', display:'block', marginBottom:6, fontWeight:800}}>Nueva Propuesta</span>
-                                  <img src={req.requestedChanges?.photoURL} style={{width:110, height:110, borderRadius:'50%', objectFit:'cover', border:'3px solid #10B981', boxShadow:'0 6px 16px rgba(16,185,129,0.3)'}} alt="Nueva"/>
+                                <div style={{fontSize:32, color:'var(--brand)', flexShrink:0}}>➔</div>
+                                <div style={{flex:'1 1 200px', maxWidth:280, textAlign:'center'}}>
+                                  <span style={{fontSize:12, color:'#10B981', display:'block', marginBottom:8, fontWeight:900}}>Nueva Propuesta Solicitada</span>
+                                  <img 
+                                    src={req.requestedChanges?.photoURL} 
+                                    onClick={() => req.requestedChanges?.photoURL && setInspectZoomImage(req.requestedChanges.photoURL)}
+                                    style={{width:200, height:200, borderRadius:'50%', objectFit:'cover', border:'4px solid #10B981', boxShadow:'0 8px 24px rgba(16,185,129,0.4)', cursor:'pointer', margin:'0 auto'}} 
+                                    alt="Nueva"
+                                    title="Haz clic para ampliar en HD"
+                                  />
                                 </div>
                               </div>
                             </div>
@@ -2251,15 +2265,27 @@ export default function AdminPage({ navigate }) {
 
                           {req.type === 'cover' && (
                             <div>
-                              <div style={{fontSize:12, fontWeight:700, color:'var(--muted)', marginBottom:12, textTransform:'uppercase'}}>Comparación de Foto de Portada</div>
-                              <div style={{display:'flex', flexDirection:'column', gap:16}}>
+                              <div style={{fontSize:13, fontWeight:800, color:'var(--muted)', marginBottom:16, textTransform:'uppercase', letterSpacing:0.5}}>Comparación de Foto de Portada (Vista Previa HD)</div>
+                              <div style={{display:'flex', flexDirection:'column', gap:20}}>
                                 <div>
-                                  <span style={{fontSize:11, color:'var(--muted)', display:'block', marginBottom:6, fontWeight:700, textAlign:'left'}}>Portada Actual</span>
-                                  <img src={u?.coverURL || 'https://via.placeholder.com/400x160?text=Sin+Portada'} style={{width:'100%', height:140, borderRadius:12, objectFit:'cover', border:'2px solid var(--border)'}} alt="Actual"/>
+                                  <span style={{fontSize:12, color:'var(--muted)', display:'block', marginBottom:8, fontWeight:800, textAlign:'left'}}>Portada Actual</span>
+                                  <img 
+                                    src={u?.coverURL || 'https://via.placeholder.com/600x240?text=Sin+Portada'} 
+                                    onClick={() => u?.coverURL && setInspectZoomImage(u.coverURL)}
+                                    style={{width:'100%', height:220, borderRadius:16, objectFit:'cover', border:'2px solid var(--border)', cursor:'pointer'}} 
+                                    alt="Actual"
+                                    title="Haz clic para ampliar"
+                                  />
                                 </div>
                                 <div>
-                                  <span style={{fontSize:11, color:'#10B981', display:'block', marginBottom:6, fontWeight:800, textAlign:'left'}}>Nueva Portada Propuesta</span>
-                                  <img src={req.requestedChanges?.coverURL} style={{width:'100%', height:140, borderRadius:12, objectFit:'cover', border:'3px solid #10B981', boxShadow:'0 6px 16px rgba(16,185,129,0.3)'}} alt="Nueva"/>
+                                  <span style={{fontSize:12, color:'#10B981', display:'block', marginBottom:8, fontWeight:900, textAlign:'left'}}>Nueva Portada Propuesta Solicitada</span>
+                                  <img 
+                                    src={req.requestedChanges?.coverURL} 
+                                    onClick={() => req.requestedChanges?.coverURL && setInspectZoomImage(req.requestedChanges.coverURL)}
+                                    style={{width:'100%', height:220, borderRadius:16, objectFit:'cover', border:'4px solid #10B981', boxShadow:'0 8px 24px rgba(16,185,129,0.3)', cursor:'pointer'}} 
+                                    alt="Nueva"
+                                    title="Haz clic para ampliar en HD"
+                                  />
                                 </div>
                               </div>
                             </div>
@@ -2267,29 +2293,35 @@ export default function AdminPage({ navigate }) {
 
                           {req.type === 'work_photo' && (
                             <div>
-                              <div style={{fontSize:12, fontWeight:700, color:'var(--muted)', marginBottom:12, textTransform:'uppercase'}}>Nueva Foto de Galería de Trabajo</div>
+                              <div style={{fontSize:13, fontWeight:800, color:'var(--muted)', marginBottom:16, textTransform:'uppercase', letterSpacing:0.5}}>Nueva Foto de Galería de Trabajo (Vista Previa Ampliada)</div>
                               {(() => {
                                 const newPhotos = req.requestedChanges?.photos || [];
                                 const addedPhoto = newPhotos[newPhotos.length - 1];
                                 return addedPhoto ? (
-                                  <img src={addedPhoto} style={{width:'100%', maxHeight:260, borderRadius:16, objectFit:'contain', border:'3px solid #10B981', background:'#000'}} alt="Work"/>
+                                  <img 
+                                    src={addedPhoto} 
+                                    onClick={() => setInspectZoomImage(addedPhoto)}
+                                    style={{width:'100%', maxHeight:420, borderRadius:20, objectFit:'contain', border:'4px solid #10B981', background:'#0F172A', cursor:'pointer'}} 
+                                    alt="Work"
+                                    title="Haz clic para ver en pantalla completa HD"
+                                  />
                                 ) : <p>No se pudo cargar la imagen</p>;
                               })()}
                             </div>
                           )}
                         </div>
                       ) : (
-                        <div style={{background:'var(--surface)', border:'1px solid var(--border)', borderRadius:16, overflow:'hidden', boxShadow:'0 4px 12px rgba(0,0,0,0.03)'}}>
-                          <div style={{background:'var(--surface2)', padding:'10px 14px', fontSize:12, fontWeight:800, color:'var(--muted)', borderBottom:'1px solid var(--border)', textTransform:'uppercase'}}>
+                        <div style={{background:'var(--surface)', border:'1px solid var(--border)', borderRadius:18, overflow:'hidden', boxShadow:'0 4px 12px rgba(0,0,0,0.03)'}}>
+                          <div style={{background:'var(--surface2)', padding:'12px 16px', fontSize:13, fontWeight:800, color:'var(--muted)', borderBottom:'1px solid var(--border)', textTransform:'uppercase'}}>
                             Comparativa de Campos Modificados
                           </div>
-                          <div style={{padding:14}}>
-                            <table style={{width:'100%', fontSize:13, borderCollapse:'collapse'}}>
+                          <div style={{padding:16}}>
+                            <table style={{width:'100%', fontSize:14, borderCollapse:'collapse'}}>
                               <thead>
-                                <tr style={{borderBottom:'2px solid var(--border)', textAlign:'left', color:'var(--muted)', fontSize:11, textTransform:'uppercase'}}>
-                                  <th style={{padding:'8px 4px'}}>Campo</th>
-                                  <th style={{padding:'8px 4px'}}>Valor Actual</th>
-                                  <th style={{padding:'8px 4px', color:'#10B981'}}>Solicitado</th>
+                                <tr style={{borderBottom:'2px solid var(--border)', textAlign:'left', color:'var(--muted)', fontSize:12, textTransform:'uppercase'}}>
+                                  <th style={{padding:'10px 6px'}}>Campo</th>
+                                  <th style={{padding:'10px 6px'}}>Valor Actual</th>
+                                  <th style={{padding:'10px 6px', color:'#10B981'}}>Solicitado</th>
                                 </tr>
                               </thead>
                               <tbody>
@@ -2299,9 +2331,9 @@ export default function AdminPage({ navigate }) {
                                   if (oldVal === newVal) return null;
                                   return (
                                     <tr key={key} style={{borderBottom:'1px solid var(--border)'}}>
-                                      <td style={{padding:'10px 4px', fontWeight:700, color:'var(--text)', textTransform:'capitalize'}}>{key}</td>
-                                      <td style={{padding:'10px 4px', color:'var(--muted)', textDecoration:'line-through'}}>{String(oldVal)}</td>
-                                      <td style={{padding:'10px 4px', color:'#10B981', fontWeight:800}}>{String(newVal)}</td>
+                                      <td style={{padding:'12px 6px', fontWeight:700, color:'var(--text)', textTransform:'capitalize'}}>{key}</td>
+                                      <td style={{padding:'12px 6px', color:'var(--muted)', textDecoration:'line-through'}}>{String(oldVal)}</td>
+                                      <td style={{padding:'12px 6px', color:'#10B981', fontWeight:800}}>{String(newVal)}</td>
                                     </tr>
                                   );
                                 })}
@@ -2316,14 +2348,14 @@ export default function AdminPage({ navigate }) {
               </div>
 
               {/* Footer Acciones */}
-              <div style={{padding:'16px 20px', background:'var(--surface)', borderTop:'1px solid var(--border)', display:'flex', gap:10}}>
+              <div style={{padding:'18px 22px', background:'var(--surface)', borderTop:'1px solid var(--border)', display:'flex', gap:12}}>
                 <button 
                   onClick={() => {
                     const reqToApprove = viewEditRequest;
                     setViewEditRequest(null);
                     setConfirm({ type: 'approve_edit', obj: reqToApprove });
                   }} 
-                  style={{flex:1, background:'#10B981', color:'#fff', padding:'14px', borderRadius:14, border:'none', fontSize:13, fontWeight:800, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:6, boxShadow:'0 4px 12px rgba(16,185,129,0.3)'}}
+                  style={{flex:1, background:'linear-gradient(135deg, #10B981, #059669)', color:'#fff', padding:'16px', borderRadius:16, border:'none', fontSize:15, fontWeight:800, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:8, boxShadow:'0 4px 14px rgba(16,185,129,0.35)'}}
                 >
                   ✅ Aprobar Cambios
                 </button>
@@ -2333,12 +2365,158 @@ export default function AdminPage({ navigate }) {
                     setViewEditRequest(null);
                     setConfirm({ type: 'reject_edit', obj: reqToReject });
                   }} 
-                  style={{flex:1, background:'#EF4444', color:'#fff', padding:'14px', borderRadius:14, border:'none', fontSize:13, fontWeight:800, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:6, boxShadow:'0 4px 12px rgba(239,68,68,0.3)'}}
+                  style={{flex:1, background:'linear-gradient(135deg, #EF4444, #DC2626)', color:'#fff', padding:'16px', borderRadius:16, border:'none', fontSize:15, fontWeight:800, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:8, boxShadow:'0 4px 14px rgba(239,68,68,0.35)'}}
                 >
                   ❌ Rechazar Solicitud
                 </button>
               </div>
 
+            </div>
+          </div>
+        )}
+
+        {/* ── MODAL INSPECTOR DE HISTORIA DE TRABAJO (VISTA PREVIA GRANDE HD EN VENTANA APARTE) ── */}
+        {viewStory && (
+          <div style={{position:'fixed', inset:0, background:'rgba(0,0,0,0.88)', zIndex:999, display:'flex', flexDirection:'column', backdropFilter:'blur(12px)', padding:'12px'}} onClick={() => setViewStory(null)}>
+            <div style={{
+              background:'var(--surface)', width:'100%', maxWidth:780, margin:'auto', borderRadius:24,
+              overflow:'hidden', border:'1px solid rgba(242,96,0,0.4)', boxShadow:'0 25px 60px rgba(0,0,0,0.6)',
+              display:'flex', flexDirection:'column', maxHeight:'94vh', animation:'scaleUp .3s cubic-bezier(0.16, 1, 0.3, 1)'
+            }} onClick={e => e.stopPropagation()}>
+
+              {/* Header Modal */}
+              <div style={{background:'linear-gradient(135deg, #1E293B, #0F172A)', padding:'18px 22px', color:'#fff', display:'flex', alignItems:'center', justifyContent:'space-between', borderBottom:'1px solid rgba(255,255,255,0.1)'}}>
+                <div>
+                  <div style={{fontSize:11, fontWeight:800, color:'#F26000', textTransform:'uppercase', letterSpacing:1, marginBottom:2}}>
+                    📸 Inspector de Historia de Trabajo (Vista Previa Ampliada)
+                  </div>
+                  <h3 style={{fontFamily:'var(--display)', fontSize:20, fontWeight:800, margin:0, color:'#fff'}}>
+                    {viewStory.proName || 'Profesional'}
+                  </h3>
+                  <span style={{fontSize:12, color:'rgba(255,255,255,0.6)'}}>
+                    ⚡ {viewStory.proCategory || 'Servicio'} · Fecha: {fmtDate(viewStory.createdAt)}
+                  </span>
+                </div>
+                <button onClick={() => setViewStory(null)} style={{background:'rgba(255,255,255,0.15)', border:'none', color:'#fff', width:40, height:40, borderRadius:'50%', fontSize:20, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center'}}>✕</button>
+              </div>
+
+              {/* Body Content */}
+              <div style={{padding:24, overflowY:'auto', flex:1, textAlign:'center'}}>
+                {viewStory.caption && (
+                  <div style={{ background: '#FFFBEB', padding: '12px 16px', borderRadius: '14px', marginBottom: '16px', fontSize: '14px', color: '#78350F', borderLeft: '4px solid #F26000', textAlign: 'left', fontWeight: '600' }}>
+                    💬 "{viewStory.caption}"
+                  </div>
+                )}
+
+                <div style={{ background: '#0F172A', padding: '16px', borderRadius: '20px', border: '1px solid var(--border)', textAlign: 'center' }}>
+                  {viewStory.mediaType === 'video' || viewStory.videoUrl ? (
+                    <video 
+                      src={viewStory.videoUrl || viewStory.imageUrl} 
+                      controls 
+                      autoPlay
+                      style={{ width: '100%', maxHeight: '480px', borderRadius: '16px', objectFit: 'contain' }} 
+                    />
+                  ) : (
+                    <img 
+                      src={viewStory.imageUrl} 
+                      onClick={() => viewStory.imageUrl && setInspectZoomImage(viewStory.imageUrl)}
+                      alt="Historia" 
+                      style={{ width: '100%', maxHeight: '480px', borderRadius: '16px', objectFit: 'contain', cursor: 'pointer' }} 
+                      title="Haz clic para ver en Pantalla Completa HD"
+                    />
+                  )}
+                  <div style={{fontSize:11, color:'#94A3B8', marginTop:10, fontWeight:700}}>
+                    💡 Haz clic sobre la imagen para abrir en Pantalla Completa HD
+                  </div>
+                </div>
+              </div>
+
+              {/* Footer Acciones */}
+              <div style={{padding:'18px 22px', background:'var(--surface)', borderTop:'1px solid var(--border)', display:'flex', gap:12}}>
+                <button 
+                  onClick={() => {
+                    const st = viewStory;
+                    setViewStory(null);
+                    setConfirm({ type: 'approve_story', obj: st });
+                  }} 
+                  style={{flex:1, background:'linear-gradient(135deg, #10B981, #059669)', color:'#fff', padding:'16px', borderRadius:16, border:'none', fontSize:15, fontWeight:800, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:8, boxShadow:'0 4px 14px rgba(16,185,129,0.35)'}}
+                >
+                  ✅ Aprobar y Publicar
+                </button>
+                <button 
+                  onClick={() => {
+                    const st = viewStory;
+                    setViewStory(null);
+                    setConfirm({ type: 'reject_story', obj: st });
+                  }} 
+                  style={{flex:1, background:'linear-gradient(135deg, #EF4444, #DC2626)', color:'#fff', padding:'16px', borderRadius:16, border:'none', fontSize:15, fontWeight:800, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:8, boxShadow:'0 4px 14px rgba(239,68,68,0.35)'}}
+                >
+                  ❌ Rechazar Historia
+                </button>
+              </div>
+
+            </div>
+          </div>
+        )}
+
+        {/* ── MODAL FULLSCREEN ZOOM DE IMÁGENES HD PARA AUDITORÍA DE ADMIN ── */}
+        {inspectZoomImage && (
+          <div 
+            style={{
+              position: 'fixed',
+              inset: 0,
+              background: 'rgba(0,0,0,0.96)',
+              zIndex: 999999,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justify: 'center',
+              padding: '16px',
+              backdropFilter: 'blur(16px)',
+              animation: 'fadeIn 0.2s ease-out'
+            }} 
+            onClick={() => setInspectZoomImage(null)}
+          >
+            <div style={{ position: 'relative', width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+              <button 
+                onClick={() => setInspectZoomImage(null)}
+                style={{
+                  position: 'absolute',
+                  top: '16px',
+                  right: '16px',
+                  background: 'rgba(239, 68, 68, 0.9)',
+                  color: '#FFFFFF',
+                  border: '2px solid #FFFFFF',
+                  width: '44px',
+                  height: '44px',
+                  borderRadius: '50%',
+                  fontSize: '22px',
+                  fontWeight: 'bold',
+                  cursor: 'pointer',
+                  zIndex: 10,
+                  boxShadow: '0 4px 14px rgba(0,0,0,0.5)'
+                }}
+              >
+                ✕
+              </button>
+
+              <img 
+                src={inspectZoomImage} 
+                alt="Zoom HD Inspector" 
+                onClick={e => e.stopPropagation()}
+                style={{
+                  maxWidth: '96vw',
+                  maxHeight: '88vh',
+                  objectFit: 'contain',
+                  borderRadius: '16px',
+                  boxShadow: '0 0 40px rgba(0,0,0,0.9)',
+                  border: '2px solid rgba(255,255,255,0.2)'
+                }} 
+              />
+              
+              <div style={{ color: '#FFFFFF', fontSize: '13px', fontWeight: '800', marginTop: '14px', background: 'rgba(255,255,255,0.15)', padding: '6px 16px', borderRadius: '20px', backdropFilter: 'blur(8px)' }}>
+                🔍 Vista Previa en Pantalla Completa HD — Toca fuera para cerrar
+              </div>
             </div>
           </div>
         )}
