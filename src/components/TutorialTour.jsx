@@ -5,7 +5,7 @@ const TOUR_KEY = 'listo_tour_done'
 
 const steps = {
   es: [
-    { emoji: '👋', title: '¡Bienvenido a Listo Patrón!', text: 'Tu app para conectar con los mejores profesionales de tu zona. Te mostramos cómo funciona en segundos.', position: 'center' },
+    { emoji: '👋', title: '¡Bienvenido a Pedidos Listo!', text: 'Tu app para conectar con los mejores profesionales de tu zona. Te mostramos cómo funciona en segundos.', position: 'center' },
     { emoji: '🔍', title: 'Busca lo que necesitas', text: 'Usa la barra de búsqueda para encontrar el profesional que necesitas. ¡Rápido y fácil!', position: 'top' },
     { emoji: '⭐', title: 'Categorías populares', text: 'Explora por categoría: mecánicos, electricistas, plomeros y mucho más. Toca cualquier ícono.', position: 'top' },
     { emoji: '🏆', title: 'Profesionales destacados', text: 'Ve las calificaciones, reseñas y precios antes de reservar. Todos verificados por Listo.', position: 'center' },
@@ -13,7 +13,7 @@ const steps = {
     { emoji: '🎉', title: '¡Listo, patrón!', text: 'Ya sabes cómo funciona. Ahora encuentra el profesional que necesitas y reserva en minutos.', position: 'center' },
   ],
   en: [
-    { emoji: '👋', title: 'Welcome to Listo Patrón!', text: 'Your app to connect with the best professionals in your area. Let us show you how it works in seconds.', position: 'center' },
+    { emoji: '👋', title: 'Welcome to Pedidos Listo!', text: 'Your app to connect with the best professionals in your area. Let us show you how it works in seconds.', position: 'center' },
     { emoji: '🔍', title: 'Search for what you need', text: 'Use the search bar to find the professional you need. Quick and easy!', position: 'top' },
     { emoji: '⭐', title: 'Popular categories', text: 'Browse by category: mechanics, electricians, plumbers and much more. Tap any icon.', position: 'top' },
     { emoji: '🏆', title: 'Featured professionals', text: 'See ratings, reviews and prices before booking. All verified by Listo.', position: 'center' },
@@ -82,7 +82,7 @@ export default function TutorialTour({ lang = 'es', onFinish }) {
         <div className="tour-chat-header">
           <div className="tour-avatar">🛠️</div>
           <div className="tour-chat-info">
-            <div className="tour-chat-name">Listo Patrón</div>
+            <div className="tour-chat-name">Pedidos Listo</div>
             <div className="tour-chat-status">● {lang === 'es' ? 'En línea' : 'Online'}</div>
           </div>
           <button className="tour-close-btn" onClick={handleFinish}>✕</button>

@@ -79,7 +79,7 @@ export default function PoliciesPage({ lang, navigate }) {
               <strong>2. Reembolsos por Transferencias:</strong> Si usted realiza una transferencia por un servicio y éste no es completado por causas atribuibles al profesional, usted tiene derecho a reportar el caso a soporte. Las solicitudes de reembolso se analizan en un lapso de 24 a 48 horas hábiles mediante nuestro departamento de soporte.
             </p>
             <p style={{ lineHeight: '1.6', marginBottom: '12px' }}>
-              <strong>3. Pagos Directos:</strong> Listo Patrón no es responsable de los fondos pagados en efectivo o por transferencias directas al profesional fuera de las solicitudes coordinadas y aprobadas en la App.
+              <strong>3. Pagos Directos:</strong> Pedidos Listo no es responsable de los fondos pagados en efectivo o por transferencias directas al profesional fuera de las solicitudes coordinadas y aprobadas en la App.
             </p>
             <p style={{ lineHeight: '1.6', marginBottom: '12px' }}>
               <strong>4. Planes y Contratos (Para Profesionales):</strong> La compra de planes promocionales VIP o Contratos Digitales dentro de la app son inversiones finales para mejorar su visibilidad y obtener leads. No se emiten reembolsos parciales por planes no utilizados si el profesional decide cerrar su cuenta.
@@ -92,7 +92,7 @@ export default function PoliciesPage({ lang, navigate }) {
           <div>
             <h2 style={{ fontSize: '22px', color: '#0F172A', marginBottom: '16px' }}>Política de Privacidad</h2>
             <p style={{ lineHeight: '1.6', marginBottom: '12px' }}>
-              Su privacidad es primordial para Listo Patrón. Recopilamos información básica como su nombre, número de contacto y ubicación aproximada para conectarlo efectivamente con profesionales cercanoss en la República Dominicana.
+              Su privacidad es primordial para Pedidos Listo. Recopilamos información básica como su nombre, número de contacto y ubicación aproximada para conectarlo efectivamente con profesionales cercanoss en la República Dominicana.
             </p>
             <p style={{ lineHeight: '1.6', marginBottom: '12px' }}>
               <strong>Uso de la Información:</strong> Utilizamos sus datos exclusivamente para operar la plataforma, enviar notificaciones relacionadas a sus solicitudes y mejorar nuestros servicios. No vendemos ni compartimos sus datos personales con terceros para fines de publicidad no relacionada.
@@ -108,7 +108,7 @@ export default function PoliciesPage({ lang, navigate }) {
           <div>
             <h2 style={{ fontSize: '22px', color: '#0F172A', marginBottom: '16px' }}>Política Clara de Entrega</h2>
             <p style={{ lineHeight: '1.6', marginBottom: '12px' }}>
-              Dado que Listo Patrón es una plataforma digital que facilita servicios presenciales y compra de intangibles (Planes Profesionales), nuestra política de entrega opera bajo las siguientes modalidades:
+              Dado que Pedidos Listo es una plataforma digital que facilita servicios presenciales y compra de intangibles (Planes Profesionales), nuestra política de entrega opera bajo las siguientes modalidades:
             </p>
             <p style={{ lineHeight: '1.6', marginBottom: '12px' }}>
               <strong>1. Contratación de Servicios Físicos:</strong> La "entrega" se concreta cuando el profesional registrado en nuestra plataforma asiste a la ubicación acordada entre usted y él, y completa el trabajo (ej. plomería, mecánica). Los tiempos de llegada se acuerdan mediante el sistema de mensajería (chat) interno de la plataforma.

@@ -39,29 +39,29 @@ const txt = {
     termsTitle: 'Términos y Condiciones', termsLastUpdate: 'Última actualización: 1 de marzo de 2026',
     privacyDocTitle: 'Política de Privacidad', privacyDocLastUpdate: 'Última actualización: 1 de marzo de 2026',
     terms: [
-      { title: '1. Naturaleza del Servicio', body: 'Listo Patrón es una plataforma tecnológica de intermediación digital que conecta usuarios con profesionales independientes.\n\nLa plataforma no participa en la ejecución de los servicios ofrecidos ni en los acuerdos comerciales entre las partes.\n\nEl profesional reconoce que actúa de manera independiente, sin que exista relación laboral, sociedad o representación con la plataforma.\n\nEl acuerdo de servicio, precios y condiciones son responsabilidad exclusiva entre el profesional y el usuario.\n\nEste acuerdo se rige por las leyes de la República Dominicana.' },
+      { title: '1. Naturaleza del Servicio', body: 'Pedidos Listo es una plataforma tecnológica de intermediación digital que conecta usuarios con profesionales independientes.\n\nLa plataforma no participa en la ejecución de los servicios ofrecidos ni en los acuerdos comerciales entre las partes.\n\nEl profesional reconoce que actúa de manera independiente, sin que exista relación laboral, sociedad o representación con la plataforma.\n\nEl acuerdo de servicio, precios y condiciones son responsabilidad exclusiva entre el profesional y el usuario.\n\nEste acuerdo se rige por las leyes de la República Dominicana.' },
       { title: '2. Modelo de Uso y Planes', body: 'Para utilizar la plataforma, el profesional deberá adquirir uno de los planes disponibles dentro de la aplicación.\n\nCada plan otorga una cantidad específica de servicios, contactos o contratos que el profesional podrá gestionar dentro de la plataforma.\n\nUna vez consumidos los beneficios del plan, el profesional deberá adquirir uno nuevo para continuar utilizando la plataforma.\n\nLos pagos de los planes deberán realizarse mediante transferencia bancaria. No se aceptan pagos en efectivo para la compra de planes.\n\nLa plataforma podrá modificar los planes, precios y beneficios notificando previamente dentro de la aplicación.' },
       { title: '3. Pagos por Servicios', body: 'Los pagos por los servicios realizados entre el cliente y el profesional se realizarán exclusivamente mediante:\n\n- Efectivo\n- Transferencia bancaria directa\n\nLos usuarios pagarán el 100% del servicio directamente al profesional en efectivo o mediante transferencia. La plataforma no procesa ni cobra tarjetas de crédito para el pago de servicios.' },
       { title: '4. Responsabilidad del Profesional', body: 'El profesional es el único responsable por:\n- La calidad del servicio prestado\n- El cumplimiento de los acuerdos con el usuario\n- La veracidad de la información proporcionada\n- Su comportamiento dentro y fuera de la plataforma' },
       { title: '5. Sistema Disciplinario', body: 'Se consideran faltas graves:\n- Proporcionar información falsa\n- Conducta inapropiada hacia usuarios\n- Uso indebido de la plataforma\n- Actividades ilegales o fraudulentas\n\nPenalizaciones:\n- Primer strike: Advertencia formal\n- Segundo strike: Suspensión temporal\n- Tercer strike: Cancelación permanente e irreversible\n\nEn casos graves, la cancelación podrá ser inmediata sin previo aviso.' },
       { title: '6. Protección de Datos', body: 'El profesional autoriza el tratamiento de sus datos conforme a la Ley 172-13 sobre Protección de Datos de la República Dominicana.' },
-      { title: '7. Limitación de Responsabilidad', body: 'Listo Patrón no garantiza ingresos, cantidad de clientes ni volumen de trabajo.\n\nLa plataforma no es responsable por:\n- Disputas entre usuario y profesional\n- Incumplimientos de acuerdos\n- Resultados del servicio prestado' },
+      { title: '7. Limitación de Responsabilidad', body: 'Pedidos Listo no garantiza ingresos, cantidad de clientes ni volumen de trabajo.\n\nLa plataforma no es responsable por:\n- Disputas entre usuario y profesional\n- Incumplimientos de acuerdos\n- Resultados del servicio prestado' },
       { title: '8. Resolución de Conflictos', body: 'Cualquier conflicto entre el profesional y el usuario deberá resolverse directamente entre ambas partes.\n\nLa plataforma podrá facilitar canales de comunicación sin asumir responsabilidad en la resolución.' },
       { title: '9. Fuerza Mayor', body: 'La plataforma no será responsable por interrupciones causadas por fallos técnicos, desastres naturales, decisiones gubernamentales o situaciones fuera de su control.' },
       { title: '10. Aceptación', body: 'El uso de la plataforma implica la aceptación total de estos términos y condiciones.' },
     ],
     termsUser: [
-      { title: '1. Bienvenido', body: 'Gracias por usar Listo Patrón. Nuestra plataforma conecta usuarios con profesionales independientes que ofrecen servicios.\n\nAl utilizar la aplicación, aceptas estos términos y condiciones.' },
-      { title: '2. Naturaleza del Servicio', body: 'Listo Patrón actúa exclusivamente como intermediario tecnológico entre usuarios y profesionales independientes.\n\nLos profesionales son responsables de la ejecución, calidad, precios y condiciones del servicio.\n\nLa plataforma no participa directamente en la prestación del servicio.' },
+      { title: '1. Bienvenido', body: 'Gracias por usar Pedidos Listo. Nuestra plataforma conecta usuarios con profesionales independientes que ofrecen servicios.\n\nAl utilizar la aplicación, aceptas estos términos y condiciones.' },
+      { title: '2. Naturaleza del Servicio', body: 'Pedidos Listo actúa exclusivamente como intermediario tecnológico entre usuarios y profesionales independientes.\n\nLos profesionales son responsables de la ejecución, calidad, precios y condiciones del servicio.\n\nLa plataforma no participa directamente en la prestación del servicio.' },
       { title: '3. Pagos', body: 'Los pagos por los servicios podrán realizarse únicamente mediante:\n\n💵 Efectivo\n\n🏦 Transferencia bancaria directa\n\nLos usuarios acuerdan el pago directamente con el profesional. La plataforma no cobra ni procesa tarjetas de crédito para los servicios.' },
       { title: '4. Registro y Cuenta', body: 'El usuario debe proporcionar información veraz y actualizada.\n\nEs responsable del uso de su cuenta y de mantener la confidencialidad de sus datos.\n\nLa plataforma podrá suspender cuentas en caso de uso indebido.' },
       { title: '5. Solicitud de Servicios', body: 'El usuario es responsable de:\n\n- Describir correctamente el servicio requerido\n- Acordar detalles con el profesional\n- Verificar condiciones antes de aceptar el servicio\n\nSe recomienda mantener la comunicación dentro de la aplicación.' },
       { title: '6. Cancelaciones', body: 'El usuario podrá cancelar un servicio.\n\nLas condiciones de cancelación podrán ser acordadas directamente con el profesional.\n\nCancelaciones abusivas podrán generar restricciones en el uso de la plataforma.' },
       { title: '7. Conducta', body: 'El usuario se compromete a:\n\n- Tratar con respeto a los profesionales\n- No realizar actividades ilegales\n- No utilizar la plataforma de forma indebida\n\nEl incumplimiento podrá resultar en suspensión de la cuenta.' },
       { title: '8. Protección de Datos', body: 'Los datos serán tratados conforme a la Ley 172-13 sobre Protección de Datos de la República Dominicana.' },
-      { title: '9. Limitación de Responsabilidad', body: 'Listo Patrón no garantiza resultados ni la calidad del servicio.\n\nLa plataforma no es responsable por:\n\n- La ejecución del trabajo por parte del profesional\n- Acuerdos realizados fuera de la aplicación\n- Incumplimientos entre las partes\n- Transacciones realizadas entre usuario y profesional\n\nEn pagos con tarjeta, la responsabilidad de la plataforma se limita a facilitar la conexión tecnológica con el proveedor de pago.' },
+      { title: '9. Limitación de Responsabilidad', body: 'Pedidos Listo no garantiza resultados ni la calidad del servicio.\n\nLa plataforma no es responsable por:\n\n- La ejecución del trabajo por parte del profesional\n- Acuerdos realizados fuera de la aplicación\n- Incumplimientos entre las partes\n- Transacciones realizadas entre usuario y profesional\n\nEn pagos con tarjeta, la responsabilidad de la plataforma se limita a facilitar la conexión tecnológica con el proveedor de pago.' },
       { title: '10. Resolución de Conflictos', body: 'Los conflictos entre usuario y profesional deberán resolverse directamente entre ambas partes.\n\nLa plataforma podrá facilitar comunicación sin asumir responsabilidad en la resolución.' },
-      { title: '11. Modificaciones', body: 'Listo Patrón podrá modificar estos términos en cualquier momento.\n\nEl uso continuo de la plataforma implica la aceptación de los cambios.' },
+      { title: '11. Modificaciones', body: 'Pedidos Listo podrá modificar estos términos en cualquier momento.\n\nEl uso continuo de la plataforma implica la aceptación de los cambios.' },
       { title: '12. Aceptación', body: 'Al registrarte y utilizar la aplicación, confirmas que has leído y aceptado estos términos y condiciones.' },
     ],
   },
@@ -88,8 +88,8 @@ const txt = {
     photoCancel: 'Cancel', photoSaved: 'Photo updated!', photoError: 'Error saving. Please try again.',
     termsTitle: 'Terms & Conditions', termsLastUpdate: 'Last updated: March 1, 2026',
     privacyDocTitle: 'Privacy Policy', privacyDocLastUpdate: 'Last updated: March 1, 2026',
-    terms: [{ title: '1. Legal Nature', body: 'Listo Patrón is a digital intermediation platform.' }],
-    termsUser: [{ title: '1. Welcome', body: 'Thank you for using Listo Patrón.' }],
+    terms: [{ title: '1. Legal Nature', body: 'Pedidos Listo is a digital intermediation platform.' }],
+    termsUser: [{ title: '1. Welcome', body: 'Thank you for using Pedidos Listo.' }],
   }
 }
 
@@ -546,7 +546,7 @@ function PrivacyDocScreen({ lang, onBack }) {
           </div>
         </div>
         <div style={{ fontSize: '14px', lineHeight: '1.6', color: '#444', marginTop: '20px' }}>
-          <p><strong>1. Recopilación de Datos</strong><br/>Recopilamos su nombre, teléfono, ubicación GPS, imágenes de su perfil y rasgos biométricos (reconocimiento facial) únicamente para la seguridad y el correcto funcionamiento de 'Listo Patrón'.</p>
+          <p><strong>1. Recopilación de Datos</strong><br/>Recopilamos su nombre, teléfono, ubicación GPS, imágenes de su perfil y rasgos biométricos (reconocimiento facial) únicamente para la seguridad y el correcto funcionamiento de 'Pedidos Listo'.</p>
           <br/>
           <p><strong>2. Uso de la Ubicación</strong><br/>La aplicación requiere acceso a su ubicación en primer y segundo plano para conectar clientes con los profesionales más cercanos y permitir el seguimiento en tiempo real del trayecto.</p>
           <br/>
@@ -660,11 +660,11 @@ function EditRequestScreen({ lang, user, onBack }) {
           </div>
           {lang === 'es' ? (
             <>
-              No coloques publicidad, teléfonos ni redes sociales en tu perfil o portada. Las fotos con publicidad no serán aceptadas. Los tratos deben realizarse únicamente dentro de <strong>Listo Patrón</strong>.
+              No coloques publicidad, teléfonos ni redes sociales en tu perfil o portada. Las fotos con publicidad no serán aceptadas. Los tratos deben realizarse únicamente dentro de <strong>Pedidos Listo</strong>.
             </>
           ) : (
             <>
-              Do not place advertising, phone numbers, or social media links on your profile or cover. Photos with advertising will not be accepted. Deals must be conducted solely within <strong>Listo Patrón</strong>.
+              Do not place advertising, phone numbers, or social media links on your profile or cover. Photos with advertising will not be accepted. Deals must be conducted solely within <strong>Pedidos Listo</strong>.
             </>
           )}
         </div>
@@ -1290,7 +1290,7 @@ export default function ProfilePage({ lang, setLang, navigate, onLogout, initial
         isOpen={showPlanModal} 
         onClose={() => setShowPlanModal(false)} 
         onSelectPlan={(plan) => {
-          alert(`Has seleccionado el ${plan.name} (${plan.price}). Por favor comunícate con la administración de Listo Patrón o realiza tu transferencia para activar tus contratos.`);
+          alert(`Has seleccionado el ${plan.name} (${plan.price}). Por favor comunícate con la administración de Pedidos Listo o realiza tu transferencia para activar tus contratos.`);
           setShowPlanModal(false);
         }} 
       />

@@ -267,7 +267,7 @@ export default function PlanSelectionModal({ isOpen, onClose, onSelectPlan, proI
                 Adquirir Plan Profesional
               </h2>
               <p style={{ fontSize: '13.5px', color: '#64748B', margin: 0, fontWeight: '500' }}>
-                Selecciona el plan que se adapte a tus necesidades para habilitar tu cuenta Listo Patrón.
+                Selecciona el plan que se adapte a tus necesidades para habilitar tu cuenta Pedidos Listo.
               </p>
             </div>
 
@@ -441,13 +441,13 @@ export default function PlanSelectionModal({ isOpen, onClose, onSelectPlan, proI
               </select>
             </div>
 
-            {/* Caja de Cuentas de Listo Patrón */}
+            {/* Caja de Cuentas de Pedidos Listo */}
             <div style={{
               background: '#FFF8F3', border: '1px solid #FFE4D6', borderRadius: '16px',
               padding: '14px 16px', marginBottom: '16px', textAlign: 'left'
             }}>
               <div style={{ fontSize: '13px', fontWeight: '800', color: '#C24E00', marginBottom: '8px' }}>
-                Cuentas de Listo Patrón:
+                Cuentas de Pedidos Listo:
               </div>
               {CUENTAS_LISTO.map((c, idx) => (
                 <div key={c.banco} style={{
@@ -514,7 +514,7 @@ export default function PlanSelectionModal({ isOpen, onClose, onSelectPlan, proI
             <p style={{ fontSize: '13.5px', color: '#475569', lineHeight: 1.6, marginBottom: '24px' }}>
               Hola <strong>{proName}</strong>, hemos recibido tu solicitud de activación del <strong>{selectedPlan?.name}</strong>.
               <br /><br />
-              El equipo administrador de <strong>Listo Patrón</strong> validará el depósito y habilitará tus contratos en tu cuenta.
+              El equipo administrador de <strong>Pedidos Listo</strong> validará el depósito y habilitará tus contratos en tu cuenta.
             </p>
             <button onClick={onClose} style={{
               width: '100%', maxWidth: '280px', padding: '14px', background: '#10B981', color: '#FFF',

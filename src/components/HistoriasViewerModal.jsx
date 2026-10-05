@@ -308,7 +308,7 @@ export default function HistoriasViewerModal({
 
   const handleShareStory = async (e) => {
     if (e) e.stopPropagation()
-    const shareText = `Mira este trabajo realizado por ${currentStory.proName} (${currentStory.proCategory}) en Listo Patrón:`
+    const shareText = `Mira este trabajo realizado por ${currentStory.proName} (${currentStory.proCategory}) en Pedidos Listo:`
     const shareUrl = window.location.origin
 
     if (navigator.share) {
@@ -699,8 +699,8 @@ export default function HistoriasViewerModal({
               { id: 'trato', name: 'Trato Hecho', icon: '/emoji/trato hecho.png' },
               { id: 'estrellas', name: '5 Estrellas', icon: '/emoji/5 estrella.png' },
               { id: 'contratar', name: 'Contratar', icon: '/emoji/contratar.png' },
-              { id: 'listo', name: 'Listo Patrón', icon: '/emoji/listo patron.png' },
-              { id: 'listo2', name: 'Listo Patrón 2', icon: '/emoji/listo patron 2.png' },
+              { id: 'listo', name: 'Pedidos Listo', icon: '/emoji/listo patron.png' },
+              { id: 'listo2', name: 'Pedidos Listo 2', icon: '/emoji/listo patron 2.png' },
               { id: 'e1', name: 'Emoji 1', icon: '/emoji/1.png' },
               { id: 'e2', name: 'Emoji 2', icon: '/emoji/2.png' },
               { id: 'e3', name: 'Emoji 3', icon: '/emoji/3.png' },

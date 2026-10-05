@@ -538,7 +538,7 @@ export default function AdminPage({ navigate }) {
   const [notifyUser, setNotifyUser] = useState('');
   const [notifySearch, setNotifySearch] = useState('');
   const [showNotifyAc, setShowNotifyAc] = useState(false);
-  const [notifyMessage, setNotifyMessage] = useState('Hola, Bienvenido a Listo Patrón. Para comenzar a generar dinero de inmediato debes completar tu perfil. ¡Te esperamos!');
+  const [notifyMessage, setNotifyMessage] = useState('Hola, Bienvenido a Pedidos Listo. Para comenzar a generar dinero de inmediato debes completar tu perfil. ¡Te esperamos!');
   const [notifyType, setNotifyType] = useState('system');
 
   useEffect(() => {
@@ -660,7 +660,7 @@ export default function AdminPage({ navigate }) {
         await addDoc(collection(db, 'notificaciones'), {
           userId: targetUser.id,
           type: 'system',
-          title: 'Hola, Bienvenido a Listo Patrón.',
+          title: 'Hola, Bienvenido a Pedidos Listo.',
           text: `¿Listo para ofrecer tus servicios?\nSi vas a trabajar como profesional, activa tu perfil en dos simples pasos:\n1. Toca el menú de las tres líneas (☰) en la esquina superior derecha.\n2. Selecciona "Trabajar como profesional".\n¡Empieza a recibir clientes hoy mismo!`,
           date: new Date().toISOString(),
           createdAt: new Date().toISOString(),
@@ -708,7 +708,7 @@ export default function AdminPage({ navigate }) {
                   userId: u.id,
                   type: 'system',
                   title: '💎 ¡Plan Activado con Éxito!',
-                  text: `Tu plan ${obj.planName} ha sido aprobado por el administrador. ¡Ya puedes ponerte en línea en la app Listo Patrón!`,
+                  text: `Tu plan ${obj.planName} ha sido aprobado por el administrador. ¡Ya puedes ponerte en línea en la app Pedidos Listo!`,
                   read: false,
                   date: new Date().toISOString(),
                   createdAt: new Date().toISOString()
@@ -767,7 +767,7 @@ export default function AdminPage({ navigate }) {
         await addDoc(collection(db, 'notificaciones'), {
           userId: obj.id,
           type: 'system',
-          title: 'Hola, Bienvenido a Listo Patrón.',
+          title: 'Hola, Bienvenido a Pedidos Listo.',
           text: `¿Listo para ofrecer tus servicios?\nSi vas a trabajar como profesional, activa tu perfil en dos simples pasos:\n1. Toca el menú de las tres líneas (☰) en la esquina superior derecha.\n2. Selecciona "Trabajar como profesional".\n¡Empieza a recibir clientes hoy mismo!`,
           date: new Date().toISOString(),
           createdAt: new Date().toISOString(),
@@ -827,7 +827,7 @@ export default function AdminPage({ navigate }) {
            await addDoc(collection(db, 'notificaciones'), {
               userId: obj.id,
               type: 'system',
-              title: 'Hola, Bienvenido a Listo Patrón.',
+              title: 'Hola, Bienvenido a Pedidos Listo.',
               text: `¿Listo para ofrecer tus servicios?\nSi vas a trabajar como profesional, activa tu perfil en dos simples pasos:\n1. Toca el menú de las tres líneas (☰) en la esquina superior derecha.\n2. Selecciona "Trabajar como profesional".\n¡Empieza a recibir clientes hoy mismo!`,
               date: new Date().toISOString(),
               createdAt: new Date().toISOString(),
@@ -883,7 +883,7 @@ export default function AdminPage({ navigate }) {
                      await addDoc(collection(db, 'notificaciones'), {
                         userId: notifyUser,
                         type: notifyType,
-                        title: notifyType === 'promo' ? '🏷️ ¡Nueva Oferta!' : 'Mensaje de Listo Patrón',
+                        title: notifyType === 'promo' ? '🏷️ ¡Nueva Oferta!' : 'Mensaje de Pedidos Listo',
                         text: notifyMessage,
                         date: new Date().toISOString(),
                         read: false
@@ -900,7 +900,7 @@ export default function AdminPage({ navigate }) {
                      await addDoc(collection(db, 'notificaciones'), {
                         userId: u.id,
                         type: notifyType,
-                        title: notifyType === 'promo' ? '🏷️ ¡Nueva Oferta!' : 'Mensaje de Listo Patrón',
+                        title: notifyType === 'promo' ? '🏷️ ¡Nueva Oferta!' : 'Mensaje de Pedidos Listo',
                         text: notifyMessage,
                         date: new Date().toISOString(),
                         read: false
@@ -2228,7 +2228,7 @@ export default function AdminPage({ navigate }) {
                     <div>
                       {/* Notice Banner */}
                       <div style={{background:'rgba(242,96,0,0.08)', border:'1.5px solid rgba(242,96,0,0.3)', padding:'14px 16px', borderRadius:16, marginBottom:20, fontSize:13, color:'var(--text)', lineHeight:1.45}}>
-                        <strong>🛡️ Política de Seguridad Listo Patrón:</strong> Revisa que la foto no contenga números de teléfono, redes sociales ni anuncios publicitarios.
+                        <strong>🛡️ Política de Seguridad Pedidos Listo:</strong> Revisa que la foto no contenga números de teléfono, redes sociales ni anuncios publicitarios.
                         <div style={{fontSize:11, color:'var(--brand)', fontWeight:800, marginTop:4}}>💡 Tip de Auditoría: Haz clic en cualquier foto para abrirla en Pantalla Completa HD.</div>
                       </div>
 
@@ -2674,7 +2674,7 @@ export default function AdminPage({ navigate }) {
                               setNotifyUser(u.id);
                               setNotifySearch(u.name || u.phone);
                               setShowNotifyAc(false);
-                              setNotifyMessage(`Hola ${u.name || 'usuario'}, Bienvenido a Listo Patrón. Para comenzar a generar dinero de inmediato debes completar tu perfil. ¡Te esperamos!`);
+                              setNotifyMessage(`Hola ${u.name || 'usuario'}, Bienvenido a Pedidos Listo. Para comenzar a generar dinero de inmediato debes completar tu perfil. ¡Te esperamos!`);
                             }}>
                               <div className="ac-avatar">
                                 {u.profilePic || u.photoURL || u.avatarId ? (

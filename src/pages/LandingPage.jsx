@@ -51,7 +51,7 @@ export default function LandingPage({ navigate, lang }) {
     <div className="splash-logo-wrap">
       <img src="./assets/logo_listo_blanco.png" alt="Listo" className="splash-logo" />
     </div>
-    <div className="splash-tagline">Listo Patrón</div>
+    <div className="splash-tagline">Pedidos Listo</div>
     <div className="splash-loader">
       <div className="splash-bar"></div>
     </div>
@@ -88,7 +88,7 @@ export default function LandingPage({ navigate, lang }) {
 
 {/*  NAV  */}
 <nav id="nav">
-  <img className="nav-logo" src="./assets/logo_listo.png" alt="Listo Patrón" style={{"height": "40px", "objectFit": "contain"}} />
+  <img className="nav-logo" src="./assets/logo_listo.png" alt="Pedidos Listo" style={{"height": "40px", "objectFit": "contain"}} />
   <div className="nav-links" id="navLinks">
     <a href="#servicios">Servicios</a>
     <a href="#como-funciona">Cómo funciona</a>
@@ -130,7 +130,7 @@ export default function LandingPage({ navigate, lang }) {
     <div style={{"position": "relative", "width": "100%", "maxWidth": "1000px", "boxShadow": "0 0 40px rgba(0,0,0,0.3)", "overflow": "hidden", "background": "#000", "borderRadius": "16px", "margin": "0 15px"}}>
       
       {/* La imagen principal (el banner naranja con las personas) - en auto proporciones para que no se corte */}
-      <img src="./assets/portada_nueva.png" style={{"width": "100%", "height": "auto", "display": "block"}} alt="Portada Listo Patrón" />
+      <img src="./assets/portada_nueva.png" style={{"width": "100%", "height": "auto", "display": "block"}} alt="Portada Pedidos Listo" />
       
       {/* El logo circular en la esquina superior derecha */}
       <img src="./assets/logo_esquina.png" style={{"position": "absolute", "top": "4%", "right": "4%", "width": "clamp(50px, 8vw, 90px)", "height": "auto", "objectFit": "contain", "zIndex": "2", "filter": "drop-shadow(0 4px 6px rgba(0,0,0,0.2))"}} alt="Logo Listo" />
@@ -365,7 +365,7 @@ export default function LandingPage({ navigate, lang }) {
             <div className="phone-notch"></div>
             <div className="phone-screen">
               <div className="phone-header" style={{"flexDirection": "column", "alignItems": "center", "gap": "6px", "padding": "16px 14px 10px"}}>
-                <img src="./assets/extracted_19.png" alt="Listo Patrón" style={{"height": "28px", "width": "auto", "objectFit": "contain", "filter": "brightness(0) invert(1)"}}/>
+                <img src="./assets/extracted_19.png" alt="Pedidos Listo" style={{"height": "28px", "width": "auto", "objectFit": "contain", "filter": "brightness(0) invert(1)"}}/>
                 <span style={{"color": "rgba(255,255,255,0.9)", "fontSize": "10px", "fontWeight": "700", "letterSpacing": ".5px"}}>🇩🇴 República Dominicana</span>
               </div>
               <div className="phone-search">🔍 ¿Qué servicio necesitas?</div>
@@ -1083,7 +1083,7 @@ export default function LandingPage({ navigate, lang }) {
       <span style={{"fontSize": "28px"}}>📲</span>
       <div style={{"textAlign": "left"}}>
         <div style={{"fontWeight": "800", "fontSize": "15px", "color": "#222"}}>Los planes se contratan desde la app</div>
-        <div style={{"fontSize": "13px", "color": "var(--gray)", "marginTop": "2px"}}>Descarga Listo Patrón, crea tu perfil de profesional y elige tu plan en segundos.</div>
+        <div style={{"fontSize": "13px", "color": "var(--gray)", "marginTop": "2px"}}>Descarga Pedidos Listo, crea tu perfil de profesional y elige tu plan en segundos.</div>
       </div>
       <a onClick={() => navigate('login')} style={{cursor: "pointer", "background": "var(--orange)", "color": "#fff", "padding": "10px 22px", "borderRadius": "50px", "fontWeight": "800", "fontSize": "14px", "textDecoration": "none", "whiteSpace": "nowrap", "boxShadow": "0 4px 14px rgba(242,96,0,0.35)", "transition": "transform .2s,box-shadow .2s"}} onMouseOver={() => { this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 24px rgba(242,96,0,0.5)' }} onMouseOut={() => { this.style.transform='';this.style.boxShadow='0 4px 14px rgba(242,96,0,0.35)' }}>🚀 Descargar app</a>
     </div>
@@ -1219,7 +1219,7 @@ export default function LandingPage({ navigate, lang }) {
       <p style={{"textAlign": "center", "marginTop": "24px", "fontSize": "13px", "color": "#aaa"}}>* Los contratos no vencen hasta ser usados (excepto VIP que es mensual)</p>
       <div style={{"display": "flex", "alignItems": "center", "justifyContent": "center", "gap": "10px", "marginTop": "20px", "background": "#fff3ec", "borderRadius": "12px", "padding": "14px 24px", "maxWidth": "600px", "marginLeft": "auto", "marginRight": "auto", "border": "1.5px solid var(--orange-pale2)"}}>
         <span style={{"fontSize": "20px"}}>ℹ️</span>
-        <p style={{"fontSize": "13px", "color": "#555", "margin": "0"}}>Para comprar un plan, descarga la app <strong style={{"color": "var(--orange)"}}>Listo Patrón</strong>, regístrate como profesional y selecciona el plan desde tu perfil.</p>
+        <p style={{"fontSize": "13px", "color": "#555", "margin": "0"}}>Para comprar un plan, descarga la app <strong style={{"color": "var(--orange)"}}>Pedidos Listo</strong>, regístrate como profesional y selecciona el plan desde tu perfil.</p>
       </div>
     </div>
 
@@ -1305,7 +1305,7 @@ export default function LandingPage({ navigate, lang }) {
 
       <details style={{"background": "#FFF3EC", "borderRadius": "14px", "padding": "18px 20px", "border": "1px solid #FFD4B8", "cursor": "pointer"}}>
         <summary style={{"fontWeight": "800", "fontSize": "15px", "color": "#C24D00", "listStyle": "none", "display": "flex", "justifyContent": "space-between", "alignItems": "center"}}>
-          ¿Cuánto cuesta unirse a Listo Patrón? <span style={{"fontSize": "20px", "color": "#F26000"}}>+</span>
+          ¿Cuánto cuesta unirse a Pedidos Listo? <span style={{"fontSize": "20px", "color": "#F26000"}}>+</span>
         </summary>
         <p style={{"marginTop": "12px", "color": "#555", "fontSize": "14px", "lineHeight": "1.7"}}>Los primeros 3 meses son completamente gratis con el Plan Básico incluido (3 contratos por mes). Después puedes elegir el plan que más te convenga según tu volumen de trabajo.</p>
       </details>
@@ -1314,7 +1314,7 @@ export default function LandingPage({ navigate, lang }) {
         <summary style={{"fontWeight": "800", "fontSize": "15px", "color": "#C24D00", "listStyle": "none", "display": "flex", "justifyContent": "space-between", "alignItems": "center"}}>
           ¿Cómo recibo los pagos? <span style={{"fontSize": "20px", "color": "#F26000"}}>+</span>
         </summary>
-        <p style={{"marginTop": "12px", "color": "#555", "fontSize": "14px", "lineHeight": "1.7"}}>Los clientes pagan en efectivo o transferencia directamente a ti. Listo Patrón no cobra comisión por servicio — solo pagas tu plan mensual.</p>
+        <p style={{"marginTop": "12px", "color": "#555", "fontSize": "14px", "lineHeight": "1.7"}}>Los clientes pagan en efectivo o transferencia directamente a ti. Pedidos Listo no cobra comisión por servicio — solo pagas tu plan mensual.</p>
       </details>
 
       <details style={{"background": "#FFF3EC", "borderRadius": "14px", "padding": "18px 20px", "border": "1px solid #FFD4B8", "cursor": "pointer"}}>
@@ -1613,7 +1613,7 @@ export default function LandingPage({ navigate, lang }) {
     <div style={{"maxWidth": "800px", "margin": "0 auto", "display": "flex", "flexDirection": "column", "alignItems": "center", "gap": "16px"}}>
       
       <div>
-        <h3 style={{"color": "#fff", "fontSize": "22px", "fontWeight": "800", "marginBottom": "10px"}}>Listo Patrón SRL</h3>
+        <h3 style={{"color": "#fff", "fontSize": "22px", "fontWeight": "800", "marginBottom": "10px"}}>Pedidos Listo SRL</h3>
         <p style={{"color": "#768bb1", "margin": "0 0 6px", "fontSize": "15px"}}>Barrio La Terrazita, Peatón 3 No. 18, Edificio de Arte</p>
         <p style={{"color": "#768bb1", "margin": "0", "fontSize": "15px"}}>Detrás Urb. La Terraza, Santiago de los Caballeros, Rep. Dom.</p>
       </div>
@@ -1650,7 +1650,7 @@ export default function LandingPage({ navigate, lang }) {
       </div>
 
       <div style={{"color": "#4a5a75", "fontSize": "14px", "marginTop": "24px"}}>
-        © 2026 Listo Patrón. Todos los derechos reservados.
+        © 2026 Pedidos Listo. Todos los derechos reservados.
       </div>
     </div>
   </footer>
@@ -1659,7 +1659,7 @@ export default function LandingPage({ navigate, lang }) {
     isOpen={showPlanModal} 
     onClose={() => setShowPlanModal(false)} 
     onSelectPlan={(plan) => {
-      alert(`Has seleccionado el ${plan.name} (${plan.price}). Para completar tu pago y activación de cuenta, por favor inicia sesión o regístrate en Listo Patrón.`);
+      alert(`Has seleccionado el ${plan.name} (${plan.price}). Para completar tu pago y activación de cuenta, por favor inicia sesión o regístrate en Pedidos Listo.`);
       setShowPlanModal(false);
       navigate('login');
     }} 

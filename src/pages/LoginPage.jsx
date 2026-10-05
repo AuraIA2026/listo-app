@@ -139,14 +139,14 @@ export default function LoginPage({ lang, navigate }) {
         
         // Enviar mensaje de bienvenida
         const welcomeText = userType === 'client'
-          ? `¡Hola ${displayName.split(' ')[0]}! Bienvenido a Listo Patrón. Estamos felices de tenerte aquí. Explora nuestro directorio y contrata a los mejores profesionales de confianza para tus proyectos hoy mismo.`
-          : `¡Hola ${displayName.split(' ')[0]}! Bienvenido a Listo Patrón. Estás a un paso de generar ingresos. Entra a "Perfil", llena tus datos de Verificación y postúlate para ser un aliado oficial. ¡Mucho éxito!`;
+          ? `¡Hola ${displayName.split(' ')[0]}! Bienvenido a Pedidos Listo. Estamos felices de tenerte aquí. Explora nuestro directorio y contrata a los mejores profesionales de confianza para tus proyectos hoy mismo.`
+          : `¡Hola ${displayName.split(' ')[0]}! Bienvenido a Pedidos Listo. Estás a un paso de generar ingresos. Entra a "Perfil", llena tus datos de Verificación y postúlate para ser un aliado oficial. ¡Mucho éxito!`;
           
         try {
           await addDoc(collection(db, 'notificaciones'), {
             userId: user.uid,
             type: 'system',
-            title: 'Mensaje de Listo Patrón',
+            title: 'Mensaje de Pedidos Listo',
             text: welcomeText,
             date: new Date().toISOString(),
             read: false
@@ -618,8 +618,8 @@ export default function LoginPage({ lang, navigate }) {
             </div>
             <p className="auth-social-text">
               {lang === 'es' 
-                ? <>Únete a <strong>más de 10,000 dominicanos</strong> que ya confían en Listo Patrón.</>
-                : <>Join <strong>over 10,000 customers</strong> who already trust Listo Patrón.</>}
+                ? <>Únete a <strong>más de 10,000 dominicanos</strong> que ya confían en Pedidos Listo.</>
+                : <>Join <strong>over 10,000 customers</strong> who already trust Pedidos Listo.</>}
             </p>
           </div>
 

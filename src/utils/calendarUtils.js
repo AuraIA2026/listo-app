@@ -8,8 +8,8 @@ export function getGoogleCalendarUrl({ title, description, location, startDate }
 
   const params = new URLSearchParams({
     action: 'TEMPLATE',
-    text: title || 'Cita de Servicio - Listo Patrón',
-    details: description || 'Servicio contratado mediante Listo Patrón.',
+    text: title || 'Cita de Servicio - Pedidos Listo',
+    details: description || 'Servicio contratado mediante Pedidos Listo.',
     location: location || 'Santo Domingo, República Dominicana',
     dates: `${fmt(start)}/${fmt(end)}`,
   })
@@ -32,7 +32,7 @@ export function downloadIcsFile({ title, description, location, startDate }) {
     `DTSTAMP:${fmt(new Date())}`,
     `DTSTART:${fmt(start)}`,
     `DTEND:${fmt(end)}`,
-    `SUMMARY:${title || 'Cita de Servicio - Listo Patrón'}`,
+    `SUMMARY:${title || 'Cita de Servicio - Pedidos Listo'}`,
     `DESCRIPTION:${(description || '').replace(/\n/g, '\\n')}`,
     `LOCATION:${location || 'República Dominicana'}`,
     'END:VEVENT',

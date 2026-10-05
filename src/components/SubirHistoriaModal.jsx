@@ -12,7 +12,7 @@ const COLOR_PALETTE = [
 ]
 
 const STICKER_PRESETS = [
-  { id: 'logo_listo', label: '⚡ Listo Patrón' },
+  { id: 'logo_listo', label: '⚡ Pedidos Listo' },
   { id: 'oficial_5s', label: '⭐ Trabajo 5 Estrellas' },
   { id: 'oferta_flash', label: '🔥 Oferta 24h' },
   { id: 'garantia', label: '🛡️ Garantizado' },
@@ -119,7 +119,7 @@ export default function SubirHistoriaModal({ isOpen, onClose, userData, onStoryU
         ctx.drawImage(img, (targetW - bgW) / 2, (targetH - bgH) / 2, bgW, bgH)
         ctx.restore()
       } else if (bgStyle === 'gradient') {
-        // Degradado estilo Listo Patrón
+        // Degradado estilo Pedidos Listo
         const grad = ctx.createLinearGradient(0, 0, 0, targetH)
         grad.addColorStop(0, '#0F172A')
         grad.addColorStop(0.5, '#1E293B')
@@ -592,7 +592,7 @@ export default function SubirHistoriaModal({ isOpen, onClose, userData, onStoryU
         trimStart: mediaType === 'video' ? trimStart : 0,
         trimEnd: mediaType === 'video' ? trimEnd : 15,
         videoDuration: mediaType === 'video' ? (selectedSegmentDuration || 15) : 15,
-        caption: caption.trim() || (isClient ? 'Excelente servicio solicitado en Listo Patrón ⚡' : 'Trabajo realizado con calidad Listo Patrón ⚡'),
+        caption: caption.trim() || (isClient ? 'Excelente servicio solicitado en Pedidos Listo ⚡' : 'Trabajo realizado con calidad Pedidos Listo ⚡'),
         offerSticker: offerSticker !== 'none' ? offerSticker : null,
         likesCount: 0,
         is5StarVerified: !isClient,
@@ -1082,7 +1082,7 @@ export default function SubirHistoriaModal({ isOpen, onClose, userData, onStoryU
             {/* 6. PANEL DE STICKERS Y MARCAS DE LISTO */}
             {activeTool === 'sticker' && (
               <div className="wa-panel-content">
-                <span className="wa-panel-title">😀 Stickers y Marcas de Listo Patrón</span>
+                <span className="wa-panel-title">😀 Stickers y Marcas de Pedidos Listo</span>
                 <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                   {STICKER_PRESETS.map(stk => {
                     const isSel = selectedStickers.some(s => s.id === stk.id)

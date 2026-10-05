@@ -27,7 +27,7 @@ export default function StoreCircleWidget({ lang = 'es' }) {
       {/* CÍRCULO TIENDA EN LA BARRA DE NAVEGACIÓN */}
       <button
         onClick={handleOpenStore}
-        title={lang === 'es' ? 'Visitar la Tienda Web de Listo Patrón 🛍️' : 'Visit Listo Patrón Web Store 🛍️'}
+        title={lang === 'es' ? 'Visitar la Tienda Web de Pedidos Listo 🛍️' : 'Visit Pedidos Listo Web Store 🛍️'}
         style={{
           width: '42px',
           height: '42px',

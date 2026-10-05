@@ -4,7 +4,7 @@ const FLASH_OFFERS = [
   { id: 'off_1', titleEs: '🔧 Plomería de Urgencia', titleEn: '🔧 Emergency Plumbing', discount: '25% OFF', descEs: 'Reparación de fugas y tuberías hoy', icon: '🔧', cat: 'plomero' },
   { id: 'off_2', titleEs: '⚡ Electricista Residencial', titleEn: '⚡ Residential Electrician', discount: '20% OFF', descEs: 'Cortocircuitos y tableros 24/7', icon: '⚡', cat: 'electricista' },
   { id: 'off_3', titleEs: '🔑 Cerrajería Express', titleEn: '🔑 Express Locksmith', discount: '30% OFF', descEs: 'Apertura de puertas y autos al instante', icon: '🔑', cat: 'cerrajero' },
-  { id: 'off_4', titleEs: '🧹 Limpieza de Oficina/Hogar', titleEn: '🧹 Deep Cleaning', discount: '15% OFF', descEs: 'Personal verificado Listo Patrón', icon: '🧹', cat: 'limpieza' }
+  { id: 'off_4', titleEs: '🧹 Limpieza de Oficina/Hogar', titleEn: '🧹 Deep Cleaning', discount: '15% OFF', descEs: 'Personal verificado Pedidos Listo', icon: '🧹', cat: 'limpieza' }
 ]
 
 export default function LightningOfferBannerModal({ isOpen, onClose, navigate, lang = 'es' }) {

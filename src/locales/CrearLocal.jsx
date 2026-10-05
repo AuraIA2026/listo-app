@@ -178,7 +178,7 @@ export default function CrearLocal({ lang = 'es', navigate, userData }) {
           </div>
 
           <div className="crear-local-section">
-            <h2 className="cls-title">Método de pago de Listo Patrón</h2>
+            <h2 className="cls-title">Método de pago de Pedidos Listo</h2>
             <div style={{ display:'flex', gap:10, marginBottom:16 }}>
                <button onClick={() => setPaymentType('tarjeta')} style={{ flex:1, padding:12, borderRadius:12, border:paymentType==='tarjeta' ? '2px solid var(--vip-gold)' : '1px solid rgba(255,255,255,0.08)', background:paymentType==='tarjeta'?'rgba(212,175,55,0.08)':'rgba(255,255,255,0.02)', color:paymentType==='tarjeta'?'var(--vip-gold)':'#ccc', fontWeight:800, cursor:'pointer', transition:'all 0.2s' }}>💳 Tarjeta</button>
                <button onClick={() => setPaymentType('transferencia')} style={{ flex:1, padding:12, borderRadius:12, border:paymentType==='transferencia' ? '2px solid var(--vip-gold)' : '1px solid rgba(255,255,255,0.08)', background:paymentType==='transferencia'?'rgba(212,175,55,0.08)':'rgba(255,255,255,0.02)', color:paymentType==='transferencia'?'var(--vip-gold)':'#ccc', fontWeight:800, cursor:'pointer', transition:'all 0.2s' }}>🏦 Transferencia</button>
@@ -222,7 +222,7 @@ export default function CrearLocal({ lang = 'es', navigate, userData }) {
                 <div style={{ background:'rgba(0,0,0,0.2)', padding:12, borderRadius:8, border:'1px solid rgba(212,175,55,0.15)' }}>
                   <p style={{ margin:'0 0 6px', fontSize:14, fontWeight:800, color:'var(--vip-gold)' }}>Banco Popular</p>
                   <p style={{ margin:'0 0 4px', fontSize:13, color:'var(--vip-text-secondary)' }}>Cuenta Corriente: <strong style={{ color:'#fff' }}>123456789</strong></p>
-                  <p style={{ margin:0, fontSize:13, color:'var(--vip-text-secondary)' }}>A nombre de: <strong style={{ color:'#fff' }}>Listo Patrón SRL</strong></p>
+                  <p style={{ margin:0, fontSize:13, color:'var(--vip-text-secondary)' }}>A nombre de: <strong style={{ color:'#fff' }}>Pedidos Listo SRL</strong></p>
                 </div>
               </div>
             )}

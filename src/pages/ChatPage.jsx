@@ -34,7 +34,7 @@ function Avatar({ name = '?', photoURL = null, color = '#F26000', size = 44, onl
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           border: '2px solid #FFD700', boxShadow: '0 4px 10px rgba(242,96,0,0.4)', overflow: 'hidden'
         }}>
-          <img src={logoBlanco} alt="Listo Patrón" style={{ height: size * 0.5, filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))' }} />
+          <img src={logoBlanco} alt="Pedidos Listo" style={{ height: size * 0.5, filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))' }} />
         </div>
         {online && <div style={{ position: 'absolute', bottom: 1, right: 1, width: size * 0.26, height: size * 0.26, borderRadius: '50%', background: '#10B981', border: '2px solid #fff' }} />}
       </div>
@@ -141,7 +141,7 @@ export default function ChatPage({ lang = 'es', navigate, professional, userData
         // PROTECCIÓN DE MODO OFICIAL SOPORTE
         if (other && typeof other.email === 'string' && other.email.toLowerCase().trim() === SUPPORT_EMAIL) {
            other.isOfficial = true;
-           other.name = 'Listo Patrón Oficial ✅';
+           other.name = 'Pedidos Listo Oficial ✅';
            other.specialty = 'Centro de Ayuda';
         }
 
@@ -237,7 +237,7 @@ export default function ChatPage({ lang = 'es', navigate, professional, userData
     let mappedOther = { uid: otherId, ...otherData }
     if (mappedOther.email && String(mappedOther.email).toLowerCase().trim() === SUPPORT_EMAIL) {
        mappedOther.isOfficial = true;
-       mappedOther.name = 'Listo Patrón Oficial ✅';
+       mappedOther.name = 'Pedidos Listo Oficial ✅';
        mappedOther.specialty = 'Centro de Ayuda';
     }
     

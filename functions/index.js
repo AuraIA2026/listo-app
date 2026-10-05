@@ -471,9 +471,9 @@ exports.enviarAlertaNuevoPedido = functions.firestore
 
       if (proData.emailNotifications !== false) {
         const mailOptions = {
-          from: '"Listo Patrón" <listopatron.app@gmail.com>',
+          from: '"Pedidos Listo" <listopatron.app@gmail.com>',
           to: destinoEmail,
-          subject: "🚨 ¡NUEVO CONTRATO DISPONIBLE! - Listo Patrón 🚨",
+          subject: "🚨 ¡NUEVO CONTRATO DISPONIBLE! - Pedidos Listo 🚨",
           html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-top: 5px solid #F26000; border-radius: 10px;">
               <h2 style="color: #1A1A2E; text-align: center;">¡Felicidades, ${proData.name.split(' ')[0]}! 🎉</h2>
@@ -485,12 +485,12 @@ exports.enviarAlertaNuevoPedido = functions.firestore
                 <p style="margin: 5px 0;"><strong>💰 Precio:</strong> ${order.price || 'A convenir'}</p>
                 <p style="margin: 5px 0;"><strong>🕒 Fecha:</strong> ${order.dateToken} - ${order.timeToken}</p>
               </div>
-              <p style="font-size: 14px; color: #666; text-align: center;">Por favor, abre la aplicación <b>Listo Patrón</b> de inmediato para aceptar o rechazar este trabajo.</p>
+              <p style="font-size: 14px; color: #666; text-align: center;">Por favor, abre la aplicación <b>Pedidos Listo</b> de inmediato para aceptar o rechazar este trabajo.</p>
               <div style="text-align: center; margin-top: 25px;">
                 <a href="https://listo-app.vercel.app/orders" style="background: #F26000; color: white; text-decoration: none; padding: 12px 25px; border-radius: 5px; font-weight: bold; font-size: 16px;">Ir a mis pedidos</a>
               </div>
               <hr style="border: none; border-top: 1px solid #eee; margin-top: 30px;">
-              <p style="font-size: 12px; color: #999; text-align: center;">Este es un mensaje automático de Listo Patrón. Por favor no respondas a este correo.</p>
+              <p style="font-size: 12px; color: #999; text-align: center;">Este es un mensaje automático de Pedidos Listo. Por favor no respondas a este correo.</p>
             </div>
           `
         };
@@ -546,7 +546,7 @@ exports.enviarNotificacionPushBackground = functions.firestore
         token: fcmToken,
         notification: {
           title: notifData.title || "🔔 Nueva Notificación",
-          body: notifData.text || "Tienes un mensaje nuevo en Listo Patrón.",
+          body: notifData.text || "Tienes un mensaje nuevo en Pedidos Listo.",
         },
         data: {
           type: notifData.type || "",
@@ -670,9 +670,9 @@ exports.enviarCorreoNuevoPlan = functions.firestore
 
       if (after.emailNotifications !== false) {
         const mailOptions = {
-          from: '"Listo Patrón" <listopatron.app@gmail.com>',
+          from: '"Pedidos Listo" <listopatron.app@gmail.com>',
           to: destinoEmail,
-          subject: `🎉 ¡Bienvenido al Plan ${planDisplay}! - Listo Patrón`,
+          subject: `🎉 ¡Bienvenido al Plan ${planDisplay}! - Pedidos Listo`,
           html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-top: 5px solid ${colorPlan}; border-radius: 10px;">
               <h2 style="color: #1A1A2E; text-align: center;">¡Gracias por postularte y creer en tu talento, ${nombre}! 🚀</h2>
@@ -686,7 +686,7 @@ exports.enviarCorreoNuevoPlan = functions.firestore
                 <a href="https://listo-app.vercel.app/profile" style="background: #1A1A2E; color: white; text-decoration: none; padding: 14px 28px; border-radius: 6px; font-weight: bold; font-size: 16px;">Entrar a mi Perfil</a>
               </div>
               <hr style="border: none; border-top: 1px solid #eee; margin-top: 30px;">
-              <p style="font-size: 12px; color: #aaa; text-align: center;">Mensaje automático del equipo de Listo Patrón.</p>
+              <p style="font-size: 12px; color: #aaa; text-align: center;">Mensaje automático del equipo de Pedidos Listo.</p>
             </div>
           `
         };
@@ -759,9 +759,9 @@ exports.enviarCorreoPagoRecibido = functions.firestore
           const neto = Math.round(montoTotal * 0.90);
 
           const mailOptions = {
-            from: '"Listo Patrón" <listopatron.app@gmail.com>',
+            from: '"Pedidos Listo" <listopatron.app@gmail.com>',
             to: destinoEmail,
-            subject: `💳 ¡Pago Recibido Exitosamente! - Listo Patrón`,
+            subject: `💳 ¡Pago Recibido Exitosamente! - Pedidos Listo`,
             html: `
               <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-top: 5px solid #10B981; border-radius: 10px;">
                 <h2 style="color: #1A1A2E; text-align: center;">¡Felicidades, ${nombre}! 🎉</h2>
@@ -780,7 +780,7 @@ exports.enviarCorreoPagoRecibido = functions.firestore
                   <a href="https://listo-app.vercel.app/profile" style="background: #10B981; color: white; text-decoration: none; padding: 12px 25px; border-radius: 5px; font-weight: bold; font-size: 16px;">Ver mi balance</a>
                 </div>
                 <hr style="border: none; border-top: 1px solid #eee; margin-top: 30px;">
-                <p style="font-size: 12px; color: #999; text-align: center;">Este es un mensaje automático de Listo Patrón. Por favor no respondas a este correo.</p>
+                <p style="font-size: 12px; color: #999; text-align: center;">Este es un mensaje automático de Pedidos Listo. Por favor no respondas a este correo.</p>
               </div>
             `
           };

@@ -136,7 +136,7 @@ export default function ProFinanzasModal({ lang = 'es', onClose, proUserData }) 
 
   const handleExportReport = () => {
     const text = encodeURIComponent(
-      `📊 *REPORTE FINANCIERO LISTO PATRÓN*\n` +
+      `📊 *REPORTE FINANCIERO PEDIDOS LISTO*\n` +
       `----------------------------------------\n` +
       `👨‍🔧 *Profesional:* ${proUserData?.name || 'Profesional Listo'}\n` +
       `💼 *Trabajos Completados:* ${metrics.completedJobs}\n` +

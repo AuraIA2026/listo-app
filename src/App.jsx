@@ -280,7 +280,7 @@ function SystemAlertModal({ alert, onClose, lang, onNavigateProfile }) {
               textShadow: '0 2px 5px rgba(0,0,0,0.4), 0 0 2px rgba(0,0,0,0.6)',
               letterSpacing: '-0.3px', lineHeight: 1.12
             }}>
-              {alert.title || 'Bienvenido a Listo Patrón'}
+              {alert.title || 'Bienvenido a Pedidos Listo'}
             </h2>
           </div>
 
@@ -378,7 +378,7 @@ function SystemAlertModal({ alert, onClose, lang, onNavigateProfile }) {
               margin: '0 0 18px', fontSize: '23px', fontWeight: '900', color: '#FFFFFF',
               textShadow: '0 2px 6px rgba(0,0,0,0.4)', lineHeight: 1.2, textAlign: 'center'
             }}>
-              {alert.title || 'Bienvenido a Listo Patrón'}
+              {alert.title || 'Bienvenido a Pedidos Listo'}
             </h2>
 
             {/* Párrafos Completos con Formato Exacto */}
@@ -619,7 +619,7 @@ export default function App() {
           playMsgSound()
           setChatBanner({ sender: senderName, text: lastMsg.text || '📎 Mensaje', chatId })
           sendBrowserNotification(`💬 Mensaje de ${senderName}`, {
-            body: lastMsg.text || 'Tienes un nuevo mensaje en Listo Patrón',
+            body: lastMsg.text || 'Tienes un nuevo mensaje en Pedidos Listo',
             url: '/orders'
           })
         })
@@ -687,7 +687,7 @@ export default function App() {
         } catch(e){}
 
         setSystemAlert({ id: toShow.id, title: toShow.title, text: toShow.text });
-        sendBrowserNotification(toShow.title || '🔔 Notificación de Listo Patrón', {
+        sendBrowserNotification(toShow.title || '🔔 Notificación de Pedidos Listo', {
           body: toShow.text || 'Tienes una nueva notificación.',
           url: '/notificaciones'
         })

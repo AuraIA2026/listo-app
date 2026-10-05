@@ -119,7 +119,7 @@ export default function CalculadoraMaterialesModal({ lang = 'es', onClose, navig
   }
 
   const handleCopyMaterials = () => {
-    const text = `📋 LISTA ESTIMADA DE MATERIALES - LISTO PATRÓN:\nTrabajo: ${selectedPreset.titleEs}\n\nMateriales:\n${calcResult.materials.join('\n')}\n\nCosto Estimado Materiales: RD$ ${calcResult.matCost.toLocaleString()}\nMano de Obra Estimada: RD$ ${calcResult.laborCost.toLocaleString()}\nTOTAL ESTIMADO: RD$ ${calcResult.totalCost.toLocaleString()}`
+    const text = `📋 LISTA ESTIMADA DE MATERIALES - PEDIDOS LISTO:\nTrabajo: ${selectedPreset.titleEs}\n\nMateriales:\n${calcResult.materials.join('\n')}\n\nCosto Estimado Materiales: RD$ ${calcResult.matCost.toLocaleString()}\nMano de Obra Estimada: RD$ ${calcResult.laborCost.toLocaleString()}\nTOTAL ESTIMADO: RD$ ${calcResult.totalCost.toLocaleString()}`
     navigator.clipboard.writeText(text)
     alert(isEs ? '📋 ¡Lista de materiales copiada al portapapeles!' : '📋 Materials list copied!')
   }
@@ -196,7 +196,7 @@ export default function CalculadoraMaterialesModal({ lang = 'es', onClose, navig
               <strong>RD$ {calcResult.matCost.toLocaleString()}</strong>
             </div>
             <div className="calc-cost-row">
-              <span>👷 {isEs ? 'Mano de Obra Estimada Listo Patrón:' : 'Est. Listo Patrón Labor:'}</span>
+              <span>👷 {isEs ? 'Mano de Obra Estimada Pedidos Listo:' : 'Est. Pedidos Listo Labor:'}</span>
               <strong style={{ color: '#F26000' }}>RD$ {calcResult.laborCost.toLocaleString()}</strong>
             </div>
             <div className="calc-cost-row total">

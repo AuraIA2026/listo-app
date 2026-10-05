@@ -1,5 +1,5 @@
 /* ==========================================================================
-   CONFIGURACIÓN Y TEMAS DE PLANES LISTO PATRÓN
+   CONFIGURACIÓN Y TEMAS DE PLANES PEDIDOS LISTO
    Estándar (Verde), Gold (Dorado), Platinum (Plateado-Azul), VIP (Naranja-Diamante)
    ========================================================================== */
 

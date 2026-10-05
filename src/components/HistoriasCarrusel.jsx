@@ -411,7 +411,7 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate
             </h3>
 
             <p style={{ fontSize: '13.5px', color: '#CBD5E1', lineHeight: 1.6, marginBottom: '22px' }}>
-              Para garantizar la máxima calidad en Listo Patrón, la función de publicar Historias de Trabajo de 24h está reservada exclusivamente para profesionales que hayan obtenido una calificación de <strong style={{ color: '#FBBF24' }}>4 a 5 Estrellas ⭐⭐⭐⭐⭐ por contrato / trabajo finalizado</strong>.
+              Para garantizar la máxima calidad en Pedidos Listo, la función de publicar Historias de Trabajo de 24h está reservada exclusivamente para profesionales que hayan obtenido una calificación de <strong style={{ color: '#FBBF24' }}>4 a 5 Estrellas ⭐⭐⭐⭐⭐ por contrato / trabajo finalizado</strong>.
               <br /><br />
               ¡Completa tu próximo contrato con responsabilidad, puntualidad y excelencia para recibir de 4 a 5 estrellas de tu cliente y desbloquear tus Historias!
             </p>
@@ -471,7 +471,7 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate
             </h3>
 
             <p style={{ fontSize: '13.5px', color: '#CBD5E1', lineHeight: 1.6, marginBottom: '22px' }}>
-              Para garantizar la seguridad, autenticidad y confianza en la comunidad de Listo Patrón, <strong style={{ color: '#F87171' }}>solo los usuarios con su Perfil Completo (Nombre y Teléfono)</strong> pueden publicar Historias de Trabajo de 24h.
+              Para garantizar la seguridad, autenticidad y confianza en la comunidad de Pedidos Listo, <strong style={{ color: '#F87171' }}>solo los usuarios con su Perfil Completo (Nombre y Teléfono)</strong> pueden publicar Historias de Trabajo de 24h.
             </p>
 
             <button

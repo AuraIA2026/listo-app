@@ -1103,7 +1103,7 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
               <div key={pro.id} className="pro-card-premium" style={{ animationDelay:`${i * 0.06}s` }} onClick={() => navigate('proProfile', pro)}>
                 <div className="premium-photo-wrap" style={{ position: 'relative' }}>
                   <div className="listo-brand-watermark" style={{ top: '12px', right: '12px' }}>
-                    <img src={logoListo} alt="Listo Patrón" className="listo-brand-watermark-img" />
+                    <img src={logoListo} alt="Pedidos Listo" className="listo-brand-watermark-img" />
                   </div>
                   <div className="premium-badges-top">
                     <span className="premium-amz-badge" style={{background: 'linear-gradient(135deg, #FF6B00, #FF3D00)'}}>✨ Exclusivo VIP</span>
@@ -1257,7 +1257,7 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
             <div key={pro.id} className={`pro-card ${cardTierClass} ${isTopRated ? 'top-rated' : ''}`} style={{ animationDelay:`${i * 0.06}s` }}>
               <div className="card-photo" style={{ position: 'relative' }}>
                 <div className="listo-brand-watermark">
-                  <img src={logoListo} alt="Listo Patrón" className="listo-brand-watermark-img" />
+                  <img src={logoListo} alt="Pedidos Listo" className="listo-brand-watermark-img" />
                 </div>
                 <img 
                   src={pro.photoURL || pro.img} 

@@ -415,7 +415,7 @@ export default function PaymentPage({ lang = 'es', navigate, professional }) {
             </p>
 
             <div className="receipt-footer-text">
-              Este es un recibo automático generado por Listo Patrón SRL. Gracias por confiar en nosotros. Si tiene algún reclamo sobre su pago, por favor contáctenos a través de la aplicación.
+              Este es un recibo automático generado por Pedidos Listo SRL. Gracias por confiar en nosotros. Si tiene algún reclamo sobre su pago, por favor contáctenos a través de la aplicación.
             </div>
 
             <button className="receipt-close-btn" onClick={() => { setShowReceipt(false); navigate('workdone', pro); }}>

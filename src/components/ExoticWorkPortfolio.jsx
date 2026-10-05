@@ -90,7 +90,7 @@ export default function ExoticWorkPortfolio({ lang = 'es', photos = [], proName 
       location: 'Santo Domingo, R.D.',
       rating: 5.0,
       clientName: 'Cliente Verificado',
-      description: `Trabajo ejecutado por ${proName || 'el profesional'} con garantía de calidad auditada por Listo Patrón.`,
+      description: `Trabajo ejecutado por ${proName || 'el profesional'} con garantía de calidad auditada por Pedidos Listo.`,
       img: url,
       tag: '✨ Certificado'
     }

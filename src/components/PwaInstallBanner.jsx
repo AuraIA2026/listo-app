@@ -35,7 +35,7 @@ export default function PwaInstallBanner() {
       setDeferredPrompt(null)
       setShowBanner(false)
     } else {
-      alert('📲 Para instalar Listo Patrón en tu teléfono:\n\n1. En iPhone (Safari): Presiona el botón "Compartir" (subir) y elige "Agregar a inicio".\n2. En Android (Chrome): Toca los 3 puntos (⋮) y elige "Instalar aplicación".')
+      alert('📲 Para instalar Pedidos Listo en tu teléfono:\n\n1. En iPhone (Safari): Presiona el botón "Compartir" (subir) y elige "Agregar a inicio".\n2. En Android (Chrome): Toca los 3 puntos (⋮) y elige "Instalar aplicación".')
     }
     await requestNotificationPermission()
   }
@@ -89,7 +89,7 @@ export default function PwaInstallBanner() {
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
           <span style={{ fontSize: '13px', fontWeight: '900', color: '#FFFFFF', letterSpacing: '0.2px' }}>
-            Instalar Listo Patrón App
+            Instalar Pedidos Listo App
           </span>
           <span style={{ fontSize: '11px', color: '#94A3B8', fontWeight: '600', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
             Acceso rápido en tu pantalla de inicio + Notificaciones ⚡

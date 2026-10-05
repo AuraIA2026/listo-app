@@ -126,8 +126,8 @@ export default function AntesDespuesGallery({ lang = 'es', customItems = null, p
           </h3>
           <p className="ba-gallery-sub">
             {isEs 
-              ? 'Resultados reales de trabajos completados en Listo Patrón' 
-              : 'Real results from jobs completed on Listo Patrón'}
+              ? 'Resultados reales de trabajos completados en Pedidos Listo' 
+              : 'Real results from jobs completed on Pedidos Listo'}
           </p>
         </div>
       </div>

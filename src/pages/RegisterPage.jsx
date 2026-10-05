@@ -186,13 +186,13 @@ export default function RegisterPage({ lang, navigate }) {
       // Mensaje Automático de Bienvenida
       try {
         const welcomeText = userType === 'pro'
-          ? `¡Hola ${cleanName.split(' ')[0]}! Bienvenido a Listo Patrón como Profesional. Entra a tu Perfil, completa tus datos de Verificación y postúlate para recibir clientes.`
-          : `¡Hola ${cleanName.split(' ')[0]}! Bienvenido a Listo Patrón. Estamos felices de tenerte aquí. Explora nuestro directorio y contrata a los mejores profesionales hoy mismo.`
+          ? `¡Hola ${cleanName.split(' ')[0]}! Bienvenido a Pedidos Listo como Profesional. Entra a tu Perfil, completa tus datos de Verificación y postúlate para recibir clientes.`
+          : `¡Hola ${cleanName.split(' ')[0]}! Bienvenido a Pedidos Listo. Estamos felices de tenerte aquí. Explora nuestro directorio y contrata a los mejores profesionales hoy mismo.`
 
         await addDoc(collection(db, 'notificaciones'), {
           userId: userId,
           type: 'system',
-          title: 'Mensaje de Listo Patrón',
+          title: 'Mensaje de Pedidos Listo',
           text: welcomeText,
           date: new Date().toISOString(),
           read: false
@@ -379,8 +379,8 @@ export default function RegisterPage({ lang, navigate }) {
               <div className="error-banner" style={{ display: 'flex', flexDirection: 'column', gap: '10px', textAlign: 'left' }}>
                 <p style={{ margin: 0, fontWeight: '600' }}>
                   {lang === 'es'
-                    ? 'Este correo ya está registrado en Listo Patrón.'
-                    : 'This email is already registered in Listo Patrón.'}
+                    ? 'Este correo ya está registrado en Pedidos Listo.'
+                    : 'This email is already registered in Pedidos Listo.'}
                 </p>
                 <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '2px' }}>
                   <button

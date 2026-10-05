@@ -33,7 +33,7 @@ export default function ProPlanAlertWidget({ userData, onOpenPlanModal }) {
     if (!localStorage.getItem(key)) {
       localStorage.setItem(key, 'true');
       const title = isExpired 
-        ? '🚨 Tu Plan de Listo Patrón ha Vencido' 
+        ? '🚨 Tu Plan de Pedidos Listo ha Vencido' 
         : isLowContracts 
         ? `⚠️ Alerta: ¡Te queda solo ${contractsCount} contrato!` 
         : `⚠️ Alerta: Tu Plan vence en ${daysLeft} días`;
@@ -41,7 +41,7 @@ export default function ProPlanAlertWidget({ userData, onOpenPlanModal }) {
       const text = isExpired
         ? 'Hola socio, tu plan ha vencido. Renueva ahora en 1 clic para volver a ponerte en línea y recibir solicitudes de clientes.'
         : isLowContracts
-        ? `Hola socio, te queda solo ${contractsCount} contrato libre en Listo Patrón. Renueva tu plan en 1 clic para evitar pausar tu visibilidad.`
+        ? `Hola socio, te queda solo ${contractsCount} contrato libre en Pedidos Listo. Renueva tu plan en 1 clic para evitar pausar tu visibilidad.`
         : `Hola socio, tu suscripción vence en ${daysLeft} día(s). Renueva en 1 clic para mantener tu estatus VIP y clientes activos.`;
 
       addDoc(collection(db, 'notificaciones'), {

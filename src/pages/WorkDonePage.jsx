@@ -407,7 +407,7 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
                   userId: latestOrder.proId,
                   type: 'reward',
                   title: '🎰 ¡1 CONTRATO GRATIS OTORGADO!',
-                  text: '¡Felicidades! Tu barra de la Ruleta Listo Patrón se llenó al 100%. Te acreditamos +1 contrato gratis automáticamente a tu saldo.',
+                  text: '¡Felicidades! Tu barra de la Ruleta Pedidos Listo se llenó al 100%. Te acreditamos +1 contrato gratis automáticamente a tu saldo.',
                   read: false,
                   icon: '🎰',
                   createdAt: serverTimestamp()
@@ -426,7 +426,7 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
                 userId: latestOrder.proId,
                 type: 'reward',
                 title: '🎰 ¡RULETA DESBLOQUEADA!',
-                text: `¡Felicidades por tu excelente trabajo! Recibiste ${formData.calificacion} estrellas ⭐ y desbloqueaste 1 giro en la Ruleta Listo Patrón.`,
+                text: `¡Felicidades por tu excelente trabajo! Recibiste ${formData.calificacion} estrellas ⭐ y desbloqueaste 1 giro en la Ruleta Pedidos Listo.`,
                 read: false,
                 icon: '🎰',
                 createdAt: serverTimestamp()
@@ -553,7 +553,7 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
                 userId: latestOrder.proId,
                 type: 'reward',
                 title: '🎰 ¡1 CONTRATO GRATIS OTORGADO!',
-                text: `¡Felicidades! Has completado ${newCompleted} evidencias y la Ruleta Listo Patrón alcanzó el 100%. Te acreditamos +1 contrato gratis automáticamente a tu saldo.`,
+                text: `¡Felicidades! Has completado ${newCompleted} evidencias y la Ruleta Pedidos Listo alcanzó el 100%. Te acreditamos +1 contrato gratis automáticamente a tu saldo.`,
                 read: false,
                 icon: '🎰',
                 createdAt: serverTimestamp()
@@ -568,7 +568,7 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
                   userId: latestOrder.proId,
                   type: 'reward',
                   title: '🎰 ¡1 CONTRATO GRATIS OTORGADO!',
-                  text: '¡Felicidades! Tu barra de la Ruleta Listo Patrón se llenó al 100%. Te acreditamos +1 contrato gratis automáticamente a tu saldo.',
+                  text: '¡Felicidades! Tu barra de la Ruleta Pedidos Listo se llenó al 100%. Te acreditamos +1 contrato gratis automáticamente a tu saldo.',
                   read: false,
                   icon: '🎰',
                   createdAt: serverTimestamp()

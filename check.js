@@ -31,10 +31,10 @@ if (navEndIndex > -1 && footerStartIndex > -1) {
     <h1 style="font-family: 'Fredoka One', cursive; color: var(--orange); margin-bottom: 24px;">Política de Privacidad</h1>
     <p style="color: var(--gray); margin-bottom: 24px;"><strong>Última actualización:</strong> 20 de Marzo, 2026</p>
     
-    <p style="color: var(--gray); margin-bottom: 16px; line-height: 1.7;">Gracias por usar Listo Patrón. Al utilizar nuestra aplicación o nuestra plataforma web, aceptas la recolección y uso de información bajo las siguientes directrices. Si tienes dudas, puedes comunicarte con nosotros directamente.</p>
+    <p style="color: var(--gray); margin-bottom: 16px; line-height: 1.7;">Gracias por usar Pedidos Listo. Al utilizar nuestra aplicación o nuestra plataforma web, aceptas la recolección y uso de información bajo las siguientes directrices. Si tienes dudas, puedes comunicarte con nosotros directamente.</p>
 
     <h2 style="font-family: 'Fredoka One', cursive; font-size: 22px; color: var(--black); margin-top: 30px; margin-bottom: 12px;">1. Información que recopilamos</h2>
-    <p style="color: var(--gray); margin-bottom: 16px; line-height: 1.7;">Listo Patrón recopila los siguientes datos para garantizar el correcto funcionamiento de nuestra plataforma de conexión entre clientes y profesionales:</p>
+    <p style="color: var(--gray); margin-bottom: 16px; line-height: 1.7;">Pedidos Listo recopila los siguientes datos para garantizar el correcto funcionamiento de nuestra plataforma de conexión entre clientes y profesionales:</p>
     <ul style="color: var(--gray); margin-bottom: 16px; line-height: 1.7; padding-left: 20px;">
         <li><strong>Información de contacto:</strong> Nombre, apellidos, número de teléfono y correo electrónico al registrarte.</li>
         <li><strong>Ubicación Geográfica:</strong> Recopilamos datos de geolocalización en tiempo real para conectar eficientemente a los clientes con los profesionales más cercanos y ofrecer seguimiento del servicio ("en camino").</li>
@@ -54,7 +54,7 @@ if (navEndIndex > -1 && footerStartIndex > -1) {
     <p style="color: var(--gray); margin-bottom: 16px; line-height: 1.7;">No vendemos ni alquilamos tus datos a terceros con fines publicitarios. La información compartida es estrictamente funcional e intermediaria. El profesional asignado a tu orden puede ver tu nombre de pila, foto y ubicación exacta (y tú las suyas) para concluir la visita a domicilio.</p>
 
     <h2 style="font-family: 'Fredoka One', cursive; font-size: 22px; color: var(--black); margin-top: 30px; margin-bottom: 12px;">4. Retención y Eliminación de Datos de Usuario</h2>
-    <p style="color: var(--gray); margin-bottom: 16px; line-height: 1.7;">Como usuario de Listo Patrón, conservas el control absoluto de tu información personal. Entendemos tu derecho al olvido y hemos agilizado el proceso al máximo para eliminar tu historial de nuestra plataforma.</p>
+    <p style="color: var(--gray); margin-bottom: 16px; line-height: 1.7;">Como usuario de Pedidos Listo, conservas el control absoluto de tu información personal. Entendemos tu derecho al olvido y hemos agilizado el proceso al máximo para eliminar tu historial de nuestra plataforma.</p>
     <div style="background: var(--orange-pale); border-left: 4px solid var(--orange); padding: 16px; border-radius: 8px; margin-bottom: 16px;">
         <p style="color: var(--black); font-weight: 700; margin-bottom: 8px;">Mecanismos para solicitar la eliminación de tu cuenta:</p>
         <ol style="color: var(--gray); margin-bottom: 0; line-height: 1.7; padding-left: 20px;">

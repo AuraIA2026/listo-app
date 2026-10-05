@@ -34,8 +34,8 @@ export default function ImprevistoModal({ lang = 'es', onClose, orderInfo, proNa
           type: 'support_ticket_created',
           title: lang === 'es' ? '🚨 Reporte de Imprevisto Recibido' : '🚨 Incident Report Received',
           text: lang === 'es'
-            ? 'El equipo de Soporte y Mediación Listo Patrón ha recibido tu alerta 24/7. Te contactaremos de inmediato.'
-            : 'Listo Patrón 24/7 Support has received your alert. We will contact you immediately.',
+            ? 'El equipo de Soporte y Mediación Pedidos Listo ha recibido tu alerta 24/7. Te contactaremos de inmediato.'
+            : 'Pedidos Listo 24/7 Support has received your alert. We will contact you immediately.',
           read: false,
           icon: '🛡️',
           createdAt: serverTimestamp(),
@@ -53,7 +53,7 @@ export default function ImprevistoModal({ lang = 'es', onClose, orderInfo, proNa
 
   const handleWhatsAppClick = () => {
     const text = encodeURIComponent(
-      `🚨 *ASISTENCIA DE EMERGENCIA 24/7 - LISTO PATRÓN*\n` +
+      `🚨 *ASISTENCIA DE EMERGENCIA 24/7 - PEDIDOS LISTO*\n` +
       `Hola equipo de Soporte, necesito asistencia inmediata durante mi servicio con ${proName || 'el profesional'}.\n` +
       `Orden ID: ${orderInfo?.id || 'Activa'}`
     )
@@ -74,7 +74,7 @@ export default function ImprevistoModal({ lang = 'es', onClose, orderInfo, proNa
                   {lang === 'es' ? 'Protocolo de Imprevistos y Seguridad 24/7' : '24/7 Safety & Incident Protocol'}
                 </h3>
                 <p className="imprevisto-sub">
-                  {lang === 'es' ? 'Soporte y Mediación Listo Patrón para tu tranquilidad' : 'Listo Patrón Support & Mediation for your peace of mind'}
+                  {lang === 'es' ? 'Soporte y Mediación Pedidos Listo para tu tranquilidad' : 'Pedidos Listo Support & Mediation for your peace of mind'}
                 </p>
               </div>
             </div>
@@ -99,7 +99,7 @@ export default function ImprevistoModal({ lang = 'es', onClose, orderInfo, proNa
               >
                 <span className="act-icon">📞</span>
                 <div>
-                  <strong>{lang === 'es' ? 'Soporte Listo Patrón 24/7' : 'Listo Patrón 24/7 Support'}</strong>
+                  <strong>{lang === 'es' ? 'Soporte Pedidos Listo 24/7' : 'Pedidos Listo 24/7 Support'}</strong>
                   <span className="act-sub">+1 (809) 909-0455</span>
                 </div>
               </a>

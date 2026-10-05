@@ -26,7 +26,7 @@ const txt = {
     },
     track:             'Seguir en mapa',
     tratoHecho:        '✅ Trato hecho',
-    listo:             '✅ ¡Listo Patrón!',
+    listo:             '✅ ¡Pedidos Listo!',
     review:            '⭐ Calificar',
     rebook:            '↩ Repetir',
     decline:           '✖ Rechazar',
@@ -578,7 +578,7 @@ export default function OrdersPage({ lang = 'es', navigate, userData, userRole }
   const [notifs,         setNotifs]         = useState([])
   const [unread,         setUnread]         = useState(0)
   const [chatTarget,     setChatTarget]     = useState(null)
-  const [workDoneOrder,  setWorkDoneOrder]  = useState(null)  // modal Listo Patrón
+  const [workDoneOrder,  setWorkDoneOrder]  = useState(null)  // modal Pedidos Listo
   const [reciboModalOrder, setReciboModalOrder] = useState(null)
   const [showMantenimientoModal, setShowMantenimientoModal] = useState(false)
 
@@ -901,7 +901,7 @@ export default function OrdersPage({ lang = 'es', navigate, userData, userRole }
       {detailsOrder   && <OrderDetailsModal order={detailsOrder} lang={lang} onClose={()=>setDetailsOrder(null)} onAccept={handleAccept} onDecline={handleDecline} />}
 
 
-      {/* ── Modal Listo Patrón (pro) ── */}
+      {/* ── Modal Pedidos Listo (pro) ── */}
       {workDoneOrder && (
         <div className="review-overlay" onClick={()=>setWorkDoneOrder(null)} style={{ zIndex:1000000 }}>
           <div className="review-modal" onClick={e=>e.stopPropagation()} style={{ textAlign:'center' }}>
@@ -918,7 +918,7 @@ export default function OrdersPage({ lang = 'es', navigate, userData, userRole }
               onClick={()=>handleWorkDone(workDoneOrder)}
               style={{ width:'100%', padding:16, borderRadius:14, background:'#F26000', color:'#fff', border:'none', fontWeight:900, fontSize:17, cursor:'pointer', boxShadow:'0 4px 16px rgba(242,96,0,0.35)', marginBottom:12 }}
             >
-              ✅ {lang==='es' ? '¡Listo Patrón!' : 'Done Boss!'}
+              ✅ {lang==='es' ? '¡Pedidos Listo!' : 'Done Boss!'}
             </button>
             <button onClick={()=>setWorkDoneOrder(null)} style={{ width:'100%', padding:14, borderRadius:14, background:'#f5f5f5', border:'none', color:'#666', fontWeight:700, fontSize:14, cursor:'pointer' }}>
               {lang==='es' ? 'Seguir trabajando' : 'Keep working'}

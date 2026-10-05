@@ -1,4 +1,4 @@
-// Helper para Notificaciones Push & Navegador de Listo Patrón
+// Helper para Notificaciones Push & Navegador de Pedidos Listo
 
 export const requestNotificationPermission = async () => {
   if (!('Notification' in window)) {
@@ -25,7 +25,7 @@ export const sendBrowserNotification = (title, options = {}) => {
 
   try {
     const notifOptions = {
-      body: options.body || 'Nueva actualización en Listo Patrón',
+      body: options.body || 'Nueva actualización en Pedidos Listo',
       icon: options.icon || '/icons/icon-192.png',
       badge: options.badge || '/icons/icon-192.png',
       tag: options.tag || 'listo-notification',

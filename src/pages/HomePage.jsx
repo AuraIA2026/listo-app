@@ -298,7 +298,7 @@ function TestimonialsCarousel({ lang, navigate }) {
               <p className="testi-new-heading">{lang === 'es' ? 'Socio Verificado' : 'Verified Partner'}</p>
               
               <div className="testi-new-border-box">
-                {lang === 'es' ? 'Servicio 100% garantizado con soporte de Listo Patrón.' : '100% guaranteed service backed by Listo Patrón.'}
+                {lang === 'es' ? 'Servicio 100% garantizado con soporte de Pedidos Listo.' : '100% guaranteed service backed by Pedidos Listo.'}
               </div>
             </div>
           </div>
@@ -492,7 +492,7 @@ export default function HomePage({ lang, navigate, userRole }) {
           userId: userData.uid,
           type: 'reward',
           title: '📸 ¡1 HISTORIA GRATIS OTORGADA!',
-          text: '¡Felicidades! Se ha acreditado +1 Historia Gratis de 24h a tu saldo en Listo Patrón.',
+          text: '¡Felicidades! Se ha acreditado +1 Historia Gratis de 24h a tu saldo en Pedidos Listo.',
           read: false,
           icon: '📸',
           createdAt: serverTimestamp()
@@ -509,15 +509,15 @@ export default function HomePage({ lang, navigate, userRole }) {
           userId: userData.uid,
           type: 'reward',
           title: '👑 ¡1 CONTRATO GRATIS OTORGADO!',
-          text: '¡Felicidades! Se ha acreditado 1 contrato gratis a tu saldo por completar tu progreso en la Ruleta Listo Patrón.',
+          text: '¡Felicidades! Se ha acreditado 1 contrato gratis a tu saldo por completar tu progreso en la Ruleta Pedidos Listo.',
           read: false,
           icon: '🎰',
           createdAt: serverTimestamp()
         });
 
         alert(lang === 'es' 
-          ? "🎉 ¡FELICIDADES! Se ha otorgado y acreditado +1 CONTRATO GRATIS automáticamente a tu cuenta de Listo Patrón." 
-          : "🎉 CONGRATULATIONS! +1 FREE CONTRACT has been automatically granted to your Listo Patrón account.");
+          ? "🎉 ¡FELICIDADES! Se ha otorgado y acreditado +1 CONTRATO GRATIS automáticamente a tu cuenta de Pedidos Listo." 
+          : "🎉 CONGRATULATIONS! +1 FREE CONTRACT has been automatically granted to your Pedidos Listo account.");
       }
       await updateDoc(userRef, updatePayload);
     } catch (err) {
@@ -1275,7 +1275,7 @@ export default function HomePage({ lang, navigate, userRole }) {
         title="Toca para abrir la Tómbola de Contratos Gratis"
       >
         <div className="amz-marquee-content">
-          🎉 ¡Bienvenido a Listo Patrón! &nbsp;&nbsp;•&nbsp;&nbsp; 🏆 Cada trabajo perfecto de 4 o 5 estrellas te otorga un giro en la Tómbola para ganar un Contrato Gratis &nbsp;&nbsp;&nbsp;&nbsp; ✦ &nbsp;&nbsp;&nbsp;&nbsp; 🏆 Cada vez que un profesional complete un contrato perfecto gana un chance para la tómbola donde podrás tener la oportunidad de ganar un contrato gratis &nbsp;&nbsp;&nbsp;&nbsp; ✦ &nbsp;&nbsp;&nbsp;&nbsp; ⭐ Recuerda que tu trabajo habla por ti: completa cada contrato con responsabilidad, excelencia y puntualidad para destacar como Socio VIP en Listo Patrón &nbsp;&nbsp;&nbsp;&nbsp; ✦ &nbsp;&nbsp;&nbsp;&nbsp; ⚡ Profesionales verificados listos en menos de 30 minutos &nbsp;&nbsp;•&nbsp;&nbsp; 🛡️ Todos los servicios 100% garantizados
+          🎉 ¡Bienvenido a Pedidos Listo! &nbsp;&nbsp;•&nbsp;&nbsp; 🏆 Cada trabajo perfecto de 4 o 5 estrellas te otorga un giro en la Tómbola para ganar un Contrato Gratis &nbsp;&nbsp;&nbsp;&nbsp; ✦ &nbsp;&nbsp;&nbsp;&nbsp; 🏆 Cada vez que un profesional complete un contrato perfecto gana un chance para la tómbola donde podrás tener la oportunidad de ganar un contrato gratis &nbsp;&nbsp;&nbsp;&nbsp; ✦ &nbsp;&nbsp;&nbsp;&nbsp; ⭐ Recuerda que tu trabajo habla por ti: completa cada contrato con responsabilidad, excelencia y puntualidad para destacar como Socio VIP en Pedidos Listo &nbsp;&nbsp;&nbsp;&nbsp; ✦ &nbsp;&nbsp;&nbsp;&nbsp; ⚡ Profesionales verificados listos en menos de 30 minutos &nbsp;&nbsp;•&nbsp;&nbsp; 🛡️ Todos los servicios 100% garantizados
         </div>
       </div>
 
@@ -1606,14 +1606,14 @@ export default function HomePage({ lang, navigate, userRole }) {
       <div 
         className="store-ribbon-banner"
         onClick={() => window.open('https://listopatron.com.do/?page=shop', '_blank')}
-        title={lang === 'es' ? 'Visitar la Tienda Web de Listo Patrón' : 'Visit Listo Patrón Web Store'}
+        title={lang === 'es' ? 'Visitar la Tienda Web de Pedidos Listo' : 'Visit Pedidos Listo Web Store'}
         style={{ marginBottom: '14px' }}
       >
         <div className="store-ribbon-content">
           <span className="store-ribbon-icon">🛍️</span>
           <div className="store-ribbon-text-group">
             <p className="store-ribbon-title">
-              {lang === 'es' ? <>Equípate en nuestra tienda <strong>Listo Patrón</strong></> : <>Equip yourself at <strong>Listo Patrón</strong> Store</>}
+              {lang === 'es' ? <>Equípate en nuestra tienda <strong>Pedidos Listo</strong></> : <>Equip yourself at <strong>Pedidos Listo</strong> Store</>}
             </p>
             <p className="store-ribbon-sub">
               {lang === 'es' ? 'Herramientas, equipos e insumos de seguridad con envío rápido a todo el país' : 'Tools, safety gear & supplies with fast nationwide shipping'}
@@ -1769,7 +1769,7 @@ export default function HomePage({ lang, navigate, userRole }) {
               <span className="amz-bento-item-tag">🔥 MÁS VENDIDO</span>
               <img src={mecanico1} alt="Mecánico" className="amz-bento-img" />
               <div className="listo-brand-watermark">
-                <img src={logoListo} alt="Listo Patrón" className="listo-brand-watermark-img" />
+                <img src={logoListo} alt="Pedidos Listo" className="listo-brand-watermark-img" />
               </div>
             </div>
             <p className="amz-bento-item-title">{lang === 'es' ? 'Diagnóstico Vehicular' : 'Auto Diagnostic'}</p>
@@ -1781,7 +1781,7 @@ export default function HomePage({ lang, navigate, userRole }) {
               <span className="amz-bento-item-tag">⚡ 24/7 URGENTE</span>
               <img src={electrica1} alt="Electricista" className="amz-bento-img" />
               <div className="listo-brand-watermark">
-                <img src={logoListo} alt="Listo Patrón" className="listo-brand-watermark-img" />
+                <img src={logoListo} alt="Pedidos Listo" className="listo-brand-watermark-img" />
               </div>
             </div>
             <p className="amz-bento-item-title">{lang === 'es' ? 'Instalación Eléctrica' : 'Electrical Install'}</p>
@@ -1793,7 +1793,7 @@ export default function HomePage({ lang, navigate, userRole }) {
               <span className="amz-bento-item-tag">🛡️ GARANTIZADO</span>
               <img src={plomero} alt="Plomero" className="amz-bento-img" />
               <div className="listo-brand-watermark">
-                <img src={logoListo} alt="Listo Patrón" className="listo-brand-watermark-img" />
+                <img src={logoListo} alt="Pedidos Listo" className="listo-brand-watermark-img" />
               </div>
             </div>
             <p className="amz-bento-item-title">{lang === 'es' ? 'Reparación de Tubería' : 'Pipe Repair'}</p>
@@ -1805,7 +1805,7 @@ export default function HomePage({ lang, navigate, userRole }) {
               <span className="amz-bento-item-tag">🔑 POPULAR</span>
               <img src={cerrajero1} alt="Cerrajero" className="amz-bento-img" />
               <div className="listo-brand-watermark">
-                <img src={logoListo} alt="Listo Patrón" className="listo-brand-watermark-img" />
+                <img src={logoListo} alt="Pedidos Listo" className="listo-brand-watermark-img" />
               </div>
             </div>
             <p className="amz-bento-item-title">{lang === 'es' ? 'Apertura de Puertas' : 'Door Opening'}</p>
@@ -1850,7 +1850,7 @@ export default function HomePage({ lang, navigate, userRole }) {
                         {s.tag && <span className="hp-svc-tag">{s.tag}</span>}
                         <img src={s.img} alt={s.nameEs} className="hp-svc-img" />
                         <div className="listo-brand-watermark">
-                          <img src={logoListo} alt="Listo Patrón" className="listo-brand-watermark-img" />
+                          <img src={logoListo} alt="Pedidos Listo" className="listo-brand-watermark-img" />
                         </div>
                       </div>
                       <div className="hp-svc-info">
@@ -1887,7 +1887,7 @@ export default function HomePage({ lang, navigate, userRole }) {
                       <div className="pro-list-img-wrap" style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         <img src={pro.img || pro.photoURL} alt={pro.nameEs} className="pro-list-img" />
                         <div className="listo-brand-watermark">
-                          <img src={logoListo} alt="Listo Patrón" className="listo-brand-watermark-img" />
+                          <img src={logoListo} alt="Pedidos Listo" className="listo-brand-watermark-img" />
                         </div>
                         
                         {hasStory && (
@@ -2041,7 +2041,7 @@ export default function HomePage({ lang, navigate, userRole }) {
         </button>
       )}
 
-      {/* Modal de la Ruleta de la Suerte Listo Patrón */}
+      {/* Modal de la Ruleta de la Suerte Pedidos Listo */}
       <LuckyWheelModal 
         isOpen={showLuckyWheel} 
         onClose={() => setShowLuckyWheel(false)} 
@@ -2055,7 +2055,7 @@ export default function HomePage({ lang, navigate, userRole }) {
         isOpen={showPlanModal} 
         onClose={() => setShowPlanModal(false)} 
         onSelectPlan={(plan) => {
-          alert(`Has seleccionado el ${plan.name} (${plan.price}). Por favor comunícate con la administración de Listo Patrón o realiza tu transferencia para activar tus contratos.`);
+          alert(`Has seleccionado el ${plan.name} (${plan.price}). Por favor comunícate con la administración de Pedidos Listo o realiza tu transferencia para activar tus contratos.`);
           setShowPlanModal(false);
         }} 
       />

@@ -213,7 +213,7 @@ export default function LuckyWheelModal({
                 fontSize: '11px', fontWeight: '900', letterSpacing: '0.5px',
                 boxShadow: '0 2px 10px rgba(255, 215, 0, 0.4)'
               }}>
-                🎰 RULETA VIP LISTO PATRÓN
+                🎰 RULETA VIP PEDIDOS LISTO
               </span>
               <h2 style={{ color: '#FFFFFF', margin: '8px 0 4px', fontSize: '20px', fontWeight: '900', textShadow: '0 2px 6px rgba(0,0,0,0.5)' }}>
                 {lang === 'es' ? '¡Gira y Completa tu Contrato!' : 'Spin & Win Your Free Contract!'}
@@ -361,7 +361,7 @@ export default function LuckyWheelModal({
                 transition: 'all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1)'
               }}
             >
-              {spinning ? '🎰 Girando Rueda...' : '🎰 ¡GIRAR RULETA LISTO PATRÓN!'}
+              {spinning ? '🎰 Girando Rueda...' : '🎰 ¡GIRAR RULETA PEDIDOS LISTO!'}
             </button>
           </>
         ) : (
@@ -387,9 +387,9 @@ export default function LuckyWheelModal({
 
             <p style={{ color: '#E2E8F0', fontSize: '13px', margin: '0 0 16px', fontWeight: '600' }}>
               {isStoryWon
-                ? 'Se ha añadido 1 crédito de historia gratis de 24 horas a tu saldo de publicaciones en Listo Patrón.'
+                ? 'Se ha añadido 1 crédito de historia gratis de 24 horas a tu saldo de publicaciones en Pedidos Listo.'
                 : (isContractWon 
-                    ? 'Se ha añadido 1 contrato gratis a tu cuenta de Listo Patrón.' 
+                    ? 'Se ha añadido 1 contrato gratis a tu cuenta de Pedidos Listo.' 
                     : `Tu progreso total acumulado ahora es de ${Math.min(wheelProgress + wonPrize.percent, 100)}%`)}
             </p>
 

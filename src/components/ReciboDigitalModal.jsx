@@ -27,7 +27,7 @@ export default function ReciboDigitalModal({ lang = 'es', onClose, orderData }) 
 
   const handleWhatsAppShare = () => {
     const text = encodeURIComponent(
-      `🧾 *COMPROBANTE OFICIAL DE SERVICIO - LISTO PATRÓN*\n` +
+      `🧾 *COMPROBANTE OFICIAL DE SERVICIO - PEDIDOS LISTO*\n` +
       `----------------------------------------\n` +
       `📄 *Factura Nº:* ${invoiceNo}\n` +
       `📅 *Fecha:* ${dateStr}\n` +
@@ -38,7 +38,7 @@ export default function ReciboDigitalModal({ lang = 'es', onClose, orderData }) 
       `💰 *Monto Total:* RD$ ${amountStr}\n` +
       `💳 *Forma de Pago:* ${paymentMethod}\n` +
       `----------------------------------------\n` +
-      `🛡️ *Respaldo y Mediación Listo Patrón 24h*\n` +
+      `🛡️ *Respaldo y Mediación Pedidos Listo 24h*\n` +
       `🌐 *Web:* https://www.listopatron.com.do/\n` +
       `📞 *Central 24/7:* +1 (809) 909-0455`
     )
@@ -55,9 +55,9 @@ export default function ReciboDigitalModal({ lang = 'es', onClose, orderData }) 
           {/* Header con Logo y Datos Oficiales */}
           <div className="recibo-header-top">
             <div className="recibo-brand">
-              <img src={logoListo} alt="Listo Patrón" className="recibo-logo" />
+              <img src={logoListo} alt="Pedidos Listo" className="recibo-logo" />
               <div>
-                <h2 className="recibo-company-name">Listo Patrón RD</h2>
+                <h2 className="recibo-company-name">Pedidos Listo RD</h2>
                 <p className="recibo-company-sub">Servicios Profesionales de Confianza</p>
                 <a href="https://www.listopatron.com.do/" target="_blank" rel="noreferrer" className="recibo-company-link">
                   🌐 www.listopatron.com.do
@@ -136,7 +136,7 @@ export default function ReciboDigitalModal({ lang = 'es', onClose, orderData }) 
             <div className="recibo-guarantee-box">
               <span>🛡️</span>
               <div>
-                <strong>Respaldo y Mediación Listo Patrón 24h</strong>
+                <strong>Respaldo y Mediación Pedidos Listo 24h</strong>
                 <p>Soporte de mediación directa con el profesional contratado.</p>
               </div>
             </div>

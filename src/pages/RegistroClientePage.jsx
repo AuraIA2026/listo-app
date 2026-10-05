@@ -27,8 +27,8 @@ const SECTIONS = [
 
 /* ─── TÉRMINOS USUARIO ───────────────────────────────────────── */
 const TERMS = [
-  { title: "1. Bienvenido",              body: "Gracias por usar Listo Patrón. Nuestra plataforma conecta usuarios con profesionales independientes que ofrecen servicios a domicilio. Al utilizar la aplicación, aceptas estos términos." },
-  { title: "2. Cómo Funciona",           body: "Listo Patrón actúa como intermediario tecnológico. Los servicios son realizados por profesionales independientes, quienes son responsables de la ejecución y calidad del trabajo." },
+  { title: "1. Bienvenido",              body: "Gracias por usar Pedidos Listo. Nuestra plataforma conecta usuarios con profesionales independientes que ofrecen servicios a domicilio. Al utilizar la aplicación, aceptas estos términos." },
+  { title: "2. Cómo Funciona",           body: "Pedidos Listo actúa como intermediario tecnológico. Los servicios son realizados por profesionales independientes, quienes son responsables de la ejecución y calidad del trabajo." },
   { title: "3. Registro y Cuenta",       body: "Debes proporcionar información real y actual. Eres responsable del uso de tu cuenta. La plataforma podrá suspender cuentas en caso de actividad sospechosa." },
   { title: "4. Solicitud de Servicios",  body: "Al confirmar un servicio, aceptas el precio mostrado. Debes estar disponible en la dirección indicada. Recomendamos mantener la comunicación dentro de la app." },
   { title: "5. Cancelaciones",           body: "Puedes cancelar sin costo antes de que el profesional esté en camino. Si ya está en ruta, puede aplicarse un cargo. Cancelaciones frecuentes generarán restricciones." },
@@ -359,7 +359,7 @@ export default function RegistroClientePage({ userRole, onBack, onSuccess }) {
                     {[
                       { k:"c1", icon:"✅", text:"Confirmo que toda mi información es real y verídica" },
                       { k:"c2", icon:"🔒", text:"Acepto la política de privacidad y protección de datos" },
-                      { k:"c3", icon:"📋", text:"Acepto los Términos y Condiciones de Listo Patrón" },
+                      { k:"c3", icon:"📋", text:"Acepto los Términos y Condiciones de Pedidos Listo" },
                     ].map(({ k, icon, text }) => (
                       <div key={k} style={{
                         ...s.checkRow,
@@ -424,7 +424,7 @@ function SuccessScreen({ onBack, isVerified, userRole, onSuccess }) {
         <div style={{ fontSize:14, color:C.gray, textAlign:"center", lineHeight:1.6, marginBottom:20 }}>
           {isPro 
             ? "Tu perfil ha sido guardado exitosamente. Ahora debes postularte para comenzar a generar ingresos."
-            : "Bienvenido a Listo Patrón. Ya puedes solicitar servicios profesionales a domicilio."}
+            : "Bienvenido a Pedidos Listo. Ya puedes solicitar servicios profesionales a domicilio."}
         </div>
         {isVerified && (
           <div style={s.successBadge}>

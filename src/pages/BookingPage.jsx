@@ -251,13 +251,13 @@ export default function BookingPage({ lang = 'es', navigate, professional, userD
               await addDoc(collection(db, 'mail'), {
                 to: proData.email || '',
                 message: {
-                  subject: '⚠️ Administra tu plan en Listo Patrón',
+                  subject: '⚠️ Administra tu plan en Pedidos Listo',
                   text: newContracts === 1
-                    ? `Hola ${proData.name || 'Socio'},\n\nTe queda solo 1 contrato disponible en tu plan.\n\nPara administrar tu plan y seguir recibiendo clientes, ingresa a nuestra plataforma web:\nhttps://www.listopatron.com.do\n\nResumen de planes disponibles en la web:\n- Plan GOLD: 8 contratos al mes (RD$1,000/mes)\n- Plan PLATINUM: 12 contratos al mes (RD$1,500/mes)\n- Plan VIP: Contratos ilimitados (RD$2,500/mes)\n\nAtentamente,\nEl equipo de Listo Patrón`
-                    : `Hola ${proData.name || 'Socio'},\n\nTe has quedado sin contratos disponibles en tu plan.\n\nPara administrar tu plan y seguir recibiendo clientes, ingresa a nuestra plataforma web:\nhttps://www.listopatron.com.do\n\nResumen de planes disponibles en la web:\n- Plan GOLD: 8 contratos al mes (RD$1,000/mes)\n- Plan PLATINUM: 12 contratos al mes (RD$1,500/mes)\n- Plan VIP: Contratos ilimitados (RD$2,500/mes)\n\nAtentamente,\nEl equipo de Listo Patrón`,
+                    ? `Hola ${proData.name || 'Socio'},\n\nTe queda solo 1 contrato disponible en tu plan.\n\nPara administrar tu plan y seguir recibiendo clientes, ingresa a nuestra plataforma web:\nhttps://www.listopatron.com.do\n\nResumen de planes disponibles en la web:\n- Plan GOLD: 8 contratos al mes (RD$1,000/mes)\n- Plan PLATINUM: 12 contratos al mes (RD$1,500/mes)\n- Plan VIP: Contratos ilimitados (RD$2,500/mes)\n\nAtentamente,\nEl equipo de Pedidos Listo`
+                    : `Hola ${proData.name || 'Socio'},\n\nTe has quedado sin contratos disponibles en tu plan.\n\nPara administrar tu plan y seguir recibiendo clientes, ingresa a nuestra plataforma web:\nhttps://www.listopatron.com.do\n\nResumen de planes disponibles en la web:\n- Plan GOLD: 8 contratos al mes (RD$1,000/mes)\n- Plan PLATINUM: 12 contratos al mes (RD$1,500/mes)\n- Plan VIP: Contratos ilimitados (RD$2,500/mes)\n\nAtentamente,\nEl equipo de Pedidos Listo`,
                   html: newContracts === 1
-                    ? `<p>Hola <strong>${proData.name || 'Socio'}</strong>,</p><p>Te queda solo 1 contrato disponible en tu plan.</p><p>Para administrar tu plan y seguir recibiendo clientes, ingresa a nuestra plataforma web:</p><p><a href="https://www.listopatron.com.do">https://www.listopatron.com.do</a></p><p><strong>Resumen de planes disponibles en la web:</strong></p><ul><li>Plan GOLD: 8 contratos al mes (RD$1,000/mes)</li><li>Plan PLATINUM: 12 contratos al mes (RD$1,500/mes)</li><li>Plan VIP: Contratos ilimitados (RD$2,500/mes)</li></ul><p>Atentamente,<br/>El equipo de Listo Patrón</p>`
-                    : `<p>Hola <strong>${proData.name || 'Socio'}</strong>,</p><p>Te has quedado sin contratos disponibles en tu plan.</p><p>Para administrar tu plan y seguir recibiendo clientes, ingresa a nuestra plataforma web:</p><p><a href="https://www.listopatron.com.do">https://www.listopatron.com.do</a></p><p><strong>Resumen de planes disponibles en la web:</strong></p><ul><li>Plan GOLD: 8 contratos al mes (RD$1,000/mes)</li><li>Plan PLATINUM: 12 contratos al mes (RD$1,500/mes)</li><li>Plan VIP: Contratos ilimitados (RD$2,500/mes)</li></ul><p>Atentamente,<br/>El equipo de Listo Patrón</p>`
+                    ? `<p>Hola <strong>${proData.name || 'Socio'}</strong>,</p><p>Te queda solo 1 contrato disponible en tu plan.</p><p>Para administrar tu plan y seguir recibiendo clientes, ingresa a nuestra plataforma web:</p><p><a href="https://www.listopatron.com.do">https://www.listopatron.com.do</a></p><p><strong>Resumen de planes disponibles en la web:</strong></p><ul><li>Plan GOLD: 8 contratos al mes (RD$1,000/mes)</li><li>Plan PLATINUM: 12 contratos al mes (RD$1,500/mes)</li><li>Plan VIP: Contratos ilimitados (RD$2,500/mes)</li></ul><p>Atentamente,<br/>El equipo de Pedidos Listo</p>`
+                    : `<p>Hola <strong>${proData.name || 'Socio'}</strong>,</p><p>Te has quedado sin contratos disponibles en tu plan.</p><p>Para administrar tu plan y seguir recibiendo clientes, ingresa a nuestra plataforma web:</p><p><a href="https://www.listopatron.com.do">https://www.listopatron.com.do</a></p><p><strong>Resumen de planes disponibles en la web:</strong></p><ul><li>Plan GOLD: 8 contratos al mes (RD$1,000/mes)</li><li>Plan PLATINUM: 12 contratos al mes (RD$1,500/mes)</li><li>Plan VIP: Contratos ilimitados (RD$2,500/mes)</li></ul><p>Atentamente,<br/>El equipo de Pedidos Listo</p>`
                 }
               })
             } catch (errMail) {
@@ -551,7 +551,7 @@ export default function BookingPage({ lang = 'es', navigate, professional, userD
                 <span className="summary-price" style={{ fontSize:'15px', color:'#10B981' }}>A acordar</span>
               </div>
               <p className="price-note" style={{ fontSize:'12px', color:'#64748B', marginTop:'8px' }}>
-                💡 En Listo Patrón no cobramos tarifas fijas. Discute el precio directo con el profesional.
+                💡 En Pedidos Listo no cobramos tarifas fijas. Discute el precio directo con el profesional.
               </p>
             </div>
 

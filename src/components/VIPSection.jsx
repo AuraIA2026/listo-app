@@ -258,7 +258,7 @@ function VIPProCard({ pro, lang, navigate, getProStoryData, onOpenStory }) {
       {/* CONTENEDOR FOTO GRANDE */}
       <div className="vip-photo-wrapper">
         <div className="listo-brand-watermark" style={{ top: '12px', right: '12px' }}>
-          <img src={logoListo} alt="Listo Patrón" className="listo-brand-watermark-img" />
+          <img src={logoListo} alt="Pedidos Listo" className="listo-brand-watermark-img" />
         </div>
         <img 
           src={pro.img || pro.photoURL} 
@@ -574,7 +574,7 @@ export default function VIPSection({
             </span>
             <img 
               src={logoListo} 
-              alt="Listo Patrón Logo" 
+              alt="Pedidos Listo Logo" 
               style={{ 
                 height: '28px', 
                 width: 'auto', 

@@ -1,6 +1,6 @@
 {
-  "appId": "com.listopatron.app",
-  "appName": "Listo Patrón",
+  "appId": "com.pedidoslisto.app",
+  "appName": "Pedidos Listo",
   "webDir": "dist",
   "ios": {
     "isInspectable": true

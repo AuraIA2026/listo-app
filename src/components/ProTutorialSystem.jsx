@@ -67,7 +67,7 @@ export default function ProTutorialSystem({ userRole, userData, currentPage, nav
           return;
         }
         if (!localStorage.getItem(welcomeKey + '_s1')) {
-          setMission({ id: 'welcome-1', type: 'tooltip', targetSelector: '[data-tour="completar-perfil"]', text: '🎉 Bienvenido a Listo Patrón.', welcomeKey });
+          setMission({ id: 'welcome-1', type: 'tooltip', targetSelector: '[data-tour="completar-perfil"]', text: '🎉 Bienvenido a Pedidos Listo.', welcomeKey });
           return;
         }
         if (!localStorage.getItem(welcomeKey + '_s2')) {
