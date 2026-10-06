@@ -290,6 +290,8 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate
           </div>
         </div>
       </div>
+
+      <div className="historias-track-container">
         {canScrollLeft && (
           <button
             className="historias-scroll-btn left"
