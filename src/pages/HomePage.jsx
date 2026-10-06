@@ -1133,8 +1133,7 @@ export default function HomePage({ lang, navigate, userRole }) {
         )}
 
         {/* ── BOTONES HERO ANIMADOS CON CARRUSEL: PEDIDOS LISTO & LISTO PATRON ── */}
-        {!isPro && (
-          <div className="hp-dual-hero-buttons-wrapper">
+        <div className="hp-dual-hero-buttons-wrapper">
             {/* BOTÓN 1: PEDIDOS LISTO */}
             <div 
               className="hp-dual-hero-button hp-hero-btn-pedidos"
@@ -1231,11 +1230,9 @@ export default function HomePage({ lang, navigate, userRole }) {
               </div>
             </div>
           </div>
-        )}
 
         {/* ── TARJETA OSCURA HERO CON BUSCADOR Y TU HISTORIA (COMO EN LA FOTO DEL CLIENTE) ── */}
-        {!isPro && (
-          <div className="hp-hero-dark-card">
+        <div className="hp-hero-dark-card">
             {/* Buscador Gigante Autocompletable Con Cámara Estilo Amazon */}
             <div className="hp-hero-search-container" style={{ position: 'relative', width: '100%', margin: '0 auto' }}>
               <div className="hp-hero-search-btn" style={{ padding: '0 6px 0 16px', display: 'flex', alignItems: 'center', cursor: 'text' }} onClick={() => document.getElementById('hp-search-input').focus()}>
@@ -1358,7 +1355,6 @@ export default function HomePage({ lang, navigate, userRole }) {
               }} 
             />
           </div>
-        )}
       </div>
 
       {/* ── MARQUEE TICKER BANNER INFORMATIVO CON LOS 3 ANUNCIOS EN SECUENCIA (TÓMBOLA & OFERTAS) ── */}
