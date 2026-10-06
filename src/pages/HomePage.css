@@ -197,6 +197,19 @@
   100% { transform: translateX(-50%); }
 }
 
+/* ── TARJETA OSCURA HERO CON BUSCADOR Y TU HISTORIA (COMO EN LA FOTO DEL CLIENTE) ── */
+.hp-hero-dark-card {
+  background: linear-gradient(180deg, #101625 0%, #0a0e18 100%);
+  border-radius: 24px;
+  padding: 16px 12px 10px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 4px;
+}
+
 
 .hp-hero-search-btn {
   display: flex; align-items: center; gap: 12px;
