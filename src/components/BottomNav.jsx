@@ -149,16 +149,31 @@ export default function BottomNav({ currentPage, navigate, lang = 'es', userRole
     return () => { unsubChats(); unsubOrders(); unsubNotifs() }
   }, [resolvedRole, userData?.type])
 
-  const activeTab =
-    currentPage === 'home'     ? 'home'     :
-    currentPage === 'search'   ? 'search'   :
-    currentPage === 'workdone' ? 'workdone' :
-    currentPage === 'orders'   ? 'orders'   :
-    currentPage === 'chat'     ? 'chat'     :
-    currentPage === 'profile'  ? 'profile'  :
-    currentPage === 'mandame'  ? 'mandame'  : 'home'
+  const [mandameSubTab, setMandameSubTab] = useState('inicio')
+
+  useEffect(() => {
+    const handleSwitch = (e) => {
+      if (e.detail) setMandameSubTab(e.detail)
+    }
+    window.addEventListener('mandame-switch-tab', handleSwitch)
+    return () => window.removeEventListener('mandame-switch-tab', handleSwitch)
+  }, [])
 
   const isMandame = currentPage === 'mandame'
+
+  const activeTab =
+    isMandame ? (
+      mandameSubTab === 'mercado' ? 'workdone' :
+      mandameSubTab === 'buscar'  ? 'search'   :
+      mandameSubTab === 'pedidos' ? 'orders'   : 'home'
+    ) : (
+      currentPage === 'home'     ? 'home'     :
+      currentPage === 'search'   ? 'search'   :
+      currentPage === 'workdone' ? 'workdone' :
+      currentPage === 'orders'   ? 'orders'   :
+      currentPage === 'chat'     ? 'chat'     :
+      currentPage === 'profile'  ? 'profile'  : 'home'
+    )
 
   return (
     <>
@@ -181,18 +196,22 @@ export default function BottomNav({ currentPage, navigate, lang = 'es', userRole
             const handleTabClick = () => {
               if (isMandame) {
                 if (tab.id === 'workdone') {
+                  setMandameSubTab('mercado')
                   window.dispatchEvent(new CustomEvent('mandame-switch-tab', { detail: 'mercado' }))
                   return
                 }
                 if (tab.id === 'search') {
+                  setMandameSubTab('buscar')
                   window.dispatchEvent(new CustomEvent('mandame-switch-tab', { detail: 'buscar' }))
                   return
                 }
                 if (tab.id === 'home') {
+                  setMandameSubTab('inicio')
                   window.dispatchEvent(new CustomEvent('mandame-switch-tab', { detail: 'inicio' }))
                   return
                 }
                 if (tab.id === 'orders') {
+                  setMandameSubTab('pedidos')
                   window.dispatchEvent(new CustomEvent('mandame-switch-tab', { detail: 'pedidos' }))
                   return
                 }

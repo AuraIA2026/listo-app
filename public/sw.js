@@ -1,5 +1,5 @@
 // Service Worker para PWA Pedidos Listo
-const CACHE_NAME = 'pedidos-listo-v5-mandame-fusion';
+const CACHE_NAME = 'pedidos-listo-v6-nav-highlight-orange';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
