@@ -7,6 +7,37 @@ import SubirHistoriaModal from './SubirHistoriaModal'
 import { getProPlanTheme } from '../planTheme'
 import './Historias.css'
 
+const PROMO_SLIDES = [
+  {
+    badge: '🍔 RESTAURANTES',
+    title: 'Pizzas, Yaroas & Comida',
+    sub: 'Pide tus platos favoritos de Santiago directos a tu mesa',
+    tag: '⚡ 25 Min',
+    image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400&auto=format&fit=crop&q=80'
+  },
+  {
+    badge: '🛵 MÁNDAME 24/7',
+    title: 'Motores & Envíos Express',
+    sub: 'Envía paquetes, llaves, medicinas y compras al instante',
+    tag: '🛵 Express',
+    image: '/assets/van_topdown-DM0HR-Nd.png'
+  },
+  {
+    badge: '🛒 SÚPER & VÍVERES',
+    title: 'Mercado & Provisiones',
+    sub: 'Víveres frescos criollos, plátanos y bebidas frías',
+    tag: '🛍️ Mercado',
+    image: 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=400&auto=format&fit=crop&q=80'
+  },
+  {
+    badge: '🔒 SEGURIDAD',
+    title: 'Rastreo & PIN OTP',
+    sub: 'Entregas seguras con código PIN contra entrega',
+    tag: '🔑 PIN OTP',
+    image: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=400&auto=format&fit=crop&q=80'
+  }
+];
+
 export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate }) {
   const [stories, setStories] = useState([])
   const [viewerOpen, setViewerOpen] = useState(false)
@@ -15,6 +46,18 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate
   const [has5StarContract, setHas5StarContract] = useState(false)
   const [showLockNotice, setShowLockNotice] = useState(false)
   const [showIncompleteProfileNotice, setShowIncompleteProfileNotice] = useState(false)
+
+  // Estado para la publicidad animada y el modal instructivo
+  const [promoSlideIndex, setPromoSlideIndex] = useState(0)
+  const [isTutorialModalOpen, setIsTutorialModalOpen] = useState(false)
+
+  // Auto-carrusel publicitario animado para la tarjeta de Pedidos Listo
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setPromoSlideIndex(prev => (prev + 1) % PROMO_SLIDES.length)
+    }, 3800)
+    return () => clearInterval(timer)
+  }, [])
 
   const trackRef = useRef(null)
   const [canScrollLeft, setCanScrollLeft] = useState(false)
@@ -200,29 +243,51 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate
 
   return (
     <div className="historias-carrusel-wrapper">
-      {/* ── CINTA MAMEY LLAMATIVA "PEDIDOS LISTO" CON DESTELLOS ── */}
-      <div 
-        className="cinta-pedidos-listo-wrapper"
-        onClick={() => {
-          if (typeof navigate === 'function') {
-            navigate('mandame');
-          } else {
-            const el = document.getElementById('hp-categories-section');
-            if (el) el.scrollIntoView({ behavior: 'smooth' });
-          }
-        }}
-      >
-        <div className="cinta-pedidos-listo">
-          <span className="sparkle-left">✨</span>
-          <span className="cinta-icon">🛵</span>
-          <div className="cinta-text-container">
-            <span className="cinta-text">PEDIDOS LISTO</span>
-            <span className="cinta-subtext">DELIVERY & MÁNDAME</span>
-          </div>
-          <span className="cinta-icon">🛍️</span>
-          <span className="sparkle-right">✨</span>
-          <div className="cinta-shine"></div>
+      {/* ── CINTA MAMEY LLAMATIVA "PEDIDOS LISTO" CON DESTELLOS Y MANO ANIMADA ── */}
+      <div className="cinta-pedidos-listo-container">
+        {/* Mano animada presionando la cinta */}
+        <div 
+          className="animated-hand-pointer"
+          onClick={() => setIsTutorialModalOpen(true)}
+          title="¡Toca para ver cómo funciona Pedidos Listo!"
+        >
+          <div className="hand-badge">👇 ¡Toca aquí!</div>
+          <span className="hand-emoji">👇</span>
         </div>
+
+        <div 
+          className="cinta-pedidos-listo-wrapper"
+          onClick={() => {
+            if (typeof navigate === 'function') {
+              navigate('mandame');
+            } else {
+              const el = document.getElementById('hp-categories-section');
+              if (el) el.scrollIntoView({ behavior: 'smooth' });
+            }
+          }}
+        >
+          <div className="cinta-pedidos-listo">
+            <span className="sparkle-left">✨</span>
+            <span className="cinta-icon">🛵</span>
+            <div className="cinta-text-container">
+              <span className="cinta-text">PEDIDOS LISTO</span>
+              <span className="cinta-subtext">DELIVERY & MÁNDAME</span>
+            </div>
+            <span className="cinta-icon">🛍️</span>
+            <span className="sparkle-right">✨</span>
+            <div className="cinta-shine"></div>
+          </div>
+        </div>
+
+        <button 
+          className="btn-como-usar-badge"
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsTutorialModalOpen(true);
+          }}
+        >
+          ❓ ¿Cómo Funciona Pedidos Listo?
+        </button>
       </div>
 
       <div className="historias-track-container">
@@ -257,6 +322,52 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate
             </div>
             <span className="historia-label pro-label">
               {!isProfileComplete ? '🔒 Completar' : (canPublishStory ? 'Tu Historia' : '⭐ 5 Estrellas')}
+            </span>
+          </div>
+
+          {/* TARJETA PUBLICITARIA ANIMADA DE PEDIDOS LISTO (RESTAURANTES, DELIVERIES Y TUTORIAL) */}
+          <div 
+            className="historia-item pedis-listo-promo-card-item"
+            onClick={() => {
+              if (typeof navigate === 'function') {
+                navigate('mandame');
+              } else {
+                setIsTutorialModalOpen(true);
+              }
+            }}
+          >
+            <div className="pedidos-promo-card-inner">
+              <div className="pedidos-promo-badge">
+                <span>{PROMO_SLIDES[promoSlideIndex].badge}</span>
+              </div>
+
+              <div className="pedidos-promo-image-box">
+                <img 
+                  src={PROMO_SLIDES[promoSlideIndex].image} 
+                  alt="Pedidos Listo Promo" 
+                  className="pedidos-promo-img"
+                />
+                <div className="pedidos-promo-overlay-tag">
+                  {PROMO_SLIDES[promoSlideIndex].tag}
+                </div>
+              </div>
+
+              <div className="pedidos-promo-info">
+                <div className="pedidos-promo-title">{PROMO_SLIDES[promoSlideIndex].title}</div>
+                <div className="pedidos-promo-sub">{PROMO_SLIDES[promoSlideIndex].sub}</div>
+              </div>
+
+              <div className="pedidos-promo-dots">
+                {PROMO_SLIDES.map((_, i) => (
+                  <span 
+                    key={i} 
+                    className={`promo-dot ${i === promoSlideIndex ? 'active' : ''}`}
+                  />
+                ))}
+              </div>
+            </div>
+            <span className="historia-label pro-label" style={{ color: '#ff6b00', fontWeight: 900 }}>
+              🍔 Pedidos Listo
             </span>
           </div>
 
@@ -509,6 +620,65 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate
             >
               👉 ¡Ir a Completar mi Perfil Ahora!
             </button>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {/* MODAL TUTORIAL INTERACTIVO: CÓMO USAR PEDIDOS LISTO */}
+      {isTutorialModalOpen && createPortal(
+        <div className="pedidos-tutorial-modal-overlay" onClick={() => setIsTutorialModalOpen(false)}>
+          <div className="pedidos-tutorial-modal-card" onClick={e => e.stopPropagation()}>
+            <div className="pedidos-tutorial-header">
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <span style={{ fontSize: 26 }}>🛵</span>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: 17, fontWeight: 900, color: '#ff6b00' }}>
+                    ¿Cómo Usar Pedidos Listo & Mándame?
+                  </h3>
+                  <span style={{ fontSize: 11, color: '#94a3b8' }}>Guía rápida paso a paso en Santiago RD</span>
+                </div>
+              </div>
+              <button className="pedidos-tutorial-close" onClick={() => setIsTutorialModalOpen(false)}>&times;</button>
+            </div>
+
+            <div className="pedidos-tutorial-steps">
+              <div className="tutorial-step-card">
+                <div className="step-num">1</div>
+                <div className="step-content">
+                  <h4>🍔 Elige tu Antojo o Servicio</h4>
+                  <p>Restaurantes (Pizzas, Yaroas, Pollo), Víveres de Supermercado o Motores Mándame Express.</p>
+                </div>
+              </div>
+
+              <div className="tutorial-step-card">
+                <div className="step-num">2</div>
+                <div className="step-content">
+                  <h4>📍 Confirma tu Dirección de Entrega</h4>
+                  <p>Indica el local de recogida y la casa/local de entrega con GPS rápido.</p>
+                </div>
+              </div>
+
+              <div className="tutorial-step-card">
+                <div className="step-num">3</div>
+                <div className="step-content">
+                  <h4>🛵 Motorizado Asignado con PIN OTP</h4>
+                  <p>Rastrea a tu driver Mándame en tiempo real y entrega tu PIN de seguridad al recibir tu pedido.</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="pedidos-tutorial-actions">
+              <button 
+                className="btn-probar-pedidos-listo"
+                onClick={() => {
+                  setIsTutorialModalOpen(false);
+                  if (typeof navigate === 'function') navigate('mandame');
+                }}
+              >
+                🚀 ¡Ir a Pedidos Listo Ahora!
+              </button>
+            </div>
           </div>
         </div>,
         document.body
