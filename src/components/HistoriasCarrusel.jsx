@@ -202,12 +202,16 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate
     <div className="historias-carrusel-wrapper">
       {/* ── BOTONES HERO ANIMADOS COMPACTOS REEMPLAZANDO EL TEXTO TRABAJOS REALIZADOS ── */}
       <div className="historias-dual-buttons-row">
-        {/* BOTÓN 1: PEDIDOS LISTO */}
+        {/* BOTÓN 1: PEDIDOS LISTO (Restaurantes, comida, tiendas y delivery) */}
         <div 
           className="hp-dual-hero-button hp-hero-btn-pedidos compact"
           onClick={() => {
-            const el = document.getElementById('hp-categories-section');
-            if (el) el.scrollIntoView({ behavior: 'smooth' });
+            if (typeof navigate === 'function') {
+              navigate('locales');
+            } else {
+              const el = document.getElementById('hp-categories-section');
+              if (el) el.scrollIntoView({ behavior: 'smooth' });
+            }
           }}
         >
           <div className="hp-hero-btn-header">
@@ -246,12 +250,16 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate
           </div>
         </div>
 
-        {/* BOTÓN 2: LISTO PATRÓN */}
+        {/* BOTÓN 2: LISTO PATRÓN (Directorio de Profesionales) */}
         <div 
           className="hp-dual-hero-button hp-hero-btn-patron compact"
           onClick={() => {
-            const el = document.getElementById('hp-categories-section');
-            if (el) el.scrollIntoView({ behavior: 'smooth' });
+            if (typeof navigate === 'function') {
+              navigate('search');
+            } else {
+              const el = document.getElementById('hp-categories-section');
+              if (el) el.scrollIntoView({ behavior: 'smooth' });
+            }
           }}
         >
           <div className="hp-hero-btn-header">

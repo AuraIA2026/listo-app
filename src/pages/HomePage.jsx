@@ -1254,6 +1254,7 @@ export default function HomePage({ lang, navigate, userRole }) {
               const proObj = (allProsToUse || []).find(p => p.id === proId) || { id: proId }; 
               navigate('proProfile', proObj); 
             }} 
+            navigate={navigate}
           />
         </div>
       </div>

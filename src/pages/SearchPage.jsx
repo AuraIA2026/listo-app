@@ -896,6 +896,7 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
           const proObj = (professionals || []).find(p => p.id === proId) || { id: proId }; 
           navigate('proProfile', proObj); 
         }} 
+        navigate={navigate}
       />
 
       {/* ── CARRUSEL ÉPICO VIP DE PROFESIONALES DESTACADOS (ENCIMA DEL CUADRO MAMEY) ── */}
