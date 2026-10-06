@@ -59,6 +59,46 @@
   transform: scale(0.95);
 }
 
+.hp-dual-hero-button.compact {
+  padding: 8px 6px 6px 6px;
+  border-radius: 16px;
+  gap: 6px;
+  box-shadow: 0 6px 16px rgba(255, 69, 0, 0.4);
+}
+
+.hp-dual-hero-button.compact .hp-hero-badge {
+  width: 32px;
+  height: 32px;
+  font-size: 10px;
+  border-width: 2px;
+}
+
+.hp-dual-hero-button.compact .hp-hero-btn-title {
+  font-size: 11px;
+}
+
+.hp-dual-hero-button.compact .hp-hero-btn-sub {
+  font-size: 9px;
+}
+
+.hp-dual-hero-button.compact .hp-hero-carousel-container {
+  height: 56px;
+  border-radius: 10px;
+}
+
+.hp-dual-hero-button.compact .hp-hero-carousel-slide {
+  width: 90px;
+  height: 48px;
+}
+
+.historias-dual-buttons-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  width: 100%;
+  margin-bottom: 8px;
+}
+
 .hp-hero-btn-header {
   display: flex;
   align-items: center;

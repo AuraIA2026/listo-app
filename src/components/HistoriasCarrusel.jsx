@@ -200,7 +200,96 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate
 
   return (
     <div className="historias-carrusel-wrapper">
-      <div className="historias-track-container">
+      {/* ── BOTONES HERO ANIMADOS COMPACTOS REEMPLAZANDO EL TEXTO TRABAJOS REALIZADOS ── */}
+      <div className="historias-dual-buttons-row">
+        {/* BOTÓN 1: PEDIDOS LISTO */}
+        <div 
+          className="hp-dual-hero-button hp-hero-btn-pedidos compact"
+          onClick={() => {
+            const el = document.getElementById('hp-categories-section');
+            if (el) el.scrollIntoView({ behavior: 'smooth' });
+          }}
+        >
+          <div className="hp-hero-btn-header">
+            <div className="hp-hero-badge">
+              <span>Listo</span>
+            </div>
+            <div className="hp-hero-btn-text">
+              <div className="hp-hero-btn-title">PEDIDOS LISTO</div>
+              <div className="hp-hero-btn-sub">DELIVERY Y MÁS</div>
+            </div>
+          </div>
+
+          <div className="hp-hero-carousel-container">
+            <div className="hp-hero-carousel-track track-food">
+              <div className="hp-hero-carousel-slide">
+                <img src="/pedidos_listo_hero.png" alt="Delivery Comida" />
+                <span>🍔 Comida</span>
+              </div>
+              <div className="hp-hero-carousel-slide">
+                <img src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=300&auto=format&fit=crop&q=80" alt="Burgers" />
+                <span>🍟 Yaroas</span>
+              </div>
+              <div className="hp-hero-carousel-slide">
+                <img src="https://images.unsplash.com/photo-1513104890138-7c749659a591?w=300&auto=format&fit=crop&q=80" alt="Pizza" />
+                <span>🍕 Pizza</span>
+              </div>
+              <div className="hp-hero-carousel-slide">
+                <img src="https://images.unsplash.com/photo-1542838132-92c53300491e?w=300&auto=format&fit=crop&q=80" alt="Supermercado" />
+                <span>🛍️ Súper</span>
+              </div>
+              <div className="hp-hero-carousel-slide">
+                <img src="/pedidos_listo_hero.png" alt="Delivery Comida" />
+                <span>🍔 Comida</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* BOTÓN 2: LISTO PATRÓN */}
+        <div 
+          className="hp-dual-hero-button hp-hero-btn-patron compact"
+          onClick={() => {
+            const el = document.getElementById('hp-categories-section');
+            if (el) el.scrollIntoView({ behavior: 'smooth' });
+          }}
+        >
+          <div className="hp-hero-btn-header">
+            <div className="hp-hero-badge">
+              <span>Listo</span>
+            </div>
+            <div className="hp-hero-btn-text">
+              <div className="hp-hero-btn-title">LISTO PATRON</div>
+              <div className="hp-hero-btn-sub">PROFESIONALES</div>
+            </div>
+          </div>
+
+          <div className="hp-hero-carousel-container">
+            <div className="hp-hero-carousel-track track-pros">
+              <div className="hp-hero-carousel-slide">
+                <img src="/listo_patron_hero.png" alt="Profesionales" />
+                <span>🛠️ Tinta & Plomero</span>
+              </div>
+              <div className="hp-hero-carousel-slide">
+                <img src="https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=300&auto=format&fit=crop&q=80" alt="Plomería" />
+                <span>🚰 Plomería</span>
+              </div>
+              <div className="hp-hero-carousel-slide">
+                <img src="https://images.unsplash.com/photo-1517524008697-84bbe3c3fd98?w=300&auto=format&fit=crop&q=80" alt="Mecánico" />
+                <span>🔧 Mecánico</span>
+              </div>
+              <div className="hp-hero-carousel-slide">
+                <img src="https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=300&auto=format&fit=crop&q=80" alt="Cerrajero" />
+                <span>🔑 Cerrajero</span>
+              </div>
+              <div className="hp-hero-carousel-slide">
+                <img src="/listo_patron_hero.png" alt="Profesionales" />
+                <span>🛠️ Tinta & Plomero</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
         {canScrollLeft && (
           <button
             className="historias-scroll-btn left"
