@@ -1,5 +1,5 @@
 // Service Worker para PWA Pedidos Listo
-const CACHE_NAME = 'pedidos-listo-v4-hero-click-nav';
+const CACHE_NAME = 'pedidos-listo-v5-mandame-fusion';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',

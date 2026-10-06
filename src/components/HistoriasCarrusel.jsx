@@ -202,12 +202,12 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate
     <div className="historias-carrusel-wrapper">
       {/* ── BOTONES HERO ANIMADOS COMPACTOS REEMPLAZANDO EL TEXTO TRABAJOS REALIZADOS ── */}
       <div className="historias-dual-buttons-row">
-        {/* BOTÓN 1: PEDIDOS LISTO (Restaurantes, comida, tiendas y delivery) */}
+        {/* BOTÓN 1: PEDIDOS LISTO (Mándame Express, Restaurantes, comida, súper y delivery) */}
         <div 
           className="hp-dual-hero-button hp-hero-btn-pedidos compact"
           onClick={() => {
             if (typeof navigate === 'function') {
-              navigate('locales');
+              navigate('mandame');
             } else {
               const el = document.getElementById('hp-categories-section');
               if (el) el.scrollIntoView({ behavior: 'smooth' });
