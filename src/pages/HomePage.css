@@ -25,6 +25,168 @@
 .hp-greeting h1 { font-family: var(--font-display, inherit); font-size: 22px; font-weight: 900; color: #1a1a2e; margin: 0 0 4px; line-height: 1.2; letter-spacing: -0.5px; }
 .hp-greeting p { font-size: 14px; color: #555; margin: 0; font-weight: 600; }
 
+/* ── BOTONES HERO ANIMADOS CON CARRUSEL DUAL ── */
+.hp-dual-hero-buttons-wrapper {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  width: 100%;
+  margin: 4px 0;
+}
+
+.hp-dual-hero-button {
+  background: linear-gradient(135deg, #FF5500 0%, #FF7700 50%, #E04800 100%);
+  border-radius: 18px;
+  padding: 10px 8px 8px 8px;
+  color: #FFFFFF;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  cursor: pointer;
+  box-shadow: 0 8px 20px rgba(255, 85, 0, 0.35), inset 0 1px 1px rgba(255, 255, 255, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s ease;
+  overflow: hidden;
+  position: relative;
+}
+
+.hp-dual-hero-button:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 12px 26px rgba(255, 85, 0, 0.5), inset 0 1px 2px rgba(255, 255, 255, 0.6);
+}
+
+.hp-dual-hero-button:active {
+  transform: scale(0.96);
+}
+
+.hp-hero-btn-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hp-hero-badge {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #FFFFFF;
+  color: #FF5500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  font-size: 11px;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+  border: 2px solid #FF5500;
+  flex-shrink: 0;
+}
+
+.hp-hero-btn-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.hp-hero-btn-title {
+  font-weight: 900;
+  font-size: 12px;
+  line-height: 1.1;
+  text-transform: uppercase;
+  letter-spacing: -0.2px;
+  color: #FFFFFF;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.4);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hp-hero-btn-sub {
+  font-weight: 800;
+  font-size: 10px;
+  color: #FFE6D5;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  opacity: 0.95;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* CAROUSEL CONTENEDOR INTERNO */
+.hp-hero-carousel-container {
+  width: 100%;
+  height: 72px;
+  background: rgba(0, 0, 0, 0.22);
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.hp-hero-carousel-track {
+  display: flex;
+  width: max-content;
+  height: 100%;
+  align-items: center;
+}
+
+.hp-hero-carousel-track.track-food {
+  animation: dualMarqueeFood 14s linear infinite;
+}
+
+.hp-hero-carousel-track.track-pros {
+  animation: dualMarqueePros 14s linear infinite;
+}
+
+.hp-dual-hero-button:hover .hp-hero-carousel-track {
+  animation-play-state: paused;
+}
+
+.hp-hero-carousel-slide {
+  width: 110px;
+  height: 62px;
+  margin: 0 4px;
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+  flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}
+
+.hp-hero-carousel-slide img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.hp-hero-carousel-slide span {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(0deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0) 100%);
+  color: white;
+  font-size: 8px;
+  font-weight: 800;
+  padding: 12px 4px 3px 4px;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@keyframes dualMarqueeFood {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes dualMarqueePros {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+
 .hp-hero-search-btn {
   display: flex; align-items: center; gap: 12px;
   background: white; border: 2px solid rgba(242,96,0,0.1); border-radius: 0px;

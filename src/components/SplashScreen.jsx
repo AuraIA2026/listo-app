@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import logoBlanco from '../assets/logo listo blanco.png'
-import letrasLogo from '../assets/letras_pedidos_listo.png'
+import letrasLogo from '../assets/letras_listo_patron.png'
 import './SplashScreen.css'
 
 export default function SplashScreen({ onFinish, lang }) {
