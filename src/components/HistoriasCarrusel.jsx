@@ -200,17 +200,6 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate
 
   return (
     <div className="historias-carrusel-wrapper">
-      <div className="historias-carrusel-header">
-        <div className="historias-title-left">
-          <div className="historias-live-pulse" />
-          <span className="historias-title-icon">📸</span>
-          <span className="historias-title-text">Trabajos Realizados</span>
-        </div>
-        <div className="historias-title-right">
-          <span className="historias-badge-24h">🔥 En Vivo • 24h</span>
-        </div>
-      </div>
-
       <div className="historias-track-container">
         {canScrollLeft && (
           <button
