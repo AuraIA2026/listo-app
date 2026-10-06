@@ -72,6 +72,14 @@ const IconSvg = ({ type, active }) => {
           )}
         </svg>
       )
+    case 'mercado':
+      return (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill={active ? color : 'none'} stroke={color} strokeWidth={active ? '2.2' : '2.2'} strokeLinecap="round" strokeLinejoin="round">
+          <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" fill={active ? color : 'none'} />
+          <line x1="3" y1="6" x2="21" y2="6" />
+          <path d="M16 10a4 4 0 0 1-8 0" />
+        </svg>
+      )
     case 'chat':
       return (
         <svg width="24" height="24" viewBox="0 0 24 24" fill={active ? color : 'none'} stroke={color} strokeWidth={active ? '0' : '2.2'} strokeLinecap="round" strokeLinejoin="round">
@@ -147,7 +155,10 @@ export default function BottomNav({ currentPage, navigate, lang = 'es', userRole
     currentPage === 'workdone' ? 'workdone' :
     currentPage === 'orders'   ? 'orders'   :
     currentPage === 'chat'     ? 'chat'     :
-    currentPage === 'profile'  ? 'profile'  : 'home'
+    currentPage === 'profile'  ? 'profile'  :
+    currentPage === 'mandame'  ? 'mandame'  : 'home'
+
+  const isMandame = currentPage === 'mandame'
 
   return (
     <>
@@ -159,13 +170,42 @@ export default function BottomNav({ currentPage, navigate, lang = 'es', userRole
         <div className="bottom-nav-inner">
           {allTabs.map(tab => {
             const isActive = activeTab === tab.id
-            const label = lang === 'es' ? tab.labelEs : tab.labelEn
+            let label = lang === 'es' ? tab.labelEs : tab.labelEn
+            let iconType = tab.iconType
+
+            if (isMandame && tab.id === 'workdone') {
+              label = lang === 'es' ? 'Mercado' : 'Market'
+              iconType = 'mercado'
+            }
+
+            const handleTabClick = () => {
+              if (isMandame) {
+                if (tab.id === 'workdone') {
+                  window.dispatchEvent(new CustomEvent('mandame-switch-tab', { detail: 'mercado' }))
+                  return
+                }
+                if (tab.id === 'search') {
+                  window.dispatchEvent(new CustomEvent('mandame-switch-tab', { detail: 'buscar' }))
+                  return
+                }
+                if (tab.id === 'home') {
+                  window.dispatchEvent(new CustomEvent('mandame-switch-tab', { detail: 'inicio' }))
+                  return
+                }
+                if (tab.id === 'orders') {
+                  window.dispatchEvent(new CustomEvent('mandame-switch-tab', { detail: 'pedidos' }))
+                  return
+                }
+              }
+              navigate(tab.id)
+            }
+
             return (
               <button
                 key={tab.id}
                 data-tour={`nav-${tab.id}`}
                 className={`nav-tab ${isActive ? 'active' : ''}`}
-                onClick={() => navigate(tab.id)}
+                onClick={handleTabClick}
               >
                 {/* Alerta de Perfil Incompleto */}
                 {tab.id === 'profile' && userData && !profileComplete && (
@@ -186,7 +226,7 @@ export default function BottomNav({ currentPage, navigate, lang = 'es', userRole
                 )}
                 
                 <span className="nav-icon" style={{ animation: isActive ? 'popIcon 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)' : 'none' }}>
-                  <IconSvg type={tab.iconType} active={isActive} />
+                  <IconSvg type={iconType} active={isActive} />
                 </span>
                 
                 <span className="nav-label">
