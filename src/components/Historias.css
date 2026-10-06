@@ -1248,13 +1248,22 @@
 .hand-badge {
   background: linear-gradient(135deg, #ff6b00, #ff8533);
   color: #ffffff;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 900;
-  padding: 3px 8px;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(255, 107, 0, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.6);
+  padding: 4px 10px;
+  border-radius: 14px;
+  box-shadow: 0 4px 14px rgba(255, 107, 0, 0.6);
+  border: 1.5px solid rgba(255, 255, 255, 0.7);
   white-space: nowrap;
+}
+
+.animated-fade-text {
+  animation: textFadeInUp 0.4s ease-out forwards;
+}
+
+@keyframes textFadeInUp {
+  0% { opacity: 0; transform: translateY(-4px) scale(0.9); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 .hand-emoji {
