@@ -11,8 +11,17 @@ content = content.replace(
 // Replace export default function App() with MandamePage
 content = content.replace('export default function App() {', 'export default function MandamePage({ navigate, userData, userRole, lang }) {');
 
-// Inject useEffect for custom event 'mandame-switch-tab'
-const eventListenerInject = `
+// Inject isMerchantUser logic & custom event listener
+const merchantUserLogicInject = `
+  const isMerchantUser = Boolean(
+    userData?.role === 'merchant' ||
+    userData?.role === 'comercio' ||
+    userData?.type === 'comercio' ||
+    userData?.isMerchant === true ||
+    userData?.email === 'listopatron.app@gmail.com' ||
+    (typeof localStorage !== 'undefined' && localStorage.getItem('force_listo_merchant_mode') === 'true')
+  );
+
   // Escuchar cambios de pestaña desde la barra de navegación global (Ej: Mercado, Buscar, Pedidos)
   useEffect(() => {
     const handleSwitch = (e) => {
@@ -23,7 +32,44 @@ const eventListenerInject = `
   }, []);
 `;
 
-content = content.replace("const [activeTab, setActiveTab] = useState('inicio');", "const [activeTab, setActiveTab] = useState('inicio');\n" + eventListenerInject);
+content = content.replace("const [activeTab, setActiveTab] = useState('inicio');", "const [activeTab, setActiveTab] = useState('inicio');\n" + merchantUserLogicInject);
+
+// Make mode switcher conditional on isMerchantUser
+const oldModeBlock = `{/* Mode Switcher Pill Header */}
+      <div style={{ background: '#0a0e1a', color: 'white', padding: '8px 16px', display: 'flex', justifyContent: spaceBetween, alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.1)', fontSize: 11, fontWeight: 800 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span style={{ fontSize: 16 }}>🍔</span>
+          <span style={{ color: '#ff6b00', fontWeight: 900 }}>PEDIDOS LISTO</span>
+        </div>
+        <div style={{ display: 'flex', gap: 6 }}>
+          <button onClick={() => setViewMode('client')} style={{ background: viewMode === 'client' ? '#ff6b00' : 'rgba(255,255,255,0.1)', color: 'white', border: 'none', padding: '4px 10px', borderRadius: 8, fontSize: 10, fontWeight: 900, cursor: 'pointer' }}>
+            📱 App Cliente
+          </button>
+          <button onClick={() => setViewMode('merchant')} style={{ background: viewMode === 'merchant' ? '#ff6b00' : 'rgba(255,255,255,0.1)', color: 'white', border: 'none', padding: '4px 10px', borderRadius: 8, fontSize: 10, fontWeight: 900, cursor: 'pointer' }}>
+            🏪 Comercio Partner
+          </button>
+        </div>
+      </div>`;
+
+const newModeBlock = `{/* Mode Switcher Pill Header - Solo para Comercio Partner / Admin */}
+      {isMerchantUser && (
+        <div style={{ background: '#0a0e1a', color: 'white', padding: '8px 16px', display: 'flex', justifyContent: spaceBetween, alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.1)', fontSize: 11, fontWeight: 800 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span style={{ fontSize: 16 }}>🍔</span>
+            <span style={{ color: '#ff6b00', fontWeight: 900 }}>PEDIDOS LISTO</span>
+          </div>
+          <div style={{ display: 'flex', gap: 6 }}>
+            <button onClick={() => setViewMode('client')} style={{ background: viewMode === 'client' ? '#ff6b00' : 'rgba(255,255,255,0.1)', color: 'white', border: 'none', padding: '4px 10px', borderRadius: 8, fontSize: 10, fontWeight: 900, cursor: 'pointer' }}>
+              📱 App Cliente
+            </button>
+            <button onClick={() => setViewMode('merchant')} style={{ background: viewMode === 'merchant' ? '#ff6b00' : 'rgba(255,255,255,0.1)', color: 'white', border: 'none', padding: '4px 10px', borderRadius: 8, fontSize: 10, fontWeight: 900, cursor: 'pointer' }}>
+              🏪 Comercio Partner
+            </button>
+          </div>
+        </div>
+      )}`;
+
+content = content.replace(oldModeBlock, newModeBlock);
 
 // Header Mamey con Menú Deslizable
 const headerMameyHtml = `<header className="py-app-header" style={{ background: 'linear-gradient(135deg, #121829 0%, #0a0e1a 100%)', borderBottom: '3px solid #ff6b00', padding: '16px 16px 18px' }}>
@@ -202,4 +248,4 @@ content = content.replace(targetMercadoChunk, searchAndMercadoHtml);
 
 fs.writeFileSync('E:/Listo/src/pages/MandamePage.jsx', content, 'utf8');
 fs.writeFileSync('D:/Listo/src/pages/MandamePage.jsx', content, 'utf8');
-console.log('MandamePage.jsx updated cleanly!');
+console.log('MandamePage.jsx updated with conditional merchant mode switcher!');

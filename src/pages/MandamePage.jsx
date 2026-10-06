@@ -206,6 +206,15 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
   const [viewMode, setViewMode] = useState('client'); // 'client' | 'merchant'
   const [activeTab, setActiveTab] = useState('inicio');
 
+  const isMerchantUser = Boolean(
+    userData?.role === 'merchant' ||
+    userData?.role === 'comercio' ||
+    userData?.type === 'comercio' ||
+    userData?.isMerchant === true ||
+    userData?.email === 'listopatron.app@gmail.com' ||
+    (typeof localStorage !== 'undefined' && localStorage.getItem('force_listo_merchant_mode') === 'true')
+  );
+
   // Escuchar cambios de pestaña desde la barra de navegación global (Ej: Mercado, Buscar, Pedidos)
   useEffect(() => {
     const handleSwitch = (e) => {
@@ -1215,21 +1224,23 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
         </div>
       )}
 
-      {/* Mode Switcher Pill Header */}
-      <div style={{ background: '#0a0e1a', color: 'white', padding: '8px 16px', display: 'flex', justifyContent: spaceBetween, alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.1)', fontSize: 11, fontWeight: 800 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <span style={{ fontSize: 16 }}>🍔</span>
-          <span style={{ color: '#ff6b00', fontWeight: 900 }}>PEDIDOS LISTO</span>
+      {/* Mode Switcher Pill Header - Solo para Comercio Partner / Admin */}
+      {isMerchantUser && (
+        <div style={{ background: '#0a0e1a', color: 'white', padding: '8px 16px', display: 'flex', justifyContent: spaceBetween, alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.1)', fontSize: 11, fontWeight: 800 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span style={{ fontSize: 16 }}>🍔</span>
+            <span style={{ color: '#ff6b00', fontWeight: 900 }}>PEDIDOS LISTO</span>
+          </div>
+          <div style={{ display: 'flex', gap: 6 }}>
+            <button onClick={() => setViewMode('client')} style={{ background: viewMode === 'client' ? '#ff6b00' : 'rgba(255,255,255,0.1)', color: 'white', border: 'none', padding: '4px 10px', borderRadius: 8, fontSize: 10, fontWeight: 900, cursor: 'pointer' }}>
+              📱 App Cliente
+            </button>
+            <button onClick={() => setViewMode('merchant')} style={{ background: viewMode === 'merchant' ? '#ff6b00' : 'rgba(255,255,255,0.1)', color: 'white', border: 'none', padding: '4px 10px', borderRadius: 8, fontSize: 10, fontWeight: 900, cursor: 'pointer' }}>
+              🏪 Comercio Partner
+            </button>
+          </div>
         </div>
-        <div style={{ display: 'flex', gap: 6 }}>
-          <button onClick={() => setViewMode('client')} style={{ background: viewMode === 'client' ? '#ff6b00' : 'rgba(255,255,255,0.1)', color: 'white', border: 'none', padding: '4px 10px', borderRadius: 8, fontSize: 10, fontWeight: 900, cursor: 'pointer' }}>
-            📱 App Cliente
-          </button>
-          <button onClick={() => setViewMode('merchant')} style={{ background: viewMode === 'merchant' ? '#ff6b00' : 'rgba(255,255,255,0.1)', color: 'white', border: 'none', padding: '4px 10px', borderRadius: 8, fontSize: 10, fontWeight: 900, cursor: 'pointer' }}>
-            🏪 Comercio Partner
-          </button>
-        </div>
-      </div>
+      )}
 
       {/* =========================================================================
          CLIENT APP VIEW MODE
