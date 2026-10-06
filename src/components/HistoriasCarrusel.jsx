@@ -25,6 +25,7 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate
 
   // Estado para la animación del texto alternante de la mano indicadora
   const [handTextIndex, setHandTextIndex] = useState(0)
+  const [showHandPointer, setShowHandPointer] = useState(true)
 
   // Timer para alternar el texto animado de la mano cada 2.4 segundos
   useEffect(() => {
@@ -32,6 +33,14 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate
       setHandTextIndex(prev => (prev + 1) % HAND_TEXTS.length)
     }, 2400)
     return () => clearInterval(timer)
+  }, [])
+
+  // Timer para ocultar la mano animada automáticamente a los 7 segundos de abrir la app
+  useEffect(() => {
+    const hideTimer = setTimeout(() => {
+      setShowHandPointer(false)
+    }, 7000)
+    return () => clearTimeout(hideTimer)
   }, [])
 
   const trackRef = useRef(null)
@@ -220,19 +229,21 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate
     <div className="historias-carrusel-wrapper">
       {/* ── CINTA MAMEY LLAMATIVA "PEDIDOS LISTO" CON DESTELLOS Y MANO ANIMADA CON TEXTO ── */}
       <div className="cinta-pedidos-listo-container">
-        {/* Mano animada presionando la cinta con texto alternante */}
-        <div 
-          className="animated-hand-pointer"
-          onClick={() => {
-            if (typeof navigate === 'function') navigate('mandame');
-          }}
-          title="¡Haz clic para entrar a Pedidos Listo!"
-        >
-          <div className="hand-badge animated-fade-text" key={handTextIndex}>
-            {HAND_TEXTS[handTextIndex]}
+        {/* Mano animada presionando la cinta con texto alternante (Solo dura 7s al abrir la app) */}
+        {showHandPointer && (
+          <div 
+            className="animated-hand-pointer"
+            onClick={() => {
+              if (typeof navigate === 'function') navigate('mandame');
+            }}
+            title="¡Haz clic para entrar a Pedidos Listo!"
+          >
+            <div className="hand-badge animated-fade-text" key={handTextIndex}>
+              {HAND_TEXTS[handTextIndex]}
+            </div>
+            <span className="hand-emoji">👇</span>
           </div>
-          <span className="hand-emoji">👇</span>
-        </div>
+        )}
 
         <div 
           className="cinta-pedidos-listo-wrapper"
