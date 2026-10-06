@@ -3,14 +3,14 @@
    Ultra-modern Instagram & WhatsApp Stories component for Listo Patrón
    ========================================================================== */
 
-/* ── CONTENEDOR PRINCIPAL DEL CARRUSEL ── */
+/* ── CONTENEDOR PRINCIPAL DEL CARRUSEL (ESTRECHO EN ALTO) ── */
 .historias-carrusel-wrapper {
   width: 100%;
-  padding: 16px 14px 12px 14px;
+  padding: 10px 12px 6px 12px;
   background: linear-gradient(135deg, #0F172A 0%, #1E293B 50%, #0F172A 100%);
   border-radius: 20px;
-  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.25), 0 4px 12px rgba(242, 96, 0, 0.15);
-  margin-bottom: 20px;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.25), 0 3px 10px rgba(242, 96, 0, 0.15);
+  margin-bottom: 12px;
   position: relative;
   overflow: hidden;
   border: 1px solid rgba(242, 96, 0, 0.25);
@@ -34,12 +34,12 @@
   100% { transform: translate(30px, 15px); opacity: 1; }
 }
 
-/* ── CINTA MAMEY PEDIDOS LISTO CON DESTELLOS (ESTILO CINTA ELEGANTE) ── */
+/* ── CINTA MAMEY PEDIDOS LISTO CON DESTELLOS (ESTILO CINTA ELEGANTE & COMPACTA) ── */
 .cinta-pedidos-listo-wrapper {
   width: 100%;
   display: flex;
   justify-content: center;
-  margin-bottom: 14px;
+  margin-bottom: 4px;
   cursor: pointer;
   user-select: none;
   position: relative;
@@ -50,14 +50,14 @@
   position: relative;
   background: linear-gradient(135deg, #ff6b00 0%, #ff8533 40%, #ff5500 80%, #e64a00 100%);
   color: #ffffff;
-  padding: 8px 18px;
-  border-radius: 26px;
+  padding: 6px 14px;
+  border-radius: 22px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  box-shadow: 0 6px 20px rgba(255, 107, 0, 0.5), 0 0 14px rgba(255, 255, 255, 0.4) inset;
-  border: 2px solid rgba(255, 255, 255, 0.7);
+  gap: 8px;
+  box-shadow: 0 5px 16px rgba(255, 107, 0, 0.45), 0 0 10px rgba(255, 255, 255, 0.35) inset;
+  border: 1.5px solid rgba(255, 255, 255, 0.7);
   overflow: hidden;
   transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
   transform: translateZ(0);
@@ -1223,12 +1223,12 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-bottom: 12px;
+  margin-bottom: 4px;
 }
 
 .animated-hand-pointer {
   position: absolute;
-  top: -22px;
+  top: -18px;
   right: 18%;
   z-index: 10;
   display: flex;
