@@ -547,65 +547,6 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate
         </div>,
         document.body
       )}
-
-      {/* MODAL TUTORIAL INTERACTIVO: CÓMO USAR PEDIDOS LISTO */}
-      {isTutorialModalOpen && createPortal(
-        <div className="pedidos-tutorial-modal-overlay" onClick={() => setIsTutorialModalOpen(false)}>
-          <div className="pedidos-tutorial-modal-card" onClick={e => e.stopPropagation()}>
-            <div className="pedidos-tutorial-header">
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <span style={{ fontSize: 26 }}>🛵</span>
-                <div>
-                  <h3 style={{ margin: 0, fontSize: 17, fontWeight: 900, color: '#ff6b00' }}>
-                    ¿Cómo Usar Pedidos Listo & Mándame?
-                  </h3>
-                  <span style={{ fontSize: 11, color: '#94a3b8' }}>Guía rápida paso a paso en Santiago RD</span>
-                </div>
-              </div>
-              <button className="pedidos-tutorial-close" onClick={() => setIsTutorialModalOpen(false)}>&times;</button>
-            </div>
-
-            <div className="pedidos-tutorial-steps">
-              <div className="tutorial-step-card">
-                <div className="step-num">1</div>
-                <div className="step-content">
-                  <h4>🍔 Elige tu Antojo o Servicio</h4>
-                  <p>Restaurantes (Pizzas, Yaroas, Pollo), Víveres de Supermercado o Motores Mándame Express.</p>
-                </div>
-              </div>
-
-              <div className="tutorial-step-card">
-                <div className="step-num">2</div>
-                <div className="step-content">
-                  <h4>📍 Confirma tu Dirección de Entrega</h4>
-                  <p>Indica el local de recogida y la casa/local de entrega con GPS rápido.</p>
-                </div>
-              </div>
-
-              <div className="tutorial-step-card">
-                <div className="step-num">3</div>
-                <div className="step-content">
-                  <h4>🛵 Motorizado Asignado con PIN OTP</h4>
-                  <p>Rastrea a tu driver Mándame en tiempo real y entrega tu PIN de seguridad al recibir tu pedido.</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="pedidos-tutorial-actions">
-              <button 
-                className="btn-probar-pedidos-listo"
-                onClick={() => {
-                  setIsTutorialModalOpen(false);
-                  if (typeof navigate === 'function') navigate('mandame');
-                }}
-              >
-                🚀 ¡Ir a Pedidos Listo Ahora!
-              </button>
-            </div>
-          </div>
-        </div>,
-        document.body
-      )}
     </div>
   )
 }
