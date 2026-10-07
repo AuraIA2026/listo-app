@@ -1,0 +1,1342 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portal de Comercios Partner Pro - Pedidos Listo</title>
+
+  <!-- Google Fonts: Outfit & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .merchant-container {
+      width: 100% !important;
+      max-width: 100% !important;
+      margin: 0 !important;
+      background: #f8fafc;
+      min-height: 100vh;
+      padding-bottom: 60px;
+      box-shadow: none !important;
+    }
+    .merchant-header {
+      background: linear-gradient(135deg, #121829 0%, #0a0e1a 100%);
+      color: white;
+      padding: 20px 18px 16px 18px;
+      border-bottom-left-radius: 24px;
+      border-bottom-right-radius: 24px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+    }
+    .merchant-nav-tabs {
+      display: flex;
+      gap: 10px;
+      overflow-x: auto;
+      padding: 14px 16px;
+      background: #ffffff;
+      border-bottom: 2px solid #e2e8f0;
+      scrollbar-width: none;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.05);
+    }
+    .merchant-nav-tabs::-webkit-scrollbar { display: none; }
+    .merchant-tab-btn {
+      background: #f1f5f9;
+      color: #64748b;
+      border: 1.5px solid #cbd5e1;
+      padding: 10px 18px;
+      border-radius: 25px;
+      font-family: var(--font-heading);
+      font-weight: 800;
+      font-size: 13px;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .merchant-tab-btn:hover {
+      background: #e2e8f0;
+      color: var(--text-primary);
+      transform: translateY(-1px);
+    }
+    .merchant-tab-btn.active {
+      background: linear-gradient(135deg, #ff6b00 0%, #ff8533 100%);
+      color: white;
+      border-color: #ff6b00;
+      box-shadow: 0 6px 18px rgba(255, 107, 0, 0.4);
+      transform: scale(1.03);
+    }
+    .merchant-tab-content.active {
+      display: block;
+    }
+    .merchant-quick-btn {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      padding: 12px 6px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      font-family: var(--font-sans);
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--text-primary);
+      text-align: center;
+    }
+    .merchant-quick-btn:hover {
+      background: #fff3e6;
+      border-color: var(--brand-mamey);
+      transform: translateY(-3px);
+      box-shadow: 0 6px 16px rgba(255, 107, 0, 0.18);
+      color: var(--brand-mamey);
+    }
+    .merchant-quick-btn:active {
+      transform: scale(0.95);
+    }
+    .form-card {
+      background: white;
+      border-radius: var(--radius-lg);
+      padding: 18px;
+      margin: 14px 16px;
+      box-shadow: var(--shadow-card);
+      border: 1px solid #f1f5f9;
+    }
+    .form-group {
+      margin-bottom: 14px;
+    }
+    .form-group label {
+      display: block;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+    .form-control {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 1px solid #cbd5e1;
+      font-size: 14px;
+      outline: none;
+    }
+    .form-control:focus {
+      border-color: var(--brand-mamey);
+      box-shadow: 0 0 0 3px var(--brand-mamey-glow);
+    }
+    .btn-mamey {
+      width: 100%;
+      background: linear-gradient(135deg, #ff6b00, #ff8533);
+      color: white;
+      border: none;
+      padding: 14px;
+      border-radius: var(--radius-pill);
+      font-family: var(--font-heading);
+      font-weight: 800;
+      font-size: 14px;
+      cursor: pointer;
+      box-shadow: var(--shadow-mamey);
+      transition: 0.2s;
+    }
+    .btn-mamey:hover {
+      transform: translateY(-2px);
+    }
+    .kpi-metric-card {
+      background: white;
+      border-radius: 16px;
+      padding: 14px 12px;
+      box-shadow: var(--shadow-soft);
+      border: 1px solid #e2e8f0;
+    }
+    .editor-preset-pill, .editor-badge-pill {
+      background: #fff3e6;
+      color: var(--brand-mamey);
+      border: 1px solid #ffe0b2;
+      padding: 6px 10px;
+      border-radius: 14px;
+      font-family: var(--font-heading);
+      font-weight: 800;
+      font-size: 11px;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: 0.15s;
+    }
+    .editor-preset-pill:hover, .editor-badge-pill:hover {
+      background: var(--brand-mamey);
+      color: white;
+    }
+    /* Thermal POS Receipt Slip */
+    .pos-ticket-paper {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      font-family: 'Courier New', Courier, monospace;
+      padding: 16px;
+      border-radius: 8px;
+      color: #000;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      position: relative;
+    }
+    .pos-ticket-paper::after {
+      content: '';
+      display: block;
+      height: 6px;
+      background: radial-gradient(circle, transparent 4px, #fff 5px);
+      background-size: 12px 12px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="merchant-container">
+    <!-- Header Partner Dark Theme -->
+    <header class="merchant-header">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <div class="mamey-icon-box" style="width: 36px; height: 36px; font-size: 18px;">🏪</div>
+          <div>
+            <span class="brand-name" style="font-size: 17px; color: white;">Pedidos Listo Partner</span>
+            <span style="font-size: 10px; background: rgba(0,230,153,0.15); color: #00e699; padding: 2px 6px; border-radius: 6px; display: block; font-weight: 800;">● PORTAL OFICIAL PRO</span>
+          </div>
+        </div>
+        
+        <div style="display: flex; gap: 6px; align-items: center;">
+          <button type="button" onclick="window.open('https://listopatron.com.do', '_blank')" style="background: rgba(59, 130, 246, 0.25); color: #60a5fa; border: 1px solid rgba(96, 165, 250, 0.5); padding: 8px 14px; border-radius: var(--radius-pill); font-family: var(--font-heading); font-weight: 800; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);">
+            🌐 Ir a la Web (listopatron.com.do)
+          </button>
+          <button onclick="window.location.href='index.html'" style="background: linear-gradient(135deg, #ff6b00, #ff8533); color: white; border: none; padding: 8px 14px; border-radius: var(--radius-pill); font-family: var(--font-heading); font-weight: 800; font-size: 12px; cursor: pointer; box-shadow: var(--shadow-mamey); display: flex; align-items: center; gap: 6px;">
+            📱 Modo Cliente
+          </button>
+        </div>
+      </div>
+
+      <!-- BARRA DE SESIÓN UNIFICADA PARTNER & BOTÓN REGISTRAR COMERCIO -->
+      <div style="background: rgba(255,255,255,0.08); padding: 8px 12px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.15); margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;" id="user-session-bar">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 12px; color: #00e699; font-weight: 900;" id="user-session-status">🟢 Sesión: Juan Pérez (Propietario)</span>
+        </div>
+
+        <div style="display: flex; gap: 6px;">
+          <button type="button" onclick="openPartnerLoginModal()" id="btn-session-login" style="background: linear-gradient(135deg, #ff6b00, #ff8533); color: white; border: none; padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: 900; cursor: pointer; box-shadow: 0 4px 12px rgba(255,107,0,0.3);">
+            🔑 Iniciar Sesión / Registrar Negocio
+          </button>
+          <button type="button" onclick="handlePartnerLogout()" id="btn-session-logout" style="background: rgba(239,68,68,0.25); color: #ef4444; border: 1px solid rgba(239,68,68,0.5); padding: 6px 10px; border-radius: 8px; font-size: 11px; font-weight: 900; cursor: pointer;">
+            🚪 Salir
+          </button>
+        </div>
+      </div>
+
+      <!-- Store Title Bar & View Mode Switcher -->
+      <div style="background: rgba(255,255,255,0.08); padding: 12px 14px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.12); margin-top: 8px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+          <div>
+            <span style="font-size: 10px; color: #94a3b8; font-weight: 700; text-transform: uppercase;">LOCAL CONECTADO</span>
+            <div style="font-size: 15px; font-weight: 900; color: white; margin-top: 1px;" id="merchant-store-title">KFC Las Colinas Santiago</div>
+          </div>
+          <button onclick="openEditStoreModal()" style="background: rgba(255,107,0,0.2); color: var(--brand-mamey); border: 1px solid rgba(255,107,0,0.4); padding: 5px 12px; border-radius: 8px; font-size: 11px; font-weight: 800; cursor: pointer;">
+            ✏️ Editar Perfil
+          </button>
+        </div>
+
+        <!-- 2 VISTAS DEL COMERCIO: SOLO MI RESTAURANTE vs TODA LA APP -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 6px;">
+          <button type="button" onclick="openSingleStoreView()" style="background: linear-gradient(135deg, #00e699, #059669); color: #0a0e1a; border: none; padding: 8px 10px; border-radius: 10px; font-weight: 900; font-size: 11px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px; box-shadow: 0 4px 12px rgba(0, 230, 153, 0.25);">
+            🏪 Vista Solo Mi Restaurante
+          </button>
+          
+          <button type="button" onclick="openFullAppView()" style="background: rgba(255,255,255,0.12); color: white; border: 1px solid rgba(255,255,255,0.2); padding: 8px 10px; border-radius: 10px; font-weight: 800; font-size: 11px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px;">
+            🌐 Vista Toda la App
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Comprehensive Navigation Tabs Bar -->
+    <nav class="merchant-nav-tabs">
+      <button class="merchant-tab-btn active" data-tab="resumen" onclick="switchMerchantTab('resumen')">📊 Resumen</button>
+      <button class="merchant-tab-btn" data-tab="pedidos" onclick="switchMerchantTab('pedidos')">🔔 Pedidos Cocina <span id="badge-pedidos-count" style="background:#ef4444; color:white; padding:2px 8px; border-radius:12px; font-size:11px; font-weight:900;">1</span></button>
+      <button class="merchant-tab-btn" data-tab="catalogo" onclick="switchMerchantTab('catalogo')">🍔 Edición de Menú & Catálogo</button>
+      <button class="merchant-tab-btn" data-tab="promos" onclick="switchMerchantTab('promos')">🎟️ Cupones & Promos</button>
+      <button class="merchant-tab-btn" data-tab="resenas" onclick="switchMerchantTab('resenas')">⭐ Reseñas & Feedback</button>
+      <button class="merchant-tab-btn" data-tab="finanzas" onclick="switchMerchantTab('finanzas')">📈 Finanzas & Banco</button>
+      <button class="merchant-tab-btn" data-tab="ajustes" onclick="switchMerchantTab('ajustes')">⚙️ Horarios & Delivery</button>
+    </nav>
+
+    <!-- ================= TAB 1: RESUMEN GENERAL (DASHBOARD) ================= -->
+    <div id="tab-resumen" class="merchant-tab-content active">
+      <div style="margin: 14px 16px; display: flex; flex-direction: column; gap: 12px;">
+        
+        <!-- Estado de Operación del Local -->
+        <div style="background: white; border-radius: var(--radius-lg); padding: 14px 18px; box-shadow: var(--shadow-card); display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <span style="font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Estado de la Cocina</span>
+            <div style="display: flex; align-items: center; gap: 6px; margin-top: 2px;">
+              <span id="store-status-dot" style="width: 10px; height: 10px; border-radius: 50%; background: #00e699; display: inline-block;"></span>
+              <span id="store-status-label" style="font-family: var(--font-heading); font-weight: 800; font-size: 14px; color: var(--text-primary);">Abierto & Recibiendo Pedidos</span>
+            </div>
+          </div>
+
+          <select id="select-store-status" onchange="handleStoreStatusChange(this.value)" style="background: #f1f5f9; border: 1px solid #cbd5e1; padding: 8px 12px; border-radius: 12px; font-weight: 800; font-size: 12px; color: var(--text-primary); cursor: pointer; outline: none;">
+            <option value="open">🟢 Abierto</option>
+            <option value="busy">🟡 Alta Demanda (Pausa 15m)</option>
+            <option value="closed">🔴 Cerrado</option>
+          </select>
+        </div>
+
+        <!-- ⚡ ACCIONES RÁPIDAS DEL COMERCIO -->
+        <div style="background: white; border-radius: var(--radius-lg); padding: 16px; box-shadow: var(--shadow-card); border: 1px solid #e2e8f0;">
+          <div style="font-size: 11px; font-weight: 800; color: var(--brand-mamey); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
+            <span>⚡ BOTONES DE ACCIÓN RÁPIDA</span>
+            <span style="font-size: 10px; color: var(--text-muted); background: #f1f5f9; padding: 2px 8px; border-radius: 6px; font-weight: 700;">Panel Aliados</span>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+            <button type="button" class="merchant-quick-btn" onclick="requestExpressRiderAlert()">
+              <span style="font-size: 22px; display: block; margin-bottom: 2px;">🛵</span>
+              <span>Motor de Apoyo</span>
+            </button>
+
+            <button type="button" class="merchant-quick-btn" onclick="openPushBroadcastModal()">
+              <span style="font-size: 22px; display: block; margin-bottom: 2px;">📢</span>
+              <span>Alerta Push</span>
+            </button>
+
+            <button type="button" class="merchant-quick-btn" onclick="openQuickFlashModal()">
+              <span style="font-size: 22px; display: block; margin-bottom: 2px;">⚡</span>
+              <span>Oferta Flash</span>
+            </button>
+
+            <button type="button" class="merchant-quick-btn" onclick="testThermalPrinterSimulator()">
+              <span style="font-size: 22px; display: block; margin-bottom: 2px;">🖨️</span>
+              <span>Imprimir POS</span>
+            </button>
+
+            <button type="button" class="merchant-quick-btn" onclick="openSalesReportModal()">
+              <span style="font-size: 22px; display: block; margin-bottom: 2px;">📊</span>
+              <span>Reporte Ventas</span>
+            </button>
+
+            <button type="button" class="merchant-quick-btn" onclick="openPinConfigModal()">
+              <span style="font-size: 22px; display: block; margin-bottom: 2px;">🔒</span>
+              <span>PIN Empleados</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 4 KPI Cards Grid -->
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
+          <div class="kpi-metric-card">
+            <span style="font-size: 10px; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">VENTAS HOY</span>
+            <span id="dash-today-sales" style="font-family: var(--font-heading); font-weight: 900; font-size: 20px; color: var(--brand-mamey); display: block; margin-top: 2px;">RD$ 4,850</span>
+            <span style="font-size: 10px; color: var(--accent-emerald); font-weight: 800; display: block; margin-top: 4px;">📈 +18.4% vs ayer</span>
+          </div>
+          
+          <div class="kpi-metric-card">
+            <span style="font-size: 10px; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">PEDIDOS HOY</span>
+            <span id="dash-today-orders" style="font-family: var(--font-heading); font-weight: 900; font-size: 20px; color: var(--text-primary); display: block; margin-top: 2px;">6 Completados</span>
+            <span style="font-size: 10px; color: var(--text-muted); font-weight: 700; display: block; margin-top: 4px;">Meta diaria: 85%</span>
+          </div>
+
+          <div class="kpi-metric-card">
+            <span style="font-size: 10px; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">CALIFICACIÓN LOCAL</span>
+            <span style="font-family: var(--font-heading); font-weight: 900; font-size: 20px; color: var(--accent-gold); display: block; margin-top: 2px;">4.9 ⭐</span>
+            <span style="font-size: 10px; color: var(--text-muted); font-weight: 700; display: block; margin-top: 4px;">🏆 Vendedor Estrella</span>
+          </div>
+
+          <div class="kpi-metric-card">
+            <span style="font-size: 10px; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">DESPACHO MEDIO</span>
+            <span style="font-family: var(--font-heading); font-weight: 900; font-size: 20px; color: #0284c7; display: block; margin-top: 2px;">18 mins</span>
+            <span style="font-size: 10px; color: var(--accent-emerald); font-weight: 800; display: block; margin-top: 4px;">⚡ Excelente Eficiencia</span>
+          </div>
+        </div>
+
+        <!-- Platillos Más Vendidos Widget -->
+        <div style="background: white; border-radius: 16px; padding: 16px; box-shadow: var(--shadow-soft); border: 1px solid #e2e8f0;">
+          <h4 style="font-family: var(--font-heading); font-weight: 800; font-size: 14px; color: var(--text-primary); margin-bottom: 10px; display: flex; justify-content: space-between;">
+            <span>🏆 Platillos Más Vendidos Este Mes</span>
+            <span style="font-size: 11px; color: var(--brand-mamey); font-weight: 800;">Top 3</span>
+          </h4>
+
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; background: #f8fafc; padding: 10px; border-radius: 10px; font-size: 12px;">
+              <div>
+                <span style="font-weight: 800; color: var(--text-primary);">🥇 Bucket Familiar KFC (8 Pzs)</span>
+                <span style="font-size: 10px; color: var(--text-muted); display: block;">42 Unidades vendidas</span>
+              </div>
+              <span style="font-weight: 900; color: var(--brand-mamey);">RD$ 41,958</span>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; background: #f8fafc; padding: 10px; border-radius: 10px; font-size: 12px;">
+              <div>
+                <span style="font-weight: 800; color: var(--text-primary);">🥈 Combo Yaroa Especial Mándame</span>
+                <span style="font-size: 10px; color: var(--text-muted); display: block;">28 Unidades vendidas</span>
+              </div>
+              <span style="font-weight: 900; color: var(--brand-mamey);">RD$ 9,240</span>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; background: #f8fafc; padding: 10px; border-radius: 10px; font-size: 12px;">
+              <div>
+                <span style="font-weight: 800; color: var(--text-primary);">🥉 Refresco Cola 2L</span>
+                <span style="font-size: 10px; color: var(--text-muted); display: block;">19 Unidades vendidas</span>
+              </div>
+              <span style="font-weight: 900; color: var(--brand-mamey);">RD$ 1,045</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Próximo Pago Bancario Card -->
+        <div style="background: linear-gradient(135deg, #121829, #0a0e1a); color: white; padding: 16px; border-radius: 18px; border: 1px solid rgba(255,107,0,0.3);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <span style="font-size: 11px; color: #94a3b8; font-weight: 700;">SALDO A DEPOSITAR</span>
+            <span style="font-size: 10px; background: rgba(0,230,153,0.15); color: #00e699; padding: 2px 8px; border-radius: 6px; font-weight: 800;">LUNES 5 OCT</span>
+          </div>
+          <div style="font-family: var(--font-heading); font-weight: 900; font-size: 24px; color: var(--brand-mamey);">RD$ 68,400.00</div>
+          <span style="font-size: 11px; color: #cbd5e1; margin-top: 4px; display: block;" id="dash-bank-account-text">Depositado a Banco Popular Dominicano ***** 8812</span>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ================= TAB 2: PEDIDOS ENTRANTES (KDS COCINA & POS) ================= -->
+    <div id="tab-pedidos" class="merchant-tab-content">
+      <div class="form-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 22px;">🔔</span>
+            <div>
+              <h3 style="font-family: var(--font-heading); font-weight: 900; font-size: 16px; color: var(--brand-mamey); margin: 0;">Pedidos Entrantes (Pantalla KDS)</h3>
+              <span style="font-size: 10px; color: var(--text-muted);">Recepción automática de órdenes & impresión de comandas</span>
+            </div>
+          </div>
+          <button onclick="playNotificationSoundSim()" style="background: #fff3e6; color: var(--brand-mamey); border: 1px solid #ffe0b2; padding: 6px 10px; border-radius: 8px; font-weight: 800; font-size: 11px; cursor: pointer;">🔊 Probar Sonido</button>
+        </div>
+
+        <!-- Validador de PIN OTP en la Entrega -->
+        <div style="background: #0a0e1a; color: white; padding: 14px; border-radius: 14px; margin-bottom: 14px; border: 1px dashed var(--accent-emerald);">
+          <span style="font-size: 10px; color: #94a3b8; font-weight: 700; display: block; margin-bottom: 4px;">VALIDADOR DE ESCUDO DE ENTREGA</span>
+          <div style="display: flex; gap: 8px;">
+            <input type="text" id="verify-pin-input" placeholder="Ingresa PIN de 4 dígitos del cliente..." style="flex-grow: 1; padding: 8px 12px; border-radius: 8px; border: none; font-size: 13px; font-weight: 800;">
+            <button style="background: var(--accent-emerald); color: #0a0e1a; border: none; padding: 8px 14px; border-radius: 8px; font-weight: 900; cursor: pointer;" onclick="handleVerifyPin()">🔒 Validar PIN</button>
+          </div>
+        </div>
+
+        <div id="merchant-orders-list">
+          <!-- Rendered via JavaScript -->
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= TAB 3: EDICIÓN DE MENÚ & CATÁLOGO ================= -->
+    <div id="tab-catalogo" class="merchant-tab-content">
+      
+      <!-- HERO BANNER: EDICIÓN Y GESTIÓN DE MENÚ -->
+      <div style="background: linear-gradient(135deg, #0a0e1a, #1e293b); color: white; border-radius: 20px; padding: 20px; margin: 14px 16px; border: 2px solid var(--brand-mamey); box-shadow: 0 10px 25px rgba(255,107,0,0.25);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <span style="font-size: 32px;">🍔</span>
+            <div>
+              <span style="font-size: 10px; font-weight: 900; background: var(--brand-mamey); color: white; padding: 2px 8px; border-radius: 6px; text-transform: uppercase;">EDICIÓN EN VIVO</span>
+              <h2 style="font-family: var(--font-heading); font-weight: 900; font-size: 22px; color: #ffffff; margin-top: 2px;">Edición de Menú & Catálogo</h2>
+            </div>
+          </div>
+          <span style="font-size: 11px; color: #00e699; font-weight: 800;">🟢 Cambios Instantáneos</span>
+        </div>
+        
+        <p style="font-size: 12px; color: #94a3b8; margin-bottom: 16px; line-height: 1.4;">
+          Agrega nuevos platos, sube fotos desde tu celular o PC, edita imágenes con el <strong>Studio Ultra Pro</strong> y gestiona disponibilidad de tu menú en tiempo real para los clientes.
+        </p>
+
+        <!-- Big Action Buttons Row inside Menu Editing Hero -->
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
+          <button type="button" onclick="focusNewProductForm()" style="background: linear-gradient(135deg, #ff6b00, #ff8533); color: white; border: none; padding: 12px 14px; border-radius: 14px; font-weight: 900; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: var(--shadow-mamey);">
+            ➕ Subir Nuevo Platillo
+          </button>
+          
+          <button type="button" onclick="triggerEditorPhotoSelect()" style="background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); padding: 12px 14px; border-radius: 14px; font-weight: 900; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
+            🎨 Studio Ultra Photo Editor
+          </button>
+        </div>
+      </div>
+
+      <!-- Subir Nuevo Producto Card -->
+      <div class="form-card" id="card-form-add-product">
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
+          <span style="font-size: 20px;">➕</span>
+          <h3 style="font-family: var(--font-heading); font-weight: 900; font-size: 18px; color: var(--brand-mamey);">Subir Nuevo Producto al Catálogo</h3>
+        </div>
+
+        <form id="form-add-product" onsubmit="handleAddNewProduct(event)">
+          <div class="form-group">
+            <label>Nombre del Platillo / Producto</label>
+            <input type="text" id="prod-name" class="form-control" placeholder="Ej: Yaroa de Pollo & Queso Mofongo" required oninput="updateLiveMenuPreview()">
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div class="form-group">
+              <label>Precio (RD$)</label>
+              <input type="number" id="prod-price" class="form-control" placeholder="Ej: 450" required oninput="updateLiveMenuPreview()">
+            </div>
+            <div class="form-group">
+              <label>Categoría del Menú / Catálogo</label>
+              <select id="prod-category" class="form-control" onchange="updateLiveMenuPreview()">
+                <option value="bocado">🍔 Bocado Rápido / Fast Food</option>
+                <option value="pollos">🍗 Pollos & Piezas Crujientes</option>
+                <option value="cubetas">🪣 Cubetas & Combos Familiares</option>
+                <option value="criollo">🍛 Comida Criolla & Platos Fuertes</option>
+                <option value="pizzas">🍕 Pizzas & Pastas</option>
+                <option value="tacos">🌮 Tacos & Comida Mexicana</option>
+                <option value="sushi">🍣 Sushi & Comida Asiática</option>
+                <option value="saludable">🥗 Ensaladas & Comida Saludable</option>
+                <option value="postres">🍰 Postres & Repostería</option>
+                <option value="bebidas">🥤 Bebidas & Jugos Naturales</option>
+                <option value="licor">🍾 Licores, Cervezas & Bebidas Frías</option>
+                <option value="super">🛒 Supermercado, Víveres & Despensa</option>
+                <option value="salud">💊 Farmacia & Cuidado Personal</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Descripción / Ingredientes</label>
+            <textarea id="prod-desc" class="form-control" rows="2" placeholder="Ej: Plátano majado con ajo criollo, chicharrón crocante y salsa especial..." oninput="updateLiveMenuPreview()"></textarea>
+          </div>
+
+          <!-- ETIQUETAS DE DIETA, ALÉRGENOS & ESTILO (UBER EATS MANAGER CALIBER) -->
+          <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 14px; border-radius: 16px; margin-bottom: 14px;">
+            <div style="font-size: 12px; font-weight: 800; color: #0f172a; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between;">
+              <span>🏷️ ETIQUETAS & DIETA (ESTILO UBER EATS)</span>
+              <span style="font-size: 10px; background: #e0f2fe; color: #0284c7; padding: 2px 6px; border-radius: 4px; font-weight: 700;">Visible al Cliente</span>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px;">
+              <label style="font-size: 11px; background: white; padding: 6px 8px; border-radius: 8px; border: 1px solid #cbd5e1; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                <input type="checkbox" name="tag-dietary" value="👑 Chef" onchange="updateLiveMenuPreview()"> 👑 Recomendado Chef
+              </label>
+              <label style="font-size: 11px; background: white; padding: 6px 8px; border-radius: 8px; border: 1px solid #cbd5e1; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                <input type="checkbox" name="tag-dietary" value="🌱 Vegano" onchange="updateLiveMenuPreview()"> 🌱 Vegano / Orgánico
+              </label>
+              <label style="font-size: 11px; background: white; padding: 6px 8px; border-radius: 8px; border: 1px solid #cbd5e1; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                <input type="checkbox" name="tag-dietary" value="🌾 Sin Gluten" onchange="updateLiveMenuPreview()"> 🌾 Sin Gluten
+              </label>
+              <label style="font-size: 11px; background: white; padding: 6px 8px; border-radius: 8px; border: 1px solid #cbd5e1; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                <input type="checkbox" name="tag-dietary" value="🌶️ Picante" onchange="updateLiveMenuPreview()"> 🌶️ Picante Fuego
+              </label>
+              <label style="font-size: 11px; background: white; padding: 6px 8px; border-radius: 8px; border: 1px solid #cbd5e1; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                <input type="checkbox" name="tag-dietary" value="🔥 Más Vendido" checked onchange="updateLiveMenuPreview()"> 🔥 Más Vendido
+              </label>
+              <label style="font-size: 11px; background: white; padding: 6px 8px; border-radius: 8px; border: 1px solid #cbd5e1; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                <input type="checkbox" name="tag-dietary" value="🥑 Keto" onchange="updateLiveMenuPreview()"> 🥑 Bajo en Carbo
+              </label>
+            </div>
+          </div>
+
+          <!-- CONFIGURADOR DE GUARNICIONES, BEBIDAS & EXTRAS PARA EL CLIENTE -->
+          <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 14px; border-radius: 16px; margin-bottom: 14px;">
+            <div style="font-size: 12px; font-weight: 800; color: var(--brand-mamey); margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;">
+              <span>⚙️ CONFIGURAR GUARNICIONES, BEBIDAS & EXTRAS</span>
+              <span style="font-size: 10px; color: var(--text-muted); background: white; padding: 2px 6px; border-radius: 4px; font-weight: 700;">Personalización Cliente</span>
+            </div>
+
+            <!-- 1. Guarnición / Acompañantes -->
+            <div style="margin-bottom: 12px;">
+              <label style="font-size: 11px; font-weight: 700; color: var(--text-primary); display: block; margin-bottom: 4px;">🍟 Guarniciones / Acompañantes Disponibles</label>
+              <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px;">
+                <label style="font-size: 11px; background: white; padding: 6px 10px; border-radius: 8px; border: 1px solid #cbd5e1; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                  <input type="checkbox" name="opt-guarnicion" value="Tostones Crujientes" checked onchange="updateLiveMenuPreview()"> 🍌 Tostones Crujientes
+                </label>
+                <label style="font-size: 11px; background: white; padding: 6px 10px; border-radius: 8px; border: 1px solid #cbd5e1; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                  <input type="checkbox" name="opt-guarnicion" value="Papas Fritas" checked onchange="updateLiveMenuPreview()"> 🍟 Papas Fritas
+                </label>
+                <label style="font-size: 11px; background: white; padding: 6px 10px; border-radius: 8px; border: 1px solid #cbd5e1; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                  <input type="checkbox" name="opt-guarnicion" value="Mofonguito de Ajo" onchange="updateLiveMenuPreview()"> 🧄 Mofonguito de Ajo
+                </label>
+                <label style="font-size: 11px; background: white; padding: 6px 10px; border-radius: 8px; border: 1px solid #cbd5e1; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                  <input type="checkbox" name="opt-guarnicion" value="Yuca al Moho" onchange="updateLiveMenuPreview()"> 🥑 Yuquita al Moho
+                </label>
+              </div>
+            </div>
+
+            <!-- 2. Bebidas Incluidas u Opcionales -->
+            <div style="margin-bottom: 12px;">
+              <label style="font-size: 11px; font-weight: 700; color: var(--text-primary); display: block; margin-bottom: 4px;">🥤 Bebidas a Elegir por el Cliente</label>
+              <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px;">
+                <label style="font-size: 11px; background: white; padding: 6px 10px; border-radius: 8px; border: 1px solid #cbd5e1; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                  <input type="checkbox" name="opt-bebida" value="Coca Cola 2L" checked onchange="updateLiveMenuPreview()"> 🥤 Refresco Cola (+RD$55)
+                </label>
+                <label style="font-size: 11px; background: white; padding: 6px 10px; border-radius: 8px; border: 1px solid #cbd5e1; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                  <input type="checkbox" name="opt-bebida" value="Jugo Chinola" checked onchange="updateLiveMenuPreview()"> 🍹 Jugo Chinola (+RD$80)
+                </label>
+                <label style="font-size: 11px; background: white; padding: 6px 10px; border-radius: 8px; border: 1px solid #cbd5e1; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                  <input type="checkbox" name="opt-bebida" value="Cerveza Presidente" onchange="updateLiveMenuPreview()"> 🍺 Cerveza Fría (+RD$150)
+                </label>
+                <label style="font-size: 11px; background: white; padding: 6px 10px; border-radius: 8px; border: 1px solid #cbd5e1; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                  <input type="checkbox" name="opt-bebida" value="Agua Mineral" checked onchange="updateLiveMenuPreview()"> 💧 Agua Mineral (+RD$35)
+                </label>
+              </div>
+            </div>
+
+            <!-- 3. Extras & Salsas Especiales -->
+            <div>
+              <label style="font-size: 11px; font-weight: 700; color: var(--text-primary); display: block; margin-bottom: 4px;">🥓 Extras & Salsas Especiales</label>
+              <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px;">
+                <label style="font-size: 11px; background: white; padding: 6px 10px; border-radius: 8px; border: 1px solid #cbd5e1; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                  <input type="checkbox" name="opt-extra" value="Chicharrón Extra (+120)" checked onchange="updateLiveMenuPreview()"> 🥓 Chicharrón (+120)
+                </label>
+                <label style="font-size: 11px; background: white; padding: 6px 10px; border-radius: 8px; border: 1px solid #cbd5e1; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                  <input type="checkbox" name="opt-extra" value="Queso Frito (+80)" checked onchange="updateLiveMenuPreview()"> 🧀 Queso Frito (+80)
+                </label>
+                <label style="font-size: 11px; background: white; padding: 6px 10px; border-radius: 8px; border: 1px solid #cbd5e1; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                  <input type="checkbox" name="opt-extra" value="Salsa Ajo (+35)" checked onchange="updateLiveMenuPreview()"> 🧄 Salsa de Ajo (+35)
+                </label>
+                <label style="font-size: 11px; background: white; padding: 6px 10px; border-radius: 8px; border: 1px solid #cbd5e1; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                  <input type="checkbox" name="opt-extra" value="Aguacate Fresco (+60)" onchange="updateLiveMenuPreview()"> 🥑 Aguacate (+60)
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- SIMULADOR DE VISTA PREVIA DEL CLIENTE EN TIEMPO REAL -->
+          <div style="background: white; border-radius: 20px; padding: 18px; box-shadow: 0 10px 25px rgba(0,0,0,0.08); border: 2px solid var(--brand-mamey); margin-bottom: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 20px;">📱</span>
+                <div>
+                  <h4 style="font-family: var(--font-heading); font-weight: 900; font-size: 15px; color: var(--text-primary); margin: 0;">Vista Previa del Cliente en Tiempo Real</h4>
+                  <span style="font-size: 10px; color: var(--accent-emerald); font-weight: 800;">● Actualización Automática en Vivo</span>
+                </div>
+              </div>
+              <span style="font-size: 10px; background: #0a0e1a; color: #00e699; padding: 2px 8px; border-radius: 6px; font-weight: 800;">Vista App Cliente</span>
+            </div>
+
+            <!-- Tarjeta Simulada del Plato -->
+            <div style="display: flex; gap: 14px; background: #f8fafc; border-radius: 16px; padding: 14px; border: 1px solid #e2e8f0; align-items: center;">
+              <img id="preview-live-img" src="https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=600&q=80" style="width: 85px; height: 85px; border-radius: 14px; object-fit: cover; border: 1px solid #cbd5e1; flex-shrink: 0;">
+              <div style="flex-grow: 1; min-width: 0;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                  <h5 id="preview-live-title" style="font-family: var(--font-heading); font-weight: 900; font-size: 15px; color: var(--text-primary); margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Yaroa de Pollo & Queso Mofongo</h5>
+                  <span style="font-size: 9px; font-weight: 900; background: #00e699; color: #0a0e1a; padding: 2px 6px; border-radius: 4px;">DISPONIBLE</span>
+                </div>
+                <p id="preview-live-desc" style="font-size: 11px; color: var(--text-muted); margin: 4px 0 6px 0; line-height: 1.3;">Plátano majado con ajo criollo, chicharrón crocante y salsa especial.</p>
+
+                <!-- Resumen de Opciones Configurada -->
+                <div id="preview-live-options-tags" style="display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 6px;">
+                  <span style="font-size: 9px; font-weight: 800; background: #fff3e6; color: var(--brand-mamey); padding: 2px 6px; border-radius: 4px;">🍟 2 Guarniciones</span>
+                  <span style="font-size: 9px; font-weight: 800; background: #e0f2fe; color: #0284c7; padding: 2px 6px; border-radius: 4px;">🥤 3 Bebidas</span>
+                  <span style="font-size: 9px; font-weight: 800; background: #fef3c7; color: #d97706; padding: 2px 6px; border-radius: 4px;">🥓 3 Extras</span>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <span id="preview-live-price" style="font-family: var(--font-heading); font-weight: 900; font-size: 17px; color: var(--brand-mamey);">RD$ 450</span>
+                  <button type="button" class="btn-mamey" style="position: static; font-size: 11px; padding: 4px 10px; border-radius: 8px;" onclick="simulateClientModalClick()">
+                    🛒 Personalizar
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Foto del Producto / Platillo</label>
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+              <!-- Custom File Upload Button Area -->
+              <div style="border: 2px dashed #ff6b00; background: #fffcf9; padding: 18px 14px; border-radius: 16px; text-align: center; cursor: pointer; transition: 0.2s;" onclick="document.getElementById('prod-file-input').click()" id="upload-box-dropzone">
+                <div style="font-size: 32px; margin-bottom: 4px;">📸</div>
+                <div style="font-weight: 900; font-size: 14px; color: var(--brand-mamey);">Toca aquí para subir foto desde tu celular o PC</div>
+                <span style="font-size: 11px; color: var(--text-muted); display: block; margin-top: 2px;">Selecciona desde tu Galería, Archivos o usa la Cámara</span>
+                <input type="file" id="prod-file-input" accept="image/*" style="display: none;" onchange="handleProductImageUpload(this)">
+              </div>
+
+              <!-- Preview box -->
+              <div id="prod-img-preview-container" style="display: none; flex-direction: column; gap: 10px; background: #fff3e6; padding: 14px; border-radius: 16px; border: 1px solid #ffe0b2;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                  <img id="prod-img-preview" src="" style="width: 64px; height: 64px; border-radius: 12px; object-fit: cover; border: 2px solid var(--brand-mamey);">
+                  <div style="flex-grow: 1;">
+                    <span style="font-size: 13px; font-weight: 800; color: var(--brand-mamey); display: block;">✓ Foto Lista para Publicar</span>
+                    <span style="font-size: 10px; color: var(--text-muted);">Aplica filtros de comida, brillo y sellos</span>
+                  </div>
+                  <button type="button" onclick="removeUploadedImage()" style="background: #fee2e2; color: #ef4444; border: none; padding: 6px 10px; border-radius: 8px; font-weight: 800; font-size: 11px; cursor: pointer;">Quitar</button>
+                </div>
+
+                <button type="button" onclick="openPhotoEditorStudio()" style="background: linear-gradient(135deg, #121829, #0a0e1a); color: white; border: 1px solid var(--brand-mamey); padding: 10px; border-radius: 12px; font-family: var(--font-heading); font-weight: 800; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+                  🎨 Abrir Editor de Fotos Studio Ultra Pro (Filtros & Sellos)
+                </button>
+              </div>
+
+              <!-- Fallback: Paste Image URL -->
+              <details style="font-size: 11px; color: var(--text-muted);">
+                <summary style="cursor: pointer; font-weight: 700; color: #64748b; padding: 2px 0;">O pegar enlace / URL de imagen web...</summary>
+                <input type="url" id="prod-img" class="form-control" placeholder="https://images.unsplash.com/..." style="margin-top: 6px;">
+              </details>
+            </div>
+          </div>
+
+          <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 16px; background: #fff3e6; padding: 10px 14px; border-radius: 12px; border: 1px solid #ffe0b2;">
+            <input type="checkbox" id="prod-is-flash" style="accent-color: var(--brand-mamey); transform: scale(1.2);">
+            <label for="prod-is-flash" style="margin: 0; font-size: 13px; font-weight: 700; color: var(--brand-mamey); cursor: pointer;">
+              ⚡ Marcar como Oferta Mándame Flash (Descuento Especial)
+            </label>
+          </div>
+
+          <button type="button" class="btn-mamey" onclick="handleAddNewProduct(event)" style="font-size: 15px; padding: 14px 20px; font-weight: 900; width: 100%; box-shadow: 0 8px 20px rgba(255, 107, 0, 0.35); cursor: pointer;">
+            ✨ Publicar Producto en Pedidos Listo
+          </button>
+        </form>
+      </div>
+
+      <!-- Lista de Inventario del Comercio -->
+      <div class="form-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+          <h3 style="font-family: var(--font-heading); font-weight: 800; font-size: 16px;">📋 Mi Inventario Activo</h3>
+          <span style="font-size: 11px; color: var(--brand-mamey); font-weight: 800;" id="merchant-product-count">3 Productos</span>
+        </div>
+
+        <div id="merchant-inventory-list">
+          <!-- Rendered via JavaScript -->
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= TAB 4: CUPONES & PROMICIONES ================= -->
+    <div id="tab-promos" class="merchant-tab-content">
+      <div class="form-card">
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
+          <span style="font-size: 22px;">🎟️</span>
+          <h3 style="font-family: var(--font-heading); font-weight: 900; font-size: 18px; color: var(--brand-mamey);">Crear Cupón de Descuento Propio</h3>
+        </div>
+
+        <form onsubmit="handleCreateStoreCoupon(event)">
+          <div class="form-group">
+            <label>Código del Cupón (Ej: SOCIO20)</label>
+            <input type="text" id="coupon-code" class="form-control" placeholder="Ej: KFC200" uppercase style="text-transform: uppercase;" required>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div class="form-group">
+              <label>Monto Descuento (RD$)</label>
+              <input type="number" id="coupon-discount" class="form-control" placeholder="Ej: 150" required>
+            </div>
+            <div class="form-group">
+              <label>Mínimo de Compra (RD$)</label>
+              <input type="number" id="coupon-min-spend" class="form-control" placeholder="Ej: 500" required>
+            </div>
+          </div>
+
+          <button type="submit" class="btn-mamey">✨ Activar Cupón en la App</button>
+        </form>
+
+        <div style="margin-top: 20px;">
+          <h4 style="font-family: var(--font-heading); font-weight: 800; font-size: 14px; color: var(--text-primary); margin-bottom: 10px;">Cupones Activos del Local</h4>
+          <div id="merchant-coupons-list">
+            <!-- Rendered via JavaScript -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= TAB 5: RESEÑAS & CLIENTES ================= -->
+    <div id="tab-resenas" class="merchant-tab-content">
+      <div class="form-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 22px;">⭐</span>
+            <h3 style="font-family: var(--font-heading); font-weight: 900; font-size: 18px; color: var(--brand-mamey);">Opiniones de Clientes</h3>
+          </div>
+          <span style="font-family: var(--font-heading); font-weight: 900; font-size: 16px; color: var(--accent-gold);">4.9 ⭐</span>
+        </div>
+
+        <div id="merchant-reviews-list">
+          <!-- Rendered via JavaScript -->
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= TAB 6: FINANZAS & PAGOS ================= -->
+    <div id="tab-finanzas" class="merchant-tab-content">
+      <div class="form-card">
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
+          <span style="font-size: 22px;">📈</span>
+          <h3 style="font-family: var(--font-heading); font-weight: 900; font-size: 18px; color: var(--brand-mamey);">Resumen Financiero & Liquidaciones</h3>
+        </div>
+
+        <div style="background: linear-gradient(135deg, #121829, #0a0e1a); color: white; padding: 18px; border-radius: 18px; margin-bottom: 16px;">
+          <span style="font-size: 11px; color: #94a3b8; font-weight: 700; display: block;">TOTAL GANADO ESTE MES</span>
+          <div style="font-family: var(--font-heading); font-weight: 900; font-size: 28px; color: var(--brand-mamey); margin-top: 2px;">RD$ 68,400.00</div>
+          <div style="font-size: 11px; color: var(--accent-emerald); font-weight: 800; margin-top: 4px;">✓ Tarifa de comisión partner: 10% Especial</div>
+        </div>
+
+        <!-- Configuración Cuenta Bancaria -->
+        <div style="background: #f8fafc; padding: 14px; border-radius: 14px; border: 1px solid #e2e8f0; margin-bottom: 16px;">
+          <h4 style="font-family: var(--font-heading); font-weight: 800; font-size: 14px; color: var(--text-primary); margin-bottom: 10px;">🏦 Datos Bancarios para Depósitos</h4>
+          
+          <form onsubmit="handleSaveBankAccount(event)">
+            <div class="form-group">
+              <label>Banco</label>
+              <select id="bank-name-select" class="form-control">
+                <option value="Banco Popular Dominicano">Banco Popular Dominicano</option>
+                <option value="Banreservas">Banreservas</option>
+                <option value="BHD León">BHD León</option>
+                <option value="Scotiabank">Scotiabank</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Número de Cuenta</label>
+              <input type="text" id="bank-account-num" class="form-control" placeholder="Ej: 7829-1092-4912" required>
+            </div>
+
+            <div class="form-group">
+              <label>Titular de la Cuenta / RNC</label>
+              <input type="text" id="bank-account-holder" class="form-control" placeholder="Ej: KFC Las Colinas SRL / RNC 130-9948" required>
+            </div>
+
+            <button type="submit" style="background: var(--brand-mamey); color: white; border: none; padding: 10px; border-radius: 10px; font-weight: 800; font-size: 12px; cursor: pointer; width: 100%;">💾 Guardar Cuenta Bancaria</button>
+          </form>
+        </div>
+
+        <div style="font-weight: 800; font-size: 13px; margin-bottom: 10px;">Últimas Liquidaciones Bancarias:</div>
+        <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; background: #f8fafc; padding: 12px; border-radius: 12px; border: 1px solid #e2e8f0; font-size: 13px;">
+            <div>
+              <div style="font-weight: 800;">🏦 Depósito Semanal Popular</div>
+              <div style="font-size: 11px; color: var(--text-muted);">28 de Septiembre 2026</div>
+            </div>
+            <span style="font-weight: 900; color: var(--accent-emerald);">+ RD$ 24,150.00</span>
+          </div>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; background: #f8fafc; padding: 12px; border-radius: 12px; border: 1px solid #e2e8f0; font-size: 13px;">
+            <div>
+              <div style="font-weight: 800;">🏦 Depósito Semanal Popular</div>
+              <div style="font-size: 11px; color: var(--text-muted);">21 de Septiembre 2026</div>
+            </div>
+            <span style="font-weight: 900; color: var(--accent-emerald);">+ RD$ 22,800.00</span>
+          </div>
+        </div>
+
+        <button onclick="alert('📥 Generando reporte de ventas en formato PDF/Excel...')" class="btn-mamey" style="font-size: 13px; padding: 12px;">
+          📥 Descargar Reporte Financiero Completo
+        </button>
+      </div>
+    </div>
+
+    <!-- ================= TAB 7: PERFIL & AJUSTES ================= -->
+    <div id="tab-ajustes" class="merchant-tab-content">
+      <!-- Tarjeta Configurar Perfil del Comercio -->
+      <div class="form-card">
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 14px;">
+          <div style="width: 44px; height: 44px; border-radius: 12px; background: #fff3e6; color: var(--brand-mamey); display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 900;" id="card-store-icon">🏬</div>
+          <div>
+            <span style="font-size: 10px; font-weight: 800; color: var(--brand-mamey); text-transform: uppercase;">Identidad del Negocio</span>
+            <h4 id="card-store-name" style="font-family: var(--font-heading); font-weight: 900; font-size: 16px; color: var(--text-primary);">KFC Las Colinas Santiago</h4>
+            <span id="card-store-address" style="font-size: 11px; color: var(--text-muted);">Av. Juan Pablo Duarte #10, Santiago</span>
+          </div>
+        </div>
+
+        <button onclick="openEditStoreModal()" class="btn-mamey" style="font-size: 13px; padding: 10px; margin-bottom: 14px;">
+          ⚙️ Editar Nombre, Dirección & Logo
+        </button>
+
+        <!-- Configuración de Horarios & Cobertura -->
+        <form onsubmit="handleSaveStoreSettings(event)">
+          <div class="form-group">
+            <label>Horario de Operación del Local</label>
+            <input type="text" id="setting-hours" class="form-control" value="08:00 AM - 11:00 PM" required>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div class="form-group">
+              <label>Radio de Cobertura Delivery</label>
+              <select id="setting-radius" class="form-control">
+                <option value="3 km">3 km</option>
+                <option value="5 km" selected>5 km</option>
+                <option value="10 km">10 km</option>
+                <option value="15 km">15 km</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Mínimo Envío Gratis (RD$)</label>
+              <input type="number" id="setting-min-spend" class="form-control" value="500" required>
+            </div>
+          </div>
+
+          <button type="submit" style="background: var(--text-primary); color: white; border: none; padding: 12px; border-radius: 12px; font-weight: 800; font-size: 13px; cursor: pointer; width: 100%;">
+            💾 Guardar Horarios & Cobertura
+          </button>
+        </form>
+      </div>
+
+      <!-- CONFIGURACIÓN DE IMPRESORA TÉRMICA WI-FI 2CONNECT / SUNMI / AIRPRINT -->
+      <div class="form-card" style="margin-top: 14px; border: 2px solid var(--brand-mamey);">
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+          <span style="font-size: 24px;">🖨️</span>
+          <div>
+            <h4 style="font-family: var(--font-heading); font-weight: 900; font-size: 16px; color: var(--brand-mamey); margin: 0;">Impresora Wi-Fi 2Connect / iPad & Red IP</h4>
+            <span style="font-size: 11px; color: var(--text-muted);">Impresión por Red IP local, AirPrint o Sunmi POS</span>
+          </div>
+        </div>
+
+        <form onsubmit="handleSavePrinterSettings(event)">
+          <div class="form-group">
+            <label>Modo de Impresora</label>
+            <select id="setting-printer-mode" class="form-control" onchange="togglePrinterIpFields(this.value)">
+              <option value="wifi_2connect" selected>📡 Impresora Wi-Fi 2Connect / Red IP (iPad / PC)</option>
+              <option value="sunmi">📱 Impresora Integrada Sunmi V2 (Android)</option>
+              <option value="airprint">🍎 iPad Safari AirPrint / Impresora iOS</option>
+            </select>
+          </div>
+
+          <div id="printer-ip-container" style="display: block;">
+            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 10px;">
+              <div class="form-group">
+                <label>Dirección IP Impresora 2Connect</label>
+                <input type="text" id="setting-printer-ip" class="form-control" placeholder="Ej: 192.168.1.200" value="192.168.1.200">
+              </div>
+              <div class="form-group">
+                <label>Puerto TCP</label>
+                <input type="number" id="setting-printer-port" class="form-control" placeholder="9100" value="9100">
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Ancho del Papel Térmico</label>
+            <select id="setting-paper-width" class="form-control">
+              <option value="58mm" selected>58 mm (Estándar Recibos)</option>
+              <option value="80mm">80 mm (Gran Formato Cocina)</option>
+            </select>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+            <button type="submit" class="btn-mamey" style="font-size: 13px; padding: 12px;">
+              💾 Guardar Impresora Wi-Fi
+            </button>
+            <button type="button" onclick="testThermalPrinterSimulator()" style="background: #121829; color: white; border: none; padding: 12px; border-radius: var(--radius-pill); font-weight: 800; font-size: 13px; cursor: pointer;">
+              🧪 Probar Ticket Wi-Fi
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Modal: Editar Nombre & Perfil del Comercio -->
+  <div id="modal-edit-store" class="modal-backdrop">
+    <div class="modal-card" style="max-width: 420px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+        <h3 style="font-family: var(--font-heading); font-weight: 900; font-size: 18px; color: var(--brand-mamey);">✏️ Editar Perfil de Comercio</h3>
+        <div class="close-btn" onclick="document.getElementById('modal-edit-store').classList.remove('active')">&times;</div>
+      </div>
+
+      <form onsubmit="handleSaveStoreProfile(event)">
+        <div class="form-group">
+          <label>Nombre del Restaurante / Comercio</label>
+          <input type="text" id="edit-store-name" class="form-control" placeholder="Ej: Pica Pollo Don Pedro, Repostería Criolla..." required>
+        </div>
+
+        <div class="form-group">
+          <label>Dirección / Ubicación del Local</label>
+          <input type="text" id="edit-store-address" class="form-control" placeholder="Ej: Av. 27 de Febrero #45, Santiago" required>
+        </div>
+
+        <div class="form-group">
+          <label>Teléfono de Contacto</label>
+          <input type="text" id="edit-store-phone" class="form-control" placeholder="Ej: 809-555-0192" required>
+        </div>
+
+        <div class="form-group">
+          <label>Foto de Portada / Logo del Local</label>
+          <div style="border: 2px dashed #ff6b00; background: #fffcf9; padding: 14px; border-radius: 14px; text-align: center; cursor: pointer;" onclick="document.getElementById('store-logo-file').click()">
+            <span style="font-size: 24px; display: block; margin-bottom: 4px;">🖼️</span>
+            <span style="font-size: 12px; font-weight: 800; color: var(--brand-mamey);">Subir Foto de Portada / Logo</span>
+            <input type="file" id="store-logo-file" accept="image/*" style="display: none;" onchange="handleStoreLogoUpload(this)">
+          </div>
+          <div id="store-logo-preview-box" style="display: none; align-items: center; gap: 10px; margin-top: 8px; background: #f8fafc; padding: 8px 12px; border-radius: 10px;">
+            <img id="store-logo-preview" src="" style="width: 40px; height: 40px; border-radius: 8px; object-fit: cover;">
+            <span style="font-size: 11px; font-weight: 700; color: var(--accent-emerald);">✓ Logo cargado</span>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-mamey" style="margin-top: 10px;">💾 Guardar Cambios de Comercio</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Vista Previa Comanda / Ticket POS Impresora Térmica -->
+  <div id="modal-pos-ticket" class="modal-backdrop">
+    <div class="modal-card" style="max-width: 360px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <h3 style="font-family: var(--font-heading); font-weight: 900; font-size: 16px; color: var(--brand-mamey);">🖨️ Impresión de Comanda POS</h3>
+        <div class="close-btn" onclick="document.getElementById('modal-pos-ticket').classList.remove('active')">&times;</div>
+      </div>
+
+      <!-- Ticket Paper -->
+      <div class="pos-ticket-paper" id="pos-ticket-content">
+        <!-- Rendered via JavaScript -->
+      </div>
+
+      <button onclick="executeThermalPrintEngine()" class="btn-mamey" style="margin-top: 14px; font-size: 13px; padding: 10px; width: 100%;">
+        🖨️ Imprimir Ticket Térmico Cocina
+      </button>
+    </div>
+  </div>
+
+  <!-- Modal: Editor de Fotos Studio Ultra Pro (Canvas Engine) -->
+  <div id="modal-photo-editor" class="modal-backdrop">
+    <div class="modal-card" style="max-width: 480px; padding: 16px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 22px;">🎨</span>
+          <div>
+            <h3 style="font-family: var(--font-heading); font-weight: 900; font-size: 17px; color: var(--brand-mamey); margin: 0;">Editor de Fotos Studio Ultra Pro</h3>
+            <span style="font-size: 10px; color: var(--accent-emerald); font-weight: 800;">● Filtros Gastronómicos & Sellos de Calidad</span>
+          </div>
+        </div>
+        <div class="close-btn" onclick="closePhotoEditorStudio()">&times;</div>
+      </div>
+
+      <!-- Live Canvas Viewport -->
+      <div style="background: #0a0e1a; border-radius: 16px; padding: 12px; text-align: center; margin-bottom: 14px; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; min-height: 260px;">
+        <canvas id="editor-canvas" style="max-width: 100%; max-height: 260px; border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.4); object-fit: contain;"></canvas>
+      </div>
+
+      <!-- Presets Filtros Gastronómicos -->
+      <div style="margin-bottom: 14px;">
+        <span style="font-size: 11px; font-weight: 800; color: var(--text-muted); display: block; margin-bottom: 6px; text-transform: uppercase;">FILTROS GASTRONÓMICOS PRESET</span>
+        <div style="display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none;">
+          <button type="button" class="editor-preset-pill" onclick="applyFoodFilterPreset('normal')">Original</button>
+          <button type="button" class="editor-preset-pill" onclick="applyFoodFilterPreset('criollo')">🍔 Criollo Gold</button>
+          <button type="button" class="editor-preset-pill" onclick="applyFoodFilterPreset('hd')">🌟 Nitidez HD</button>
+          <button type="button" class="editor-preset-pill" onclick="applyFoodFilterPreset('parrilla')">🍖 Asado & Parrilla</button>
+          <button type="button" class="editor-preset-pill" onclick="applyFoodFilterPreset('fresco')">🥗 Fresco</button>
+          <button type="button" class="editor-preset-pill" onclick="applyFoodFilterPreset('dark')">🖤 Dark Gourmet</button>
+        </div>
+      </div>
+
+      <!-- Adjustment Sliders -->
+      <div style="background: #f8fafc; padding: 12px; border-radius: 14px; border: 1px solid #e2e8f0; margin-bottom: 14px; display: flex; flex-direction: column; gap: 10px;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <label style="font-size: 11px; font-weight: 700; color: var(--text-primary);">☀️ Brillo</label>
+          <input type="range" id="slider-brightness" min="50" max="180" value="100" style="width: 60%; accent-color: var(--brand-mamey);" oninput="updateEditorFromSliders()">
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <label style="font-size: 11px; font-weight: 700; color: var(--text-primary);">🎨 Saturación (Color)</label>
+          <input type="range" id="slider-saturation" min="0" max="200" value="100" style="width: 60%; accent-color: var(--brand-mamey);" oninput="updateEditorFromSliders()">
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <label style="font-size: 11px; font-weight: 700; color: var(--text-primary);">🌓 Contraste</label>
+          <input type="range" id="slider-contrast" min="50" max="180" value="100" style="width: 60%; accent-color: var(--brand-mamey);" oninput="updateEditorFromSliders()">
+        </div>
+      </div>
+
+      <!-- Quick Tools & Watermark Badges -->
+      <div style="margin-bottom: 14px;">
+        <span style="font-size: 11px; font-weight: 800; color: var(--text-muted); display: block; margin-bottom: 6px; text-transform: uppercase;">AGREGAR SELLO DE MARCA / BADGE</span>
+        <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+          <button type="button" class="editor-badge-pill" onclick="setEditorWatermark(null)">Sin Sello</button>
+          <button type="button" class="editor-badge-pill" onclick="setEditorWatermark('CHEF')">⭐ Recomendado Chef</button>
+          <button type="button" class="editor-badge-pill" onclick="setEditorWatermark('CRIOLLO')">🔥 100% Criollo</button>
+          <button type="button" class="editor-badge-pill" onclick="setEditorWatermark('FLASH')">⚡ Oferta Flash</button>
+          <button type="button" class="editor-badge-pill" onclick="setEditorWatermark('TOP')">🥇 Vendedor Top</button>
+          <button type="button" class="editor-badge-pill" style="background: #e2e8f0; color: var(--text-primary);" onclick="rotateEditorImage()">🔄 Rotar 90°</button>
+        </div>
+      </div>
+
+      <!-- STICKERS ANIMADOS & LUMINOSOS PARA FOTOS -->
+      <div style="margin-bottom: 14px;">
+        <span style="font-size: 11px; font-weight: 800; color: var(--brand-mamey); display: block; margin-bottom: 6px; text-transform: uppercase;">✨ STICKERS ANIMADOS & LUMINOSOS PARA LA FOTO</span>
+        <div style="display: flex; gap: 6px; overflow-x: auto; padding-bottom: 6px; scrollbar-width: none;">
+          <button type="button" class="editor-badge-pill" style="background: linear-gradient(135deg, #ef4444, #ff6b00); color: white;" onclick="setEditorSticker('FIRE')">🔥 Fuego Criollo</button>
+          <button type="button" class="editor-badge-pill" style="background: linear-gradient(135deg, #eab308, #ca8a04); color: white;" onclick="setEditorSticker('CHEF_STAR')">⭐ 5 Estrellas Chef</button>
+          <button type="button" class="editor-badge-pill" style="background: linear-gradient(135deg, #00e699, #059669); color: #0a0e1a;" onclick="setEditorSticker('SAZON')">🇩🇴 100% Criollo</button>
+          <button type="button" class="editor-badge-pill" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: white;" onclick="setEditorSticker('FLASH_DELIVERY')">⚡ Flash 15 mins</button>
+          <button type="button" class="editor-badge-pill" style="background: linear-gradient(135deg, #f59e0b, #d97706); color: white;" onclick="setEditorSticker('CHEESE')">🧀 Queso Fundido</button>
+          <button type="button" class="editor-badge-pill" style="background: linear-gradient(135deg, #8b5cf6, #6d28d9); color: white;" onclick="setEditorSticker('TOP_SELLER')">👑 Patrón Top Seller</button>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 8px;">
+        <button type="button" onclick="saveEditorResult()" class="btn-mamey" style="flex-grow: 1;">
+          ✨ Aplicar Edición al Platillo
+        </button>
+        <button type="button" onclick="resetEditorControls()" style="background: #e2e8f0; border: none; padding: 10px 14px; border-radius: var(--radius-pill); font-weight: 800; font-size: 12px; cursor: pointer;">
+          ↩️ Reset
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Motor de Apoyo Express -->
+  <div id="modal-express-rider" class="modal-backdrop">
+    <div class="modal-card" style="max-width: 420px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <h3 style="font-family: var(--font-heading); font-weight: 900; font-size: 18px; color: var(--brand-mamey);">🛵 Solicitud de Motor de Apoyo</h3>
+        <div class="close-btn" onclick="document.getElementById('modal-express-rider').classList.remove('active')">&times;</div>
+      </div>
+      <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 14px;">Solicita un repartidor de refuerzo en tiempo real para desahogar pedidos en horas pico de tu cocina.</p>
+
+      <div style="background: #0a0e1a; color: white; padding: 14px; border-radius: 14px; margin-bottom: 14px; border: 1px solid #00e699;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+          <span style="font-size: 11px; font-weight: 800; color: #00e699;">🟢 REPARTIDOR ASIGNADO</span>
+          <span style="font-size: 10px; background: rgba(0,230,153,0.2); color: #00e699; padding: 2px 6px; border-radius: 4px; font-weight: 900;">⏱️ 4 MINS</span>
+        </div>
+        <div style="font-family: var(--font-heading); font-weight: 900; font-size: 16px; color: white;">Kelvin Santos (Mándame Express #42)</div>
+        <div style="font-size: 11px; color: #cbd5e1; margin-top: 2px;">📞 Tel: 809-555-9911 • 🛵 Honda Navi Mamey</div>
+      </div>
+
+      <button type="button" class="btn-mamey" style="width: 100%;" onclick="confirmExpressRiderOrder()">🚀 Confirmar y Enviar Motor a Mi Cocina</button>
+    </div>
+  </div>
+
+  <!-- Modal: Alerta Promocional Push -->
+  <div id="modal-push-broadcast" class="modal-backdrop">
+    <div class="modal-card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <h3 style="font-family: var(--font-heading); font-weight: 900; font-size: 18px; color: var(--brand-mamey);">📢 Enviar Notificación Push</h3>
+        <div class="close-btn" onclick="document.getElementById('modal-push-broadcast').classList.remove('active')">&times;</div>
+      </div>
+      <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 14px;">Envía una alerta instantánea a todos los clientes que están a menos de 5 km de tu local.</p>
+      
+      <div style="margin-bottom: 12px;">
+        <label style="font-size: 11px; font-weight: 700; display: block; margin-bottom: 4px;">Mensaje de la Alerta</label>
+        <input type="text" id="input-push-msg" class="merchant-input" placeholder="Ej: 🔥 20% OFF en todos los Mofongos!" value="🔥 ¡Aprovecha un 20% OFF en tu pedido hoy con envío express!">
+      </div>
+      <button type="button" class="btn-mamey" style="width: 100%;" onclick="sendPushBroadcastAlert()">🚀 Disparar Notificación Push</button>
+    </div>
+  </div>
+
+  <!-- Modal: Crear Oferta Flash -->
+  <div id="modal-quick-flash" class="modal-backdrop">
+    <div class="modal-card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <h3 style="font-family: var(--font-heading); font-weight: 900; font-size: 18px; color: var(--brand-mamey);">⚡ Crear Oferta Flash Relámpago</h3>
+        <div class="close-btn" onclick="document.getElementById('modal-quick-flash').classList.remove('active')">&times;</div>
+      </div>
+      <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 14px;">Tu plato aparecerá destacado en el carrusel de Inicio con una etiqueta de descuento.</p>
+      
+      <div style="margin-bottom: 12px;">
+        <label style="font-size: 11px; font-weight: 700; display: block; margin-bottom: 4px;">Platillo en Promoción</label>
+        <select id="select-flash-product" class="merchant-input">
+          <option value="p-1">Bucket Familiar KFC (8 Pzs)</option>
+          <option value="p-2">Salcocho Criollo 7 Carnes</option>
+          <option value="p-3">Mofongo De Chicharrón Especial</option>
+        </select>
+      </div>
+
+      <div style="margin-bottom: 16px;">
+        <label style="font-size: 11px; font-weight: 700; display: block; margin-bottom: 4px;">Porcentaje de Descuento</label>
+        <select id="select-flash-discount" class="merchant-input">
+          <option value="30">30% OFF</option>
+          <option value="50" selected>50% OFF (Recomendado)</option>
+          <option value="80">80% OFF (Súper Oferta)</option>
+        </select>
+      </div>
+
+      <button type="button" class="btn-mamey" style="width: 100%;" onclick="submitQuickFlashDeal()">⚡ Activar Oferta Flash Ahora</button>
+    </div>
+  </div>
+
+  <!-- Modal: Reporte Contable & Finanzas -->
+  <div id="modal-sales-report" class="modal-backdrop">
+    <div class="modal-card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <h3 style="font-family: var(--font-heading); font-weight: 900; font-size: 18px; color: var(--text-primary);">📊 Reporte Contable de Ventas</h3>
+        <div class="close-btn" onclick="document.getElementById('modal-sales-report').classList.remove('active')">&times;</div>
+      </div>
+      <div style="background: #0a0e1a; color: white; padding: 14px; border-radius: 14px; margin-bottom: 14px;">
+        <div style="font-size: 11px; color: #00e699; font-weight: 800;">RESUMEN DE LIQUIDACIÓN MES ACTUAL</div>
+        <div style="font-family: var(--font-heading); font-weight: 900; font-size: 24px; color: white; margin-top: 4px;">RD$ 148,500.00</div>
+        <div style="font-size: 11px; color: #94a3b8; margin-top: 4px;">42 Pedidos procesados • Comisión Pedidos Listo: 10%</div>
+      </div>
+      <button type="button" class="btn-mamey" style="width: 100%;" onclick="downloadPdfReportSimulator()">📥 Descargar Reporte PDF / Excel</button>
+    </div>
+  </div>
+
+  <!-- Modal: PIN de Seguridad Empleados -->
+  <div id="modal-pin-config" class="modal-backdrop">
+    <div class="modal-card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <h3 style="font-family: var(--font-heading); font-weight: 900; font-size: 18px; color: var(--text-primary);">🔒 PIN de Seguridad para Empleados</h3>
+        <div class="close-btn" onclick="document.getElementById('modal-pin-config').classList.remove('active')">&times;</div>
+      </div>
+      <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 14px;">Establece un PIN de 4 dígitos para que tus empleados entren al Panel de Comercio.</p>
+
+      <div style="margin-bottom: 12px;">
+        <label style="font-size: 11px; font-weight: 700; display: block; margin-bottom: 4px;">Nuevo PIN (4 dígitos)</label>
+        <input type="password" id="input-new-merchant-pin" maxlength="4" class="merchant-input" placeholder="Ej: 1234" value="1234" style="letter-spacing: 6px; font-weight: 900; font-size: 18px; text-align: center;">
+      </div>
+
+      <button type="button" class="btn-mamey" style="width: 100%;" onclick="saveNewMerchantPin()">💾 Guardar Nuevo PIN</button>
+    </div>
+  </div>
+
+  <!-- Modal: Iniciar Sesión Unificada Partner -->
+  <div id="modal-partner-login" class="modal-backdrop">
+    <div class="modal-card" style="max-width: 400px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 22px;">🔑</span>
+          <div>
+            <h3 style="font-family: var(--font-heading); font-weight: 900; font-size: 18px; color: var(--brand-mamey); margin: 0;">Iniciar Sesión Unificada</h3>
+            <span style="font-size: 10px; color: var(--text-muted);">Acceso para Propietarios de Comercio</span>
+          </div>
+        </div>
+        <div class="close-btn" onclick="document.getElementById('modal-partner-login').classList.remove('active')">&times;</div>
+      </div>
+
+      <form onsubmit="handlePartnerLoginSubmit(event)">
+        <div class="form-group">
+          <label>Correo Electrónico del Propietario</label>
+          <input type="email" id="login-email" class="form-control" placeholder="dueño@mi-restaurante.com" value="socio@pedidoslisto.com" required>
+        </div>
+
+        <div class="form-group">
+          <label>Contraseña de Acceso</label>
+          <input type="password" id="login-password" class="form-control" placeholder="••••••••" value="123456" required>
+        </div>
+
+        <button type="submit" class="btn-mamey" style="margin-top: 10px; font-size: 14px; padding: 12px;">
+          🚀 Entrar a Mi Comercio en Pedidos Listo
+        </button>
+      </form>
+
+      <div style="text-align: center; margin-top: 16px; padding-top: 12px; border-top: 1px dashed #e2e8f0;">
+        <span style="font-size: 12px; color: var(--text-muted);">¿Aún no has registrado tu restaurante o negocio?</span>
+        <button type="button" onclick="switchToRegisterModal()" style="background: #fff3e6; color: var(--brand-mamey); border: 1px solid #ffe0b2; padding: 10px 14px; border-radius: 12px; font-weight: 900; font-size: 12px; cursor: pointer; width: 100%; margin-top: 8px;">
+          🏪 Registrar Mi Comercio en Pedidos Listo Ahora ➔
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Registrar Mi Comercio en Pedidos Listo (Web Wizard) -->
+  <div id="modal-register-merchant" class="modal-backdrop">
+    <div class="modal-card" style="max-width: 460px; max-height: 90vh; overflow-y: auto;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 24px;">🏪</span>
+          <div>
+            <h3 style="font-family: var(--font-heading); font-weight: 900; font-size: 18px; color: var(--brand-mamey); margin: 0;">Registrar Mi Comercio en Pedidos Listo</h3>
+            <span style="font-size: 10px; color: var(--accent-emerald); font-weight: 800;">● Alta de Negocio en Vivo (Ventas & POS)</span>
+          </div>
+        </div>
+        <div class="close-btn" onclick="document.getElementById('modal-register-merchant').classList.remove('active')">&times;</div>
+      </div>
+
+      <form onsubmit="handleRegisterMerchantSubmit(event)">
+        <!-- PASO 1: DATOS DEL PROPIETARIO -->
+        <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 14px; padding: 12px; margin-bottom: 12px;">
+          <div style="font-size: 11px; font-weight: 900; color: var(--brand-mamey); text-transform: uppercase; margin-bottom: 8px;">
+            👤 PASO 1: DATOS DEL PROPIETARIO / CUENTA
+          </div>
+
+          <div class="form-group">
+            <label>Nombre Completo del Propietario / Representante</label>
+            <input type="text" id="reg-owner-name" class="form-control" placeholder="Ej: Juan Pérez" required>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+            <div class="form-group">
+              <label>Correo Electrónico</label>
+              <input type="email" id="reg-email" class="form-control" placeholder="dueño@mi-local.com" required>
+            </div>
+            <div class="form-group">
+              <label>Contraseña</label>
+              <input type="password" id="reg-password" class="form-control" placeholder="••••••••" required>
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 0;">
+            <label>Teléfono Personal / WhatsApp Propietario</label>
+            <input type="text" id="reg-owner-phone" class="form-control" placeholder="Ej: 809-555-0192" required>
+          </div>
+        </div>
+
+        <!-- PASO 2: DATOS DEL NEGOCIO / RESTAURANTE -->
+        <div style="background: #fff3e6; border: 1px solid #ffe0b2; border-radius: 14px; padding: 12px; margin-bottom: 12px;">
+          <div style="font-size: 11px; font-weight: 900; color: var(--brand-mamey); text-transform: uppercase; margin-bottom: 8px;">
+            🏪 PASO 2: DATOS DEL RESTAURANTE / NEGOCIO
+          </div>
+
+          <div class="form-group">
+            <label>Nombre Comercial del Comercio</label>
+            <input type="text" id="reg-store-name" class="form-control" placeholder="Ej: Pica Pollo Don Pedro, Repostería Criolla..." required>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+            <div class="form-group">
+              <label>Categoría Principal</label>
+              <select id="reg-store-cat" class="form-control">
+                <option value="pollos" selected>🍗 Pollos & Piezas Crujientes</option>
+                <option value="criollo">🍛 Comida Criolla & Mofongos</option>
+                <option value="bocado">🍔 Fast Food / Yaroas / Burgers</option>
+                <option value="pizzas">🍕 Pizzas & Pastas</option>
+                <option value="tacos">🌮 Comida Mexicana / Tacos</option>
+                <option value="postres">🍰 Postres & Repostería</option>
+                <option value="super">🛒 Supermercado & Colmado</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>RNC / Cédula del Negocio</label>
+              <input type="text" id="reg-store-rnc" class="form-control" placeholder="Ej: 131-00918-2" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Dirección Completa del Local</label>
+            <input type="text" id="reg-store-address" class="form-control" placeholder="Ej: Av. 27 de Febrero #45, Santiago" required>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 0;">
+            <label>Teléfono Directo del Negocio</label>
+            <input type="text" id="reg-store-phone" class="form-control" placeholder="Ej: 809-555-8899" required>
+          </div>
+        </div>
+
+        <!-- PASO 3: CUENTA BANCARIA PARA DEPÓSITOS -->
+        <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 14px; padding: 12px; margin-bottom: 14px;">
+          <div style="font-size: 11px; font-weight: 900; color: #15803d; text-transform: uppercase; margin-bottom: 8px;">
+            🏦 PASO 3: CUENTA BANCARIA DE LIQUIDACIÓN
+          </div>
+
+          <div class="form-group">
+            <label>Banco para Depósitos Semanales</label>
+            <select id="reg-bank-name" class="form-control">
+              <option value="Banco Popular Dominicano" selected>Banco Popular Dominicano</option>
+              <option value="Banreservas">Banreservas</option>
+              <option value="Banco BHD">Banco BHD</option>
+              <option value="Banco Santa Cruz">Banco Santa Cruz</option>
+              <option value="Scotiabank">Scotiabank</option>
+            </select>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label>Número de Cuenta</label>
+              <input type="text" id="reg-bank-number" class="form-control" placeholder="Ej: 7829-1092-4912" required>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 0;">
+              <label>Titular de la Cuenta</label>
+              <input type="text" id="reg-bank-holder" class="form-control" placeholder="Ej: Don Pedro SRL" required>
+            </div>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-mamey" style="font-size: 15px; padding: 14px; width: 100%; font-weight: 900; box-shadow: 0 8px 20px rgba(255,107,0,0.35);">
+          ✨ Registrar Mi Comercio & Abrir Panel POS
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <script type="module" src="./merchant.js"></script>
+</body>
+</html>

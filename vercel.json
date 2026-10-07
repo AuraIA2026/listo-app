@@ -1,10 +1,17 @@
 {
+  "cleanUrls": true,
   "rewrites": [
     {
-      "source": "/(.*)",
+      "source": "/merchant",
+      "destination": "/merchant.html"
+    },
+    {
+      "source": "/merchant.html",
+      "destination": "/merchant.html"
+    },
+    {
+      "source": "/((?!assets/|merchant|merchant.html|style.css|app.js|merchant.js|.*\\.).*)",
       "destination": "/index.html"
     }
   ]
 }
-
-
