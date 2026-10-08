@@ -497,7 +497,7 @@ export default function AdminPanelPage() {
                         className={`plan-btn ${prof.subscription?.plan === key ? 'active' : ''}`}
                         onClick={() => assignPlan(prof.id, key)}
                       >
-                        {plan.name.split(' ')[0]}
+                        {(plan && plan.name) ? plan.name.split(' ')[0] : ''}
                       </button>
                     ))}
                   </div>

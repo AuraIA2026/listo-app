@@ -224,7 +224,7 @@ export default function ExoticWorkPortfolio({ lang = 'es', photos = [], proName 
             <div className="exotic-card-content">
               <div className="exotic-card-meta">
                 <span className="exotic-category">{work.category}</span>
-                <span className="exotic-rating">⭐ {work.rating.toFixed(1)}</span>
+                <span className="exotic-rating">⭐ {typeof work.rating === 'number' ? work.rating.toFixed(1) : '5.0'}</span>
               </div>
 
               <h3 className="exotic-card-title">{work.title}</h3>

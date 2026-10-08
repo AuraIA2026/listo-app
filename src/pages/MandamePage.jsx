@@ -620,7 +620,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
   const [posActiveCashier, setPosActiveCashier] = useState('Juan Pérez (Cajero #1)');
 
   const handleApplyPosCoupon = () => {
-    if (!posCouponCode) return;
+    if (!posCouponCode || typeof posCouponCode !== 'string') return;
     const codeUpper = posCouponCode.toUpperCase().trim();
     if (codeUpper === 'LISTO200' || codeUpper === 'PROMO200') {
       setPosDiscountAmount(200);
@@ -1250,17 +1250,19 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
   };
 
   const handleAddToCartCustom = (prod, selectedSide, selectedDrink) => {
-    const itemTitle = `${prod.name} (${selectedSide.split(' ')[0]})`;
-    const itemPrice = prod.price;
+    if (!prod) return;
+    const sideStr = (selectedSide && typeof selectedSide === 'string') ? selectedSide.split(' ')[0] : 'Normal';
+    const itemTitle = `${prod.name || 'Producto'} (${sideStr})`;
+    const itemPrice = prod.price || 0;
     setCart(prev => {
       const existing = prev.find(i => i.name === itemTitle);
       if (existing) {
         return prev.map(i => i.name === itemTitle ? { ...i, qty: i.qty + 1 } : i);
       }
-      return [...prev, { id: prod.id + '-' + Date.now(), name: itemTitle, price: itemPrice, qty: 1 }];
+      return [...prev, { id: (prod.id || Date.now()) + '-' + Date.now(), name: itemTitle, price: itemPrice, qty: 1 }];
     });
     setCustomizeProduct(null);
-    showToast(`🛒 "${prod.name}" añadido al carrito`);
+    showToast(`🛒 "${prod.name || 'Producto'}" añadido al carrito`);
   };
 
   const handleIncreaseQty = (itemId) => {

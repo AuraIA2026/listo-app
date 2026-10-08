@@ -171,8 +171,9 @@ export default function ServicesPage({ lang = 'es', navigate, userData }) {
     .filter(p => {
       if (userData?.blockedUsers?.includes(p.id)) return false
       const matchCat    = activeCategory === 'all' || p.category === activeCategory
-      const matchSearch = p.name.toLowerCase().includes(search.toLowerCase()) ||
-                          p.location.toLowerCase().includes(search.toLowerCase())
+      const s = (search || '').toLowerCase()
+      const matchSearch = (p.name || '').toLowerCase().includes(s) ||
+                          (p.location || '').toLowerCase().includes(s)
       const matchAvail  = !onlyAvailable || p.available
       return matchCat && matchSearch && matchAvail
     })
