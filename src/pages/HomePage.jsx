@@ -292,7 +292,7 @@ function TestimonialsCarousel({ lang, navigate }) {
               </div>
 
               <div className="testi-new-stars">
-                {'★'.repeat(t.rating)}{'☆'.repeat(5 - t.rating)}
+                {'★'.repeat(Math.max(0, Math.min(5, Math.floor(t.rating || 0))))}{'☆'.repeat(Math.max(0, Math.min(5, 5 - Math.floor(t.rating || 0))))}
               </div>
               
               <p className="testi-new-heading">{lang === 'es' ? 'Socio Verificado' : 'Verified Partner'}</p>

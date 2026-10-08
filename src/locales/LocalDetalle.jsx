@@ -393,7 +393,7 @@ export default function LocalDetalle({ lang = 'es', navigate, local: propLocal, 
                   <div className="local-servicio-info">
                     <p className="local-servicio-nombre">{r.clientName}</p>
                     <div style={{ color: '#FFD700', fontSize: 11, marginBottom: 4 }}>
-                      {'★'.repeat(r.score)}{'☆'.repeat(5 - r.score)}
+                      {'★'.repeat(Math.max(0, Math.min(5, Math.floor(r.score || 0))))}{'☆'.repeat(Math.max(0, Math.min(5, 5 - Math.floor(r.score || 0))))}
                     </div>
                     <p style={{ fontSize: 13, color: '#555', margin: 0, lineHeight: 1.4 }}>"{r.comment}"</p>
                   </div>

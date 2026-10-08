@@ -531,7 +531,7 @@ function ProDelMes({ lang, navigate, userRole }) {
                     <div className="pdm-resena-content">
                       <p className="pdm-client-name">{r.clientName}</p>
                       <div className="pdm-resena-stars">
-                        {'★'.repeat(r.score)}{'☆'.repeat(5 - r.score)}
+                        {'★'.repeat(Math.max(0, Math.min(5, Math.floor(r.score || 0))))}{'☆'.repeat(Math.max(0, Math.min(5, 5 - Math.floor(r.score || 0))))}
                       </div>
                       <p className="pdm-resena-text">"{r.comment}"</p>
                     </div>
@@ -1199,7 +1199,10 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
                 </div>
 
                 <div className="premium-rating-row">
-                  <span className="premium-stars">{'★'.repeat(Math.round(pro.rating || 0))}{'☆'.repeat(5 - Math.round(pro.rating || 0))}</span>
+                  {(() => {
+                    const validStars = Math.max(0, Math.min(5, Math.round(pro.rating || 0)));
+                    return <span className="premium-stars">{'★'.repeat(validStars)}{'☆'.repeat(5 - validStars)}</span>;
+                  })()}
                   <span className="premium-rating-text">{Number(pro.rating || 0).toFixed(1)} ({pro.reviews || 0} {lang==='es'?'valoraciones':'ratings'})</span>
                 </div>
 

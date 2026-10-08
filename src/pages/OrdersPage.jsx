@@ -102,7 +102,7 @@ const PROGRESS_LABELS = {
 }
 
 const isPaymentNotif  = (text = '') => {
-  const t = text.toLowerCase()
+  const t = String(text || '').toLowerCase()
   return t.includes('pago') || t.includes('payment') || t.includes('procede') || t.includes('proceed')
 }
 const isNewOrderNotif = (n) => n.type === 'new_order' || n.title === '¡Nuevo Pedido!'
@@ -808,7 +808,7 @@ export default function OrdersPage({ lang = 'es', navigate, userData, userRole }
               <div className="oc-top">
                 {o.photoURL ? <img src={o.photoURL} alt={o.specialty} style={{ width:44,height:44,borderRadius:'50%',objectFit:'cover',flexShrink:0 }}/> : <div className="oc-avatar" style={{ background:avatarColors[i%avatarColors.length],width:44,height:44 }}>{o.avatar}</div>}
                 <div className="oc-info"><p className="oc-name">{o.pro}</p><p className="oc-spec">{o.icon} {o.specialty}</p><p className="oc-date">📅 {o.date}</p></div>
-                <div className="oc-right"><span className="oc-status" style={{ color:statusColor(o.status),background:statusColor(o.status)+'18' }}>{T.status[o.status]}</span><p className="oc-price">{o.price}</p></div>
+                <div className="oc-right"><span className="oc-status" style={{ color:statusColor(o.status),background:statusColor(o.status)+'18' }}>{T.status[o.status] || o.status || 'Pendiente'}</span><p className="oc-price">{o.price}</p></div>
               </div>
               <div className="order-progress">
                 {PROGRESS_STEPS.map((s, idx, arr) => {
@@ -850,7 +850,7 @@ export default function OrdersPage({ lang = 'es', navigate, userData, userRole }
             <div className="oc-top">
               {o.photoURL ? <img src={o.photoURL} alt={o.specialty} style={{ width:44,height:44,borderRadius:'50%',objectFit:'cover',flexShrink:0 }}/> : <div className="oc-avatar" style={{ background:avatarColors[(i+2)%avatarColors.length],width:44,height:44 }}>{o.avatar}</div>}
               <div className="oc-info"><p className="oc-name">{o.pro}</p><p className="oc-spec">{o.icon} {o.specialty}</p><p className="oc-date">📅 {o.date}</p></div>
-              <div className="oc-right"><span className="oc-status" style={{ color:statusColor(o.status),background:statusColor(o.status)+'18' }}>{T.status[o.status]}</span><p className="oc-price">{o.price}</p></div>
+              <div className="oc-right"><span className="oc-status" style={{ color:statusColor(o.status),background:statusColor(o.status)+'18' }}>{T.status[o.status] || o.status || 'Completado'}</span><p className="oc-price">{o.price}</p></div>
             </div>
             <div className="oc-actions">
               {o.status==='done' && userRole!=='pro' && (
@@ -882,8 +882,7 @@ export default function OrdersPage({ lang = 'es', navigate, userData, userRole }
                     {userRole === 'pro' ? `Calificación de ${o.clientName || 'Cliente'}` : 'Tu Calificación'}
                   </span>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                    <span style={{ fontSize: 14, letterSpacing: 2 }}>{'⭐'.repeat(o.ratingScore)}</span>
-                    <span style={{ fontSize: 13, fontWeight: 900, color: '#F26000' }}>{o.ratingScore}.0</span>
+                    <span style={{ fontSize: 14, letterSpacing: 2 }}>{'⭐'.repeat(Math.max(0, Math.min(5, Math.floor(o.ratingScore || 0))))}</span>
                   </div>
                 </div>
                 {o.ratingComment && (

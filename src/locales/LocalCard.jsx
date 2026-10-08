@@ -64,7 +64,10 @@ export default function LocalCard({ local, onPress }) {
         {/* Rating */}
         <div className="local-card-rating">
           <span className="local-card-stars">
-            {'★'.repeat(Math.round(local.rating || 0))}{'☆'.repeat(5 - Math.round(local.rating || 0))}
+            {(() => {
+              const validStars = Math.max(0, Math.min(5, Math.round(local.rating || 0)));
+              return <>{'★'.repeat(validStars)}{'☆'.repeat(5 - validStars)}</>;
+            })()}
           </span>
           <span className="local-card-rating-num">{Number(local.rating || 0).toFixed(1)}</span>
           <span className="local-card-reviews">({local.totalResenas || 0})</span>
