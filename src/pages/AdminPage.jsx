@@ -1307,6 +1307,29 @@ export default function AdminPage({ navigate }) {
             return 10;
           };
 
+          // Función para conectar y abrir el portal Comercio Partner de una tienda específica
+          const handleOpenStorePortal = (store) => {
+            try {
+              localStorage.setItem('force_listo_merchant_mode', 'true');
+              localStorage.setItem('pedidos_listo_view_mode', 'merchant');
+              
+              const prevMerchantState = JSON.parse(localStorage.getItem('pedidos_listo_merchant_state') || '{}');
+              const updatedState = {
+                ...prevMerchantState,
+                storeName: store.businessName || 'Comercio Partner',
+                address: `${store.city || 'Santo Domingo'}, RD`,
+                phone: store.phone || '',
+                email: store.email || '',
+                ownerName: `${store.ownerName || ''} ${store.ownerLastName || ''}`
+              };
+              localStorage.setItem('pedidos_listo_merchant_state', JSON.stringify(updatedState));
+            } catch (e) {}
+            showToast(`🏪 Conectando portal Comercio Partner de ${store.businessName || 'Comercio'}...`);
+            if (navigate) {
+              navigate('mandame');
+            }
+          };
+
           // Función para generar e imprimir el cuadre mensual oficial
           const printMonthlyClosing = (store) => {
             const printWin = window.open('', '_blank');
@@ -1709,9 +1732,16 @@ export default function AdminPage({ navigate }) {
                       </div>
                     </div>
 
-                    {/* BOTONES DE ACCIÓN: IMPRIMIR, PDF, HISTORIAL Y WHATSAPP */}
+                    {/* BOTONES DE ACCIÓN: IMPRIMIR, PDF, ABRIR COMERCIO PARTNER, HISTORIAL Y WHATSAPP */}
                     <div className="cc-actions" style={{ marginTop: '16px', paddingTop: '12px', borderTop: '1px solid var(--border)', display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between' }}>
                       <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                        <button 
+                          onClick={() => handleOpenStorePortal(req)}
+                          style={{ padding: '10px 14px', borderRadius: '12px', background: 'linear-gradient(135deg, #FF6B00, #E65100)', color: '#FFF', border: 'none', fontWeight: '900', fontSize: '12.5px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px', boxShadow: '0 4px 12px rgba(255,107,0,0.3)' }}
+                        >
+                          🏪 Abrir Comercio Partner
+                        </button>
+
                         <button 
                           onClick={() => setSelectedPartnerDetail({...req, monthlySales, monthlyOrders, monthlyDeliveries, monthlyPickups, commission10, netPayout, cutoffDay, commissionPct: commPct})}
                           style={{ padding: '10px 14px', borderRadius: '12px', background: 'var(--brand-dim)', border: '1.5px solid var(--brand)', color: 'var(--brand)', fontWeight: '900', fontSize: '12.5px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
@@ -1861,6 +1891,10 @@ export default function AdminPage({ navigate }) {
 
                       {/* Botones de Pie del Modal */}
                       <div style={{ marginTop: '20px', display: 'flex', gap: '10px', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
+                        <button onClick={() => handleOpenStorePortal(selectedPartnerDetail)} style={{ padding: '10px 18px', borderRadius: '12px', background: 'linear-gradient(135deg, #FF6B00, #E65100)', color: '#FFF', border: 'none', fontWeight: '900', fontSize: '13px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px', boxShadow: '0 4px 12px rgba(255,107,0,0.3)' }}>
+                          🏪 Abrir Comercio Partner
+                        </button>
+
                         <button onClick={() => printMonthlyClosing(selectedPartnerDetail)} style={{ padding: '10px 18px', borderRadius: '12px', background: '#0D0E15', color: '#FFF', border: 'none', fontWeight: '800', fontSize: '13px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
                           🖨️ Imprimir Cuadre
                         </button>
