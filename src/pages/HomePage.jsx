@@ -1736,134 +1736,16 @@ export default function HomePage({ lang, navigate, userRole }) {
 
 
 
-      <div className="hp-cats-scroll">
-        {topHomeCategories.map((c, i) => (
-          <div key={i} className="hp-cat-btn" onClick={() => navigate('search', { catToSelect: c.id || 'all' })}>
-            {i === 0 && <span className="cat-flash-badge">🔥 HOT</span>}
-            {i === 2 && <span className="cat-flash-badge" style={{background:'#10B981', boxShadow: '0 4px 8px rgba(16, 185, 129, 0.4)'}}>NUEVO</span>}
-            <div className="cat-icon-wrap">
-              {c.image ? (
-                <img src={c.image} alt={c.labelEs} style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '10px' }} />
-              ) : (
-                <span className="hp-cat-icon">{c.icon}</span>
-              )}
-            </div>
-            <span className="hp-cat-label">{lang === 'es' ? c.labelEs : c.labelEn}</span>
-          </div>
-        ))}
-      </div>
-
-
-      {/* ── ESTRUCTURA VARIADA 1 ESTILO AMAZON: BENTO GRID CONTENEDOR 2x2 ── */}
-      <section className="amz-bento-section">
-        <div className="amz-bento-header">
-          <h2 className="amz-bento-title">
-            🛍️ {lang === 'es' ? 'Abarrotes y servicios con entrega hoy' : 'Same day services'}
-          </h2>
-          <button className="hp-see-all" onClick={() => navigate('search')}>
-            {lang === 'es' ? 'Ver todo' : 'See all'} ›
-          </button>
-        </div>
-        <div className="amz-bento-grid">
-          <div className="amz-bento-item" onClick={() => navigate('search', { catToSelect: 'mecanico' })}>
-            <div className="amz-bento-img-wrap" style={{ position: 'relative' }}>
-              <span className="amz-bento-item-tag">🔥 MÁS VENDIDO</span>
-              <img src={mecanico1} alt="Mecánico" className="amz-bento-img" />
-              <div className="listo-brand-watermark">
-                <img src={logoListo} alt="Pedidos Listo" className="listo-brand-watermark-img" />
-              </div>
-            </div>
-            <p className="amz-bento-item-title">{lang === 'es' ? 'Diagnóstico Vehicular' : 'Auto Diagnostic'}</p>
-            <p className="amz-bento-item-sub">🤝 {lang === 'es' ? 'A convenir' : 'To agree'}</p>
-          </div>
-
-          <div className="amz-bento-item" onClick={() => navigate('search', { catToSelect: 'electricista' })}>
-            <div className="amz-bento-img-wrap" style={{ position: 'relative' }}>
-              <span className="amz-bento-item-tag">⚡ 24/7 URGENTE</span>
-              <img src={electrica1} alt="Electricista" className="amz-bento-img" />
-              <div className="listo-brand-watermark">
-                <img src={logoListo} alt="Pedidos Listo" className="listo-brand-watermark-img" />
-              </div>
-            </div>
-            <p className="amz-bento-item-title">{lang === 'es' ? 'Instalación Eléctrica' : 'Electrical Install'}</p>
-            <p className="amz-bento-item-sub">🤝 {lang === 'es' ? 'A convenir' : 'To agree'}</p>
-          </div>
-
-          <div className="amz-bento-item" onClick={() => navigate('search', { catToSelect: 'plomero' })}>
-            <div className="amz-bento-img-wrap" style={{ position: 'relative' }}>
-              <span className="amz-bento-item-tag">🛡️ GARANTIZADO</span>
-              <img src={plomero} alt="Plomero" className="amz-bento-img" />
-              <div className="listo-brand-watermark">
-                <img src={logoListo} alt="Pedidos Listo" className="listo-brand-watermark-img" />
-              </div>
-            </div>
-            <p className="amz-bento-item-title">{lang === 'es' ? 'Reparación de Tubería' : 'Pipe Repair'}</p>
-            <p className="amz-bento-item-sub">🤝 {lang === 'es' ? 'A convenir' : 'To agree'}</p>
-          </div>
-
-          <div className="amz-bento-item" onClick={() => navigate('search', { catToSelect: 'cerrajero' })}>
-            <div className="amz-bento-img-wrap" style={{ position: 'relative' }}>
-              <span className="amz-bento-item-tag">🔑 POPULAR</span>
-              <img src={cerrajero1} alt="Cerrajero" className="amz-bento-img" />
-              <div className="listo-brand-watermark">
-                <img src={logoListo} alt="Pedidos Listo" className="listo-brand-watermark-img" />
-              </div>
-            </div>
-            <p className="amz-bento-item-title">{lang === 'es' ? 'Apertura de Puertas' : 'Door Opening'}</p>
-            <p className="amz-bento-item-sub">🤝 {lang === 'es' ? 'A convenir' : 'To agree'}</p>
-          </div>
-        </div>
-      </section>
-
-
-
-
-
-
-      {sections.map((sec, idx) => {
-            // Colores temáticos extraidos de los Planes VIP/Platinum/Gold/Basico para dar forma
-            const amzThemes = [
-              { bg: 'linear-gradient(145deg, #EFF6FF 0%, #DBEAFE 100%)', color: '#1E3A8A', card: '#FFF' }, // VIP Blue
-              { bg: 'linear-gradient(145deg, #FFFBEB 0%, #FEF3C7 100%)', color: '#92400E', card: '#FFF' }, // Gold Orange
-              { bg: 'linear-gradient(145deg, #F8FAFC 0%, #F1F5F9 100%)', color: '#334155', card: '#FFF' }, // Básico Silver
-              { bg: 'linear-gradient(145deg, #FDF4FF 0%, #FCE7F3 100%)', color: '#831843', card: '#FFF' }, // Pink
-              { bg: 'linear-gradient(145deg, #F0FDF4 0%, #DCFCE7 100%)', color: '#166534', card: '#FFF' }, // Green
-              { bg: 'linear-gradient(145deg, #FEF2F2 0%, #FEE2E2 100%)', color: '#991B1B', card: '#FFF' }, // Red
-              { bg: 'linear-gradient(145deg, #FAF5FF 0%, #F3E8FF 100%)', color: '#4C1D95', card: '#FFF' }, // Purple
-            ];
-            const theme = amzThemes[idx % amzThemes.length];
-
-            return (
-              <section key={sec.id} className="hp-service-section reveal" style={{ background: theme.bg }}>
-                <div className="hp-sec-header amz-sec-header">
-                  <h2 className="hp-sec-title amz-sec-title" style={{ color: theme.color, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    {sec.image ? <img src={sec.image} alt={sec.titleEs} style={{ width: '24px', height: '24px', objectFit: 'contain' }} /> : sec.icon} 
-                    {lang === 'es' ? sec.titleEs : sec.titleEn}
-                  </h2>
-                  <button className="hp-see-all amz-see-all" style={{ color: theme.color }} onClick={() => navigate('search')}>
-                    {lang === 'es' ? 'Ver todo' : 'See all'} ›
-                  </button>
-                </div>
-                <div className="hp-service-cards amz-cards-scroll">
-                  {sec.services.map((s, i) => (
-                    <div key={i} className="hp-svc-card amz-bento-card" style={{ background: theme.card }} onClick={() => navigate('booking', { specialty: sec.id })}>
-                      <div className="hp-svc-img-wrap" style={{ position: 'relative' }}>
-                        {s.tag && <span className="hp-svc-tag">{s.tag}</span>}
-                        <img src={s.img} alt={s.nameEs} className="hp-svc-img" />
-                        <div className="listo-brand-watermark">
-                          <img src={logoListo} alt="Pedidos Listo" className="listo-brand-watermark-img" />
-                        </div>
-                      </div>
-                      <div className="hp-svc-info">
-                        <p className="hp-svc-name">{lang === 'es' ? s.nameEs : s.nameEn}</p>
-                        <p className="hp-svc-price">{s.price}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </section>
-            );
-          })}
+      {/* ── SECCIÓN PROFESIONALES DESTACADOS (NUESTRO VIP) RESTAURADA DEBAJO DEL BANNER DE LA TIENDA ── */}
+      <VIPSection 
+        realVipPros={featuredProsToUse} 
+        lang={lang} 
+        navigate={navigate} 
+        sectionTitle={lang === 'es' ? '🌟 Profesionales Destacados' : '🌟 Featured Professionals'}
+        sectionSub={lang === 'es' ? 'Nuestros VIP verificados 5 estrellas' : 'Our 5-star verified VIPs'}
+        getProStoryData={getProStoryData}
+        onOpenStory={handleOpenStoryViewer}
+      />
 
           <section ref={allProsRef} className={`all-pros-section${allProsVisible ? ' reveal' : ''}`}>
             <div className="hp-sec-header" style={{ marginBottom: 12 }}>
