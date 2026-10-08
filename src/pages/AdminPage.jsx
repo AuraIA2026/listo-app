@@ -506,6 +506,7 @@ export default function AdminPage({ navigate }) {
   const [alerts, setAlerts]     = useState([]); // Alertas de plan
   const [vipLocales, setVipLocales] = useState([]); // Locales VIP
   const [partnerRequests, setPartnerRequests] = useState([]); // Solicitudes de Comercios Partner
+  const [stories, setStories] = useState([]); // Historias 24h
   const [toast, setToast]       = useState('');
   const [confirm, setConfirm]   = useState(null); // { type, obj }
   const [viewDocs, setViewDocs] = useState(null); // Usuario a inspeccionar documentos
@@ -616,7 +617,13 @@ export default function AdminPage({ navigate }) {
       setPartnerRequests(arr);
     });
 
-    return () => { unsubPay(); unsubUsers(); unsubVerif(); unsubReps(); unsubEdits(); unsubAlerts(); unsubLocales(); unsubPartnerReqs(); };
+    // 9. Escuchar Historias 24h
+    const unsubStories = onSnapshot(query(collection(db, 'historias'), orderBy('createdAt', 'desc')), (snap) => {
+      const arr = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      setStories(arr);
+    });
+
+    return () => { unsubPay(); unsubUsers(); unsubVerif(); unsubReps(); unsubEdits(); unsubAlerts(); unsubLocales(); unsubPartnerReqs(); unsubStories(); };
   }, []);
 
   const prevUnreadCount = useRef(0);
@@ -668,6 +675,11 @@ export default function AdminPage({ navigate }) {
     setConfirm(null);
 
     try {
+      if (type === 'delete_story') {
+        await deleteDoc(doc(db, 'historias', obj.id));
+        showToast('🗑️ Historia eliminada por moderación');
+      }
+
       if (type === 'paid') {
         // Aprobar un pago (Comisión/Plan transferido)
         await updateDoc(doc(db, 'payments', obj.id), { status: 'paid' });
@@ -1205,13 +1217,14 @@ export default function AdminPage({ navigate }) {
             { id:'comercios',     icon:'🏪', label:'Comercio', count: partnerRequests.filter(r => r.status === 'pending').length },
             { id:'postulaciones', icon:'🛡️', label:'Nuevos', count:verifications.length },
             { id:'locales',      icon:'🏬', label:'Locales VIP', count: vipLocales.filter(l => !l.activo).length },
+            { id:'historias',    icon:'📸', label:'Historias', count: stories.length },
             { id:'alertas',      icon:'🔔', label:'Alertas', count: alerts.filter(a => !a.read).length },
-            { id:'pagos',      icon:'💳', label:'Historial',  count:completedPayments.length },
-            { id:'comisiones', icon:'⏳', label:'Validar', count:pendienteCount },
-            { id:'bloqueados', icon:'👥', label:'Directorio', count:users.length },
-            { id:'ediciones',  icon:'✏️', label:'Ediciones', count: editRequests.filter(r => r.status === 'pending').length },
-            { id:'quejas',     icon:'🚨', label:'Quejas', count: reports.filter(r => r.status === 'pending').length },
-            { id:'regalos',    icon:'🎁', label:'Regalos', count: '+' },
+            { id:'pagos',        icon:'💳', label:'Historial',  count:completedPayments.length },
+            { id:'comisiones',   icon:'⏳', label:'Validar', count:pendienteCount },
+            { id:'bloqueados',   icon:'👥', label:'Directorio', count:users.length },
+            { id:'ediciones',    icon:'✏️', label:'Ediciones', count: editRequests.filter(r => r.status === 'pending').length },
+            { id:'quejas',       icon:'🚨', label:'Quejas', count: reports.filter(r => r.status === 'pending').length },
+            { id:'regalos',      icon:'🎁', label:'Regalos', count: '+' },
           ].map(t => (
             <button key={t.id} className={`tab-btn${tab===t.id?' active':''}`} onClick={()=>setTab(t.id)} style={{minWidth:70}}>
               <span className="tab-icon">{t.icon}</span>
@@ -2000,6 +2013,99 @@ export default function AdminPage({ navigate }) {
                 )}
               </div>
             ))}
+          </div>
+        )}
+
+        {/* ── TAB: HISTORIAS (Moderación de Stories 24h) ── */}
+        {tab === 'historias' && (
+          <div className="admin-section" style={{marginTop:16}}>
+            <div className="section-header">
+              <div>
+                <span className="section-title">📸 Moderación de Historias (24h)</span>
+                <p style={{fontSize:'12px', color:'var(--muted)', margin:'4px 0 0'}}>
+                  Revisa y modera las historias publicadas por profesionales y clientes en la plataforma.
+                </p>
+              </div>
+              <span className="admin-badge" style={{background:'var(--brand)'}}>{stories.length} activas</span>
+            </div>
+
+            {stories.length === 0 && (
+              <div className="empty-admin" style={{padding:'40px 20px', textAlign:'center', background:'var(--surface)', borderRadius:'18px', border:'1px solid var(--border)'}}>
+                <div style={{fontSize:'40px', marginBottom:'10px'}}>📸</div>
+                <h4 style={{margin:'0 0 6px', fontSize:'16px', color:'var(--text)'}}>No hay historias publicadas</h4>
+                <p style={{margin:0, fontSize:'13px', color:'var(--muted)'}}>Las historias subidas por los socios aparecerán aquí para moderación instantánea.</p>
+              </div>
+            )}
+
+            <div style={{display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(240px, 1fr))', gap:'16px', marginTop:'16px'}}>
+              {stories.map((st, i) => {
+                const media = st.mediaUrl || st.imageUrl || st.url || st.videoUrl;
+                const isVid = st.type === 'video' || st.isVideo || (media && media.match(/\.(mp4|webm|mov)/i));
+                return (
+                  <div key={st.id || i} style={{background:'var(--surface)', borderRadius:'16px', border:'1px solid var(--border)', overflow:'hidden', boxShadow:'0 4px 12px rgba(0,0,0,0.04)', display:'flex', flexDirection:'column'}}>
+                    {/* Header Autor */}
+                    <div style={{padding:'10px 12px', display:'flex', alignItems:'center', gap:'10px', background:'var(--surface2)', borderBottom:'1px solid var(--border)'}}>
+                      <img 
+                        src={st.proPhoto || st.userPhoto || st.avatar || 'https://via.placeholder.com/40'} 
+                        alt={st.proName || st.userName || 'Usuario'} 
+                        style={{width:36, height:36, borderRadius:'50%', objectFit:'cover', border:'2px solid var(--brand)'}}
+                        onError={(e) => { e.target.src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(st.proName || 'U'); }}
+                      />
+                      <div style={{flex:1, minWidth:0}}>
+                        <div style={{fontSize:'13px', fontWeight:800, color:'var(--text)', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis'}}>
+                          {st.proName || st.userName || st.nombre || 'Socio Listo'}
+                        </div>
+                        <div style={{fontSize:'11px', color:'var(--muted)'}}>
+                          {st.categoria || st.category || 'Historia 24h'}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Visual Media Preview */}
+                    <div style={{position:'relative', width:'100%', height:'220px', background:'#000', cursor:'pointer'}} onClick={() => media && setPreviewImageModal({ url: media, title: st.proName || 'Historia 24h' })}>
+                      {isVid ? (
+                        <video src={media} style={{width:'100%', height:'100%', objectFit:'cover'}} muted playsInline />
+                      ) : (
+                        <img src={media || 'https://via.placeholder.com/300x400?text=Sin+Imagen'} alt="Historia" style={{width:'100%', height:'100%', objectFit:'cover'}} />
+                      )}
+                      <div style={{position:'absolute', bottom:8, left:8, right:8, background:'rgba(0,0,0,0.65)', backdropFilter:'blur(4px)', padding:'6px 10px', borderRadius:'8px', color:'#FFF', fontSize:'12px', fontWeight:'600'}}>
+                        {st.caption || st.title || st.texto || 'Sin pie de foto'}
+                      </div>
+                    </div>
+
+                    {/* Info y Estadísticas */}
+                    <div style={{padding:'12px', flex:1, display:'flex', flexDirection:'column', justifyContent:'space-between'}}>
+                      <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', fontSize:'11.5px', color:'var(--muted)', marginBottom:'10px'}}>
+                        <span>👁️ {st.vistas || st.viewsCount || 0} vistas</span>
+                        <span>❤️ {st.likes || st.likesCount || 0} me gusta</span>
+                      </div>
+
+                      {/* Botón Borrar / Moderar */}
+                      <button 
+                        onClick={() => setConfirm({ type: 'delete_story', obj: st })}
+                        style={{
+                          width:'100%',
+                          padding:'10px',
+                          borderRadius:'10px',
+                          background:'rgba(239,68,68,0.1)',
+                          color:'#EF4444',
+                          border:'1px solid rgba(239,68,68,0.3)',
+                          fontWeight:'800',
+                          fontSize:'12.5px',
+                          cursor:'pointer',
+                          display:'flex',
+                          alignItems:'center',
+                          justifyContent: 'center',
+                          gap:'6px'
+                        }}
+                      >
+                        🗑️ Eliminar por Moderación
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         )}
 
