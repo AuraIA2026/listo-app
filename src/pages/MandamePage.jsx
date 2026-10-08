@@ -1551,7 +1551,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                 </div>
 
                 {/* 3. Category Hub Grid (IMG_4455.png reference) */}
-                <div className="py-main-hub-section" style={{ padding: '0 16px', marginBottom: 20 }}>
+                <div className="py-main-hub-section" style={{ padding: '0 16px', marginBottom: 16 }}>
                   {/* Top 2 Big Cards */}
                   <div className="py-hub-top-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
                     <div 
@@ -1638,50 +1638,348 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                       style={{ background: 'white', border: '1px solid #e2e8f0', borderRadius: 16, padding: '10px 6px', textAlign: 'center', cursor: 'pointer', boxShadow: '0 2px 10px rgba(0,0,0,0.04)' }}
                     >
                       <img src="assets/drinks_3d_1791137124884.png" className="py-med-hub-img" alt="Licores" style={{ width: 38, height: 38, objectFit: 'contain', margin: '0 auto 4px' }} />
-                      <span className="py-med-hub-label" style={{ fontSize: 11, fontWeight: 800, color: '#1e293b', display: 'block' }}>Licores</span>
+                      <span className="py-med-hub-label" style={{ fontSize: 11, fontWeight: 800, color: '#1e293b', display: 'block' }}>Bebidas</span>
                     </div>
                   </div>
                 </div>
 
-                {/* 4. Flash Discounts Section with Live Timer (IMG_4457.png reference) */}
-                <div className="flash-deals-box" style={{ margin: '0 16px 20px 16px', background: 'linear-gradient(135deg, #fff3e6 0%, #ffffff 100%)', padding: 16, borderRadius: 20, border: '1px solid #ffe0b2' }}>
-                  <div className="flash-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                {/* 4. Partner Merchant Logos Strip (Circles / Square Logos from IMG_4455.png) */}
+                <div style={{ display: 'flex', gap: 12, overflowX: 'auto', padding: '0 16px', marginBottom: 16, scrollbarWidth: 'none' }}>
+                  {[
+                    { name: 'Pork & Beer', color: '#ff6b00', bg: '#fff3e6', icon: '🍺' },
+                    { name: 'Doña Pula', color: '#dc2626', bg: '#fef2f2', icon: '🍗' },
+                    { name: 'Pizza Getto', color: '#ca8a04', bg: '#fefce8', icon: '🍕' },
+                    { name: 'Pork & Beer', color: '#ea580c', bg: '#ffedd5', icon: '🥓' },
+                    { name: 'KFC', color: '#b91c1c', bg: '#fef2f2', icon: '🍗' },
+                    { name: 'McDonalds', color: '#dc2626', bg: '#fef2f2', icon: '🍔' }
+                  ].map((brand, idx) => (
+                    <div key={idx} onClick={() => showToast(`🏪 Comercio: ${brand.name}`)} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', cursor: 'pointer', flexShrink: 0 }}>
+                      <div style={{ width: 52, height: 52, borderRadius: 18, background: brand.bg, border: `2px solid ${brand.color}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, boxShadow: '0 4px 10px rgba(0,0,0,0.06)' }}>
+                        {brand.icon}
+                      </div>
+                      <span style={{ fontSize: 10, fontWeight: 800, color: '#1e293b', marginTop: 4 }}>{brand.name}</span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* 5. Yellow Flash Countdown Banner ("Ahorra hasta RD$ 300" from IMG_4455.png & IMG_4456.png) */}
+                <div style={{ padding: '0 16px', marginBottom: 16 }}>
+                  <div style={{
+                    background: 'linear-gradient(135deg, #facc15 0%, #eab308 100%)',
+                    borderRadius: 20,
+                    padding: 16,
+                    color: '#0f172a',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    boxShadow: '0 8px 24px rgba(234, 179, 8, 0.3)'
+                  }}>
+                    <div style={{ position: 'relative', zIndex: 2, maxWidth: '68%' }}>
+                      <span style={{ background: '#0f172a', color: '#ffffff', fontSize: 10, fontWeight: 900, padding: '3px 8px', borderRadius: 8, display: 'inline-block', marginBottom: 6 }}>
+                        39:47
+                      </span>
+                      <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 900, fontSize: 18, lineHeight: 1.2, marginBottom: 4, color: '#0f172a' }}>
+                        Ahorra hasta RD$ 300
+                      </h3>
+                      <p style={{ fontSize: 11, fontWeight: 700, color: '#334155', lineHeight: 1.3, marginBottom: 10 }}>
+                        Prueba nuevos sabores y disfruta Descuentos fugaces.
+                      </p>
+                      <button 
+                        onClick={() => setActiveTab('promociones')}
+                        style={{ background: '#0f172a', color: '#ffffff', border: 'none', padding: '6px 14px', borderRadius: 12, fontWeight: 900, fontSize: 11, cursor: 'pointer' }}
+                      >
+                        Descubrir locales
+                      </button>
+                    </div>
+
+                    <div style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', fontSize: 64, filter: 'drop-shadow(0 6px 12px rgba(0,0,0,0.15))' }}>
+                      ⏰
+                    </div>
+                  </div>
+                </div>
+
+                {/* 6. Horizontal Promo Banners (Mastercard / APAP Plus Promo from IMG_4456.png) */}
+                <div style={{ display: 'flex', gap: 12, overflowX: 'auto', padding: '0 16px', marginBottom: 16, scrollbarWidth: 'none' }}>
+                  <div style={{ minWidth: 260, maxWidth: 260, background: 'linear-gradient(135deg, #4c1d95, #3b0764)', borderRadius: 20, padding: 16, color: 'white', flexShrink: 0, boxShadow: '0 6px 18px rgba(76,29,149,0.3)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                     <div>
-                      <div className="flash-title" style={{ fontFamily: 'var(--font-heading)', fontWeight: 900, fontSize: 16, color: '#ff6b00', display: 'flex', alignItems: 'center', gap: 6 }}>
-                        ⚡ Descuentos Relámpago en Vivo
-                      </div>
-                      <span style={{ fontSize: 11, color: '#64748b' }}>Ahorra hasta RD$ 300 en platillos seleccionados</span>
+                      <span style={{ background: 'rgba(255,255,255,0.2)', color: 'white', fontSize: 9, fontWeight: 900, padding: '2px 8px', borderRadius: 6 }}>plus</span>
+                      <h4 style={{ fontFamily: 'var(--font-heading)', fontWeight: 900, fontSize: 15, margin: '6px 0 4px' }}>6 meses Gratis</h4>
+                      <p style={{ fontSize: 10, opacity: 0.9, lineHeight: 1.3 }}>+3 meses al 50% OFF con tus Tarjetas Mastercard Standard o Gold APAP</p>
                     </div>
-                    <span style={{ background: '#ff6b00', color: 'white', fontWeight: 900, fontSize: 11, padding: '4px 10px', borderRadius: 12, display: 'flex', alignItems: 'center', gap: 4 }}>
-                      ⏱️ 01:45:12
-                    </span>
+                    <button style={{ background: '#00e699', color: '#0a0e1a', border: 'none', padding: '5px 12px', borderRadius: 10, fontWeight: 900, fontSize: 10, alignSelf: 'flex-start', marginTop: 10, cursor: 'pointer' }}>
+                      Suscribirme
+                    </button>
                   </div>
 
-                  <div className="flash-scroll-row" style={{ display: 'flex', gap: 12, overflowX: 'auto', scrollbarWidth: 'none', paddingBottom: 4 }}>
-                    {INITIAL_PRODUCTS.map(prod => (
-                      <div key={prod.id} className="flash-item-card" style={{ minWidth: 150, maxWidth: 150, background: 'white', borderRadius: 16, padding: 10, position: 'relative', border: '1px solid #fed7aa', boxShadow: '0 4px 12px rgba(255,107,0,0.08)' }}>
-                        <span className="flash-tag" style={{ position: 'absolute', top: 8, left: 8, background: '#ef4444', color: 'white', fontWeight: 900, fontSize: 10, padding: '2px 6px', borderRadius: 6 }}>
-                          -30% OFF
-                        </span>
-                        <img src={prod.image} alt={prod.name} className="flash-img" style={{ width: '100%', height: 80, objectFit: 'contain', margin: '8px 0' }} />
-                        <div className="flash-item-title" style={{ fontSize: 11, fontWeight: 800, color: '#1e293b', marginBottom: 4, height: 28, overflow: 'hidden' }}>{prod.name}</div>
-                        <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
-                          <span className="flash-price" style={{ fontWeight: 900, fontSize: 14, color: '#ff6b00' }}>RD$ {Math.round(prod.price * 0.7)}</span>
-                          <span style={{ fontSize: 10, color: '#94a3b8', textDecoration: 'line-through' }}>RD$ {prod.price}</span>
-                        </div>
-                        <div 
-                          className="btn-add-flash" 
-                          onClick={() => handleAddToCartCustom(prod, 'Tostones', 'Cola')}
-                          style={{ position: 'absolute', bottom: 8, right: 8, width: 28, height: 28, borderRadius: '50%', background: '#ff6b00', color: 'white', fontSize: 16, fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 2px 8px rgba(255,107,0,0.4)' }}
-                        >
-                          +
-                        </div>
-                      </div>
-                    ))}
+                  <div style={{ minWidth: 240, maxWidth: 240, background: 'linear-gradient(135deg, #ea1d2c, #b91c1c)', borderRadius: 20, padding: 16, color: 'white', flexShrink: 0, boxShadow: '0 6px 18px rgba(234,29,44,0.3)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                    <div>
+                      <span style={{ background: 'rgba(0,0,0,0.3)', color: '#ffc107', fontSize: 9, fontWeight: 900, padding: '2px 8px', borderRadius: 6 }}>COMBO PROMO</span>
+                      <h4 style={{ fontFamily: 'var(--font-heading)', fontWeight: 900, fontSize: 15, margin: '6px 0 4px' }}>RD$ 299 Pechuga</h4>
+                      <p style={{ fontSize: 10, opacity: 0.9, lineHeight: 1.3 }}>Pechurinas crujientes con tostones y refresco frío incluido.</p>
+                    </div>
+                    <button style={{ background: '#ffffff', color: '#ea1d2c', border: 'none', padding: '5px 12px', borderRadius: 10, fontWeight: 900, fontSize: 10, alignSelf: 'flex-start', marginTop: 10, cursor: 'pointer' }}>
+                      Pedir Combo
+                    </button>
                   </div>
                 </div>
 
-                {/* 5. Quick Category Filter Chips (IMG_4456.png reference) */}
+                {/* 7. Section: "Come y Cena hasta $345" (Full Mamey Card Container from IMG_4457.png) */}
+                <div style={{ padding: '0 16px', marginBottom: 20 }}>
+                  <div style={{ background: 'linear-gradient(135deg, #ff6b00 0%, #ea580c 100%)', borderRadius: 24, padding: 16, color: 'white', boxShadow: '0 8px 24px rgba(255,107,0,0.3)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                      <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 900, fontSize: 17, color: 'white', margin: 0 }}>
+                        Come y Cena hasta RD$ 345
+                      </h3>
+                      <span style={{ fontSize: 11, fontWeight: 900, color: 'white', cursor: 'pointer', background: 'rgba(255,255,255,0.2)', padding: '4px 10px', borderRadius: 12 }}>
+                        Mostrar todos
+                      </span>
+                    </div>
+
+                    <div style={{ display: 'flex', gap: 12, overflowX: 'auto', scrollbarWidth: 'none', paddingBottom: 4 }}>
+                      <div style={{ minWidth: 200, maxWidth: 200, background: 'white', borderRadius: 18, overflow: 'hidden', color: '#1e293b', flexShrink: 0, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
+                        <div style={{ padding: '8px 12px', display: 'flex', alignItems: 'center', gap: 8, borderBottom: '1px solid #f1f5f9' }}>
+                          <span style={{ fontSize: 14 }}>🍣</span>
+                          <div>
+                            <div style={{ fontWeight: 900, fontSize: 12 }}>Square One</div>
+                            <div style={{ fontSize: 10, color: '#64748b' }}>🛵 RD$ 100</div>
+                          </div>
+                        </div>
+                        <div style={{ position: 'relative' }}>
+                          <img src="assets/burger_3d.png" style={{ width: '100%', height: 110, objectFit: 'cover' }} alt="" />
+                          <span style={{ position: 'absolute', top: 6, left: 6, background: '#facc15', color: '#0f172a', fontWeight: 900, fontSize: 9, padding: '2px 6px', borderRadius: 6 }}>20% DTO</span>
+                        </div>
+                        <div style={{ padding: 10 }}>
+                          <div style={{ fontWeight: 900, fontSize: 13, color: '#1e293b' }}>BACON Roll</div>
+                          <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginTop: 4 }}>
+                            <span style={{ fontWeight: 900, fontSize: 14, color: '#ff6b00' }}>RD$ 344</span>
+                            <span style={{ fontSize: 10, color: '#94a3b8', textDecoration: 'line-through' }}>RD$ 430.70</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div style={{ minWidth: 200, maxWidth: 200, background: 'white', borderRadius: 18, overflow: 'hidden', color: '#1e293b', flexShrink: 0, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
+                        <div style={{ padding: '8px 12px', display: 'flex', alignItems: 'center', gap: 8, borderBottom: '1px solid #f1f5f9' }}>
+                          <span style={{ fontSize: 14 }}>🍗</span>
+                          <div>
+                            <div style={{ fontWeight: 900, fontSize: 12 }}>Pica Pollo El Rincón</div>
+                            <div style={{ fontSize: 10, color: '#64748b' }}>🛵 RD$ 40</div>
+                          </div>
+                        </div>
+                        <div style={{ position: 'relative' }}>
+                          <img src="assets/burger_3d.png" style={{ width: '100%', height: 110, objectFit: 'cover' }} alt="" />
+                        </div>
+                        <div style={{ padding: 10 }}>
+                          <div style={{ fontWeight: 900, fontSize: 12, color: '#1e293b', height: 28, overflow: 'hidden' }}>4 piezas pechurinas crujientes</div>
+                          <div style={{ fontWeight: 900, fontSize: 14, color: '#ff6b00', marginTop: 4 }}>RD$ 275</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 8. Section: "Mismo precio que en local" (IMG_4457.png) */}
+                <div style={{ padding: '0 16px', marginBottom: 20 }}>
+                  <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 900, fontSize: 17, color: '#1e293b', marginBottom: 12 }}>
+                    Mismo precio que en local
+                  </h3>
+
+                  <div style={{ display: 'flex', gap: 12, overflowX: 'auto', scrollbarWidth: 'none', paddingBottom: 4 }}>
+                    <div style={{ minWidth: 220, maxWidth: 220, background: 'white', borderRadius: 20, overflow: 'hidden', border: '1px solid #e2e8f0', boxShadow: '0 4px 14px rgba(0,0,0,0.06)', flexShrink: 0 }}>
+                      <div style={{ position: 'relative' }}>
+                        <img src="assets/burger_3d.png" style={{ width: '100%', height: 120, objectFit: 'cover' }} alt="" />
+                        <span style={{ position: 'absolute', top: 8, left: 8, background: '#00e699', color: '#0a0e1a', fontWeight: 900, fontSize: 10, padding: '3px 8px', borderRadius: 8 }}>
+                          Mismo precio que en local
+                        </span>
+                      </div>
+                      <div style={{ padding: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <div>
+                          <div style={{ fontWeight: 900, fontSize: 14, color: '#1e293b' }}>Sopa Andrea</div>
+                          <div style={{ fontSize: 11, color: '#64748b' }}>Sancocho & Víveres</div>
+                        </div>
+                        <span style={{ background: '#f8fafc', padding: '4px 8px', borderRadius: 8, fontWeight: 900, fontSize: 11 }}>★ 4.6</span>
+                      </div>
+                    </div>
+
+                    <div style={{ minWidth: 220, maxWidth: 220, background: 'white', borderRadius: 20, overflow: 'hidden', border: '1px solid #e2e8f0', boxShadow: '0 4px 14px rgba(0,0,0,0.06)', flexShrink: 0 }}>
+                      <div style={{ position: 'relative' }}>
+                        <img src="assets/burger_3d.png" style={{ width: '100%', height: 120, objectFit: 'cover' }} alt="" />
+                        <span style={{ position: 'absolute', top: 8, left: 8, background: '#00e699', color: '#0a0e1a', fontWeight: 900, fontSize: 10, padding: '3px 8px', borderRadius: 8 }}>
+                          Mismo precio que en local
+                        </span>
+                      </div>
+                      <div style={{ padding: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <div>
+                          <div style={{ fontWeight: 900, fontSize: 14, color: '#1e293b' }}>McDonald's</div>
+                          <div style={{ fontSize: 11, color: '#64748b' }}>Combo Doble Carne</div>
+                        </div>
+                        <span style={{ background: '#f8fafc', padding: '4px 8px', borderRadius: 8, fontWeight: 900, fontSize: 11 }}>★ 4.8</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 9. Section: "PedidosYa Market - Villa Olga" Grocery Carousel (IMG_4458.png) */}
+                <div style={{ padding: '0 16px', marginBottom: 20 }}>
+                  <div style={{ background: 'white', borderRadius: 20, padding: 16, border: '1.5px solid #e2e8f0', boxShadow: '0 4px 16px rgba(0,0,0,0.05)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+                      <img src="assets/market_basket_3d.png" style={{ width: 40, height: 40, objectFit: 'contain' }} alt="" />
+                      <div>
+                        <div style={{ fontWeight: 900, fontSize: 15, color: '#1e293b' }}>Pedidos Listo Market - Villa Olga</div>
+                        <div style={{ fontSize: 11, color: '#64748b' }}>⏱️ 15-35 min • 🚚 RD$ 70 • <strong style={{ color: '#00e699' }}>Hasta 50% OFF</strong></div>
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'flex', gap: 12, overflowX: 'auto', scrollbarWidth: 'none', paddingTop: 8 }}>
+                      <div style={{ minWidth: 140, maxWidth: 140, background: '#f8fafc', borderRadius: 16, padding: 10, position: 'relative', border: '1px solid #e2e8f0', flexShrink: 0 }}>
+                        <span style={{ background: '#facc15', color: '#0f172a', fontWeight: 900, fontSize: 9, padding: '2px 6px', borderRadius: 6, position: 'absolute', top: 8, left: 8 }}>80% OFF</span>
+                        <img src="assets/grocery_bag_3d.png" style={{ width: '100%', height: 75, objectFit: 'contain', margin: '8px 0' }} alt="" />
+                        <div style={{ fontWeight: 800, fontSize: 11, color: '#1e293b', marginBottom: 4, height: 26, overflow: 'hidden' }}>Platano Verde 1 Unidad</div>
+                        <div style={{ fontWeight: 900, fontSize: 14, color: '#ff6b00' }}>RD$ 5</div>
+                        <div style={{ fontSize: 9, color: '#94a3b8', textDecoration: 'line-through' }}>RD$ 25</div>
+                      </div>
+
+                      <div style={{ minWidth: 140, maxWidth: 140, background: '#f8fafc', borderRadius: 16, padding: 10, position: 'relative', border: '1px solid #e2e8f0', flexShrink: 0 }}>
+                        <span style={{ background: '#facc15', color: '#0f172a', fontWeight: 900, fontSize: 9, padding: '2px 6px', borderRadius: 6, position: 'absolute', top: 8, left: 8 }}>80% OFF</span>
+                        <img src="assets/grocery_bag_3d.png" style={{ width: '100%', height: 75, objectFit: 'contain', margin: '8px 0' }} alt="" />
+                        <div style={{ fontWeight: 800, fontSize: 11, color: '#1e293b', marginBottom: 4, height: 26, overflow: 'hidden' }}>Platano Maduro 1 Unidad</div>
+                        <div style={{ fontWeight: 900, fontSize: 14, color: '#ff6b00' }}>RD$ 5</div>
+                        <div style={{ fontSize: 9, color: '#94a3b8', textDecoration: 'line-through' }}>RD$ 25</div>
+                      </div>
+
+                      <div style={{ minWidth: 140, maxWidth: 140, background: '#f8fafc', borderRadius: 16, padding: 10, position: 'relative', border: '1px solid #e2e8f0', flexShrink: 0 }}>
+                        <span style={{ background: '#facc15', color: '#0f172a', fontWeight: 900, fontSize: 9, padding: '2px 6px', borderRadius: 6, position: 'absolute', top: 8, left: 8 }}>40% OFF</span>
+                        <img src="assets/drinks_3d_1791137124884.png" style={{ width: '100%', height: 75, objectFit: 'contain', margin: '8px 0' }} alt="" />
+                        <div style={{ fontWeight: 800, fontSize: 11, color: '#1e293b', marginBottom: 4, height: 26, overflow: 'hidden' }}>Refresco Coca-Cola 2L</div>
+                        <div style={{ fontWeight: 900, fontSize: 14, color: '#ff6b00' }}>RD$ 55.20</div>
+                        <div style={{ fontSize: 9, color: '#94a3b8', textDecoration: 'line-through' }}>RD$ 92</div>
+                      </div>
+
+                      <div style={{ minWidth: 140, maxWidth: 140, background: '#f8fafc', borderRadius: 16, padding: 10, position: 'relative', border: '1px solid #e2e8f0', flexShrink: 0 }}>
+                        <span style={{ background: '#facc15', color: '#0f172a', fontWeight: 900, fontSize: 9, padding: '2px 6px', borderRadius: 6, position: 'absolute', top: 8, left: 8 }}>50% OFF</span>
+                        <img src="assets/grocery_bag_3d.png" style={{ width: '100%', height: 75, objectFit: 'contain', margin: '8px 0' }} alt="" />
+                        <div style={{ fontWeight: 800, fontSize: 11, color: '#1e293b', marginBottom: 4, height: 26, overflow: 'hidden' }}>Cebolla Roja Importada (1 lb)</div>
+                        <div style={{ fontWeight: 900, fontSize: 14, color: '#ff6b00' }}>RD$ 32.50</div>
+                        <div style={{ fontSize: 9, color: '#94a3b8', textDecoration: 'line-through' }}>RD$ 65</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 10. Section: "Relacionado con tus pedidos" (IMG_4458.png) */}
+                <div style={{ padding: '0 16px', marginBottom: 20 }}>
+                  <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 900, fontSize: 17, color: '#1e293b', marginBottom: 12 }}>
+                    Relacionado con tus pedidos
+                  </h3>
+
+                  <div style={{ display: 'flex', gap: 12, overflowX: 'auto', scrollbarWidth: 'none', paddingBottom: 4 }}>
+                    <div style={{ minWidth: 250, maxWidth: 250, background: 'white', borderRadius: 20, overflow: 'hidden', border: '1px solid #e2e8f0', boxShadow: '0 4px 14px rgba(0,0,0,0.06)', flexShrink: 0 }}>
+                      <img src="assets/burger_3d.png" style={{ width: '100%', height: 130, objectFit: 'cover' }} alt="" />
+                      <div style={{ padding: 12 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+                          <div style={{ fontWeight: 900, fontSize: 14, color: '#1e293b' }}>El Patio Familiar Zapata</div>
+                          <span style={{ fontWeight: 900, fontSize: 11, background: '#f8fafc', padding: '2px 6px', borderRadius: 6 }}>★ 4.2</span>
+                        </div>
+                        <div style={{ fontSize: 11, color: '#64748b' }}>⏱️ 10-30 min • 🚚 RD$ 40 • <strong style={{ color: '#00e699' }}>Gratis con Plus</strong></div>
+                      </div>
+                    </div>
+
+                    <div style={{ minWidth: 250, maxWidth: 250, background: 'white', borderRadius: 20, overflow: 'hidden', border: '1px solid #e2e8f0', boxShadow: '0 4px 14px rgba(0,0,0,0.06)', flexShrink: 0 }}>
+                      <img src="assets/burger_3d.png" style={{ width: '100%', height: 130, objectFit: 'cover' }} alt="" />
+                      <div style={{ padding: 12 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+                          <div style={{ fontWeight: 900, fontSize: 14, color: '#1e293b' }}>Pork & Beer Culture</div>
+                          <span style={{ fontWeight: 900, fontSize: 11, background: '#f8fafc', padding: '2px 6px', borderRadius: 6 }}>★ 4.9</span>
+                        </div>
+                        <div style={{ fontSize: 11, color: '#64748b' }}>⏱️ 15-25 min • 🚚 RD$ 0 Envío Gratis</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 11. Section: "plus ¡El envío es gratis! Desbloquea nuevos descuentos" (IMG_4459.png) */}
+                <div style={{ padding: '0 16px', marginBottom: 20 }}>
+                  <div style={{ background: 'linear-gradient(135deg, #311b92 0%, #1a237e 100%)', borderRadius: 24, padding: 16, color: 'white', boxShadow: '0 8px 24px rgba(49,27,146,0.3)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                      <div>
+                        <span style={{ background: '#00e699', color: '#0a0e1a', fontSize: 10, fontWeight: 900, padding: '2px 8px', borderRadius: 6 }}>plus ¡El envío es gratis!</span>
+                        <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 900, fontSize: 16, color: 'white', margin: '4px 0 0' }}>Desbloquea nuevos descuentos</h3>
+                      </div>
+                      <span style={{ fontSize: 11, fontWeight: 900, color: 'white', cursor: 'pointer', background: 'rgba(255,255,255,0.2)', padding: '4px 10px', borderRadius: 12 }}>
+                        Suscribirme
+                      </span>
+                    </div>
+
+                    <div style={{ display: 'flex', gap: 12, overflowX: 'auto', scrollbarWidth: 'none', paddingBottom: 4 }}>
+                      <div style={{ minWidth: 200, maxWidth: 200, background: 'white', borderRadius: 18, overflow: 'hidden', color: '#1e293b', flexShrink: 0, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
+                        <div style={{ padding: '8px 12px', display: 'flex', alignItems: 'center', gap: 8, borderBottom: '1px solid #f1f5f9' }}>
+                          <span style={{ fontSize: 14 }}>🍗</span>
+                          <div>
+                            <div style={{ fontWeight: 900, fontSize: 12 }}>Corazon Crujiente</div>
+                            <div style={{ fontSize: 10, color: '#64748b' }}>🛵 RD$ 70</div>
+                          </div>
+                        </div>
+                        <div style={{ position: 'relative' }}>
+                          <img src="assets/burger_3d.png" style={{ width: '100%', height: 110, objectFit: 'cover' }} alt="" />
+                          <span style={{ position: 'absolute', top: 6, left: 6, background: '#311b92', color: 'white', fontWeight: 900, fontSize: 9, padding: '2px 6px', borderRadius: 6 }}>plus 34% DTO</span>
+                        </div>
+                        <div style={{ padding: 10 }}>
+                          <div style={{ fontWeight: 900, fontSize: 12, color: '#1e293b' }}>Corazonada Yaroa</div>
+                          <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginTop: 4 }}>
+                            <span style={{ fontWeight: 900, fontSize: 14, color: '#ff6b00' }}>RD$ 330</span>
+                            <span style={{ fontSize: 10, color: '#94a3b8', textDecoration: 'line-through' }}>RD$ 495</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div style={{ minWidth: 200, maxWidth: 200, background: 'white', borderRadius: 18, overflow: 'hidden', color: '#1e293b', flexShrink: 0, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
+                        <div style={{ padding: '8px 12px', display: 'flex', alignItems: 'center', gap: 8, borderBottom: '1px solid #f1f5f9' }}>
+                          <span style={{ fontSize: 14 }}>🍕</span>
+                          <div>
+                            <div style={{ fontWeight: 900, fontSize: 12 }}>Víctor Pizza St.</div>
+                            <div style={{ fontSize: 10, color: '#64748b' }}>🛵 RD$ 100</div>
+                          </div>
+                        </div>
+                        <div style={{ position: 'relative' }}>
+                          <img src="assets/burger_3d.png" style={{ width: '100%', height: 110, objectFit: 'cover' }} alt="" />
+                          <span style={{ position: 'absolute', top: 6, left: 6, background: '#311b92', color: 'white', fontWeight: 900, fontSize: 9, padding: '2px 6px', borderRadius: 6 }}>plus 20% DTO</span>
+                        </div>
+                        <div style={{ padding: 10 }}>
+                          <div style={{ fontWeight: 900, fontSize: 12, color: '#1e293b' }}>Pepperoni (8 pedazos)</div>
+                          <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginTop: 4 }}>
+                            <span style={{ fontWeight: 900, fontSize: 14, color: '#ff6b00' }}>RD$ 442</span>
+                            <span style={{ fontSize: 10, color: '#94a3b8', textDecoration: 'line-through' }}>RD$ 520</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 12. Section: "Los más pedidos esta semana" (IMG_4459.png) */}
+                <div style={{ padding: '0 16px', marginBottom: 20 }}>
+                  <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 900, fontSize: 17, color: '#1e293b', marginBottom: 12 }}>
+                    Los más pedidos esta semana
+                  </h3>
+
+                  <div style={{ display: 'flex', gap: 12, overflowX: 'auto', scrollbarWidth: 'none', paddingBottom: 4 }}>
+                    <div style={{ minWidth: 200, maxWidth: 200, background: 'white', borderRadius: 20, overflow: 'hidden', border: '1px solid #e2e8f0', boxShadow: '0 4px 14px rgba(0,0,0,0.06)', flexShrink: 0 }}>
+                      <img src="assets/burger_3d.png" style={{ width: '100%', height: 120, objectFit: 'cover' }} alt="" />
+                      <div style={{ padding: 10 }}>
+                        <div style={{ fontWeight: 900, fontSize: 13, color: '#1e293b' }}>Sushi Rolls Gourmet</div>
+                        <div style={{ fontSize: 11, color: '#64748b', marginTop: 2 }}>Square One</div>
+                      </div>
+                    </div>
+
+                    <div style={{ minWidth: 200, maxWidth: 200, background: 'white', borderRadius: 20, overflow: 'hidden', border: '1px solid #e2e8f0', boxShadow: '0 4px 14px rgba(0,0,0,0.06)', flexShrink: 0 }}>
+                      <img src="assets/burger_3d.png" style={{ width: '100%', height: 120, objectFit: 'cover' }} alt="" />
+                      <div style={{ padding: 10 }}>
+                        <div style={{ fontWeight: 900, fontSize: 13, color: '#1e293b' }}>Yaroa Especial</div>
+                        <div style={{ fontSize: 11, color: '#64748b', marginTop: 2 }}>Mofongo Xpress</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 13. Category Filter Chips (IMG_4456.png reference) */}
                 <div style={{ padding: '0 16px', marginBottom: 14 }}>
                   <div className="filters-scroll-row" style={{ display: 'flex', gap: 8, overflowX: 'auto', scrollbarWidth: 'none', padding: '4px 0' }}>
                     {[
@@ -1716,50 +2014,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                   </div>
                 </div>
 
-                {/* 6. Loyalty & Cashback Banner (IMG_4460.png reference) */}
-                <div style={{ padding: '0 16px', marginBottom: 20 }}>
-                  <div style={{
-                    background: 'linear-gradient(135deg, #0a0e1a 0%, #121829 100%)',
-                    borderRadius: 20,
-                    padding: 16,
-                    color: 'white',
-                    border: '1.5px solid rgba(255, 107, 0, 0.4)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justify: 'space-between',
-                    boxShadow: '0 6px 20px rgba(0,0,0,0.15)'
-                  }}>
-                    <div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-                        <span style={{ fontSize: 16 }}>💰</span>
-                        <span style={{ fontFamily: 'var(--font-heading)', fontWeight: 900, fontSize: 14, color: '#ff6b00' }}>
-                          Listo Puntos & Cashback Mamey
-                        </span>
-                      </div>
-                      <div style={{ fontSize: 11, color: '#94a3b8', lineHeight: 1.3 }}>
-                        Acumula 10% de devolución en cada pedido. Saldo acumulado: <strong style={{ color: '#00e699' }}>RD$ 250</strong>
-                      </div>
-                    </div>
-                    <button 
-                      onClick={() => showToast('💰 Monedero Mamey Activo')}
-                      style={{
-                        background: 'rgba(255,107,0,0.2)',
-                        color: '#ff6b00',
-                        border: '1px solid #ff6b00',
-                        padding: '6px 12px',
-                        borderRadius: 12,
-                        fontSize: 11,
-                        fontWeight: 900,
-                        cursor: 'pointer',
-                        whiteSpace: 'nowrap'
-                      }}
-                    >
-                      Ver Monedero
-                    </button>
-                  </div>
-                </div>
-
-                {/* 7. Stores Directory List */}
+                {/* 14. Stores Directory List */}
                 <div style={{ padding: '0 16px 24px 16px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
                     <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 900, fontSize: 17, color: '#1e293b', margin: 0 }}>
