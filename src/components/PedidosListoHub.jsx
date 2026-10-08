@@ -2,34 +2,37 @@
 import React, { useState, useEffect } from 'react';
 import './PedidosListoHub.css';
 
-// Mock Data for Quick Commerce
+// HERO BANNERS (MAMEY BRAND)
 const HERO_BANNERS = [
   {
     id: 1,
-    tag: '⚡ Listo Market',
-    title: 'Supermercado en tu puerta en 15 min',
-    desc: 'Hasta 40% OFF en frutas, bebidas y abarrotes hoy.',
-    btnText: 'Pedir al Market 🛒',
+    tag: '⚡ Listo Market 15m',
+    title: 'Supermercado a tu puerta en 15 min',
+    desc: 'Hasta 40% OFF en frutas, bebidas y abarrotes.',
+    btnText: 'Pedir al Súper 🛒',
     bgGradient: 'linear-gradient(135deg, #FF6000 0%, #FF8533 100%)',
-    emoji: '🛒'
+    emoji: '🛒',
+    catId: 'market'
   },
   {
     id: 2,
     tag: '🍔 Combos Mamey',
     title: 'Los mejores restaurantes de la ciudad',
-    desc: 'Envío gratis en tus pedidos de hamburguesas y pizza.',
+    desc: 'Envío gratis en tus hamburguesas y pizzas favoritas.',
     btnText: 'Ver Restaurantes 🍕',
     bgGradient: 'linear-gradient(135deg, #E04E00 0%, #FF6000 100%)',
-    emoji: '🍔'
+    emoji: '🍔',
+    catId: 'restaurantes'
   },
   {
     id: 3,
     tag: '🛵 Mándame Express',
     title: 'Envíos instantáneos de paquetes',
-    desc: '¿Necesitas enviar llaves o documentos? Lo hacemos por ti.',
-    btnText: 'Solicitar Envíos 📦',
+    desc: 'Envía llaves, documentos o encargos en minutos.',
+    btnText: 'Solicitar Rider 📦',
     bgGradient: 'linear-gradient(135deg, #D44200 0%, #FF731A 100%)',
-    emoji: '🛵'
+    emoji: '🛵',
+    catId: 'mandame'
   }
 ];
 
@@ -48,90 +51,73 @@ const STORES = [
   {
     id: 'st1',
     name: 'Burger Mamey House',
-    cat: 'Hamburguesas & Grill',
+    cat: 'restaurantes',
+    sub: 'Hamburguesas & Grill',
     time: '20-30 min',
     rating: '4.9',
     reviews: '340',
     delivery: 'RD$ 75',
     img: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=400&q=80',
-    bannerTag: '🔥 2x1 Martes'
+    bannerTag: '🔥 2x1 Martes',
+    menu: [
+      { id: 'm1', name: 'Burger Mamey Especial', price: 390, desc: 'Doble carne angus, queso cheddar, tocino crujiente y salsa mamey.', img: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=200&q=80' },
+      { id: 'm2', name: 'Papas Supremos Mamey', price: 180, desc: 'Papas rizadas con queso derretido y tocineta.', img: 'https://images.unsplash.com/photo-1573080496219-bb080dd4f877?auto=format&fit=crop&w=200&q=80' }
+    ]
   },
   {
     id: 'st2',
-    name: 'Listo Market - Villa Olga',
-    cat: 'Supermercado & Frescos',
+    name: 'Listo Market - Súper Express',
+    cat: 'market',
+    sub: 'Supermercado & Frescos',
     time: '12-18 min',
     rating: '5.0',
     reviews: '890',
     delivery: 'GRATIS',
     img: 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=400&q=80',
-    bannerTag: '⚡ Entrega en 15m'
+    bannerTag: '⚡ Entrega en 15m',
+    menu: [
+      { id: 'p1', name: 'Leche Entera 1L', price: 110, desc: '1 Litro fresca.', img: 'https://images.unsplash.com/photo-1563636619-e9143da7973b?auto=format&fit=crop&w=200&q=80' },
+      { id: 'p2', name: 'Cerveza Presidente 6-Pack', price: 650, desc: 'Lata 12oz bien fría.', img: 'https://images.unsplash.com/photo-1608270586620-248524c67de9?auto=format&fit=crop&w=200&q=80' }
+    ]
   },
   {
     id: 'st3',
     name: 'Pizzeria Don Mamey',
-    cat: 'Pizza Artesanal & Pastas',
+    cat: 'restaurantes',
+    sub: 'Pizza Artesanal & Pastas',
     time: '25-35 min',
     rating: '4.8',
     reviews: '520',
     delivery: 'RD$ 50',
     img: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=400&q=80',
-    bannerTag: '🍕 Masa Madre'
+    bannerTag: '🍕 Masa Madre',
+    menu: [
+      { id: 'm3', name: 'Pizza Pepperoni Mamey Grande', price: 650, desc: 'Quеsо mоzzаrеllа, pеppеrоnі іtаlіаnо y sаlsа dе lа cаsа.', img: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=200&q=80' }
+    ]
   },
   {
     id: 'st4',
     name: 'Comida Criolla Doña Rosa',
-    cat: 'Sancocho, Mofongo & Pollo',
+    cat: 'restaurantes',
+    sub: 'Sancocho, Mofongo & Pollo',
     time: '15-25 min',
     rating: '4.9',
     reviews: '610',
     delivery: 'RD$ 60',
     img: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=400&q=80',
-    bannerTag: '🇩🇴 Sabor Dominicano'
+    bannerTag: '🇩🇴 Sabor Dominicano',
+    menu: [
+      { id: 'm4', name: 'Mofongo Especial con Chicharrón', price: 420, desc: 'Mofongo de plátano verde con chicharrón crujiente y caldo.', img: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=200&q=80' }
+    ]
   }
 ];
 
 const MARKET_PRODUCTS = [
-  {
-    id: 'p1',
-    name: 'Leche Entera 1L',
-    price: 110,
-    unit: '1 Litro',
-    img: 'https://images.unsplash.com/photo-1563636619-e9143da7973b?auto=format&fit=crop&w=200&q=80',
-    cat: 'market'
-  },
-  {
-    id: 'p2',
-    name: 'Cerveza Presidente 6-Pack',
-    price: 650,
-    unit: 'Lata 12oz',
-    img: 'https://images.unsplash.com/photo-1608270586620-248524c67de9?auto=format&fit=crop&w=200&q=80',
-    cat: 'bebidas'
-  },
-  {
-    id: 'p3',
-    name: 'Pan de Agua Fresco',
-    price: 75,
-    unit: 'Funda 10 u',
-    img: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=200&q=80',
-    cat: 'market'
-  },
-  {
-    id: 'p4',
-    name: 'Aguacate Hass Premium',
-    price: 85,
-    unit: 'Por unidad',
-    img: 'https://images.unsplash.com/photo-1523049673857-eb18f1d7b578?auto=format&fit=crop&w=200&q=80',
-    cat: 'market'
-  },
-  {
-    id: 'p5',
-    name: 'Burger Mamey Especial',
-    price: 390,
-    unit: 'Doble carne + papas',
-    img: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=200&q=80',
-    cat: 'restaurantes'
-  }
+  { id: 'p1', name: 'Leche Entera 1L', price: 110, unit: '1 Litro', img: 'https://images.unsplash.com/photo-1563636619-e9143da7973b?auto=format&fit=crop&w=200&q=80' },
+  { id: 'p2', name: 'Cerveza Presidente 6-Pack', price: 650, unit: 'Lata 12oz', img: 'https://images.unsplash.com/photo-1608270586620-248524c67de9?auto=format&fit=crop&w=200&q=80' },
+  { id: 'p3', name: 'Pan de Agua Fresco', price: 75, unit: 'Funda 10 u', img: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=200&q=80' },
+  { id: 'p4', name: 'Aguacate Hass Premium', price: 85, unit: 'Por unidad', img: 'https://images.unsplash.com/photo-1523049673857-eb18f1d7b578?auto=format&fit=crop&w=200&q=80' },
+  { id: 'p5', name: 'Burger Mamey Especial', price: 390, unit: 'Doble carne', img: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=200&q=80' }
 ];
 
 export default function PedidosListoHub({ lang = 'es', navigate }) {
@@ -140,11 +126,18 @@ export default function PedidosListoHub({ lang = 'es', navigate }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [cartItems, setCartItems] = useState([]);
   const [showCartDrawer, setShowCartDrawer] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [selectedStore, setSelectedStore] = useState(null);
+  const [showMandameModal, setShowMandameModal] = useState(false);
   const [activeTrackingOrder, setActiveTrackingOrder] = useState(null);
   const [deliveryAddress, setDeliveryAddress] = useState('Villa Olga, Calle 5 #12, Santiago');
   const [paymentMethod, setPaymentMethod] = useState('efectivo');
   const [tipAmount, setTipAmount] = useState(50);
+
+  // Mándame State
+  const [mandamePickUp, setMandamePickUp] = useState('Mi ubicación actual');
+  const [mandameDropOff, setMandameDropOff] = useState('');
+  const [mandameType, setMandameType] = useState('Documentos');
+  const [mandameNote, setMandameNote] = useState('');
 
   // Auto-slide hero banner
   useEffect(() => {
@@ -154,14 +147,22 @@ export default function PedidosListoHub({ lang = 'es', navigate }) {
     return () => clearInterval(timer);
   }, []);
 
+  // Filter stores by category
+  const filteredStores = STORES.filter(st => {
+    const matchesCat = selectedCat === 'todos' || st.cat === selectedCat;
+    const matchesSearch = st.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          st.sub.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesCat && matchesSearch;
+  });
+
   // Cart functions
-  const addToCart = (product) => {
+  const addToCart = (item) => {
     setCartItems(prev => {
-      const existing = prev.find(item => item.id === product.id);
+      const existing = prev.find(i => i.id === item.id);
       if (existing) {
-        return prev.map(item => item.id === product.id ? { ...item, qty: item.qty + 1 } : item);
+        return prev.map(i => i.id === item.id ? { ...i, qty: i.qty + 1 } : i);
       }
-      return [...prev, { ...product, qty: 1 }];
+      return [...prev, { ...item, qty: 1 }];
     });
   };
 
@@ -199,6 +200,27 @@ export default function PedidosListoHub({ lang = 'es', navigate }) {
     setShowCartDrawer(false);
   };
 
+  const handleRequestMandame = (e) => {
+    e.preventDefault();
+    if (!mandameDropOff.trim()) {
+      alert('Por favor ingresa la dirección de entrega para el envío Mándame.');
+      return;
+    }
+    const newOrder = {
+      id: 'MD-' + Math.floor(100000 + Math.random() * 900000),
+      items: [{ name: `Envío Mándame: ${mandameType}`, price: 120, qty: 1 }],
+      total: 120 + 20,
+      address: mandameDropOff,
+      status: 'confirmado',
+      time: '10-20 min',
+      riderName: 'Pedro Rodríguez (Mándame Express)',
+      riderPhone: '809-555-9988'
+    };
+    setActiveTrackingOrder(newOrder);
+    setShowMandameModal(false);
+    setMandameDropOff('');
+  };
+
   return (
     <div className="pedidos-listo-container">
       {/* 1. BARRA SUPERIOR DE UBICACIÓN & BÚSQUEDA */}
@@ -228,11 +250,11 @@ export default function PedidosListoHub({ lang = 'es', navigate }) {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
-          <button className="pl-search-icon-right">🎤</button>
+          <button className="pl-search-icon-right" onClick={() => alert('Búsqueda por voz activada')}>🎤</button>
         </div>
       </div>
 
-      {/* 2. HERO BANNERS CAROUSEL (ESTILO PEDIDOSYA EN MAMEY) */}
+      {/* 2. HERO BANNERS CAROUSEL (MAMEY BRAND) */}
       <div className="pl-banner-wrapper">
         {HERO_BANNERS.map((banner, index) => (
           index === currentSlide && (
@@ -245,7 +267,10 @@ export default function PedidosListoHub({ lang = 'es', navigate }) {
                 <span className="pl-banner-tag">{banner.tag}</span>
                 <h3 className="pl-banner-title">{banner.title}</h3>
                 <p className="pl-banner-desc">{banner.desc}</p>
-                <button className="pl-banner-btn" onClick={() => setSelectedCat(banner.id === 1 ? 'market' : banner.id === 2 ? 'restaurantes' : 'mandame')}>
+                <button className="pl-banner-btn" onClick={() => {
+                  if (banner.catId === 'mandame') setShowMandameModal(true);
+                  else setSelectedCat(banner.catId);
+                }}>
                   {banner.btnText}
                 </button>
               </div>
@@ -267,9 +292,11 @@ export default function PedidosListoHub({ lang = 'es', navigate }) {
       {/* 3. MOSAICO DE CATEGORÍAS (QUICK-COMMERCE GRID) */}
       <div className="pl-grid-title-row">
         <h3 className="pl-section-title">Servicios Pedidos Listo</h3>
-        <span style={{ fontSize: 12, fontWeight: 800, color: 'var(--mamey-primary)', cursor: 'pointer' }}>
-          Ver todos →
-        </span>
+        {selectedCat !== 'todos' && (
+          <span style={{ fontSize: 12, fontWeight: 800, color: 'var(--mamey-primary)', cursor: 'pointer' }} onClick={() => setSelectedCat('todos')}>
+            ✕ Ver Todos
+          </span>
+        )}
       </div>
 
       <div className="pl-grid-categories">
@@ -277,7 +304,10 @@ export default function PedidosListoHub({ lang = 'es', navigate }) {
           <div
             key={cat.id}
             className={`pl-cat-card ${selectedCat === cat.id ? 'active' : ''}`}
-            onClick={() => setSelectedCat(cat.id === selectedCat ? 'todos' : cat.id)}
+            onClick={() => {
+              if (cat.id === 'mandame') setShowMandameModal(true);
+              else setSelectedCat(cat.id === selectedCat ? 'todos' : cat.id);
+            }}
           >
             {cat.badge && <span className="pl-cat-badge">{cat.badge}</span>}
             <div className="pl-cat-icon-box" style={{ background: cat.bg }}>
@@ -292,14 +322,14 @@ export default function PedidosListoHub({ lang = 'es', navigate }) {
       <div className="pl-horizontal-section">
         <div className="pl-grid-title-row">
           <h3 className="pl-section-title">🛒 Listo Market - Entrega en 15 min</h3>
-          <span style={{ fontSize: 12, fontWeight: 800, color: 'var(--mamey-primary)', cursor: 'pointer' }}>
+          <span style={{ fontSize: 12, fontWeight: 800, color: 'var(--mamey-primary)', cursor: 'pointer' }} onClick={() => setSelectedCat('market')}>
             Explorar súper
           </span>
         </div>
 
         <div className="pl-horiz-scroll">
           {MARKET_PRODUCTS.map(prod => (
-            <div key={prod.id} className="pl-product-card" onClick={() => setSelectedProduct(prod)}>
+            <div key={prod.id} className="pl-product-card" onClick={() => addToCart(prod)}>
               <img src={prod.img} alt={prod.name} className="pl-product-img" />
               <div>
                 <p className="pl-product-name">{prod.name}</p>
@@ -326,15 +356,15 @@ export default function PedidosListoHub({ lang = 'es', navigate }) {
         </div>
 
         <div className="pl-horiz-scroll">
-          {STORES.map(store => (
-            <div key={store.id} className="pl-store-card" onClick={() => alert(`Abriendo menú de ${store.name}`)}>
+          {filteredStores.map(store => (
+            <div key={store.id} className="pl-store-card" onClick={() => setSelectedStore(store)}>
               <div className="pl-store-banner" style={{ backgroundImage: `url(${store.img})` }}>
                 <span className="pl-store-tag">{store.bannerTag}</span>
                 <span className="pl-store-time">⏱️ {store.time}</span>
               </div>
               <div className="pl-store-body">
                 <h4 className="pl-store-name">{store.name}</h4>
-                <p className="pl-store-sub">{store.cat}</p>
+                <p className="pl-store-sub">{store.sub}</p>
                 <div className="pl-store-meta">
                   <span className="pl-store-rating">★ {store.rating} ({store.reviews})</span>
                   <span className="pl-store-delivery">🛵 {store.delivery}</span>
@@ -356,7 +386,102 @@ export default function PedidosListoHub({ lang = 'es', navigate }) {
         </div>
       )}
 
-      {/* 7. MODAL DRAWER DE CARRITO & CHECKOUT */}
+      {/* 7. MODAL DETALLE DE TIENDA / MENÚ */}
+      {selectedStore && (
+        <div className="pl-modal-overlay" onClick={() => setSelectedStore(null)}>
+          <div className="pl-cart-drawer" onClick={(e) => e.stopPropagation()} style={{ borderRadius: '28px 28px 0 0' }}>
+            <div className="pl-drawer-header">
+              <h3 className="pl-drawer-title">{selectedStore.name}</h3>
+              <button className="pl-close-btn" onClick={() => setSelectedStore(null)}>✕</button>
+            </div>
+            <p style={{ margin: '0 0 12px', fontSize: 13, color: '#666', fontWeight: 600 }}>
+              ⏱️ {selectedStore.time} • ⭐ {selectedStore.rating} ({selectedStore.reviews} opiniones)
+            </p>
+
+            <div style={{ maxHeight: 340, overflowY: 'auto' }}>
+              {selectedStore.menu.map(item => (
+                <div key={item.id} className="pl-cart-item-row" style={{ padding: '12px 0' }}>
+                  <div className="pl-cart-item-info">
+                    <img src={item.img} alt={item.name} style={{ width: 54, height: 54, borderRadius: 12, objectFit: 'cover' }} />
+                    <div>
+                      <p className="pl-cart-item-name">{item.name}</p>
+                      <p className="pl-cart-item-sub">{item.desc}</p>
+                      <span style={{ fontSize: 14, fontWeight: 900, color: 'var(--mamey-primary)' }}>RD$ {item.price}</span>
+                    </div>
+                  </div>
+                  <button className="pl-product-add-btn" onClick={() => {
+                    addToCart(item);
+                    alert(`Añadido: ${item.name}`);
+                  }}>+</button>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 8. MODAL DE SOLICITUD MÁNDAME EXPRESS */}
+      {showMandameModal && (
+        <div className="pl-modal-overlay" onClick={() => setShowMandameModal(false)}>
+          <div className="pl-cart-drawer" onClick={(e) => e.stopPropagation()} style={{ borderRadius: '28px 28px 0 0' }}>
+            <div className="pl-drawer-header">
+              <h3 className="pl-drawer-title">🛵 Mándame Express - Envío Instantáneo</h3>
+              <button className="pl-close-btn" onClick={() => setShowMandameModal(false)}>✕</button>
+            </div>
+
+            <form onSubmit={handleRequestMandame} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div>
+                <label style={{ fontSize: 12, fontWeight: 800, color: '#666' }}>PUNTO DE RECOGIDA</label>
+                <input
+                  type="text"
+                  className="pl-search-input"
+                  style={{ marginTop: 4 }}
+                  value={mandamePickUp}
+                  onChange={(e) => setMandamePickUp(e.target.value)}
+                />
+              </div>
+
+              <div>
+                <label style={{ fontSize: 12, fontWeight: 800, color: '#666' }}>PUNTO DE ENTREGA (DESTINO)</label>
+                <input
+                  type="text"
+                  className="pl-search-input"
+                  style={{ marginTop: 4 }}
+                  placeholder="Ej: Ensanche Naco, Calle 2 #4"
+                  value={mandameDropOff}
+                  onChange={(e) => setMandameDropOff(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div>
+                <label style={{ fontSize: 12, fontWeight: 800, color: '#666' }}>TIPO DE PAQUETE</label>
+                <select
+                  className="pl-search-input"
+                  style={{ marginTop: 4 }}
+                  value={mandameType}
+                  onChange={(e) => setMandameType(e.target.value)}
+                >
+                  <option value="Documentos">📄 Documentos / Llaves</option>
+                  <option value="Paquete Pequeño">📦 Paquete Pequeño</option>
+                  <option value="Comida / Regalo">🎁 Comida / Regalo</option>
+                </select>
+              </div>
+
+              <div style={{ background: '#FFF4EE', border: '1.5px solid #FFE4D6', borderRadius: 14, padding: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: 13, fontWeight: 800, color: '#1A1A2E' }}>Costo estimado del envío:</span>
+                <span style={{ fontSize: 16, fontWeight: 900, color: 'var(--mamey-primary)' }}>RD$ 120</span>
+              </div>
+
+              <button type="submit" className="pl-order-confirm-btn">
+                🛵 Solicitar Mándame Rider Ahora
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* 9. MODAL DRAWER DE CARRITO & CHECKOUT */}
       {showCartDrawer && (
         <div className="pl-modal-overlay" onClick={() => setShowCartDrawer(false)}>
           <div className="pl-cart-drawer" onClick={(e) => e.stopPropagation()}>
@@ -416,7 +541,7 @@ export default function PedidosListoHub({ lang = 'es', navigate }) {
         </div>
       )}
 
-      {/* 8. MODAL DE SEGUIMIENTO EN TIEMPO REAL (RASTREO EN VIVO) */}
+      {/* 10. MODAL DE SEGUIMIENTO EN TIEMPO REAL (RASTREO EN VIVO) */}
       {activeTrackingOrder && (
         <div className="pl-modal-overlay">
           <div className="pl-cart-drawer" style={{ background: '#FFFFFF', borderRadius: '28px' }}>
