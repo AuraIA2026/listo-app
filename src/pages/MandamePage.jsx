@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './MandamePage.css';
+import './HomePage.css';
 import PedidosListoHub from '../components/PedidosListoHub';
+import HistoriasCarrusel from '../components/HistoriasCarrusel';
 
 // Initial Mock State
 const ANIMATED_BANNERS_CATALOG = [
@@ -1441,54 +1443,49 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
           <div className="screen-panel active">
             {activeTab === 'inicio' && (
               <>
-                {/* 1. Merchant Stories Reel (Partner Brand Avatars) */}
-                <div className="stories-reel-row">
-                  <div className="story-circle-item" onClick={() => setActiveStoreModal(INITIAL_STORES[0])}>
-                    <div className="story-avatar-box">
-                      <img src="assets/burger_3d.png" alt="KFC" />
-                      <span className="story-live-badge badge-flash">33% OFF</span>
+                {/* 1. Tarjeta Oscura Hero con Buscador y Carrusel de Historias (Pedidos Listo) */}
+                <div style={{ padding: '0 16px', marginTop: 12, marginBottom: 16 }}>
+                  <div className="hp-hero-dark-card" style={{ margin: 0 }}>
+                    {/* Buscador Gigante Autocompletable */}
+                    <div className="hp-hero-search-container" style={{ position: 'relative', width: '100%', margin: '0 auto' }}>
+                      <div 
+                        className="hp-hero-search-btn" 
+                        style={{ padding: '0 6px 0 16px', display: 'flex', alignItems: 'center', cursor: 'text', borderRadius: 16, background: '#ffffff' }}
+                        onClick={() => {
+                          const query = prompt('¿Qué deseas buscar en Pedidos Listo?', searchQuery);
+                          if (query !== null) setSearchQuery(query);
+                        }}
+                      >
+                        <span className="hp-hero-icon">🔍</span>
+                        <input 
+                          type="text" 
+                          placeholder="¿Qué se te antoja hoy? (Comida, súper, farmacia...)"
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                          style={{ flex: 1, border: 'none', background: 'transparent', height: '100%', outline: 'none', fontSize: '14px', fontWeight: '600', color: '#1a1a2e', padding: '12px 0' }}
+                        />
+                        <button 
+                          className="hp-hero-action" 
+                          style={{ background: 'transparent', border: 'none', padding: 0, cursor: 'pointer', zIndex: 3 }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (searchQuery.trim()) setActiveTab('buscar');
+                          }}
+                        >
+                          <span style={{ fontSize: '12px', background: 'linear-gradient(135deg, #FF7A1A, #F26000)', color: 'white', padding: '8px 16px', borderRadius: '20px', fontWeight: '900', boxShadow: '0 2px 6px rgba(242,96,0,0.4)', display: 'inline-block' }}>
+                            Buscar
+                          </span>
+                        </button>
+                      </div>
                     </div>
-                    <span className="story-label">KFC Colinas</span>
-                  </div>
 
-                  <div className="story-circle-item" onClick={() => setActiveStoreModal(INITIAL_STORES[1])}>
-                    <div className="story-avatar-box" style={{ background: 'linear-gradient(135deg, #00e699, #059669)' }}>
-                      <img src="assets/burger_3d.png" alt="Cartel Tacos" />
-                      <span className="story-live-badge badge-pro">Envío RD$0</span>
-                    </div>
-                    <span className="story-label">Cartel Tacos</span>
-                  </div>
-
-                  <div className="story-circle-item" onClick={() => setActiveStoreModal(INITIAL_STORES[2])}>
-                    <div className="story-avatar-box" style={{ background: 'linear-gradient(135deg, #ffc107, #d97706)' }}>
-                      <img src="assets/burger_3d.png" alt="Mofongo Xpress" />
-                      <span className="story-live-badge badge-flash">⭐ Top #1</span>
-                    </div>
-                    <span className="story-label">Mofongo Xpress</span>
-                  </div>
-
-                  <div className="story-circle-item" onClick={() => showToast('🍻 Pork & Beer 2x1 Cerveza')}>
-                    <div className="story-avatar-box" style={{ background: 'linear-gradient(135deg, #a855f7, #7c3aed)' }}>
-                      <img src="assets/drinks_3d_1791137124884.png" alt="Pork & Beer" />
-                      <span className="story-live-badge badge-pro">2x1 Frías</span>
-                    </div>
-                    <span className="story-label">Pork & Beer</span>
-                  </div>
-
-                  <div className="story-circle-item" onClick={() => showToast('🍦 Don Pula Postres')}>
-                    <div className="story-avatar-box">
-                      <img src="assets/grocery_bag_3d.png" alt="Don Pula" />
-                      <span className="story-live-badge badge-flash">Postres</span>
-                    </div>
-                    <span className="story-label">Don Pula</span>
-                  </div>
-
-                  <div className="story-circle-item" onClick={() => showToast('🍕 Pizza Hut Deal')}>
-                    <div className="story-avatar-box" style={{ background: 'linear-gradient(135deg, #ef4444, #b91c1c)' }}>
-                      <img src="assets/market_basket_3d.png" alt="Pizza Hut" />
-                      <span className="story-live-badge badge-flash">Flash</span>
-                    </div>
-                    <span className="story-label">Pizza Hut</span>
+                    {/* Carrusel de Historias 24h & Cinta Mamey Pedidos Listo */}
+                    <HistoriasCarrusel 
+                      userData={userData} 
+                      isPro={userRole === 'pro' || userData?.role === 'pro'} 
+                      onHirePro={(proId) => { navigate && navigate('proProfile', { id: proId }); }} 
+                      navigate={navigate}
+                    />
                   </div>
                 </div>
 
