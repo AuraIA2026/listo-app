@@ -260,6 +260,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
   const [cart, setCart] = useState([]);
   const [selectedTip, setSelectedTip] = useState(50);
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategoryFilter, setSelectedCategoryFilter] = useState('all');
   const [activeStoreModal, setActiveStoreModal] = useState(null);
   const [storeModalTab, setStoreModalTab] = useState('menu'); // 'menu' | 'info'
   const [customizeProduct, setCustomizeProduct] = useState(null);
@@ -1439,45 +1440,337 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
           <div className="screen-panel active">
             {activeTab === 'inicio' && (
               <>
-                {/* Category Hub Grid */}
-                <div className="py-main-hub-section">
-                  <div className="py-hub-top-grid">
-                    <div className="py-big-hub-card" onClick={() => setActiveStoreModal(INITIAL_STORES[0])}>
-                      <img src="assets/burger_3d.png" className="py-big-hub-img" alt="Restaurantes" />
-                      <div className="py-big-hub-label">Restaurantes</div>
+                {/* 1. Merchant Stories Reel (Partner Brand Avatars) */}
+                <div className="stories-reel-row">
+                  <div className="story-circle-item" onClick={() => setActiveStoreModal(INITIAL_STORES[0])}>
+                    <div className="story-avatar-box">
+                      <img src="assets/burger_3d.png" alt="KFC" />
+                      <span className="story-live-badge badge-flash">33% OFF</span>
                     </div>
-                    <div className="py-big-hub-card" onClick={() => setActiveTab('mercado')}>
-                      <span className="py-market-badge">P Market</span>
-                      <img src="assets/market_basket_3d.png" className="py-big-hub-img" alt="Market" />
-                      <div className="py-big-hub-label">Pedidos Listo Market</div>
+                    <span className="story-label">KFC Colinas</span>
+                  </div>
+
+                  <div className="story-circle-item" onClick={() => setActiveStoreModal(INITIAL_STORES[1])}>
+                    <div className="story-avatar-box" style={{ background: 'linear-gradient(135deg, #00e699, #059669)' }}>
+                      <img src="assets/burger_3d.png" alt="Cartel Tacos" />
+                      <span className="story-live-badge badge-pro">Envío RD$0</span>
+                    </div>
+                    <span className="story-label">Cartel Tacos</span>
+                  </div>
+
+                  <div className="story-circle-item" onClick={() => setActiveStoreModal(INITIAL_STORES[2])}>
+                    <div className="story-avatar-box" style={{ background: 'linear-gradient(135deg, #ffc107, #d97706)' }}>
+                      <img src="assets/burger_3d.png" alt="Mofongo Xpress" />
+                      <span className="story-live-badge badge-flash">⭐ Top #1</span>
+                    </div>
+                    <span className="story-label">Mofongo Xpress</span>
+                  </div>
+
+                  <div className="story-circle-item" onClick={() => showToast('🍻 Pork & Beer 2x1 Cerveza')}>
+                    <div className="story-avatar-box" style={{ background: 'linear-gradient(135deg, #a855f7, #7c3aed)' }}>
+                      <img src="assets/drinks_3d_1791137124884.png" alt="Pork & Beer" />
+                      <span className="story-live-badge badge-pro">2x1 Frías</span>
+                    </div>
+                    <span className="story-label">Pork & Beer</span>
+                  </div>
+
+                  <div className="story-circle-item" onClick={() => showToast('🍦 Don Pula Postres')}>
+                    <div className="story-avatar-box">
+                      <img src="assets/grocery_bag_3d.png" alt="Don Pula" />
+                      <span className="story-live-badge badge-flash">Postres</span>
+                    </div>
+                    <span className="story-label">Don Pula</span>
+                  </div>
+
+                  <div className="story-circle-item" onClick={() => showToast('🍕 Pizza Hut Deal')}>
+                    <div className="story-avatar-box" style={{ background: 'linear-gradient(135deg, #ef4444, #b91c1c)' }}>
+                      <img src="assets/market_basket_3d.png" alt="Pizza Hut" />
+                      <span className="story-live-badge badge-flash">Flash</span>
+                    </div>
+                    <span className="story-label">Pizza Hut</span>
+                  </div>
+                </div>
+
+                {/* 2. Main Hero Banner - Mamey Gradient Style (IMG_4455.png) */}
+                <div style={{ padding: '0 16px', marginBottom: 16 }}>
+                  <div style={{
+                    background: 'linear-gradient(135deg, #ff6b00 0%, #ea580c 50%, #c2410c 100%)',
+                    borderRadius: 24,
+                    padding: 20,
+                    color: 'white',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    boxShadow: '0 10px 30px rgba(255, 107, 0, 0.35)',
+                    border: '1px solid rgba(255, 255, 255, 0.2)'
+                  }}>
+                    <div style={{ position: 'relative', zIndex: 2, maxWidth: '72%' }}>
+                      <span style={{ background: 'rgba(0,0,0,0.25)', color: '#ffffff', fontSize: 10, fontWeight: 900, padding: '4px 10px', borderRadius: 12, display: 'inline-block', marginBottom: 8, letterSpacing: '0.5px' }}>
+                        🇩🇴 100% SABOR CRIOLLO SANTIAGO
+                      </span>
+                      <h2 style={{ fontFamily: 'var(--font-heading)', fontWeight: 900, fontSize: 21, lineHeight: 1.15, marginBottom: 6 }}>
+                        🔥 Come y Cena hasta RD$ 345
+                      </h2>
+                      <p style={{ fontSize: 12, opacity: 0.92, lineHeight: 1.3, marginBottom: 14 }}>
+                        El plan perfecto para tu bolsillo. Mofongos, Yaroas, Pizzas y Combos Familiares directo a tu mesa.
+                      </p>
+                      <button 
+                        onClick={() => setActiveTab('promociones')}
+                        style={{
+                          background: '#ffffff',
+                          color: '#ff6b00',
+                          border: 'none',
+                          padding: '8px 18px',
+                          borderRadius: 14,
+                          fontWeight: 900,
+                          fontSize: 12,
+                          cursor: 'pointer',
+                          boxShadow: '0 4px 14px rgba(0,0,0,0.2)',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 6
+                        }}
+                      >
+                        Ver Ofertas de Fuego ⚡
+                      </button>
+                    </div>
+
+                    <img 
+                      src="assets/burger_3d.png" 
+                      alt="Burger 3D" 
+                      style={{
+                        position: 'absolute',
+                        right: -10,
+                        bottom: -10,
+                        width: 135,
+                        height: 135,
+                        objectFit: 'contain',
+                        filter: 'drop-shadow(0 10px 20px rgba(0,0,0,0.3))'
+                      }} 
+                    />
+                  </div>
+                </div>
+
+                {/* 3. Category Hub Grid (IMG_4455.png reference) */}
+                <div className="py-main-hub-section" style={{ padding: '0 16px', marginBottom: 20 }}>
+                  {/* Top 2 Big Cards */}
+                  <div className="py-hub-top-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
+                    <div 
+                      className="py-big-hub-card" 
+                      onClick={() => setActiveStoreModal(INITIAL_STORES[0])}
+                      style={{
+                        background: 'linear-gradient(135deg, #ffffff 0%, #fff7ed 100%)',
+                        border: '1.5px solid #ffedd5',
+                        borderRadius: 20,
+                        padding: 14,
+                        position: 'relative',
+                        cursor: 'pointer',
+                        boxShadow: '0 4px 16px rgba(0,0,0,0.05)',
+                        minHeight: 120,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justify: 'space-between'
+                      }}
+                    >
+                      <div>
+                        <span style={{ fontSize: 10, fontWeight: 900, color: '#ff6b00', background: '#fff3e6', padding: '2px 8px', borderRadius: 8 }}>30+ Comercios</span>
+                        <div style={{ fontFamily: 'var(--font-heading)', fontWeight: 900, fontSize: 15, color: '#1e293b', marginTop: 4 }}>Restaurantes</div>
+                      </div>
+                      <img src="assets/burger_3d.png" className="py-big-hub-img" alt="Restaurantes" style={{ width: 65, height: 65, objectFit: 'contain', alignSelf: 'flex-end' }} />
+                    </div>
+
+                    <div 
+                      className="py-big-hub-card" 
+                      onClick={() => setActiveTab('mercado')}
+                      style={{
+                        background: 'linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%)',
+                        border: '1.5px solid #dcfce7',
+                        borderRadius: 20,
+                        padding: 14,
+                        position: 'relative',
+                        cursor: 'pointer',
+                        boxShadow: '0 4px 16px rgba(0,0,0,0.05)',
+                        minHeight: 120,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justify: 'space-between'
+                      }}
+                    >
+                      <div>
+                        <span style={{ fontSize: 10, fontWeight: 900, color: '#16a34a', background: '#dcfce7', padding: '2px 8px', borderRadius: 8 }}>P Market</span>
+                        <div style={{ fontFamily: 'var(--font-heading)', fontWeight: 900, fontSize: 15, color: '#1e293b', marginTop: 4 }}>Pedidos Listo Market</div>
+                      </div>
+                      <img src="assets/market_basket_3d.png" className="py-big-hub-img" alt="Market" style={{ width: 65, height: 65, objectFit: 'contain', alignSelf: 'flex-end' }} />
                     </div>
                   </div>
-                  <div className="py-hub-bottom-grid">
-                    <div className="py-med-hub-card" onClick={() => setActiveTab('mercado')}>
-                      <img src="assets/grocery_bag_3d.png" className="py-med-hub-img" alt="Mercados" />
-                      <span className="py-med-hub-label">Mercados</span>
+
+                  {/* Bottom 4 Medium Grid Cards */}
+                  <div className="py-hub-bottom-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}>
+                    <div 
+                      className="py-med-hub-card" 
+                      onClick={() => setActiveTab('mercado')}
+                      style={{ background: 'white', border: '1px solid #e2e8f0', borderRadius: 16, padding: '10px 6px', textAlign: 'center', cursor: 'pointer', boxShadow: '0 2px 10px rgba(0,0,0,0.04)' }}
+                    >
+                      <img src="assets/grocery_bag_3d.png" className="py-med-hub-img" alt="Mercados" style={{ width: 38, height: 38, objectFit: 'contain', margin: '0 auto 4px' }} />
+                      <span className="py-med-hub-label" style={{ fontSize: 11, fontWeight: 800, color: '#1e293b', display: 'block' }}>Mercados</span>
                     </div>
-                    <div className="py-med-hub-card" onClick={() => showToast('Salud & Farmacia')}>
-                      <img src="assets/health_kit_3d.png" className="py-med-hub-img" alt="Salud" />
-                      <span className="py-med-hub-label">Salud</span>
+
+                    <div 
+                      className="py-med-hub-card" 
+                      onClick={() => showToast('💊 Farmacias & Salud 24/7 Abiertas')}
+                      style={{ background: 'white', border: '1px solid #e2e8f0', borderRadius: 16, padding: '10px 6px', textAlign: 'center', cursor: 'pointer', boxShadow: '0 2px 10px rgba(0,0,0,0.04)' }}
+                    >
+                      <img src="assets/health_kit_3d.png" className="py-med-hub-img" alt="Salud" style={{ width: 38, height: 38, objectFit: 'contain', margin: '0 auto 4px' }} />
+                      <span className="py-med-hub-label" style={{ fontSize: 11, fontWeight: 800, color: '#1e293b', display: 'block' }}>Salud 24/7</span>
                     </div>
-                    <div className="py-med-hub-card" onClick={() => setIsAddressModalOpen(true)}>
-                      <img src="assets/grocery_bag_3d.png" className="py-med-hub-img" alt="Mándao" />
-                      <span className="py-med-hub-label">Mándao'</span>
+
+                    <div 
+                      className="py-med-hub-card" 
+                      onClick={() => setIsAddressModalOpen(true)}
+                      style={{ background: 'white', border: '1px solid #e2e8f0', borderRadius: 16, padding: '10px 6px', textAlign: 'center', cursor: 'pointer', boxShadow: '0 2px 10px rgba(0,0,0,0.04)' }}
+                    >
+                      <img src="assets/grocery_bag_3d.png" className="py-med-hub-img" alt="Mándao" style={{ width: 38, height: 38, objectFit: 'contain', margin: '0 auto 4px' }} />
+                      <span className="py-med-hub-label" style={{ fontSize: 11, fontWeight: 800, color: '#1e293b', display: 'block' }}>Mándao'</span>
                     </div>
-                    <div className="py-med-hub-card" onClick={() => setActiveTab('promociones')}>
-                      <img src="assets/drinks_3d_1791137124884.png" className="py-med-hub-img" alt="Licores" />
-                      <span className="py-med-hub-label">Licores</span>
+
+                    <div 
+                      className="py-med-hub-card" 
+                      onClick={() => setActiveTab('promociones')}
+                      style={{ background: 'white', border: '1px solid #e2e8f0', borderRadius: 16, padding: '10px 6px', textAlign: 'center', cursor: 'pointer', boxShadow: '0 2px 10px rgba(0,0,0,0.04)' }}
+                    >
+                      <img src="assets/drinks_3d_1791137124884.png" className="py-med-hub-img" alt="Licores" style={{ width: 38, height: 38, objectFit: 'contain', margin: '0 auto 4px' }} />
+                      <span className="py-med-hub-label" style={{ fontSize: 11, fontWeight: 800, color: '#1e293b', display: 'block' }}>Licores</span>
                     </div>
                   </div>
                 </div>
 
-                {/* Stores Directory List */}
-                <div style={{ padding: '0 16px 16px 16px' }}>
-                  <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 900, fontSize: 17, marginBottom: 12 }}>
-                    Comercios & Restaurantes Destacados
-                  </h3>
-                  {INITIAL_STORES.map(st => (
+                {/* 4. Flash Discounts Section with Live Timer (IMG_4457.png reference) */}
+                <div className="flash-deals-box" style={{ margin: '0 16px 20px 16px', background: 'linear-gradient(135deg, #fff3e6 0%, #ffffff 100%)', padding: 16, borderRadius: 20, border: '1px solid #ffe0b2' }}>
+                  <div className="flash-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                    <div>
+                      <div className="flash-title" style={{ fontFamily: 'var(--font-heading)', fontWeight: 900, fontSize: 16, color: '#ff6b00', display: 'flex', alignItems: 'center', gap: 6 }}>
+                        ⚡ Descuentos Relámpago en Vivo
+                      </div>
+                      <span style={{ fontSize: 11, color: '#64748b' }}>Ahorra hasta RD$ 300 en platillos seleccionados</span>
+                    </div>
+                    <span style={{ background: '#ff6b00', color: 'white', fontWeight: 900, fontSize: 11, padding: '4px 10px', borderRadius: 12, display: 'flex', alignItems: 'center', gap: 4 }}>
+                      ⏱️ 01:45:12
+                    </span>
+                  </div>
+
+                  <div className="flash-scroll-row" style={{ display: 'flex', gap: 12, overflowX: 'auto', scrollbarWidth: 'none', paddingBottom: 4 }}>
+                    {INITIAL_PRODUCTS.map(prod => (
+                      <div key={prod.id} className="flash-item-card" style={{ minWidth: 150, maxWidth: 150, background: 'white', borderRadius: 16, padding: 10, position: 'relative', border: '1px solid #fed7aa', boxShadow: '0 4px 12px rgba(255,107,0,0.08)' }}>
+                        <span className="flash-tag" style={{ position: 'absolute', top: 8, left: 8, background: '#ef4444', color: 'white', fontWeight: 900, fontSize: 10, padding: '2px 6px', borderRadius: 6 }}>
+                          -30% OFF
+                        </span>
+                        <img src={prod.image} alt={prod.name} className="flash-img" style={{ width: '100%', height: 80, objectFit: 'contain', margin: '8px 0' }} />
+                        <div className="flash-item-title" style={{ fontSize: 11, fontWeight: 800, color: '#1e293b', marginBottom: 4, height: 28, overflow: 'hidden' }}>{prod.name}</div>
+                        <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
+                          <span className="flash-price" style={{ fontWeight: 900, fontSize: 14, color: '#ff6b00' }}>RD$ {Math.round(prod.price * 0.7)}</span>
+                          <span style={{ fontSize: 10, color: '#94a3b8', textDecoration: 'line-through' }}>RD$ {prod.price}</span>
+                        </div>
+                        <div 
+                          className="btn-add-flash" 
+                          onClick={() => handleAddToCartCustom(prod, 'Tostones', 'Cola')}
+                          style={{ position: 'absolute', bottom: 8, right: 8, width: 28, height: 28, borderRadius: '50%', background: '#ff6b00', color: 'white', fontSize: 16, fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 2px 8px rgba(255,107,0,0.4)' }}
+                        >
+                          +
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 5. Quick Category Filter Chips (IMG_4456.png reference) */}
+                <div style={{ padding: '0 16px', marginBottom: 14 }}>
+                  <div className="filters-scroll-row" style={{ display: 'flex', gap: 8, overflowX: 'auto', scrollbarWidth: 'none', padding: '4px 0' }}>
+                    {[
+                      { id: 'all', label: '🔥 Todos' },
+                      { id: 'bocado', label: '🍔 Hamburguesas' },
+                      { id: 'criollo', label: '🧄 Mofongos' },
+                      { id: 'pollo', label: '🍗 Pollo Crujiente' },
+                      { id: 'pizza', label: '🍕 Pizzas' },
+                      { id: 'saludable', label: '🥑 Saludable' },
+                      { id: 'licores', label: '🍺 Bebidas' }
+                    ].map(cat => (
+                      <button
+                        key={cat.id}
+                        onClick={() => setSelectedCategoryFilter(cat.id)}
+                        className={`filter-chip ${selectedCategoryFilter === cat.id ? 'active' : ''}`}
+                        style={{
+                          background: selectedCategoryFilter === cat.id ? '#ff6b00' : 'white',
+                          color: selectedCategoryFilter === cat.id ? 'white' : '#64748b',
+                          border: selectedCategoryFilter === cat.id ? '1px solid #ff8533' : '1px solid #e2e8f0',
+                          padding: '6px 14px',
+                          borderRadius: 20,
+                          fontSize: 12,
+                          fontWeight: 800,
+                          whiteSpace: 'nowrap',
+                          cursor: 'pointer',
+                          boxShadow: selectedCategoryFilter === cat.id ? '0 4px 12px rgba(255,107,0,0.3)' : 'none'
+                        }}
+                      >
+                        {cat.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 6. Loyalty & Cashback Banner (IMG_4460.png reference) */}
+                <div style={{ padding: '0 16px', marginBottom: 20 }}>
+                  <div style={{
+                    background: 'linear-gradient(135deg, #0a0e1a 0%, #121829 100%)',
+                    borderRadius: 20,
+                    padding: 16,
+                    color: 'white',
+                    border: '1.5px solid rgba(255, 107, 0, 0.4)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justify: 'space-between',
+                    boxShadow: '0 6px 20px rgba(0,0,0,0.15)'
+                  }}>
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+                        <span style={{ fontSize: 16 }}>💰</span>
+                        <span style={{ fontFamily: 'var(--font-heading)', fontWeight: 900, fontSize: 14, color: '#ff6b00' }}>
+                          Listo Puntos & Cashback Mamey
+                        </span>
+                      </div>
+                      <div style={{ fontSize: 11, color: '#94a3b8', lineHeight: 1.3 }}>
+                        Acumula 10% de devolución en cada pedido. Saldo acumulado: <strong style={{ color: '#00e699' }}>RD$ 250</strong>
+                      </div>
+                    </div>
+                    <button 
+                      onClick={() => showToast('💰 Monedero Mamey Activo')}
+                      style={{
+                        background: 'rgba(255,107,0,0.2)',
+                        color: '#ff6b00',
+                        border: '1px solid #ff6b00',
+                        padding: '6px 12px',
+                        borderRadius: 12,
+                        fontSize: 11,
+                        fontWeight: 900,
+                        cursor: 'pointer',
+                        whiteSpace: 'nowrap'
+                      }}
+                    >
+                      Ver Monedero
+                    </button>
+                  </div>
+                </div>
+
+                {/* 7. Stores Directory List */}
+                <div style={{ padding: '0 16px 24px 16px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                    <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 900, fontSize: 17, color: '#1e293b', margin: 0 }}>
+                      Comercios & Restaurantes Destacados
+                    </h3>
+                    <span style={{ fontSize: 11, fontWeight: 800, color: '#ff6b00', cursor: 'pointer' }}>
+                      Ver Todos ({INITIAL_STORES.length})
+                    </span>
+                  </div>
+
+                  {INITIAL_STORES.filter(st => selectedCategoryFilter === 'all' || st.category === selectedCategoryFilter).map(st => (
                     <div key={st.id} className="custom-store-card" onClick={() => setActiveStoreModal(st)}>
                       <div style={{ position: 'relative' }}>
                         <img src={st.image} alt={st.name} className="store-header-image" />
