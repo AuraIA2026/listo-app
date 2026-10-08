@@ -1133,130 +1133,60 @@ export default function HomePage({ lang, navigate, userRole }) {
           </div>
         )}
 
-        {/* ── TARJETA OSCURA HERO CON BUSCADOR, BOTONES Y TU HISTORIA ── */}
-        <div className="hp-hero-dark-card">
-          {/* 1. Buscador Gigante Autocompletable Con Cámara Estilo Amazon */}
-          <div className="hp-hero-search-container" style={{ position: 'relative', width: '100%', margin: '0 auto' }}>
-            <div className="hp-hero-search-btn" style={{ padding: '0 6px 0 16px', display: 'flex', alignItems: 'center', cursor: 'text' }} onClick={() => document.getElementById('hp-search-input').focus()}>
-              <span className="hp-hero-icon">🔍</span>
-              {homeSearch.length === 0 && (
-                <div className="hp-placeholder-container">
-                  {prevPhIdx !== null && prevPhIdx !== phIdx && (
-                    <span className="hp-placeholder-text slide-out" key={`out-${prevPhIdx}`}>
-                      {searchPlaceholders[prevPhIdx]}
-                    </span>
-                  )}
-                  <span className="hp-placeholder-text slide-in" key={`in-${phIdx}`}>
-                    {searchPlaceholders[phIdx]}
-                  </span>
-                </div>
-              )}
-              <input 
-                id="hp-search-input"
-                type="text" 
-                value={homeSearch} 
-                onChange={(e) => {
-                  setHomeSearch(e.target.value);
-                  setShowDropdown(true);
-                }}
-                onFocus={() => setShowDropdown(true)}
-                onBlur={() => setTimeout(() => setShowDropdown(false), 200)}
-                style={{ flex: 1, border: 'none', background: 'transparent', height: '100%', outline: 'none', fontSize: '15px', fontWeight: '600', color: '#1a1a2e', padding: '16px 0', zIndex: 2 }}
-              />
-              
-              {/* Botón Icono Estratégico ⚡ Cotización Flash */}
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setShowSolicitudExpress(true);
-                }}
-                title={lang === 'es' ? 'Cotización Flash Express 3 Pasos ⚡' : '3-Step Flash Quote ⚡'}
-                style={{
-                  background: 'linear-gradient(135deg, #F26000 0%, #FF8533 100%)',
-                  border: 'none',
-                  borderRadius: '12px',
-                  width: '36px',
-                  height: '36px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  cursor: 'pointer',
-                  marginRight: '6px',
-                  boxShadow: '0 4px 12px rgba(242, 96, 0, 0.4)',
-                  zIndex: 3,
-                  transition: 'transform 0.15s'
-                }}
-                onMouseDown={(e) => e.currentTarget.style.transform = 'scale(0.92)'}
-                onMouseUp={(e) => e.currentTarget.style.transform = 'scale(1)'}
-                onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
-              >
-                <span style={{ fontSize: '18px', color: '#FFF' }}>⚡</span>
-              </button>
-
-              <button 
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (homeSearch.trim()) {
-                     navigate('search', { state: { searchQuery: homeSearch } });
-                  } else {
-                     navigate('search');
-                  }
-                }}
-                className="hp-hero-action" style={{ background: 'transparent', border: 'none', padding: 0, cursor: 'pointer', zIndex: 3 }}>
-                <span style={{ fontSize: '12px', background: 'linear-gradient(135deg, #FF7A1A, #F26000)', color: 'white', padding: '10px 18px', borderRadius: '20px', fontWeight: '900', boxShadow: '0 2px 6px rgba(242,96,0,0.4)', display: 'inline-block' }}>
-                  {lang === 'es' ? 'Buscar' : 'Search'}
-                </span>
-              </button>
-            </div>
-            
-            {/* Dropdown de Resultados (Autocompletado) */}
-            {showDropdown && homeSearch.trim().length > 0 && (
-              <div className="fade-up" style={{ position: 'absolute', top: '100%', left: 0, right: 0, marginTop: '10px', background: 'rgba(255, 255, 255, 0.95)', backdropFilter: 'blur(16px)', borderRadius: '20px', boxShadow: '0 10px 40px rgba(0,0,0,0.15)', overflow: 'hidden', zIndex: 100, border: '1px solid rgba(0,0,0,0.06)', maxHeight: '350px', overflowY: 'auto' }}>
-                {allProsToUse.filter(p => p.nameEs?.toLowerCase().includes(homeSearch.toLowerCase()) || p.specEs?.toLowerCase().includes(homeSearch.toLowerCase())).length > 0 ? (
-                  allProsToUse.filter(p => p.nameEs?.toLowerCase().includes(homeSearch.toLowerCase()) || p.specEs?.toLowerCase().includes(homeSearch.toLowerCase())).slice(0, 5).map(pro => (
-                    <div key={pro.id} onClick={() => navigate('proProfile', pro)} style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '14px 16px', borderBottom: '1px solid rgba(0,0,0,0.04)', cursor: 'pointer', transition: 'all 0.2s' }} onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(242,96,0,0.06)'; e.currentTarget.style.paddingLeft = '20px'; }} onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.paddingLeft = '16px'; }}>
-                      {pro.img ? (
-                        <img src={pro.img} alt={pro.nameEs} style={{ width: '44px', height: '44px', borderRadius: '50%', objectFit: 'cover', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }} />
-                      ) : (
-                        <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: '#FF8533', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '18px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>{pro.avatar}</div>
-                      )}
-                      <div style={{ flex: 1 }}>
-                        <p style={{ margin: 0, fontSize: '15px', fontWeight: '800', color: '#1a1a2e' }}>{pro.nameEs}</p>
-                        <p style={{ margin: 0, fontSize: '12px', color: '#666', fontWeight: '600' }}>
-                          {pro.specEs}
-                          {pro.rating && pro.reviews && pro.reviews > 0 ? (
-                            <span style={{color: '#FFD700', marginLeft: '4px'}}>⭐ {Number(pro.rating).toFixed(1)}</span>
-                          ) : null}
-                        </p>
-                      </div>
-                      <span style={{ fontSize: '18px', color: '#ccc', fontWeight: 'bold' }}>›</span>
-                    </div>
-                  ))
-                ) : (
-                  <div style={{ padding: '24px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ fontSize: '32px' }}>🕵️‍♂️</span>
-                    <p style={{ margin: 0, color: '#666', fontSize: '14px', fontWeight: '600' }}>
-                      {lang === 'es' ? 'No encontramos a nadie con esa búsqueda.' : 'No one found with that search.'}
-                    </p>
-                  </div>
-                )}
-                <div onClick={() => navigate('search')} style={{ padding: '12px', textAlign: 'center', background: '#f8f9fa', color: '#F26000', fontSize: '13px', fontWeight: '800', cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.05em' }} onMouseEnter={(e) => e.currentTarget.style.background = '#f1f3f5'} onMouseLeave={(e) => e.currentTarget.style.background = '#f8f9fa'}>
-                  {lang === 'es' ? 'Ver todos los profesionales' : 'See all professionals'}
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* CARRUSEL DE HISTORIAS Y BOTONES HERO EMBEBIDOS */}
-          <HistoriasCarrusel 
-            userData={userData} 
-            isPro={isPro} 
-            onHirePro={(proId) => { 
-              const proObj = (allProsToUse || []).find(p => p.id === proId) || { id: proId }; 
-              navigate('proProfile', proObj); 
+        {/* ── TARJETA HERO DE PEDIDOS LISTO CON VIDEO EN VIVO Y HISTORIAS SUPERPUESTAS ── */}
+        <div 
+          className="hp-hero-dark-card" 
+          style={{ 
+            position: 'relative', 
+            borderRadius: '24px', 
+            overflow: 'hidden', 
+            boxShadow: '0 10px 30px rgba(0,0,0,0.3)',
+            border: '1.5px solid rgba(242, 96, 0, 0.45)',
+            background: '#0F172A'
+          }}
+        >
+          {/* Video Promocional en Vivo de Pedidos Listo al Fondo */}
+          <video 
+            src="/assets/delivery_rider_video.mp4" 
+            autoPlay 
+            loop 
+            muted 
+            playsInline 
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              opacity: 0.55,
+              zIndex: 1
             }} 
-            navigate={navigate}
           />
+
+          {/* Overlay Gradient Oscuro para Máxima Legibilidad */}
+          <div 
+            style={{
+              position: 'absolute',
+              inset: 0,
+              background: 'linear-gradient(180deg, rgba(15, 23, 42, 0.35) 0%, rgba(15, 23, 42, 0.85) 100%)',
+              zIndex: 2,
+              pointerEvents: 'none'
+            }} 
+          />
+
+          {/* Contenido de Historias Superpuesto Encima del Video */}
+          <div style={{ position: 'relative', zIndex: 3 }}>
+            <HistoriasCarrusel 
+              userData={userData} 
+              isPro={isPro} 
+              onHirePro={(proId) => { 
+                const proObj = (allProsToUse || []).find(p => p.id === proId) || { id: proId }; 
+                navigate('proProfile', proObj); 
+              }} 
+              navigate={navigate}
+            />
+          </div>
         </div>
       </div>
 
