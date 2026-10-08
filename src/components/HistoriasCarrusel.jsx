@@ -266,8 +266,17 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate
           onClick={handleRibbonClick}
         >
           <div className="cinta-pedidos-listo" style={isMandameView ? { background: 'linear-gradient(135deg, #2563eb 0%, #3b82f6 40%, #1d4ed8 80%, #1e40af 100%)', boxShadow: '0 5px 16px rgba(37, 99, 235, 0.45), 0 0 10px rgba(255, 255, 255, 0.35) inset' } : {}}>
-            <span className="sparkle-left">✨</span>
-            <span className="cinta-icon">{isMandameView ? '🤝' : '🛵'}</span>
+            {isMandameView ? (
+              <span className="cinta-icon moto-speed-wrap">
+                <span className="moto-emoji">🤝</span>
+              </span>
+            ) : (
+              <span className="cinta-icon moto-speed-wrap" title="¡Delivery a toda velocidad!">
+                <span className="moto-emoji">🛵</span>
+                <span className="moto-smoke-trail">💨</span>
+                <span className="moto-speed-lines">⚡</span>
+              </span>
+            )}
             <div className="cinta-text-container">
               <span className="cinta-text">{isMandameView ? 'LISTO PATRÓN' : 'PEDIDOS LISTO'}</span>
               <span className="cinta-subtext">{isMandameView ? 'SERVICIOS & TÉCNICOS' : 'DELIVERY & MÁNDAME'}</span>
