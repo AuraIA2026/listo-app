@@ -203,15 +203,34 @@ const INITIAL_PRODUCTS = [
 ];
 
 export default function MandamePage({ navigate, userData, userRole, lang }) {
+  const isMerchantUser = Boolean(
+    userData?.role === 'merchant' ||
+    userData?.role === 'comercio' ||
+    userData?.type === 'comercio' ||
+    userData?.isMerchant === true ||
+    userData?.email === 'listopatron.app@gmail.com' ||
+    userData?.email === 'admin@listopatron.com.do' ||
+    (typeof localStorage !== 'undefined' && localStorage.getItem('force_listo_merchant_mode') === 'true')
+  );
+
   const [viewMode, setViewMode] = useState(() => {
     try {
-      const saved = localStorage.getItem('pedidos_listo_view_mode');
-      if (saved === 'merchant' || localStorage.getItem('force_listo_merchant_mode') === 'true') {
-        return 'merchant';
+      if (isMerchantUser) {
+        const saved = localStorage.getItem('pedidos_listo_view_mode');
+        if (saved === 'merchant' || localStorage.getItem('force_listo_merchant_mode') === 'true') {
+          return 'merchant';
+        }
       }
     } catch (e) {}
     return 'client';
   }); // 'client' | 'merchant'
+
+  // Garantizar que los usuarios normales sin comercio siempre vean la app de cliente normal
+  useEffect(() => {
+    if (!isMerchantUser && viewMode !== 'client') {
+      setViewMode('client');
+    }
+  }, [isMerchantUser, viewMode]);
 
   const handleSetViewMode = (mode) => {
     setViewMode(mode);
@@ -219,20 +238,11 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
       localStorage.setItem('pedidos_listo_view_mode', mode);
       if (mode === 'merchant') {
         localStorage.setItem('force_listo_merchant_mode', 'true');
+      } else {
+        localStorage.removeItem('force_listo_merchant_mode');
       }
     } catch (e) {}
   };
-
-  const [activeTab, setActiveTab] = useState('inicio');
-
-  const isMerchantUser = Boolean(
-    userData?.role === 'merchant' ||
-    userData?.role === 'comercio' ||
-    userData?.type === 'comercio' ||
-    userData?.isMerchant === true ||
-    userData?.email === 'listopatron.app@gmail.com' ||
-    (typeof localStorage !== 'undefined' && localStorage.getItem('force_listo_merchant_mode') === 'true')
-  );
 
   // Escuchar cambios de pestaña desde la barra de navegación global (Ej: Mercado, Buscar, Pedidos)
   useEffect(() => {
@@ -1283,47 +1293,49 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
         </div>
       )}
 
-      {/* Mode Switcher Pill Header (Conexión Directa App Cliente <-> Comercio Partner) */}
-      <div style={{ background: '#0a0e1a', color: 'white', padding: '10px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid #ff6b00', fontSize: 11, fontWeight: 800 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <span style={{ fontSize: 16 }}>🍔</span>
-          <span style={{ color: '#ff6b00', fontWeight: 900, letterSpacing: '0.5px' }}>PEDIDOS LISTO</span>
+      {/* Mode Switcher Pill Header - ÚNICAMENTE visible si el usuario tiene una Cuenta de Comercio Registrada o Admin */}
+      {isMerchantUser && (
+        <div style={{ background: '#0a0e1a', color: 'white', padding: '10px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid #ff6b00', fontSize: 11, fontWeight: 800 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span style={{ fontSize: 16 }}>🍔</span>
+            <span style={{ color: '#ff6b00', fontWeight: 900, letterSpacing: '0.5px' }}>PEDIDOS LISTO</span>
+          </div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button 
+              onClick={() => handleSetViewMode('client')} 
+              style={{ 
+                background: viewMode === 'client' ? '#ff6b00' : 'rgba(255,255,255,0.12)', 
+                color: 'white', 
+                border: viewMode === 'client' ? '1px solid #ff8533' : '1px solid rgba(255,255,255,0.2)', 
+                padding: '6px 14px', 
+                borderRadius: 20, 
+                fontSize: 11, 
+                fontWeight: 900, 
+                cursor: 'pointer',
+                boxShadow: viewMode === 'client' ? '0 4px 12px rgba(255,107,0,0.4)' : 'none'
+              }}
+            >
+              📱 App Cliente
+            </button>
+            <button 
+              onClick={() => handleSetViewMode('merchant')} 
+              style={{ 
+                background: viewMode === 'merchant' ? '#ff6b00' : 'rgba(255,255,255,0.12)', 
+                color: 'white', 
+                border: viewMode === 'merchant' ? '1px solid #ff8533' : '1px solid rgba(255,255,255,0.2)', 
+                padding: '6px 14px', 
+                borderRadius: 20, 
+                fontSize: 11, 
+                fontWeight: 900, 
+                cursor: 'pointer',
+                boxShadow: viewMode === 'merchant' ? '0 4px 12px rgba(255,107,0,0.4)' : 'none'
+              }}
+            >
+              🏪 Comercio Partner
+            </button>
+          </div>
         </div>
-        <div style={{ display: 'flex', gap: 8 }}>
-          <button 
-            onClick={() => handleSetViewMode('client')} 
-            style={{ 
-              background: viewMode === 'client' ? '#ff6b00' : 'rgba(255,255,255,0.12)', 
-              color: 'white', 
-              border: viewMode === 'client' ? '1px solid #ff8533' : '1px solid rgba(255,255,255,0.2)', 
-              padding: '6px 14px', 
-              borderRadius: 20, 
-              fontSize: 11, 
-              fontWeight: 900, 
-              cursor: 'pointer',
-              boxShadow: viewMode === 'client' ? '0 4px 12px rgba(255,107,0,0.4)' : 'none'
-            }}
-          >
-            📱 App Cliente
-          </button>
-          <button 
-            onClick={() => handleSetViewMode('merchant')} 
-            style={{ 
-              background: viewMode === 'merchant' ? '#ff6b00' : 'rgba(255,255,255,0.12)', 
-              color: 'white', 
-              border: viewMode === 'merchant' ? '1px solid #ff8533' : '1px solid rgba(255,255,255,0.2)', 
-              padding: '6px 14px', 
-              borderRadius: 20, 
-              fontSize: 11, 
-              fontWeight: 900, 
-              cursor: 'pointer',
-              boxShadow: viewMode === 'merchant' ? '0 4px 12px rgba(255,107,0,0.4)' : 'none'
-            }}
-          >
-            🏪 Comercio Partner
-          </button>
-        </div>
-      </div>
+      )}
 
       {/* =========================================================================
          CLIENT APP VIEW MODE
