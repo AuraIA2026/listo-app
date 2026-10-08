@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './MandamePage.css';
+import PedidosListoHub from '../components/PedidosListoHub';
 
 // Initial Mock State
 const ANIMATED_BANNERS_CATALOG = [
@@ -1662,65 +1663,8 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                   ))}
                 </div>
 
-                {/* 5. Yellow Flash Countdown Banner ("Ahorra hasta RD$ 300" from IMG_4455.png & IMG_4456.png) */}
-                <div style={{ padding: '0 16px', marginBottom: 16 }}>
-                  <div style={{
-                    background: 'linear-gradient(135deg, #facc15 0%, #eab308 100%)',
-                    borderRadius: 20,
-                    padding: 16,
-                    color: '#0f172a',
-                    position: 'relative',
-                    overflow: 'hidden',
-                    boxShadow: '0 8px 24px rgba(234, 179, 8, 0.3)'
-                  }}>
-                    <div style={{ position: 'relative', zIndex: 2, maxWidth: '68%' }}>
-                      <span style={{ background: '#0f172a', color: '#ffffff', fontSize: 10, fontWeight: 900, padding: '3px 8px', borderRadius: 8, display: 'inline-block', marginBottom: 6 }}>
-                        39:47
-                      </span>
-                      <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 900, fontSize: 18, lineHeight: 1.2, marginBottom: 4, color: '#0f172a' }}>
-                        Ahorra hasta RD$ 300
-                      </h3>
-                      <p style={{ fontSize: 11, fontWeight: 700, color: '#334155', lineHeight: 1.3, marginBottom: 10 }}>
-                        Prueba nuevos sabores y disfruta Descuentos fugaces.
-                      </p>
-                      <button 
-                        onClick={() => setActiveTab('promociones')}
-                        style={{ background: '#0f172a', color: '#ffffff', border: 'none', padding: '6px 14px', borderRadius: 12, fontWeight: 900, fontSize: 11, cursor: 'pointer' }}
-                      >
-                        Descubrir locales
-                      </button>
-                    </div>
-
-                    <div style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', fontSize: 64, filter: 'drop-shadow(0 6px 12px rgba(0,0,0,0.15))' }}>
-                      ⏰
-                    </div>
-                  </div>
-                </div>
-
-                {/* 6. Horizontal Promo Banners (Mastercard / APAP Plus Promo from IMG_4456.png) */}
-                <div style={{ display: 'flex', gap: 12, overflowX: 'auto', padding: '0 16px', marginBottom: 16, scrollbarWidth: 'none' }}>
-                  <div style={{ minWidth: 260, maxWidth: 260, background: 'linear-gradient(135deg, #4c1d95, #3b0764)', borderRadius: 20, padding: 16, color: 'white', flexShrink: 0, boxShadow: '0 6px 18px rgba(76,29,149,0.3)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                    <div>
-                      <span style={{ background: 'rgba(255,255,255,0.2)', color: 'white', fontSize: 9, fontWeight: 900, padding: '2px 8px', borderRadius: 6 }}>plus</span>
-                      <h4 style={{ fontFamily: 'var(--font-heading)', fontWeight: 900, fontSize: 15, margin: '6px 0 4px' }}>6 meses Gratis</h4>
-                      <p style={{ fontSize: 10, opacity: 0.9, lineHeight: 1.3 }}>+3 meses al 50% OFF con tus Tarjetas Mastercard Standard o Gold APAP</p>
-                    </div>
-                    <button style={{ background: '#00e699', color: '#0a0e1a', border: 'none', padding: '5px 12px', borderRadius: 10, fontWeight: 900, fontSize: 10, alignSelf: 'flex-start', marginTop: 10, cursor: 'pointer' }}>
-                      Suscribirme
-                    </button>
-                  </div>
-
-                  <div style={{ minWidth: 240, maxWidth: 240, background: 'linear-gradient(135deg, #ea1d2c, #b91c1c)', borderRadius: 20, padding: 16, color: 'white', flexShrink: 0, boxShadow: '0 6px 18px rgba(234,29,44,0.3)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                    <div>
-                      <span style={{ background: 'rgba(0,0,0,0.3)', color: '#ffc107', fontSize: 9, fontWeight: 900, padding: '2px 8px', borderRadius: 6 }}>COMBO PROMO</span>
-                      <h4 style={{ fontFamily: 'var(--font-heading)', fontWeight: 900, fontSize: 15, margin: '6px 0 4px' }}>RD$ 299 Pechuga</h4>
-                      <p style={{ fontSize: 10, opacity: 0.9, lineHeight: 1.3 }}>Pechurinas crujientes con tostones y refresco frío incluido.</p>
-                    </div>
-                    <button style={{ background: '#ffffff', color: '#ea1d2c', border: 'none', padding: '5px 12px', borderRadius: 10, fontWeight: 900, fontSize: 10, alignSelf: 'flex-start', marginTop: 10, cursor: 'pointer' }}>
-                      Pedir Combo
-                    </button>
-                  </div>
-                </div>
+                {/* 5. Pedidos Listo Hub (Reloj en vivo MM:SS & Carruseles Dobles Interactivos) */}
+                <PedidosListoHub lang={lang} navigate={navigate} />
 
                 {/* 7. Section: "Come y Cena hasta $345" (Full Mamey Card Container from IMG_4457.png) */}
                 <div style={{ padding: '0 16px', marginBottom: 20 }}>
