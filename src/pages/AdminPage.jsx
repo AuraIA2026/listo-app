@@ -543,6 +543,23 @@ export default function AdminPage({ navigate }) {
   const [partnerFilterStatus, setPartnerFilterStatus] = useState('all'); // 'all' | 'pending' | 'approved' | 'rejected'
   const [selectedPartnerDetail, setSelectedPartnerDetail] = useState(null);
   const [billingMonth, setBillingMonth] = useState('2026-10');
+  const [partnerCommissions, setPartnerCommissions] = useState({
+    'demo-1': 10,
+    'demo-2': 5,
+    'demo-3': 0
+  });
+
+  const updateCommerceCommission = async (storeId, newPct) => {
+    const validPct = Math.max(0, Math.min(100, Number(newPct) || 0));
+    setPartnerCommissions(prev => ({ ...prev, [storeId]: validPct }));
+    try {
+      const storeRef = doc(db, 'partner_requests', storeId);
+      await updateDoc(storeRef, { commissionPct: validPct });
+    } catch (e) {
+      // Si no existe documento en Firestore (demo) se gestiona de forma transparente en estado local
+    }
+    showToast(`⚙️ Comisión para el comercio configurada a ${validPct}%`);
+  };
 
   useEffect(() => {
     // 1. Escuchar Pagos
@@ -1222,7 +1239,8 @@ export default function AdminPage({ navigate }) {
               monthlySales: 34500,
               monthlyOrders: 28,
               monthlyDeliveries: 24,
-              cutoffDay: 30
+              cutoffDay: 30,
+              commissionPct: 10
             },
             {
               id: 'demo-2',
@@ -1240,7 +1258,8 @@ export default function AdminPage({ navigate }) {
               monthlySales: 22800,
               monthlyOrders: 19,
               monthlyDeliveries: 16,
-              cutoffDay: 30
+              cutoffDay: 30,
+              commissionPct: 5
             },
             {
               id: 'demo-3',
@@ -1258,7 +1277,8 @@ export default function AdminPage({ navigate }) {
               monthlySales: 18900,
               monthlyOrders: 14,
               monthlyDeliveries: 12,
-              cutoffDay: 30
+              cutoffDay: 30,
+              commissionPct: 0
             }
           ];
 
@@ -1280,6 +1300,13 @@ export default function AdminPage({ navigate }) {
             return true;
           });
 
+          // Función para obtener el % de comisión activo de un comercio
+          const getCommPct = (store) => {
+            if (partnerCommissions[store.id] !== undefined) return partnerCommissions[store.id];
+            if (store.commissionPct !== undefined) return store.commissionPct;
+            return 10;
+          };
+
           // Función para generar e imprimir el cuadre mensual oficial
           const printMonthlyClosing = (store) => {
             const printWin = window.open('', '_blank');
@@ -1288,10 +1315,11 @@ export default function AdminPage({ navigate }) {
               return;
             }
 
+            const commPct = getCommPct(store);
+            const commRate = commPct / 100;
             const grossSales = store.monthlySales || 28500;
-            const commRate = store.commissionRate || 0.10;
-            const comm10 = grossSales * commRate;
-            const netPayout = grossSales - comm10;
+            const commAmount = grossSales * commRate;
+            const netPayout = grossSales - commAmount;
 
             const html = `
               <!DOCTYPE html>
@@ -1333,7 +1361,7 @@ export default function AdminPage({ navigate }) {
                       <strong>Período Contable:</strong> ${billingMonth}<br/>
                       <strong>Teléfono / WhatsApp:</strong> ${store.phone || 'N/A'}<br/>
                       <strong>Correo Electrónico:</strong> ${store.email || 'N/A'}<br/>
-                      <strong>Fecha de Impresión:</strong> ${new Date().toLocaleDateString('es-DO')}
+                      <strong>Tasa de Comisión Aplicada:</strong> ${commPct === 0 ? '🎁 0.0% Gratis (Lanzamiento)' : commPct === 5 ? '⚡ 5.0% Promocional' : `💎 ${commPct.toFixed(1)}% Estándar`}
                     </div>
                   </div>
 
@@ -1367,17 +1395,17 @@ export default function AdminPage({ navigate }) {
                         <td>Incluido</td>
                       </tr>
                       <tr>
-                        <td><strong>Comisión PedidosListo (10%)</strong></td>
-                        <td>10.0% estático congelado</td>
+                        <td><strong>Comisión Plataforma (${commPct}%)</strong></td>
+                        <td>${commPct === 0 ? 'Promoción 0% Gratis' : `Tasa pactada al ${commPct}%`}</td>
                         <td>Deducción Plataforma</td>
-                        <td><strong style="color: #C2410C;">- RD$${Math.round(comm10).toLocaleString()}</strong></td>
+                        <td><strong style="color: ${commPct > 0 ? '#C2410C' : '#059669'};">${commPct > 0 ? `- RD$${Math.round(commAmount).toLocaleString()}` : 'RD$0 (Gratis)'}</strong></td>
                       </tr>
                     </tbody>
                   </table>
 
                   <div class="totals-box">
                     <div class="total-row"><span>Ventas Brutas Acumuladas:</span> <span>RD$${Math.round(grossSales).toLocaleString()}</span></div>
-                    <div class="total-row"><span>Deducción Comisión Listo (10%):</span> <span style="color: #F87171;">- RD$${Math.round(comm10).toLocaleString()}</span></div>
+                    <div class="total-row"><span>Deducción Comisión Listo (${commPct}%):</span> <span style="color: ${commPct > 0 ? '#F87171' : '#34D399'};">${commPct > 0 ? `- RD$${Math.round(commAmount).toLocaleString()}` : 'RD$0 (Gratis)'}</span></div>
                     <div class="total-row grand"><span>LIQUIDACIÓN NETA A PAGAR AL COMERCIO:</span> <span>RD$${Math.round(netPayout).toLocaleString()}</span></div>
                   </div>
 
@@ -1415,8 +1443,9 @@ export default function AdminPage({ navigate }) {
             const mockOrders = req.monthlyOrders || (15 + (seed * 3) % 40);
             const mockDeliveries = req.monthlyDeliveries || Math.floor(mockOrders * 0.85);
 
+            const commPct = getCommPct(req);
             globalVentasMes += mockSales;
-            globalComisionMes += mockSales * 0.10;
+            globalComisionMes += mockSales * (commPct / 100);
             globalPedidosMes += mockOrders;
             globalDeliveriesMes += mockDeliveries;
           });
@@ -1432,7 +1461,7 @@ export default function AdminPage({ navigate }) {
                       🏪 Contabilidad Mensual de Comercios & Fecha de Corte
                     </h3>
                     <p style={{ fontSize: '12.5px', color: 'var(--muted)', margin: '4px 0 0' }}>
-                      Gestiona liquidaciones, ventas del mes, cálculo del 10% de comisión, impresión de cuadres y descarga en PDF.
+                      Gestiona liquidaciones, ventas del mes, comisiones editables (0% gratis, 5% promo o 10% estándar), cuadres e impresiones PDF.
                     </p>
                   </div>
 
@@ -1460,7 +1489,7 @@ export default function AdminPage({ navigate }) {
                   </div>
 
                   <div style={{ background: 'linear-gradient(135deg, #ECFDF5 0%, #D1FAE5 100%)', border: '1.5px solid #A7F3D0', borderRadius: '14px', padding: '14px 16px' }}>
-                    <div style={{ fontSize: '11px', fontWeight: '800', color: '#047857', textTransform: 'uppercase', letterSpacing: '0.5px' }}>📈 Comisión Listo 10%</div>
+                    <div style={{ fontSize: '11px', fontWeight: '800', color: '#047857', textTransform: 'uppercase', letterSpacing: '0.5px' }}>📈 Comisión Plataforma</div>
                     <div style={{ fontSize: '20px', fontWeight: '900', color: '#065F46', marginTop: '2px', fontFamily: 'var(--mono)' }}>{fmtRD(Math.round(globalComisionMes))}</div>
                     <div style={{ fontSize: '11px', color: '#059669', marginTop: '2px' }}>Ganancia de la plataforma</div>
                   </div>
@@ -1545,11 +1574,14 @@ export default function AdminPage({ navigate }) {
                 const monthlyOrders = req.monthlyOrders || (15 + (seed * 3) % 40);
                 const monthlyDeliveries = req.monthlyDeliveries || Math.floor(monthlyOrders * 0.85);
                 const monthlyPickups = monthlyOrders - monthlyDeliveries;
-                const commission10 = monthlySales * 0.10;
+                
+                const commPct = getCommPct(req);
+                const commRate = commPct / 100;
+                const commission10 = monthlySales * commRate;
                 const netPayout = monthlySales - commission10;
                 const cutoffDay = req.cutoffDay || 30;
 
-                const waMessage = `Hola%20${encodeURIComponent(req.ownerName || 'amigo')},%20te%20escribimos%20de%20PedidosListo.%20Este%20es%20el%20resumen%20contable%20de%20tu%20comercio%20"${encodeURIComponent(req.businessName || '')}"%20para%20el%20corte%20del%20día%20${cutoffDay}:%0A- Ventas Brutas: RD$${Math.round(monthlySales).toLocaleString()}%0A- Pedidos Atendidos: ${monthlyOrders} (${monthlyDeliveries} por Delivery 🛵)%0A- Comisión 10%: -RD$${Math.round(commission10).toLocaleString()}%0A- Pago Neto a Recibir: RD$${Math.round(netPayout).toLocaleString()}`;
+                const waMessage = `Hola%20${encodeURIComponent(req.ownerName || 'amigo')},%20te%20escribimos%20de%20PedidosListo.%20Este%20es%20el%20resumen%20contable%20de%20tu%20comercio%20"${encodeURIComponent(req.businessName || '')}"%20para%20el%20corte%20del%20día%20${cutoffDay}:%0A- Ventas Brutas: RD$${Math.round(monthlySales).toLocaleString()}%0A- Pedidos Atendidos: ${monthlyOrders} (${monthlyDeliveries} por Delivery 🛵)%0A- Tasa Comisión (${commPct}%): ${commPct === 0 ? 'GRATIS' : `-RD$${Math.round(commission10).toLocaleString()}`}%0A- Pago Neto a Recibir: RD$${Math.round(netPayout).toLocaleString()}`;
                 const waLink = cleanPhone ? `https://wa.me/${formattedWaPhone}?text=${waMessage}` : null;
 
                 return (
@@ -1596,8 +1628,56 @@ export default function AdminPage({ navigate }) {
                           <span>🏷️ {req.businessType}</span>
                         </div>
 
-                        {/* PANEL CONTABLE RESUMIDO CON CÁLCULO DE COMISIÓN 10% */}
-                        <div style={{ marginTop: '14px', background: 'var(--surface2)', borderRadius: '14px', padding: '12px 16px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '10px', border: '1px solid var(--border)' }}>
+                        {/* CONTROLES EDITABLES DE COMISIÓN (0% Gratis, 5% Promo, 10% Estándar u Otro) */}
+                        <div style={{ marginTop: '12px', background: 'var(--surface2)', borderRadius: '12px', padding: '10px 14px', border: '1px dashed var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span style={{ fontSize: '12px', fontWeight: '800', color: 'var(--text)' }}>⚙️ Tasa de Comisión:</span>
+                            <span style={{ fontSize: '12px', fontWeight: '900', color: commPct === 0 ? '#059669' : commPct === 5 ? '#2563EB' : 'var(--brand)', background: commPct === 0 ? '#D1FAE5' : commPct === 5 ? '#DBEAFE' : 'var(--brand-dim)', padding: '2px 8px', borderRadius: '8px' }}>
+                              {commPct === 0 ? '🎁 0% GRATIS' : commPct === 5 ? '⚡ 5% PROMO' : `💎 ${commPct}% ESTÁNDAR`}
+                            </span>
+                          </div>
+
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                            {[
+                              { pct: 0, label: '🎁 0% Gratis' },
+                              { pct: 5, label: '⚡ 5% Promo' },
+                              { pct: 10, label: '💎 10% Estándar' }
+                            ].map(opt => (
+                              <button
+                                key={opt.pct}
+                                onClick={() => updateCommerceCommission(req.id, opt.pct)}
+                                style={{
+                                  padding: '5px 10px',
+                                  borderRadius: '8px',
+                                  border: commPct === opt.pct ? '1.5px solid var(--brand)' : '1px solid var(--border)',
+                                  background: commPct === opt.pct ? 'var(--brand)' : 'var(--surface)',
+                                  color: commPct === opt.pct ? '#FFF' : 'var(--text)',
+                                  fontWeight: '800',
+                                  fontSize: '11.5px',
+                                  cursor: 'pointer'
+                                }}
+                              >
+                                {opt.label}
+                              </button>
+                            ))}
+
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'var(--surface)', padding: '3px 8px', borderRadius: '8px', border: '1px solid var(--border)' }}>
+                              <span style={{ fontSize: '11px', color: 'var(--muted)', fontWeight: '700' }}>Otro:</span>
+                              <input
+                                type="number"
+                                min="0"
+                                max="100"
+                                value={commPct}
+                                onChange={(e) => updateCommerceCommission(req.id, e.target.value)}
+                                style={{ width: '42px', padding: '2px 4px', borderRadius: '4px', border: '1px solid var(--border)', textAlign: 'center', fontWeight: '900', fontSize: '12px', background: 'transparent', color: 'var(--text)' }}
+                              />
+                              <span style={{ fontSize: '11px', fontWeight: '800', color: 'var(--text)' }}>%</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* PANEL CONTABLE RESUMIDO CON CÁLCULO DE COMISIÓN DINÁMICA */}
+                        <div style={{ marginTop: '10px', background: 'var(--surface2)', borderRadius: '14px', padding: '12px 16px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '10px', border: '1px solid var(--border)' }}>
                           <div>
                             <div style={{ fontSize: '10.5px', fontWeight: '800', color: 'var(--muted)', textTransform: 'uppercase' }}>💰 Ventas Mes</div>
                             <div style={{ fontSize: '16px', fontWeight: '900', color: '#047857', fontFamily: 'var(--mono)', marginTop: '2px' }}>
@@ -1606,9 +1686,9 @@ export default function AdminPage({ navigate }) {
                           </div>
 
                           <div>
-                            <div style={{ fontSize: '10.5px', fontWeight: '800', color: 'var(--muted)', textTransform: 'uppercase' }}>📉 Comisión 10%</div>
-                            <div style={{ fontSize: '16px', fontWeight: '900', color: 'var(--brand)', fontFamily: 'var(--mono)', marginTop: '2px' }}>
-                              {fmtRD(Math.round(commission10))}
+                            <div style={{ fontSize: '10.5px', fontWeight: '800', color: 'var(--muted)', textTransform: 'uppercase' }}>📉 Comisión ({commPct}%)</div>
+                            <div style={{ fontSize: '16px', fontWeight: '900', color: commPct === 0 ? '#059669' : 'var(--brand)', fontFamily: 'var(--mono)', marginTop: '2px' }}>
+                              {commPct === 0 ? 'RD$0 (Gratis)' : fmtRD(Math.round(commission10))}
                             </div>
                           </div>
 
@@ -1633,21 +1713,21 @@ export default function AdminPage({ navigate }) {
                     <div className="cc-actions" style={{ marginTop: '16px', paddingTop: '12px', borderTop: '1px solid var(--border)', display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between' }}>
                       <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                         <button 
-                          onClick={() => setSelectedPartnerDetail({...req, monthlySales, monthlyOrders, monthlyDeliveries, monthlyPickups, commission10, netPayout, cutoffDay})}
+                          onClick={() => setSelectedPartnerDetail({...req, monthlySales, monthlyOrders, monthlyDeliveries, monthlyPickups, commission10, netPayout, cutoffDay, commissionPct: commPct})}
                           style={{ padding: '10px 14px', borderRadius: '12px', background: 'var(--brand-dim)', border: '1.5px solid var(--brand)', color: 'var(--brand)', fontWeight: '900', fontSize: '12.5px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
                         >
                           📊 Historial & Pedidos
                         </button>
 
                         <button 
-                          onClick={() => printMonthlyClosing({...req, monthlySales, monthlyOrders, monthlyDeliveries, monthlyPickups, commission10, netPayout, cutoffDay})}
+                          onClick={() => printMonthlyClosing({...req, monthlySales, monthlyOrders, monthlyDeliveries, monthlyPickups, commission10, netPayout, cutoffDay, commissionPct: commPct})}
                           style={{ padding: '10px 14px', borderRadius: '12px', background: '#0D0E15', color: '#FFF', border: 'none', fontWeight: '800', fontSize: '12.5px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
                         >
                           🖨️ Imprimir Cuadre
                         </button>
 
                         <button 
-                          onClick={() => printMonthlyClosing({...req, monthlySales, monthlyOrders, monthlyDeliveries, monthlyPickups, commission10, netPayout, cutoffDay})}
+                          onClick={() => printMonthlyClosing({...req, monthlySales, monthlyOrders, monthlyDeliveries, monthlyPickups, commission10, netPayout, cutoffDay, commissionPct: commPct})}
                           style={{ padding: '10px 14px', borderRadius: '12px', background: '#3B82F6', color: '#FFF', border: 'none', fontWeight: '800', fontSize: '12.5px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
                         >
                           📄 Descargar PDF
@@ -1718,8 +1798,10 @@ export default function AdminPage({ navigate }) {
                         </div>
 
                         <div>
-                          <div style={{ fontSize: '11px', fontWeight: '800', color: '#C2410C', textTransform: 'uppercase' }}>Comisión Listo (10%)</div>
-                          <div style={{ fontSize: '18px', fontWeight: '900', color: '#EA580C', marginTop: '2px', fontFamily: 'var(--mono)' }}>{fmtRD(Math.round(selectedPartnerDetail.commission10))}</div>
+                          <div style={{ fontSize: '11px', fontWeight: '800', color: '#C2410C', textTransform: 'uppercase' }}>Comisión Listo ({selectedPartnerDetail.commissionPct ?? 10}%)</div>
+                          <div style={{ fontSize: '18px', fontWeight: '900', color: '#EA580C', marginTop: '2px', fontFamily: 'var(--mono)' }}>
+                            {(selectedPartnerDetail.commissionPct ?? 10) === 0 ? 'RD$0 (Gratis)' : fmtRD(Math.round(selectedPartnerDetail.commission10))}
+                          </div>
                         </div>
 
                         <div>
@@ -1746,7 +1828,7 @@ export default function AdminPage({ navigate }) {
                               <th style={{ padding: '10px 12px' }}>Fecha</th>
                               <th style={{ padding: '10px 12px' }}>Tipo</th>
                               <th style={{ padding: '10px 12px' }}>Total (RD$)</th>
-                              <th style={{ padding: '10px 12px' }}>Comisión (10%)</th>
+                              <th style={{ padding: '10px 12px' }}>Comisión ({selectedPartnerDetail.commissionPct ?? 10}%)</th>
                               <th style={{ padding: '10px 12px' }}>Estado</th>
                             </tr>
                           </thead>
@@ -1754,6 +1836,8 @@ export default function AdminPage({ navigate }) {
                             {Array.from({ length: Math.min(selectedPartnerDetail.monthlyOrders, 8) }).map((_, idx) => {
                               const ordAmount = Math.round(750 + (idx * 310) % 1800);
                               const isDelivery = idx % 4 !== 0;
+                              const cPct = selectedPartnerDetail.commissionPct ?? 10;
+                              const cAmt = ordAmount * (cPct / 100);
                               return (
                                 <tr key={idx} style={{ borderBottom: '1px solid #E2E8F0', background: idx % 2 === 0 ? '#FFFFFF' : '#F8FAFC' }}>
                                   <td style={{ padding: '10px 12px', fontWeight: '800', color: '#0F172A' }}>#ORD-{8420 + idx}</td>
@@ -1764,7 +1848,9 @@ export default function AdminPage({ navigate }) {
                                     </span>
                                   </td>
                                   <td style={{ padding: '10px 12px', fontWeight: '900', color: '#0F172A', fontFamily: 'var(--mono)' }}>{fmtRD(ordAmount)}</td>
-                                  <td style={{ padding: '10px 12px', fontWeight: '800', color: '#EA580C', fontFamily: 'var(--mono)' }}>{fmtRD(Math.round(ordAmount * 0.10))}</td>
+                                  <td style={{ padding: '10px 12px', fontWeight: '800', color: cPct === 0 ? '#059669' : '#EA580C', fontFamily: 'var(--mono)' }}>
+                                    {cPct === 0 ? 'RD$0' : fmtRD(Math.round(cAmt))}
+                                  </td>
                                   <td style={{ padding: '10px 12px' }}><span style={{ color: '#059669', fontWeight: '800' }}>✅ Entregado</span></td>
                                 </tr>
                               );
