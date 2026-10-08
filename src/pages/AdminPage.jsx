@@ -1202,10 +1202,68 @@ export default function AdminPage({ navigate }) {
             </button>
           ))}
         </div>
-        {/* ── TAB: COMERCIOS (Contabilidad Mensual, Fecha de Corte & Historial) ── */}
+        {/* ── TAB: COMERCIOS (Contabilidad Mensual, Fecha de Corte, PDF & Impresión) ── */}
         {tab === 'comercios' && (() => {
+          // Lista base de comercios (solicitudes reales + demos si está vacía)
+          const baseComercios = partnerRequests.length > 0 ? partnerRequests : [
+            {
+              id: 'demo-1',
+              businessName: 'Pizzería El Patrón',
+              ownerName: 'Juan',
+              ownerLastName: 'Pérez',
+              phone: '809-555-0199',
+              email: 'contacto@elpatron.com',
+              city: 'Santo Domingo',
+              businessType: 'Restaurante / Comida',
+              branches: 2,
+              isStreetStore: 'Si',
+              status: 'approved',
+              createdAt: new Date().toISOString(),
+              monthlySales: 34500,
+              monthlyOrders: 28,
+              monthlyDeliveries: 24,
+              cutoffDay: 30
+            },
+            {
+              id: 'demo-2',
+              businessName: 'Comida Criolla Yunga',
+              ownerName: 'María',
+              ownerLastName: 'González',
+              phone: '809-555-0244',
+              email: 'info@yunga.com.do',
+              city: 'Santiago',
+              businessType: 'Restaurante / Comida',
+              branches: 1,
+              isStreetStore: 'Si',
+              status: 'approved',
+              createdAt: new Date().toISOString(),
+              monthlySales: 22800,
+              monthlyOrders: 19,
+              monthlyDeliveries: 16,
+              cutoffDay: 30
+            },
+            {
+              id: 'demo-3',
+              businessName: 'Farmacia & Minimarket Central',
+              ownerName: 'Carlos',
+              ownerLastName: 'Ramírez',
+              phone: '809-555-0311',
+              email: 'admin@farmaciacentral.com',
+              city: 'La Romana',
+              businessType: 'Farmacia',
+              branches: 3,
+              isStreetStore: 'Si',
+              status: 'pending',
+              createdAt: new Date().toISOString(),
+              monthlySales: 18900,
+              monthlyOrders: 14,
+              monthlyDeliveries: 12,
+              cutoffDay: 30
+            }
+          ];
+
           // Filtrado de búsquedas por texto y estado
-          const filteredRequests = partnerRequests.filter(req => {
+          const filteredRequests = baseComercios.filter(req => {
             const queryStr = partnerSearch.toLowerCase();
             const matchesText = !partnerSearch || 
               (req.businessName && req.businessName.toLowerCase().includes(queryStr)) ||
@@ -1222,10 +1280,128 @@ export default function AdminPage({ navigate }) {
             return true;
           });
 
+          // Función para generar e imprimir el cuadre mensual oficial
+          const printMonthlyClosing = (store) => {
+            const printWin = window.open('', '_blank');
+            if (!printWin) {
+              showToast('⚠️ Permite emergentes para imprimir el cuadre');
+              return;
+            }
+
+            const grossSales = store.monthlySales || 28500;
+            const commRate = store.commissionRate || 0.10;
+            const comm10 = grossSales * commRate;
+            const netPayout = grossSales - comm10;
+
+            const html = `
+              <!DOCTYPE html>
+              <html>
+                <head>
+                  <title>CUADRE MENSUAL - ${store.businessName || 'COMERCIO'}</title>
+                  <style>
+                    body { font-family: 'DM Sans', Arial, sans-serif; padding: 40px; color: #0F172A; max-width: 800px; margin: auto; }
+                    .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #FF6B00; padding-bottom: 16px; margin-bottom: 24px; }
+                    .logo { font-size: 24px; font-weight: 900; color: #FF6B00; }
+                    .badge { background: #FFF7ED; color: #C2410C; border: 1px solid #FED7AA; padding: 4px 12px; borderRadius: 20px; font-size: 12px; font-weight: 800; }
+                    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; background: #F8FAFC; padding: 16px; border-radius: 12px; margin-bottom: 24px; border: 1px solid #E2E8F0; }
+                    .table { width: 100%; border-collapse: collapse; margin-bottom: 24px; }
+                    .table th, .table td { padding: 10px 12px; border-bottom: 1px solid #E2E8F0; text-align: left; }
+                    .table th { background: #F1F5F9; text-transform: uppercase; font-size: 11px; color: #475569; }
+                    .totals-box { background: #0D0E15; color: #FFF; padding: 20px; border-radius: 16px; margin-top: 24px; }
+                    .total-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; }
+                    .total-row.grand { font-size: 19px; font-weight: 900; color: #FF6B00; border-top: 1px solid #334155; padding-top: 12px; margin-top: 12px; }
+                    @media print { body { padding: 0; } }
+                  </style>
+                </head>
+                <body>
+                  <div class="header">
+                    <div>
+                      <div class="logo">🛵 PEDIDOSLISTO PARTNER</div>
+                      <div style="font-size: 13px; color: #64748B;">Comprobante Oficial de Cuadre Mensual y Liquidación</div>
+                    </div>
+                    <span class="badge">CORTE MENSUAL DÍA ${store.cutoffDay || 30}</span>
+                  </div>
+
+                  <div class="info-grid">
+                    <div>
+                      <strong>Establecimiento:</strong> ${store.businessName || 'Comercio Partner'}<br/>
+                      <strong>Propietario:</strong> ${store.ownerName || ''} ${store.ownerLastName || ''}<br/>
+                      <strong>Ciudad / Ubicación:</strong> ${store.city || 'Santo Domingo'}<br/>
+                      <strong>Categoría:</strong> ${store.businessType || 'Comercio'}
+                    </div>
+                    <div>
+                      <strong>Período Contable:</strong> ${billingMonth}<br/>
+                      <strong>Teléfono / WhatsApp:</strong> ${store.phone || 'N/A'}<br/>
+                      <strong>Correo Electrónico:</strong> ${store.email || 'N/A'}<br/>
+                      <strong>Fecha de Impresión:</strong> ${new Date().toLocaleDateString('es-DO')}
+                    </div>
+                  </div>
+
+                  <h3 style="font-size: 16px; margin-bottom: 12px;">📦 Resumen de Ventas y Pedidos Atendidos</h3>
+                  <table class="table">
+                    <thead>
+                      <tr>
+                        <th>Concepto / Servicio</th>
+                        <th>Detalle / Cantidad</th>
+                        <th>Porcentaje / Tasa</th>
+                        <th>Monto Acumulado (RD$)</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>Ventas Brutas Totales</td>
+                        <td>${store.monthlyOrders || 24} pedidos procesados</td>
+                        <td>Tarifa Comercio</td>
+                        <td>RD$${Math.round(grossSales).toLocaleString()}</td>
+                      </tr>
+                      <tr>
+                        <td>Servicios de Delivery Oficial</td>
+                        <td>${store.monthlyDeliveries || 20} entregas motorizadas</td>
+                        <td>Listo Patrón</td>
+                        <td>Incluido</td>
+                      </tr>
+                      <tr>
+                        <td>Retiros por Cliente (Pickup)</td>
+                        <td>${(store.monthlyOrders || 24) - (store.monthlyDeliveries || 20)} en mostrador</td>
+                        <td>Local Directo</td>
+                        <td>Incluido</td>
+                      </tr>
+                      <tr>
+                        <td><strong>Comisión PedidosListo (10%)</strong></td>
+                        <td>10.0% estático congelado</td>
+                        <td>Deducción Plataforma</td>
+                        <td><strong style="color: #C2410C;">- RD$${Math.round(comm10).toLocaleString()}</strong></td>
+                      </tr>
+                    </tbody>
+                  </table>
+
+                  <div class="totals-box">
+                    <div class="total-row"><span>Ventas Brutas Acumuladas:</span> <span>RD$${Math.round(grossSales).toLocaleString()}</span></div>
+                    <div class="total-row"><span>Deducción Comisión Listo (10%):</span> <span style="color: #F87171;">- RD$${Math.round(comm10).toLocaleString()}</span></div>
+                    <div class="total-row grand"><span>LIQUIDACIÓN NETA A PAGAR AL COMERCIO:</span> <span>RD$${Math.round(netPayout).toLocaleString()}</span></div>
+                  </div>
+
+                  <div style="margin-top: 50px; display: flex; justify-content: space-between; border-top: 1px dashed #CBD5E1; padding-top: 20px; font-size: 12px; color: #64748B;">
+                    <div>________________________________<br/>Firma Autorizada PedidosListo</div>
+                    <div>________________________________<br/>Firma Conforme Representante Local</div>
+                  </div>
+
+                  <script>
+                    window.onload = function() {
+                      window.print();
+                    };
+                  </script>
+                </body>
+              </html>
+            `;
+            printWin.document.write(html);
+            printWin.document.close();
+          };
+
           // Métricas contables globales del mes
-          const totalComercios = partnerRequests.length;
-          const aprobadosCount = partnerRequests.filter(r => r.status === 'approved').length;
-          const pendientesCount = partnerRequests.filter(r => !r.status || r.status === 'pending').length;
+          const totalComercios = baseComercios.length;
+          const aprobadosCount = baseComercios.filter(r => r.status === 'approved').length;
+          const pendientesCount = baseComercios.filter(r => !r.status || r.status === 'pending').length;
 
           // Totales financieros estimados/acumulados
           let globalVentasMes = 0;
@@ -1233,8 +1409,7 @@ export default function AdminPage({ navigate }) {
           let globalPedidosMes = 0;
           let globalDeliveriesMes = 0;
 
-          partnerRequests.forEach(req => {
-            // Generar o calcular métricas contables por comercio
+          baseComercios.forEach(req => {
             const seed = (req.id || '123').charCodeAt(0) + (req.businessName || 'A').length;
             const mockSales = req.monthlySales || (18500 + (seed * 840) % 35000);
             const mockOrders = req.monthlyOrders || (15 + (seed * 3) % 40);
@@ -1257,7 +1432,7 @@ export default function AdminPage({ navigate }) {
                       🏪 Contabilidad Mensual de Comercios & Fecha de Corte
                     </h3>
                     <p style={{ fontSize: '12.5px', color: 'var(--muted)', margin: '4px 0 0' }}>
-                      Gestiona liquidaciones, ventas del mes, uso de delivery y estado de cortes para cada local partner.
+                      Gestiona liquidaciones, ventas del mes, cálculo del 10% de comisión, impresión de cuadres y descarga en PDF.
                     </p>
                   </div>
 
@@ -1321,10 +1496,10 @@ export default function AdminPage({ navigate }) {
                   {/* Filtros rápidos por estado */}
                   <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '2px' }}>
                     {[
-                      { id: 'all', label: `Todos (${partnerRequests.length})` },
+                      { id: 'all', label: `Todos (${baseComercios.length})` },
                       { id: 'pending', label: `⏳ Pendientes (${pendientesCount})` },
                       { id: 'approved', label: `✅ Activos (${aprobadosCount})` },
-                      { id: 'rejected', label: `🔴 Archivados (${partnerRequests.filter(r => r.status === 'rejected').length})` }
+                      { id: 'rejected', label: `🔴 Archivados (${baseComercios.filter(r => r.status === 'rejected').length})` }
                     ].map(f => (
                       <button 
                         key={f.id} 
@@ -1351,8 +1526,11 @@ export default function AdminPage({ navigate }) {
               {filteredRequests.length === 0 && (
                 <div className="empty-admin" style={{ padding: '40px 20px', textAlign: 'center', background: 'var(--surface)', borderRadius: '18px', border: '1px solid var(--border)' }}>
                   <div style={{ fontSize: '40px', marginBottom: '10px' }}>🔎</div>
-                  <h4 style={{ margin: '0 0 6px', fontSize: '16px', color: 'var(--text)' }}>No se encontraron comercios</h4>
-                  <p style={{ margin: 0, fontSize: '13px', color: 'var(--muted)' }}>Intenta ajustar tu búsqueda o filtro de estado.</p>
+                  <h4 style={{ margin: '0 0 6px', fontSize: '16px', color: 'var(--text)' }}>No se encontraron comercios que coincidan</h4>
+                  <p style={{ margin: '0 0 16px', fontSize: '13px', color: 'var(--muted)' }}>Intenta borrar el texto del buscador o cambiar el filtro de estado.</p>
+                  <button onClick={() => { setPartnerSearch(''); setPartnerFilterStatus('all'); }} style={{ padding: '10px 20px', borderRadius: '10px', background: 'var(--brand)', color: '#FFF', border: 'none', fontWeight: '800', cursor: 'pointer' }}>
+                    🔄 Ver todos los comercios
+                  </button>
                 </div>
               )}
 
@@ -1368,9 +1546,10 @@ export default function AdminPage({ navigate }) {
                 const monthlyDeliveries = req.monthlyDeliveries || Math.floor(monthlyOrders * 0.85);
                 const monthlyPickups = monthlyOrders - monthlyDeliveries;
                 const commission10 = monthlySales * 0.10;
+                const netPayout = monthlySales - commission10;
                 const cutoffDay = req.cutoffDay || 30;
 
-                const waMessage = `Hola%20${encodeURIComponent(req.ownerName || 'amigo')},%20te%20escribimos%20de%20PedidosListo.%20Este%20es%20el%20resumen%20contable%20de%20tu%20comercio%20"${encodeURIComponent(req.businessName || '')}"%20para%20el%20corte%20del%20día%20${cutoffDay}:%0A- Ventas del Mes: RD$${Math.round(monthlySales).toLocaleString()}%0A- Pedidos Atendidos: ${monthlyOrders} (${monthlyDeliveries} por Delivery 🛵)%0A- Comisión 10%: RD$${Math.round(commission10).toLocaleString()}`;
+                const waMessage = `Hola%20${encodeURIComponent(req.ownerName || 'amigo')},%20te%20escribimos%20de%20PedidosListo.%20Este%20es%20el%20resumen%20contable%20de%20tu%20comercio%20"${encodeURIComponent(req.businessName || '')}"%20para%20el%20corte%20del%20día%20${cutoffDay}:%0A- Ventas Brutas: RD$${Math.round(monthlySales).toLocaleString()}%0A- Pedidos Atendidos: ${monthlyOrders} (${monthlyDeliveries} por Delivery 🛵)%0A- Comisión 10%: -RD$${Math.round(commission10).toLocaleString()}%0A- Pago Neto a Recibir: RD$${Math.round(netPayout).toLocaleString()}`;
                 const waLink = cleanPhone ? `https://wa.me/${formattedWaPhone}?text=${waMessage}` : null;
 
                 return (
@@ -1417,7 +1596,7 @@ export default function AdminPage({ navigate }) {
                           <span>🏷️ {req.businessType}</span>
                         </div>
 
-                        {/* PANEL CONTABLE RESUMIDO DEL COMERCIO */}
+                        {/* PANEL CONTABLE RESUMIDO CON CÁLCULO DE COMISIÓN 10% */}
                         <div style={{ marginTop: '14px', background: 'var(--surface2)', borderRadius: '14px', padding: '12px 16px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '10px', border: '1px solid var(--border)' }}>
                           <div>
                             <div style={{ fontSize: '10.5px', fontWeight: '800', color: 'var(--muted)', textTransform: 'uppercase' }}>💰 Ventas Mes</div>
@@ -1434,35 +1613,49 @@ export default function AdminPage({ navigate }) {
                           </div>
 
                           <div>
-                            <div style={{ fontSize: '10.5px', fontWeight: '800', color: 'var(--muted)', textTransform: 'uppercase' }}>📦 Pedidos Usados</div>
-                            <div style={{ fontSize: '15px', fontWeight: '800', color: 'var(--text)', marginTop: '2px' }}>
-                              {monthlyOrders} pedidos
+                            <div style={{ fontSize: '10.5px', fontWeight: '800', color: 'var(--muted)', textTransform: 'uppercase' }}>💵 Pago Neto Local</div>
+                            <div style={{ fontSize: '16px', fontWeight: '900', color: '#1E40AF', fontFamily: 'var(--mono)', marginTop: '2px' }}>
+                              {fmtRD(Math.round(netPayout))}
                             </div>
                           </div>
 
                           <div>
-                            <div style={{ fontSize: '10.5px', fontWeight: '800', color: 'var(--muted)', textTransform: 'uppercase' }}>🛵 Flota / Delivery</div>
+                            <div style={{ fontSize: '10.5px', fontWeight: '800', color: 'var(--muted)', textTransform: 'uppercase' }}>🛵 Deliveries</div>
                             <div style={{ fontSize: '13px', fontWeight: '800', color: '#3B82F6', marginTop: '2px' }}>
-                              {monthlyDeliveries} delivery | {monthlyPickups} retiro
+                              {monthlyDeliveries} envíos | {monthlyPickups} pickups
                             </div>
                           </div>
                         </div>
                       </div>
                     </div>
 
-                    {/* BOTONES DE ACCIÓN Y VER HISTORIAL */}
+                    {/* BOTONES DE ACCIÓN: IMPRIMIR, PDF, HISTORIAL Y WHATSAPP */}
                     <div className="cc-actions" style={{ marginTop: '16px', paddingTop: '12px', borderTop: '1px solid var(--border)', display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between' }}>
                       <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                         <button 
-                          onClick={() => setSelectedPartnerDetail({...req, monthlySales, monthlyOrders, monthlyDeliveries, monthlyPickups, commission10, cutoffDay})}
-                          style={{ padding: '10px 16px', borderRadius: '12px', background: 'var(--brand-dim)', border: '1.5px solid var(--brand)', color: 'var(--brand)', fontWeight: '900', fontSize: '13px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                          onClick={() => setSelectedPartnerDetail({...req, monthlySales, monthlyOrders, monthlyDeliveries, monthlyPickups, commission10, netPayout, cutoffDay})}
+                          style={{ padding: '10px 14px', borderRadius: '12px', background: 'var(--brand-dim)', border: '1.5px solid var(--brand)', color: 'var(--brand)', fontWeight: '900', fontSize: '12.5px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
                         >
-                          📊 Ver Historial Contable & Pedidos
+                          📊 Historial & Pedidos
+                        </button>
+
+                        <button 
+                          onClick={() => printMonthlyClosing({...req, monthlySales, monthlyOrders, monthlyDeliveries, monthlyPickups, commission10, netPayout, cutoffDay})}
+                          style={{ padding: '10px 14px', borderRadius: '12px', background: '#0D0E15', color: '#FFF', border: 'none', fontWeight: '800', fontSize: '12.5px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                        >
+                          🖨️ Imprimir Cuadre
+                        </button>
+
+                        <button 
+                          onClick={() => printMonthlyClosing({...req, monthlySales, monthlyOrders, monthlyDeliveries, monthlyPickups, commission10, netPayout, cutoffDay})}
+                          style={{ padding: '10px 14px', borderRadius: '12px', background: '#3B82F6', color: '#FFF', border: 'none', fontWeight: '800', fontSize: '12.5px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                        >
+                          📄 Descargar PDF
                         </button>
 
                         {waLink && (
-                          <a href={waLink} target="_blank" rel="noreferrer" style={{ padding: '10px 16px', borderRadius: '12px', background: '#25D366', color: '#FFF', textDecoration: 'none', fontWeight: '800', fontSize: '13px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                            💬 WhatsApp Estado Contable
+                          <a href={waLink} target="_blank" rel="noreferrer" style={{ padding: '10px 14px', borderRadius: '12px', background: '#25D366', color: '#FFF', textDecoration: 'none', fontWeight: '800', fontSize: '12.5px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                            💬 WhatsApp Cuadre
                           </a>
                         )}
                       </div>
@@ -1493,10 +1686,10 @@ export default function AdminPage({ navigate }) {
                 );
               })}
 
-              {/* MODAL DETALLADO DE HISTORIAL CONTABLE Y PEDIDOS INDIVIDUALES */}
+              {/* MODAL DETALLADO DE HISTORIAL CONTABLE CON BOTONES DE IMPRESIÓN Y PDF */}
               {selectedPartnerDetail && (
                 <div style={{ position: 'fixed', inset: 0, zIndex: 10000, background: 'rgba(13, 14, 21, 0.85)', backdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px', overflowY: 'auto' }} onClick={() => setSelectedPartnerDetail(null)}>
-                  <div style={{ background: '#FFFFFF', borderRadius: '24px', maxWidth: '780px', width: '100%', overflow: 'hidden', boxShadow: '0 25px 60px rgba(0,0,0,0.5)', position: 'relative', margin: 'auto', border: '1.5px solid var(--border)' }} onClick={e => e.stopPropagation()}>
+                  <div style={{ background: '#FFFFFF', borderRadius: '24px', maxWidth: '820px', width: '100%', overflow: 'hidden', boxShadow: '0 25px 60px rgba(0,0,0,0.5)', position: 'relative', margin: 'auto', border: '1.5px solid var(--border)' }} onClick={e => e.stopPropagation()}>
                     
                     {/* Modal Header */}
                     <div style={{ background: 'linear-gradient(135deg, #0d0e15 0%, #1e293b 100%)', padding: '24px', color: '#FFF', position: 'relative' }}>
@@ -1530,8 +1723,8 @@ export default function AdminPage({ navigate }) {
                         </div>
 
                         <div>
-                          <div style={{ fontSize: '11px', fontWeight: '800', color: '#047857', textTransform: 'uppercase' }}>Ingreso Neto Local</div>
-                          <div style={{ fontSize: '18px', fontWeight: '900', color: '#059669', marginTop: '2px', fontFamily: 'var(--mono)' }}>{fmtRD(Math.round(selectedPartnerDetail.monthlySales * 0.90))}</div>
+                          <div style={{ fontSize: '11px', fontWeight: '800', color: '#047857', textTransform: 'uppercase' }}>Pago Neto Local</div>
+                          <div style={{ fontSize: '18px', fontWeight: '900', color: '#059669', marginTop: '2px', fontFamily: 'var(--mono)' }}>{fmtRD(Math.round(selectedPartnerDetail.netPayout))}</div>
                         </div>
 
                         <div>
@@ -1582,9 +1775,14 @@ export default function AdminPage({ navigate }) {
 
                       {/* Botones de Pie del Modal */}
                       <div style={{ marginTop: '20px', display: 'flex', gap: '10px', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
-                        <button onClick={() => setSelectedPartnerDetail(null)} style={{ padding: '10px 20px', borderRadius: '12px', border: '1.5px solid #CBD5E1', background: '#FFF', color: '#475569', fontWeight: '800', fontSize: '13px', cursor: 'pointer' }}>
-                          Cerrar
+                        <button onClick={() => printMonthlyClosing(selectedPartnerDetail)} style={{ padding: '10px 18px', borderRadius: '12px', background: '#0D0E15', color: '#FFF', border: 'none', fontWeight: '800', fontSize: '13px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                          🖨️ Imprimir Cuadre
                         </button>
+                        
+                        <button onClick={() => printMonthlyClosing(selectedPartnerDetail)} style={{ padding: '10px 18px', borderRadius: '12px', background: '#3B82F6', color: '#FFF', border: 'none', fontWeight: '800', fontSize: '13px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                          📄 Descargar PDF
+                        </button>
+
                         <button 
                           onClick={() => {
                             showToast(`💳 Liquidación mensual registrada para ${selectedPartnerDetail.businessName}`);
@@ -1592,7 +1790,7 @@ export default function AdminPage({ navigate }) {
                           }}
                           style={{ padding: '10px 20px', borderRadius: '12px', background: 'linear-gradient(135deg, #10B981, #059669)', color: '#FFF', border: 'none', fontWeight: '900', fontSize: '13px', cursor: 'pointer', boxShadow: '0 4px 12px rgba(16,185,129,0.3)' }}
                         >
-                          💳 Marcar Corte & Liquidación al Día
+                          💳 Marcar Corte al Día
                         </button>
                       </div>
 
