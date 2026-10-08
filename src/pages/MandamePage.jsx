@@ -252,7 +252,8 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
     window.addEventListener('mandame-switch-tab', handleSwitch);
     return () => window.removeEventListener('mandame-switch-tab', handleSwitch);
   }, []);
- // 'inicio' | 'mercado' | 'promociones' | 'pedidos'
+
+  const [activeTab, setActiveTab] = useState('inicio'); // 'inicio' | 'mercado' | 'promociones' | 'pedidos' | 'buscar'
   const [merchantTab, setMerchantTab] = useState('catalogo'); // 'resumen' | 'pedidos' | 'catalogo' | 'promos' | 'resenas' | 'finanzas' | 'perfil'
 
   // Cart & State
