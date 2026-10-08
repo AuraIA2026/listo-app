@@ -509,6 +509,7 @@ export default function AdminPage({ navigate }) {
   const [toast, setToast]       = useState('');
   const [confirm, setConfirm]   = useState(null); // { type, obj }
   const [viewDocs, setViewDocs] = useState(null); // Usuario a inspeccionar documentos
+  const [previewImageModal, setPreviewImageModal] = useState(null); // { url, title } Modal inspeccion HD
   const [viewProStats, setViewProStats] = useState(null); // Modal avanzado de central de mando
   const [psFilter, setPsFilter] = useState('all'); // Filtros rápidos
   const [psLimit, setPsLimit] = useState(20); // Paginación
@@ -2020,34 +2021,34 @@ export default function AdminPage({ navigate }) {
 
               <div style={{display:'flex', flexDirection:'column', gap:12, marginBottom:20}}>
                 {viewDocs.verificacion?.docs?.cedulaFrontal ? (
-                  <div><span style={{fontSize:12, color:'#aaa', display:'block', marginBottom:4}}>Cédula: Frente</span>
-                  <img src={viewDocs.verificacion.docs.cedulaFrontal} style={{width:'100%', borderRadius:8, border:'1px solid #333'}} alt="Frente"/></div>
+                  <div><span style={{fontSize:12, color:'var(--muted)', display:'block', marginBottom:4}}>Cédula: Frente (Toca para ampliar HD)</span>
+                  <img src={viewDocs.verificacion.docs.cedulaFrontal} style={{width:'100%', borderRadius:10, border:'1px solid var(--border)', cursor:'pointer'}} alt="Frente" onClick={() => setPreviewImageModal({ url: viewDocs.verificacion.docs.cedulaFrontal, title: `Cédula Frente - ${viewDocs.verificacion?.nombre || ''}` })}/></div>
                 ) : (
                   <div style={{padding:'10px 14px', background:'rgba(239,68,68,0.1)', border:'1px solid #EF4444', borderRadius:10, color:'#EF4444', fontSize:12, fontWeight:700}}>
                     ⚠️ Foto Cédula (Frente): NO ADJUNTADA
                   </div>
                 )}
                 {viewDocs.verificacion?.docs?.cedulaTrasera ? (
-                  <div><span style={{fontSize:12, color:'#aaa', display:'block', marginBottom:4}}>Cédula: Reverso</span>
-                  <img src={viewDocs.verificacion.docs.cedulaTrasera} style={{width:'100%', borderRadius:8, border:'1px solid #333'}} alt="Reverso"/></div>
+                  <div><span style={{fontSize:12, color:'var(--muted)', display:'block', marginBottom:4}}>Cédula: Reverso (Toca para ampliar HD)</span>
+                  <img src={viewDocs.verificacion.docs.cedulaTrasera} style={{width:'100%', borderRadius:10, border:'1px solid var(--border)', cursor:'pointer'}} alt="Reverso" onClick={() => setPreviewImageModal({ url: viewDocs.verificacion.docs.cedulaTrasera, title: `Cédula Reverso - ${viewDocs.verificacion?.nombre || ''}` })}/></div>
                 ) : (
                   <div style={{padding:'10px 14px', background:'rgba(239,68,68,0.1)', border:'1px solid #EF4444', borderRadius:10, color:'#EF4444', fontSize:12, fontWeight:700}}>
                     ⚠️ Foto Cédula (Reverso): NO ADJUNTADA
                   </div>
                 )}
                 {viewDocs.verificacion?.docs?.selfie ? (
-                  <div><span style={{fontSize:12, color:'#aaa', display:'block', marginBottom:4}}>Selfie de Autenticidad</span>
-                  <img src={viewDocs.verificacion.docs.selfie} style={{width:'100%', borderRadius:8, border:'1px solid #333'}} alt="Selfie"/></div>
+                  <div><span style={{fontSize:12, color:'var(--muted)', display:'block', marginBottom:4}}>Selfie de Autenticidad (Toca para ampliar HD)</span>
+                  <img src={viewDocs.verificacion.docs.selfie} style={{width:'100%', borderRadius:10, border:'1px solid var(--border)', cursor:'pointer'}} alt="Selfie" onClick={() => setPreviewImageModal({ url: viewDocs.verificacion.docs.selfie, title: `Selfie con Cédula - ${viewDocs.verificacion?.nombre || ''}` })}/></div>
                 ) : (
                   <div style={{padding:'8px 12px', background:'rgba(239,68,68,0.1)', border:'1px solid #EF4444', borderRadius:10, color:'#EF4444', fontSize:12, fontWeight:700}}>
                     ⚠️ Selfie con Cédula: NO ADJUNTADA
                   </div>
                 )}
                 {viewDocs.verificacion?.docs?.buenaConducta ? (
-                  <div><span style={{fontSize:12, color:'#aaa', display:'block', marginBottom:4}}>Certificado de Buena Conducta</span>
+                  <div><span style={{fontSize:12, color:'var(--muted)', display:'block', marginBottom:4}}>Certificado de Buena Conducta (Toca para ampliar HD)</span>
                   {viewDocs.verificacion.docs.buenaConducta.includes('.pdf') 
                     ? <a href={viewDocs.verificacion.docs.buenaConducta} target="_blank" rel="noreferrer" style={{color:'#3B82F6'}}>📄 Ver PDF Buena Conducta</a>
-                    : <img src={viewDocs.verificacion.docs.buenaConducta} style={{width:'100%', borderRadius:8, border:'1px solid #333'}} alt="Antecedentes"/>}
+                    : <img src={viewDocs.verificacion.docs.buenaConducta} style={{width:'100%', borderRadius:10, border:'1px solid var(--border)', cursor:'pointer'}} alt="Antecedentes" onClick={() => setPreviewImageModal({ url: viewDocs.verificacion.docs.buenaConducta, title: `Buena Conducta - ${viewDocs.verificacion?.nombre || ''}` })}/>}
                   </div>
                 ) : (
                   <div style={{padding:'10px 14px', background:'rgba(239,68,68,0.1)', border:'1px solid #EF4444', borderRadius:10, color:'#EF4444', fontSize:12, fontWeight:700}}>
@@ -2582,41 +2583,86 @@ export default function AdminPage({ navigate }) {
                         </div>
                         
                         {isMedia ? (
-                          <div style={{display:'flex', gap:10, marginBottom:12, justifyContent:'center'}}>
+                          <div style={{display:'flex', flexDirection:'column', gap:12, marginBottom:16, width:'100%'}}>
                              {req.type === 'photo' && (
-                               <>
-                                 <div style={{flex:1, textAlign:'center'}}>
-                                   <div style={{fontSize:11, color:'var(--muted)', marginBottom:4}}>Foto Actual</div>
-                                   <img src={u?.photoURL || 'https://via.placeholder.com/100?text=Vacio'} style={{width:80, height:80, borderRadius:'50%', objectFit:'cover', border:'2px solid var(--border)'}} alt="Current"/>
+                               <div style={{display:'flex', gap:14, flexWrap:'wrap', width:'100%'}}>
+                                 {u?.photoURL && (
+                                   <div style={{flex:1, minWidth:'200px', textAlign:'center', background:'#FFF', padding:'12px', borderRadius:'16px', border:'1px solid var(--border)'}}>
+                                     <div style={{fontSize:11, fontWeight:'700', color:'var(--muted)', marginBottom:8}}>Foto de Perfil Anterior (Actual):</div>
+                                     <div 
+                                       style={{position:'relative', width:'100%', height:'220px', borderRadius:'14px', overflow:'hidden', cursor:'pointer', background:'#F8FAFC', border:'1px solid var(--border)'}}
+                                       onClick={() => setPreviewImageModal({ url: u.photoURL, title: `Foto de Perfil Anterior - ${u?.name || req.userName}` })}
+                                     >
+                                       <img src={u.photoURL} style={{width:'100%', height:'100%', objectFit:'cover'}} alt="Foto Perfil Actual"/>
+                                       <div style={{position:'absolute', bottom:8, right:8, background:'rgba(0,0,0,0.75)', color:'#FFF', padding:'4px 10px', borderRadius:'8px', fontSize:'11px', fontWeight:'700'}}>🔍 Ampliar</div>
+                                     </div>
+                                   </div>
+                                 )}
+                                 <div style={{flex:1.5, minWidth:'240px', textAlign:'center', background:'#FFF', padding:'14px', borderRadius:'16px', border:'2px solid #10B981', boxShadow:'0 6px 18px rgba(16,185,129,0.18)'}}>
+                                   <div style={{fontSize:12.5, fontWeight:'800', color:'#059669', marginBottom:8, display:'flex', alignItems:'center', justifyContent:'center', gap:6}}>
+                                     <span>📸 NUEVA FOTO DE PERFIL (VISTA PREVIA GRANDE)</span>
+                                   </div>
+                                   <div 
+                                     style={{position:'relative', width:'100%', height:'300px', borderRadius:'14px', overflow:'hidden', cursor:'pointer', background:'#F8FAFC', border:'1.5px solid #10B981'}}
+                                     onClick={() => setPreviewImageModal({ url: req.requestedChanges.photoURL, title: `NUEVA Foto de Perfil - ${u?.name || req.userName}` })}
+                                   >
+                                     <img src={req.requestedChanges.photoURL} style={{width:'100%', height:'100%', objectFit:'cover'}} alt="Nueva Foto de Perfil Grande"/>
+                                     <div style={{position:'absolute', bottom:10, left:'50%', transform:'translateX(-50%)', background:'linear-gradient(135deg, #10B981, #059669)', color:'#FFF', padding:'6px 16px', borderRadius:'20px', fontSize:'11.5px', fontWeight:'800', boxShadow:'0 4px 14px rgba(0,0,0,0.3)', whiteSpace:'nowrap', display:'flex', alignItems:'center', gap:6}}>
+                                       <span>🔍 AMPLIAR HD (VERIFICAR TELÉFONO)</span>
+                                     </div>
+                                   </div>
+                                   <div style={{fontSize:'11.5px', color:'var(--muted)', marginTop:'8px', fontStyle:'italic'}}>
+                                     💡 Haz clic sobre la foto para verla en pantalla completa y revisar si tiene números de teléfono.
+                                   </div>
                                  </div>
-                                 <div style={{display:'flex', alignItems:'center', fontSize:24, color:'var(--muted)'}}>➔</div>
-                                 <div style={{flex:1, textAlign:'center'}}>
-                                   <div style={{fontSize:11, color:'var(--brand)', fontWeight:700, marginBottom:4}}>Foto Nueva</div>
-                                   <img src={req.requestedChanges.photoURL} style={{width:80, height:80, borderRadius:'50%', objectFit:'cover', border:'3px solid #10B981'}} alt="New"/>
-                                 </div>
-                               </>
+                               </div>
                              )}
+
                              {req.type === 'cover' && (
-                               <>
-                                 <div style={{flex:1, textAlign:'center'}}>
-                                   <div style={{fontSize:11, color:'var(--muted)', marginBottom:4}}>Portada Actual</div>
-                                   <img src={u?.coverURL || 'https://via.placeholder.com/120?text=Sin+Portada'} style={{width:120, height:70, borderRadius:'8px', objectFit:'cover', border:'2px solid var(--border)'}} alt="Current"/>
+                               <div style={{display:'flex', gap:14, flexWrap:'wrap', width:'100%'}}>
+                                 {u?.coverURL && (
+                                   <div style={{flex:1, minWidth:'200px', textAlign:'center', background:'#FFF', padding:'12px', borderRadius:'16px', border:'1px solid var(--border)'}}>
+                                     <div style={{fontSize:11, fontWeight:'700', color:'var(--muted)', marginBottom:8}}>Portada Actual:</div>
+                                     <div 
+                                       style={{position:'relative', width:'100%', height:'180px', borderRadius:'14px', overflow:'hidden', cursor:'pointer', background:'#F8FAFC'}}
+                                       onClick={() => setPreviewImageModal({ url: u.coverURL, title: `Portada Actual - ${u?.name || req.userName}` })}
+                                     >
+                                       <img src={u.coverURL} style={{width:'100%', height:'100%', objectFit:'cover'}} alt="Portada Actual"/>
+                                       <div style={{position:'absolute', bottom:8, right:8, background:'rgba(0,0,0,0.75)', color:'#FFF', padding:'4px 10px', borderRadius:'8px', fontSize:'11px', fontWeight:'700'}}>🔍 Ampliar</div>
+                                     </div>
+                                   </div>
+                                 )}
+                                 <div style={{flex:1.5, minWidth:'240px', textAlign:'center', background:'#FFF', padding:'14px', borderRadius:'16px', border:'2px solid #10B981', boxShadow:'0 6px 18px rgba(16,185,129,0.18)'}}>
+                                   <div style={{fontSize:12.5, fontWeight:'800', color:'#059669', marginBottom:8}}>🖼️ NUEVA FOTO DE PORTADA (VISTA PREVIA GRANDE)</div>
+                                   <div 
+                                     style={{position:'relative', width:'100%', height:'220px', borderRadius:'14px', overflow:'hidden', cursor:'pointer', background:'#F8FAFC', border:'1.5px solid #10B981'}}
+                                     onClick={() => setPreviewImageModal({ url: req.requestedChanges.coverURL, title: `NUEVA Foto de Portada - ${u?.name || req.userName}` })}
+                                   >
+                                     <img src={req.requestedChanges.coverURL} style={{width:'100%', height:'100%', objectFit:'cover'}} alt="Nueva Portada Grande"/>
+                                     <div style={{position:'absolute', bottom:10, left:'50%', transform:'translateX(-50%)', background:'linear-gradient(135deg, #10B981, #059669)', color:'#FFF', padding:'6px 16px', borderRadius:'20px', fontSize:'11.5px', fontWeight:'800', boxShadow:'0 4px 14px rgba(0,0,0,0.3)', whiteSpace:'nowrap'}}>
+                                       🔍 AMPLIAR HD (VERIFICAR TELÉFONO)
+                                     </div>
+                                   </div>
                                  </div>
-                                 <div style={{display:'flex', alignItems:'center', fontSize:24, color:'var(--muted)'}}>➔</div>
-                                 <div style={{flex:1, textAlign:'center'}}>
-                                   <div style={{fontSize:11, color:'var(--brand)', fontWeight:700, marginBottom:4}}>Portada Nueva</div>
-                                   <img src={req.requestedChanges.coverURL} style={{width:120, height:70, borderRadius:'8px', objectFit:'cover', border:'3px solid #10B981'}} alt="New"/>
-                                 </div>
-                               </>
+                               </div>
                              )}
+
                              {req.type === 'work_photo' && (
-                               <div style={{textAlign:'center', width:'100%'}}>
-                                 <div style={{fontSize:11, color:'var(--brand)', fontWeight:700, marginBottom:6}}>Nueva Foto de Trabajo para Galería:</div>
+                               <div style={{textAlign:'center', width:'100%', background:'#FFF', padding:'14px', borderRadius:'16px', border:'2px solid #10B981'}}>
+                                 <div style={{fontSize:12.5, fontWeight:'800', color:'#059669', marginBottom:8}}>📷 NUEVA FOTO DE TRABAJO PARA GALERÍA (VISTA PREVIA GRANDE):</div>
                                  {(() => {
                                    const newPhotos = req.requestedChanges.photos || [];
                                    const addedPhoto = newPhotos[newPhotos.length - 1];
                                    return addedPhoto ? (
-                                     <img src={addedPhoto} style={{width:160, height:120, borderRadius:'12px', objectFit:'cover', border:'3px solid #10B981', boxShadow:'0 4px 12px rgba(0,0,0,0.1)'}} alt="New Work"/>
+                                     <div 
+                                       style={{position:'relative', width:'100%', maxWidth:'480px', height:'280px', margin:'auto', borderRadius:'14px', overflow:'hidden', cursor:'pointer', border:'1.5px solid #10B981', background:'#F8FAFC'}}
+                                       onClick={() => setPreviewImageModal({ url: addedPhoto, title: `Foto de Trabajo Realizado - ${u?.name || req.userName}` })}
+                                     >
+                                       <img src={addedPhoto} style={{width:'100%', height:'100%', objectFit:'cover'}} alt="New Work"/>
+                                       <div style={{position:'absolute', bottom:10, left:'50%', transform:'translateX(-50%)', background:'linear-gradient(135deg, #10B981, #059669)', color:'#FFF', padding:'6px 16px', borderRadius:'20px', fontSize:'11.5px', fontWeight:'800', boxShadow:'0 4px 14px rgba(0,0,0,0.3)', whiteSpace:'nowrap'}}>
+                                         🔍 AMPLIAR HD (VERIFICAR TELÉFONO)
+                                       </div>
+                                     </div>
                                    ) : <p>Error cargando foto</p>;
                                  })()}
                                </div>
@@ -3052,6 +3098,55 @@ export default function AdminPage({ navigate }) {
                  '💚 Confirmar validación'}
               </button>
               <button className="cm-btn ghost" onClick={() => {setConfirm(null); setBlockReason('');}}>Cancelar</button>
+            </div>
+          </div>
+        )}
+
+        {/* ── MODAL FULLSCREEN LIGHTBOX INSPECCIÓN HD DE FOTOS ── */}
+        {previewImageModal && (
+          <div 
+            style={{
+              position: 'fixed', inset: 0, background: 'rgba(0, 0, 0, 0.92)', backdropFilter: 'blur(10px)',
+              zIndex: 1000, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '20px'
+            }}
+            onClick={() => setPreviewImageModal(null)}
+          >
+            <div 
+              style={{
+                position: 'relative', width: '100%', maxWidth: '900px', maxHeight: '90vh',
+                display: 'flex', flexDirection: 'column', alignItems: 'center', background: '#0F172A',
+                borderRadius: '24px', border: '1.5px solid rgba(255, 255, 255, 0.15)', overflow: 'hidden',
+                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.7)'
+              }}
+              onClick={e => e.stopPropagation()}
+            >
+              {/* Header del Lightbox */}
+              <div style={{ width: '100%', padding: '16px 24px', background: '#1E293B', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255, 255, 255, 0.1)' }}>
+                <h4 style={{ color: '#FFF', fontFamily: 'var(--display)', fontSize: '15px', fontWeight: '800', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span>🔍 Inspección HD de Foto</span>
+                  <span style={{ fontSize: '12px', color: '#94A3B8', fontWeight: '500' }}>({previewImageModal.title || 'Vista Previa Ampliada'})</span>
+                </h4>
+                <button 
+                  onClick={() => setPreviewImageModal(null)}
+                  style={{ background: 'rgba(255, 255, 255, 0.1)', border: 'none', color: '#FFF', width: '32px', height: '32px', borderRadius: '50%', cursor: 'pointer', fontWeight: 'bold', fontSize: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* Imagen Principal Full Resolution */}
+              <div style={{ padding: '20px', width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', overflow: 'auto', background: '#020617', minHeight: '320px' }}>
+                <img 
+                  src={previewImageModal.url} 
+                  alt="HD Preview" 
+                  style={{ maxWidth: '100%', maxHeight: '72vh', objectFit: 'contain', borderRadius: '12px', boxShadow: '0 8px 30px rgba(0, 0, 0, 0.5)' }}
+                />
+              </div>
+
+              {/* Footer Info */}
+              <div style={{ width: '100%', padding: '12px 24px', background: '#1E293B', color: '#94A3B8', fontSize: '12px', textAlign: 'center', borderTop: '1px solid rgba(255, 255, 255, 0.1)' }}>
+                💡 Revisa detalladamente si la imagen contiene números de teléfono, datos de contacto o marcas no permitidas antes de aprobar.
+              </div>
             </div>
           </div>
         )}
