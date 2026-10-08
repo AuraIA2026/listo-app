@@ -7,14 +7,21 @@ import SubirHistoriaModal from './SubirHistoriaModal'
 import { getProPlanTheme } from '../planTheme'
 import './Historias.css'
 
-const HAND_TEXTS = [
+const HAND_TEXTS_DELIVERY = [
   '🍔 ¿Tienes hambre?',
   '👇 ¡Presiona aquí!',
   '🛵 Delivery & Mándame',
   '🛍️ Víveres & Súper'
 ];
 
-export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate }) {
+const HAND_TEXTS_SERVICES = [
+  '🛠️ ¿Buscas un técnico?',
+  '👇 Volver a Listo Patrón',
+  '⚡ Electricistas & Plomeros',
+  '🤝 Servicios Profesionales'
+];
+
+export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate, isMandameView = false }) {
   const [stories, setStories] = useState([])
   const [viewerOpen, setViewerOpen] = useState(false)
   const [selectedStoryIndex, setSelectedStoryIndex] = useState(0)
@@ -27,13 +34,15 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate
   const [handTextIndex, setHandTextIndex] = useState(0)
   const [showHandPointer, setShowHandPointer] = useState(true)
 
+  const activeHandTexts = isMandameView ? HAND_TEXTS_SERVICES : HAND_TEXTS_DELIVERY;
+
   // Timer para alternar el texto animado de la mano cada 2.4 segundos
   useEffect(() => {
     const timer = setInterval(() => {
-      setHandTextIndex(prev => (prev + 1) % HAND_TEXTS.length)
+      setHandTextIndex(prev => (prev + 1) % activeHandTexts.length)
     }, 2400)
     return () => clearInterval(timer)
-  }, [])
+  }, [activeHandTexts.length])
 
   // Timer para ocultar la mano animada automáticamente a los 7 segundos de abrir la app
   useEffect(() => {
@@ -225,21 +234,28 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate
     }
   }
 
+  const handleRibbonClick = () => {
+    if (typeof navigate === 'function') {
+      navigate(isMandameView ? 'home' : 'mandame');
+    } else {
+      const el = document.getElementById('hp-categories-section');
+      if (el) el.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
     <div className="historias-carrusel-wrapper">
-      {/* ── CINTA MAMEY LLAMATIVA "PEDIDOS LISTO" CON DESTELLOS Y MANO ANIMADA CON TEXTO ── */}
+      {/* ── CINTA MAMEY LLAMATIVA CON DESTELLOS Y MANO ANIMADA CON TEXTO ── */}
       <div className="cinta-pedidos-listo-container">
         {/* Mano animada presionando la cinta con texto alternante (Solo dura 7s al abrir la app) */}
         {showHandPointer && (
           <div 
             className="animated-hand-pointer"
-            onClick={() => {
-              if (typeof navigate === 'function') navigate('mandame');
-            }}
-            title="¡Haz clic para entrar a Pedidos Listo!"
+            onClick={handleRibbonClick}
+            title={isMandameView ? "¡Haz clic para volver a Listo Patrón!" : "¡Haz clic para entrar a Pedidos Listo!"}
           >
             <div className="hand-badge animated-fade-text" key={handTextIndex}>
-              {HAND_TEXTS[handTextIndex]}
+              {activeHandTexts[handTextIndex]}
             </div>
             <span className="hand-emoji">👇</span>
           </div>
@@ -247,28 +263,22 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate
 
         <div 
           className="cinta-pedidos-listo-wrapper"
-          onClick={() => {
-            if (typeof navigate === 'function') {
-              navigate('mandame');
-            } else {
-              const el = document.getElementById('hp-categories-section');
-              if (el) el.scrollIntoView({ behavior: 'smooth' });
-            }
-          }}
+          onClick={handleRibbonClick}
         >
-          <div className="cinta-pedidos-listo">
+          <div className="cinta-pedidos-listo" style={isMandameView ? { background: 'linear-gradient(135deg, #2563eb 0%, #3b82f6 40%, #1d4ed8 80%, #1e40af 100%)', boxShadow: '0 5px 16px rgba(37, 99, 235, 0.45), 0 0 10px rgba(255, 255, 255, 0.35) inset' } : {}}>
             <span className="sparkle-left">✨</span>
-            <span className="cinta-icon">🛵</span>
+            <span className="cinta-icon">{isMandameView ? '🤝' : '🛵'}</span>
             <div className="cinta-text-container">
-              <span className="cinta-text">PEDIDOS LISTO</span>
-              <span className="cinta-subtext">DELIVERY & MÁNDAME</span>
+              <span className="cinta-text">{isMandameView ? 'LISTO PATRÓN' : 'PEDIDOS LISTO'}</span>
+              <span className="cinta-subtext">{isMandameView ? 'SERVICIOS & TÉCNICOS' : 'DELIVERY & MÁNDAME'}</span>
             </div>
-            <span className="cinta-icon">🛍️</span>
+            <span className="cinta-icon">{isMandameView ? '🛠️' : '🛍️'}</span>
             <span className="sparkle-right">✨</span>
             <div className="cinta-shine"></div>
           </div>
         </div>
       </div>
+
 
       <div className="historias-track-container">
         {canScrollLeft && (

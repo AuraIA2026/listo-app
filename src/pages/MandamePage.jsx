@@ -1352,25 +1352,25 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
           {/* Header */}
           <header className="py-app-header" style={{ background: 'linear-gradient(135deg, #121829 0%, #0a0e1a 100%)', borderBottom: '3px solid #ff6b00', padding: '16px 16px 18px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-              <button 
+              <div 
+                className="cinta-pedidos-listo-wrapper"
                 onClick={() => navigate && navigate('home')}
-                style={{
-                  background: 'rgba(255,255,255,0.12)',
-                  border: '1px solid rgba(255,255,255,0.25)',
-                  color: 'white',
-                  padding: '6px 14px',
-                  borderRadius: '20px',
-                  fontWeight: '900',
-                  fontSize: '12px',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  backdropFilter: 'blur(6px)'
-                }}
+                style={{ margin: 0, width: 'auto' }}
+                title="Volver a Listo Patrón (Servicios Profesionales)"
               >
-                ← Volver a Listo Patrón
-              </button>
+                <div className="cinta-pedidos-listo" style={{ padding: '6px 14px', background: 'linear-gradient(135deg, #2563eb 0%, #3b82f6 40%, #1d4ed8 100%)', borderColor: 'rgba(255,255,255,0.7)', boxShadow: '0 4px 14px rgba(37,99,235,0.45)' }}>
+                  <span className="sparkle-left">✨</span>
+                  <span className="cinta-icon">🤝</span>
+                  <div className="cinta-text-container">
+                    <span className="cinta-text" style={{ fontSize: 13 }}>LISTO PATRÓN</span>
+                    <span className="cinta-subtext">SERVICIOS</span>
+                  </div>
+                  <span className="cinta-icon">🛠️</span>
+                  <span className="sparkle-right">✨</span>
+                  <div className="cinta-shine"></div>
+                </div>
+              </div>
+
               <div style={{ fontSize: '11px', fontWeight: 900, color: '#ff6b00', background: 'rgba(255,107,0,0.15)', padding: '4px 12px', borderRadius: '16px', border: '1px solid rgba(255,107,0,0.4)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                 🛵 PEDIDOS LISTO & MÁNDAME
               </div>
@@ -1479,13 +1479,15 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                       </div>
                     </div>
 
-                    {/* Carrusel de Historias 24h & Cinta Mamey Pedidos Listo */}
+                    {/* Carrusel de Historias 24h & Cinta Azul Listo Patrón */}
                     <HistoriasCarrusel 
                       userData={userData} 
                       isPro={userRole === 'pro' || userData?.role === 'pro'} 
                       onHirePro={(proId) => { navigate && navigate('proProfile', { id: proId }); }} 
                       navigate={navigate}
+                      isMandameView={true}
                     />
+
                   </div>
                 </div>
 
