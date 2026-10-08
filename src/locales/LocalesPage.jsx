@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react'
 import { collection, query, where, getDocs } from 'firebase/firestore'
 import { db } from '../firebase'
+import ListoMarketModule from './ListoMarketModule'
 import './Locales.css'
 
 const avatarColors = ['#F26000','#C24D00','#FF8533','#7A3000','#FFB380']
@@ -98,6 +99,9 @@ export default function LocalesPage({ lang = 'es', navigate }) {
 
   return (
     <div className="locales-page marketplace-view">
+
+      {/* MÓDULO LISTO MARKET & MERCADO QUICK-COMMERCE */}
+      <ListoMarketModule />
 
       {/* Header Estilo Marketplace */}
       <div className="locales-page-header">

@@ -14,6 +14,7 @@ import ProPlanAlertWidget from '../components/ProPlanAlertWidget'
 import PlanSelectionModal from '../components/PlanSelectionModal'
 import EstimadorPreciosModal from '../components/EstimadorPreciosModal'
 import SolicitudExpressModal from '../components/SolicitudExpressModal'
+import PedidosListoHub from '../components/PedidosListoHub'
 import CalculadoraMaterialesModal from '../components/CalculadoraMaterialesModal'
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
@@ -887,6 +888,9 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
           {search && <button className="search-clear" onClick={() => setSearch('')} style={{ zIndex: 3 }}>✕</button>}
         </div>
       </div>
+
+      {/* ── PEDIDOS LISTO HUB EN BUSCAR ── */}
+      {userRole !== 'pro' && <PedidosListoHub lang={lang} navigate={navigate} />}
 
       {/* ── CARRUSEL DE HISTORIAS DE TRABAJOS REALIZADOS (STORIES 24H) ── */}
       <HistoriasCarrusel 
