@@ -505,14 +505,11 @@ export default function AdminPage({ navigate }) {
   const [editRequests, setEditRequests] = useState([]); // Solicitudes de Edición
   const [alerts, setAlerts]     = useState([]); // Alertas de plan
   const [vipLocales, setVipLocales] = useState([]); // Locales VIP
-  const [storiesList, setStoriesList] = useState([]); // Historias de Trabajo para moderar
+  const [partnerRequests, setPartnerRequests] = useState([]); // Solicitudes de Comercios Partner
   const [toast, setToast]       = useState('');
   const [confirm, setConfirm]   = useState(null); // { type, obj }
   const [viewDocs, setViewDocs] = useState(null); // Usuario a inspeccionar documentos
   const [viewProStats, setViewProStats] = useState(null); // Modal avanzado de central de mando
-  const [viewStory, setViewStory] = useState(null); // Modal inspector de historias
-  const [viewEditRequest, setViewEditRequest] = useState(null); // Modal inspector de cambios de datos
-  const [inspectZoomImage, setInspectZoomImage] = useState(null); // Fullscreen zoom image preview
   const [psFilter, setPsFilter] = useState('all'); // Filtros rápidos
   const [psLimit, setPsLimit] = useState(20); // Paginación
   const [isAuthenticated, setIsAuthenticated] = useState(true); // Cambiado a true para evitar contraseña por ahora
@@ -538,7 +535,7 @@ export default function AdminPage({ navigate }) {
   const [notifyUser, setNotifyUser] = useState('');
   const [notifySearch, setNotifySearch] = useState('');
   const [showNotifyAc, setShowNotifyAc] = useState(false);
-  const [notifyMessage, setNotifyMessage] = useState('Hola, Bienvenido a Pedidos Listo. Para comenzar a generar dinero de inmediato debes completar tu perfil. ¡Te esperamos!');
+  const [notifyMessage, setNotifyMessage] = useState('Hola, Bienvenido a Listo Patrón. Para comenzar a generar dinero de inmediato debes completar tu perfil. ¡Te esperamos!');
   const [notifyType, setNotifyType] = useState('system');
 
   useEffect(() => {
@@ -589,14 +586,13 @@ export default function AdminPage({ navigate }) {
       setVipLocales(arr);
     });
 
-    // 8. Escuchar Historias de Trabajo para Moderación
-    const unsubStories = onSnapshot(collection(db, 'historias'), (snap) => {
+    // 8. Escuchar Solicitudes de Comercios Partner
+    const unsubPartnerReqs = onSnapshot(query(collection(db, 'partner_requests'), orderBy('createdAt', 'desc')), (snap) => {
       const arr = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-      arr.sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
-      setStoriesList(arr);
+      setPartnerRequests(arr);
     });
 
-    return () => { unsubPay(); unsubUsers(); unsubVerif(); unsubReps(); unsubEdits(); unsubAlerts(); unsubLocales(); unsubStories(); };
+    return () => { unsubPay(); unsubUsers(); unsubVerif(); unsubReps(); unsubEdits(); unsubAlerts(); unsubLocales(); unsubPartnerReqs(); };
   }, []);
 
   const prevUnreadCount = useRef(0);
@@ -641,40 +637,6 @@ export default function AdminPage({ navigate }) {
     }
   };
 
-  const handleDirectUnblock = async (targetUser) => {
-    if (!targetUser) return;
-    try {
-      await updateDoc(doc(db, 'users', targetUser.id), { 
-        planStatus: 'active', 
-        approved: true,
-        isBlocked: false,
-        isSuspended: false,
-        blocked: false,
-        status: 'active',
-        role: 'professional',
-        type: 'pro',
-        planExpirationDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-        available: true
-      });
-      if (targetUser.id) {
-        await addDoc(collection(db, 'notificaciones'), {
-          userId: targetUser.id,
-          type: 'system',
-          title: 'Hola, Bienvenido a Pedidos Listo.',
-          text: `¿Listo para ofrecer tus servicios?\nSi vas a trabajar como profesional, activa tu perfil en dos simples pasos:\n1. Toca el menú de las tres líneas (☰) en la esquina superior derecha.\n2. Selecciona "Trabajar como profesional".\n¡Empieza a recibir clientes hoy mismo!`,
-          date: new Date().toISOString(),
-          createdAt: new Date().toISOString(),
-          read: false
-        }).catch(() => {});
-      }
-      showToast(`✅ ${targetUser.name || 'Usuario'} activado`);
-      setViewProStats(prev => prev ? { ...prev, planStatus: 'active', approved: true, available: true, isBlocked: false, isSuspended: false, blocked: false, status: 'active' } : null);
-    } catch(e) {
-      console.error("Error activating user:", e);
-      showToast("❌ Error al activar usuario");
-    }
-  };
-
   /* Confirmar acciones reales con Firebase */
   const ejecutarConfirm = async () => {
     if (!confirm) return;
@@ -708,7 +670,7 @@ export default function AdminPage({ navigate }) {
                   userId: u.id,
                   type: 'system',
                   title: '💎 ¡Plan Activado con Éxito!',
-                  text: `Tu plan ${obj.planName} ha sido aprobado por el administrador. ¡Ya puedes ponerte en línea en la app Pedidos Listo!`,
+                  text: `Tu plan ${obj.planName} ha sido aprobado por el administrador. ¡Ya puedes ponerte en línea en la app Listo Patrón!`,
                   read: false,
                   date: new Date().toISOString(),
                   createdAt: new Date().toISOString()
@@ -763,16 +725,16 @@ export default function AdminPage({ navigate }) {
 
         await updateDoc(doc(db, 'users', obj.id), payload);
 
-        // Notificar al usuario sobre su éxito en activación / verificación
+        // Notificar al usuario sobre su éxito en verificación
         await addDoc(collection(db, 'notificaciones'), {
           userId: obj.id,
           type: 'system',
-          title: 'Hola, Bienvenido a Pedidos Listo.',
-          text: `¿Listo para ofrecer tus servicios?\nSi vas a trabajar como profesional, activa tu perfil en dos simples pasos:\n1. Toca el menú de las tres líneas (☰) en la esquina superior derecha.\n2. Selecciona "Trabajar como profesional".\n¡Empieza a recibir clientes hoy mismo!`,
+          title: '🚨 ¡Perfil Aprobado! 🎉',
+          text: 'Tu perfil ha sido aprobado por el administrador. ¡Ahora puedes postularte a un plan para recibir clientes!',
           date: new Date().toISOString(),
-          createdAt: new Date().toISOString(),
+          createdAt: new Date().toISOString(), // o serverTimestamp()
           read: false
-        }).catch(() => {});
+        });
 
         showToast(`🎉 ¡${obj.verificacion?.nombre || 'El usuario'} ahora es Profesional!`);
         setViewDocs(null); // Cerrar modal
@@ -783,17 +745,6 @@ export default function AdminPage({ navigate }) {
           'verificacion.estado': 'rechazada',
           'verificacion.fechaOculto': new Date().toISOString()
         });
-        if (obj.id) {
-          await addDoc(collection(db, 'notificaciones'), {
-            userId: obj.id,
-            type: 'system',
-            title: 'Tu foto no fue aprobada',
-            text: `Notamos que tu foto incluye números de teléfono, redes sociales o información publicitaria.\nPor políticas de la plataforma, las fotos de perfil deben mostrar únicamente tu rostro, logo o imagen\nprofesional limpia, sin datos de contacto ni anuncios.\nPor favor, sube una nueva imagen para que podamos activar tu perfil de inmediato.`,
-            date: new Date().toISOString(),
-            createdAt: new Date().toISOString(),
-            read: false
-          }).catch(() => {});
-        }
         showToast(`🔴 Postulación rechazada`);
         setViewDocs(null); // Cerrar modal
       }
@@ -802,14 +753,9 @@ export default function AdminPage({ navigate }) {
          await updateDoc(doc(db, 'users', obj.id), { 
             planStatus: 'inactive', 
             approved: false,
-            available: false,
-            isBlocked: true,
-            isSuspended: true,
-            status: 'blocked',
             blockReason: blockReason.trim()
          });
          showToast(`🔴 ${obj.name} marcado como suspendido`);
-         setViewProStats(prev => prev ? { ...prev, planStatus: 'inactive', approved: false, available: false, isBlocked: true, isSuspended: true, status: 'blocked' } : null);
          setBlockReason(''); // Resetear
       }
       if (type === 'reject_payment') {
@@ -823,17 +769,6 @@ export default function AdminPage({ navigate }) {
             planExpirationDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
             available: true
          });
-         if (obj.id) {
-           await addDoc(collection(db, 'notificaciones'), {
-              userId: obj.id,
-              type: 'system',
-              title: 'Hola, Bienvenido a Pedidos Listo.',
-              text: `¿Listo para ofrecer tus servicios?\nSi vas a trabajar como profesional, activa tu perfil en dos simples pasos:\n1. Toca el menú de las tres líneas (☰) en la esquina superior derecha.\n2. Selecciona "Trabajar como profesional".\n¡Empieza a recibir clientes hoy mismo!`,
-              date: new Date().toISOString(),
-              createdAt: new Date().toISOString(),
-              read: false
-           }).catch(() => {});
-         }
          showToast(`✅ ${obj.name} activado`);
       }
       if (type === 'add_contract') {
@@ -883,7 +818,7 @@ export default function AdminPage({ navigate }) {
                      await addDoc(collection(db, 'notificaciones'), {
                         userId: notifyUser,
                         type: notifyType,
-                        title: notifyType === 'promo' ? '🏷️ ¡Nueva Oferta!' : 'Mensaje de Pedidos Listo',
+                        title: notifyType === 'promo' ? '🏷️ ¡Nueva Oferta!' : 'Mensaje de Listo Patrón',
                         text: notifyMessage,
                         date: new Date().toISOString(),
                         read: false
@@ -900,7 +835,7 @@ export default function AdminPage({ navigate }) {
                      await addDoc(collection(db, 'notificaciones'), {
                         userId: u.id,
                         type: notifyType,
-                        title: notifyType === 'promo' ? '🏷️ ¡Nueva Oferta!' : 'Mensaje de Pedidos Listo',
+                        title: notifyType === 'promo' ? '🏷️ ¡Nueva Oferta!' : 'Mensaje de Listo Patrón',
                         text: notifyMessage,
                         date: new Date().toISOString(),
                         read: false
@@ -1044,10 +979,9 @@ export default function AdminPage({ navigate }) {
             await addDoc(collection(db, 'notificaciones'), {
                userId: targetUserId,
                type: 'system',
-               title: 'Tu foto no fue aprobada',
-               text: `Notamos que tu foto incluye números de teléfono, redes sociales o información publicitaria.\nPor políticas de la plataforma, las fotos de perfil deben mostrar únicamente tu rostro, logo o imagen\nprofesional limpia, sin datos de contacto ni anuncios.\nPor favor, sube una nueva imagen para que podamos activar tu perfil de inmediato.`,
+               title: 'Cambio de Perfil Rechazado',
+               text: 'Hola, tu solicitud para actualizar tus datos o foto de perfil no fue aprobada por nuestros agentes. Intenta de nuevo con información válida.',
                date: new Date().toISOString(),
-               createdAt: new Date().toISOString(),
                read: false
             });
          }
@@ -1095,62 +1029,6 @@ export default function AdminPage({ navigate }) {
          showToast('🗑️ Alerta eliminada');
       }
 
-      if (type === 'approve_story') {
-        const nowTime = new Date()
-        const expiresAt = new Date(nowTime.getTime() + 24 * 60 * 60 * 1000).toISOString()
-        await updateDoc(doc(db, 'historias', obj.id), {
-          status: 'approved',
-          moderated: true,
-          approvedAt: nowTime.toISOString(),
-          expiresAt: expiresAt
-        });
-        if (obj.proId && !obj.proId.startsWith('anon_') && !obj.proId.startsWith('pro_')) {
-          await addDoc(collection(db, 'notificaciones'), {
-            userId: obj.proId,
-            type: 'system',
-            title: '📸 ¡Tu Historia ha sido Aprobada! 🎉',
-            text: 'Tu Historia de Trabajo de 24h ha sido validada por administración y ya está visible en la plataforma.',
-            date: new Date().toISOString(),
-            createdAt: new Date().toISOString(),
-            read: false
-          }).catch(() => {});
-        }
-        showToast(`📸 Historia de ${obj.proName || 'Profesional'} aprobada y publicada`);
-      }
-
-      if (type === 'reject_story') {
-        await updateDoc(doc(db, 'historias', obj.id), {
-          status: 'rejected',
-          moderated: false,
-          approved: false,
-          rejectedAt: new Date().toISOString()
-        });
-
-        // Limpiar notificaciones de admin referentes a esta historia
-        const notifsToDelete = alerts.filter(a => a.storyDocId === obj.id || (a.type === 'new_story_review' && a.storyDocId === obj.id));
-        for (const n of notifsToDelete) {
-          try { await deleteDoc(doc(db, 'notificaciones', n.id)); } catch(e){}
-        }
-
-        if (obj.proId && !obj.proId.startsWith('anon_') && !obj.proId.startsWith('pro_')) {
-          await addDoc(collection(db, 'notificaciones'), {
-            userId: obj.proId,
-            type: 'system',
-            title: '📸 Historia de Trabajo no aprobada',
-            text: `Notamos que tu historia de trabajo no cumple con las políticas de contenido limpio de la plataforma.\nPor favor, sube una nueva imagen para que podamos publicarla de inmediato.`,
-            date: new Date().toISOString(),
-            createdAt: new Date().toISOString(),
-            read: false
-          }).catch(() => {});
-        }
-        showToast(`🔴 Historia rechazada`);
-      }
-
-      if (type === 'delete_story') {
-        await deleteDoc(doc(db, 'historias', obj.id));
-        showToast(`🗑️ Historia eliminada`);
-      }
-
       if (type === 'mark_all_read') {
          const batch = writeBatch(db);
          const unreads = alerts.filter(a => !a.read);
@@ -1159,6 +1037,51 @@ export default function AdminPage({ navigate }) {
          });
          await batch.commit();
          showToast('✅ Todas las alertas marcadas como leídas');
+      }
+
+      if (type === 'approve_partner_request') {
+         await updateDoc(doc(db, 'partner_requests', obj.id), { 
+           status: 'approved', 
+           processedAt: new Date().toISOString(),
+           validatedBy: 'admin'
+         });
+         
+         // Registrar automáticamente en la colección 'locales' para activarlo en el directorio de la App
+         try {
+           await addDoc(collection(db, 'locales'), {
+             nombre: obj.businessName || 'Comercio Partner',
+             propietario: `${obj.ownerName || ''} ${obj.ownerLastName || ''}`.trim(),
+             email: obj.email || '',
+             telefono: obj.phone || '',
+             ciudad: obj.city || 'Santo Domingo',
+             categoria: obj.businessType || 'Restaurante / Comida',
+             sucursales: parseInt(obj.branches || '1'),
+             localCalle: obj.isStreetStore === 'Si',
+             activo: true,
+             verificado: true,
+             plan: 'PedidosListo Partner',
+             comision: '10%',
+             createdAt: new Date().toISOString()
+           });
+         } catch (eLoc) {
+           console.error("Error creando registro en locales:", eLoc);
+         }
+
+         // Marcar alertas/notificaciones asociadas como leídas
+         const notifsToUpdate = alerts.filter(a => a.requestId === obj.id || (a.text && obj.phone && a.text.includes(obj.phone)));
+         for (const nDoc of notifsToUpdate) {
+           try { await updateDoc(doc(db, 'notificaciones', nDoc.id), { read: true }); } catch (eNotif) {}
+         }
+
+         showToast(`🎉 Comercio "${obj.businessName}" validado y activado exitosamente`);
+      }
+
+      if (type === 'reject_partner_request') {
+         await updateDoc(doc(db, 'partner_requests', obj.id), { 
+           status: 'rejected', 
+           processedAt: new Date().toISOString() 
+         });
+         showToast(`🔴 Solicitud de "${obj.businessName}" archivada`);
       }
     } catch(err) {
       console.error(err);
@@ -1169,8 +1092,8 @@ export default function AdminPage({ navigate }) {
   // Separemos los pagos en completados y pendientes
   const completedPayments = payments.filter(p => p.status === 'paid');
   const pendingPayments   = payments.filter(p => p.status === 'pending');
-  // Usuarios bloqueados explícitamente (solo los suspendidos/bloqueados reales)
-  const blockedUsers      = users.filter(u => u.isBlocked || u.isSuspended || u.blocked || u.status === 'blocked');
+  // Usuarios bloqueados/pendientes de aprobar (solo profesionales)
+  const blockedUsers      = users.filter(u => u.role === 'professional' && (!u.approved || u.planStatus === 'inactive'));
 
   const pendienteCount = pendingPayments.length;
   const bloqueadoCount = blockedUsers.length;
@@ -1219,8 +1142,8 @@ export default function AdminPage({ navigate }) {
           <div className="topbar-left">
             <button className="admin-back" onClick={() => navigate && navigate('profile')}>‹</button>
             <span className="admin-title">🛡️ Admin</span>
-            {(pendienteCount + bloqueadoCount + alerts.filter(a => !a.read).length) > 0 && (
-              <span className="admin-badge">{pendienteCount + bloqueadoCount + alerts.filter(a => !a.read).length} alertas</span>
+            {(pendienteCount + bloqueadoCount + partnerRequests.filter(r => r.status === 'pending').length + alerts.filter(a => !a.read).length) > 0 && (
+              <span className="admin-badge">{pendienteCount + bloqueadoCount + partnerRequests.filter(r => r.status === 'pending').length + alerts.filter(a => !a.read).length} alertas</span>
             )}
           </div>
           <div className="topbar-right">
@@ -1255,8 +1178,9 @@ export default function AdminPage({ navigate }) {
         {/* TABS */}
         <div className="admin-tabs" style={{overflowX:'auto', paddingBottom:4}}>
           {[
-            { id:'historias',    icon:'📸', label:'Historias', count: storiesList.filter(s => s.status === 'pending' || (!s.status && !s.moderated)).length },
+            { id:'comercios',     icon:'🏪', label:'Comercio', count: partnerRequests.filter(r => r.status === 'pending').length },
             { id:'postulaciones', icon:'🛡️', label:'Nuevos', count:verifications.length },
+            { id:'locales',      icon:'🏬', label:'Locales VIP', count: vipLocales.filter(l => !l.activo).length },
             { id:'alertas',      icon:'🔔', label:'Alertas', count: alerts.filter(a => !a.read).length },
             { id:'pagos',      icon:'💳', label:'Historial',  count:completedPayments.length },
             { id:'comisiones', icon:'⏳', label:'Validar', count:pendienteCount },
@@ -1272,6 +1196,110 @@ export default function AdminPage({ navigate }) {
             </button>
           ))}
         </div>
+        {tab === 'comercios' && (
+          <div className="admin-section" style={{marginTop:16}}>
+            {/* Cabecera y Resumen de Métricas de Comercio */}
+            <div style={{ background: 'var(--surface)', borderRadius: '18px', padding: '16px 20px', marginBottom: '16px', border: '1px solid var(--border)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                <span className="section-title" style={{ color: 'var(--brand)', fontSize: '13px' }}>
+                  🏪 Panel de Validación de Comercios Partner ({partnerRequests.length})
+                </span>
+                <span style={{ fontSize: '11px', background: 'var(--brand-dim)', color: 'var(--brand)', padding: '4px 10px', borderRadius: '12px', fontWeight: '800' }}>
+                  CONTRATACIÓN COMERCIAL RD
+                </span>
+              </div>
+
+              {/* Sub-tarjetas de estado */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))', gap: '8px' }}>
+                <div style={{ background: 'var(--surface2)', borderRadius: '12px', padding: '10px 12px', textAlign: 'center' }}>
+                  <div style={{ fontSize: '18px', fontWeight: '900', color: 'var(--brand)' }}>
+                    {partnerRequests.filter(r => !r.status || r.status === 'pending').length}
+                  </div>
+                  <div style={{ fontSize: '10.5px', color: 'var(--muted)', fontWeight: '700' }}>⏳ Pendientes</div>
+                </div>
+                <div style={{ background: 'var(--surface2)', borderRadius: '12px', padding: '10px 12px', textAlign: 'center' }}>
+                  <div style={{ fontSize: '18px', fontWeight: '900', color: 'var(--green)' }}>
+                    {partnerRequests.filter(r => r.status === 'approved').length}
+                  </div>
+                  <div style={{ fontSize: '10.5px', color: 'var(--muted)', fontWeight: '700' }}>✅ Validados / Activos</div>
+                </div>
+                <div style={{ background: 'var(--surface2)', borderRadius: '12px', padding: '10px 12px', textAlign: 'center' }}>
+                  <div style={{ fontSize: '18px', fontWeight: '900', color: 'var(--red)' }}>
+                    {partnerRequests.filter(r => r.status === 'rejected').length}
+                  </div>
+                  <div style={{ fontSize: '10.5px', color: 'var(--muted)', fontWeight: '700' }}>🔴 Archivados</div>
+                </div>
+              </div>
+            </div>
+
+            {partnerRequests.length === 0 && (
+              <div className="empty-admin"><p>No hay solicitudes de comercios por el momento.</p></div>
+            )}
+
+            {partnerRequests.map((req, i) => {
+              const cleanPhone = (req.phone || '').replace(/\D/g, '');
+              const formattedWaPhone = cleanPhone.length === 10 ? `1${cleanPhone}` : cleanPhone;
+              const waLink = cleanPhone ? `https://wa.me/${formattedWaPhone}?text=Hola%20${encodeURIComponent(req.ownerName || 'amigo')},%20te%20contactamos%20de%20PedidosListo%20Partner%20sobre%20la%20solicitud%20de%20tu%20comercio%20"${encodeURIComponent(req.businessName || '')}".` : null;
+
+              return (
+                <div className="payment-card" key={req.id} style={{animationDelay:`${i*.06}s`, borderColor: req.status === 'approved' ? 'rgba(16,185,129,0.4)' : req.status === 'rejected' ? 'rgba(239,68,68,0.3)' : 'rgba(242,96,0,0.5)', background: req.status === 'approved' ? '#F0FDF4' : 'var(--surface)'}}>
+                  <div className="pc-top" style={{alignItems:'flex-start'}}>
+                    <div className="pc-avatar" style={{background: req.status === 'approved' ? '#10B981' : 'linear-gradient(135deg, #F26000, #ff3d00)', fontSize:'22px', borderRadius:'14px', width:'46px', height:'46px', display:'flex', alignItems:'center', justifyContent:'center', color:'#FFF'}}>
+                      🏪
+                    </div>
+                    <div className="pc-info" style={{flex:1}}>
+                      <div style={{display:'flex', alignItems:'center', gap:'8px', flexWrap:'wrap'}}>
+                        <div className="pc-name" style={{fontSize:'17px', fontWeight:'900', color:'var(--text)'}}>{req.businessName || 'Comercio Sin Nombre'}</div>
+                        <span className={`status-pill ${req.status === 'approved' ? 'paid' : req.status === 'rejected' ? 'blocked' : 'waiting'}`} style={{fontSize:'10.5px'}}>
+                          {req.status === 'approved' ? '✅ Comercio Validado & Activo' : req.status === 'rejected' ? '🔴 Solicitud Archivada' : '⏳ Pendiente de Validación'}
+                        </span>
+                      </div>
+                      
+                      <div className="pc-detail" style={{fontWeight:'800', color:'var(--text)', marginTop:4, fontSize:'13.5px'}}>
+                        👤 Dueño: {req.ownerName} {req.ownerLastName}
+                      </div>
+                      
+                      <div style={{fontSize:'12.5px', color:'var(--muted)', marginTop:6, display:'flex', flexWrap:'wrap', gap:'12px'}}>
+                        <span>📧 <strong>Email:</strong> {req.email || 'Sin correo'}</span>
+                        <span>📞 <strong>Teléfono:</strong> {req.phone}</span>
+                        <span>📍 <strong>Ciudad:</strong> {req.city || 'Santo Domingo'}</span>
+                      </div>
+
+                      <div style={{fontSize:'12px', color:'var(--text)', marginTop:8, display:'flex', gap:'8px', flexWrap:'wrap'}}>
+                        <span style={{background:'var(--surface2)', padding:'3px 10px', borderRadius:'8px', fontWeight:'800', border:'1px solid var(--border)'}}>🏷️ {req.businessType}</span>
+                        <span style={{background:'var(--surface2)', padding:'3px 10px', borderRadius:'8px', fontWeight:'800', border:'1px solid var(--border)'}}>🏢 Sucursales: {req.branches || 1}</span>
+                        <span style={{background:'var(--surface2)', padding:'3px 10px', borderRadius:'8px', fontWeight:'800', border:'1px solid var(--border)'}}>🚪 Local a Calle: {req.isStreetStore}</span>
+                        <span style={{background:'rgba(242,96,0,0.1)', color:'var(--brand)', padding:'3px 10px', borderRadius:'8px', fontWeight:'800', border:'1px solid rgba(242,96,0,0.2)'}}>💰 Comisión 10%</span>
+                      </div>
+                    </div>
+                    
+                    <div className="pc-right" style={{textAlign:'right'}}>
+                      <div style={{fontSize:'11px', color:'var(--muted)', fontWeight:'600'}}>{fmtDate(req.createdAt)}</div>
+                    </div>
+                  </div>
+
+                  <div className="cc-actions" style={{marginTop:16, display:'flex', gap:'10px', flexWrap:'wrap'}}>
+                    {waLink && (
+                      <a href={waLink} target="_blank" rel="noreferrer" className="cc-btn remind" style={{background:'#25D366', color:'#FFF', textDecoration:'none', textAlign:'center', display:'inline-flex', alignItems:'center', justifyContent:'center', gap:6, padding:'10px 16px', borderRadius:'12px', fontWeight:'800', fontSize:'13px'}}>
+                        💬 Contactar por WhatsApp
+                      </a>
+                    )}
+                    {req.status !== 'approved' && (
+                      <button className="cc-btn paid" onClick={() => setConfirm({type:'approve_partner_request', obj: req})} style={{padding:'10px 16px', borderRadius:'12px', fontWeight:'800', fontSize:'13px', background:'linear-gradient(135deg, #10B981, #059669)', color:'#FFF', border:'none', cursor:'pointer', boxShadow:'0 4px 10px rgba(16,185,129,0.3)'}}>
+                        ✅ Aprobar & Validar Comercio
+                      </button>
+                    )}
+                    {req.status !== 'rejected' && (
+                      <button className="cc-btn block" onClick={() => setConfirm({type:'reject_partner_request', obj: req})} style={{padding:'10px 16px', borderRadius:'12px', fontWeight:'800', fontSize:'13px'}}>
+                        🔴 Archivar Solicitud
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
 
         {/* ── TAB: POSTULACIONES (Aprobar Nuevos Profesionales) ── */}
         {tab === 'postulaciones' && (
@@ -1312,126 +1340,43 @@ export default function AdminPage({ navigate }) {
           </div>
         )}
 
-        {/* ── TAB: HISTORIAS (Moderación de Historias de Trabajo) ── */}
-        {tab === 'historias' && (
+        {/* ── TAB: LOCALES VIP (Aprobar Locales VIP) ── */}
+        {tab === 'locales' && (
           <div className="admin-section" style={{marginTop:16}}>
             <div className="section-header">
-              <span className="section-title">Moderación de Historias ({storiesList.length})</span>
+              <span className="section-title">Locales VIP por Aprobar ({vipLocales.filter(l => !l.activo).length})</span>
             </div>
-            {storiesList.length === 0 && (
-              <div className="empty-admin"><p>No hay historias de trabajo registradas aún.</p></div>
+            {vipLocales.filter(l => !l.activo).length === 0 && (
+              <div className="empty-admin"><p>No hay locales VIP pendientes de aprobación.</p></div>
             )}
-            {storiesList.map((story, i) => {
-              const isRejected = story.status === 'rejected' || story.moderated === 'rejected' || story.approved === false;
-              const isApproved = (story.status === 'approved' || story.approved === true) && !isRejected;
-              const isPending = !isApproved && !isRejected;
-
-              return (
-                <div 
-                  className="payment-card" 
-                  key={story.id} 
-                  style={{
-                    animationDelay: `${i * .05}s`, 
-                    borderColor: isPending ? '#F59E0B' : isApproved ? '#10B981' : '#EF4444',
-                    background: isPending ? '#FFFDF5' : '#FFFFFF'
-                  }}
-                >
-                  <div className="pc-top" style={{alignItems:'center'}}>
-                    <img 
-                      src={story.proAvatar || 'https://randomuser.me/api/portraits/men/32.jpg'} 
-                      alt={story.proName} 
-                      style={{ width: 44, height: 44, borderRadius: '50%', objectFit: 'cover', border: '2px solid #F26000' }} 
-                    />
-                    <div className="pc-info">
-                      <div className="pc-name">{story.proName || 'Profesional'}</div>
-                      <div className="pc-detail">⚡ {story.proCategory} · {fmtDate(story.createdAt)}</div>
-                    </div>
-                    <div className="pc-right">
-                      <span className={`status-pill ${isApproved ? 'paid' : isPending ? 'pending' : 'blocked'}`}>
-                        {isApproved ? '✅ Aprobada' : isPending ? '⏳ Pendiente' : '🔴 Rechazada'}
-                      </span>
-                    </div>
+            {vipLocales.filter(l => !l.activo).map((local, i) => (
+              <div className="payment-card" key={local.id} style={{animationDelay:`${i*.06}s`, borderColor:'rgba(245,158,11,0.3)'}}>
+                <div className="pc-top" style={{alignItems:'center'}}>
+                  <div className="pc-avatar" style={{background:'#F59E0B', backgroundImage: `url(${local.logoURL})`, backgroundSize: 'cover', backgroundPosition: 'center'}}>
+                    {!local.logoURL && '🏬'}
                   </div>
-
-                  {story.caption && (
-                    <div style={{ background: '#F8FAFC', padding: '10px 14px', borderRadius: '10px', marginTop: '10px', fontSize: '13px', color: '#1E293B', borderLeft: '3px solid #F26000' }}>
-                      💬 "{story.caption}"
-                    </div>
-                  )}
-
-                  {(story.imageUrl || story.videoUrl) && (
-                    <div style={{ marginTop: '12px', textAlign: 'center', cursor: 'pointer' }} onClick={() => setViewStory(story)}>
-                      {story.mediaType === 'video' || story.videoUrl ? (
-                        <video 
-                          src={story.videoUrl || story.imageUrl} 
-                          controls 
-                          style={{ width: '100%', maxHeight: '280px', borderRadius: '14px', background: '#0F172A', objectFit: 'contain' }} 
-                        />
-                      ) : (
-                        <img 
-                          src={story.imageUrl} 
-                          alt="Trabajo" 
-                          style={{ width: '100%', maxHeight: '280px', borderRadius: '14px', objectFit: 'cover', border: '1px solid #E2E8F0' }} 
-                        />
-                      )}
-                    </div>
-                  )}
-
-                  <div className="cc-actions" style={{ marginTop: '14px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                    <button 
-                      className="cc-btn remind" 
-                      onClick={() => setViewStory(story)}
-                      style={{ background: '#3B82F6', color: '#fff', border: 'none', fontWeight: 800, fontSize: '12px', flex: '1 1 100%' }}
-                    >
-                      🔎 Inspeccionar en Ventana Aparte
-                    </button>
-                    {isPending && (
-                      <>
-                        <button 
-                          className="cc-btn paid" 
-                          onClick={() => setConfirm({ type: 'approve_story', obj: story })}
-                          style={{ fontWeight: 800, fontSize: '12px', flex: 1 }}
-                        >
-                          ✅ Aprobar y Publicar
-                        </button>
-                        <button 
-                          className="cc-btn block" 
-                          onClick={() => setConfirm({ type: 'reject_story', obj: story })}
-                          style={{ fontWeight: 800, fontSize: '12px', flex: 1 }}
-                        >
-                          ❌ Rechazar
-                        </button>
-                      </>
-                    )}
-                    {isApproved && (
-                      <button 
-                        className="cc-btn block" 
-                        onClick={() => setConfirm({ type: 'reject_story', obj: story })}
-                        style={{ fontWeight: 800, fontSize: '12px', flex: 1 }}
-                      >
-                        🔴 Desactivar
-                      </button>
-                    )}
-                    {isRejected && (
-                      <button 
-                        className="cc-btn paid" 
-                        onClick={() => setConfirm({ type: 'approve_story', obj: story })}
-                        style={{ fontWeight: 800, fontSize: '12px', flex: 1 }}
-                      >
-                        ✅ Reactivar
-                      </button>
-                    )}
-                    <button 
-                      className="cc-btn remind" 
-                      onClick={() => setConfirm({ type: 'delete_story', obj: story })}
-                      style={{ flex: '0.4', fontSize: '12px' }}
-                    >
-                      🗑️
+                  <div className="pc-info">
+                    <div className="pc-name">{local.nombre || 'Local VIP'}</div>
+                    <div className="pc-detail">{local.categoria || 'Servicios VIP'} · Pro: {local.proNombre}</div>
+                  </div>
+                  <div className="pc-right">
+                    <button className="cc-btn remind" style={{background:'#F59E0B', color:'#fff', border:'none', padding:'6px 12px', fontSize:'11px'}} onClick={() => setConfirm({type:'approve_local', obj: local})}>
+                      ✅ Aprobar Local VIP
                     </button>
                   </div>
                 </div>
-              );
-            })}
+                {local.fotosTrabajos && local.fotosTrabajos.length > 0 && (
+                  <div style={{marginTop:10}}>
+                    <span style={{fontSize:11, color:'var(--muted)', display:'block', marginBottom:4}}>Fotos de trabajos cargadas ({local.fotosTrabajos.length}):</span>
+                    <div style={{display:'flex', gap:6, overflowX:'auto', paddingBottom:4}}>
+                      {local.fotosTrabajos.map((foto, idx) => (
+                        <img key={idx} src={foto} style={{width:55, height:55, borderRadius:8, objectFit:'cover', border:'1px solid #ddd'}} alt="Trabajo"/>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
         )}
 
@@ -1490,100 +1435,9 @@ export default function AdminPage({ navigate }) {
               </div>
 
               <div style={{display:'flex', gap:10}}>
-                <button onClick={() => setConfirm({type:'approve_verif', obj: viewDocs})} style={{flex:1, background:'#10B981', color:'#fff', padding:14, borderRadius:12, border:'none', fontSize:14, fontWeight:800, cursor:'pointer'}}>✅ ACTIVAR PERFIL</button>
+                <button onClick={() => setConfirm({type:'approve_verif', obj: viewDocs})} style={{flex:1, background:'#10B981', color:'#fff', padding:14, borderRadius:12, border:'none', fontSize:14, fontWeight:800, cursor:'pointer'}}>✅ APROBAR</button>
                 <button onClick={() => setConfirm({type:'reject_verif', obj: viewDocs})} style={{flex:1, background:'#EF4444', color:'#fff', padding:14, borderRadius:12, border:'none', fontSize:14, fontWeight:800, cursor:'pointer'}}>❌ RECHAZAR</button>
               </div>
-            </div>
-          </div>
-        )}
-
-        {/* ── MODAL INSPECTOR DE HISTORIA EN VENTANA APARTE ── */}
-        {viewStory && (
-          <div style={{position:'fixed', inset:0, background:'rgba(0,0,0,0.85)', zIndex:999, display:'flex', flexDirection:'column', backdropFilter:'blur(10px)', padding:16}} onClick={() => setViewStory(null)}>
-            <div style={{
-              background:'var(--surface)', width:'100%', maxWidth:540, margin:'auto', borderRadius:24,
-              overflow:'hidden', border:'1px solid rgba(242,96,0,0.3)', boxShadow:'0 25px 50px -12px rgba(0,0,0,0.5)',
-              display:'flex', flexDirection:'column', maxHeight:'92vh', animation:'scaleUp .3s cubic-bezier(0.16, 1, 0.3, 1)'
-            }} onClick={e => e.stopPropagation()}>
-              
-              {/* Header Modal */}
-              <div style={{background:'linear-gradient(135deg, #111827, #1E293B)', padding:'18px 20px', color:'#fff', display:'flex', alignItems:'center', justifyContent:'space-between', borderBottom:'1px solid rgba(255,255,255,0.1)'}}>
-                <div style={{display:'flex', alignItems:'center', gap:12}}>
-                  <img 
-                    src={viewStory.proAvatar || 'https://randomuser.me/api/portraits/men/32.jpg'} 
-                    alt={viewStory.proName} 
-                    style={{width:44, height:44, borderRadius:'50%', objectFit:'cover', border:'2px solid var(--brand)'}}
-                  />
-                  <div>
-                    <h3 style={{fontFamily:'var(--display)', fontSize:16, fontWeight:800, margin:0, color:'#fff'}}>{viewStory.proName || 'Profesional'}</h3>
-                    <span style={{fontSize:12, color:'rgba(255,255,255,0.7)'}}>⚡ {viewStory.proCategory || 'Historia de Trabajo'} · {fmtDate(viewStory.createdAt)}</span>
-                  </div>
-                </div>
-                <button onClick={() => setViewStory(null)} style={{background:'rgba(255,255,255,0.1)', border:'none', color:'#fff', width:36, height:36, borderRadius:'50%', fontSize:18, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center'}}>✕</button>
-              </div>
-
-              {/* Body Media Preview Container */}
-              <div style={{padding:20, overflowY:'auto', background:'#090D16', flex:1, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center'}}>
-                {(viewStory.imageUrl || viewStory.videoUrl) ? (
-                  viewStory.mediaType === 'video' || viewStory.videoUrl ? (
-                    <video 
-                      src={viewStory.videoUrl || viewStory.imageUrl} 
-                      controls 
-                      autoPlay 
-                      style={{width:'100%', maxHeight:'420px', borderRadius:16, objectFit:'contain', background:'#000', boxShadow:'0 10px 30px rgba(0,0,0,0.5)'}} 
-                    />
-                  ) : (
-                    <img 
-                      src={viewStory.imageUrl} 
-                      alt="Historia Completa" 
-                      style={{width:'100%', maxHeight:'420px', borderRadius:16, objectFit:'contain', background:'#000', boxShadow:'0 10px 30px rgba(0,0,0,0.5)'}} 
-                    />
-                  )
-                ) : (
-                  <div style={{padding:40, color:'var(--muted)', textAlign:'center'}}>Sin multimedia adjunta</div>
-                )}
-
-                {viewStory.caption && (
-                  <div style={{width:'100%', background:'rgba(255,255,255,0.06)', padding:'14px 18px', borderRadius:14, marginTop:16, borderLeft:'4px solid var(--brand)', color:'#F1F5F9', fontSize:14, lineHeight:1.5}}>
-                    💬 "{viewStory.caption}"
-                  </div>
-                )}
-              </div>
-
-              {/* Footer Acciones */}
-              <div style={{padding:'16px 20px', background:'var(--surface)', borderTop:'1px solid var(--border)', display:'flex', gap:10}}>
-                <button 
-                  onClick={() => {
-                    const storyToApprove = viewStory;
-                    setViewStory(null);
-                    setConfirm({ type: 'approve_story', obj: storyToApprove });
-                  }} 
-                  style={{flex:1, background:'#10B981', color:'#fff', padding:'14px', borderRadius:14, border:'none', fontSize:13, fontWeight:800, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:6, boxShadow:'0 4px 12px rgba(16,185,129,0.3)'}}
-                >
-                  ✅ Aprobar y Publicar
-                </button>
-                <button 
-                  onClick={() => {
-                    const storyToReject = viewStory;
-                    setViewStory(null);
-                    setConfirm({ type: 'reject_story', obj: storyToReject });
-                  }} 
-                  style={{flex:1, background:'#EF4444', color:'#fff', padding:'14px', borderRadius:14, border:'none', fontSize:13, fontWeight:800, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:6, boxShadow:'0 4px 12px rgba(239,68,68,0.3)'}}
-                >
-                  ❌ Rechazar
-                </button>
-                <button 
-                  onClick={() => {
-                    const storyToDelete = viewStory;
-                    setViewStory(null);
-                    setConfirm({ type: 'delete_story', obj: storyToDelete });
-                  }} 
-                  style={{background:'var(--surface2)', color:'var(--muted)', border:'1px solid var(--border)', padding:'14px 18px', borderRadius:14, fontSize:13, fontWeight:700, cursor:'pointer'}}
-                >
-                  🗑️
-                </button>
-              </div>
-
             </div>
           </div>
         )}
@@ -1911,7 +1765,7 @@ export default function AdminPage({ navigate }) {
                    if (psFilter === 'clients') return u.role !== 'professional' && u.type !== 'pro';
                    if (psFilter === 'pros') return u.role === 'professional' || u.type === 'pro';
                    if (psFilter === 'online') return (u.role === 'professional' || u.type === 'pro') && u.available;
-                   if (psFilter === 'suspended') return u.isBlocked || u.isSuspended || u.blocked || u.status === 'blocked';
+                   if (psFilter === 'suspended') return (u.role === 'professional' || u.type === 'pro') && (!u.approved || u.planStatus === 'inactive' || u.planStatus === 'expired');
                    return true;
                 })
                 .sort((a,b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0));
@@ -2024,15 +1878,15 @@ export default function AdminPage({ navigate }) {
                   </button>
                 </div>
 
-                {/* Suspensiones / Bloqueos */}
+                {/* Suspensiones */}
                 <div style={{display:'flex', gap:8, marginBottom:12}}>
-                  {(!viewProStats.approved || viewProStats.planStatus === 'inactive' || viewProStats.isBlocked || viewProStats.isSuspended || viewProStats.blocked || viewProStats.status === 'blocked' || viewProStats.status === 'suspended' || viewProStats.status === 'inactive') ? (
-                    <button className="cc-btn paid" style={{background:'#10B981', color:'#fff', flex:1, padding: 12, fontWeight: 800}} onClick={() => handleDirectUnblock(viewProStats)}>
-                      ✅ Activar Perfil
+                  {viewProStats.planStatus === 'inactive' || !viewProStats.approved ? (
+                    <button className="cc-btn paid" style={{background:'#10B981', color:'#fff', flex:1}} onClick={() => setConfirm({type:'unblock', obj:viewProStats})}>
+                      ✅ Reactivar Perfil
                     </button>
                   ) : (
-                    <button className="cc-btn block" style={{background:'#EF4444', color:'#fff', flex:1, padding: 12, fontWeight: 800}} onClick={() => setConfirm({type:'block', obj:viewProStats})}>
-                      🔴 Bloquear / Suspender Perfil
+                    <button className="cc-btn block" style={{background:'#EF4444', color:'#fff', flex:1}} onClick={() => setConfirm({type:'block', obj:viewProStats})}>
+                      🔴 Suspender Perfil
                     </button>
                   )}
                 </div>
@@ -2174,10 +2028,7 @@ export default function AdminPage({ navigate }) {
                           </div>
                         )}
 
-                        <div style={{display:'flex', gap:8, flexWrap:'wrap'}}>
-                          <button className="cc-btn remind" style={{flex:'1 1 100%', fontSize:12, padding:10, background:'#3B82F6', color:'#fff', border:'none', fontWeight:800}} onClick={() => setViewEditRequest(req)}>
-                             🔎 Inspeccionar en Ventana Aparte
-                          </button>
+                        <div style={{display:'flex', gap:8}}>
                           <button className="cc-btn paid" style={{flex:1, fontSize:12, padding:10}} onClick={() => setConfirm({type:'approve_edit', obj: req})}>
                              ✅ APROBAR
                           </button>
@@ -2189,335 +2040,6 @@ export default function AdminPage({ navigate }) {
                   </div>
                )
             })}
-          </div>
-        )}
-
-        {/* ── MODAL INSPECTOR DE CAMBIO DE DATOS / PERFIL EN VENTANA APARTE (VISTA PREVIA GRANDE HD) ── */}
-        {viewEditRequest && (
-          <div style={{position:'fixed', inset:0, background:'rgba(0,0,0,0.88)', zIndex:999, display:'flex', flexDirection:'column', backdropFilter:'blur(12px)', padding:'12px'}} onClick={() => setViewEditRequest(null)}>
-            <div style={{
-              background:'var(--surface)', width:'100%', maxWidth:780, margin:'auto', borderRadius:24,
-              overflow:'hidden', border:'1px solid rgba(59,130,246,0.4)', boxShadow:'0 25px 60px rgba(0,0,0,0.6)',
-              display:'flex', flexDirection:'column', maxHeight:'94vh', animation:'scaleUp .3s cubic-bezier(0.16, 1, 0.3, 1)'
-            }} onClick={e => e.stopPropagation()}>
-
-              {/* Header Modal */}
-              <div style={{background:'linear-gradient(135deg, #1E293B, #0F172A)', padding:'18px 22px', color:'#fff', display:'flex', alignItems:'center', justifyContent:'space-between', borderBottom:'1px solid rgba(255,255,255,0.1)'}}>
-                <div>
-                  <div style={{fontSize:11, fontWeight:800, color:'#3B82F6', textTransform:'uppercase', letterSpacing:1, marginBottom:2}}>
-                    🔎 Inspector de Solicitud de Edición (Vista Previa Ampliada)
-                  </div>
-                  <h3 style={{fontFamily:'var(--display)', fontSize:20, fontWeight:800, margin:0, color:'#fff'}}>
-                    {viewEditRequest.userName || 'Profesional'}
-                  </h3>
-                  <span style={{fontSize:12, color:'rgba(255,255,255,0.6)'}}>
-                    📅 Fecha de solicitud: {fmtDate(viewEditRequest.createdAt)}
-                  </span>
-                </div>
-                <button onClick={() => setViewEditRequest(null)} style={{background:'rgba(255,255,255,0.15)', border:'none', color:'#fff', width:40, height:40, borderRadius:'50%', fontSize:20, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center'}}>✕</button>
-              </div>
-
-              {/* Body Content */}
-              <div style={{padding:24, overflowY:'auto', flex:1}}>
-                {(() => {
-                  const req = viewEditRequest;
-                  const u = users.find(x => x.id === req.userId || x.uid === req.userId);
-                  const isMedia = ['photo', 'cover', 'work_photo'].includes(req.type);
-
-                  return (
-                    <div>
-                      {/* Notice Banner */}
-                      <div style={{background:'rgba(242,96,0,0.08)', border:'1.5px solid rgba(242,96,0,0.3)', padding:'14px 16px', borderRadius:16, marginBottom:20, fontSize:13, color:'var(--text)', lineHeight:1.45}}>
-                        <strong>🛡️ Política de Seguridad Pedidos Listo:</strong> Revisa que la foto no contenga números de teléfono, redes sociales ni anuncios publicitarios.
-                        <div style={{fontSize:11, color:'var(--brand)', fontWeight:800, marginTop:4}}>💡 Tip de Auditoría: Haz clic en cualquier foto para abrirla en Pantalla Completa HD.</div>
-                      </div>
-
-                      {isMedia ? (
-                        <div style={{background:'var(--surface2)', padding:20, borderRadius:20, border:'1px solid var(--border)', textAlign:'center'}}>
-                          {req.type === 'photo' && (
-                            <div>
-                              <div style={{fontSize:13, fontWeight:800, color:'var(--muted)', marginBottom:16, textTransform:'uppercase', letterSpacing:0.5}}>Comparación de Foto de Perfil (Vista Previa HD)</div>
-                              <div style={{display:'flex', gap:24, justifyContent:'center', alignItems:'center', flexWrap:'wrap'}}>
-                                <div style={{flex:'1 1 200px', maxWidth:280, textAlign:'center'}}>
-                                  <span style={{fontSize:12, color:'var(--muted)', display:'block', marginBottom:8, fontWeight:800}}>Foto Actual</span>
-                                  <img 
-                                    src={u?.photoURL || 'https://via.placeholder.com/200?text=Sin+Foto'} 
-                                    onClick={() => u?.photoURL && setInspectZoomImage(u.photoURL)}
-                                    style={{width:200, height:200, borderRadius:'50%', objectFit:'cover', border:'3px solid var(--border)', boxShadow:'0 8px 20px rgba(0,0,0,0.15)', cursor:'pointer', margin:'0 auto'}} 
-                                    alt="Actual"
-                                    title="Haz clic para ampliar"
-                                  />
-                                </div>
-                                <div style={{fontSize:32, color:'var(--brand)', flexShrink:0}}>➔</div>
-                                <div style={{flex:'1 1 200px', maxWidth:280, textAlign:'center'}}>
-                                  <span style={{fontSize:12, color:'#10B981', display:'block', marginBottom:8, fontWeight:900}}>Nueva Propuesta Solicitada</span>
-                                  <img 
-                                    src={req.requestedChanges?.photoURL} 
-                                    onClick={() => req.requestedChanges?.photoURL && setInspectZoomImage(req.requestedChanges.photoURL)}
-                                    style={{width:200, height:200, borderRadius:'50%', objectFit:'cover', border:'4px solid #10B981', boxShadow:'0 8px 24px rgba(16,185,129,0.4)', cursor:'pointer', margin:'0 auto'}} 
-                                    alt="Nueva"
-                                    title="Haz clic para ampliar en HD"
-                                  />
-                                </div>
-                              </div>
-                            </div>
-                          )}
-
-                          {req.type === 'cover' && (
-                            <div>
-                              <div style={{fontSize:13, fontWeight:800, color:'var(--muted)', marginBottom:16, textTransform:'uppercase', letterSpacing:0.5}}>Comparación de Foto de Portada (Vista Previa HD)</div>
-                              <div style={{display:'flex', flexDirection:'column', gap:20}}>
-                                <div>
-                                  <span style={{fontSize:12, color:'var(--muted)', display:'block', marginBottom:8, fontWeight:800, textAlign:'left'}}>Portada Actual</span>
-                                  <img 
-                                    src={u?.coverURL || 'https://via.placeholder.com/600x240?text=Sin+Portada'} 
-                                    onClick={() => u?.coverURL && setInspectZoomImage(u.coverURL)}
-                                    style={{width:'100%', height:220, borderRadius:16, objectFit:'cover', border:'2px solid var(--border)', cursor:'pointer'}} 
-                                    alt="Actual"
-                                    title="Haz clic para ampliar"
-                                  />
-                                </div>
-                                <div>
-                                  <span style={{fontSize:12, color:'#10B981', display:'block', marginBottom:8, fontWeight:900, textAlign:'left'}}>Nueva Portada Propuesta Solicitada</span>
-                                  <img 
-                                    src={req.requestedChanges?.coverURL} 
-                                    onClick={() => req.requestedChanges?.coverURL && setInspectZoomImage(req.requestedChanges.coverURL)}
-                                    style={{width:'100%', height:220, borderRadius:16, objectFit:'cover', border:'4px solid #10B981', boxShadow:'0 8px 24px rgba(16,185,129,0.3)', cursor:'pointer'}} 
-                                    alt="Nueva"
-                                    title="Haz clic para ampliar en HD"
-                                  />
-                                </div>
-                              </div>
-                            </div>
-                          )}
-
-                          {req.type === 'work_photo' && (
-                            <div>
-                              <div style={{fontSize:13, fontWeight:800, color:'var(--muted)', marginBottom:16, textTransform:'uppercase', letterSpacing:0.5}}>Nueva Foto de Galería de Trabajo (Vista Previa Ampliada)</div>
-                              {(() => {
-                                const newPhotos = req.requestedChanges?.photos || [];
-                                const addedPhoto = newPhotos[newPhotos.length - 1];
-                                return addedPhoto ? (
-                                  <img 
-                                    src={addedPhoto} 
-                                    onClick={() => setInspectZoomImage(addedPhoto)}
-                                    style={{width:'100%', maxHeight:420, borderRadius:20, objectFit:'contain', border:'4px solid #10B981', background:'#0F172A', cursor:'pointer'}} 
-                                    alt="Work"
-                                    title="Haz clic para ver en pantalla completa HD"
-                                  />
-                                ) : <p>No se pudo cargar la imagen</p>;
-                              })()}
-                            </div>
-                          )}
-                        </div>
-                      ) : (
-                        <div style={{background:'var(--surface)', border:'1px solid var(--border)', borderRadius:18, overflow:'hidden', boxShadow:'0 4px 12px rgba(0,0,0,0.03)'}}>
-                          <div style={{background:'var(--surface2)', padding:'12px 16px', fontSize:13, fontWeight:800, color:'var(--muted)', borderBottom:'1px solid var(--border)', textTransform:'uppercase'}}>
-                            Comparativa de Campos Modificados
-                          </div>
-                          <div style={{padding:16}}>
-                            <table style={{width:'100%', fontSize:14, borderCollapse:'collapse'}}>
-                              <thead>
-                                <tr style={{borderBottom:'2px solid var(--border)', textAlign:'left', color:'var(--muted)', fontSize:12, textTransform:'uppercase'}}>
-                                  <th style={{padding:'10px 6px'}}>Campo</th>
-                                  <th style={{padding:'10px 6px'}}>Valor Actual</th>
-                                  <th style={{padding:'10px 6px', color:'#10B981'}}>Solicitado</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {Object.keys(req.requestedChanges || {}).map(key => {
-                                  const oldVal = u?.[key] || 'Sin especificar';
-                                  const newVal = req.requestedChanges[key];
-                                  if (oldVal === newVal) return null;
-                                  return (
-                                    <tr key={key} style={{borderBottom:'1px solid var(--border)'}}>
-                                      <td style={{padding:'12px 6px', fontWeight:700, color:'var(--text)', textTransform:'capitalize'}}>{key}</td>
-                                      <td style={{padding:'12px 6px', color:'var(--muted)', textDecoration:'line-through'}}>{String(oldVal)}</td>
-                                      <td style={{padding:'12px 6px', color:'#10B981', fontWeight:800}}>{String(newVal)}</td>
-                                    </tr>
-                                  );
-                                })}
-                              </tbody>
-                            </table>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })()}
-              </div>
-
-              {/* Footer Acciones */}
-              <div style={{padding:'18px 22px', background:'var(--surface)', borderTop:'1px solid var(--border)', display:'flex', gap:12}}>
-                <button 
-                  onClick={() => {
-                    const reqToApprove = viewEditRequest;
-                    setViewEditRequest(null);
-                    setConfirm({ type: 'approve_edit', obj: reqToApprove });
-                  }} 
-                  style={{flex:1, background:'linear-gradient(135deg, #10B981, #059669)', color:'#fff', padding:'16px', borderRadius:16, border:'none', fontSize:15, fontWeight:800, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:8, boxShadow:'0 4px 14px rgba(16,185,129,0.35)'}}
-                >
-                  ✅ Aprobar Cambios
-                </button>
-                <button 
-                  onClick={() => {
-                    const reqToReject = viewEditRequest;
-                    setViewEditRequest(null);
-                    setConfirm({ type: 'reject_edit', obj: reqToReject });
-                  }} 
-                  style={{flex:1, background:'linear-gradient(135deg, #EF4444, #DC2626)', color:'#fff', padding:'16px', borderRadius:16, border:'none', fontSize:15, fontWeight:800, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:8, boxShadow:'0 4px 14px rgba(239,68,68,0.35)'}}
-                >
-                  ❌ Rechazar Solicitud
-                </button>
-              </div>
-
-            </div>
-          </div>
-        )}
-
-        {/* ── MODAL INSPECTOR DE HISTORIA DE TRABAJO (VISTA PREVIA GRANDE HD EN VENTANA APARTE) ── */}
-        {viewStory && (
-          <div style={{position:'fixed', inset:0, background:'rgba(0,0,0,0.88)', zIndex:999, display:'flex', flexDirection:'column', backdropFilter:'blur(12px)', padding:'12px'}} onClick={() => setViewStory(null)}>
-            <div style={{
-              background:'var(--surface)', width:'100%', maxWidth:780, margin:'auto', borderRadius:24,
-              overflow:'hidden', border:'1px solid rgba(242,96,0,0.4)', boxShadow:'0 25px 60px rgba(0,0,0,0.6)',
-              display:'flex', flexDirection:'column', maxHeight:'94vh', animation:'scaleUp .3s cubic-bezier(0.16, 1, 0.3, 1)'
-            }} onClick={e => e.stopPropagation()}>
-
-              {/* Header Modal */}
-              <div style={{background:'linear-gradient(135deg, #1E293B, #0F172A)', padding:'18px 22px', color:'#fff', display:'flex', alignItems:'center', justifyContent:'space-between', borderBottom:'1px solid rgba(255,255,255,0.1)'}}>
-                <div>
-                  <div style={{fontSize:11, fontWeight:800, color:'#F26000', textTransform:'uppercase', letterSpacing:1, marginBottom:2}}>
-                    📸 Inspector de Historia de Trabajo (Vista Previa Ampliada)
-                  </div>
-                  <h3 style={{fontFamily:'var(--display)', fontSize:20, fontWeight:800, margin:0, color:'#fff'}}>
-                    {viewStory.proName || 'Profesional'}
-                  </h3>
-                  <span style={{fontSize:12, color:'rgba(255,255,255,0.6)'}}>
-                    ⚡ {viewStory.proCategory || 'Servicio'} · Fecha: {fmtDate(viewStory.createdAt)}
-                  </span>
-                </div>
-                <button onClick={() => setViewStory(null)} style={{background:'rgba(255,255,255,0.15)', border:'none', color:'#fff', width:40, height:40, borderRadius:'50%', fontSize:20, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center'}}>✕</button>
-              </div>
-
-              {/* Body Content */}
-              <div style={{padding:24, overflowY:'auto', flex:1, textAlign:'center'}}>
-                {viewStory.caption && (
-                  <div style={{ background: '#FFFBEB', padding: '12px 16px', borderRadius: '14px', marginBottom: '16px', fontSize: '14px', color: '#78350F', borderLeft: '4px solid #F26000', textAlign: 'left', fontWeight: '600' }}>
-                    💬 "{viewStory.caption}"
-                  </div>
-                )}
-
-                <div style={{ background: '#0F172A', padding: '16px', borderRadius: '20px', border: '1px solid var(--border)', textAlign: 'center' }}>
-                  {viewStory.mediaType === 'video' || viewStory.videoUrl ? (
-                    <video 
-                      src={viewStory.videoUrl || viewStory.imageUrl} 
-                      controls 
-                      autoPlay
-                      style={{ width: '100%', maxHeight: '480px', borderRadius: '16px', objectFit: 'contain' }} 
-                    />
-                  ) : (
-                    <img 
-                      src={viewStory.imageUrl} 
-                      onClick={() => viewStory.imageUrl && setInspectZoomImage(viewStory.imageUrl)}
-                      alt="Historia" 
-                      style={{ width: '100%', maxHeight: '480px', borderRadius: '16px', objectFit: 'contain', cursor: 'pointer' }} 
-                      title="Haz clic para ver en Pantalla Completa HD"
-                    />
-                  )}
-                  <div style={{fontSize:11, color:'#94A3B8', marginTop:10, fontWeight:700}}>
-                    💡 Haz clic sobre la imagen para abrir en Pantalla Completa HD
-                  </div>
-                </div>
-              </div>
-
-              {/* Footer Acciones */}
-              <div style={{padding:'18px 22px', background:'var(--surface)', borderTop:'1px solid var(--border)', display:'flex', gap:12}}>
-                <button 
-                  onClick={() => {
-                    const st = viewStory;
-                    setViewStory(null);
-                    setConfirm({ type: 'approve_story', obj: st });
-                  }} 
-                  style={{flex:1, background:'linear-gradient(135deg, #10B981, #059669)', color:'#fff', padding:'16px', borderRadius:16, border:'none', fontSize:15, fontWeight:800, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:8, boxShadow:'0 4px 14px rgba(16,185,129,0.35)'}}
-                >
-                  ✅ Aprobar y Publicar
-                </button>
-                <button 
-                  onClick={() => {
-                    const st = viewStory;
-                    setViewStory(null);
-                    setConfirm({ type: 'reject_story', obj: st });
-                  }} 
-                  style={{flex:1, background:'linear-gradient(135deg, #EF4444, #DC2626)', color:'#fff', padding:'16px', borderRadius:16, border:'none', fontSize:15, fontWeight:800, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:8, boxShadow:'0 4px 14px rgba(239,68,68,0.35)'}}
-                >
-                  ❌ Rechazar Historia
-                </button>
-              </div>
-
-            </div>
-          </div>
-        )}
-
-        {/* ── MODAL FULLSCREEN ZOOM DE IMÁGENES HD PARA AUDITORÍA DE ADMIN ── */}
-        {inspectZoomImage && (
-          <div 
-            style={{
-              position: 'fixed',
-              inset: 0,
-              background: 'rgba(0,0,0,0.96)',
-              zIndex: 999999,
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justify: 'center',
-              padding: '16px',
-              backdropFilter: 'blur(16px)',
-              animation: 'fadeIn 0.2s ease-out'
-            }} 
-            onClick={() => setInspectZoomImage(null)}
-          >
-            <div style={{ position: 'relative', width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-              <button 
-                onClick={() => setInspectZoomImage(null)}
-                style={{
-                  position: 'absolute',
-                  top: '16px',
-                  right: '16px',
-                  background: 'rgba(239, 68, 68, 0.9)',
-                  color: '#FFFFFF',
-                  border: '2px solid #FFFFFF',
-                  width: '44px',
-                  height: '44px',
-                  borderRadius: '50%',
-                  fontSize: '22px',
-                  fontWeight: 'bold',
-                  cursor: 'pointer',
-                  zIndex: 10,
-                  boxShadow: '0 4px 14px rgba(0,0,0,0.5)'
-                }}
-              >
-                ✕
-              </button>
-
-              <img 
-                src={inspectZoomImage} 
-                alt="Zoom HD Inspector" 
-                onClick={e => e.stopPropagation()}
-                style={{
-                  maxWidth: '96vw',
-                  maxHeight: '88vh',
-                  objectFit: 'contain',
-                  borderRadius: '16px',
-                  boxShadow: '0 0 40px rgba(0,0,0,0.9)',
-                  border: '2px solid rgba(255,255,255,0.2)'
-                }} 
-              />
-              
-              <div style={{ color: '#FFFFFF', fontSize: '13px', fontWeight: '800', marginTop: '14px', background: 'rgba(255,255,255,0.15)', padding: '6px 16px', borderRadius: '20px', backdropFilter: 'blur(8px)' }}>
-                🔍 Vista Previa en Pantalla Completa HD — Toca fuera para cerrar
-              </div>
-            </div>
           </div>
         )}
 
@@ -2674,7 +2196,7 @@ export default function AdminPage({ navigate }) {
                               setNotifyUser(u.id);
                               setNotifySearch(u.name || u.phone);
                               setShowNotifyAc(false);
-                              setNotifyMessage(`Hola ${u.name || 'usuario'}, Bienvenido a Pedidos Listo. Para comenzar a generar dinero de inmediato debes completar tu perfil. ¡Te esperamos!`);
+                              setNotifyMessage(`Hola ${u.name || 'usuario'}, Bienvenido a Listo Patrón. Para comenzar a generar dinero de inmediato debes completar tu perfil. ¡Te esperamos!`);
                             }}>
                               <div className="ac-avatar">
                                 {u.profilePic || u.photoURL || u.avatarId ? (
@@ -2811,13 +2333,7 @@ export default function AdminPage({ navigate }) {
           <div className="confirm-overlay" onClick={() => {setConfirm(null); setBlockReason('');}}>
             <div className="confirm-modal" onClick={e => e.stopPropagation()}>
               <span className="cm-icon">
-                {confirm.type==='block' ? '🔴' :
-                 confirm.type==='delete_account'||confirm.type==='delete_story'||confirm.type==='delete_alert' ? '🗑️' :
-                 confirm.type==='sub_contract' ? '➖' :
-                 confirm.type==='add_contract' ? '➕' :
-                 confirm.type==='unblock'||confirm.type==='approve_verif'||confirm.type==='approve_edit'||confirm.type==='approve_story'||confirm.type==='paid' ? '✅' :
-                 confirm.type==='reject_payment'||confirm.type==='reject_verif'||confirm.type==='reject_edit'||confirm.type==='reject_story' ? '❌' :
-                 '💚'}
+                {confirm.type==='block' ? '🔴' : confirm.type==='delete_account' ? '💀' : confirm.type==='sub_contract' ? '➖' : confirm.type==='add_contract' ? '➕' : confirm.type==='unblock' ? '✅' : confirm.type==='delete_alert' ? '🗑️' : '💚'}
               </span>
                <h3 className="cm-title">
                 {confirm.type==='block'   ? '¿Suspender perfil?' :
@@ -2832,61 +2348,49 @@ export default function AdminPage({ navigate }) {
                  confirm.type==='approve_verif' ? '¿Aprobar Profesional?' :
                  confirm.type==='reject_verif' ? '¿Rechazar Verificación?' :
                  confirm.type==='resolve_report' ? '¿Marcar como resuelta?' :
-                 confirm.type==='approve_edit' ? '¿Aprobar cambios de perfil?' :
-                 confirm.type==='reject_edit' ? '¿Rechazar cambio de foto?' :
-                 confirm.type==='approve_story' ? '¿Aprobar y publicar foto?' :
-                 confirm.type==='reject_story' ? '¿Rechazar foto?' :
-                 confirm.type==='delete_story' ? '¿Eliminar foto?' :
-                 confirm.type==='paid' ? '¿Aprobar transferencia de plan?' :
+                 confirm.type==='approve_edit' ? '¿Aprobar cambios?' :
+                 confirm.type==='reject_edit' ? '¿Rechazar solicitud de edición?' :
                  confirm.type==='mark_read' ? '¿Marcar alerta como leída?' :
                  confirm.type==='delete_alert' ? '¿Eliminar alerta?' :
                  confirm.type==='mark_all_read' ? '¿Marcar todas las alertas como leídas?' :
-                 '¿Confirmar acción?'}
+                 '¿Aprobar transferencia?'}
               </h3>
               <p className="cm-sub">
                 {confirm.type==='block'
-                  ? `Estás a punto de suspender a ${confirm.obj?.name || 'este perfil'}. Quedará inactivo.`
+                  ? `Estás a punto de suspender a ${confirm.obj.name} (${confirm.obj.service || 'Profesional'}). Quedará inactivo.`
                   : confirm.type==='delete_account'
-                  ? `ATENCIÓN: Vas a borrar el perfil de ${confirm.obj?.name || 'este usuario'} de manera definitiva.`
+                  ? `ATENCIÓN: Vas a borrar el perfil de ${confirm.obj.name} de manera definitiva e irreversible. Se eliminará de la base de datos de usuarios completamente.`
                   : confirm.type==='unblock'
-                  ? `Se activará el perfil de ${confirm.obj?.name || 'este usuario'} en el sistema.`
+                  ? `Se activará el perfil de ${confirm.obj.name} en el sistema.`
                   : confirm.type==='add_contract'
-                  ? `Se agregará 1 contrato gratis a la cuenta de ${confirm.obj?.name || 'este usuario'}.`
+                  ? `Se agregará 1 contrato gratis a la cuenta de ${confirm.obj.name}.`
                   : confirm.type==='sub_contract'
-                  ? `Se quitará 1 contrato de la cuenta de ${confirm.obj?.name || 'este usuario'}.`
+                  ? `Se quitará 1 contrato de la cuenta de ${confirm.obj.name}.`
                   : confirm.type==='send_gift'
-                  ? `Se enviarán ${giftAmount} contratos a este usuario.`
+                  ? `Se enviarán ${giftAmount} contratos a este usuario y saltará el confeti en su app.`
                   : confirm.type==='send_notification'
-                  ? (notifyTarget === 'single' ? `Se enviará este mensaje directamente al usuario.` : `🚨 Difusión masiva a todos los usuarios.`)
+                  ? (notifyTarget === 'single' ? `Se enviará este mensaje directamente a la sección de notificaciones de la app del usuario.` : `🚨 ATENCIÓN: Estás a punto de enviar una DIFUSIÓN MASIVA. Todos los usuarios en la categoría seleccionada recibirán la notificación In-App al instante.`)
                   : confirm.type==='remind'
-                  ? `Se enviará una notificación In-App a ${confirm.obj?.name || confirm.obj?.proName || 'este usuario'}.`
+                  ? `Se enviará una notificación In-App al celular de ${confirm.obj.name || confirm.obj.proName} recordándole que termine el proceso.`
                   : confirm.type==='reject_payment'
-                  ? `El pago de la comisión de ${confirm.obj?.proName || 'este profesional'} será rechazado.`
+                  ? `El pago de la comisión de ${confirm.obj.proName} será rechazado.`
                   : confirm.type==='approve_verif'
-                  ? `El usuario ${confirm.obj?.verificacion?.nombre || confirm.obj?.name || 'este perfil'} será promovido a Profesional.`
+                  ? `El usuario ${confirm.obj.verificacion?.nombre || 'este perfil'} será promovido a Profesional Premium y se le recargarán contratos iniciales.`
                   : confirm.type==='reject_verif'
                   ? `Se rechazará esta verificación y el usuario tendrá que intentar de nuevo.`
                   : confirm.type==='resolve_report'
-                  ? `La queja será archivada.`
+                  ? `La queja de ${confirm.obj.reporterName} será archivada y se quitará de la lista de pendientes.`
                   : confirm.type==='approve_edit'
-                  ? `Los nuevos datos o foto sobrescribirán el perfil de ${confirm.obj?.userName || 'este usuario'}.`
+                  ? `Los nuevos datos o foto sobrescribirán el perfil de ${confirm.obj.userName}.`
                   : confirm.type==='reject_edit'
-                  ? `Se rechazará la foto y se enviará la notificación In-App al usuario indicando el motivo.`
-                  : confirm.type==='approve_story'
-                  ? `La foto de ${confirm.obj?.proName || 'trabajo'} será aprobada y publicada.`
-                  : confirm.type==='reject_story'
-                  ? `La foto de ${confirm.obj?.proName || 'trabajo'} será rechazada y se le enviará la notificación de políticas al usuario.`
-                  : confirm.type==='delete_story'
-                  ? `La foto de ${confirm.obj?.proName || 'trabajo'} será eliminada permanentemente.`
-                  : confirm.type==='paid'
-                  ? `Se marcará el pago como verificado y se agregará el plan a ${confirm.obj?.proName || 'este profesional'}.`
+                  ? `La solicitud será descartada y se enviará una notificación In-App al usuario.`
                   : confirm.type==='mark_read'
-                  ? `Se marcará esta alerta como leída.`
+                  ? `Se marcará esta alerta como leída para limpiar tu bandeja.`
                   : confirm.type==='delete_alert'
-                  ? `Esta alerta será borrada del historial.`
+                  ? `Esta alerta será borrada definitivamente del historial.`
                   : confirm.type==='mark_all_read'
-                  ? `Todas las alertas se marcarán como leídas.`
-                  : `¿Deseas confirmar esta acción en el sistema?`}
+                  ? `Todas las alertas no leídas actualmente se marcarán como leídas de una sola vez.`
+                  : `Se marcará el pago como verificado y se agregará el plan a la cuenta de ${confirm.obj.proName}.`}
               </p>
 
               {confirm.type === 'block' && (
@@ -2903,17 +2407,7 @@ export default function AdminPage({ navigate }) {
               )}
 
               <button
-                className={`cm-btn ${
-                  confirm.type==='block'||
-                  confirm.type==='delete_account'||
-                  confirm.type==='sub_contract'||
-                  confirm.type==='reject_payment'||
-                  confirm.type==='reject_verif'||
-                  confirm.type==='reject_edit'||
-                  confirm.type==='reject_story'||
-                  confirm.type==='delete_story'||
-                  confirm.type==='delete_alert' ? 'danger' : 'success'
-                }`}
+                className={`cm-btn ${confirm.type==='block'||confirm.type==='delete_account'||confirm.type==='sub_contract'||confirm.type==='reject_payment'||confirm.type==='reject_verif'||confirm.type==='delete_alert'?'danger':'success'}`}
                 disabled={confirm.type === 'block' && !blockReason.trim()}
                 onClick={ejecutarConfirm}>
                 {confirm.type==='block'   ? '🔴 Sí, suspender'    :
@@ -2929,15 +2423,11 @@ export default function AdminPage({ navigate }) {
                  confirm.type==='reject_verif' ? '❌ Sí, rechazar' :
                  confirm.type==='resolve_report' ? '✔️ Confirmar Resolución' :
                  confirm.type==='approve_edit' ? '✅ Aplicar Cambios' :
-                 confirm.type==='reject_edit' ? '❌ Rechazar Foto' :
-                 confirm.type==='approve_story' ? '✅ Aprobar y Publicar' :
-                 confirm.type==='reject_story' ? '❌ Rechazar Foto' :
-                 confirm.type==='delete_story' ? '🗑️ Eliminar Foto' :
-                 confirm.type==='paid' ? '💚 Confirmar validación' :
+                 confirm.type==='reject_edit' ? '❌ Rechazar Cambios' :
                  confirm.type==='mark_read' ? '✅ Marcar Leída' :
                  confirm.type==='delete_alert' ? '🗑️ Eliminar' :
                  confirm.type==='mark_all_read' ? '✅ Marcar todas' :
-                 'Confirmar'}
+                 '💚 Confirmar validación'}
               </button>
               <button className="cm-btn ghost" onClick={() => {setConfirm(null); setBlockReason('');}}>Cancelar</button>
             </div>

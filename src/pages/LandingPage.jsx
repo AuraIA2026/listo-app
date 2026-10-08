@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import './LandingPage.css';
 import useLandingLogic from '../useLandingLogic';
 import PlanSelectionModal from '../components/PlanSelectionModal';
+import { collection, addDoc } from 'firebase/firestore';
+import { db } from '../firebase';
 import ad15 from '../assets/landing/extracted_15.png';
 import ad16 from '../assets/landing/extracted_16.png';
 import ad17 from '../assets/landing/extracted_17.png';
@@ -13,9 +15,557 @@ import pro23 from '../assets/landing/extracted_23.jpeg';
 import pro24 from '../assets/landing/extracted_24.jpeg';
 import pro25 from '../assets/landing/extracted_25.jpeg';
 
+function DeliveryPartnerModal({ onClose, navigate }) {
+  const [activeTab, setActiveTab] = useState('registro'); // 'registro' | 'pasos' | 'documentos' | 'soluciones' | 'testimonios'
+  const [formData, setFormData] = useState({
+    businessName: '',
+    ownerName: '',
+    ownerLastName: '',
+    businessType: 'Restaurante / Comida',
+    branches: '1',
+    isStreetStore: 'Si',
+    isDgiiRegistered: 'No',
+    phone: '',
+    email: '',
+    city: 'Santo Domingo'
+  });
+  const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setSubmitting(true);
+    try {
+      // 1. Guardar la solicitud en la colección 'partner_requests'
+      const docRef = await addDoc(collection(db, 'partner_requests'), {
+        ...formData,
+        status: 'pending',
+        createdAt: new Date().toISOString()
+      });
+
+      // 2. Notificar al administrador en la colección 'notificaciones'
+      await addDoc(collection(db, 'notificaciones'), {
+        userId: 'admin',
+        type: 'partner_request',
+        requestId: docRef.id,
+        title: '🏬 Nueva Solicitud de Comercio Partner',
+        text: `${formData.businessName || 'Comercio'} (${formData.ownerName} ${formData.ownerLastName}) ha solicitado registrar su negocio. Tel: ${formData.phone}, Email: ${formData.email}`,
+        read: false,
+        createdAt: new Date().toISOString(),
+        date: new Date().toISOString()
+      });
+    } catch (err) {
+      console.error("Error enviando solicitud de comercio:", err);
+    } finally {
+      setSubmitting(false);
+      setSubmitted(true);
+    }
+  };
+
+  return (
+    <div style={{ position: 'fixed', inset: 0, zIndex: 10000, background: 'rgba(13, 14, 21, 0.88)', backdropFilter: 'blur(12px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px', overflowY: 'auto' }} onClick={onClose}>
+      <div style={{ background: '#FFFFFF', borderRadius: '24px', maxWidth: '1020px', width: '100%', overflow: 'hidden', boxShadow: '0 25px 60px rgba(0,0,0,0.6)', position: 'relative', margin: 'auto', border: '1px solid rgba(255,255,255,0.1)' }} onClick={e => e.stopPropagation()}>
+        
+        {/* Header Banner estilo PedidosListo Partner */}
+        <div style={{ background: 'linear-gradient(135deg, #0d0e15 0%, #1a1c29 100%)', padding: '24px 28px 16px', color: '#FFFFFF', position: 'relative', borderBottom: '3px solid #ff6b00' }}>
+          <button onClick={onClose} style={{ position: 'absolute', top: '18px', right: '18px', background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.3)', color: '#FFFFFF', width: '36px', height: '36px', borderRadius: '50%', fontSize: '18px', cursor: 'pointer', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }}>✕</button>
+          
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255, 107, 0, 0.2)', border: '1px solid #ff6b00', padding: '4px 14px', borderRadius: '20px', fontSize: '12px', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '10px', color: '#ff6b00' }}>
+            🤝 PEDIDOSLISTO PARTNER PORTAL · REPÚBLICA DOMINICANA
+          </div>
+          
+          <h2 style={{ fontFamily: "'Outfit', 'Fredoka One', cursive, sans-serif", fontSize: '26px', margin: '0 0 6px', lineHeight: 1.2, fontWeight: '900' }}>
+            ¡Un nuevo canal para vender más y despegar tu negocio! 🚀
+          </h2>
+          <p style={{ fontSize: '14px', margin: '0 0 16px', color: '#94A3B8', fontWeight: '500' }}>
+            Únete a la red líder de comercios, restaurantes y repartidores en República Dominicana.
+          </p>
+
+          {/* Bar de Métricas en la cabecera */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '8px', marginBottom: '16px' }}>
+            <div style={{ background: 'rgba(255,255,255,0.06)', borderRadius: '10px', padding: '8px 12px', textAlign: 'center' }}>
+              <div style={{ fontSize: '16px', fontWeight: '900', color: '#FF6B00' }}>+500</div>
+              <div style={{ fontSize: '11px', color: '#94A3B8' }}>Comercios Aliados</div>
+            </div>
+            <div style={{ background: 'rgba(255,255,255,0.06)', borderRadius: '10px', padding: '8px 12px', textAlign: 'center' }}>
+              <div style={{ fontSize: '16px', fontWeight: '900', color: '#10B981' }}>~15 min</div>
+              <div style={{ fontSize: '11px', color: '#94A3B8' }}>Tiempo Promedio</div>
+            </div>
+            <div style={{ background: 'rgba(255,255,255,0.06)', borderRadius: '10px', padding: '8px 12px', textAlign: 'center' }}>
+              <div style={{ fontSize: '16px', fontWeight: '900', color: '#F59E0B' }}>10%</div>
+              <div style={{ fontSize: '11px', color: '#94A3B8' }}>Comisión Congelada</div>
+            </div>
+            <div style={{ background: 'rgba(255,255,255,0.06)', borderRadius: '10px', padding: '8px 12px', textAlign: 'center' }}>
+              <div style={{ fontSize: '16px', fontWeight: '900', color: '#3B82F6' }}>4.9 / 5 ⭐</div>
+              <div style={{ fontSize: '11px', color: '#94A3B8' }}>Satisfacción Clientes</div>
+            </div>
+          </div>
+
+          {/* Menú Nav Tabs del Modal */}
+          <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '4px', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '12px' }}>
+            {[
+              { id: 'registro', label: '📝 Registrar Local', icon: '📝' },
+              { id: 'pasos', label: '⚡ Paso a Paso', icon: '⚡' },
+              { id: 'documentos', label: '📄 Requisitos & Docs', icon: '📄' },
+              { id: 'soluciones', label: '💡 Soluciones & Créditos', icon: '💡' },
+              { id: 'testimonios', label: '🛵 Flota & Testimonios', icon: '🛵' }
+            ].map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                style={{
+                  padding: '8px 16px',
+                  borderRadius: '12px',
+                  border: activeTab === tab.id ? '1.5px solid #ff6b00' : '1.5px solid rgba(255,255,255,0.15)',
+                  background: activeTab === tab.id ? '#ff6b00' : 'rgba(255,255,255,0.05)',
+                  color: '#FFFFFF',
+                  fontWeight: '800',
+                  fontSize: '12.5px',
+                  cursor: 'pointer',
+                  whiteSpace: 'nowrap',
+                  transition: 'all 0.2s ease-in-out'
+                }}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Modal Content */}
+        <div style={{ padding: '24px 28px', maxHeight: '72vh', overflowY: 'auto', background: '#F8FAFC' }}>
+          
+          {submitted ? (
+            <div style={{ textAlign: 'center', padding: '40px 20px', background: '#FFFFFF', borderRadius: '20px', border: '1.5px solid #E2E8F0' }}>
+              <div style={{ fontSize: '60px', marginBottom: '16px' }}>🎉</div>
+              <h3 style={{ fontSize: '24px', fontWeight: '900', color: '#0d0e15', marginBottom: '8px' }}>
+                ¡Solicitud recibida con éxito!
+              </h3>
+              <p style={{ fontSize: '15px', color: '#64748B', maxWidth: '480px', margin: '0 auto 24px', lineHeight: '1.5' }}>
+                Un ejecutivo de <strong>PedidosListo Partner</strong> revisará tu información y se pondrá en contacto contigo a través de WhatsApp o llamada telefónica en menos de 24 horas para completar la activación.
+              </p>
+              <button
+                onClick={onClose}
+                style={{
+                  padding: '12px 28px',
+                  background: 'linear-gradient(135deg, #ff6b00, #ff3d00)',
+                  color: '#FFF',
+                  border: 'none',
+                  borderRadius: '30px',
+                  fontWeight: '800',
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 15px rgba(255,107,0,0.4)'
+                }}
+              >
+                Entendido / Cerrar
+              </button>
+            </div>
+          ) : (
+            <div>
+              {/* TAB 1: REGISTRO DE LOCAL */}
+              {activeTab === 'registro' && (
+                <div style={{ display: 'grid', gridTemplateColumns: '1.15fr 1fr', gap: '24px', alignItems: 'start' }}>
+                  {/* Formulario Izquierda */}
+                  <div style={{ background: '#FFFFFF', padding: '20px', borderRadius: '20px', border: '1.5px solid #E2E8F0', boxShadow: '0 4px 12px rgba(0,0,0,0.03)' }}>
+                    {/* Banner de Oferta Destacada */}
+                    <div style={{ background: '#FFF7ED', border: '1.5px solid #FFEDD5', borderRadius: '14px', padding: '12px 16px', marginBottom: '18px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <span style={{ fontSize: '22px' }}>🎁</span>
+                      <div>
+                        <div style={{ fontSize: '13px', fontWeight: '800', color: '#9A3412' }}>
+                          10% de comisión estática + PedidosListo Plus gratis primeros 30 días
+                        </div>
+                        <div style={{ fontSize: '11.5px', color: '#C2410C' }}>
+                          Sin mensualidades fijas obligatorias ni penalizaciones por cancelación.
+                        </div>
+                      </div>
+                    </div>
+
+                    <h3 style={{ fontSize: '18px', fontWeight: '900', color: '#0d0e15', marginBottom: '16px' }}>
+                      ¡Registra tu local ahora mismo!
+                    </h3>
+
+                    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                      <div>
+                        <label style={{ display: 'block', fontSize: '12px', fontWeight: '800', color: '#334155', marginBottom: '4px' }}>Nombre del local o negocio *</label>
+                        <input required type="text" placeholder="Ej: Pizzería El Patrón" value={formData.businessName} onChange={e => setFormData({...formData, businessName: e.target.value})} style={{ width: '100%', padding: '10px 14px', border: '1.5px solid #CBD5E1', borderRadius: '10px', fontSize: '14px' }} />
+                      </div>
+
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                        <div>
+                          <label style={{ display: 'block', fontSize: '12px', fontWeight: '800', color: '#334155', marginBottom: '4px' }}>Nombre del dueño *</label>
+                          <input required type="text" placeholder="Tu nombre" value={formData.ownerName} onChange={e => setFormData({...formData, ownerName: e.target.value})} style={{ width: '100%', padding: '10px 14px', border: '1.5px solid #CBD5E1', borderRadius: '10px', fontSize: '14px' }} />
+                        </div>
+                        <div>
+                          <label style={{ display: 'block', fontSize: '12px', fontWeight: '800', color: '#334155', marginBottom: '4px' }}>Apellido *</label>
+                          <input required type="text" placeholder="Tu apellido" value={formData.ownerLastName} onChange={e => setFormData({...formData, ownerLastName: e.target.value})} style={{ width: '100%', padding: '10px 14px', border: '1.5px solid #CBD5E1', borderRadius: '10px', fontSize: '14px' }} />
+                        </div>
+                      </div>
+
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                        <div>
+                          <label style={{ display: 'block', fontSize: '12px', fontWeight: '800', color: '#334155', marginBottom: '4px' }}>Correo electrónico *</label>
+                          <input required type="email" placeholder="ejemplo@correo.com" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} style={{ width: '100%', padding: '10px 14px', border: '1.5px solid #CBD5E1', borderRadius: '10px', fontSize: '14px' }} />
+                        </div>
+                        <div>
+                          <label style={{ display: 'block', fontSize: '12px', fontWeight: '800', color: '#334155', marginBottom: '4px' }}>Teléfono / WhatsApp *</label>
+                          <input required type="tel" placeholder="809-000-0000" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} style={{ width: '100%', padding: '10px 14px', border: '1.5px solid #CBD5E1', borderRadius: '10px', fontSize: '14px' }} />
+                        </div>
+                      </div>
+
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                        <div>
+                          <label style={{ display: 'block', fontSize: '12px', fontWeight: '800', color: '#334155', marginBottom: '4px' }}>Ciudad / Provincia *</label>
+                          <select value={formData.city} onChange={e => setFormData({...formData, city: e.target.value})} style={{ width: '100%', padding: '10px 14px', border: '1.5px solid #CBD5E1', borderRadius: '10px', fontSize: '14px', background: '#FFF' }}>
+                            <option value="Santo Domingo">Santo Domingo</option>
+                            <option value="Santiago">Santiago</option>
+                            <option value="La Romana">La Romana</option>
+                            <option value="San Pedro">San Pedro de Macorís</option>
+                            <option value="Puerto Plata">Puerto Plata</option>
+                            <option value="Punta Cana / Bávaro">Punta Cana / Bávaro</option>
+                            <option value="Moca / La Vega">Moca / La Vega</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label style={{ display: 'block', fontSize: '12px', fontWeight: '800', color: '#334155', marginBottom: '4px' }}>Tipo de negocio *</label>
+                          <select value={formData.businessType} onChange={e => setFormData({...formData, businessType: e.target.value})} style={{ width: '100%', padding: '10px 14px', border: '1.5px solid #CBD5E1', borderRadius: '10px', fontSize: '14px', background: '#FFF' }}>
+                            <option value="Restaurante / Comida">Restaurante / Comida</option>
+                            <option value="Colmado / Minimarket">Colmado / Minimarket</option>
+                            <option value="Farmacia">Farmacia</option>
+                            <option value="Tienda / Ropa">Tienda / Ropa</option>
+                            <option value="Supermercado / Bebidas">Supermercado / Bebidas</option>
+                            <option value="Otro">Otro</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', alignItems: 'center' }}>
+                        <div>
+                          <label style={{ display: 'block', fontSize: '12px', fontWeight: '800', color: '#334155', marginBottom: '4px' }}>Sucursales *</label>
+                          <input type="number" min="1" value={formData.branches} onChange={e => setFormData({...formData, branches: e.target.value})} style={{ width: '100%', padding: '10px 14px', border: '1.5px solid #CBD5E1', borderRadius: '10px', fontSize: '14px' }} />
+                        </div>
+                        <div>
+                          <label style={{ display: 'block', fontSize: '12px', fontWeight: '800', color: '#334155', marginBottom: '4px' }}>¿Es local a la calle?</label>
+                          <div style={{ display: 'flex', gap: '16px', alignItems: 'center', height: '42px' }}>
+                            <label style={{ fontSize: '13px', display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', fontWeight: '600' }}><input type="radio" name="street" value="Si" checked={formData.isStreetStore === 'Si'} onChange={e => setFormData({...formData, isStreetStore: e.target.value})} /> Sí</label>
+                            <label style={{ fontSize: '13px', display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', fontWeight: '600' }}><input type="radio" name="street" value="No" checked={formData.isStreetStore === 'No'} onChange={e => setFormData({...formData, isStreetStore: e.target.value})} /> No</label>
+                          </div>
+                        </div>
+                      </div>
+
+                      <button
+                        type="submit"
+                        disabled={submitting}
+                        style={{
+                          marginTop: '8px',
+                          padding: '14px',
+                          background: submitting ? '#94A3B8' : 'linear-gradient(135deg, #ff6b00 0%, #ff3d00 100%)',
+                          color: '#FFFFFF',
+                          border: 'none',
+                          borderRadius: '12px',
+                          fontSize: '15px',
+                          fontWeight: '900',
+                          cursor: submitting ? 'not-allowed' : 'pointer',
+                          boxShadow: submitting ? 'none' : '0 4px 15px rgba(255, 107, 0, 0.4)',
+                          transition: 'all 0.2s'
+                        }}
+                      >
+                        {submitting ? '⏳ Enviando solicitud...' : '🚀 Enviar solicitud de registro'}
+                      </button>
+                    </form>
+                  </div>
+
+                  {/* Columna Derecha con Galería y Testimonios */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    {/* Foto 1: Motorista Uniformado */}
+                    <div style={{ position: 'relative', borderRadius: '18px', overflow: 'hidden', boxShadow: '0 6px 18px rgba(0,0,0,0.1)', border: '1.5px solid #E2E8F0' }}>
+                      <img src="/assets/partner/delivery_rider.png" alt="Repartidor Listo Patrón" style={{ width: '100%', height: '180px', objectFit: 'cover', display: 'block' }} />
+                      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(13,14,21,0.85) 0%, transparent 60%)' }}></div>
+                      <div style={{ position: 'absolute', bottom: '12px', left: '14px', right: '14px', color: '#FFF' }}>
+                        <div style={{ fontSize: '11px', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '1px', color: '#FF6B00', marginBottom: '2px' }}>
+                          🛵 FLOTA PROPIA Y CERTIFICADA
+                        </div>
+                        <div style={{ fontSize: '13px', fontWeight: '800' }}>
+                          Repartidores equipados con mochilas térmicas oficial PedidosListo
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Testimonio 1: Aliado Perfecto */}
+                    <div style={{ background: 'linear-gradient(135deg, #FF6B00 0%, #D84300 100%)', borderRadius: '18px', padding: '16px', color: '#FFFFFF', boxShadow: '0 6px 18px rgba(255,107,0,0.25)', position: 'relative' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                        <span style={{ fontSize: '13px', fontWeight: '900', letterSpacing: '0.5px' }}>
+                          🛵 - Pedidos Listo Delivery
+                        </span>
+                        <span style={{ background: 'rgba(255,255,255,0.25)', padding: '2px 8px', borderRadius: '12px', fontSize: '10px', fontWeight: '800' }}>
+                          COMERCIO ALIADO
+                        </span>
+                      </div>
+                      <p style={{ fontSize: '12px', lineHeight: '1.5', margin: 0, fontStyle: 'italic', opacity: 0.98 }}>
+                        "¡El aliado perfecto para tu negocio! Pedidos Listo Delivery ha sido mucho más que un canal de ventas. Su plataforma nos permitió llegar a nuevo público y mantenernos competitivos. Esta relación fue clave para convertir nuestras metas en resultados."
+                      </p>
+                    </div>
+
+                    {/* Foto 2: Entrega en Mano */}
+                    <div style={{ position: 'relative', borderRadius: '18px', overflow: 'hidden', border: '1.5px solid #E2E8F0', height: '130px' }}>
+                      <img src="/assets/partner/delivery_handover.png" alt="Entrega de paquete Listo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* TAB 2: PASO A PASO */}
+              {activeTab === 'pasos' && (
+                <div>
+                  <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+                    <div style={{ display: 'inline-block', background: 'rgba(255, 107, 0, 0.1)', border: '1px solid #ff6b00', color: '#ff6b00', padding: '4px 14px', borderRadius: '20px', fontSize: '12px', fontWeight: '900', textTransform: 'uppercase', marginBottom: '8px' }}>
+                      ⚡ PROCESO RÁPIDO DE VENTA
+                    </div>
+                    <h3 style={{ fontSize: '22px', fontWeight: '900', color: '#0d0e15', margin: 0 }}>
+                      Comenzar a vender en PedidosListo es así de simple
+                    </h3>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px', marginBottom: '24px' }}>
+                    {[
+                      { step: '1', title: 'Regístrate en 2 minutos', desc: 'Completa el formulario web con los datos básicos de tu establecimiento.', icon: '📝', color: '#3B82F6' },
+                      { step: '2', title: 'Contacto & Tarifa 10%', desc: 'Un ejecutivo comercial valida tu cuenta y aplica el 10% de comisión congelada.', icon: '📞', color: '#10B981' },
+                      { step: '3', title: 'Configura tu Menú / Catálogo', desc: 'Carga tus platos, productos, precios, fotos y horarios de atención.', icon: '📱', color: '#8B5CF6' },
+                      { step: '4', title: 'Recibe Pedidos en Vivo', desc: 'Tus clientes ordenan desde la app y recibes la confirmación en tiempo real.', icon: '🔔', color: '#F59E0B' },
+                      { step: '5', title: 'Despacho con Flota Oficial', desc: 'Nuestros motoristas uniformados recogen y entregan en promedio 15 min.', icon: '🛵', color: '#FF6B00' },
+                      { step: '6', title: 'Cobra semanal o quincenal', desc: 'Recibe tus depósitos directamente a tu cuenta bancaria con reporte detallado.', icon: '💰', color: '#059669' }
+                    ].map(item => (
+                      <div key={item.step} style={{ background: '#FFFFFF', borderRadius: '18px', padding: '20px', border: '1.5px solid #E2E8F0', boxShadow: '0 4px 12px rgba(0,0,0,0.03)', position: 'relative' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                          <span style={{ fontSize: '28px' }}>{item.icon}</span>
+                          <span style={{ background: item.color, color: '#FFF', fontWeight: '900', width: '28px', height: '28px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px' }}>
+                            {item.step}
+                          </span>
+                        </div>
+                        <h4 style={{ fontSize: '15px', fontWeight: '900', color: '#0d0e15', margin: '0 0 6px' }}>{item.title}</h4>
+                        <p style={{ fontSize: '12.5px', color: '#64748B', margin: 0, lineHeight: '1.5' }}>{item.desc}</p>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Banner Ilustrativo de Gestión */}
+                  <div style={{ background: '#FFFFFF', borderRadius: '18px', padding: '20px', border: '1.5px solid #E2E8F0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '20px', boxShadow: '0 4px 12px rgba(0,0,0,0.03)' }}>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ color: '#FF6B00', fontWeight: '900', fontSize: '12px', textTransform: 'uppercase', marginBottom: '4px' }}>⚡ PORTAL PARTNER EN TIEMPO REAL</div>
+                      <h4 style={{ fontSize: '16px', fontWeight: '900', color: '#0d0e15', margin: '0 0 6px' }}>Monitorea tu negocio desde cualquier dispositivo</h4>
+                      <p style={{ fontSize: '13px', color: '#64748B', margin: 0, lineHeight: '1.5' }}>
+                        Acepta ordenes con 1 solo clic, pausa artículos agotados al instante y visualiza el rastreo GPS en mapa interactivo de cada repartidor de PedidosListo.
+                      </p>
+                    </div>
+                    <img src="/assets/partner/delivery_food.png" alt="Portal PedidosListo" style={{ width: '160px', height: '110px', objectFit: 'cover', borderRadius: '14px', border: '1.5px solid #CBD5E1' }} />
+                  </div>
+                </div>
+              )}
+
+              {/* TAB 3: REQUISITOS & DOCUMENTOS */}
+              {activeTab === 'documentos' && (
+                <div>
+                  <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+                    <div style={{ display: 'inline-block', background: 'rgba(255, 107, 0, 0.1)', border: '1px solid #ff6b00', color: '#ff6b00', padding: '4px 14px', borderRadius: '20px', fontSize: '12px', fontWeight: '900', textTransform: 'uppercase', marginBottom: '8px' }}>
+                      📄 REQUISITOS OFICIALES
+                    </div>
+                    <h3 style={{ fontSize: '22px', fontWeight: '900', color: '#0d0e15', margin: 0 }}>
+                      ¿Qué documentos necesitas para vender con nosotros?
+                    </h3>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '24px' }}>
+                    {/* Persona Física */}
+                    <div style={{ background: '#FFFFFF', borderRadius: '20px', padding: '24px', border: '1.5px solid #CBD5E1', boxShadow: '0 4px 14px rgba(0,0,0,0.04)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px', borderBottom: '2px solid #F1F5F9', paddingBottom: '12px' }}>
+                        <span style={{ fontSize: '28px' }}>👤</span>
+                        <div>
+                          <h4 style={{ fontSize: '16px', fontWeight: '900', color: '#0d0e15', margin: 0 }}>Persona Física</h4>
+                          <span style={{ fontSize: '12px', color: '#64748B', fontWeight: '600' }}>Emprendedores y locales individuales</span>
+                        </div>
+                      </div>
+                      <ul style={{ paddingLeft: '20px', margin: 0, fontSize: '13px', color: '#334155', display: 'flex', flexDirection: 'column', gap: '10px', lineHeight: '1.5' }}>
+                        <li>🪪 <strong>Cédula de Identidad y Electoral</strong> dominicana (o pasaporte si es extranjero).</li>
+                        <li>🏦 <strong>Certificación bancaria o estado de cuenta</strong> a nombre del titular para depósitos.</li>
+                        <li>📋 <strong>Menú o catálogo de productos</strong> con precios vigentes y descripciones.</li>
+                        <li>📍 <strong>Dirección exacta y comprobante de local</strong> o taller.</li>
+                      </ul>
+                    </div>
+
+                    {/* Persona Jurídica */}
+                    <div style={{ background: '#FFFFFF', borderRadius: '20px', padding: '24px', border: '1.5px solid #FF6B00', boxShadow: '0 4px 14px rgba(255,107,0,0.1)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px', borderBottom: '2px solid #F1F5F9', paddingBottom: '12px' }}>
+                        <span style={{ fontSize: '28px' }}>🏢</span>
+                        <div>
+                          <h4 style={{ fontSize: '16px', fontWeight: '900', color: '#0d0e15', margin: 0 }}>Persona Jurídica</h4>
+                          <span style={{ fontSize: '12px', color: '#FF6B00', fontWeight: '800' }}>Empresas, SRL, EIRL o C. por A.</span>
+                        </div>
+                      </div>
+                      <ul style={{ paddingLeft: '20px', margin: 0, fontSize: '13px', color: '#334155', display: 'flex', flexDirection: 'column', gap: '10px', lineHeight: '1.5' }}>
+                        <li>🏢 <strong>RNC (Registro Nacional de Contribuyentes)</strong> emitido por la DGII.</li>
+                        <li>📑 <strong>Registro Mercantil vigente</strong> emitido por la Cámara de Comercio.</li>
+                        <li>🪪 <strong>Cédula del Representante Legal</strong> firmado en la asamblea.</li>
+                        <li>🏦 <strong>Certificación de cuenta bancaria empresarial</strong> para pagos automáticos.</li>
+                      </ul>
+                    </div>
+                  </div>
+
+                  <div style={{ background: '#FFF7ED', border: '1.5px solid #FED7AA', borderRadius: '16px', padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '14px' }}>
+                    <span style={{ fontSize: '26px' }}>💡</span>
+                    <p style={{ fontSize: '12.5px', color: '#9A3412', margin: 0, lineHeight: '1.5' }}>
+                      <strong>¿No tienes todos los documentos listos?</strong> No te preocupes. Puedes registrarte hoy y nuestro equipo de asesores de PedidosListo Partner te orientará paso a paso para completar tu expediente sin costo.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* TAB 4: SOLUCIONES & CRÉDITOS */}
+              {activeTab === 'soluciones' && (
+                <div>
+                  <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+                    <div style={{ display: 'inline-block', background: 'rgba(255, 107, 0, 0.1)', border: '1px solid #ff6b00', color: '#ff6b00', padding: '4px 14px', borderRadius: '20px', fontSize: '12px', fontWeight: '900', textTransform: 'uppercase', marginBottom: '8px' }}>
+                      💡 HERRAMIENTAS DE CRECIMIENTO
+                    </div>
+                    <h3 style={{ fontSize: '22px', fontWeight: '900', color: '#0d0e15', margin: 0 }}>
+                      Impulsa tu negocio con nuestras soluciones exclusivas
+                    </h3>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px', marginBottom: '24px' }}>
+                    {/* Destacados */}
+                    <div style={{ background: '#FFFFFF', borderRadius: '20px', padding: '22px', border: '1.5px solid #E2E8F0', boxShadow: '0 4px 14px rgba(0,0,0,0.04)' }}>
+                      <div style={{ fontSize: '32px', marginBottom: '12px' }}>🔥</div>
+                      <h4 style={{ fontSize: '16px', fontWeight: '900', color: '#0d0e15', margin: '0 0 6px' }}>PedidosListo Destacados</h4>
+                      <p style={{ fontSize: '12.5px', color: '#64748B', lineHeight: '1.5', margin: 0 }}>
+                        Multiplica tus ventas hasta 5 veces más posicionando tu negocio en las primeras posiciones de búsqueda de la app durante horas pico.
+                      </p>
+                    </div>
+
+                    {/* Créditos */}
+                    <div style={{ background: 'linear-gradient(135deg, #0d0e15 0%, #1e293b 100%)', color: '#FFFFFF', borderRadius: '20px', padding: '22px', border: '1.5px solid #ff6b00', boxShadow: '0 4px 14px rgba(255,107,0,0.2)' }}>
+                      <div style={{ fontSize: '32px', marginBottom: '12px' }}>💳</div>
+                      <h4 style={{ fontSize: '16px', fontWeight: '900', color: '#FF6B00', margin: '0 0 6px' }}>PedidosListo Créditos</h4>
+                      <p style={{ fontSize: '12.5px', color: '#CBD5E1', lineHeight: '1.5', margin: 0 }}>
+                        Financiamiento express para compra de materia prima, empaques, maquinaria o remodelación de tu local. Descuento automático de ventas.
+                      </p>
+                    </div>
+
+                    {/* Plus */}
+                    <div style={{ background: '#FFFFFF', borderRadius: '20px', padding: '22px', border: '1.5px solid #E2E8F0', boxShadow: '0 4px 14px rgba(0,0,0,0.04)' }}>
+                      <div style={{ fontSize: '32px', marginBottom: '12px' }}>⭐</div>
+                      <h4 style={{ fontSize: '16px', fontWeight: '900', color: '#0d0e15', margin: '0 0 6px' }}>PedidosListo Plus</h4>
+                      <p style={{ fontSize: '12.5px', color: '#64748B', lineHeight: '1.5', margin: 0 }}>
+                        Insignia de verificación oficial. Envíos gratis garantizados a clientes suscritos y prioridad de asignación a repartidores cercanos.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                    <div style={{ background: 'linear-gradient(135deg, #FF6B00 0%, #E65100 100%)', borderRadius: '18px', padding: '20px', color: '#FFF' }}>
+                      <div style={{ fontSize: '24px', marginBottom: '8px' }}>🚀</div>
+                      <h5 style={{ fontSize: '15px', fontWeight: '900', margin: '0 0 4px' }}>Aumenta tus pedidos un 40%</h5>
+                      <p style={{ fontSize: '12px', margin: 0, opacity: 0.95, lineHeight: '1.4' }}>
+                        Los comercios que activan PedidosListo Destacados reciben en promedio un 40% más de órdenes semanales.
+                      </p>
+                    </div>
+                    <div style={{ background: '#0D0E15', borderRadius: '18px', padding: '20px', color: '#FFF', border: '1.5px solid #334155' }}>
+                      <div style={{ fontSize: '24px', marginBottom: '8px' }}>💰</div>
+                      <h5 style={{ fontSize: '15px', fontWeight: '900', color: '#FF6B00', margin: '0 0 4px' }}>Microcréditos al 0% fricción</h5>
+                      <p style={{ fontSize: '12px', color: '#CBD5E1', margin: 0, lineHeight: '1.4' }}>
+                        Sin papeleo bancario. Si tienes ventas constantes en la app, apruebas tu crédito inmediatamente.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* TAB 5: FLOTA & TESTIMONIOS */}
+              {activeTab === 'testimonios' && (
+                <div>
+                  <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+                    <div style={{ display: 'inline-block', background: 'rgba(255, 107, 0, 0.1)', border: '1px solid #ff6b00', color: '#ff6b00', padding: '4px 14px', borderRadius: '20px', fontSize: '12px', fontWeight: '900', textTransform: 'uppercase', marginBottom: '8px' }}>
+                      🛵 LA FLOTA MÁS GRANDE DE RD
+                    </div>
+                    <h3 style={{ fontSize: '22px', fontWeight: '900', color: '#0d0e15', margin: 0 }}>
+                      Lo que dicen los restauranteros y comercios aliados
+                    </h3>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '24px' }}>
+                    {/* Testimonio Restaurante Proteína */}
+                    <div style={{ background: 'linear-gradient(135deg, #FF6B00 0%, #D84300 100%)', borderRadius: '20px', padding: '22px', color: '#FFFFFF', boxShadow: '0 8px 24px rgba(255,107,0,0.3)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+                        <span style={{ fontSize: '14px', fontWeight: '900' }}>
+                          🛵 Restaurante Proteína
+                        </span>
+                        <span style={{ background: 'rgba(255,255,255,0.25)', padding: '3px 10px', borderRadius: '20px', fontSize: '10.5px', fontWeight: '800' }}>
+                          COMERCIO CERTIFICADO
+                        </span>
+                      </div>
+                      <p style={{ fontSize: '12.5px', lineHeight: '1.6', margin: 0, fontStyle: 'italic' }}>
+                        "¡El aliado perfecto para tu negocio! Pedidos Listo Delivery ha sido mucho más que un canal de ventas. Su plataforma nos permitió llegar a nuevo público y mantenernos competitivos. Esta relación fue clave para convertir nuestras metas en resultados. Estamos entusiasmados por seguir creciendo juntos."
+                      </p>
+                    </div>
+
+                    {/* Testimonio Fresh Bowl DR */}
+                    <div style={{ background: 'linear-gradient(135deg, #0D0E15 0%, #1E293B 100%)', border: '1.5px solid #334155', borderRadius: '20px', padding: '22px', color: '#FFFFFF', boxShadow: '0 8px 24px rgba(0,0,0,0.25)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+                        <span style={{ fontSize: '14px', fontWeight: '900', color: '#FF6B00' }}>
+                          🍔 Fresh Bowl DR
+                        </span>
+                        <span style={{ color: '#FFB800', fontSize: '13px' }}>
+                          ★★★★★ 5.0
+                        </span>
+                      </div>
+                      <p style={{ fontSize: '12px', lineHeight: '1.6', margin: 0, fontStyle: 'italic', color: '#CBD5E1' }}>
+                        "¡Tus antojos favoritos, listos en minutos! En Restaurante Proteína y comercios afiliados preparamos cada plato con los ingredientes más frescos y la rapidez que te encanta. Explora nuestro menú en la app, elige lo que más se te antoje y recíbelo directo en tu puerta. No esperes más para disfrutar de una experiencia única, rápida y deliciosa. ¡Haz tu pedido ahora mismo por la app de Listo y déjate sorprender!"
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Galería de Fotos de Entregas */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px' }}>
+                    <div style={{ borderRadius: '14px', overflow: 'hidden', height: '140px', border: '1.5px solid #E2E8F0' }}>
+                      <img src="/assets/partner/delivery_rider.png" alt="Rider Listo Patrón" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    </div>
+                    <div style={{ borderRadius: '14px', overflow: 'hidden', height: '140px', border: '1.5px solid #E2E8F0' }}>
+                      <img src="/assets/partner/delivery_food.png" alt="Comida Envasada Listo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    </div>
+                    <div style={{ borderRadius: '14px', overflow: 'hidden', height: '140px', border: '1.5px solid #E2E8F0' }}>
+                      <img src="/assets/partner/delivery_handover.png" alt="Entrega en Puerta Listo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Banner Informativo Inferior Completo de Cierre */}
+              <div style={{ marginTop: '24px', background: 'linear-gradient(135deg, #FFF7ED 0%, #FFEDD5 100%)', border: '1.5px solid #FED7AA', borderRadius: '18px', padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '16px' }}>
+                <div style={{ background: '#FF6B00', color: '#FFF', width: '46px', height: '46px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px', flexShrink: 0, boxShadow: '0 4px 12px rgba(255,107,0,0.35)' }}>
+                  🛵
+                </div>
+                <div>
+                  <h5 style={{ fontSize: '13.5px', fontWeight: '900', color: '#9A3412', margin: '0 0 3px' }}>
+                    Pedidos Listo Delivery · Tu solución 360° para envíos en República Dominicana
+                  </h5>
+                  <p style={{ fontSize: '12px', color: '#C2410C', margin: 0, lineHeight: '1.45' }}>
+                    Desde la solicitud del cliente en la app hasta el despacho por nuestros repartidores uniformados, Pedidos Listo Delivery garantiza frescura, rapidez y trazabilidad GPS en cada orden. ¡Forma parte de la red de comercios que está revolucionando las ventas digitales en todo el país!
+                  </p>
+                </div>
+              </div>
+
+            </div>
+          )}
+
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function LandingPage({ navigate, lang }) {
   useLandingLogic();
   const [showPlanModal, setShowPlanModal] = useState(false);
+  const [showDeliveryModal, setShowDeliveryModal] = useState(false);
 
   useEffect(() => {
     const checkUrlForPlan = () => {
@@ -51,7 +601,7 @@ export default function LandingPage({ navigate, lang }) {
     <div className="splash-logo-wrap">
       <img src="./assets/logo_listo_blanco.png" alt="Listo" className="splash-logo" />
     </div>
-    <div className="splash-tagline">Pedidos Listo</div>
+    <div className="splash-tagline">Listo Patrón</div>
     <div className="splash-loader">
       <div className="splash-bar"></div>
     </div>
@@ -88,37 +638,105 @@ export default function LandingPage({ navigate, lang }) {
 
 {/*  NAV  */}
 <nav id="nav">
-  <img className="nav-logo" src="./assets/logo_listo.png" alt="Pedidos Listo" style={{"height": "40px", "objectFit": "contain"}} />
+  <div style={{ display: 'flex', alignItems: 'center' }}>
+    <img className="nav-logo" src="./assets/logo_listo.png" alt="Listo Patrón" style={{"height": "40px", "objectFit": "contain"}} />
+    
+    <div className="nav-header-buttons" style={{ display: 'flex', alignItems: 'center', gap: '8px', marginLeft: '10px' }}>
+      {/* BANNER EQUIPATE EN NUESTRA TIENDA PEDIDOS LISTO */}
+      <div
+        onClick={() => navigate('shop')}
+        className="nav-action-btn shop-banner-glow"
+        style={{
+          background: '#0d0e15',
+          color: '#ffffff',
+          border: '1.5px solid #ff6b00',
+          borderRadius: '50px',
+          padding: '6px 14px 6px 16px',
+          cursor: 'pointer',
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '12px',
+          boxShadow: '0 0 18px rgba(255, 107, 0, 0.45)',
+          transition: 'all 0.3s ease-in-out'
+        }}
+      >
+        <span style={{ fontSize: '22px' }}>🛍️</span>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', lineHeight: '1.2' }}>
+          <span style={{ fontSize: '13px', fontWeight: '800', color: '#ffffff' }}>
+            Equípate en nuestra tienda <span style={{ color: '#ff6b00', fontWeight: '900' }}>Pedidos Listo</span>
+          </span>
+          <span style={{ fontSize: '10.5px', color: '#94A3B8', fontWeight: '500' }}>
+            Herramientas, equipos e insumos de seguridad con envío rápido a todo el país
+          </span>
+        </div>
+        <span style={{
+          background: 'linear-gradient(135deg, #ff6b00 0%, #ff3d00 100%)',
+          color: '#ffffff',
+          fontWeight: '900',
+          fontSize: '12px',
+          padding: '6px 14px',
+          borderRadius: '50px',
+          boxShadow: '0 2px 10px rgba(255,107,0,0.5)',
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '4px',
+          whiteSpace: 'nowrap'
+        }}>
+          🛒 Visitar Tienda ›
+        </span>
+      </div>
+
+      <button onClick={() => setShowPlanModal(true)} className="nav-action-btn" style={{ background: 'linear-gradient(135deg, #10B981, #059669)', color: 'white', border: 'none', borderRadius: '50px', padding: '8px 16px', fontSize: '13px', fontWeight: '800', cursor: 'pointer', boxShadow: '0 4px 10px rgba(16,185,129,0.3)' }}>
+        <span>💳 COMPRAR UN PLAN</span>
+      </button>
+
+      {/* BOTÓN PEDIDOS LISTO PARTNER CON INSIGNIA MAMEY CURVADA */}
+      <button
+        onClick={() => setShowDeliveryModal(true)}
+        className="nav-action-btn partner-btn-glow"
+        style={{
+          background: '#0d0e15',
+          color: 'white',
+          border: '1.5px solid #ff6b00',
+          borderRadius: '50px',
+          padding: '5px 8px 5px 16px',
+          cursor: 'pointer',
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '10px',
+          boxShadow: '0 0 15px rgba(255, 107, 0, 0.4)',
+          transition: 'all 0.3s ease-in-out'
+        }}
+      >
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+          <span style={{ fontWeight: '900', fontStyle: 'italic', fontSize: '15px', color: '#ffffff', letterSpacing: '-0.3px', fontFamily: "'Outfit', 'Fredoka One', sans-serif" }}>
+            Pedidos<span style={{ color: '#ff6b00' }}>Listo</span>
+          </span>
+          <span style={{
+            background: 'linear-gradient(135deg, #ff6b00 0%, #ff8533 100%)',
+            color: '#ffffff',
+            fontFamily: "'Outfit', sans-serif",
+            fontWeight: '900',
+            fontSize: '12px',
+            padding: '5px 14px',
+            borderRadius: '50px',
+            boxShadow: '0 2px 10px rgba(255,107,0,0.5)',
+            letterSpacing: '0.3px',
+            display: 'inline-block'
+          }}>
+            Partner
+          </span>
+        </span>
+      </button>
+    </div>
+  </div>
+
   <div className="nav-links" id="navLinks">
     <a href="#servicios">Servicios</a>
     <a href="#como-funciona">Cómo funciona</a>
     <a href="#profesionales">Para profesionales</a>
     <a href="#planes" onClick={(e) => { e.preventDefault(); setShowPlanModal(true); }}>Planes</a>
     <a href="#faq">FAQ</a>
-    <a onClick={() => navigate('shop')} style={{cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "4px"}}>Tienda 🛒</a>
-    <button 
-      onClick={() => setShowPlanModal(true)} 
-      className="nav-btn-plan" 
-      style={{
-        background: '#10B981', 
-        color: '#FFFFFF', 
-        fontWeight: '900', 
-        padding: '8px 18px', 
-        borderRadius: '50px', 
-        border: 'none', 
-        cursor: 'pointer',
-        boxShadow: '0 4px 12px rgba(16, 185, 129, 0.4)',
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: '6px',
-        fontSize: '13px',
-        transition: 'transform 0.2s ease, background 0.2s ease'
-      }}
-      onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
-      onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
-    >
-      💳 COMPRAR UN PLAN
-    </button>
     <a onClick={() => navigate('login')} className="nav-btn" style={{cursor: "pointer", "color": "#FFFFFF", "fontWeight": "bold"}}>Abrir app →</a>
   </div>
   <button className="burger" id="burger"><span></span><span></span><span></span></button>
@@ -130,7 +748,7 @@ export default function LandingPage({ navigate, lang }) {
     <div style={{"position": "relative", "width": "100%", "maxWidth": "1000px", "boxShadow": "0 0 40px rgba(0,0,0,0.3)", "overflow": "hidden", "background": "#000", "borderRadius": "16px", "margin": "0 15px"}}>
       
       {/* La imagen principal (el banner naranja con las personas) - en auto proporciones para que no se corte */}
-      <img src="./assets/portada_nueva.png" style={{"width": "100%", "height": "auto", "display": "block"}} alt="Portada Pedidos Listo" />
+      <img src="./assets/portada_nueva.png" style={{"width": "100%", "height": "auto", "display": "block"}} alt="Portada Listo Patrón" />
       
       {/* El logo circular en la esquina superior derecha */}
       <img src="./assets/logo_esquina.png" style={{"position": "absolute", "top": "4%", "right": "4%", "width": "clamp(50px, 8vw, 90px)", "height": "auto", "objectFit": "contain", "zIndex": "2", "filter": "drop-shadow(0 4px 6px rgba(0,0,0,0.2))"}} alt="Logo Listo" />
@@ -365,7 +983,7 @@ export default function LandingPage({ navigate, lang }) {
             <div className="phone-notch"></div>
             <div className="phone-screen">
               <div className="phone-header" style={{"flexDirection": "column", "alignItems": "center", "gap": "6px", "padding": "16px 14px 10px"}}>
-                <img src="./assets/extracted_19.png" alt="Pedidos Listo" style={{"height": "28px", "width": "auto", "objectFit": "contain", "filter": "brightness(0) invert(1)"}}/>
+                <img src="./assets/extracted_19.png" alt="Listo Patrón" style={{"height": "28px", "width": "auto", "objectFit": "contain", "filter": "brightness(0) invert(1)"}}/>
                 <span style={{"color": "rgba(255,255,255,0.9)", "fontSize": "10px", "fontWeight": "700", "letterSpacing": ".5px"}}>🇩🇴 República Dominicana</span>
               </div>
               <div className="phone-search">🔍 ¿Qué servicio necesitas?</div>
@@ -1083,9 +1701,9 @@ export default function LandingPage({ navigate, lang }) {
       <span style={{"fontSize": "28px"}}>📲</span>
       <div style={{"textAlign": "left"}}>
         <div style={{"fontWeight": "800", "fontSize": "15px", "color": "#222"}}>Los planes se contratan desde la app</div>
-        <div style={{"fontSize": "13px", "color": "var(--gray)", "marginTop": "2px"}}>Descarga Pedidos Listo, crea tu perfil de profesional y elige tu plan en segundos.</div>
+        <div style={{"fontSize": "13px", "color": "var(--gray)", "marginTop": "2px"}}>Descarga Listo Patrón, crea tu perfil de profesional y elige tu plan en segundos.</div>
       </div>
-      <a onClick={() => navigate('login')} style={{cursor: "pointer", "background": "var(--orange)", "color": "#fff", "padding": "10px 22px", "borderRadius": "50px", "fontWeight": "800", "fontSize": "14px", "textDecoration": "none", "whiteSpace": "nowrap", "boxShadow": "0 4px 14px rgba(242,96,0,0.35)", "transition": "transform .2s,box-shadow .2s"}} onMouseOver={() => { this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 24px rgba(242,96,0,0.5)' }} onMouseOut={() => { this.style.transform='';this.style.boxShadow='0 4px 14px rgba(242,96,0,0.35)' }}>🚀 Descargar app</a>
+
     </div>
     <div className="planes-wrap" style={{"gridTemplateColumns": "repeat(auto-fit,minmax(220px,1fr))", "maxWidth": "1100px"}}>
     {/*  styles extracted  */}
@@ -1219,7 +1837,7 @@ export default function LandingPage({ navigate, lang }) {
       <p style={{"textAlign": "center", "marginTop": "24px", "fontSize": "13px", "color": "#aaa"}}>* Los contratos no vencen hasta ser usados (excepto VIP que es mensual)</p>
       <div style={{"display": "flex", "alignItems": "center", "justifyContent": "center", "gap": "10px", "marginTop": "20px", "background": "#fff3ec", "borderRadius": "12px", "padding": "14px 24px", "maxWidth": "600px", "marginLeft": "auto", "marginRight": "auto", "border": "1.5px solid var(--orange-pale2)"}}>
         <span style={{"fontSize": "20px"}}>ℹ️</span>
-        <p style={{"fontSize": "13px", "color": "#555", "margin": "0"}}>Para comprar un plan, descarga la app <strong style={{"color": "var(--orange)"}}>Pedidos Listo</strong>, regístrate como profesional y selecciona el plan desde tu perfil.</p>
+        <p style={{"fontSize": "13px", "color": "#555", "margin": "0"}}>Para comprar un plan, descarga la app <strong style={{"color": "var(--orange)"}}>Listo Patrón</strong>, regístrate como profesional y selecciona el plan desde tu perfil.</p>
       </div>
     </div>
 
@@ -1305,7 +1923,7 @@ export default function LandingPage({ navigate, lang }) {
 
       <details style={{"background": "#FFF3EC", "borderRadius": "14px", "padding": "18px 20px", "border": "1px solid #FFD4B8", "cursor": "pointer"}}>
         <summary style={{"fontWeight": "800", "fontSize": "15px", "color": "#C24D00", "listStyle": "none", "display": "flex", "justifyContent": "space-between", "alignItems": "center"}}>
-          ¿Cuánto cuesta unirse a Pedidos Listo? <span style={{"fontSize": "20px", "color": "#F26000"}}>+</span>
+          ¿Cuánto cuesta unirse a Listo Patrón? <span style={{"fontSize": "20px", "color": "#F26000"}}>+</span>
         </summary>
         <p style={{"marginTop": "12px", "color": "#555", "fontSize": "14px", "lineHeight": "1.7"}}>Los primeros 3 meses son completamente gratis con el Plan Básico incluido (3 contratos por mes). Después puedes elegir el plan que más te convenga según tu volumen de trabajo.</p>
       </details>
@@ -1314,7 +1932,7 @@ export default function LandingPage({ navigate, lang }) {
         <summary style={{"fontWeight": "800", "fontSize": "15px", "color": "#C24D00", "listStyle": "none", "display": "flex", "justifyContent": "space-between", "alignItems": "center"}}>
           ¿Cómo recibo los pagos? <span style={{"fontSize": "20px", "color": "#F26000"}}>+</span>
         </summary>
-        <p style={{"marginTop": "12px", "color": "#555", "fontSize": "14px", "lineHeight": "1.7"}}>Los clientes pagan en efectivo o transferencia directamente a ti. Pedidos Listo no cobra comisión por servicio — solo pagas tu plan mensual.</p>
+        <p style={{"marginTop": "12px", "color": "#555", "fontSize": "14px", "lineHeight": "1.7"}}>Los clientes pagan en efectivo o transferencia directamente a ti. Listo Patrón no cobra comisión por servicio — solo pagas tu plan mensual.</p>
       </details>
 
       <details style={{"background": "#FFF3EC", "borderRadius": "14px", "padding": "18px 20px", "border": "1px solid #FFD4B8", "cursor": "pointer"}}>
@@ -1541,9 +2159,9 @@ export default function LandingPage({ navigate, lang }) {
         </div>
 
         <div className="why-app-card reveal stagger-5">
-          <div className="why-app-icon">💵</div>
-          <h3>Pago directo</h3>
-          <p>Paga directamente al profesional mediante transferencia bancaria o en efectivo. Sin complicaciones.</p>
+          <div className="why-app-icon">💳</div>
+          <h3>Pago seguro</h3>
+          <p>Paga dentro de la app con tarjeta de crédito o débito. Protección garantizada.</p>
         </div>
 
         <div className="why-app-card reveal stagger-6">
@@ -1613,7 +2231,7 @@ export default function LandingPage({ navigate, lang }) {
     <div style={{"maxWidth": "800px", "margin": "0 auto", "display": "flex", "flexDirection": "column", "alignItems": "center", "gap": "16px"}}>
       
       <div>
-        <h3 style={{"color": "#fff", "fontSize": "22px", "fontWeight": "800", "marginBottom": "10px"}}>Pedidos Listo SRL</h3>
+        <h3 style={{"color": "#fff", "fontSize": "22px", "fontWeight": "800", "marginBottom": "10px"}}>Listo Patrón SRL</h3>
         <p style={{"color": "#768bb1", "margin": "0 0 6px", "fontSize": "15px"}}>Barrio La Terrazita, Peatón 3 No. 18, Edificio de Arte</p>
         <p style={{"color": "#768bb1", "margin": "0", "fontSize": "15px"}}>Detrás Urb. La Terraza, Santiago de los Caballeros, Rep. Dom.</p>
       </div>
@@ -1650,7 +2268,7 @@ export default function LandingPage({ navigate, lang }) {
       </div>
 
       <div style={{"color": "#4a5a75", "fontSize": "14px", "marginTop": "24px"}}>
-        © 2026 Pedidos Listo. Todos los derechos reservados.
+        © 2026 Listo Patrón. Todos los derechos reservados.
       </div>
     </div>
   </footer>
@@ -1659,11 +2277,18 @@ export default function LandingPage({ navigate, lang }) {
     isOpen={showPlanModal} 
     onClose={() => setShowPlanModal(false)} 
     onSelectPlan={(plan) => {
-      alert(`Has seleccionado el ${plan.name} (${plan.price}). Para completar tu pago y activación de cuenta, por favor inicia sesión o regístrate en Pedidos Listo.`);
+      alert(`Has seleccionado el ${plan.name} (${plan.price}). Para completar tu pago y activación de cuenta, por favor inicia sesión o regístrate en Listo Patrón.`);
       setShowPlanModal(false);
       navigate('login');
     }} 
   />
+
+  {showDeliveryModal && (
+    <DeliveryPartnerModal 
+      onClose={() => setShowDeliveryModal(false)} 
+      navigate={navigate} 
+    />
+  )}
 
 </div>
 );
