@@ -415,7 +415,31 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
     setTimeout(() => setToastMessage(''), 3000);
   };
 
-  const playKitchenAlarmSound = () => {
+  const [selectedAlarmSound, setSelectedAlarmSound] = useState(() => {
+    try {
+      return localStorage.getItem('pedidos_listo_alarm_sound') || 'alarm_kitchen';
+    } catch (e) {
+      return 'alarm_kitchen';
+    }
+  });
+
+  const handleSelectAlarmSound = (soundType) => {
+    setSelectedAlarmSound(soundType);
+    try {
+      localStorage.setItem('pedidos_listo_alarm_sound', soundType);
+    } catch (e) {}
+    playKitchenAlarmSound(soundType);
+    showToast(`🔊 Tono de alerta cambiado a: ${soundType === 'chaching' ? '💰 Caja Registradora' : soundType === 'siren' ? '📢 Sirena Emergencia' : soundType === 'chime' ? '🔔 Timbre Clásico' : '🚨 Alarma Cocina High-Volume'}`);
+  };
+
+  const playKitchenAlarmSound = (soundType = selectedAlarmSound) => {
+    try {
+      const selectedAudio = localStorage.getItem('listo_sound_order') || 'new_contract_v3';
+      const audio = new Audio(`/audio/${selectedAudio}.mp3`);
+      audio.volume = 1.0;
+      audio.play().catch(() => {});
+    } catch (e) {}
+
     try {
       const AudioContext = window.AudioContext || window.webkitAudioContext;
       if (!AudioContext) return;
@@ -427,18 +451,34 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
 
-      osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(880, ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(1320, ctx.currentTime + 0.25);
+      if (soundType === 'chaching') {
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(1200, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(1800, ctx.currentTime + 0.3);
+      } else if (soundType === 'siren') {
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(600, ctx.currentTime);
+        osc.frequency.linearRampToValueAtTime(1400, ctx.currentTime + 0.35);
+      } else if (soundType === 'chime') {
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(523.25, ctx.currentTime); // C5
+        osc.frequency.setValueAtTime(659.25, ctx.currentTime + 0.15); // E5
+        osc.frequency.setValueAtTime(783.99, ctx.currentTime + 0.3); // G5
+      } else {
+        // 'alarm_kitchen' por defecto
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(880, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(1320, ctx.currentTime + 0.25);
+      }
 
-      gain.gain.setValueAtTime(0.4, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.35);
+      gain.gain.setValueAtTime(0.6, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.45);
 
       osc.connect(gain);
       gain.connect(ctx.destination);
 
       osc.start();
-      osc.stop(ctx.currentTime + 0.4);
+      osc.stop(ctx.currentTime + 0.45);
     } catch (e) {}
   };
 
@@ -2538,7 +2578,28 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                     <span style={{ fontWeight: 900, fontSize: 15, color: 'white' }}>Receptor de Pedidos</span>
                   </div>
 
-                  <div style={{ display: 'flex', gap: 6 }}>
+                  <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
+                    <select
+                      value={selectedAlarmSound}
+                      onChange={(e) => handleSelectAlarmSound(e.target.value)}
+                      style={{
+                        background: 'rgba(255,255,255,0.12)',
+                        color: '#FFF',
+                        border: '1px solid rgba(255,107,0,0.5)',
+                        padding: '5px 8px',
+                        borderRadius: 10,
+                        fontWeight: 900,
+                        fontSize: 10.5,
+                        cursor: 'pointer',
+                        outline: 'none'
+                      }}
+                    >
+                      <option value="alarm_kitchen" style={{ background: '#121829', color: '#FFF' }}>🚨 Alarma Fuerte Cocina</option>
+                      <option value="chime" style={{ background: '#121829', color: '#FFF' }}>🔔 Timbre Clásico</option>
+                      <option value="chaching" style={{ background: '#121829', color: '#FFF' }}>💰 Caja Registradora</option>
+                      <option value="siren" style={{ background: '#121829', color: '#FFF' }}>📢 Sirena Emergencia</option>
+                    </select>
+
                     <button
                       onClick={() => setIsSoundAlarmEnabled(prev => !prev)}
                       style={{
@@ -2554,9 +2615,10 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                     >
                       {isSoundAlarmEnabled ? '🔔 Alarma: ON' : '🔕 Alarma: OFF'}
                     </button>
+
                     <button
-                      onClick={playKitchenAlarmSound}
-                      style={{ background: 'rgba(255,255,255,0.1)', color: 'white', border: '1px solid rgba(255,255,255,0.2)', padding: '6px 10px', borderRadius: 10, fontWeight: 900, fontSize: 10, cursor: 'pointer' }}
+                      onClick={() => playKitchenAlarmSound(selectedAlarmSound)}
+                      style={{ background: 'linear-gradient(135deg, #FF6B00, #E65100)', color: 'white', border: 'none', padding: '6px 10px', borderRadius: 10, fontWeight: 900, fontSize: 10, cursor: 'pointer', boxShadow: '0 2px 8px rgba(255,107,0,0.3)' }}
                     >
                       🔊 Probar Sonido
                     </button>
