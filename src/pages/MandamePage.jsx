@@ -2542,7 +2542,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                 {merchantState.products.map(prod => {
                   const prodImgCount = (prod.images && prod.images.length) || 1;
                   return (
-                    <div key={prod.id} style={{ display: 'flex', alignItems: 'center', justifyContent: spaceBetween, background: 'rgba(255,255,255,0.05)', padding: '10px 12px', borderRadius: 14, marginBottom: 8, border: '1px solid rgba(255,255,255,0.1)' }}>
+                    <div key={prod.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(255,255,255,0.05)', padding: '10px 12px', borderRadius: 14, marginBottom: 8, border: '1px solid rgba(255,255,255,0.1)' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', flexGrow: 1, minWidth: 0 }} onClick={() => handleOpenDishPhotoManager(prod.id)}>
                         <div style={{ position: 'relative', flexShrink: 0 }}>
                           <img src={prod.image} style={{ width: 46, height: 46, borderRadius: 10, objectFit: 'cover' }} alt={prod.name} />
@@ -2712,7 +2712,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                         }}
                       >
                         {/* Order Header */}
-                        <div style={{ display: 'flex', justifyContent: spaceBetween, alignItems: 'center', marginBottom: 10, borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: 8 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10, borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: 8 }}>
                           <div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                               <span style={{ fontWeight: 900, fontSize: 16, color: '#ff6b00' }}>#{order.id}</span>
@@ -2741,7 +2741,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                         <div style={{ marginBottom: 12 }}>
                           <div style={{ fontSize: 11, fontWeight: 900, color: '#ff6b00', marginBottom: 6 }}>📜 PLATILLOS A PREPARAR:</div>
                           {(order.items || []).map((item, idx) => (
-                            <div key={idx} style={{ display: 'flex', justifyContent: spaceBetween, alignItems: 'center', background: 'rgba(255,255,255,0.06)', padding: '8px 10px', borderRadius: 10, marginBottom: 4 }}>
+                            <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,255,255,0.06)', padding: '8px 10px', borderRadius: 10, marginBottom: 4 }}>
                               <div>
                                 <span style={{ fontWeight: 900, fontSize: 13, color: '#00e699', marginRight: 6 }}>{item.qty}x</span>
                                 <span style={{ fontWeight: 800, fontSize: 13, color: 'white' }}>{item.name}</span>
@@ -2753,7 +2753,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                         </div>
 
                         {/* Order Total & Action Controls */}
-                        <div style={{ display: 'flex', justifyContent: spaceBetween, alignItems: 'center', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: 10 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: 10 }}>
                           <div>
                             <div style={{ fontSize: 10, color: '#94a3b8' }}>Total Venta:</div>
                             <div style={{ fontWeight: 900, fontSize: 16, color: '#00e699' }}>RD$ {order.total}</div>
@@ -2839,7 +2839,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
 
               return (
                 <div>
-                  <div style={{ display: 'flex', justifyContent: spaceBetween, alignItems: 'center', marginBottom: 12 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
                     <div>
                       <span style={{ fontSize: 10, background: '#ff6b00', color: 'white', padding: '2px 8px', borderRadius: 6, fontWeight: 900 }}>
                         📸 GESTIONAR & MODIFICAR FOTOS
@@ -2933,7 +2933,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
       {activeStoreModal && (
         <div className="modal-backdrop active">
           <div className="modal-card">
-            <div style={{ display: 'flex', justifyContent: spaceBetween, alignItems: 'center', marginBottom: 12 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
               <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 900, fontSize: 18, color: '#ff6b00', margin: 0 }}>🏪 {activeStoreModal.name}</h3>
               <div className="close-btn" onClick={() => setActiveStoreModal(null)}>&times;</div>
             </div>
@@ -2993,7 +2993,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
       {customizeProduct && (
         <div className="modal-backdrop active">
           <div className="modal-card">
-            <div style={{ display: 'flex', justifyContent: spaceBetween, alignItems: 'center', marginBottom: 12 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
               <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 900, fontSize: 17, color: '#ff6b00', margin: 0 }}>
                 🍔 {customizeProduct.name}
               </h3>
@@ -3072,7 +3072,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
       {editingPhotoIndex !== null && (
         <div className="modal-backdrop active" style={{ zIndex: 600 }}>
           <div className="modal-card" style={{ background: '#0a0e1a', color: 'white', borderTop: '3px solid #ff6b00', maxHeight: '92vh' }}>
-            <div style={{ display: 'flex', justifyContent: spaceBetween, alignItems: 'center', marginBottom: 10 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
               <div>
                 <span style={{ fontSize: 10, background: 'linear-gradient(135deg, #ff6b00, #ff8533)', color: 'white', padding: '2px 8px', borderRadius: 6, fontWeight: 900 }}>
                   ⚡ ESTUDIO ULTRA PRO HD
@@ -3266,7 +3266,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
             {/* TAB 0: EMOJIS ANIMADOS & UBIQUIDAD */}
             {editorTab === 'emojis' && (
               <div style={{ marginBottom: 12 }}>
-                <div style={{ fontSize: 11, fontWeight: 900, color: '#00e699', marginBottom: 6, display: 'flex', justifyContent: spaceBetween, alignItems: 'center' }}>
+                <div style={{ fontSize: 11, fontWeight: 900, color: '#00e699', marginBottom: 6, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <span>😄 AÑADIR EMOJI ANIMADO A LA FOTO</span>
                   <span style={{ fontSize: 9, color: '#94a3b8' }}>Toca la foto para ubicar</span>
                 </div>
@@ -3313,7 +3313,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
             {/* TAB 1: 100+ PLANTILLAS Y BANNERS ANIMADOS DE OFERTAS */}
             {editorTab === 'templates' && (
               <div style={{ marginBottom: 12 }}>
-                <div style={{ display: 'flex', justifyContent: spaceBetween, alignItems: 'center', marginBottom: 6 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
                   <label style={{ fontSize: 11, fontWeight: 900, color: '#ff6b00', margin: 0 }}>
                     🔥 CATÁLOGO DE 100 BANNERS ANIMADOS
                   </label>
@@ -3445,7 +3445,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
             {/* TAB 4: SELLOS Y ROTACIÓN */}
             {editorTab === 'effects' && (
               <div style={{ marginBottom: 12 }}>
-                <div style={{ display: 'flex', gap: 8, justifyContent: spaceBetween, alignItems: 'center', marginBottom: 10 }}>
+                <div style={{ display: 'flex', gap: 8, justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
                   <div style={{ display: 'flex', gap: 6 }}>
                     <button onClick={() => setPhotoRotate(r => (r + 90) % 360)} style={{ background: 'rgba(255,255,255,0.1)', color: 'white', border: 'none', padding: '8px 12px', borderRadius: 10, fontWeight: 800, fontSize: 11, cursor: 'pointer' }}>
                       🔄 Rotar 90°
@@ -3486,7 +3486,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
       {isCartModalOpen && (
         <div className="modal-backdrop active">
           <div className="modal-card">
-            <div style={{ display: 'flex', justifyContent: spaceBetween, alignItems: 'center', marginBottom: 14 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 900, fontSize: 18, color: '#ff6b00', margin: 0 }}>🛒 Tu Carrito Pedidos Listo</h3>
                 {totalCartItems > 0 && (
@@ -3515,7 +3515,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
               <div>
                 <div style={{ maxHeight: 280, overflowY: 'auto', paddingRight: 4 }}>
                   {cart.map(item => (
-                    <div key={item.id} style={{ display: 'flex', justifyContent: spaceBetween, alignItems: 'center', padding: '12px 0', borderBottom: '1px solid #e2e8f0' }}>
+                    <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0', borderBottom: '1px solid #e2e8f0' }}>
                       <div style={{ flexGrow: 1, paddingRight: 8 }}>
                         <div style={{ fontWeight: 800, fontSize: 13, color: '#0f172a' }}>{item.name}</div>
                         <div style={{ fontSize: 12, color: '#ff6b00', fontWeight: 900, marginTop: 2 }}>
@@ -3544,19 +3544,19 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
 
                 {/* Subtotals & Delivery breakdown */}
                 <div style={{ borderTop: '2px dashed #e2e8f0', marginTop: 14, paddingTop: 12 }}>
-                  <div style={{ display: 'flex', justifyContent: spaceBetween, fontSize: 12, color: '#64748b', marginBottom: 4 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: '#64748b', marginBottom: 4 }}>
                     <span>Subtotal Platillos:</span>
                     <span style={{ fontWeight: 800, color: '#0f172a' }}>RD$ {cartSubtotal}</span>
                   </div>
-                  <div style={{ display: 'flex', justifyContent: spaceBetween, fontSize: 12, color: '#64748b', marginBottom: 4 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: '#64748b', marginBottom: 4 }}>
                     <span>Costo Delivery 🛵:</span>
                     <span style={{ fontWeight: 800, color: '#0f172a' }}>RD$ 55</span>
                   </div>
-                  <div style={{ display: 'flex', justifyContent: spaceBetween, fontSize: 12, color: '#64748b', marginBottom: 6 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: '#64748b', marginBottom: 6 }}>
                     <span>Propina Conductor 💛:</span>
                     <span style={{ fontWeight: 800, color: '#0f172a' }}>RD$ {selectedTip}</span>
                   </div>
-                  <div style={{ display: 'flex', justifyContent: spaceBetween, fontSize: 16, fontWeight: 900, color: '#0f172a', paddingTop: 8, borderTop: '1px solid #e2e8f0' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 16, fontWeight: 900, color: '#0f172a', paddingTop: 8, borderTop: '1px solid #e2e8f0' }}>
                     <span>Total a Pagar:</span>
                     <span style={{ color: '#ff6b00' }}>RD$ {cartTotal}</span>
                   </div>
@@ -3752,5 +3752,3 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
     </div>
   );
 }
-
-function spaceBetween() { return 'space-between'; }
