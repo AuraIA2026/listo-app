@@ -104,11 +104,9 @@ const demoVipPros = [
 ]
 
 const innerPhotos = [
-  { video: '/assets/delivery_rider_video.mp4', img: plomero, titleEs: 'Pedidos Listo — Entregas & Delivery Express', titleEn: 'Pedidos Listo — Express Delivery', badge: '📦 PEDIDOS LISTO 24/7' },
-  { img: plomero, titleEs: 'Juan Pérez — Plomero Máster', titleEn: 'Juan Pérez — Master Plumber', badge: '💧 Plomería 24/7' },
-  { img: electrica1, titleEs: 'María González — Electricista Certificada', titleEn: 'María González — Certified Electrician', badge: '⚡ Electricidad 24/7' },
-  { img: mecanico1, titleEs: 'Luisa Martínez — Mecánica Automotriz', titleEn: 'Luisa Martínez — Auto Mechanic', badge: '🔧 Mecánica Móvil' },
-  { img: cerrajero1, titleEs: 'Roberto Núñez — Cerrajero Express', titleEn: 'Roberto Núñez — Express Locksmith', badge: '🔑 Cerrajería 24/7' }
+  { video: '/assets/delivery_rider_video.mp4', titleEs: 'Pedidos Listo — Entrega de Paquetes & Envíos', titleEn: 'Pedidos Listo — Package & Express Delivery', badge: '📦 ENTREGA EN MANO 24/7' },
+  { video: '/assets/delivery_worker_scooter.mp4', titleEs: 'Pedidos Listo — Delivery en Moto a Toda Velocidad', titleEn: 'Pedidos Listo — High Speed Scooter Delivery', badge: '🛵 DELIVERIES EN MOTO 24/7' },
+  { titleEs: 'Pedidos Listo — Mandados, Compras & Servicios', titleEn: 'Pedidos Listo — Errands, Shopping & Services', badge: '⚡ TODO EN UN SOLO LUGAR' }
 ]
 
 export const getProTier = (pro) => {
@@ -523,23 +521,24 @@ export default function VIPSection({
         onMouseEnter={() => { isInteracting.current = true }}
         onMouseLeave={() => { isInteracting.current = false }}
       >
-        {/* TARJETA 1: TARJETA PROMO EXCLUSIVA DE PEDIDOS LISTO (CON VIDEO 6s Y BOTÓN DIRECTO) */}
+        {/* TARJETA 1: TARJETA PROMO EXCLUSIVA DE PEDIDOS LISTO (COLOR MAMEY CON VIDEOS Y BOTÓN DIRECTO) */}
         <div 
           className="vip-card-hero amz-blue-hero-card"
           onClick={() => {
             navigate('mandame');
           }}
           style={{
-            background: 'linear-gradient(160deg, #0073EC 0%, #0045B5 60%, #002B7A 100%)',
+            background: 'linear-gradient(160deg, #FF7A1A 0%, #F26000 60%, #C24D00 100%)',
             color: 'white',
-            borderColor: '#0052C2',
+            borderColor: '#FF8533',
             display: 'flex',
             flexDirection: 'column',
             justify: 'space-between',
             padding: '18px 16px',
             position: 'relative',
             overflow: 'hidden',
-            minHeight: '360px'
+            minHeight: '360px',
+            boxShadow: '0 10px 30px rgba(242, 96, 0, 0.35)'
           }}
         >
           {/* Shimmer Effect */}
@@ -548,14 +547,15 @@ export default function VIPSection({
           {/* Top Tag & Logo Listo */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', zIndex: 2 }}>
             <span style={{ 
-              background: 'linear-gradient(135deg, #FF7A1A, #F26000)', 
-              color: '#FFFFFF', 
+              background: '#1A1A2E', 
+              color: '#FFD700', 
               padding: '4px 10px', 
               borderRadius: '20px', 
               fontSize: '10px', 
               fontWeight: '900', 
               letterSpacing: '0.5px',
-              boxShadow: '0 2px 8px rgba(242, 96, 0, 0.4)',
+              border: '1px solid #FFD700',
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.4)',
               display: 'flex',
               alignItems: 'center',
               gap: '4px'
@@ -577,8 +577,8 @@ export default function VIPSection({
           {/* Banner Oferta Especial Pedidos Listo */}
           <div style={{
             margin: '8px 0 0',
-            background: 'rgba(255,255,255,0.15)',
-            border: '1px solid rgba(255,255,255,0.25)',
+            background: 'rgba(255,255,255,0.2)',
+            border: '1px solid rgba(255,255,255,0.35)',
             borderRadius: '10px',
             padding: '4px 8px',
             display: 'flex',
@@ -587,10 +587,10 @@ export default function VIPSection({
             zIndex: 2,
             backdropFilter: 'blur(4px)'
           }}>
-            <span style={{ fontSize: '10px', fontWeight: '800', color: '#FFD700' }}>
+            <span style={{ fontSize: '10px', fontWeight: '800', color: '#FFFFFF' }}>
               ⚡ ENVIOS & DELIVERIES
             </span>
-            <span style={{ fontSize: '10px', fontWeight: '900', color: '#FFFFFF', background: '#F26000', padding: '2px 6px', borderRadius: '6px' }}>
+            <span style={{ fontSize: '10px', fontWeight: '900', color: '#1A1A2E', background: '#FFD700', padding: '2px 6px', borderRadius: '6px' }}>
               ENTREGA HOY
             </span>
           </div>
@@ -644,7 +644,7 @@ export default function VIPSection({
             <h3 style={{ fontSize: '18px', fontWeight: '900', color: '#ffffff', margin: 0, lineHeight: '1.15', textShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>
               Pedidos Listo
             </h3>
-            <p style={{ fontSize: '11px', color: '#B3D7FF', fontWeight: '700', margin: '4px 0 0', lineHeight: '1.3' }}>
+            <p style={{ fontSize: '11px', color: '#FFF8F2', fontWeight: '700', margin: '4px 0 0', lineHeight: '1.3' }}>
               ⭐ 5.0 • {lang === 'es' ? 'Entregas express y servicios al instante' : 'Express deliveries & instant services'}
             </p>
           </div>
@@ -657,17 +657,20 @@ export default function VIPSection({
                 navigate('mandame');
               }}
               style={{
-                background: 'linear-gradient(135deg, #FF7A1A, #F26000)',
-                color: 'white',
+                background: '#FFFFFF',
+                color: '#F26000',
                 border: 'none',
                 borderRadius: '22px',
                 padding: '10px 18px',
                 fontSize: '12px',
                 fontWeight: '900',
                 cursor: 'pointer',
-                boxShadow: '0 4px 12px rgba(242, 96, 0, 0.4)',
-                width: '100%'
+                boxShadow: '0 4px 14px rgba(0, 0, 0, 0.25)',
+                width: '100%',
+                transition: 'transform 0.15s ease'
               }}
+              onMouseDown={(e) => e.currentTarget.style.transform = 'scale(0.96)'}
+              onMouseUp={(e) => e.currentTarget.style.transform = 'scale(1)'}
             >
               ⚡ {lang === 'es' ? 'Ir a Pedidos Listo ›' : 'Go to Pedidos Listo ›'}
             </button>
