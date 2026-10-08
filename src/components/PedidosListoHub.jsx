@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from 'react';
 import './PedidosListoHub.css';
 
-// HERO BANNERS (MAMEY BRAND)
 const HERO_BANNERS = [
   {
     id: 1,
@@ -33,6 +32,51 @@ const HERO_BANNERS = [
     bgGradient: 'linear-gradient(135deg, #D44200 0%, #FF731A 100%)',
     emoji: '🛵',
     catId: 'mandame'
+  }
+];
+
+const DUAL_SLIDES = [
+  {
+    id: 1,
+    left: {
+      bg: '#3B0764',
+      badge: 'plus',
+      title: '6 meses Gratis',
+      desc: '+3 meses al 50% OFF con tus Tarjetas Mastercard Standard o Gold APAP',
+      btnText: 'Suscribirme',
+      btnClass: 'pl-btn-green',
+      action: 'sub'
+    },
+    right: {
+      bg: '#D50000',
+      badge: 'COMBO PROMO',
+      title: 'RD$ 299 Pechuga',
+      desc: 'Pechurinas crujientes con tostones y refresco frío incluido.',
+      btnText: 'Pedir Combo',
+      btnClass: 'pl-btn-white',
+      action: 'combo'
+    }
+  },
+  {
+    id: 2,
+    left: {
+      bg: '#FF6000',
+      badge: 'SUPERMARKET',
+      title: 'Envío Gratis Súper',
+      desc: 'En tu compra de Listo Market mayor a RD$ 500 en 15 minutos.',
+      btnText: 'Ir al Súper',
+      btnClass: 'pl-btn-white',
+      action: 'market'
+    },
+    right: {
+      bg: '#1E1B4B',
+      badge: 'MÁNDAME',
+      title: '50% OFF Courier',
+      desc: 'Envía documentos y paquetes por la ciudad a mitad de precio.',
+      btnText: 'Pedir Rider',
+      btnClass: 'pl-btn-green',
+      action: 'mandame'
+    }
   }
 ];
 
@@ -122,6 +166,7 @@ const MARKET_PRODUCTS = [
 
 export default function PedidosListoHub({ lang = 'es', navigate }) {
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [dualSlideIndex, setDualSlideIndex] = useState(0);
   const [selectedCat, setSelectedCat] = useState('todos');
   const [searchQuery, setSearchQuery] = useState('');
   const [cartItems, setCartItems] = useState([]);
@@ -133,18 +178,40 @@ export default function PedidosListoHub({ lang = 'es', navigate }) {
   const [paymentMethod, setPaymentMethod] = useState('efectivo');
   const [tipAmount, setTipAmount] = useState(50);
 
+  // REAL LIVE COUNTDOWN TIMER (39 MIN 47 SEC = 2387 SECONDS)
+  const [secondsLeft, setSecondsLeft] = useState(2387);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setSecondsLeft(prev => (prev > 0 ? prev - 1 : 2387));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const formatCountdown = (totalSeconds) => {
+    const mins = Math.floor(totalSeconds / 60);
+    const secs = totalSeconds % 60;
+    return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+  };
+
   // Mándame State
   const [mandamePickUp, setMandamePickUp] = useState('Mi ubicación actual');
   const [mandameDropOff, setMandameDropOff] = useState('');
   const [mandameType, setMandameType] = useState('Documentos');
-  const [mandameNote, setMandameNote] = useState('');
 
-  // Auto-slide hero banner
+  // Auto-slide hero banner & dual carousel
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentSlide(prev => (prev + 1) % HERO_BANNERS.length);
     }, 4500);
     return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    const dualTimer = setInterval(() => {
+      setDualSlideIndex(prev => (prev + 1) % DUAL_SLIDES.length);
+    }, 4000);
+    return () => clearInterval(dualTimer);
   }, []);
 
   // Filter stores by category
@@ -221,6 +288,22 @@ export default function PedidosListoHub({ lang = 'es', navigate }) {
     setMandameDropOff('');
   };
 
+  const handleDualAction = (action) => {
+    if (action === 'sub') {
+      alert('🎉 ¡Te has suscrito a Listo Plus! Disfruta 6 meses Gratis de envíos a 0 costo.');
+    } else if (action === 'combo') {
+      const comboItem = { id: 'combo_pechuga', name: 'RD$ 299 Combo Pechuguitas + Tostones + Refresco', price: 299 };
+      addToCart(comboItem);
+      setShowCartDrawer(true);
+    } else if (action === 'market') {
+      setSelectedCat('market');
+    } else if (action === 'mandame') {
+      setShowMandameModal(true);
+    }
+  };
+
+  const currentDual = DUAL_SLIDES[dualSlideIndex];
+
   return (
     <div className="pedidos-listo-container">
       {/* 1. BARRA SUPERIOR DE UBICACIÓN & BÚSQUEDA */}
@@ -254,7 +337,65 @@ export default function PedidosListoHub({ lang = 'es', navigate }) {
         </div>
       </div>
 
-      {/* 2. HERO BANNERS CAROUSEL (MAMEY BRAND) */}
+      {/* 2. BANNER OFERTA RELÁMPAGO AMARILLO (CON RELOJ EN VIVO 39:47) */}
+      <div className="pl-yellow-flash-card">
+        <div>
+          <div className="pl-flash-timer-pill">
+            <span>⏱️</span>
+            <span>{formatCountdown(secondsLeft)}</span>
+          </div>
+          <h2 className="pl-yellow-title">Ahorra hasta RD$ 300</h2>
+          <p className="pl-yellow-desc">Prueba nuevos sabores y disfruta Descuentos fugaces.</p>
+          <button className="pl-yellow-btn" onClick={() => setSelectedCat('restaurantes')}>
+            Descubrir locales
+          </button>
+        </div>
+        <div className="pl-clock-graphic-wrap">
+          ⏰
+        </div>
+      </div>
+
+      {/* 3. CARRUSEL DE BANNERS DOBLES INTERACTIVOS (PURPLE & MAMEY COMBOS) */}
+      <div className="pl-dual-carousel-wrapper">
+        <div className="pl-dual-grid">
+          {/* BANNER IZQUIERDO (PURPLE) */}
+          <div className="pl-card-purple" style={{ background: currentDual.left.bg }}>
+            <div>
+              <span className="pl-mini-badge">{currentDual.left.badge}</span>
+              <h3 className="pl-dual-title">{currentDual.left.title}</h3>
+              <p className="pl-dual-desc">{currentDual.left.desc}</p>
+            </div>
+            <button className={currentDual.left.btnClass} onClick={() => handleDualAction(currentDual.left.action)}>
+              {currentDual.left.btnText}
+            </button>
+          </div>
+
+          {/* BANNER DERECHO (RED/MAMEY COMBO) */}
+          <div className="pl-card-mamey-combo" style={{ background: currentDual.right.bg }}>
+            <div>
+              <span className="pl-mini-badge">{currentDual.right.badge}</span>
+              <h3 className="pl-dual-title">{currentDual.right.title}</h3>
+              <p className="pl-dual-desc">{currentDual.right.desc}</p>
+            </div>
+            <button className={currentDual.right.btnClass} onClick={() => handleDualAction(currentDual.right.action)}>
+              {currentDual.right.btnText}
+            </button>
+          </div>
+        </div>
+
+        {/* PUNTOS INDICADORES DE CARRUSEL DOBLE */}
+        <div className="pl-dual-dots">
+          {DUAL_SLIDES.map((_, idx) => (
+            <button
+              key={idx}
+              className={`pl-dual-dot ${idx === dualSlideIndex ? 'active' : ''}`}
+              onClick={() => setDualSlideIndex(idx)}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* 4. HERO BANNERS CAROUSEL (MAMEY BRAND) */}
       <div className="pl-banner-wrapper">
         {HERO_BANNERS.map((banner, index) => (
           index === currentSlide && (
@@ -289,7 +430,7 @@ export default function PedidosListoHub({ lang = 'es', navigate }) {
         </div>
       </div>
 
-      {/* 3. MOSAICO DE CATEGORÍAS (QUICK-COMMERCE GRID) */}
+      {/* 5. MOSAICO DE CATEGORÍAS (QUICK-COMMERCE GRID) */}
       <div className="pl-grid-title-row">
         <h3 className="pl-section-title">Servicios Pedidos Listo</h3>
         {selectedCat !== 'todos' && (
@@ -318,7 +459,7 @@ export default function PedidosListoHub({ lang = 'es', navigate }) {
         ))}
       </div>
 
-      {/* 4. CARRUSEL DE PRODUCTOS DE LISTO MARKET */}
+      {/* 6. CARRUSEL DE PRODUCTOS DE LISTO MARKET */}
       <div className="pl-horizontal-section">
         <div className="pl-grid-title-row">
           <h3 className="pl-section-title">🛒 Listo Market - Entrega en 15 min</h3>
@@ -349,7 +490,7 @@ export default function PedidosListoHub({ lang = 'es', navigate }) {
         </div>
       </div>
 
-      {/* 5. LOCALE & RESTAURANTES DESTACADOS */}
+      {/* 7. LOCALE & RESTAURANTES DESTACADOS */}
       <div className="pl-horizontal-section">
         <div className="pl-grid-title-row">
           <h3 className="pl-section-title">🔥 Restaurantes & Locales Populares</h3>
@@ -375,7 +516,7 @@ export default function PedidosListoHub({ lang = 'es', navigate }) {
         </div>
       </div>
 
-      {/* 6. BOTÓN FLOTANTE DEL CARRITO */}
+      {/* 8. BOTÓN FLOTANTE DEL CARRITO */}
       {cartItems.length > 0 && (
         <div className="pl-floating-cart" onClick={() => setShowCartDrawer(true)}>
           <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -386,7 +527,7 @@ export default function PedidosListoHub({ lang = 'es', navigate }) {
         </div>
       )}
 
-      {/* 7. MODAL DETALLE DE TIENDA / MENÚ */}
+      {/* 9. MODAL DETALLE DE TIENDA / MENÚ */}
       {selectedStore && (
         <div className="pl-modal-overlay" onClick={() => setSelectedStore(null)}>
           <div className="pl-cart-drawer" onClick={(e) => e.stopPropagation()} style={{ borderRadius: '28px 28px 0 0' }}>
@@ -411,7 +552,7 @@ export default function PedidosListoHub({ lang = 'es', navigate }) {
                   </div>
                   <button className="pl-product-add-btn" onClick={() => {
                     addToCart(item);
-                    alert(`Añadido: ${item.name}`);
+                    alert(`Añadido al pedido: ${item.name}`);
                   }}>+</button>
                 </div>
               ))}
@@ -420,7 +561,7 @@ export default function PedidosListoHub({ lang = 'es', navigate }) {
         </div>
       )}
 
-      {/* 8. MODAL DE SOLICITUD MÁNDAME EXPRESS */}
+      {/* 10. MODAL DE SOLICITUD MÁNDAME EXPRESS */}
       {showMandameModal && (
         <div className="pl-modal-overlay" onClick={() => setShowMandameModal(false)}>
           <div className="pl-cart-drawer" onClick={(e) => e.stopPropagation()} style={{ borderRadius: '28px 28px 0 0' }}>
@@ -481,7 +622,7 @@ export default function PedidosListoHub({ lang = 'es', navigate }) {
         </div>
       )}
 
-      {/* 9. MODAL DRAWER DE CARRITO & CHECKOUT */}
+      {/* 11. MODAL DRAWER DE CARRITO & CHECKOUT */}
       {showCartDrawer && (
         <div className="pl-modal-overlay" onClick={() => setShowCartDrawer(false)}>
           <div className="pl-cart-drawer" onClick={(e) => e.stopPropagation()}>
@@ -541,7 +682,7 @@ export default function PedidosListoHub({ lang = 'es', navigate }) {
         </div>
       )}
 
-      {/* 10. MODAL DE SEGUIMIENTO EN TIEMPO REAL (RASTREO EN VIVO) */}
+      {/* 12. MODAL DE SEGUIMIENTO EN TIEMPO REAL (RASTREO EN VIVO) */}
       {activeTrackingOrder && (
         <div className="pl-modal-overlay">
           <div className="pl-cart-drawer" style={{ background: '#FFFFFF', borderRadius: '28px' }}>

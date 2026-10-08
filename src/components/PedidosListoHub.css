@@ -139,112 +139,200 @@
   cursor: pointer;
 }
 
-/* --- HERO BANNERS CAROUSEL --- */
-.pl-banner-wrapper {
-  position: relative;
-  width: 100%;
-  border-radius: 22px;
-  overflow: hidden;
-  margin-bottom: 16px;
-  box-shadow: 0 10px 24px rgba(255, 96, 0, 0.18);
-}
-
-.pl-banner-slide {
+/* --- BANNER OFERTA RELÁMPAGO AMARILLO (CON RELOJ EN VIVO) --- */
+.pl-yellow-flash-card {
+  background: #FFC700;
+  border-radius: 26px;
   padding: 22px 20px;
-  border-radius: 22px;
-  color: #FFFFFF;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  min-height: 140px;
+  color: #0F172A;
   position: relative;
-  box-sizing: border-box;
+  overflow: hidden;
+  margin-bottom: 14px;
+  box-shadow: 0 10px 24px rgba(255, 199, 0, 0.3);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-.pl-banner-info {
-  max-width: 65%;
-  z-index: 2;
-}
-
-.pl-banner-tag {
-  display: inline-block;
-  padding: 4px 10px;
-  background: rgba(255, 255, 255, 0.25);
-  backdrop-filter: blur(8px);
-  border-radius: 12px;
-  font-size: 11px;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 6px;
-}
-
-.pl-banner-title {
-  font-size: 20px;
-  font-weight: 900;
-  line-height: 1.15;
-  margin: 0 0 6px;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-}
-
-.pl-banner-desc {
-  font-size: 12px;
-  opacity: 0.95;
-  margin: 0 0 12px;
-  font-weight: 600;
-}
-
-.pl-banner-btn {
-  padding: 8px 16px;
-  border-radius: 14px;
-  background: #FFFFFF;
-  color: var(--mamey-primary);
+.pl-flash-timer-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #0F172A;
+  color: #FFFFFF;
   font-size: 13px;
   font-weight: 900;
+  padding: 4px 14px;
+  border-radius: 20px;
+  margin-bottom: 10px;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+
+.pl-yellow-title {
+  font-size: 24px;
+  font-weight: 900;
+  margin: 0 0 6px;
+  color: #0F172A;
+  line-height: 1.1;
+  letter-spacing: -0.5px;
+}
+
+.pl-yellow-desc {
+  font-size: 13px;
+  font-weight: 700;
+  margin: 0 0 16px;
+  color: #2D3748;
+  max-width: 80%;
+  line-height: 1.3;
+}
+
+.pl-yellow-btn {
+  background: #0F172A;
+  color: #FFFFFF;
   border: none;
+  padding: 10px 20px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 900;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.25);
   transition: transform 0.15s ease;
 }
 
-.pl-banner-btn:active {
-  transform: scale(0.95);
+.pl-yellow-btn:active {
+  transform: scale(0.94);
 }
 
-.pl-banner-img-wrap {
-  position: absolute;
-  right: -10px;
-  bottom: -10px;
-  font-size: 80px;
-  z-index: 1;
-  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.25));
+.pl-clock-graphic-wrap {
+  position: relative;
+  font-size: 70px;
+  animation: clockPulse 2s ease-in-out infinite;
   user-select: none;
 }
 
-.pl-banner-dots {
-  position: absolute;
-  bottom: 10px;
-  left: 50%;
-  transform: translateX(-50%);
+@keyframes clockPulse {
+  0%, 100% { transform: scale(1) rotate(0deg); }
+  50% { transform: scale(1.08) rotate(4deg); }
+}
+
+/* --- DUAL BANNER CAROUSEL (PURPLE & MAMEY COMBOS) --- */
+.pl-dual-carousel-wrapper {
+  position: relative;
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.pl-dual-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.pl-card-purple {
+  background: #3B0764;
+  border-radius: 24px;
+  padding: 18px 16px;
+  color: #FFFFFF;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 175px;
+  box-shadow: 0 8px 20px rgba(59, 7, 100, 0.25);
+  position: relative;
+}
+
+.pl-card-mamey-combo {
+  background: #D50000;
+  border-radius: 24px;
+  padding: 18px 16px;
+  color: #FFFFFF;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 175px;
+  box-shadow: 0 8px 20px rgba(213, 0, 0, 0.25);
+  position: relative;
+}
+
+.pl-mini-badge {
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.2);
+  color: #FFFFFF;
+  font-size: 10px;
+  font-weight: 900;
+  padding: 3px 8px;
+  border-radius: 10px;
+  width: fit-content;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+
+.pl-dual-title {
+  font-size: 20px;
+  font-weight: 900;
+  margin: 0 0 6px;
+  line-height: 1.15;
+  letter-spacing: -0.4px;
+}
+
+.pl-dual-desc {
+  font-size: 11px;
+  font-weight: 600;
+  opacity: 0.9;
+  margin: 0 0 14px;
+  line-height: 1.3;
+}
+
+.pl-btn-green {
+  background: #00E676;
+  color: #0F172A;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 16px;
+  font-size: 13px;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0, 230, 118, 0.3);
+  transition: transform 0.15s ease;
+  width: fit-content;
+}
+
+.pl-btn-white {
+  background: #FFFFFF;
+  color: #D50000;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 16px;
+  font-size: 13px;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(255, 255, 255, 0.3);
+  transition: transform 0.15s ease;
+  width: fit-content;
+}
+
+.pl-dual-dots {
   display: flex;
   gap: 6px;
-  z-index: 3;
+  justify-content: center;
+  margin-top: 10px;
 }
 
-.pl-banner-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 4px;
-  background: rgba(255, 255, 255, 0.4);
+.pl-dual-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #CBD5E1;
   border: none;
-  padding: 0;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.25s ease;
 }
 
-.pl-banner-dot.active {
-  width: 22px;
-  background: #FFFFFF;
+.pl-dual-dot.active {
+  width: 20px;
+  border-radius: 10px;
+  background: var(--mamey-primary);
 }
 
 /* --- GRID CATEGORÍAS TIPO PEDIDOSYA --- */
