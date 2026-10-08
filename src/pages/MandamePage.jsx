@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { db } from '../firebase';
 import './MandamePage.css';
 import './HomePage.css';
 import PedidosListoHub from '../components/PedidosListoHub';
@@ -270,6 +272,68 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
   const [isCartModalOpen, setIsCartModalOpen] = useState(false);
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
+
+  // Registro de Comercio Vinculado a la Cuenta del Usuario
+  const [isRegisterCommerceModalOpen, setIsRegisterCommerceModalOpen] = useState(false);
+  const [regStoreName, setRegStoreName] = useState(userData?.storeName || '');
+  const [regStoreCategory, setRegStoreCategory] = useState('restaurantes');
+  const [regStorePhone, setRegStorePhone] = useState(userData?.phone || userData?.telefono || '');
+  const [regStoreAddress, setRegStoreAddress] = useState('Santiago, República Dominicana');
+  const [regPrepTime, setRegPrepTime] = useState('15-25 min');
+  const [isRegisteringCommerce, setIsRegisteringCommerce] = useState(false);
+
+  const handleRegisterUserCommerce = async (e) => {
+    e.preventDefault();
+    if (!regStoreName.trim()) {
+      alert('Por favor escribe el nombre de tu comercio o restaurante.');
+      return;
+    }
+
+    setIsRegisteringCommerce(true);
+    try {
+      if (userData?.uid) {
+        await updateDoc(doc(db, 'users', userData.uid), {
+          isMerchant: true,
+          role: 'comercio',
+          hasCommerce: true,
+          storeName: regStoreName.trim(),
+          storeCategory: regStoreCategory,
+          storePhone: regStorePhone.trim(),
+          storeAddress: regStoreAddress.trim(),
+          updatedAt: serverTimestamp()
+        });
+      }
+
+      setMerchantState(prev => ({
+        ...prev,
+        storeName: regStoreName.trim(),
+        address: regStoreAddress.trim(),
+        prepTime: regPrepTime
+      }));
+
+      localStorage.setItem('force_listo_merchant_mode', 'true');
+      localStorage.setItem('pedidos_listo_view_mode', 'merchant');
+
+      handleSetViewMode('merchant');
+      setIsRegisterCommerceModalOpen(false);
+      showToast(`🎉 ¡Comercio Activado! Bienvenido a ${regStoreName.trim()} en Pedidos Listo Partner`);
+    } catch (err) {
+      console.error('Error registrando comercio:', err);
+      setMerchantState(prev => ({
+        ...prev,
+        storeName: regStoreName.trim(),
+        address: regStoreAddress.trim(),
+        prepTime: regPrepTime
+      }));
+      localStorage.setItem('force_listo_merchant_mode', 'true');
+      localStorage.setItem('pedidos_listo_view_mode', 'merchant');
+      handleSetViewMode('merchant');
+      setIsRegisterCommerceModalOpen(false);
+      showToast(`🎉 ¡Comercio Activado! Bienvenido a ${regStoreName.trim()} en Pedidos Listo Partner`);
+    } finally {
+      setIsRegisteringCommerce(false);
+    }
+  };
 
   // Merchant Dish Form State (Uber Eats Style)
   const [merchantState, setMerchantState] = useState(() => {
@@ -1300,8 +1364,8 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
         </div>
       )}
 
-      {/* Mode Switcher Pill Header - ÚNICAMENTE visible si el usuario tiene una Cuenta de Comercio Registrada o Admin */}
-      {isMerchantUser && (
+      {/* Mode Switcher Pill Header - Visible si el usuario tiene comercio registrado */}
+      {isMerchantUser ? (
         <div style={{ background: '#0a0e1a', color: 'white', padding: '10px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid #ff6b00', fontSize: 11, fontWeight: 800 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <span style={{ fontSize: 16 }}>🍔</span>
@@ -1338,11 +1402,25 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                 boxShadow: viewMode === 'merchant' ? '0 4px 12px rgba(255,107,0,0.4)' : 'none'
               }}
             >
-              🏪 Comercio Partner
+              🏪 Mi Comercio Partner
             </button>
           </div>
         </div>
+      ) : (
+        <div style={{ background: 'linear-gradient(135deg, #059669 0%, #047857 100%)', color: 'white', padding: '8px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 11, fontWeight: 800 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span style={{ fontSize: 14 }}>🏬</span>
+            <span>¿Tienes un negocio o restaurante? <strong>Regístralo gratis con tu cuenta</strong></span>
+          </div>
+          <button 
+            onClick={() => setIsRegisterCommerceModalOpen(true)}
+            style={{ background: '#ffffff', color: '#047857', border: 'none', padding: '4px 12px', borderRadius: 14, fontSize: 11, fontWeight: 900, cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}
+          >
+            🚀 Activar Mi Comercio
+          </button>
+        </div>
       )}
+
 
       {/* =========================================================================
          CLIENT APP VIEW MODE
@@ -4235,7 +4313,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
               </button>
               <button
                 onClick={() => setIsCashReportOpen(false)}
-                style={{ background: 'rgba(255,255,255,0.1)', color: 'white', border: 'none', padding: 12, borderRadius: 12, fontWeight: 800, fontSize: 13, cursor: 'pointer' }}
+                style={{ background: 'rgba(255,255,255,0.1)', color: 'white', border: 'none', padding: 12, borderRadius: 8, fontWeight: 800, fontSize: 13, cursor: 'pointer' }}
               >
                 ✕ Cerrar
               </button>
@@ -4243,6 +4321,109 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
           </div>
         </div>
       )}
+
+      {/* MODAL DE REGISTRO / ACTIVACIÓN DE COMERCIO PARA LA CUENTA DEL USUARIO */}
+      {isRegisterCommerceModalOpen && (
+        <div className="pl-modal-overlay" onClick={() => setIsRegisterCommerceModalOpen(false)}>
+          <div className="pl-cart-drawer" onClick={(e) => e.stopPropagation()} style={{ borderRadius: '24px 24px 0 0', maxWidth: 520, margin: '0 auto', background: '#FFFFFF', padding: 20 }}>
+            <div className="pl-drawer-header">
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontSize: 24 }}>🏬</span>
+                <div>
+                  <h3 className="pl-drawer-title" style={{ margin: 0, fontSize: 17, color: '#0f172a' }}>Registrar Comercio Partner</h3>
+                  <p style={{ margin: 0, fontSize: 11, color: '#64748b', fontWeight: 600 }}>Cuenta asociada: {userData?.email || 'Tu Cuenta'}</p>
+                </div>
+              </div>
+              <button className="pl-close-btn" onClick={() => setIsRegisterCommerceModalOpen(false)}>✕</button>
+            </div>
+
+            <form onSubmit={handleRegisterUserCommerce} style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 8 }}>
+              <div>
+                <label style={{ fontSize: 11, fontWeight: 800, color: '#475569', textTransform: 'uppercase' }}>Nombre de tu Comercio / Restaurante *</label>
+                <input 
+                  type="text"
+                  className="pl-search-input"
+                  style={{ marginTop: 4, width: '100%', boxSizing: 'border-box' }}
+                  placeholder="Ej: Mofongo Master, Súper Don Juan, KFC Colinas..."
+                  value={regStoreName}
+                  onChange={(e) => setRegStoreName(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div>
+                <label style={{ fontSize: 11, fontWeight: 800, color: '#475569', textTransform: 'uppercase' }}>Categoría Principal</label>
+                <select 
+                  className="pl-search-input"
+                  style={{ marginTop: 4, width: '100%', boxSizing: 'border-box' }}
+                  value={regStoreCategory}
+                  onChange={(e) => setRegStoreCategory(e.target.value)}
+                >
+                  <option value="restaurantes">🍔 Restaurantes & Fast Food</option>
+                  <option value="market">🛒 Supermercado & Listo Market</option>
+                  <option value="farmacias">💊 Farmacia & Salud 24/7</option>
+                  <option value="bebidas">🍺 Licores & Frías</option>
+                  <option value="reposteria">🍰 Repostería & Postres</option>
+                  <option value="tiendas">🛍️ Variedades & Tienda</option>
+                </select>
+              </div>
+
+              <div>
+                <label style={{ fontSize: 11, fontWeight: 800, color: '#475569', textTransform: 'uppercase' }}>Teléfono de Pedidos / WhatsApp</label>
+                <input 
+                  type="text"
+                  className="pl-search-input"
+                  style={{ marginTop: 4, width: '100%', boxSizing: 'border-box' }}
+                  placeholder="Ej: 809-555-0199"
+                  value={regStorePhone}
+                  onChange={(e) => setRegStorePhone(e.target.value)}
+                />
+              </div>
+
+              <div>
+                <label style={{ fontSize: 11, fontWeight: 800, color: '#475569', textTransform: 'uppercase' }}>Dirección del Local</label>
+                <input 
+                  type="text"
+                  className="pl-search-input"
+                  style={{ marginTop: 4, width: '100%', boxSizing: 'border-box' }}
+                  placeholder="Ej: Av. Juan Pablo Duarte #10, Santiago"
+                  value={regStoreAddress}
+                  onChange={(e) => setRegStoreAddress(e.target.value)}
+                />
+              </div>
+
+              <div>
+                <label style={{ fontSize: 11, fontWeight: 800, color: '#475569', textTransform: 'uppercase' }}>Tiempo Promedio de Preparación</label>
+                <select 
+                  className="pl-search-input"
+                  style={{ marginTop: 4, width: '100%', boxSizing: 'border-box' }}
+                  value={regPrepTime}
+                  onChange={(e) => setRegPrepTime(e.target.value)}
+                >
+                  <option value="10-20 min">⏱️ 10 - 20 min (Express)</option>
+                  <option value="15-25 min">⏱️ 15 - 25 min (Normal)</option>
+                  <option value="20-30 min">⏱️ 20 - 30 min (Gourmet)</option>
+                  <option value="30-45 min">⏱️ 30 - 45 min (Combos Grandes)</option>
+                </select>
+              </div>
+
+              <div style={{ background: '#FFF4EE', border: '1.5px solid #FFE4D6', borderRadius: 14, padding: 12, fontSize: 12, color: '#1e293b' }}>
+                ✨ Al activar tu comercio con este correo (<strong>{userData?.email || 'Tu Cuenta'}</strong>), obtendrás acceso inmediato al panel de <strong>Comandera de Pedidos, Punto de Venta POS, Catálogo de Platillos y Editor de Fotos</strong>.
+              </div>
+
+              <button 
+                type="submit" 
+                className="pl-order-confirm-btn" 
+                disabled={isRegisteringCommerce}
+                style={{ background: 'linear-gradient(135deg, #ff6b00 0%, #ea580c 100%)', marginTop: 6 }}
+              >
+                {isRegisteringCommerce ? '⏳ Activando Comercio...' : '🚀 Activar Mi Herramienta Comercio Ahora'}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+
