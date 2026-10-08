@@ -1410,14 +1410,25 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
         <div style={{ background: 'linear-gradient(135deg, #059669 0%, #047857 100%)', color: 'white', padding: '8px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 11, fontWeight: 800 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <span style={{ fontSize: 14 }}>🏬</span>
-            <span>¿Tienes un negocio o restaurante? <strong>Regístralo gratis con tu cuenta</strong></span>
+            <span>¿Tienes un negocio o restaurante? <strong>Regístralo en la Web Pedidos Listo Partner</strong></span>
           </div>
-          <button 
-            onClick={() => setIsRegisterCommerceModalOpen(true)}
-            style={{ background: '#ffffff', color: '#047857', border: 'none', padding: '4px 12px', borderRadius: 14, fontSize: 11, fontWeight: 900, cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}
-          >
-            🚀 Activar Mi Comercio
-          </button>
+          <div style={{ display: 'flex', gap: 6 }}>
+            <button 
+              onClick={() => {
+                if (navigate) navigate('crearLocal');
+                else setIsRegisterCommerceModalOpen(true);
+              }}
+              style={{ background: '#ffffff', color: '#047857', border: 'none', padding: '4px 12px', borderRadius: 14, fontSize: 11, fontWeight: 900, cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}
+            >
+              🌐 Pedidos Listo Partner Web
+            </button>
+            <button 
+              onClick={() => setIsRegisterCommerceModalOpen(true)}
+              style={{ background: 'rgba(255,255,255,0.2)', color: '#ffffff', border: '1px solid rgba(255,255,255,0.4)', padding: '4px 10px', borderRadius: 14, fontSize: 11, fontWeight: 800, cursor: 'pointer' }}
+            >
+              🚀 Registro Rápido
+            </button>
+          </div>
         </div>
       )}
 
@@ -4418,6 +4429,17 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                 style={{ background: 'linear-gradient(135deg, #ff6b00 0%, #ea580c 100%)', marginTop: 6 }}
               >
                 {isRegisteringCommerce ? '⏳ Activando Comercio...' : '🚀 Activar Mi Herramienta Comercio Ahora'}
+              </button>
+
+              <button 
+                type="button"
+                onClick={() => {
+                  setIsRegisterCommerceModalOpen(false);
+                  if (navigate) navigate('crearLocal');
+                }}
+                style={{ background: '#0f172a', color: '#ffffff', border: '1px solid #334155', padding: '12px', borderRadius: 14, fontWeight: 800, fontSize: 12, cursor: 'pointer', marginTop: 4, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
+              >
+                🌐 Ir al Portal Web: Pedidos Listo Partner Completo ➔
               </button>
             </form>
           </div>
