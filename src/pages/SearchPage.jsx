@@ -889,8 +889,6 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
         </div>
       </div>
 
-      {/* ── PEDIDOS LISTO HUB EN BUSCAR ── */}
-      {userRole !== 'pro' && <PedidosListoHub lang={lang} navigate={navigate} />}
 
       {/* ── CARRUSEL DE HISTORIAS DE TRABAJOS REALIZADOS (STORIES 24H) ── */}
       <HistoriasCarrusel 

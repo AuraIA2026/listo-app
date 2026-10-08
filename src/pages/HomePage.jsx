@@ -1260,8 +1260,6 @@ export default function HomePage({ lang, navigate, userRole }) {
         </div>
       </div>
 
-      {/* ── PEDIDOS LISTO QUICK-COMMERCE HUB (PEDIDOSYA MAMEY STYLE) ── */}
-      {!isPro && <PedidosListoHub lang={lang} navigate={navigate} />}
       {/* ── MARQUEE TICKER BANNER INFORMATIVO CON LOS 3 ANUNCIOS EN SECUENCIA (TÓMBOLA & OFERTAS) ── */}
       <div 
         className="amz-marquee-container" 
