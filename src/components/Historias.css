@@ -109,55 +109,121 @@
   filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
 }
 
-/* ── ANIMACIÓN DE DELIVERY EN MOTOR A TODA VELOCIDAD 🛵💨 ── */
+/* ── ANIMACIÓN DE DELIVERY MOTO BLANCA A TODA VELOCIDAD CON LÍNEAS DE VELOCIDAD 🛵💨 ── */
 .moto-speed-wrap {
   position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  margin: 0 4px;
+  margin: 0 6px;
+  height: 32px;
 }
 
-.moto-emoji {
+.white-moto-img {
+  width: 36px;
+  height: 30px;
+  object-fit: contain;
   display: inline-block;
-  font-size: 20px;
-  animation: highSpeedMotoDrive 0.38s ease-in-out infinite alternate;
+  animation: whiteMotoDriveVibrate 0.32s ease-in-out infinite alternate;
   transform-origin: bottom center;
-  filter: drop-shadow(-2px 4px 6px rgba(0, 0, 0, 0.45));
+  filter: drop-shadow(-3px 4px 6px rgba(0, 0, 0, 0.5)) brightness(1.15) contrast(1.1);
+  position: relative;
+  z-index: 2;
 }
 
-@keyframes highSpeedMotoDrive {
+@keyframes whiteMotoDriveVibrate {
   0% {
-    transform: translateY(0px) rotate(-6deg) scaleX(1.02);
-    filter: drop-shadow(-2px 3px 6px rgba(0,0,0,0.4));
+    transform: translateY(0px) rotate(-7deg) scaleX(1);
+    filter: drop-shadow(-2px 3px 5px rgba(0,0,0,0.5)) brightness(1.15);
   }
   25% {
-    transform: translateY(-2.5px) rotate(-9deg) scaleX(1.05);
+    transform: translateY(-2px) rotate(-11deg) scaleX(1.05);
   }
   50% {
-    transform: translateY(1px) rotate(-5deg) scaleX(0.97);
+    transform: translateY(1px) rotate(-6deg) scaleX(0.97);
   }
   75% {
-    transform: translateY(-3px) rotate(-11deg) scaleX(1.08);
+    transform: translateY(-3px) rotate(-12deg) scaleX(1.07);
   }
   100% {
-    transform: translateY(0.5px) rotate(-7deg) scaleX(1.03);
-    filter: drop-shadow(-4px 5px 8px rgba(255, 107, 0, 0.8));
+    transform: translateY(0.5px) rotate(-8deg) scaleX(1.02);
+    filter: drop-shadow(-5px 5px 10px rgba(255, 107, 0, 0.9)) brightness(1.2);
   }
 }
 
-.cinta-pedidos-listo:hover .moto-emoji {
-  animation: motoWarpNitro 0.25s linear infinite alternate;
+.cinta-pedidos-listo:hover .white-moto-img {
+  animation: whiteMotoNitro 0.2s linear infinite alternate;
 }
 
-@keyframes motoWarpNitro {
+@keyframes whiteMotoNitro {
   0% {
-    transform: translateX(-1px) translateY(-3px) rotate(-12deg) scale(1.2);
-    filter: drop-shadow(-6px 6px 12px rgba(255, 69, 0, 0.9));
+    transform: translateX(-2px) translateY(-3px) rotate(-14deg) scale(1.25);
+    filter: drop-shadow(-8px 6px 14px rgba(255, 255, 255, 0.9)) brightness(1.3);
   }
   100% {
-    transform: translateX(4px) translateY(1px) rotate(-15deg) scale(1.25);
-    filter: drop-shadow(-8px 8px 16px rgba(255, 234, 0, 0.9));
+    transform: translateX(5px) translateY(1px) rotate(-18deg) scale(1.3);
+    filter: drop-shadow(-10px 8px 18px rgba(255, 215, 0, 1)) brightness(1.4);
+  }
+}
+
+/* Líneas de Velocidad Impulsadas (Speed Streaks) */
+.speed-lines-container {
+  position: absolute;
+  left: -24px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 40px;
+  height: 24px;
+  pointer-events: none;
+  z-index: 1;
+  overflow: visible;
+}
+
+.speed-line {
+  position: absolute;
+  height: 2px;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.95) 50%, rgba(255, 215, 0, 0.9) 100%);
+  border-radius: 2px;
+  box-shadow: 0 0 6px rgba(255, 255, 255, 0.8), 0 0 10px rgba(255, 107, 0, 0.6);
+  animation: speedLineShoot 0.35s linear infinite;
+}
+
+.speed-line.line-1 {
+  top: 3px;
+  width: 22px;
+  animation-delay: 0s;
+}
+
+.speed-line.line-2 {
+  top: 9px;
+  width: 32px;
+  animation-delay: 0.08s;
+}
+
+.speed-line.line-3 {
+  top: 15px;
+  width: 28px;
+  animation-delay: 0.16s;
+}
+
+.speed-line.line-4 {
+  top: 21px;
+  width: 18px;
+  animation-delay: 0.24s;
+}
+
+@keyframes speedLineShoot {
+  0% {
+    transform: translateX(18px) scaleX(0.2);
+    opacity: 0;
+  }
+  30% {
+    opacity: 1;
+    transform: translateX(6px) scaleX(1.2);
+  }
+  100% {
+    transform: translateX(-24px) scaleX(1.8);
+    opacity: 0;
   }
 }
 
@@ -168,6 +234,7 @@
   font-size: 13px;
   pointer-events: none;
   animation: motoSmokeDrive 0.35s linear infinite;
+  z-index: 1;
 }
 
 @keyframes motoSmokeDrive {
@@ -185,21 +252,6 @@
   }
 }
 
-.moto-speed-lines {
-  position: absolute;
-  right: -10px;
-  top: -2px;
-  font-size: 10px;
-  color: #FFE500;
-  opacity: 0.9;
-  pointer-events: none;
-  animation: speedFlash 0.3s ease-in-out infinite alternate;
-}
-
-@keyframes speedFlash {
-  0% { transform: scale(0.7) rotate(10deg); opacity: 0.3; }
-  100% { transform: scale(1.3) rotate(-10deg); opacity: 1; filter: drop-shadow(0 0 6px #FFE500); }
-}
 
 
 .sparkle-left, .sparkle-right {
