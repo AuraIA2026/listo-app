@@ -1210,8 +1210,82 @@ export default function HomePage({ lang, navigate, userRole }) {
              <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '4px', background: 'linear-gradient(90deg, #FF7A1A, #F26000, #E65100)' }} />
 
              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                 <h2 style={{ fontSize: '18px', fontWeight: '900', margin: 0, color: '#1A1A2E' }}>👋 ¡Hola, Socio!</h2>
+               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                 {/* Foto de Perfil del Usuario reubicada donde estaba la manita 👋 */}
+                 <div 
+                   onClick={() => {
+                     if (isPro || userRole === 'pro' || userData?.type === 'pro') {
+                       navigate('proProfile', userData)
+                     } else {
+                       navigate('profile')
+                     }
+                   }}
+                   style={{ position: 'relative', cursor: 'pointer', flexShrink: 0 }}
+                   title={lang === 'es' ? 'Ver mi perfil' : 'View my profile'}
+                 >
+                   <img 
+                     src={userData?.profilePhoto || userData?.photoURL || logoListo} 
+                     alt="Perfil" 
+                     style={{ 
+                       width: '42px', 
+                       height: '42px', 
+                       borderRadius: '50%', 
+                       objectFit: 'cover', 
+                       border: '2.5px solid #F26000', 
+                       boxShadow: '0 3px 10px rgba(242, 96, 0, 0.25)',
+                       background: '#FFF'
+                     }} 
+                   />
+
+                   {/* Ícono de chat flotante en la esquina de la foto de perfil */}
+                   <div 
+                     onClick={(e) => {
+                       e.stopPropagation();
+                       navigate('chat');
+                     }}
+                     style={{
+                       position: 'absolute',
+                       bottom: '-2px',
+                       right: '-2px',
+                       width: '20px',
+                       height: '20px',
+                       borderRadius: '50%',
+                       background: 'linear-gradient(135deg, #FF7A1A, #F26000)',
+                       display: 'flex',
+                       alignItems: 'center',
+                       justify: 'center',
+                       boxShadow: '0 2px 6px rgba(0,0,0,0.4)',
+                       cursor: 'pointer',
+                       border: '1.5px solid white',
+                       zIndex: 21
+                     }}
+                     title={lang === 'es' ? 'Ir a mensajes' : 'Go to chat'}
+                   >
+                     <span style={{ fontSize: '10px', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                       💬
+                     </span>
+                     {totalUnreadMessages > 0 && (
+                       <span 
+                         style={{ 
+                           position: 'absolute', 
+                           top: '-5px', 
+                           right: '-5px', 
+                           background: '#EF4444', 
+                           color: 'white', 
+                           fontSize: '8px', 
+                           fontWeight: '900', 
+                           borderRadius: '7px', 
+                           padding: '1px 4px', 
+                           border: '1px solid white'
+                         }}
+                       >
+                         {totalUnreadMessages > 9 ? '9+' : totalUnreadMessages}
+                       </span>
+                     )}
+                   </div>
+                 </div>
+
+                 <h2 style={{ fontSize: '18px', fontWeight: '900', margin: 0, color: '#1A1A2E' }}>¡Hola, Socio!</h2>
                  <span style={{ fontSize: '10px', fontWeight: '800', background: 'rgba(242, 96, 0, 0.12)', color: '#F26000', padding: '3px 8px', borderRadius: '12px', border: '1px solid rgba(242, 96, 0, 0.25)' }}>
                    ⭐ PANEL PRO
                  </span>
