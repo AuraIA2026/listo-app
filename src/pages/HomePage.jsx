@@ -1185,6 +1185,7 @@ export default function HomePage({ lang, navigate, userRole }) {
                 navigate('proProfile', proObj); 
               }} 
               navigate={navigate}
+              hideRibbon={true}
             />
           </div>
         </div>

@@ -21,7 +21,7 @@ const HAND_TEXTS_SERVICES = [
   '🤝 Servicios Profesionales'
 ];
 
-export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate, isMandameView = false }) {
+export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate, isMandameView = false, hideRibbon = false }) {
   const [stories, setStories] = useState([])
   const [viewerOpen, setViewerOpen] = useState(false)
   const [selectedStoryIndex, setSelectedStoryIndex] = useState(0)
@@ -246,47 +246,49 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate
   return (
     <div className="historias-carrusel-wrapper">
       {/* ── CINTA MAMEY LLAMATIVA CON DESTELLOS Y MANO ANIMADA CON TEXTO ── */}
-      <div className="cinta-pedidos-listo-container">
-        {/* Mano animada presionando la cinta con texto alternante (Solo dura 7s al abrir la app) */}
-        {showHandPointer && (
-          <div 
-            className="animated-hand-pointer"
-            onClick={handleRibbonClick}
-            title={isMandameView ? "¡Haz clic para volver a Listo Patrón!" : "¡Haz clic para entrar a Pedidos Listo!"}
-          >
-            <div className="hand-badge animated-fade-text" key={handTextIndex}>
-              {activeHandTexts[handTextIndex]}
+      {!hideRibbon && (
+        <div className="cinta-pedidos-listo-container">
+          {/* Mano animada presionando la cinta con texto alternante (Solo dura 7s al abrir la app) */}
+          {showHandPointer && (
+            <div 
+              className="animated-hand-pointer"
+              onClick={handleRibbonClick}
+              title={isMandameView ? "¡Haz clic para volver a Listo Patrón!" : "¡Haz clic para entrar a Pedidos Listo!"}
+            >
+              <div className="hand-badge animated-fade-text" key={handTextIndex}>
+                {activeHandTexts[handTextIndex]}
+              </div>
+              <span className="hand-emoji">👇</span>
             </div>
-            <span className="hand-emoji">👇</span>
-          </div>
-        )}
+          )}
 
-        <div 
-          className="cinta-pedidos-listo-wrapper"
-          onClick={handleRibbonClick}
-        >
-          <div className="cinta-pedidos-listo" style={isMandameView ? { background: 'linear-gradient(135deg, #2563eb 0%, #3b82f6 40%, #1d4ed8 80%, #1e40af 100%)', boxShadow: '0 5px 16px rgba(37, 99, 235, 0.45), 0 0 10px rgba(255, 255, 255, 0.35) inset' } : {}}>
-            {isMandameView ? (
-              <span className="cinta-icon moto-speed-wrap">
-                <span className="moto-emoji">🤝</span>
-              </span>
-            ) : (
-              <span className="cinta-icon moto-speed-wrap" title="¡Delivery a toda velocidad!">
-                <span className="moto-emoji">🛵</span>
-                <span className="moto-smoke-trail">💨</span>
-                <span className="moto-speed-lines">⚡</span>
-              </span>
-            )}
-            <div className="cinta-text-container">
-              <span className="cinta-text">{isMandameView ? 'LISTO PATRÓN' : 'PEDIDOS LISTO'}</span>
-              <span className="cinta-subtext">{isMandameView ? 'SERVICIOS & TÉCNICOS' : 'DELIVERY & MÁNDAME'}</span>
+          <div 
+            className="cinta-pedidos-listo-wrapper"
+            onClick={handleRibbonClick}
+          >
+            <div className="cinta-pedidos-listo" style={isMandameView ? { background: 'linear-gradient(135deg, #2563eb 0%, #3b82f6 40%, #1d4ed8 80%, #1e40af 100%)', boxShadow: '0 5px 16px rgba(37, 99, 235, 0.45), 0 0 10px rgba(255, 255, 255, 0.35) inset' } : {}}>
+              {isMandameView ? (
+                <span className="cinta-icon moto-speed-wrap">
+                  <span className="moto-emoji">🤝</span>
+                </span>
+              ) : (
+                <span className="cinta-icon moto-speed-wrap" title="¡Delivery a toda velocidad!">
+                  <span className="moto-emoji">🛵</span>
+                  <span className="moto-smoke-trail">💨</span>
+                  <span className="moto-speed-lines">⚡</span>
+                </span>
+              )}
+              <div className="cinta-text-container">
+                <span className="cinta-text">{isMandameView ? 'LISTO PATRÓN' : 'PEDIDOS LISTO'}</span>
+                <span className="cinta-subtext">{isMandameView ? 'SERVICIOS & TÉCNICOS' : 'DELIVERY & MÁNDAME'}</span>
+              </div>
+              <span className="cinta-icon">{isMandameView ? '🛠️' : '🛍️'}</span>
+              <span className="sparkle-right">✨</span>
+              <div className="cinta-shine"></div>
             </div>
-            <span className="cinta-icon">{isMandameView ? '🛠️' : '🛍️'}</span>
-            <span className="sparkle-right">✨</span>
-            <div className="cinta-shine"></div>
           </div>
         </div>
-      </div>
+      )}
 
 
       <div className="historias-track-container">

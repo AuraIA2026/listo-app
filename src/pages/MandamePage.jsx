@@ -1532,49 +1532,17 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
           <div className="screen-panel active">
             {activeTab === 'inicio' && (
               <>
-                {/* 1. Tarjeta Oscura Hero con Buscador y Carrusel de Historias (Pedidos Listo) */}
+                {/* 1. Tarjeta Oscura Hero con Carrusel de Historias (Pedidos Listo) */}
                 <div style={{ padding: '0 16px', marginTop: 12, marginBottom: 16 }}>
                   <div className="hp-hero-dark-card" style={{ margin: 0 }}>
-                    {/* Buscador Gigante Autocompletable */}
-                    <div className="hp-hero-search-container" style={{ position: 'relative', width: '100%', margin: '0 auto' }}>
-                      <div 
-                        className="hp-hero-search-btn" 
-                        style={{ padding: '0 6px 0 16px', display: 'flex', alignItems: 'center', cursor: 'text', borderRadius: 16, background: '#ffffff' }}
-                        onClick={() => {
-                          const query = prompt('¿Qué deseas buscar en Pedidos Listo?', searchQuery);
-                          if (query !== null) setSearchQuery(query);
-                        }}
-                      >
-                        <span className="hp-hero-icon">🔍</span>
-                        <input 
-                          type="text" 
-                          placeholder="¿Qué se te antoja hoy? (Comida, súper, farmacia...)"
-                          value={searchQuery}
-                          onChange={(e) => setSearchQuery(e.target.value)}
-                          style={{ flex: 1, border: 'none', background: 'transparent', height: '100%', outline: 'none', fontSize: '14px', fontWeight: '600', color: '#1a1a2e', padding: '12px 0' }}
-                        />
-                        <button 
-                          className="hp-hero-action" 
-                          style={{ background: 'transparent', border: 'none', padding: 0, cursor: 'pointer', zIndex: 3 }}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            if (searchQuery.trim()) setActiveTab('buscar');
-                          }}
-                        >
-                          <span style={{ fontSize: '12px', background: 'linear-gradient(135deg, #FF7A1A, #F26000)', color: 'white', padding: '8px 16px', borderRadius: '20px', fontWeight: '900', boxShadow: '0 2px 6px rgba(242,96,0,0.4)', display: 'inline-block' }}>
-                            Buscar
-                          </span>
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Carrusel de Historias 24h & Cinta Azul Listo Patrón */}
+                    {/* Carrusel de Historias 24h */}
                     <HistoriasCarrusel 
                       userData={userData} 
                       isPro={userRole === 'pro' || userData?.role === 'pro'} 
                       onHirePro={(proId) => { navigate && navigate('proProfile', { id: proId }); }} 
                       navigate={navigate}
                       isMandameView={true}
+                      hideRibbon={true}
                     />
 
                   </div>
