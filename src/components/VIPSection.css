@@ -23,13 +23,14 @@
 }
 
 .vip-sec-title {
-  font-size: 19px;
+  font-size: 18px;
   font-weight: 900;
   color: #1A1A2E;
   margin: 0;
   display: flex;
   align-items: center;
   gap: 6px;
+  white-space: nowrap;
 }
 
 .vip-crown-badge {

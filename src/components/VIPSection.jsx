@@ -492,9 +492,6 @@ export default function VIPSection({
             <h2 className="vip-sec-title">
               {sectionTitle || (lang === 'es' ? '🌟 Profesionales Destacados' : '🌟 Featured Professionals')}
             </h2>
-            <span className="vip-crown-badge">
-              {lang === 'es' ? 'DESTACADOS' : 'FEATURED'}
-            </span>
           </div>
           {showSeeAll && (
             <button 
