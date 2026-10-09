@@ -1537,14 +1537,14 @@ export default function HomePage({ lang, navigate, userRole }) {
       <div 
         className="store-ribbon-banner"
         onClick={() => window.open('https://listopatron.com.do/?page=shop', '_blank')}
-        title={lang === 'es' ? 'Visitar la Tienda Web de Pedidos Listo' : 'Visit Pedidos Listo Web Store'}
+        title={lang === 'es' ? 'Visitar la Tienda Web de Listo Patrón' : 'Visit Listo Patrón Web Store'}
         style={{ marginBottom: '14px' }}
       >
         <div className="store-ribbon-content">
           <span className="store-ribbon-icon">🛍️</span>
           <div className="store-ribbon-text-group">
             <p className="store-ribbon-title">
-              {lang === 'es' ? <>Equípate en nuestra tienda <strong>Pedidos Listo</strong></> : <>Equip yourself at <strong>Pedidos Listo</strong> Store</>}
+              {lang === 'es' ? <>Equípate en nuestra tienda <strong>Listo Patrón</strong></> : <>Equip yourself at <strong>Listo Patrón</strong> Store</>}
             </p>
             <p className="store-ribbon-sub">
               {lang === 'es' ? 'Herramientas, equipos e insumos de seguridad con envío rápido a todo el país' : 'Tools, safety gear & supplies with fast nationwide shipping'}
