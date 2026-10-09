@@ -1429,16 +1429,7 @@ export default function HomePage({ lang, navigate, userRole }) {
 
 
 
-      {/* ── SECCIÓN PROFESIONALES DESTACADOS (NUESTRO VIP) RESTAURADA DEBAJO DEL BANNER DE LA TIENDA ── */}
-      <VIPSection 
-        realVipPros={featuredProsToUse} 
-        lang={lang} 
-        navigate={navigate} 
-        sectionTitle={lang === 'es' ? '🌟 Profesionales Destacados' : '🌟 Featured Professionals'}
-        sectionSub={lang === 'es' ? 'Nuestros VIP verificados 5 estrellas' : 'Our 5-star verified VIPs'}
-        getProStoryData={getProStoryData}
-        onOpenStory={handleOpenStoryViewer}
-      />
+
 
       {/* ── MARQUEE TICKER BANNER INFORMATIVO CON LOS 3 ANUNCIOS EN SECUENCIA (TÓMBOLA & OFERTAS) ── */}
       <div 
