@@ -1645,38 +1645,7 @@ export default function HomePage({ lang, navigate, userRole }) {
         />
       )}
       {/* ── ELEMENTOS FLOTANTES ESTILO TEMU / AMAZON ── */}
-      {/* Live Hiring Activity Toast */}
-      {showLiveToast && currentLiveToastObj?.text && (
-        <div 
-          className="live-activity-toast"
-          onClick={() => setShowLiveToast(false)}
-          style={{ cursor: 'pointer' }}
-          title="Toca para cerrar"
-        >
-          <span style={{ fontSize: '18px', flexShrink: 0 }}>{currentLiveToastObj.icon || '🔔'}</span>
-          <p className="live-activity-toast-text" style={{ flex: 1 }}>
-            {currentLiveToastObj.text}
-          </p>
-          <button 
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              setShowLiveToast(false);
-            }}
-            style={{
-              background: 'none',
-              border: 'none',
-              color: '#AAA',
-              fontSize: '14px',
-              cursor: 'pointer',
-              padding: '0 0 0 8px',
-              fontWeight: 'bold'
-            }}
-          >
-            ✕
-          </button>
-        </div>
-      )}
+
 
       {/* Floating Lucky Wheel FAB — Se muestra ÚNICAMENTE para profesionales cuando tienen giros ganados por 4 o 5 estrellas */}
       {(isPro && (userData?.spinsAvailable || 0) > 0) && (
