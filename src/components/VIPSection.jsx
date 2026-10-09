@@ -16,87 +16,87 @@ const demoVipPros = [
     id: 'vip_1',
     nameEs: 'Juan Pérez',
     nameEn: 'Juan Pérez',
-    specEs: 'Plomero Máster VIP',
-    specEn: 'Master VIP Plumber',
+    specEs: 'Plomero Máster',
+    specEn: 'Master Plumber',
     rating: 5.0,
     reviews: 142,
     location: 'Santo Domingo',
     jobs: 180,
-    currentPlan: 'VIP',
-    planName: 'VIP',
-    badgeTitle: '👑 SOCIO VIP',
+    currentPlan: 'Verificado',
+    planName: 'Verificado',
+    badgeTitle: '🔹 SOCIO VERIFICADO',
     avail: true,
     img: plomero,
     experience: '8 años de exp.',
-    guarantee: 'Garantía Listo VIP'
+    guarantee: 'Garantía Listo'
   },
   {
     id: 'vip_2',
     nameEs: 'María González',
     nameEn: 'María González',
-    specEs: 'Electricista Certificada VIP',
-    specEn: 'Certified VIP Electrician',
+    specEs: 'Electricista Certificada',
+    specEn: 'Certified Electrician',
     rating: 5.0,
     reviews: 98,
     location: 'Santiago',
     jobs: 125,
-    currentPlan: 'VIP',
-    planName: 'VIP',
-    badgeTitle: '👑 SOCIO VIP',
+    currentPlan: 'Platinum',
+    planName: 'Platinum',
+    badgeTitle: '💎 SOCIO PLATINUM',
     avail: true,
     img: electrica1,
     experience: '6 años de exp.',
-    guarantee: 'Certificación VIP 24/7'
+    guarantee: 'Certificación 24/7'
   },
   {
     id: 'vip_3',
     nameEs: 'Roberto Núñez',
     nameEn: 'Roberto Núñez',
-    specEs: 'Cerrajero de Emergencia VIP',
-    specEn: 'Emergency VIP Locksmith',
+    specEs: 'Cerrajero de Emergencia',
+    specEn: 'Emergency Locksmith',
     rating: 5.0,
     reviews: 215,
     location: 'Santo Domingo Este',
     jobs: 260,
-    currentPlan: 'VIP',
-    planName: 'VIP',
-    badgeTitle: '👑 SOCIO VIP',
+    currentPlan: 'Gold',
+    planName: 'Gold',
+    badgeTitle: '⭐ SOCIO GOLD',
     avail: true,
     img: cerrajero1,
     experience: '10 años de exp.',
-    guarantee: 'Respuesta VIP < 20 min'
+    guarantee: 'Respuesta < 20 min'
   },
   {
     id: 'vip_4',
     nameEs: 'Carlos Herrera',
     nameEn: 'Carlos Herrera',
-    specEs: 'Paisajista VIP',
-    specEn: 'VIP Landscape Gardener',
+    specEs: 'Paisajista',
+    specEn: 'Landscape Gardener',
     rating: 4.9,
     reviews: 76,
     location: 'La Vega',
     jobs: 90,
-    currentPlan: 'VIP',
-    planName: 'VIP',
-    badgeTitle: '👑 SOCIO VIP',
+    currentPlan: 'Verificado',
+    planName: 'Verificado',
+    badgeTitle: '🔹 SOCIO VERIFICADO',
     avail: true,
     img: jardinero,
     experience: '5 años de exp.',
-    guarantee: 'Diseño VIP'
+    guarantee: 'Diseño Profesional'
   },
   {
     id: 'vip_5',
     nameEs: 'Luisa Martínez',
     nameEn: 'Luisa Martínez',
-    specEs: 'Mecánica Automotriz VIP',
-    specEn: 'VIP Auto Mechanic',
+    specEs: 'Mecánica Automotriz',
+    specEn: 'Auto Mechanic',
     rating: 4.9,
     reviews: 164,
     location: 'Puerto Plata',
     jobs: 210,
-    currentPlan: 'VIP',
-    planName: 'VIP',
-    badgeTitle: '👑 SOCIO VIP',
+    currentPlan: 'Platinum',
+    planName: 'Platinum',
+    badgeTitle: '💎 SOCIO PLATINUM',
     avail: true,
     experience: '9 años de exp.',
     guarantee: 'Garantía Listo'
@@ -167,7 +167,7 @@ export const getProPlanBadge = (pro, lang = 'es') => {
   let badgeClass = 'plan-badge-basico';
 
   if (rawPlan.includes('vip') || rawPlan.includes('ilimitado') || rawPlan.includes('elite')) {
-    text = lang === 'es' ? '⭐ PROFESIONAL DESTACADO' : '⭐ FEATURED PRO';
+    text = lang === 'es' ? '⭐ SOCIO VIP' : '⭐ VIP PARTNER';
     badgeClass = 'plan-badge-vip';
   } else if (rawPlan.includes('platinum') || rawPlan.includes('platino')) {
     text = lang === 'es' ? '💎 SOCIO PLATINUM' : '💎 PLATINUM PARTNER';
@@ -437,23 +437,7 @@ export default function VIPSection({
   getProStoryData,
   onOpenStory
 }) {
-  const filterVipOnly = true;
-
-  const realFiltered = (realVipPros || []).filter(pro => {
-    if (!isProVip(pro)) return false
-    const nRev = Number(pro.reviews !== undefined ? pro.reviews : (pro.reviewsCount || 0))
-    const eRate = nRev > 0 ? Number(pro.rating || 0) : 0.0
-    return nRev > 0 && eRate >= 4.9
-  })
-
-  const rawProsList = realFiltered.length > 0 ? realFiltered : demoVipPros
-  const displayPros = rawProsList.filter(pro => {
-    if (String(pro.id || '').startsWith('vip_')) return true
-    if (!isProVip(pro)) return false
-    const nRev = Number(pro.reviews !== undefined ? pro.reviews : (pro.reviewsCount || 0))
-    const eRate = nRev > 0 ? Number(pro.rating || 0) : 0.0
-    return nRev > 0 && eRate >= 4.9
-  })
+  const displayPros = (realVipPros && realVipPros.length > 0) ? realVipPros : demoVipPros
   const containerRef = React.useRef(null)
   const isInteracting = React.useRef(false)
   const [activeInnerSlide, setActiveInnerSlide] = React.useState(0)
