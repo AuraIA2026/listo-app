@@ -1368,29 +1368,6 @@ export default function HomePage({ lang, navigate, userRole }) {
         </div>
       )}
 
-      {/* ── CINTA / ANUNCIO LARGO Y FINO INVITANDO A LA TIENDA WEB (DEBAJO DE HISTORIAS) ── */}
-      <div 
-        className="store-ribbon-banner"
-        onClick={() => window.open('https://listopatron.com.do/?page=shop', '_blank')}
-        title={lang === 'es' ? 'Visitar la Tienda Web de Listo Patrón' : 'Visit Listo Patrón Web Store'}
-        style={{ marginBottom: '14px' }}
-      >
-        <div className="store-ribbon-content">
-          <span className="store-ribbon-icon">🛍️</span>
-          <div className="store-ribbon-text-group">
-            <p className="store-ribbon-title">
-              {lang === 'es' ? <>Equípate en nuestra tienda <strong>Listo Patrón</strong></> : <>Equip yourself at <strong>Listo Patrón</strong> Store</>}
-            </p>
-            <p className="store-ribbon-sub">
-              {lang === 'es' ? 'Herramientas, equipos e insumos de seguridad con envío rápido a todo el país' : 'Tools, safety gear & supplies with fast nationwide shipping'}
-            </p>
-          </div>
-        </div>
-        <button className="store-ribbon-btn">
-          🛒 {lang === 'es' ? 'Visitar Tienda ›' : 'Visit Store ›'}
-        </button>
-      </div>
-
       {/* ── SECCIÓN DESPLEGABLE DE EMERGENCIAS (ACTIVADA DESDE EL CÍRCULO SIRENA BOMBERO EN LA BARRA SUPERIOR) ── */}
       {isProblemsExpanded && (
         <div 
@@ -1498,10 +1475,7 @@ export default function HomePage({ lang, navigate, userRole }) {
         </div>
       )}
 
-
-
-
-      {/* ── SECCIÓN PROFESIONALES DESTACADOS (NUESTRO VIP) RESTAURADA DEBAJO DEL BANNER DE LA TIENDA ── */}
+      {/* ── SECCIÓN PROFESIONALES DESTACADOS (NUESTRO VIP) ── */}
       <VIPSection 
         realVipPros={featuredProsToUse} 
         lang={lang} 
@@ -1511,6 +1485,29 @@ export default function HomePage({ lang, navigate, userRole }) {
         getProStoryData={getProStoryData}
         onOpenStory={handleOpenStoryViewer}
       />
+
+      {/* ── CINTA / ANUNCIO LARGO Y FINO INVITANDO A LA TIENDA WEB (DEBAJO DE PROFESIONALES DESTACADOS) ── */}
+      <div 
+        className="store-ribbon-banner"
+        onClick={() => window.open('https://listopatron.com.do/?page=shop', '_blank')}
+        title={lang === 'es' ? 'Visitar la Tienda Web de Listo Patrón' : 'Visit Listo Patrón Web Store'}
+        style={{ marginTop: '10px', marginBottom: '14px' }}
+      >
+        <div className="store-ribbon-content">
+          <span className="store-ribbon-icon">🛍️</span>
+          <div className="store-ribbon-text-group">
+            <p className="store-ribbon-title">
+              {lang === 'es' ? <>Equípate en nuestra tienda <strong>Listo Patrón</strong></> : <>Equip yourself at <strong>Listo Patrón</strong> Store</>}
+            </p>
+            <p className="store-ribbon-sub">
+              {lang === 'es' ? 'Herramientas, equipos e insumos de seguridad con envío rápido a todo el país' : 'Tools, safety gear & supplies with fast nationwide shipping'}
+            </p>
+          </div>
+        </div>
+        <button className="store-ribbon-btn">
+          🛒 {lang === 'es' ? 'Visitar Tienda ›' : 'Visit Store ›'}
+        </button>
+      </div>
 
           <section ref={allProsRef} className={`all-pros-section${allProsVisible ? ' reveal' : ''}`}>
             <div className="hp-sec-header" style={{ marginBottom: 12 }}>
