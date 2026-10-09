@@ -1532,22 +1532,6 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
           <div className="screen-panel active">
             {activeTab === 'inicio' && (
               <>
-                {/* 1. Tarjeta Oscura Hero con Carrusel de Historias (Pedidos Listo) */}
-                <div style={{ padding: '0 16px', marginTop: 12, marginBottom: 16 }}>
-                  <div className="hp-hero-dark-card" style={{ margin: 0 }}>
-                    {/* Carrusel de Historias 24h */}
-                    <HistoriasCarrusel 
-                      userData={userData} 
-                      isPro={userRole === 'pro' || userData?.role === 'pro'} 
-                      onHirePro={(proId) => { navigate && navigate('proProfile', { id: proId }); }} 
-                      navigate={navigate}
-                      isMandameView={true}
-                      hideRibbon={true}
-                    />
-
-                  </div>
-                </div>
-
                 {/* 2. Main Hero Banner - Mamey Gradient Style (IMG_4455.png) */}
                 <div style={{ padding: '0 16px', marginBottom: 16 }}>
                   <div style={{
