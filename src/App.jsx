@@ -427,7 +427,7 @@ export default function App() {
       if (search.includes('page=shop') || hash.includes('shop')) return 'shop';
       if (search.includes('comprar-plan') || hash.includes('comprar-plan') || hash.includes('planes')) return 'landing';
     }
-    return 'login';
+    return 'home';
   });
   const [lang,            setLang]            = useState('es')
   const [selectedPro,     setSelectedPro]     = useState(null)
@@ -453,7 +453,7 @@ export default function App() {
   const notifiedMsgIds     = useRef(new Set())
   const banneredChatIds    = useRef(new Set())
   const chatListenerReady  = useRef(false)
-  const currentPageRef     = useRef('login')
+  const currentPageRef     = useRef('home')
 
   useEffect(() => { currentPageRef.current = currentPage }, [currentPage])
 
@@ -548,8 +548,8 @@ export default function App() {
       })
     } else {
       setCurrentPage(prev => {
-        if (prev === 'register' || prev === 'policies') return prev
-        return 'login'
+        if (['register', 'policies', 'login', 'landing'].includes(prev)) return prev
+        return 'home'
       })
     }
   }, [authUser, authLoading, userData])
@@ -787,7 +787,7 @@ export default function App() {
   }
 
   if (showSplash) {
-    return <SplashScreen onFinish={() => { setShowSplash(false); setCurrentPage(userData ? 'home' : 'login') }} lang={lang} />
+    return <SplashScreen onFinish={() => { setShowSplash(false); setCurrentPage(userData ? 'home' : 'home') }} lang={lang} />
   }
 
   if (!authReady) return null
