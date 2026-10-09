@@ -1507,7 +1507,7 @@ export default function HomePage({ lang, navigate, userRole }) {
         lang={lang} 
         navigate={navigate} 
         sectionTitle={lang === 'es' ? '🌟 Profesionales Destacados' : '🌟 Featured Professionals'}
-        sectionSub={lang === 'es' ? 'Nuestros VIP verificados 5 estrellas' : 'Our 5-star verified VIPs'}
+        sectionSub={null}
         getProStoryData={getProStoryData}
         onOpenStory={handleOpenStoryViewer}
       />
