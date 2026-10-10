@@ -1124,7 +1124,9 @@ export default function AdminPage({ navigate }) {
              userSnap.forEach(async (uDoc) => {
                await updateDoc(doc(db, 'users', uDoc.id), {
                  role: 'comercio',
-                 hasCommerce: true,
+                 isMerchant: true,
+                  hasCommerce: true,
+                  storeName: obj.businessName || 'Mi Comercio',
                  commerceName: obj.businessName || 'Mi Comercio',
                  commerceStatus: 'active'
                });

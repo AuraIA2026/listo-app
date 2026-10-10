@@ -1369,7 +1369,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
         <div style={{ background: '#0a0e1a', color: 'white', padding: '10px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid #ff6b00', fontSize: 11, fontWeight: 800 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <span style={{ fontSize: 16 }}>🍔</span>
-            <span style={{ color: '#ff6b00', fontWeight: 900, letterSpacing: '0.5px' }}>PEDIDOS LISTO</span>
+            <span style={{ color: '#ff6b00', fontWeight: 900, letterSpacing: '0.5px' }}>{viewMode === 'merchant' && (merchantState.storeName || userData?.storeName || userData?.commerceName) ? `🏪 ${(merchantState.storeName || userData?.storeName || userData?.commerceName).toUpperCase()}` : 'PEDIDOS LISTO'}</span>
           </div>
           <div style={{ display: 'flex', gap: 8 }}>
             <button 
