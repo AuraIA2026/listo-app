@@ -882,79 +882,105 @@ export default function LandingPage({ navigate, lang }) {
   </div>
 </div>
 
-{/*  CONTADOR DE ESTADÍSTICAS  */}
-<section style={{"background": "#F26000", "padding": "50px 5%", "position": "relative", "overflow": "hidden"}}>
+{/*  CONTADOR DE ESTADÍSTICAS EN UNA SOLA LÍNEA  */}
+<section style={{"background": "#F26000", "padding": "32px 3%", "position": "relative", "overflow": "hidden"}}>
 
   {/*  Fondo decorativo  */}
   <div style={{"position": "absolute", "inset": "0", "backgroundImage": "radial-gradient(circle,rgba(255,255,255,0.08) 1.5px,transparent 1.5px)", "backgroundSize": "30px 30px", "pointerEvents": "none"}}></div>
   <div style={{"position": "absolute", "top": "-80px", "right": "-80px", "width": "300px", "height": "300px", "borderRadius": "50%", "background": "rgba(255,255,255,0.06)", "pointerEvents": "none"}}></div>
   <div style={{"position": "absolute", "bottom": "-60px", "left": "-60px", "width": "220px", "height": "220px", "borderRadius": "50%", "background": "rgba(0,0,0,0.06)", "pointerEvents": "none"}}></div>
 
-  <div className="section-inner" style={{"position": "relative", "zIndex": "1"}}>
+  <div className="section-inner" style={{"position": "relative", "zIndex": "1", "maxWidth": "1200px", "margin": "0 auto"}}>
 
-    <div style={{"textAlign": "center", "marginBottom": "36px"}}>
-      <h2 style={{"fontFamily": "'Fredoka One',cursive", "fontSize": "clamp(24px,4vw,42px)", "color": "#fff", "lineHeight": "1.1", "marginBottom": "8px"}}>
+    <div style={{"textAlign": "center", "marginBottom": "20px"}}>
+      <h2 style={{"fontFamily": "'Fredoka One',cursive", "fontSize": "clamp(22px,3vw,34px)", "color": "#fff", "lineHeight": "1.1", "marginBottom": "6px"}}>
         Números que nos respaldan
       </h2>
-      <p style={{"fontSize": "15px", "color": "rgba(255,255,255,0.8)", "maxWidth": "420px", "margin": "0 auto"}}>
+      <p style={{"fontSize": "14px", "color": "rgba(255,255,255,0.85)", "maxWidth": "460px", "margin": "0 auto"}}>
         Creciendo cada día junto a profesionales y clientes de República Dominicana.
       </p>
     </div>
 
-    <div style={{"display": "grid", "gridTemplateColumns": "repeat(auto-fit,minmax(180px,1fr))", "gap": "20px", "maxWidth": "900px", "margin": "0 auto"}} id="statsGrid">
+    {/* TODAS LAS 6 ESTADÍSTICAS EN UNA SOLA LÍNEA */}
+    <div 
+      id="statsGrid"
+      style={{
+        display: "grid", 
+        gridTemplateColumns: "repeat(6, minmax(130px, 1fr))", 
+        gap: "12px", 
+        width: "100%", 
+        maxWidth: "1200px", 
+        margin: "0 auto",
+        overflowX: "auto",
+        paddingBottom: "8px",
+        scrollbarWidth: "none"
+      }}
+    >
 
       {/*  Stat 1  */}
-      <div style={{"background": "rgba(255,255,255,0.15)", "backdropFilter": "blur(10px)", "border": "1px solid rgba(255,255,255,0.25)", "borderRadius": "20px", "padding": "28px 20px", "textAlign": "center", "transition": "transform .3s,box-shadow .3s"}}
-           onMouseOver={() => { this.style.transform='translateY(-6px)';this.style.boxShadow='0 16px 40px rgba(0,0,0,0.2)' }}
-           onMouseOut={() => { this.style.transform='';this.style.boxShadow='' }}>
-        <div style={{"fontSize": "36px", "marginBottom": "8px"}}>👷</div>
-        <div style={{"fontFamily": "'Fredoka One',cursive", "fontSize": "46px", "color": "#fff", "lineHeight": "1"}} className="stat-counter" data-target="500" data-suffix="+">0</div>
-        <div style={{"fontSize": "13px", "color": "rgba(255,255,255,0.85)", "fontWeight": "700", "marginTop": "6px", "textTransform": "uppercase", "letterSpacing": ".8px"}}>Profesionales activos</div>
+      <div 
+        style={{"background": "rgba(255,255,255,0.15)", "backdropFilter": "blur(10px)", "border": "1px solid rgba(255,255,255,0.25)", "borderRadius": "18px", "padding": "18px 10px", "textAlign": "center", "transition": "transform .25s ease, box-shadow .25s ease", "minWidth": "120px"}}
+        onMouseOver={(e) => { e.currentTarget.style.transform='translateY(-4px)'; e.currentTarget.style.boxShadow='0 12px 28px rgba(0,0,0,0.22)'; }}
+        onMouseOut={(e) => { e.currentTarget.style.transform=''; e.currentTarget.style.boxShadow=''; }}
+      >
+        <div style={{"fontSize": "28px", "marginBottom": "6px"}}>👷</div>
+        <div style={{"fontFamily": "'Fredoka One',cursive", "fontSize": "clamp(26px, 2.2vw, 36px)", "color": "#fff", "lineHeight": "1"}} className="stat-counter" data-target="500" data-suffix="+">0</div>
+        <div style={{"fontSize": "11px", "color": "rgba(255,255,255,0.9)", "fontWeight": "800", "marginTop": "6px", "textTransform": "uppercase", "letterSpacing": ".6px", "lineHeight": "1.25"}}>Profesionales activos</div>
       </div>
 
       {/*  Stat 2  */}
-      <div style={{"background": "rgba(255,255,255,0.15)", "backdropFilter": "blur(10px)", "border": "1px solid rgba(255,255,255,0.25)", "borderRadius": "20px", "padding": "28px 20px", "textAlign": "center", "transition": "transform .3s,box-shadow .3s"}}
-           onMouseOver={() => { this.style.transform='translateY(-6px)';this.style.boxShadow='0 16px 40px rgba(0,0,0,0.2)' }}
-           onMouseOut={() => { this.style.transform='';this.style.boxShadow='' }}>
-        <div style={{"fontSize": "36px", "marginBottom": "8px"}}>✅</div>
-        <div style={{"fontFamily": "'Fredoka One',cursive", "fontSize": "46px", "color": "#fff", "lineHeight": "1"}} className="stat-counter" data-target="1200" data-suffix="+">0</div>
-        <div style={{"fontSize": "13px", "color": "rgba(255,255,255,0.85)", "fontWeight": "700", "marginTop": "6px", "textTransform": "uppercase", "letterSpacing": ".8px"}}>Servicios completados</div>
+      <div 
+        style={{"background": "rgba(255,255,255,0.15)", "backdropFilter": "blur(10px)", "border": "1px solid rgba(255,255,255,0.25)", "borderRadius": "18px", "padding": "18px 10px", "textAlign": "center", "transition": "transform .25s ease, box-shadow .25s ease", "minWidth": "120px"}}
+        onMouseOver={(e) => { e.currentTarget.style.transform='translateY(-4px)'; e.currentTarget.style.boxShadow='0 12px 28px rgba(0,0,0,0.22)'; }}
+        onMouseOut={(e) => { e.currentTarget.style.transform=''; e.currentTarget.style.boxShadow=''; }}
+      >
+        <div style={{"fontSize": "28px", "marginBottom": "6px"}}>✅</div>
+        <div style={{"fontFamily": "'Fredoka One',cursive", "fontSize": "clamp(26px, 2.2vw, 36px)", "color": "#fff", "lineHeight": "1"}} className="stat-counter" data-target="1200" data-suffix="+">0</div>
+        <div style={{"fontSize": "11px", "color": "rgba(255,255,255,0.9)", "fontWeight": "800", "marginTop": "6px", "textTransform": "uppercase", "letterSpacing": ".6px", "lineHeight": "1.25"}}>Servicios completados</div>
       </div>
 
       {/*  Stat 3  */}
-      <div style={{"background": "rgba(255,255,255,0.15)", "backdropFilter": "blur(10px)", "border": "1px solid rgba(255,255,255,0.25)", "borderRadius": "20px", "padding": "28px 20px", "textAlign": "center", "transition": "transform .3s,box-shadow .3s"}}
-           onMouseOver={() => { this.style.transform='translateY(-6px)';this.style.boxShadow='0 16px 40px rgba(0,0,0,0.2)' }}
-           onMouseOut={() => { this.style.transform='';this.style.boxShadow='' }}>
-        <div style={{"fontSize": "36px", "marginBottom": "8px"}}>⭐</div>
-        <div style={{"fontFamily": "'Fredoka One',cursive", "fontSize": "46px", "color": "#fff", "lineHeight": "1"}} className="stat-counter" data-target="4.9" data-suffix="/5" data-decimal="true">0</div>
-        <div style={{"fontSize": "13px", "color": "rgba(255,255,255,0.85)", "fontWeight": "700", "marginTop": "6px", "textTransform": "uppercase", "letterSpacing": ".8px"}}>Calificación promedio</div>
+      <div 
+        style={{"background": "rgba(255,255,255,0.15)", "backdropFilter": "blur(10px)", "border": "1px solid rgba(255,255,255,0.25)", "borderRadius": "18px", "padding": "18px 10px", "textAlign": "center", "transition": "transform .25s ease, box-shadow .25s ease", "minWidth": "120px"}}
+        onMouseOver={(e) => { e.currentTarget.style.transform='translateY(-4px)'; e.currentTarget.style.boxShadow='0 12px 28px rgba(0,0,0,0.22)'; }}
+        onMouseOut={(e) => { e.currentTarget.style.transform=''; e.currentTarget.style.boxShadow=''; }}
+      >
+        <div style={{"fontSize": "28px", "marginBottom": "6px"}}>⭐</div>
+        <div style={{"fontFamily": "'Fredoka One',cursive", "fontSize": "clamp(26px, 2.2vw, 36px)", "color": "#fff", "lineHeight": "1"}} className="stat-counter" data-target="4.9" data-suffix="/5" data-decimal="true">0</div>
+        <div style={{"fontSize": "11px", "color": "rgba(255,255,255,0.9)", "fontWeight": "800", "marginTop": "6px", "textTransform": "uppercase", "letterSpacing": ".6px", "lineHeight": "1.25"}}>Calificación promedio</div>
       </div>
 
       {/*  Stat 4  */}
-      <div style={{"background": "rgba(255,255,255,0.15)", "backdropFilter": "blur(10px)", "border": "1px solid rgba(255,255,255,0.25)", "borderRadius": "20px", "padding": "28px 20px", "textAlign": "center", "transition": "transform .3s,box-shadow .3s"}}
-           onMouseOver={() => { this.style.transform='translateY(-6px)';this.style.boxShadow='0 16px 40px rgba(0,0,0,0.2)' }}
-           onMouseOut={() => { this.style.transform='';this.style.boxShadow='' }}>
-        <div style={{"fontSize": "36px", "marginBottom": "8px"}}>⚡</div>
-        <div style={{"fontFamily": "'Fredoka One',cursive", "fontSize": "46px", "color": "#fff", "lineHeight": "1"}} className="stat-counter" data-target="15" data-suffix=" min">0</div>
-        <div style={{"fontSize": "13px", "color": "rgba(255,255,255,0.85)", "fontWeight": "700", "marginTop": "6px", "textTransform": "uppercase", "letterSpacing": ".8px"}}>Tiempo de respuesta</div>
+      <div 
+        style={{"background": "rgba(255,255,255,0.15)", "backdropFilter": "blur(10px)", "border": "1px solid rgba(255,255,255,0.25)", "borderRadius": "18px", "padding": "18px 10px", "textAlign": "center", "transition": "transform .25s ease, box-shadow .25s ease", "minWidth": "120px"}}
+        onMouseOver={(e) => { e.currentTarget.style.transform='translateY(-4px)'; e.currentTarget.style.boxShadow='0 12px 28px rgba(0,0,0,0.22)'; }}
+        onMouseOut={(e) => { e.currentTarget.style.transform=''; e.currentTarget.style.boxShadow=''; }}
+      >
+        <div style={{"fontSize": "28px", "marginBottom": "6px"}}>⚡</div>
+        <div style={{"fontFamily": "'Fredoka One',cursive", "fontSize": "clamp(26px, 2.2vw, 36px)", "color": "#fff", "lineHeight": "1"}} className="stat-counter" data-target="15" data-suffix=" min">0</div>
+        <div style={{"fontSize": "11px", "color": "rgba(255,255,255,0.9)", "fontWeight": "800", "marginTop": "6px", "textTransform": "uppercase", "letterSpacing": ".6px", "lineHeight": "1.25"}}>Tiempo de respuesta</div>
       </div>
 
       {/*  Stat 5  */}
-      <div style={{"background": "rgba(255,255,255,0.15)", "backdropFilter": "blur(10px)", "border": "1px solid rgba(255,255,255,0.25)", "borderRadius": "20px", "padding": "28px 20px", "textAlign": "center", "transition": "transform .3s,box-shadow .3s"}}
-           onMouseOver={() => { this.style.transform='translateY(-6px)';this.style.boxShadow='0 16px 40px rgba(0,0,0,0.2)' }}
-           onMouseOut={() => { this.style.transform='';this.style.boxShadow='' }}>
-        <div style={{"fontSize": "36px", "marginBottom": "8px"}}>🏙️</div>
-        <div style={{"fontFamily": "'Fredoka One',cursive", "fontSize": "46px", "color": "#fff", "lineHeight": "1"}} className="stat-counter" data-target="2" data-suffix=" ciudades">0</div>
-        <div style={{"fontSize": "13px", "color": "rgba(255,255,255,0.85)", "fontWeight": "700", "marginTop": "6px", "textTransform": "uppercase", "letterSpacing": ".8px"}}>Ciudades activas</div>
+      <div 
+        style={{"background": "rgba(255,255,255,0.15)", "backdropFilter": "blur(10px)", "border": "1px solid rgba(255,255,255,0.25)", "borderRadius": "18px", "padding": "18px 10px", "textAlign": "center", "transition": "transform .25s ease, box-shadow .25s ease", "minWidth": "120px"}}
+        onMouseOver={(e) => { e.currentTarget.style.transform='translateY(-4px)'; e.currentTarget.style.boxShadow='0 12px 28px rgba(0,0,0,0.22)'; }}
+        onMouseOut={(e) => { e.currentTarget.style.transform=''; e.currentTarget.style.boxShadow=''; }}
+      >
+        <div style={{"fontSize": "28px", "marginBottom": "6px"}}>🏙️</div>
+        <div style={{"fontFamily": "'Fredoka One',cursive", "fontSize": "clamp(26px, 2.2vw, 36px)", "color": "#fff", "lineHeight": "1"}} className="stat-counter" data-target="2" data-suffix=" ciudades">0</div>
+        <div style={{"fontSize": "11px", "color": "rgba(255,255,255,0.9)", "fontWeight": "800", "marginTop": "6px", "textTransform": "uppercase", "letterSpacing": ".6px", "lineHeight": "1.25"}}>Ciudades activas</div>
       </div>
 
       {/*  Stat 6  */}
-      <div style={{"background": "rgba(255,255,255,0.15)", "backdropFilter": "blur(10px)", "border": "1px solid rgba(255,255,255,0.25)", "borderRadius": "20px", "padding": "28px 20px", "textAlign": "center", "transition": "transform .3s,box-shadow .3s"}}
-           onMouseOver={() => { this.style.transform='translateY(-6px)';this.style.boxShadow='0 16px 40px rgba(0,0,0,0.2)' }}
-           onMouseOut={() => { this.style.transform='';this.style.boxShadow='' }}>
-        <div style={{"fontSize": "36px", "marginBottom": "8px"}}>😊</div>
-        <div style={{"fontFamily": "'Fredoka One',cursive", "fontSize": "46px", "color": "#fff", "lineHeight": "1"}} className="stat-counter" data-target="94" data-suffix="%">0</div>
-        <div style={{"fontSize": "13px", "color": "rgba(255,255,255,0.85)", "fontWeight": "700", "marginTop": "6px", "textTransform": "uppercase", "letterSpacing": ".8px"}}>Clientes satisfechos</div>
+      <div 
+        style={{"background": "rgba(255,255,255,0.15)", "backdropFilter": "blur(10px)", "border": "1px solid rgba(255,255,255,0.25)", "borderRadius": "18px", "padding": "18px 10px", "textAlign": "center", "transition": "transform .25s ease, box-shadow .25s ease", "minWidth": "120px"}}
+        onMouseOver={(e) => { e.currentTarget.style.transform='translateY(-4px)'; e.currentTarget.style.boxShadow='0 12px 28px rgba(0,0,0,0.22)'; }}
+        onMouseOut={(e) => { e.currentTarget.style.transform=''; e.currentTarget.style.boxShadow=''; }}
+      >
+        <div style={{"fontSize": "28px", "marginBottom": "6px"}}>😊</div>
+        <div style={{"fontFamily": "'Fredoka One',cursive", "fontSize": "clamp(26px, 2.2vw, 36px)", "color": "#fff", "lineHeight": "1"}} className="stat-counter" data-target="94" data-suffix="%">0</div>
+        <div style={{"fontSize": "11px", "color": "rgba(255,255,255,0.9)", "fontWeight": "800", "marginTop": "6px", "textTransform": "uppercase", "letterSpacing": ".6px", "lineHeight": "1.25"}}>Clientes satisfechos</div>
       </div>
 
     </div>
