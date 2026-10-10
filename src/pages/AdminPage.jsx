@@ -1342,7 +1342,7 @@ export default function AdminPage({ navigate }) {
 
             const commPct = getCommPct(store);
             const commRate = commPct / 100;
-            const grossSales = store.monthlySales || 28500;
+            const grossSales = store.monthlySales || 0;
             const commAmount = grossSales * commRate;
             const netPayout = grossSales - commAmount;
 
@@ -1464,9 +1464,9 @@ export default function AdminPage({ navigate }) {
 
           baseComercios.forEach(req => {
             const seed = (req.id || '123').charCodeAt(0) + (req.businessName || 'A').length;
-            const mockSales = req.monthlySales || (18500 + (seed * 840) % 35000);
-            const mockOrders = req.monthlyOrders || (15 + (seed * 3) % 40);
-            const mockDeliveries = req.monthlyDeliveries || Math.floor(mockOrders * 0.85);
+            const mockSales = req.monthlySales || 0;
+            const mockOrders = req.monthlyOrders || 0;
+            const mockDeliveries = req.monthlyDeliveries || 0;
 
             const commPct = getCommPct(req);
             globalVentasMes += mockSales;
@@ -1620,10 +1620,10 @@ export default function AdminPage({ navigate }) {
                 
                 // Cálculo de contabilidad individual para la ficha
                 const seed = (req.id || '123').charCodeAt(0) + (req.businessName || 'A').length;
-                const monthlySales = req.monthlySales || (18500 + (seed * 840) % 35000);
-                const monthlyOrders = req.monthlyOrders || (15 + (seed * 3) % 40);
-                const monthlyDeliveries = req.monthlyDeliveries || Math.floor(monthlyOrders * 0.85);
-                const monthlyPickups = monthlyOrders - monthlyDeliveries;
+                const monthlySales = req.monthlySales || 0;
+                const monthlyOrders = req.monthlyOrders || 0;
+                const monthlyDeliveries = req.monthlyDeliveries || 0;
+                const monthlyPickups = req.monthlyPickups || 0;
                 
                 const commPct = getCommPct(req);
                 const commRate = commPct / 100;

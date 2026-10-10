@@ -347,8 +347,8 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
             status: parsed.status || 'open',
             prepTime: parsed.prepTime || '15-25',
             address: parsed.address || 'Av. Juan Pablo Duarte #10, Santiago',
-            todaySales: typeof parsed.todaySales === 'number' ? parsed.todaySales : 18450,
-            todayOrdersCount: typeof parsed.todayOrdersCount === 'number' ? parsed.todayOrdersCount : 42,
+            todaySales: typeof parsed.todaySales === 'number' ? parsed.todaySales : 0,
+            todayOrdersCount: typeof parsed.todayOrdersCount === 'number' ? parsed.todayOrdersCount : 0,
             products: (Array.isArray(parsed.products) && parsed.products.length > 0) ? parsed.products : INITIAL_PRODUCTS,
             orders: (Array.isArray(parsed.orders) && parsed.orders.length > 0) ? parsed.orders : [
               {
@@ -392,8 +392,8 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
       status: 'open',
       prepTime: '15-25',
       address: 'Av. Juan Pablo Duarte #10, Santiago',
-      todaySales: 18450,
-      todayOrdersCount: 42,
+      todaySales: 0,
+      todayOrdersCount: 0,
       products: INITIAL_PRODUCTS,
       orders: [
         {
