@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import './LandingPage.css';
 import useLandingLogic from '../useLandingLogic';
 import PlanSelectionModal from '../components/PlanSelectionModal';
@@ -36,29 +36,38 @@ function DeliveryPartnerModal({ onClose, navigate }) {
     e.preventDefault();
     setSubmitting(true);
     try {
-      // 1. Guardar la solicitud en la colecciÃ³n 'partner_requests'
+      // 1. Guardar la solicitud en la colección 'partner_requests'
       const docRef = await addDoc(collection(db, 'partner_requests'), {
-        ...formData,
+        businessName: (formData.businessName || '').trim(),
+        ownerName: (formData.ownerName || '').trim(),
+        ownerLastName: (formData.ownerLastName || '').trim(),
+        email: (formData.email || '').toLowerCase().trim(),
+        phone: (formData.phone || '').trim(),
+        city: formData.city || 'Santo Domingo',
+        businessType: formData.businessType || 'Restaurante / Comida',
+        branches: parseInt(formData.branches || '1'),
+        isStreetStore: formData.isStreetStore || 'Si',
         status: 'pending',
         createdAt: new Date().toISOString()
       });
 
-      // 2. Notificar al administrador en la colecciÃ³n 'notificaciones'
+      // 2. Notificar al administrador en la colección 'notificaciones'
       await addDoc(collection(db, 'notificaciones'), {
         userId: 'admin',
         type: 'partner_request',
         requestId: docRef.id,
-        title: 'ðŸ¬ Nueva Solicitud de Comercio Partner',
-        text: `${formData.businessName || 'Comercio'} (${formData.ownerName} ${formData.ownerLastName}) ha solicitado registrar su negocio. Tel: ${formData.phone}, Email: ${formData.email}`,
+        title: '🏬 Nueva Solicitud de Comercio Partner',
+        text: `${(formData.businessName || 'Comercio').trim()} (${(formData.ownerName || '').trim()} ${(formData.ownerLastName || '').trim()}) ha solicitado registrar su negocio. Tel: ${formData.phone}, Email: ${formData.email}`,
         read: false,
         createdAt: new Date().toISOString(),
         date: new Date().toISOString()
       });
+      setSubmitted(true);
     } catch (err) {
       console.error("Error enviando solicitud de comercio:", err);
+      alert("Error al enviar la solicitud: " + (err.message || "Por favor intenta de nuevo"));
     } finally {
       setSubmitting(false);
-      setSubmitted(true);
     }
   };
 

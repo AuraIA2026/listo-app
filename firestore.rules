@@ -111,6 +111,12 @@ service cloud.firestore {
       allow read, update, delete: if isAuth();
     }
 
+    // 6g. SOLICITUDES DE COMERCIOS PARTNER (partner_requests)
+    match /partner_requests/{requestId} {
+      allow create: if true; // Permitir que la web pública envíe solicitudes de comercio
+      allow read, update, delete: if true; // Administrador y app pueden validar y activar comercios
+    }
+
     // 7. OTRAS COLECCIONES PUBLICAS TEMPORALES (comisiones, etc)
     match /{document=**} {
       allow read, write: if false;

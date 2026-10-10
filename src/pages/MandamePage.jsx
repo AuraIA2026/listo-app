@@ -1365,7 +1365,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
       )}
 
       {/* Mode Switcher Pill Header - Visible si el usuario tiene comercio registrado */}
-      {isMerchantUser ? (
+      {isMerchantUser && (
         <div style={{ background: '#0a0e1a', color: 'white', padding: '10px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid #ff6b00', fontSize: 11, fontWeight: 800 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <span style={{ fontSize: 16 }}>🍔</span>
@@ -1403,30 +1403,6 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
               }}
             >
               🏪 Mi Comercio Partner
-            </button>
-          </div>
-        </div>
-      ) : (
-        <div style={{ background: 'linear-gradient(135deg, #059669 0%, #047857 100%)', color: 'white', padding: '8px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 11, fontWeight: 800 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <span style={{ fontSize: 14 }}>🏬</span>
-            <span>¿Tienes un negocio o restaurante? <strong>Regístralo en la Web Pedidos Listo Partner</strong></span>
-          </div>
-          <div style={{ display: 'flex', gap: 6 }}>
-            <button 
-              onClick={() => {
-                if (navigate) navigate('crearLocal');
-                else setIsRegisterCommerceModalOpen(true);
-              }}
-              style={{ background: '#ffffff', color: '#047857', border: 'none', padding: '4px 12px', borderRadius: 14, fontSize: 11, fontWeight: 900, cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}
-            >
-              🌐 Pedidos Listo Partner Web
-            </button>
-            <button 
-              onClick={() => setIsRegisterCommerceModalOpen(true)}
-              style={{ background: 'rgba(255,255,255,0.2)', color: '#ffffff', border: '1px solid rgba(255,255,255,0.4)', padding: '4px 10px', borderRadius: 14, fontSize: 11, fontWeight: 800, cursor: 'pointer' }}
-            >
-              🚀 Registro Rápido
             </button>
           </div>
         </div>

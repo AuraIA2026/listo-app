@@ -612,9 +612,16 @@ export default function AdminPage({ navigate }) {
     });
 
     // 8. Escuchar Solicitudes de Comercios Partner
-    const unsubPartnerReqs = onSnapshot(query(collection(db, 'partner_requests'), orderBy('createdAt', 'desc')), (snap) => {
+    const unsubPartnerReqs = onSnapshot(collection(db, 'partner_requests'), (snap) => {
       const arr = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      arr.sort((a, b) => {
+        const da = a.createdAt?.seconds ? a.createdAt.seconds * 1000 : new Date(a.createdAt || 0).getTime();
+        const db = b.createdAt?.seconds ? b.createdAt.seconds * 1000 : new Date(b.createdAt || 0).getTime();
+        return db - da;
+      });
       setPartnerRequests(arr);
+    }, (err) => {
+      console.warn("Firestore partner_requests listener warning:", err);
     });
 
     // 9. Escuchar Historias 24h
@@ -1076,18 +1083,24 @@ export default function AdminPage({ navigate }) {
       }
 
       if (type === 'approve_partner_request') {
-         await updateDoc(doc(db, 'partner_requests', obj.id), { 
-           status: 'approved', 
-           processedAt: new Date().toISOString(),
-           validatedBy: 'admin'
-         });
+         if (obj.id && !obj.id.startsWith('demo-')) {
+           try {
+             await updateDoc(doc(db, 'partner_requests', obj.id), { 
+               status: 'approved', 
+               processedAt: new Date().toISOString(),
+               validatedBy: 'admin'
+             });
+           } catch (eUp) {
+             console.warn("Error actualizando partner_requests doc:", eUp);
+           }
+         }
          
          // Registrar automáticamente en la colección 'locales' para activarlo en el directorio de la App
          try {
            await addDoc(collection(db, 'locales'), {
              nombre: obj.businessName || 'Comercio Partner',
              propietario: `${obj.ownerName || ''} ${obj.ownerLastName || ''}`.trim(),
-             email: obj.email || '',
+             email: (obj.email || '').toLowerCase().trim(),
              telefono: obj.phone || '',
              ciudad: obj.city || 'Santo Domingo',
              categoria: obj.businessType || 'Restaurante / Comida',
@@ -1103,20 +1116,51 @@ export default function AdminPage({ navigate }) {
            console.error("Error creando registro en locales:", eLoc);
          }
 
+         // Si el usuario tiene una cuenta registrada en 'users', activarle rol de comercio
+         if (obj.email) {
+           try {
+             const userQuery = query(collection(db, 'users'), where('email', '==', obj.email.toLowerCase().trim()));
+             const userSnap = await getDocs(userQuery);
+             userSnap.forEach(async (uDoc) => {
+               await updateDoc(doc(db, 'users', uDoc.id), {
+                 role: 'comercio',
+                 hasCommerce: true,
+                 commerceName: obj.businessName || 'Mi Comercio',
+                 commerceStatus: 'active'
+               });
+               await addDoc(collection(db, 'notificaciones'), {
+                 userId: uDoc.id,
+                 type: 'system',
+                 title: '🎉 ¡Tu Comercio ha sido Validado y Activado!',
+                 text: `¡Felicidades! Tu comercio "${obj.businessName}" ha sido aprobado y validado en Pedidos Listo Partner. Ya puedes ingresar al portal Comercio para recibir órdenes.`,
+                 date: new Date().toISOString(),
+                 createdAt: new Date().toISOString(),
+                 read: false
+               });
+             });
+           } catch (eUser) {}
+         }
+
          // Marcar alertas/notificaciones asociadas como leídas
          const notifsToUpdate = alerts.filter(a => a.requestId === obj.id || (a.text && obj.phone && a.text.includes(obj.phone)));
          for (const nDoc of notifsToUpdate) {
            try { await updateDoc(doc(db, 'notificaciones', nDoc.id), { read: true }); } catch (eNotif) {}
          }
 
-         showToast(`🎉 Comercio "${obj.businessName}" validado y activado exitosamente`);
+         setPartnerRequests(prev => prev.map(r => r.id === obj.id ? { ...r, status: 'approved' } : r));
+         showToast(`🎉 ¡Comercio "${obj.businessName}" validado y activado exitosamente!`);
       }
 
       if (type === 'reject_partner_request') {
-         await updateDoc(doc(db, 'partner_requests', obj.id), { 
-           status: 'rejected', 
-           processedAt: new Date().toISOString() 
-         });
+         if (obj.id && !obj.id.startsWith('demo-')) {
+           try {
+             await updateDoc(doc(db, 'partner_requests', obj.id), { 
+               status: 'rejected', 
+               processedAt: new Date().toISOString() 
+             });
+           } catch (eRej) {}
+         }
+         setPartnerRequests(prev => prev.map(r => r.id === obj.id ? { ...r, status: 'rejected' } : r));
          showToast(`🔴 Solicitud de "${obj.businessName}" archivada`);
       }
     } catch(err) {
@@ -1235,66 +1279,8 @@ export default function AdminPage({ navigate }) {
         </div>
         {/* ── TAB: COMERCIOS (Contabilidad Mensual, Fecha de Corte, PDF & Impresión) ── */}
         {tab === 'comercios' && (() => {
-          // Lista base de comercios (solicitudes reales + demos si está vacía)
-          const baseComercios = partnerRequests.length > 0 ? partnerRequests : [
-            {
-              id: 'demo-1',
-              businessName: 'Pizzería El Patrón',
-              ownerName: 'Juan',
-              ownerLastName: 'Pérez',
-              phone: '809-555-0199',
-              email: 'contacto@elpatron.com',
-              city: 'Santo Domingo',
-              businessType: 'Restaurante / Comida',
-              branches: 2,
-              isStreetStore: 'Si',
-              status: 'approved',
-              createdAt: new Date().toISOString(),
-              monthlySales: 34500,
-              monthlyOrders: 28,
-              monthlyDeliveries: 24,
-              cutoffDay: 30,
-              commissionPct: 10
-            },
-            {
-              id: 'demo-2',
-              businessName: 'Comida Criolla Yunga',
-              ownerName: 'María',
-              ownerLastName: 'González',
-              phone: '809-555-0244',
-              email: 'info@yunga.com.do',
-              city: 'Santiago',
-              businessType: 'Restaurante / Comida',
-              branches: 1,
-              isStreetStore: 'Si',
-              status: 'approved',
-              createdAt: new Date().toISOString(),
-              monthlySales: 22800,
-              monthlyOrders: 19,
-              monthlyDeliveries: 16,
-              cutoffDay: 30,
-              commissionPct: 5
-            },
-            {
-              id: 'demo-3',
-              businessName: 'Farmacia & Minimarket Central',
-              ownerName: 'Carlos',
-              ownerLastName: 'Ramírez',
-              phone: '809-555-0311',
-              email: 'admin@farmaciacentral.com',
-              city: 'La Romana',
-              businessType: 'Farmacia',
-              branches: 3,
-              isStreetStore: 'Si',
-              status: 'pending',
-              createdAt: new Date().toISOString(),
-              monthlySales: 18900,
-              monthlyOrders: 14,
-              monthlyDeliveries: 12,
-              cutoffDay: 30,
-              commissionPct: 0
-            }
-          ];
+          // Lista base de comercios (solicitudes reales de Firestore)
+          const baseComercios = partnerRequests;
 
           // Filtrado de búsquedas por texto y estado
           const filteredRequests = baseComercios.filter(req => {
@@ -1490,6 +1476,31 @@ export default function AdminPage({ navigate }) {
           return (
             <div className="admin-section" style={{marginTop:16}}>
               
+              {/* ALERTA DE NUEVAS SOLICITUDES DESDE LA WEB */}
+              {partnerRequests.filter(r => !r.status || r.status === 'pending').length > 0 && (
+                <div style={{ background: 'linear-gradient(135deg, #FFF7ED 0%, #FFEDD5 100%)', border: '2px solid #FF6B00', borderRadius: '18px', padding: '16px 20px', marginBottom: '18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '14px', boxShadow: '0 6px 20px rgba(255,107,0,0.18)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                    <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: '#FF6B00', color: '#FFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px', flexShrink: 0 }}>
+                      ⚡
+                    </div>
+                    <div>
+                      <h4 style={{ margin: '0 0 3px', fontSize: '15.5px', fontWeight: '900', color: '#9A3412' }}>
+                        ¡Tienes {partnerRequests.filter(r => !r.status || r.status === 'pending').length} nueva(s) solicitud(es) de Comercio Web pendiente(s)!
+                      </h4>
+                      <p style={{ margin: 0, fontSize: '13px', color: '#C2410C', lineHeight: '1.4' }}>
+                        Enviadas por usuarios desde el botón <strong>PedidosListo Partner</strong>. Revisa los datos y pulsa <strong>"Validar & Activar Solicitud"</strong>.
+                      </p>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => setPartnerFilterStatus('pending')}
+                    style={{ background: '#FF6B00', color: '#FFF', padding: '8px 16px', borderRadius: '30px', fontWeight: '900', fontSize: '12.5px', border: 'none', cursor: 'pointer', whiteSpace: 'nowrap', boxShadow: '0 4px 10px rgba(255,107,0,0.3)' }}
+                  >
+                    Ver Pendientes ({partnerRequests.filter(r => !r.status || r.status === 'pending').length})
+                  </button>
+                </div>
+              )}
+
               {/* BARRA SUPERIOR DE BÚSQUEDA Y CONTABILIDAD MENSUAL */}
               <div style={{ background: 'var(--surface)', borderRadius: '20px', padding: '20px', marginBottom: '18px', border: '1px solid var(--border)', boxShadow: '0 4px 14px rgba(0,0,0,0.03)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
@@ -1789,9 +1800,9 @@ export default function AdminPage({ navigate }) {
                           <button 
                             className="cc-btn paid" 
                             onClick={() => setConfirm({type:'approve_partner_request', obj: req})}
-                            style={{ padding: '10px 16px', borderRadius: '12px', fontWeight: '900', fontSize: '13px', background: 'linear-gradient(135deg, #10B981, #059669)', color: '#FFF', border: 'none', cursor: 'pointer', boxShadow: '0 4px 12px rgba(16,185,129,0.3)' }}
+                            style={{ padding: '12px 20px', borderRadius: '12px', fontWeight: '900', fontSize: '13.5px', background: 'linear-gradient(135deg, #10B981, #059669)', color: '#FFF', border: 'none', cursor: 'pointer', boxShadow: '0 4px 14px rgba(16,185,129,0.4)', display: 'inline-flex', alignItems: 'center', gap: '8px' }}
                           >
-                            ✅ Validar & Activar Comercio
+                            ✅ Validar & Activar Solicitud
                           </button>
                         )}
 
@@ -1804,6 +1815,14 @@ export default function AdminPage({ navigate }) {
                             🔴 Archivar
                           </button>
                         )}
+
+                        <button 
+                          className="cc-btn block" 
+                          onClick={() => setConfirm({type:'delete_partner_request', obj: req})}
+                          style={{ padding: '10px 14px', borderRadius: '12px', fontWeight: '800', fontSize: '13px', background: 'rgba(239, 68, 68, 0.08)', color: '#EF4444', borderColor: 'rgba(239, 68, 68, 0.3)' }}
+                        >
+                          🗑️ Eliminar
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -3107,7 +3126,7 @@ export default function AdminPage({ navigate }) {
           <div className="confirm-overlay" onClick={() => {setConfirm(null); setBlockReason('');}}>
             <div className="confirm-modal" onClick={e => e.stopPropagation()}>
               <span className="cm-icon">
-                {confirm.type==='block' ? '🔴' : confirm.type==='delete_account' ? '💀' : confirm.type==='sub_contract' ? '➖' : confirm.type==='add_contract' ? '➕' : confirm.type==='unblock' ? '✅' : confirm.type==='delete_alert' ? '🗑️' : '💚'}
+                {confirm.type==='block' ? '🔴' : confirm.type==='delete_account' ? '💀' : confirm.type==='sub_contract' ? '➖' : confirm.type==='add_contract' ? '➕' : confirm.type==='unblock' ? '✅' : confirm.type==='delete_alert' || confirm.type==='delete_partner_request' ? '🗑️' : confirm.type==='approve_partner_request' ? '🏪' : confirm.type==='reject_partner_request' ? '📁' : '💚'}
               </span>
                <h3 className="cm-title">
                 {confirm.type==='block'   ? '¿Suspender perfil?' :
@@ -3127,6 +3146,9 @@ export default function AdminPage({ navigate }) {
                  confirm.type==='mark_read' ? '¿Marcar alerta como leída?' :
                  confirm.type==='delete_alert' ? '¿Eliminar alerta?' :
                  confirm.type==='mark_all_read' ? '¿Marcar todas las alertas como leídas?' :
+                 confirm.type==='approve_partner_request' ? '¿Validar y Activar Comercio?' :
+                 confirm.type==='reject_partner_request' ? '¿Archivar solicitud de comercio?' :
+                 confirm.type==='delete_partner_request' ? '¿Eliminar comercio definitivamente?' :
                  '¿Aprobar transferencia?'}
               </h3>
               <p className="cm-sub">
@@ -3164,6 +3186,12 @@ export default function AdminPage({ navigate }) {
                   ? `Esta alerta será borrada definitivamente del historial.`
                   : confirm.type==='mark_all_read'
                   ? `Todas las alertas no leídas actualmente se marcarán como leídas de una sola vez.`
+                  : confirm.type==='approve_partner_request'
+                  ? `Se validará y activará "${confirm.obj.businessName || 'Comercio'}". Se creará automáticamente en el directorio de la app y se habilitará su rol de comercio.`
+                  : confirm.type==='reject_partner_request'
+                  ? `La solicitud de "${confirm.obj.businessName || 'Comercio'}" pasará a estado archivada.`
+                  : confirm.type==='delete_partner_request'
+                  ? `Se eliminará permanentemente la solicitud de "${confirm.obj.businessName || 'Comercio'}" de la base de datos.`
                   : `Se marcará el pago como verificado y se agregará el plan a la cuenta de ${confirm.obj.proName}.`}
               </p>
 
@@ -3181,7 +3209,7 @@ export default function AdminPage({ navigate }) {
               )}
 
               <button
-                className={`cm-btn ${confirm.type==='block'||confirm.type==='delete_account'||confirm.type==='sub_contract'||confirm.type==='reject_payment'||confirm.type==='reject_verif'||confirm.type==='delete_alert'?'danger':'success'}`}
+                className={`cm-btn ${confirm.type==='block'||confirm.type==='delete_account'||confirm.type==='sub_contract'||confirm.type==='reject_payment'||confirm.type==='reject_verif'||confirm.type==='delete_alert'||confirm.type==='reject_partner_request'||confirm.type==='delete_partner_request'?'danger':'success'}`}
                 disabled={confirm.type === 'block' && !blockReason.trim()}
                 onClick={ejecutarConfirm}>
                 {confirm.type==='block'   ? '🔴 Sí, suspender'    :
@@ -3201,6 +3229,9 @@ export default function AdminPage({ navigate }) {
                  confirm.type==='mark_read' ? '✅ Marcar Leída' :
                  confirm.type==='delete_alert' ? '🗑️ Eliminar' :
                  confirm.type==='mark_all_read' ? '✅ Marcar todas' :
+                 confirm.type==='approve_partner_request' ? '✅ Sí, Validar y Activar' :
+                 confirm.type==='reject_partner_request' ? '📁 Sí, Archivar' :
+                 confirm.type==='delete_partner_request' ? '🗑️ Sí, Eliminar' :
                  '💚 Confirmar validación'}
               </button>
               <button className="cm-btn ghost" onClick={() => {setConfirm(null); setBlockReason('');}}>Cancelar</button>
