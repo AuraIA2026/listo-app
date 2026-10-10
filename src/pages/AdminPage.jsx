@@ -81,93 +81,230 @@ body{background:var(--bg);color:var(--text);font-family:var(--body);}
   pointer-events:none;z-index:0;
 }
 
-/* ── TOPBAR ── */
+/* ── TOPBAR MAMEY OS ── */
 .admin-topbar{
   position:sticky;top:0;z-index:50;
   background:rgba(255,255,255,0.92);
-  backdrop-filter:blur(16px);
-  border-bottom:1px solid var(--border);
+  backdrop-filter:blur(18px);
+  -webkit-backdrop-filter:blur(18px);
+  border-bottom:1.5px solid rgba(242,96,0,0.15);
   display:flex;align-items:center;justify-content:space-between;
   padding:max(calc(env(safe-area-inset-top, 0px) + 16px), 52px) 20px 16px;
+  box-shadow:0 4px 20px rgba(0,0,0,0.02);
 }
 .topbar-left{display:flex;align-items:center;gap:12px;}
 .admin-back{
-  background:var(--surface2);border:1px solid var(--border);
-  color:var(--muted);width:36px;height:36px;border-radius:10px;
-  cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;
-  transition:all .2s;
+  background:rgba(242,96,0,0.08);border:1px solid rgba(242,96,0,0.2);
+  color:var(--brand);width:38px;height:38px;border-radius:12px;
+  cursor:pointer;font-size:20px;font-weight:800;display:flex;align-items:center;justify-content:center;
+  transition:all .25s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
-.admin-back:hover{color:var(--text);border-color:rgba(255,255,255,0.15);}
-.admin-title{font-family:var(--display);font-size:17px;font-weight:800;letter-spacing:-.3px;}
+.admin-back:hover{
+  background:var(--brand);color:#FFFFFF;border-color:var(--brand);
+  transform:scale(1.08);box-shadow:0 4px 14px rgba(242,96,0,0.35);
+}
+.admin-title{
+  font-family:var(--display);font-size:18px;font-weight:900;
+  letter-spacing:-.3px;color:var(--text);display:flex;align-items:center;gap:6px;
+}
 .admin-badge{
-  background:var(--red);color:#fff;
-  font-family:var(--display);font-size:10px;font-weight:700;
-  padding:2px 7px;border-radius:20px;letter-spacing:.5px;
+  background:linear-gradient(135deg, #EF4444, #DC2626);color:#fff;
+  font-family:var(--display);font-size:10px;font-weight:800;
+  padding:3px 9px;border-radius:20px;letter-spacing:.5px;
+  box-shadow:0 2px 8px rgba(239,68,68,0.4);
   animation:badgePulse 2s ease-in-out infinite;
 }
 @keyframes badgePulse{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.4)}50%{box-shadow:0 0 0 5px transparent}}
 
 .topbar-right{display:flex;align-items:center;gap:8px;}
 .admin-tag{
-  font-family:var(--mono);font-size:10px;
-  color:var(--brand);background:var(--brand-dim);
-  border:1px solid rgba(242,96,0,0.2);
-  padding:4px 10px;border-radius:6px;letter-spacing:.5px;
+  font-family:var(--mono);font-size:10.5px;font-weight:800;
+  color:#FFFFFF;background:linear-gradient(135deg, #FF7A00, #F26000);
+  border:1px solid rgba(255,255,255,0.3);
+  padding:5px 12px;border-radius:10px;letter-spacing:.6px;
+  box-shadow:0 4px 12px rgba(242,96,0,0.35);
 }
 
-/* ── TABS ── */
+/* ── TABS EXÓTICOS MAMEY ── */
 .admin-tabs{
-  display:flex;gap:4px;
-  padding:16px 20px 0;
-  position:relative;z-index:1;
+  display:flex;gap:10px;
+  padding:14px 16px;
+  background:rgba(255,255,255,0.85);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  border:1.5px solid rgba(242,96,0,0.18);
+  border-radius:24px;
+  margin:10px 20px 20px;
+  box-shadow:0 10px 30px -5px rgba(242,96,0,0.08), 0 2px 10px rgba(0,0,0,0.02), inset 0 1px 0 rgba(255,255,255,0.9);
+  position:relative;z-index:2;
+  overflow-x:auto;
+  scrollbar-width:thin;
+  scrollbar-color:rgba(242,96,0,0.35) transparent;
 }
-.tab-btn{
-  flex:1;padding:10px 8px;
-  background:var(--surface);border:1px solid var(--border);
-  color:var(--muted);font-family:var(--display);font-size:12px;font-weight:700;
-  border-radius:12px;cursor:pointer;transition:all .2s;
-  letter-spacing:.3px;display:flex;flex-direction:column;align-items:center;gap:3px;
+.admin-tabs::-webkit-scrollbar{
+  height:4px;
 }
-.tab-btn span.tab-icon{font-size:16px;}
-.tab-btn.active{
-  background:var(--brand-dim);border-color:rgba(242,96,0,0.3);
-  color:var(--brand);
+.admin-tabs::-webkit-scrollbar-thumb{
+  background:rgba(242,96,0,0.35);
+  border-radius:4px;
 }
-.tab-count{
-  font-family:var(--mono);font-size:10px;
-  background:var(--surface2);
-  padding:1px 6px;border-radius:4px;
-  color:var(--muted);
-}
-.tab-btn.active .tab-count{background:rgba(242,96,0,0.2);color:var(--brand);}
 
-/* ── MÉTRICAS ── */
+.tab-btn{
+  flex:0 0 auto;min-width:86px;
+  padding:12px 10px 14px;
+  background:#FFFFFF;
+  border:1.5px solid rgba(226,232,240,0.85);
+  color:#64748B;
+  font-family:var(--display);
+  border-radius:18px;cursor:pointer;
+  transition:all .25s cubic-bezier(0.4, 0, 0.2, 1);
+  letter-spacing:.2px;
+  display:flex;flex-direction:column;align-items:center;gap:7px;
+  position:relative;
+  box-shadow:0 2px 8px rgba(0,0,0,0.02);
+}
+.tab-btn:hover{
+  border-color:rgba(242,96,0,0.4);
+  color:#1E293B;
+  transform:translateY(-3px);
+  box-shadow:0 12px 24px -4px rgba(242,96,0,0.16), 0 4px 10px rgba(0,0,0,0.03);
+}
+
+.tab-exotic-icon{
+  width:42px;height:42px;
+  border-radius:14px;
+  display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(135deg, rgba(242,96,0,0.08) 0%, rgba(255,107,0,0.02) 100%);
+  border:1px solid rgba(242,96,0,0.18);
+  color:var(--brand);
+  transition:all .3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow:0 2px 8px rgba(242,96,0,0.05);
+}
+.tab-btn:hover .tab-exotic-icon{
+  transform:translateY(-2px) scale(1.08);
+  background:linear-gradient(135deg, rgba(242,96,0,0.16) 0%, rgba(255,107,0,0.08) 100%);
+  border-color:rgba(242,96,0,0.35);
+  box-shadow:0 8px 18px rgba(242,96,0,0.22);
+}
+
+.tab-btn.active{
+  background:linear-gradient(180deg, #FFFFFF 0%, #FFF8F2 100%);
+  border-color:#F26000;
+  box-shadow:0 14px 30px -4px rgba(242,96,0,0.28), 0 2px 8px rgba(0,0,0,0.04);
+  transform:translateY(-3px);
+}
+.tab-btn.active::before{
+  content:'';position:absolute;top:0;left:22%;right:22%;height:3.5px;
+  background:linear-gradient(90deg, #FF7A00, #F26000);
+  border-radius:0 0 4px 4px;
+  box-shadow:0 2px 8px rgba(242,96,0,0.7);
+}
+.tab-btn.active .tab-exotic-icon{
+  background:linear-gradient(135deg, #FF7A00 0%, #F26000 55%, #D44E00 100%);
+  border-color:rgba(255,255,255,0.4);
+  color:#FFFFFF;
+  box-shadow:0 8px 24px rgba(242,96,0,0.52), inset 0 1px 1px rgba(255,255,255,0.5);
+  transform:scale(1.1);
+}
+
+.tab-label{
+  font-family:var(--display);
+  font-size:11.5px;font-weight:700;
+  letter-spacing:.2px;
+  white-space:nowrap;
+  color:#475569;
+}
+.tab-btn.active .tab-label{
+  color:#C94A00;
+  font-weight:800;
+}
+
+.tab-count{
+  font-family:var(--mono);font-size:10px;font-weight:700;
+  background:#F1F5F9;
+  padding:2px 8px;border-radius:12px;
+  color:#64748B;
+  min-width:20px;text-align:center;
+  transition:all .2s;
+}
+.tab-count.has-badge{
+  background:rgba(242,96,0,0.12);
+  color:#F26000;
+  border:1px solid rgba(242,96,0,0.25);
+  font-weight:800;
+}
+.tab-btn:hover .tab-count{
+  background:rgba(242,96,0,0.14);
+  color:#F26000;
+}
+.tab-btn.active .tab-count{
+  background:#F26000;
+  color:#FFFFFF;
+  box-shadow:0 3px 10px rgba(242,96,0,0.45);
+  border:none;
+}
+
+/* ── MÉTRICAS SUPERIORES CON VIDA MAMEY ── */
 .metrics-grid{
   display:grid;grid-template-columns:1fr 1fr;
-  gap:10px;padding:16px 20px;
+  gap:12px;padding:16px 20px 8px;
   position:relative;z-index:1;
 }
-.metric-card{
-  background:var(--surface);border:1px solid var(--border);
-  border-radius:16px;padding:16px;
-  animation:fadeUp .4s ease both;
+@media(min-width:768px){
+  .metrics-grid{grid-template-columns:repeat(4, 1fr);}
 }
+.metric-card{
+  background:#FFFFFF;border:1.5px solid var(--border);
+  border-radius:18px;padding:16px 18px;
+  animation:fadeUp .4s ease both;
+  position:relative;overflow:hidden;
+  box-shadow:0 4px 16px rgba(0,0,0,0.02);
+  transition:all .25s ease;
+}
+.metric-card:hover{
+  transform:translateY(-3px);
+  box-shadow:0 12px 28px rgba(0,0,0,0.06);
+  border-color:rgba(242,96,0,0.3);
+}
+.metric-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:3.5px;
+  border-radius:18px 18px 0 0;
+}
+.metric-card.brand::before{background:linear-gradient(90deg, #FF7A00, #F26000);}
+.metric-card.green::before{background:linear-gradient(90deg, #34D399, #10B981);}
+.metric-card.yellow::before{background:linear-gradient(90deg, #FBBF24, #F59E0B);}
+.metric-card.red::before{background:linear-gradient(90deg, #F87171, #EF4444);}
+
+.metric-header-row{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:6px;
+}
+.metric-icon-badge{
+  width:28px;height:28px;border-radius:9px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:14px;
+  background:rgba(242,96,0,0.08);
+}
+.metric-card.green .metric-icon-badge{background:rgba(16,185,129,0.1);}
+.metric-card.yellow .metric-icon-badge{background:rgba(245,158,11,0.1);}
+.metric-card.red .metric-icon-badge{background:rgba(239,68,68,0.1);}
+
+.metric-label{font-size:10.5px;color:var(--muted);font-family:var(--display);font-weight:800;letter-spacing:1px;text-transform:uppercase;}
+.metric-value{font-family:var(--mono);font-size:24px;font-weight:700;margin-bottom:3px;letter-spacing:-0.5px;}
+.metric-sub{font-size:11.5px;color:var(--muted);font-weight:500;}
 .metric-card:nth-child(1){animation-delay:.05s}
 .metric-card:nth-child(2){animation-delay:.1s}
 .metric-card:nth-child(3){animation-delay:.15s}
 .metric-card:nth-child(4){animation-delay:.2s}
 @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
 
-.metric-label{font-size:10px;color:var(--muted);font-family:var(--display);font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;}
-.metric-value{font-family:var(--mono);font-size:22px;font-weight:500;margin-bottom:2px;}
-.metric-sub{font-size:11px;color:var(--muted);}
-.metric-card.green{border-color:rgba(16,185,129,0.2);}
+.metric-card.green{border-color:rgba(16,185,129,0.25);}
 .metric-card.green .metric-value{color:var(--green);}
-.metric-card.brand{border-color:rgba(242,96,0,0.2);}
+.metric-card.brand{border-color:rgba(242,96,0,0.3);}
 .metric-card.brand .metric-value{color:var(--brand);}
-.metric-card.red{border-color:rgba(239,68,68,0.2);}
+.metric-card.red{border-color:rgba(239,68,68,0.25);}
 .metric-card.red .metric-value{color:var(--red);}
-.metric-card.yellow{border-color:rgba(245,158,11,0.2);}
+.metric-card.yellow{border-color:rgba(245,158,11,0.25);}
 .metric-card.yellow .metric-value{color:var(--yellow);}
 
 /* ── SECCIÓN ── */
@@ -494,6 +631,108 @@ const fmtDate = (timestamp) => {
   const d = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
   return d.toLocaleDateString('es-DO', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
 };
+
+/* ─── ICONOS EXÓTICOS MAMEY PARA TABS ADMIN ──────────────── */
+function ExoticTabIcon({ id, active }) {
+  const strokeColor = active ? '#FFFFFF' : '#F26000';
+  const fillAccent = active ? 'rgba(255,255,255,0.22)' : 'rgba(242,96,0,0.16)';
+  
+  switch(id) {
+    case 'comercios':
+      return (
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+          <path d="M3 9.5L5.2 4H18.8L21 9.5" stroke={strokeColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          <path d="M3 9.5C3 11 4.2 12 5.5 12C6.8 12 8 11 8 9.5C8 11 9.2 12 10.5 12C11.8 12 13 11 13 9.5C13 11 14.2 12 15.5 12C16.8 12 18 11 18 9.5C18 11 19.2 12 20.5 12C21.8 12 21 11 21 9.5" stroke={strokeColor} strokeWidth="1.6" strokeLinecap="round"/>
+          <path d="M4 12V20C4 20.6 4.4 21 5 21H19C19.6 21 20 20.6 20 20V12" stroke={strokeColor} strokeWidth="2" strokeLinecap="round"/>
+          <rect x="8.5" y="14" width="7" height="6.5" rx="1.5" fill={fillAccent} stroke={strokeColor} strokeWidth="1.8"/>
+          <path d="M10.5 14V12.5C10.5 11.7 11.2 11 12 11C12.8 11 13.5 11.7 13.5 12.5V14" stroke={strokeColor} strokeWidth="1.6" strokeLinecap="round"/>
+        </svg>
+      );
+    case 'postulaciones':
+      return (
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+          <path d="M12 2.5L4 6.5V12C4 17 7.4 21.4 12 22.8C16.6 21.4 20 17 20 12V6.5L12 2.5Z" fill={fillAccent} stroke={strokeColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          <path d="M8.5 12L11 14.5L15.8 9.5" stroke={strokeColor} strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      );
+    case 'historias':
+      return (
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+          <rect x="2.5" y="3.5" width="19" height="17" rx="5" fill={fillAccent} stroke={strokeColor} strokeWidth="2"/>
+          <circle cx="12" cy="12" r="4.2" stroke={strokeColor} strokeWidth="2"/>
+          <circle cx="12" cy="12" r="2" fill={strokeColor}/>
+          <circle cx="17.2" cy="7" r="1.4" fill={strokeColor}/>
+        </svg>
+      );
+    case 'alertas':
+      return (
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+          <path d="M18 8.5A6 6 0 0 0 6 8.5C6 15.5 3.5 17.5 3.5 17.5H20.5C20.5 17.5 18 15.5 18 8.5Z" fill={fillAccent} stroke={strokeColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          <path d="M13.73 21A2 2 0 0 1 10.27 21" stroke={strokeColor} strokeWidth="2" strokeLinecap="round"/>
+          <circle cx="18" cy="5" r="2.5" fill={active ? '#FFE4E6' : '#EF4444'} stroke={active ? '#E11D48' : '#FFFFFF'} strokeWidth="1"/>
+        </svg>
+      );
+    case 'pagos':
+      return (
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+          <rect x="2.5" y="5" width="19" height="14" rx="3.5" fill={fillAccent} stroke={strokeColor} strokeWidth="2"/>
+          <path d="M2.5 9.5H21.5" stroke={strokeColor} strokeWidth="2"/>
+          <rect x="5.5" y="13" width="4.5" height="3" rx="0.8" fill={active ? '#FFD700' : '#F59E0B'} stroke={strokeColor} strokeWidth="0.8"/>
+          <circle cx="16.5" cy="14.5" r="1.5" fill={strokeColor}/>
+        </svg>
+      );
+    case 'comisiones':
+      return (
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+          <path d="M5 2.5H19M5 21.5H19" stroke={strokeColor} strokeWidth="2" strokeLinecap="round"/>
+          <path d="M6 2.5V7C6 9.5 8 11.5 10.5 12C8 12.5 6 14.5 6 17V21.5" fill={fillAccent} stroke={strokeColor} strokeWidth="2" strokeLinejoin="round"/>
+          <path d="M18 2.5V7C18 9.5 16 11.5 13.5 12C16 12.5 18 14.5 18 17V21.5" fill={fillAccent} stroke={strokeColor} strokeWidth="2" strokeLinejoin="round"/>
+          <circle cx="12" cy="15.5" r="1.8" fill={strokeColor}/>
+          <path d="M12 11V13.5" stroke={strokeColor} strokeWidth="1.8" strokeLinecap="round"/>
+        </svg>
+      );
+    case 'bloqueados':
+      return (
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+          <path d="M16 21V19C16 16.8 14.2 15 12 15H7C4.8 15 3 16.8 3 19V21" stroke={strokeColor} strokeWidth="2" strokeLinecap="round"/>
+          <circle cx="9.5" cy="8" r="4" fill={fillAccent} stroke={strokeColor} strokeWidth="2"/>
+          <path d="M17 11C18.7 11 20 12.3 20 14V16.5" stroke={strokeColor} strokeWidth="1.8" strokeLinecap="round"/>
+          <path d="M15 5C16.5 5.5 17.5 6.8 17.5 8.5C17.5 9.8 16.8 11 15.8 11.5" stroke={strokeColor} strokeWidth="1.8" strokeLinecap="round"/>
+          <path d="M9.5 2L10.5 3.5L12 2.5L11 4.5H8L7 2.5L8.5 3.5L9.5 2Z" fill={active ? '#FFD700' : '#F59E0B'}/>
+        </svg>
+      );
+    case 'ediciones':
+      return (
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+          <path d="M11 20.5H21" stroke={strokeColor} strokeWidth="2" strokeLinecap="round"/>
+          <path d="M15.5 3.5C16.3 2.7 17.7 2.7 18.5 3.5C19.3 4.3 19.3 5.7 18.5 6.5L6.5 18.5L2.5 19.5L3.5 15.5L15.5 3.5Z" fill={fillAccent} stroke={strokeColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          <path d="M14 5L17 8" stroke={strokeColor} strokeWidth="2" strokeLinecap="round"/>
+        </svg>
+      );
+    case 'quejas':
+      return (
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+          <path d="M12 3V1.5M12 22.5V21M3 12H1.5M22.5 12H21" stroke={strokeColor} strokeWidth="2" strokeLinecap="round"/>
+          <path d="M18.36 5.64L19.78 4.22M5.64 18.36L4.22 19.78" stroke={strokeColor} strokeWidth="2" strokeLinecap="round"/>
+          <path d="M6 18C6 14.7 8.7 12 12 12C15.3 12 18 14.7 18 18" fill={fillAccent} stroke={strokeColor} strokeWidth="2"/>
+          <rect x="5" y="18" width="14" height="3" rx="1.5" fill={strokeColor}/>
+          <circle cx="12" cy="9" r="2.5" fill={active ? '#FFE4E6' : '#EF4444'} stroke={strokeColor} strokeWidth="1.5"/>
+        </svg>
+      );
+    case 'regalos':
+      return (
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+          <rect x="3" y="9" width="18" height="4.5" rx="1.5" fill={fillAccent} stroke={strokeColor} strokeWidth="2"/>
+          <path d="M12 9V21.5" stroke={strokeColor} strokeWidth="2"/>
+          <path d="M19 13.5V20C19 20.8 18.2 21.5 17.5 21.5H6.5C5.8 21.5 5 20.8 5 20V13.5" fill={fillAccent} stroke={strokeColor} strokeWidth="2"/>
+          <path d="M12 9C12 9 9.5 3.5 7 3.5C5 3.5 4 5 5 6.5C6 8 12 9 12 9Z" stroke={strokeColor} strokeWidth="1.8" fill={active ? '#FFD700' : 'rgba(245,158,11,0.2)'}/>
+          <path d="M12 9C12 9 14.5 3.5 17 3.5C19 3.5 20 5 19 6.5C18 8 12 9 12 9Z" stroke={strokeColor} strokeWidth="1.8" fill={active ? '#FFD700' : 'rgba(245,158,11,0.2)'}/>
+        </svg>
+      );
+    default:
+      return <span style={{fontSize:18}}>⭐</span>;
+  }
+}
 
 /* ─── COMPONENTE PRINCIPAL ───────────────────────────────── */
 export default function AdminPage({ navigate }) {
@@ -1219,62 +1458,81 @@ export default function AdminPage({ navigate }) {
       <style>{css}</style>
       <div className="admin-wrap">
 
-        {/* TOPBAR */}
+        {/* TOPBAR MAMEY OS */}
         <div className="admin-topbar">
           <div className="topbar-left">
-            <button className="admin-back" onClick={() => navigate && navigate('profile')}>‹</button>
-            <span className="admin-title">🛡️ Admin</span>
+            <button className="admin-back" onClick={() => navigate && navigate('profile')} title="Volver al Perfil">‹</button>
+            <span className="admin-title">
+              <span style={{ color: '#F26000', fontSize: '20px' }}>👑</span> Listo Master Admin
+            </span>
             {(pendienteCount + bloqueadoCount + partnerRequests.filter(r => r.status === 'pending').length + alerts.filter(a => !a.read).length) > 0 && (
               <span className="admin-badge">{pendienteCount + bloqueadoCount + partnerRequests.filter(r => r.status === 'pending').length + alerts.filter(a => !a.read).length} alertas</span>
             )}
           </div>
           <div className="topbar-right">
-            <span className="admin-tag">LISTO v1.0</span>
+            <span style={{ display:'flex', alignItems:'center', gap:6, fontSize:11, fontWeight:800, color:'#10B981', background:'rgba(16,185,129,0.1)', padding:'5px 11px', borderRadius:20, border:'1px solid rgba(16,185,129,0.25)' }}>
+              <span style={{ width:7, height:7, borderRadius:'50%', background:'#10B981', display:'inline-block', boxShadow:'0 0 6px #10B981' }}></span> En Vivo
+            </span>
+            <span className="admin-tag">⚡ MAMEY OS</span>
           </div>
         </div>
 
-        {/* MÉTRICAS */}
+        {/* MÉTRICAS SUPERIORES CON ESTILO EXÓTICO */}
         <div className="metrics-grid">
           <div className="metric-card brand">
-            <div className="metric-label">Ventas Totales</div>
-            <div className="metric-value">{fmtRD(Math.round(totalVentas))}</div>
+            <div className="metric-header-row">
+              <div className="metric-label">Ventas Totales</div>
+              <div className="metric-icon-badge">💰</div>
+            </div>
+            <div className="metric-value" style={{ color: '#F26000' }}>{fmtRD(Math.round(totalVentas))}</div>
             <div className="metric-sub">Ingresos por planes</div>
           </div>
           <div className="metric-card green">
-            <div className="metric-label">Planes Vendidos</div>
+            <div className="metric-header-row">
+              <div className="metric-label">Planes Vendidos</div>
+              <div className="metric-icon-badge">🚀</div>
+            </div>
             <div className="metric-value">{planesVendidos}</div>
             <div className="metric-sub">contratos activados</div>
           </div>
           <div className="metric-card yellow">
-            <div className="metric-label">Pagos por Validar</div>
+            <div className="metric-header-row">
+              <div className="metric-label">Pagos por Validar</div>
+              <div className="metric-icon-badge">⏳</div>
+            </div>
             <div className="metric-value">{fmtRD(planesPorVerificar)}</div>
             <div className="metric-sub">{pendienteCount} transferencias</div>
           </div>
           <div className="metric-card red">
-            <div className="metric-label">Bloqueados</div>
+            <div className="metric-header-row">
+              <div className="metric-label">Bloqueados</div>
+              <div className="metric-icon-badge">🔒</div>
+            </div>
             <div className="metric-value">{bloqueadoCount}</div>
             <div className="metric-sub">perfiles suspendidos</div>
           </div>
         </div>
 
-        {/* TABS */}
-        <div className="admin-tabs" style={{overflowX:'auto', paddingBottom:4}}>
+        {/* TABS CON ICONOS EXÓTICOS Y ESTILO MAMEY */}
+        <div className="admin-tabs" style={{overflowX:'auto', paddingBottom:6}}>
           {[
-            { id:'comercios',     icon:'🏪', label:'Comercio', count: partnerRequests.filter(r => r.status === 'pending').length },
-            { id:'postulaciones', icon:'🛡️', label:'Nuevos', count:verifications.length },
-            { id:'historias',    icon:'📸', label:'Historias', count: stories.length },
-            { id:'alertas',      icon:'🔔', label:'Alertas', count: alerts.filter(a => !a.read).length },
-            { id:'pagos',        icon:'💳', label:'Historial',  count:completedPayments.length },
-            { id:'comisiones',   icon:'⏳', label:'Validar', count:pendienteCount },
-            { id:'bloqueados',   icon:'👥', label:'Directorio', count:users.length },
-            { id:'ediciones',    icon:'✏️', label:'Ediciones', count: editRequests.filter(r => r.status === 'pending').length },
-            { id:'quejas',       icon:'🚨', label:'Quejas', count: reports.filter(r => r.status === 'pending').length },
-            { id:'regalos',      icon:'🎁', label:'Regalos', count: '+' },
+            { id:'comercios',     label:'Comercio', count: partnerRequests.filter(r => r.status === 'pending').length },
+            { id:'postulaciones', label:'Nuevos', count:verifications.length },
+            { id:'historias',    label:'Historias', count: stories.length },
+            { id:'alertas',      label:'Alertas', count: alerts.filter(a => !a.read).length },
+            { id:'pagos',        label:'Historial',  count:completedPayments.length },
+            { id:'comisiones',   label:'Validar', count:pendienteCount },
+            { id:'bloqueados',   label:'Directorio', count:users.length },
+            { id:'ediciones',    label:'Ediciones', count: editRequests.filter(r => r.status === 'pending').length },
+            { id:'quejas',       label:'Quejas', count: reports.filter(r => r.status === 'pending').length },
+            { id:'regalos',      label:'Regalos', count: '+' },
           ].map(t => (
-            <button key={t.id} className={`tab-btn${tab===t.id?' active':''}`} onClick={()=>setTab(t.id)} style={{minWidth:70}}>
-              <span className="tab-icon">{t.icon}</span>
-              <span>{t.label}</span>
-              <span className="tab-count">{t.count}</span>
+            <button key={t.id} className={`tab-btn${tab===t.id?' active':''}`} onClick={()=>setTab(t.id)}>
+              <div className="tab-exotic-icon">
+                <ExoticTabIcon id={t.id} active={tab===t.id} />
+              </div>
+              <span className="tab-label">{t.label}</span>
+              <span className={`tab-count${t.count > 0 && tab !== t.id ? ' has-badge' : ''}`}>{t.count}</span>
             </button>
           ))}
         </div>
