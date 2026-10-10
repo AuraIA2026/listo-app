@@ -648,28 +648,46 @@ export default function LandingPage({ navigate, lang }) {
     <img className="nav-logo" src="./assets/logo_listo.png" alt="Listo Patrón" style={{"height": "40px", "objectFit": "contain"}} />
     
     <div className="nav-header-buttons" style={{ display: 'flex', alignItems: 'center', gap: '10px', marginLeft: '10px', flexWrap: 'nowrap' }}>
-      {/* BOTÓN TIENDA OFICIAL */}
+      {/* BOTÓN TIENDA OFICIAL ESTILO PREMIUM EXÓTICO */}
       <button
-        onClick={() => navigate('shop')}
-        className="nav-action-btn"
+        onClick={() => navigate ? navigate('shop') : (window.location.href = '/?page=shop')}
+        className="nav-action-btn partner-btn-glow"
         style={{
-          background: '#ff6b00',
-          color: '#ffffff',
-          border: 'none',
+          background: '#0B0C10',
+          color: '#FFFFFF',
+          border: '1.5px solid #FF6B00',
           borderRadius: '50px',
-          padding: '8px 16px',
-          fontSize: '13px',
-          fontWeight: '800',
+          padding: '4px 6px 4px 14px',
           cursor: 'pointer',
-          boxShadow: '0 4px 10px rgba(255, 107, 0, 0.35)',
           display: 'inline-flex',
           alignItems: 'center',
-          gap: '6px',
+          gap: '8px',
+          boxShadow: '0 0 16px rgba(255, 107, 0, 0.45)',
+          transition: 'all 0.2s ease-in-out',
           whiteSpace: 'nowrap',
-          transition: 'all 0.2s ease-in-out'
+          flexShrink: 0
         }}
+        title="Tienda Oficial Listo Patrón"
       >
-        <span>Tienda 🛒</span>
+        <span style={{ fontWeight: '900', fontStyle: 'italic', fontSize: '15px', color: '#ffffff', letterSpacing: '-0.3px', fontFamily: "'Outfit', 'Fredoka One', sans-serif" }}>
+          Listo<span style={{ color: '#FF6B00' }}>Patrón</span>
+        </span>
+        <span style={{
+          background: 'linear-gradient(135deg, #FF6B00 0%, #FF8533 100%)',
+          color: '#ffffff',
+          fontFamily: "'Outfit', sans-serif",
+          fontWeight: '900',
+          fontSize: '12px',
+          padding: '5px 14px',
+          borderRadius: '50px',
+          boxShadow: '0 2px 8px rgba(255,107,0,0.5)',
+          letterSpacing: '0.3px',
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '4px'
+        }}>
+          Tienda 🛒
+        </span>
       </button>
 
       {/* BOTÓN COMPRAR UN PLAN */}

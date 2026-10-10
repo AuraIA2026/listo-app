@@ -809,7 +809,7 @@ export default function App() {
 
       {currentPage === 'landing'      && <LandingPage  {...commonProps} />}
       {currentPage === 'home'         && <HomePage     {...userProps} />}
-      {currentPage === 'shop'         && <ShopPage     onNavigate={navigate} />}
+      {currentPage === 'shop'         && <ShopPage     onNavigate={navigate} navigate={navigate} />}
       {currentPage === 'services'     && <ServicesPage {...userProps} />}
       {currentPage === 'search'       && <SearchPage   {...userProps} initialCategory={selectedPro?.catToSelect || 'all'} initialProvince={selectedPro?.provinceToSelect || 'all'} />}
       {currentPage === 'orders'       && <OrdersPage   {...userProps} />}

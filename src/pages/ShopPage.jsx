@@ -204,7 +204,54 @@ const products = [
   }
 ];
 
-export default function ShopPage({ onNavigate }) {
+export default function ShopPage({ onNavigate, navigate }) {
+  const handleBackToWeb = (e) => {
+    if (e) {
+      if (typeof e.preventDefault === 'function') e.preventDefault();
+      if (typeof e.stopPropagation === 'function') e.stopPropagation();
+    }
+
+    // 1. Limpiar historial y query params en la URL del navegador
+    if (typeof window !== 'undefined') {
+      try {
+        if (window.history && window.history.pushState) {
+          const cleanPath = window.location.pathname.includes('index.html') 
+            ? window.location.pathname 
+            : '/';
+          window.history.pushState({}, '', cleanPath);
+        }
+      } catch (err) {
+        console.warn('Error clearing history in ShopPage:', err);
+      }
+    }
+
+    // 2. Ejecutar función de navegación hacia la web / portada
+    let handled = false;
+    const navFn = onNavigate || navigate;
+    if (typeof navFn === 'function') {
+      try {
+        navFn('landing');
+        handled = true;
+      } catch (err) {
+        console.warn(err);
+      }
+      try {
+        navFn('home');
+        handled = true;
+      } catch (err) {
+        console.warn(err);
+      }
+    }
+
+    // 3. Redirección infalible a la raíz de la web
+    if (typeof window !== 'undefined') {
+      if (!handled || window.location.search.includes('page=shop') || window.location.hash.includes('shop')) {
+        window.location.href = '/';
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }
+  };
   const [cart, setCart] = useState(() => {
     const savedCart = localStorage.getItem('listo_cart');
     return savedCart ? JSON.parse(savedCart) : [];
@@ -297,13 +344,37 @@ export default function ShopPage({ onNavigate }) {
       
       {/* SHOP NAVIGATION BAR */}
       <nav id="nav" className="shop-nav">
-        <div style={{"display": "flex", "alignItems": "center"}}>
-          <img className="nav-logo" src="./assets/logo_listo_patron.png" alt="Listo Patrón" style={{"height": "75px", "objectFit": "contain"}} />
+        <div style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }} onClick={handleBackToWeb} title="Ir a la portada de Listo Patrón">
+          <img className="nav-logo" src="./assets/logo_listo_patron.png" alt="Listo Patrón" style={{ height: '75px', objectFit: 'contain' }} />
           <span className="shop-logo-text">Tienda</span>
         </div>
 
-        <div className="nav-links">
-          <button onClick={() => onNavigate('home')} className="shop-back-btn">← Volver al Inicio</button>
+        <div className="nav-links shop-header-actions" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <button 
+            type="button" 
+            onClick={handleBackToWeb} 
+            className="shop-back-btn"
+            style={{
+              background: 'rgba(255, 107, 0, 0.05)',
+              border: '1.5px solid #FF6B00',
+              color: '#FF6B00',
+              padding: '8px 18px',
+              borderRadius: '50px',
+              fontSize: '14px',
+              fontWeight: '800',
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              whiteSpace: 'nowrap',
+              boxShadow: '0 2px 8px rgba(255, 107, 0, 0.15)',
+              transition: 'all 0.2s ease',
+              zIndex: 100
+            }}
+            title="Regresar a la página principal de Listo Patrón"
+          >
+            ← Volver al Inicio
+          </button>
           
           <button className="cart-nav-btn" onClick={() => setIsCartOpen(true)}>
             <span className="cart-icon-wrapper">
@@ -590,7 +661,7 @@ export default function ShopPage({ onNavigate }) {
               onClick={() => {
                 setIsSuccessOpen(false);
                 setCart([]);
-                onNavigate('home');
+                handleBackToWeb();
               }}
             >
               Enviar Detalles a WhatsApp 💬
