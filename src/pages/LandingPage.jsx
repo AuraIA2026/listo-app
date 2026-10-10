@@ -785,15 +785,31 @@ export default function LandingPage({ navigate, lang }) {
     </div>
   </div>
 
-  <div className="nav-links" id="navLinks">
-    <a href="#servicios">Servicios</a>
-    <a href="#como-funciona">Cómo funciona</a>
-    <a href="#profesionales">Para profesionales</a>
-    <a href="#planes" onClick={(e) => { e.preventDefault(); setShowPlanModal(true); }}>Planes</a>
-    <a href="#faq">FAQ</a>
-    <a onClick={() => navigate('login')} className="nav-btn" style={{cursor: "pointer", "color": "#FFFFFF", "fontWeight": "bold"}}>Abrir app →</a>
+  <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+    {/* ENLACES DE TEXTO (Se ocultan en el menú hamburguesa cuando no hay suficiente espacio) */}
+    <div className="nav-links" id="navLinks">
+      <a href="#servicios">Servicios</a>
+      <a href="#como-funciona">Cómo funciona</a>
+      <a href="#profesionales">Para profesionales</a>
+      <a href="#planes" onClick={(e) => { e.preventDefault(); setShowPlanModal(true); }}>Planes</a>
+      <a href="#faq">FAQ</a>
+      <a onClick={() => navigate('login')} className="nav-btn nav-btn-inside-menu" style={{ cursor: "pointer", color: "#FFFFFF", fontWeight: "bold" }}>Abrir app →</a>
+    </div>
+
+    {/* BOTÓN ABRIR APP SIEMPRE VISIBLE EN LA BARRA */}
+    <a 
+      onClick={() => navigate('login')} 
+      className="nav-btn nav-btn-direct" 
+      style={{ cursor: "pointer", color: "#FFFFFF", fontWeight: "bold", whiteSpace: "nowrap" }}
+    >
+      Abrir app →
+    </a>
+
+    {/* BOTÓN HAMBURGUESA PARA VER SERVICIOS, FAQ Y DEMÁS */}
+    <button className="burger" id="burger" aria-label="Abrir Menú">
+      <span></span><span></span><span></span>
+    </button>
   </div>
-  <button className="burger" id="burger"><span></span><span></span><span></span></button>
 </nav>
 
 
