@@ -9,7 +9,7 @@ import electrica1 from '../assets/pros/Electricista1.jpg'
 import plomero    from '../assets/pros/Plomero.jpg'
 import cerrajero1 from '../assets/pros/Cerrajero1.jpg'
 import jardinero  from '../assets/pros/Jardinero.jpg'
-import logoListo  from '../assets/logo_listo.png'
+import logoListo  from '../assets/pedidos-listo-mamey.png'
 
 const demoVipPros = [
   {

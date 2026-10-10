@@ -24,6 +24,7 @@ import WorkDonePage           from './pages/WorkDonePage'
 import Navbar                 from './components/Navbar'
 import BottomNav              from './components/BottomNav'
 import SplashScreen           from './components/SplashScreen'
+import PedidosListoIntro      from './components/PedidosListoIntro'
 // import TutorialTour           from './components/TutorialTour'
 // import ProTutorialSystem        from './components/ProTutorialSystem'
 import { ExoticOrderNotification, OrderDetailsModal } from './pages/OrdersPage'
@@ -35,9 +36,10 @@ import MandamePage            from './pages/MandamePage'
 import NotificacionPage       from './pages/Notificacionpage'
 import PoliciesPage           from './pages/PoliciesPage'
 import LandingPage            from './pages/LandingPage'
+import ShopPage               from './pages/ShopPage'
 import PwaInstallBanner       from './components/PwaInstallBanner'
 import { sendBrowserNotification } from './utils/notifications'
-import logoBlanco             from './assets/logo listo blanco.png'
+import logoBlanco             from './assets/logo-blanco.png'
 import './App.css'
 
 const TOUR_KEY = 'listo_tour_done'
@@ -419,6 +421,7 @@ export default function App() {
   const { userData, loading: authLoading, authUser, userRole, profileComplete } = useUserData()
   const authReady = !authLoading
 
+  const [showIntro,       setShowIntro]       = useState(true)
   const [showSplash,      setShowSplash]      = useState(isNative)
   const [currentPage,     setCurrentPage]     = useState(() => {
     if (typeof window !== 'undefined') {
@@ -427,7 +430,7 @@ export default function App() {
       if (search.includes('page=shop') || hash.includes('shop')) return 'shop';
       if (search.includes('comprar-plan') || hash.includes('comprar-plan') || hash.includes('planes')) return 'landing';
     }
-    return 'login';
+    return 'home';
   });
   const [lang,            setLang]            = useState('es')
   const [selectedPro,     setSelectedPro]     = useState(null)
@@ -453,7 +456,7 @@ export default function App() {
   const notifiedMsgIds     = useRef(new Set())
   const banneredChatIds    = useRef(new Set())
   const chatListenerReady  = useRef(false)
-  const currentPageRef     = useRef('login')
+  const currentPageRef     = useRef('home')
 
   useEffect(() => { currentPageRef.current = currentPage }, [currentPage])
 
@@ -548,8 +551,8 @@ export default function App() {
       })
     } else {
       setCurrentPage(prev => {
-        if (prev === 'register' || prev === 'policies') return prev
-        return 'login'
+        if (['register', 'policies', 'login', 'landing'].includes(prev)) return prev
+        return 'home'
       })
     }
   }, [authUser, authLoading, userData])
@@ -786,8 +789,12 @@ export default function App() {
     setCurrentPage('login')
   }
 
+  if (showIntro) {
+    return <PedidosListoIntro onFinish={() => setShowIntro(false)} />
+  }
+
   if (showSplash) {
-    return <SplashScreen onFinish={() => { setShowSplash(false); setCurrentPage(userData ? 'home' : 'login') }} lang={lang} />
+    return <SplashScreen onFinish={() => { setShowSplash(false); setCurrentPage(userData ? 'home' : 'home') }} lang={lang} />
   }
 
   if (!authReady) return null
@@ -807,6 +814,7 @@ export default function App() {
 
       {currentPage === 'landing'      && <LandingPage  {...commonProps} />}
       {currentPage === 'home'         && <HomePage     {...userProps} />}
+      {currentPage === 'shop'         && <ShopPage     onNavigate={navigate} />}
       {currentPage === 'services'     && <ServicesPage {...userProps} />}
       {currentPage === 'search'       && <SearchPage   {...userProps} initialCategory={selectedPro?.catToSelect || 'all'} initialProvince={selectedPro?.provinceToSelect || 'all'} />}
       {currentPage === 'orders'       && <OrdersPage   {...userProps} />}

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { collection, query, where, getDocs, updateDoc, doc, getDoc, addDoc, serverTimestamp, onSnapshot } from 'firebase/firestore'
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage'
 import { db, storage } from '../firebase'
-import listoLogo from '../assets/logo listo blanco.png'
+import listoLogo from '../assets/logo-blanco.png'
 import ReciboDigitalModal from '../components/ReciboDigitalModal'
 
 const compressImage = (file) => new Promise((resolve, reject) => {

@@ -43,7 +43,7 @@ import jardinero  from '../assets/pros/Jardinero.jpg'
 import ninera     from '../assets/pros/Niñera.jpg'
 import ninera1    from '../assets/pros/Niñera1.jpg'
 import bannerPros from '../assets/banner_pros.jpg'
-import logoListo  from '../assets/logo_listo.png'
+import logoListo  from '../assets/logo-mamey.png'
 
 const testimonials = [
   { nameEs:'María González',  photo: electrica1, rating:5, dateEs:'Hace 2 días',    dateEn:'2 days ago',   specEs:'Electricista', specEn:'Electrician', textEs:'Excelente servicio, llegó puntual y resolvió el problema en menos de una hora. Lo recomiendo 100%.', textEn:'Excellent service, arrived on time and fixed the problem in less than an hour. 100% recommended.' },

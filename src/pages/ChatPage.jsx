@@ -15,7 +15,7 @@ const quickReplies = [
   'Necesito más información',
 ]
 
-import logoBlanco from '../assets/logo listo blanco.png'
+import logoBlanco from '../assets/logo-blanco.png'
 
 // ── Genera un ID de conversación determinista entre dos usuarios ──────────────
 const getChatId = (uid1, uid2) =>

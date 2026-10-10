@@ -1235,8 +1235,8 @@ export default function ProfilePage({ lang, setLang, navigate, onLogout, initial
       </div>
 
       <div className="profile-brand">
-        <img src="/src/assets/logo_listo.png" alt="Listo" />
-        <p>Listo, patrón.</p>
+        <img src="/assets/pedidos-listo-mamey.png" alt="Pedidos Listo" />
+        <p>Pedidos Listo Dominicana</p>
         <span style={{ cursor:'default', userSelect:'none' }}>v1.0.0</span>
       </div>
 

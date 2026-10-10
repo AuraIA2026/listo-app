@@ -22,7 +22,7 @@ import L from 'leaflet'
 import recomendarIcon from '../assets/icons/recomendar.png'
 import opinionesIcon from '../assets/icons/opiniones.png'
 import compartirIcon from '../assets/icons/compartir.png'
-import logoListo from '../assets/logo_listo.png'
+import logoListo from '../assets/logo-mamey.png'
 import './SearchPage.css'
 
 const customProIcon = new L.Icon({

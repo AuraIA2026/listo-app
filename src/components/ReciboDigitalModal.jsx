@@ -1,5 +1,5 @@
 import { useRef } from 'react'
-import logoListo from '../assets/logo_listo.png'
+import logoListo from '../assets/logo-mamey.png'
 import './ReciboDigitalModal.css'
 
 export default function ReciboDigitalModal({ lang = 'es', onClose, orderData }) {
