@@ -770,7 +770,31 @@ export default function LandingPage({ navigate, lang }) {
     </div>
 </div>
 
-
+{/*  CINTA OFICIAL TIENDA LISTO PATRÓN (PORTADA)  */}
+<div style={{ width: '100%', background: '#F26000', padding: '0 15px 18px', display: 'flex', justifyContent: 'center' }}>
+  <div style={{ width: '100%', maxWidth: '1000px' }}>
+    <div 
+      className="store-ribbon-banner"
+      onClick={() => navigate ? navigate('shop') : window.location.href = '/?page=shop'}
+      title="Visitar la Tienda Web de Listo Patrón"
+    >
+      <div className="store-ribbon-content">
+        <span className="store-ribbon-icon">🛍️</span>
+        <div className="store-ribbon-text-group">
+          <p className="store-ribbon-title">
+            Equípate en nuestra tienda <strong>Listo Patrón</strong>
+          </p>
+          <p className="store-ribbon-sub">
+            Herramientas, equipos e insumos de seguridad con envío rápido a todo el país
+          </p>
+        </div>
+      </div>
+      <button className="store-ribbon-btn" onClick={(e) => { e.stopPropagation(); navigate ? navigate('shop') : window.location.href = '/?page=shop'; }}>
+        🛒 Visitar Tienda ›
+      </button>
+    </div>
+  </div>
+</div>
 
 {/*  CONTADOR DE ESTADÍSTICAS  */}
 <section style={{"background": "#F26000", "padding": "50px 5%", "position": "relative", "overflow": "hidden"}}>
@@ -928,6 +952,31 @@ export default function LandingPage({ navigate, lang }) {
     </div>
   </div>
 </section>
+
+
+{/*  CINTA OFICIAL TIENDA LISTO PATRÓN (DEBAJO DE PROFESIONALES DESTACADOS)  */}
+<div style={{ maxWidth: '1200px', margin: '14px auto 20px', padding: '0 5%' }}>
+  <div 
+    className="store-ribbon-banner"
+    onClick={() => navigate ? navigate('shop') : window.location.href = '/?page=shop'}
+    title="Visitar la Tienda Web de Listo Patrón"
+  >
+    <div className="store-ribbon-content">
+      <span className="store-ribbon-icon">🛍️</span>
+      <div className="store-ribbon-text-group">
+        <p className="store-ribbon-title">
+          Equípate en nuestra tienda <strong>Listo Patrón</strong>
+        </p>
+        <p className="store-ribbon-sub">
+          Herramientas, equipos e insumos de seguridad con envío rápido a todo el país
+        </p>
+      </div>
+    </div>
+    <button className="store-ribbon-btn" onClick={(e) => { e.stopPropagation(); navigate ? navigate('shop') : window.location.href = '/?page=shop'; }}>
+      🛒 Visitar Tienda ›
+    </button>
+  </div>
+</div>
 
 {/*  PUBLICIDAD  */}
 <section style={{"background": "#f5f5f5", "padding": "24px 5%"}}>

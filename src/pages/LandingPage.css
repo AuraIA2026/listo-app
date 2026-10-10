@@ -5027,3 +5027,127 @@ h2.section-title {
 .chip {
   box-shadow: 0 4px 15px rgba(242, 96, 0, 0.15);
 }
+
+/* ── CINTA ANUNCIO TIENDA WEB OFICIAL LISTO PATRÓN ── */
+.store-ribbon-banner {
+  background: linear-gradient(90deg, #151326 0%, #1f1b38 50%, #0d0c18 100%);
+  border: 1.5px solid rgba(242, 96, 0, 0.45);
+  border-left: 5px solid #F26000;
+  border-radius: 16px;
+  padding: 12px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25), 0 0 15px rgba(242, 96, 0, 0.15);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.store-ribbon-banner:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 32px rgba(242, 96, 0, 0.35), 0 0 20px rgba(242, 96, 0, 0.25);
+  border-color: #F26000;
+}
+
+.store-ribbon-content {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex: 1;
+  min-width: 0;
+}
+
+.store-ribbon-icon {
+  font-size: 28px;
+  flex-shrink: 0;
+  animation: storeCartBounce 2.5s infinite ease-in-out;
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.4));
+}
+
+@keyframes storeCartBounce {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-3px) scale(1.12); }
+}
+
+.store-ribbon-text-group {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+.store-ribbon-title {
+  font-size: 15px;
+  font-weight: 900;
+  color: #FFFFFF;
+  margin: 0;
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  letter-spacing: -0.2px;
+}
+
+.store-ribbon-title strong {
+  color: #F26000;
+}
+
+.store-ribbon-sub {
+  font-size: 12px;
+  font-weight: 500;
+  color: #CBD5E1;
+  margin: 2px 0 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.store-ribbon-btn {
+  background: linear-gradient(135deg, #FF7A1A 0%, #F26000 100%);
+  color: #FFFFFF;
+  border: none;
+  border-radius: 50px;
+  padding: 10px 20px;
+  font-size: 13px;
+  font-weight: 900;
+  cursor: pointer;
+  flex-shrink: 0;
+  white-space: nowrap;
+  box-shadow: 0 4px 14px rgba(242, 96, 0, 0.5);
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  letter-spacing: 0.2px;
+}
+
+.store-ribbon-btn:hover {
+  background: #C24D00;
+  transform: scale(1.05);
+  box-shadow: 0 6px 18px rgba(242, 96, 0, 0.7);
+}
+
+@media (max-width: 768px) {
+  .store-ribbon-banner {
+    padding: 10px 14px;
+    gap: 10px;
+  }
+  .store-ribbon-icon {
+    font-size: 22px;
+  }
+  .store-ribbon-title {
+    font-size: 13px;
+    white-space: normal;
+  }
+  .store-ribbon-sub {
+    font-size: 10.5px;
+    white-space: normal;
+  }
+  .store-ribbon-btn {
+    padding: 8px 14px;
+    font-size: 11.5px;
+  }
+}
