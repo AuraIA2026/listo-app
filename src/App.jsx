@@ -24,7 +24,6 @@ import WorkDonePage           from './pages/WorkDonePage'
 import Navbar                 from './components/Navbar'
 import BottomNav              from './components/BottomNav'
 import SplashScreen           from './components/SplashScreen'
-import PedidosListoIntro      from './components/PedidosListoIntro'
 // import TutorialTour           from './components/TutorialTour'
 // import ProTutorialSystem        from './components/ProTutorialSystem'
 import { ExoticOrderNotification, OrderDetailsModal } from './pages/OrdersPage'
@@ -421,7 +420,6 @@ export default function App() {
   const { userData, loading: authLoading, authUser, userRole, profileComplete } = useUserData()
   const authReady = !authLoading
 
-  const [showIntro,       setShowIntro]       = useState(true)
   const [showSplash,      setShowSplash]      = useState(isNative)
   const [currentPage,     setCurrentPage]     = useState(() => {
     if (typeof window !== 'undefined') {
@@ -789,9 +787,6 @@ export default function App() {
     setCurrentPage('login')
   }
 
-  if (showIntro) {
-    return <PedidosListoIntro onFinish={() => setShowIntro(false)} />
-  }
 
   if (showSplash) {
     return <SplashScreen onFinish={() => { setShowSplash(false); setCurrentPage(userData ? 'home' : 'home') }} lang={lang} />
