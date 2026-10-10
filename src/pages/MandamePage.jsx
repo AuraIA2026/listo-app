@@ -2108,33 +2108,189 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
          ========================================================================= */}
       {viewMode === 'merchant' && (
         <div style={{ flexGrow: 1, overflowY: 'auto', padding: 16, paddingBottom: 80 }}>
-          {/* Header */}
-          <div style={{ background: '#121829', padding: 16, borderRadius: 20, border: '1px solid rgba(255,255,255,0.1)', marginBottom: 16, display: 'flex', gap: 10, overflowX: 'auto', alignItems: 'center' }}>
-            <button onClick={() => setMerchantTab('pos')} style={{ background: merchantTab === 'pos' ? 'linear-gradient(135deg, #00e699, #00b377)' : '#121829', color: merchantTab === 'pos' ? '#0a0e1a' : 'white', border: '1px solid rgba(255,255,255,0.1)', padding: '8px 14px', borderRadius: 12, fontWeight: 900, fontSize: 12, cursor: 'pointer', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 6 }}>
-              <span>💻 POS Caja</span>
-              <span style={{ background: merchantTab === 'pos' ? '#0a0e1a' : '#00e699', color: merchantTab === 'pos' ? '#00e699' : '#0a0e1a', fontSize: 9, fontWeight: 900, padding: '1px 6px', borderRadius: 6 }}>
+          {/* Header 4 Botones Mamey: 2 Arriba y 2 Abajo (Fuera del cuadro azul) */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: 16 }}>
+            {/* 1. POS CAJA */}
+            <button 
+              onClick={() => setMerchantTab('pos')} 
+              style={{ 
+                background: merchantTab === 'pos' 
+                  ? 'linear-gradient(135deg, #E04800 0%, #C23800 100%)' 
+                  : 'linear-gradient(135deg, #FF6B00 0%, #FF8533 100%)', 
+                color: '#FFFFFF', 
+                border: merchantTab === 'pos' ? '2.5px solid #FFFFFF' : '1.5px solid rgba(255,255,255,0.2)', 
+                borderRadius: '16px', 
+                padding: '12px 10px', 
+                fontWeight: 900, 
+                fontSize: '13.5px', 
+                cursor: 'pointer', 
+                display: 'flex', 
+                flexDirection: 'column', 
+                alignItems: 'center', 
+                justifyContent: 'center', 
+                gap: '4px',
+                boxShadow: merchantTab === 'pos' 
+                  ? '0 6px 18px rgba(224, 72, 0, 0.45)' 
+                  : '0 4px 12px rgba(255, 107, 0, 0.28)',
+                transition: 'all 0.2s ease',
+                transform: merchantTab === 'pos' ? 'scale(1.02)' : 'scale(1)'
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span style={{ fontSize: '16px' }}>💻</span>
+                <span>POS Caja</span>
+              </div>
+              <span style={{ 
+                background: 'rgba(0,0,0,0.25)', 
+                color: '#FFFFFF', 
+                fontSize: '10px', 
+                fontWeight: 900, 
+                padding: '2px 8px', 
+                borderRadius: '10px',
+                letterSpacing: '0.3px'
+              }}>
                 RD$ {merchantState.todaySales}
               </span>
             </button>
-            <button onClick={() => setMerchantTab('pedidos')} style={{ background: merchantTab === 'pedidos' ? '#ff6b00' : '#121829', color: 'white', border: '1px solid rgba(255,255,255,0.1)', padding: '8px 14px', borderRadius: 12, fontWeight: 800, fontSize: 12, cursor: 'pointer', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 6 }}>
-              <span>🔔 Comandera Cocina</span>
-              {merchantState.orders.filter(o => o.status === 'new').length > 0 && (
-                <span style={{ background: '#ef4444', color: 'white', fontSize: 9, fontWeight: 900, padding: '1px 6px', borderRadius: 6, animation: 'pulse 1s infinite alternate' }}>
+
+            {/* 2. COMANDERA COCINA */}
+            <button 
+              onClick={() => setMerchantTab('pedidos')} 
+              style={{ 
+                background: merchantTab === 'pedidos' 
+                  ? 'linear-gradient(135deg, #E04800 0%, #C23800 100%)' 
+                  : 'linear-gradient(135deg, #FF6B00 0%, #FF8533 100%)', 
+                color: '#FFFFFF', 
+                border: merchantTab === 'pedidos' ? '2.5px solid #FFFFFF' : '1.5px solid rgba(255,255,255,0.2)', 
+                borderRadius: '16px', 
+                padding: '12px 10px', 
+                fontWeight: 900, 
+                fontSize: '13.5px', 
+                cursor: 'pointer', 
+                display: 'flex', 
+                flexDirection: 'column', 
+                alignItems: 'center', 
+                justifyContent: 'center', 
+                gap: '4px',
+                boxShadow: merchantTab === 'pedidos' 
+                  ? '0 6px 18px rgba(224, 72, 0, 0.45)' 
+                  : '0 4px 12px rgba(255, 107, 0, 0.28)',
+                transition: 'all 0.2s ease',
+                transform: merchantTab === 'pedidos' ? 'scale(1.02)' : 'scale(1)'
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span style={{ fontSize: '16px' }}>🔔</span>
+                <span>Comandera Cocina</span>
+              </div>
+              {merchantState.orders.filter(o => o.status === 'new').length > 0 ? (
+                <span style={{ 
+                  background: '#EF4444', 
+                  color: '#FFFFFF', 
+                  fontSize: '10px', 
+                  fontWeight: 900, 
+                  padding: '2px 8px', 
+                  borderRadius: '10px', 
+                  animation: 'pulse 1s infinite alternate' 
+                }}>
                   {merchantState.orders.filter(o => o.status === 'new').length} Nuevos
+                </span>
+              ) : (
+                <span style={{ 
+                  background: 'rgba(0,0,0,0.2)', 
+                  color: '#FFFFFF', 
+                  fontSize: '10px', 
+                  fontWeight: 800, 
+                  padding: '2px 8px', 
+                  borderRadius: '10px' 
+                }}>
+                  Órdenes en vivo
                 </span>
               )}
             </button>
-            <button onClick={() => setMerchantTab('dashboard')} style={{ background: merchantTab === 'dashboard' ? '#ffb703' : '#121829', color: merchantTab === 'dashboard' ? '#0a0e1a' : 'white', border: '1px solid rgba(255,255,255,0.1)', padding: '8px 14px', borderRadius: 12, fontWeight: 900, fontSize: 12, cursor: 'pointer', whiteSpace: 'nowrap' }}>
-              📊 Dashboard & Ventas
+
+            {/* 3. CATÁLOGO & PLATILLOS */}
+            <button 
+              onClick={() => setMerchantTab('catalogo')} 
+              style={{ 
+                background: merchantTab === 'catalogo' 
+                  ? 'linear-gradient(135deg, #E04800 0%, #C23800 100%)' 
+                  : 'linear-gradient(135deg, #FF6B00 0%, #FF8533 100%)', 
+                color: '#FFFFFF', 
+                border: merchantTab === 'catalogo' ? '2.5px solid #FFFFFF' : '1.5px solid rgba(255,255,255,0.2)', 
+                borderRadius: '16px', 
+                padding: '12px 10px', 
+                fontWeight: 900, 
+                fontSize: '13.5px', 
+                cursor: 'pointer', 
+                display: 'flex', 
+                flexDirection: 'column', 
+                alignItems: 'center', 
+                justifyContent: 'center', 
+                gap: '4px',
+                boxShadow: merchantTab === 'catalogo' 
+                  ? '0 6px 18px rgba(224, 72, 0, 0.45)' 
+                  : '0 4px 12px rgba(255, 107, 0, 0.28)',
+                transition: 'all 0.2s ease',
+                transform: merchantTab === 'catalogo' ? 'scale(1.02)' : 'scale(1)'
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span style={{ fontSize: '16px' }}>🍔</span>
+                <span>Catálogo & Menú</span>
+              </div>
+              <span style={{ 
+                background: 'rgba(0,0,0,0.2)', 
+                color: '#FFFFFF', 
+                fontSize: '10px', 
+                fontWeight: 800, 
+                padding: '2px 8px', 
+                borderRadius: '10px' 
+              }}>
+                Platillos & Precios
+              </span>
             </button>
-            <button onClick={() => setMerchantTab('insumos')} style={{ background: merchantTab === 'insumos' ? '#38bdf8' : '#121829', color: merchantTab === 'insumos' ? '#0a0e1a' : 'white', border: '1px solid rgba(255,255,255,0.1)', padding: '8px 14px', borderRadius: 12, fontWeight: 900, fontSize: 12, cursor: 'pointer', whiteSpace: 'nowrap' }}>
-              📦 Insumos & Stock
-            </button>
-            <button onClick={() => setMerchantTab('gps')} style={{ background: merchantTab === 'gps' ? '#a855f7' : '#121829', color: 'white', border: '1px solid rgba(255,255,255,0.1)', padding: '8px 14px', borderRadius: 12, fontWeight: 900, fontSize: 12, cursor: 'pointer', whiteSpace: 'nowrap' }}>
-              🛵 Monitoreo GPS Mándame
-            </button>
-            <button onClick={() => setMerchantTab('catalogo')} style={{ background: merchantTab === 'catalogo' ? '#ff6b00' : '#121829', color: 'white', border: '1px solid rgba(255,255,255,0.1)', padding: '8px 14px', borderRadius: 12, fontWeight: 800, fontSize: 12, cursor: 'pointer', whiteSpace: 'nowrap' }}>
-              🍔 Catalogo & Platillos
+
+            {/* 4. DASHBOARD & VENTAS */}
+            <button 
+              onClick={() => setMerchantTab('dashboard')} 
+              style={{ 
+                background: merchantTab === 'dashboard' 
+                  ? 'linear-gradient(135deg, #E04800 0%, #C23800 100%)' 
+                  : 'linear-gradient(135deg, #FF6B00 0%, #FF8533 100%)', 
+                color: '#FFFFFF', 
+                border: merchantTab === 'dashboard' ? '2.5px solid #FFFFFF' : '1.5px solid rgba(255,255,255,0.2)', 
+                borderRadius: '16px', 
+                padding: '12px 10px', 
+                fontWeight: 900, 
+                fontSize: '13.5px', 
+                cursor: 'pointer', 
+                display: 'flex', 
+                flexDirection: 'column', 
+                alignItems: 'center', 
+                justifyContent: 'center', 
+                gap: '4px',
+                boxShadow: merchantTab === 'dashboard' 
+                  ? '0 6px 18px rgba(224, 72, 0, 0.45)' 
+                  : '0 4px 12px rgba(255, 107, 0, 0.28)',
+                transition: 'all 0.2s ease',
+                transform: merchantTab === 'dashboard' ? 'scale(1.02)' : 'scale(1)'
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span style={{ fontSize: '16px' }}>📊</span>
+                <span>Dashboard & Ventas</span>
+              </div>
+              <span style={{ 
+                background: 'rgba(0,0,0,0.2)', 
+                color: '#FFFFFF', 
+                fontSize: '10px', 
+                fontWeight: 800, 
+                padding: '2px 8px', 
+                borderRadius: '10px' 
+              }}>
+                Métricas & Cuadres
+              </span>
             </button>
           </div>
 
