@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './LandingPage.css';
 import useLandingLogic from '../useLandingLogic';
 import PlanSelectionModal from '../components/PlanSelectionModal';
@@ -567,6 +567,17 @@ export default function LandingPage({ navigate, lang }) {
   const [showPlanModal, setShowPlanModal] = useState(false);
   const [selectedPlanInitial, setSelectedPlanInitial] = useState(null);
   const [showDeliveryModal, setShowDeliveryModal] = useState(false);
+  const [isHeroMuted, setIsHeroMuted] = useState(true);
+  const heroVideoRef = useRef(null);
+
+  const toggleHeroSound = (e) => {
+    e.stopPropagation();
+    if (heroVideoRef.current) {
+      const nextMuted = !heroVideoRef.current.muted;
+      heroVideoRef.current.muted = nextMuted;
+      setIsHeroMuted(nextMuted);
+    }
+  };
 
   const openPlanModalWithPlan = (planId) => {
     setSelectedPlanInitial(planId);
@@ -766,12 +777,49 @@ export default function LandingPage({ navigate, lang }) {
 </nav>
 
 
-{/*  PORTADA PRINCIPAL / INTRO ESTATICO  */}
+{/*  PORTADA PRINCIPAL / VIDEO OFICIAL PROFESIONALES  */}
 <div id="intro-portada-container" style={{"width": "100%", "background": "#F26000", "paddingTop": "70px", "display": "flex", "justifyContent": "center", "position": "relative"}}>
-    <div style={{"position": "relative", "width": "100%", "maxWidth": "1000px", "boxShadow": "0 0 40px rgba(0,0,0,0.3)", "overflow": "hidden", "background": "#000", "borderRadius": "16px", "margin": "0 15px"}}>
+    <div style={{"position": "relative", "width": "100%", "maxWidth": "1000px", "boxShadow": "0 0 40px rgba(0,0,0,0.3)", "overflow": "hidden", "background": "#000", "borderRadius": "16px", "margin": "0 15px", "aspectRatio": "16 / 9"}}>
       
-      {/* La imagen principal (el banner naranja con las personas) - en auto proporciones para que no se corte */}
-      <img src="./assets/portada_nueva.png" style={{"width": "100%", "height": "auto", "display": "block"}} alt="Portada Listo Patrón" />
+      {/* Video Oficial Listo Patrón en la Portada */}
+      <video
+        ref={heroVideoRef}
+        src="./assets/todos_los_profesionales.mp4"
+        poster="./assets/todos_los_profesionales_poster.jpg"
+        autoPlay
+        muted={isHeroMuted}
+        loop
+        playsInline
+        style={{"width": "100%", "height": "100%", "objectFit": "cover", "display": "block"}}
+      />
+
+      {/* Botón flotante para activar / desactivar sonido */}
+      <button
+        onClick={toggleHeroSound}
+        style={{
+          position: "absolute",
+          bottom: "16px",
+          left: "16px",
+          zIndex: 10,
+          background: "rgba(0, 0, 0, 0.65)",
+          color: "#ffffff",
+          border: "1px solid rgba(255, 255, 255, 0.3)",
+          backdropFilter: "blur(8px)",
+          borderRadius: "50px",
+          padding: "8px 16px",
+          fontSize: "13px",
+          fontWeight: "700",
+          cursor: "pointer",
+          display: "inline-flex",
+          alignItems: "center",
+          gap: "8px",
+          boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
+          transition: "all 0.2s ease"
+        }}
+        title={isHeroMuted ? "Activar audio" : "Silenciar audio"}
+      >
+        <span>{isHeroMuted ? "🔇 Activar Sonido" : "🔊 Silenciar"}</span>
+      </button>
       
       {/* El logo circular en la esquina superior derecha */}
       <img src="./assets/logo_esquina.png" style={{"position": "absolute", "top": "4%", "right": "4%", "width": "clamp(50px, 8vw, 90px)", "height": "auto", "objectFit": "contain", "zIndex": "2", "filter": "drop-shadow(0 4px 6px rgba(0,0,0,0.2))"}} alt="Logo Listo" />
