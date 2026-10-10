@@ -1262,7 +1262,6 @@ export default function AdminPage({ navigate }) {
           {[
             { id:'comercios',     icon:'🏪', label:'Comercio', count: partnerRequests.filter(r => r.status === 'pending').length },
             { id:'postulaciones', icon:'🛡️', label:'Nuevos', count:verifications.length },
-            { id:'locales',      icon:'🏬', label:'Locales VIP', count: vipLocales.filter(l => !l.activo).length },
             { id:'historias',    icon:'📸', label:'Historias', count: stories.length },
             { id:'alertas',      icon:'🔔', label:'Alertas', count: alerts.filter(a => !a.read).length },
             { id:'pagos',        icon:'💳', label:'Historial',  count:completedPayments.length },
@@ -1997,45 +1996,6 @@ export default function AdminPage({ navigate }) {
           </div>
         )}
 
-        {/* ── TAB: LOCALES VIP (Aprobar Locales VIP) ── */}
-        {tab === 'locales' && (
-          <div className="admin-section" style={{marginTop:16}}>
-            <div className="section-header">
-              <span className="section-title">Locales VIP por Aprobar ({vipLocales.filter(l => !l.activo).length})</span>
-            </div>
-            {vipLocales.filter(l => !l.activo).length === 0 && (
-              <div className="empty-admin"><p>No hay locales VIP pendientes de aprobación.</p></div>
-            )}
-            {vipLocales.filter(l => !l.activo).map((local, i) => (
-              <div className="payment-card" key={local.id} style={{animationDelay:`${i*.06}s`, borderColor:'rgba(245,158,11,0.3)'}}>
-                <div className="pc-top" style={{alignItems:'center'}}>
-                  <div className="pc-avatar" style={{background:'#F59E0B', backgroundImage: `url(${local.logoURL})`, backgroundSize: 'cover', backgroundPosition: 'center'}}>
-                    {!local.logoURL && '🏬'}
-                  </div>
-                  <div className="pc-info">
-                    <div className="pc-name">{local.nombre || 'Local VIP'}</div>
-                    <div className="pc-detail">{local.categoria || 'Servicios VIP'} · Pro: {local.proNombre}</div>
-                  </div>
-                  <div className="pc-right">
-                    <button className="cc-btn remind" style={{background:'#F59E0B', color:'#fff', border:'none', padding:'6px 12px', fontSize:'11px'}} onClick={() => setConfirm({type:'approve_local', obj: local})}>
-                      ✅ Aprobar Local VIP
-                    </button>
-                  </div>
-                </div>
-                {local.fotosTrabajos && local.fotosTrabajos.length > 0 && (
-                  <div style={{marginTop:10}}>
-                    <span style={{fontSize:11, color:'var(--muted)', display:'block', marginBottom:4}}>Fotos de trabajos cargadas ({local.fotosTrabajos.length}):</span>
-                    <div style={{display:'flex', gap:6, overflowX:'auto', paddingBottom:4}}>
-                      {local.fotosTrabajos.map((foto, idx) => (
-                        <img key={idx} src={foto} style={{width:55, height:55, borderRadius:8, objectFit:'cover', border:'1px solid #ddd'}} alt="Trabajo"/>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
 
         {/* ── TAB: HISTORIAS (Moderación de Stories 24h) ── */}
         {tab === 'historias' && (
