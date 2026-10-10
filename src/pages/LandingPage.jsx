@@ -701,26 +701,46 @@ export default function LandingPage({ navigate, lang }) {
         </span>
       </button>
 
-      {/* BOTÓN COMPRAR UN PLAN */}
+      {/* BOTÓN COMPRAR UN PLAN ESTILO PREMIUM EXÓTICO */}
       <button
         onClick={() => setShowPlanModal(true)}
-        className="nav-action-btn"
+        className="nav-action-btn partner-btn-glow"
         style={{
-          background: 'linear-gradient(135deg, #10B981, #059669)',
-          color: 'white',
-          border: 'none',
+          background: '#0B0C10',
+          color: '#FFFFFF',
+          border: '1.5px solid #FF6B00',
           borderRadius: '50px',
-          padding: '8px 16px',
-          fontSize: '13px',
-          fontWeight: '800',
+          padding: '4px 6px 4px 14px',
           cursor: 'pointer',
-          boxShadow: '0 4px 10px rgba(16,185,129,0.3)',
-          whiteSpace: 'nowrap',
           display: 'inline-flex',
-          alignItems: 'center'
+          alignItems: 'center',
+          gap: '8px',
+          boxShadow: '0 0 16px rgba(255, 107, 0, 0.45)',
+          transition: 'all 0.2s ease-in-out',
+          whiteSpace: 'nowrap',
+          flexShrink: 0
         }}
+        title="Adquirir Plan Profesional Listo Patrón"
       >
-        <span>💳 COMPRAR UN PLAN</span>
+        <span style={{ fontWeight: '900', fontStyle: 'italic', fontSize: '15px', color: '#ffffff', letterSpacing: '-0.3px', fontFamily: "'Outfit', 'Fredoka One', sans-serif" }}>
+          Listo<span style={{ color: '#FF6B00' }}>Pro</span>
+        </span>
+        <span style={{
+          background: 'linear-gradient(135deg, #FF6B00 0%, #FF8533 100%)',
+          color: '#ffffff',
+          fontFamily: "'Outfit', sans-serif",
+          fontWeight: '900',
+          fontSize: '12px',
+          padding: '5px 14px',
+          borderRadius: '50px',
+          boxShadow: '0 2px 8px rgba(255,107,0,0.5)',
+          letterSpacing: '0.3px',
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '4px'
+        }}>
+          💳 Comprar Plan
+        </span>
       </button>
 
       {/* BOTÓN PEDIDOS LISTO PARTNER EXACTO A LA IMAGEN */}
