@@ -53,10 +53,11 @@
 /* Documento Factura */
 .recibo-paper {
   background: #ffffff;
-  border-radius: 20px;
+  border-radius: 24px;
   padding: 28px;
-  border: 1px solid #E2E8F0;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  border: 2px solid #FFEDD5;
+  border-top: 6px solid #F26000;
+  box-shadow: 0 14px 40px rgba(242, 96, 0, 0.08);
   position: relative;
 }
 
@@ -74,19 +75,18 @@
 }
 
 .recibo-logo {
-  width: 58px;
-  height: 58px;
+  width: 64px;
+  height: 64px;
   object-fit: contain;
-  border-radius: 14px;
-  background: #F26000;
-  padding: 4px;
+  border-radius: 50%;
+  filter: drop-shadow(0 4px 12px rgba(242, 96, 0, 0.35));
 }
 
 .recibo-company-name {
   margin: 0;
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 900;
-  color: #0F172A;
+  color: #F26000;
   letter-spacing: -0.3px;
 }
 
@@ -112,21 +112,22 @@
 
 .badge-tag {
   display: inline-block;
-  background: #FFF7ED;
-  color: #C2410C;
-  border: 1px solid #FFEDD5;
+  background: linear-gradient(135deg, #F26000 0%, #FF7A1A 100%);
+  color: #FFFFFF;
+  border: none;
   font-size: 10px;
   font-weight: 900;
-  padding: 3px 8px;
+  padding: 4px 10px;
   border-radius: 8px;
   letter-spacing: 0.5px;
+  box-shadow: 0 3px 8px rgba(242, 96, 0, 0.3);
 }
 
 .invoice-num {
   margin: 4px 0 0;
-  font-size: 18px;
+  font-size: 19px;
   font-weight: 900;
-  color: #0F172A;
+  color: #C24D00;
 }
 
 .invoice-date {
@@ -136,10 +137,10 @@
 }
 
 .recibo-divider-line {
-  height: 2px;
-  background: linear-gradient(90deg, #F26000, #FF8533, #CBD5E1);
+  height: 3px;
+  background: linear-gradient(90deg, #F26000 0%, #FF8533 50%, #FFEDD5 100%);
   margin: 20px 0;
-  border-radius: 2px;
+  border-radius: 3px;
 }
 
 .recibo-info-grid {
@@ -150,18 +151,21 @@
 }
 
 .recibo-info-block {
-  background: #F8FAFC;
-  border: 1px solid #E2E8F0;
-  border-radius: 14px;
-  padding: 14px;
+  background: #FFF9F5;
+  border: 1.5px solid #FFD4B8;
+  border-radius: 16px;
+  padding: 14px 16px;
+  box-shadow: 0 2px 8px rgba(242, 96, 0, 0.04);
 }
 
 .info-block-title {
   margin: 0 0 8px;
   font-size: 11px;
   font-weight: 900;
-  color: #F26000;
+  color: #C24D00;
   letter-spacing: 0.5px;
+  border-bottom: 1px dashed #FFD4B8;
+  padding-bottom: 4px;
 }
 
 .info-line {
@@ -179,7 +183,8 @@
   margin-bottom: 20px;
   border-radius: 14px;
   overflow: hidden;
-  border: 1px solid #E2E8F0;
+  border: 1.5px solid #FFD4B8;
+  box-shadow: 0 2px 10px rgba(242, 96, 0, 0.04);
 }
 
 .recibo-table {
@@ -189,11 +194,11 @@
 }
 
 .recibo-table th {
-  background: #0F172A;
+  background: linear-gradient(135deg, #F26000 0%, #D94E00 100%);
   color: #ffffff;
-  padding: 12px 14px;
+  padding: 13px 14px;
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 900;
   text-align: left;
   letter-spacing: 0.5px;
 }
@@ -201,7 +206,7 @@
 .recibo-table td {
   padding: 14px;
   color: #1E293B;
-  border-top: 1px solid #E2E8F0;
+  border-top: 1px solid #FFE4D1;
 }
 
 /* Totales */
@@ -218,9 +223,9 @@
   align-items: center;
   gap: 10px;
   background: #F0FDF4;
-  border: 1px solid #BBF7D0;
-  border-radius: 14px;
-  padding: 10px 14px;
+  border: 1.5px solid #86EFAC;
+  border-radius: 16px;
+  padding: 12px 16px;
   max-width: 320px;
 }
 
@@ -241,11 +246,12 @@
 }
 
 .recibo-total-box {
-  background: #FFF7ED;
-  border: 2px solid #F26000;
-  border-radius: 16px;
-  padding: 12px 18px;
+  background: linear-gradient(135deg, #FFF7ED 0%, #FFEDD5 100%);
+  border: 2.5px solid #F26000;
+  border-radius: 18px;
+  padding: 14px 22px;
   text-align: right;
+  box-shadow: 0 6px 18px rgba(242, 96, 0, 0.18);
 }
 
 .total-label {
@@ -253,11 +259,12 @@
   font-size: 11px;
   font-weight: 900;
   color: #C2410C;
+  letter-spacing: 0.5px;
 }
 
 .total-amount {
   display: block;
-  font-size: 22px;
+  font-size: 24px;
   font-weight: 900;
   color: #F26000;
 }
@@ -275,7 +282,15 @@
 
 .footer-contact {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
+  align-items: center;
+  font-size: 13px;
+  font-weight: 800;
+  color: #C24D00;
+  background: #FFF9F5;
+  padding: 10px 16px;
+  border-radius: 12px;
+  border: 1px solid #FFD4B8;
 }
 
 .footer-contact p {
@@ -289,7 +304,7 @@
 .social-label {
   display: block;
   font-weight: 800;
-  color: #334155;
+  color: #C24D00;
   margin-bottom: 6px;
 }
 
@@ -301,19 +316,21 @@
 }
 
 .social-icons-row a {
-  color: #475569;
+  color: #C24D00;
   text-decoration: none;
   font-weight: 700;
   font-size: 12px;
-  background: #F1F5F9;
-  padding: 4px 10px;
+  background: #FFF9F5;
+  border: 1px solid #FFD4B8;
+  padding: 5px 12px;
   border-radius: 10px;
   transition: all 0.2s;
 }
 
 .social-icons-row a:hover {
-  color: #F26000;
-  background: #FFF7ED;
+  color: #ffffff;
+  background: #F26000;
+  border-color: #F26000;
 }
 
 /* Actions bar */
@@ -351,12 +368,13 @@
 }
 
 .recibo-btn.print {
-  background: #1E293B;
+  background: linear-gradient(135deg, #F26000 0%, #D94E00 100%);
   color: #ffffff;
+  box-shadow: 0 6px 16px rgba(242, 96, 0, 0.35);
 }
 
 .recibo-btn.print:hover {
-  background: #0F172A;
+  background: linear-gradient(135deg, #D94E00 0%, #B83E00 100%);
 }
 
 .recibo-btn.whatsapp {

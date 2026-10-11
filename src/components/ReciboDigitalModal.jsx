@@ -1,5 +1,5 @@
 import { useRef } from 'react'
-import logoListo from '../assets/logo-mamey.png'
+import logoListo from '../assets/logo-app-oficial.png'
 import './ReciboDigitalModal.css'
 
 export default function ReciboDigitalModal({ lang = 'es', onClose, orderData, order }) {
@@ -153,7 +153,6 @@ export default function ReciboDigitalModal({ lang = 'es', onClose, orderData, or
           <div className="recibo-footer-official">
             <div className="footer-contact">
               <p>📞 <strong>Soporte Oficial Listo:</strong> +1 (809) 909-0455</p>
-              <p>📧 <strong>Email:</strong> listopatron.app@gmail.com</p>
             </div>
 
             <div className="footer-socials">
