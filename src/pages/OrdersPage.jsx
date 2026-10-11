@@ -747,19 +747,31 @@ export default function OrdersPage({ lang = 'es', navigate, userData, userRole }
   const allOrders     = [...orders, ...history]
   const pendingReview = allOrders.filter(o => o.status==='done' && !o.rated)
 
-  // Marcar trabajo como terminado + notificar al cliente
+  // Marcar trabajo como terminado + generar factura oficial y notificar al cliente
   const handleWorkDone = async (o) => {
     try {
-      await updateDoc(doc(db, 'orders', o.id), { status: 'done' })
+      const invoiceNo = `LP-${o.id ? o.id.substring(0, 8).toUpperCase() : Math.floor(100000 + Math.random() * 900000)}`
+      const nowStr = new Date().toISOString()
+
+      await updateDoc(doc(db, 'orders', o.id), { 
+        status: 'done',
+        invoiceNo: invoiceNo,
+        invoiceDate: nowStr,
+        facturaGenerada: true
+      })
+
       if (o.clientId) {
         await addDoc(collection(db, 'notificaciones'), {
           userId:    o.clientId,
           orderId:   o.id,
           type:      'job_done',
-          title:     lang==='es' ? '🎉 ¡Trabajo Terminado!' : '🎉 Work Done!',
-          text:      lang==='es' ? `${o.proName||'El profesional'} ha terminado el trabajo. ¡Procede con el pago!` : `${o.proName||'The professional'} finished the job. Proceed with payment!`,
+          title:     lang==='es' ? '🎉 ¡Listo Patrón! Factura de Servicio' : '🎉 Done Boss! Service Invoice',
+          text:      lang==='es' 
+            ? `${o.proName||'El profesional'} ha terminado el trabajo. Tu factura oficial Nº ${invoiceNo} ha sido generada por un monto de ${o.price||'RD$0'}. ¡Toca aquí para ver tu factura y coordinar el pago!` 
+            : `${o.proName||'The professional'} finished the job. Your official invoice Nº ${invoiceNo} has been generated.`,
           read:      false,
-          icon:      '✅',
+          icon:      '🧾',
+          invoiceNo: invoiceNo,
           createdAt: serverTimestamp(),
         })
       }
@@ -826,10 +838,10 @@ export default function OrdersPage({ lang = 'es', navigate, userData, userRole }
       {o.status==='done' && (
         <button 
           className="oc-btn track" 
-          style={{ background:'#F8FAFC', color:'#334155', border:'1px solid #CBD5E1', marginTop:4, width:'100%', fontWeight:'bold' }}
+          style={{ background:'#FFF7ED', color:'#C2410C', border:'1.5px solid #FDBA74', marginTop:4, width:'100%', fontWeight:'bold', display:'flex', alignItems:'center', justifyContent:'center', gap:6 }}
           onClick={()=>setReciboModalOrder(o)}
         >
-          🧾 {lang==='es'?'Ver Comprobante / Recibo':'View Digital Receipt'}
+          🧾 {lang==='es'?'Ver Factura Oficial: Listo Patrón':'View Official Invoice: Listo Patrón'}
         </button>
       )}
       {o.status==='done' && !o.rated && userRole!=='pro' && (o.paymentStatus==='approved'||o.paymentStatus==='pending_cash') && <button className="oc-btn review" onClick={()=>setReviewOrder(o)}>{T.review}</button>}
@@ -918,6 +930,15 @@ export default function OrdersPage({ lang = 'es', navigate, userData, userRole }
               {o.status==='done' && userRole !== 'pro' && (
                 <button className="oc-btn track" style={{ background:'#FFF7ED', color:'#C2410C', border:'1px solid #FFEDD5', marginTop:4, fontWeight:'bold' }} onClick={()=>setShowMantenimientoModal(true)}>
                   📅 {lang==='es'?'Agenda Preventiva':'Preventive Schedule'}
+                </button>
+              )}
+              {o.status==='done' && (
+                <button 
+                  className="oc-btn track" 
+                  style={{ background:'#FFF7ED', color:'#C2410C', border:'1.5px solid #FDBA74', marginTop:4, width:'100%', fontWeight:'bold', display:'flex', alignItems:'center', justifyContent:'center', gap:6 }}
+                  onClick={()=>setReciboModalOrder(o)}
+                >
+                  🧾 {lang==='es'?'Ver Factura Oficial: Listo Patrón':'View Official Invoice: Listo Patrón'}
                 </button>
               )}
               {o.status!=='cancelled' && userRole !== 'pro' && <button className="oc-btn rebook" onClick={()=>navigate('search')}>{T.rebook}</button>}

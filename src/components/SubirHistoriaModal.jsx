@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 import { db, auth } from '../firebase'
 import { collection, addDoc } from 'firebase/firestore'
 import './Historias.css'
+import PhotoNoticeModal from './PhotoNoticeModal'
 
 const QUICK_TAGS = ['#Plomería', '#Electricidad', '#Pintura', '#Mecánica', '#Catering', '#Reparación', '#Limpieza', '#TrabajoListo']
 
@@ -24,6 +25,8 @@ const STICKER_PRESETS = [
 export default function SubirHistoriaModal({ isOpen, onClose, userData, onStoryUploaded }) {
   const [mediaType, setMediaType] = useState('image') // 'image' | 'video'
   const [mediaPreview, setMediaPreview] = useState(null)
+  const [showPhotoNotice, setShowPhotoNotice] = useState(false)
+  const storyFileInputRef = useRef(null)
   const [videoDuration, setVideoDuration] = useState(null)
   const [videoRawDuration, setVideoRawDuration] = useState(0)
   const [trimStart, setTrimStart] = useState(0)
@@ -1144,11 +1147,16 @@ export default function SubirHistoriaModal({ isOpen, onClose, userData, onStoryU
 
         {/* ÁREA DE VISTA PREVIA INTERACTIVA (CON DRAG DE IMAGEN Y CANVAS DE DIBUJO) */}
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', margin: '4px 0', gap: '10px' }}>
-          <label
+          <div
             className="subir-historia-preview-area"
             style={{
               touchAction: (activeTool === 'draw' || activeTool === 'crop') ? 'none' : 'auto',
               cursor: activeTool === 'crop' ? 'grab' : (activeTool === 'draw' ? 'crosshair' : 'pointer')
+            }}
+            onClick={() => {
+              if (!mediaPreview) {
+                setShowPhotoNotice(true)
+              }
             }}
             onMouseDown={handleStartPan}
             onMouseMove={handleMovePan}
@@ -1159,12 +1167,38 @@ export default function SubirHistoriaModal({ isOpen, onClose, userData, onStoryU
             onTouchEnd={handleEndPan}
           >
             <input
+              ref={storyFileInputRef}
               type="file"
               accept="image/*,video/*"
               style={{ display: 'none' }}
               onChange={handleFileChange}
               disabled={activeTool === 'draw' || activeTool === 'crop'}
             />
+            {mediaPreview && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setShowPhotoNotice(true)
+                }}
+                style={{
+                  position: 'absolute',
+                  top: 10,
+                  left: 10,
+                  zIndex: 25,
+                  background: 'rgba(0,0,0,0.65)',
+                  color: '#fff',
+                  border: '1px solid rgba(255,255,255,0.3)',
+                  borderRadius: '10px',
+                  padding: '5px 10px',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  cursor: 'pointer'
+                }}
+              >
+                🔄 Cambiar
+              </button>
+            )}
             {mediaPreview ? (
               mediaType === 'video' ? (
                 <div style={{ position: 'relative', width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#000' }}>
@@ -1226,7 +1260,7 @@ export default function SubirHistoriaModal({ isOpen, onClose, userData, onStoryU
                 </span>
               </div>
             )}
-          </label>
+          </div>
         </div>
 
         {/* CAMPO DE DESCRIPCIÓN Y PILLS DE TAGS */}
@@ -1369,6 +1403,13 @@ export default function SubirHistoriaModal({ isOpen, onClose, userData, onStoryU
             {isUploading ? 'Publicando...' : '🚀 Publicar Historia'}
           </button>
         </div>
+
+        <PhotoNoticeModal
+          isOpen={showPhotoNotice}
+          onClose={() => setShowPhotoNotice(false)}
+          onContinue={() => storyFileInputRef.current?.click()}
+          lang="es"
+        />
       </div>
     </div>,
     document.body

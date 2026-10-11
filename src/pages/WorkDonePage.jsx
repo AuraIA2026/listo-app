@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { collection, query, where, getDocs, updateDoc, doc, getDoc, addDoc, serverTimestamp, onSnapshot } from 'firebase/firestore'
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage'
 import { db, storage } from '../firebase'
 import listoLogo from '../assets/logo-blanco.png'
 import ReciboDigitalModal from '../components/ReciboDigitalModal'
+import PhotoNoticeModal from '../components/PhotoNoticeModal'
 
 const compressImage = (file) => new Promise((resolve, reject) => {
   const reader = new FileReader()
@@ -65,6 +66,27 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
   const [quejaTexto, setQuejaTexto] = useState('')
   const [showReciboModal, setShowReciboModal] = useState(false)
   const [pendingRequests, setPendingRequests] = useState([])
+  const [showPhotoNotice, setShowPhotoNotice] = useState(false)
+  const [photoNoticeTarget, setPhotoNoticeTarget] = useState(null)
+  const evidenceFileRef = useRef(null)
+
+  const handleRequestPhotoNotice = (target) => {
+    setPhotoNoticeTarget(target)
+    setShowPhotoNotice(true)
+  }
+
+  const handlePhotoNoticeContinue = () => {
+    setShowPhotoNotice(false)
+    if (photoNoticeTarget === 'avatar') {
+      document.getElementById('pro-direct-avatar')?.click()
+    } else if (photoNoticeTarget === 'cover') {
+      document.getElementById('pro-direct-cover')?.click()
+    } else if (photoNoticeTarget === 'work') {
+      document.getElementById('pro-direct-work')?.click()
+    } else if (photoNoticeTarget === 'evidence') {
+      evidenceFileRef.current?.click()
+    }
+  }
 
   useEffect(() => {
     if (!isPro || !finalUserData?.uid) return
@@ -102,14 +124,14 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
         userName: finalUserData.name || 'Profesional',
         requestedChanges: { photoURL: base64 },
         type: 'new_edit_request_photo',
-        title: '📷 SOLICITUD DE CAMBIO DE FOTO DE PERFIL',
+        title: 'ðŸ“· SOLICITUD DE CAMBIO DE FOTO DE PERFIL',
         text: `El profesional ${finalUserData.name || 'Un profesional'} ha solicitado actualizar su foto de perfil.`,
         read: false,
         createdAt: serverTimestamp(),
         date: new Date().toISOString()
       })
       alert(lang === 'es'
-        ? '¡Solicitud enviada! Tu nueva foto de perfil ha sido enviada a la Central de Mando para su autorización.'
+        ? 'Â¡Solicitud enviada! Tu nueva foto de perfil ha sido enviada a la Central de Mando para su autorizaciÃ³n.'
         : 'Request sent! Your new profile photo has been sent for approval.'
       )
     } catch (err) {
@@ -143,14 +165,14 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
         userName: finalUserData.name || 'Profesional',
         requestedChanges: { coverURL: base64 },
         type: 'new_edit_request_cover',
-        title: '🖼️ SOLICITUD DE CAMBIO DE PORTADA',
+        title: 'ðŸ–¼ï¸ SOLICITUD DE CAMBIO DE PORTADA',
         text: `El profesional ${finalUserData.name || 'Un profesional'} ha solicitado actualizar su foto de portada.`,
         read: false,
         createdAt: serverTimestamp(),
         date: new Date().toISOString()
       })
       alert(lang === 'es'
-        ? '¡Solicitud enviada! Tu nueva foto de portada ha sido enviada a la Central de Mando para su autorización.'
+        ? 'Â¡Solicitud enviada! Tu nueva foto de portada ha sido enviada a la Central de Mando para su autorizaciÃ³n.'
         : 'Request sent! Your new cover photo has been sent for approval.'
       )
     } catch (err) {
@@ -190,7 +212,7 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
         userName: finalUserData.name || 'Profesional',
         requestedChanges: { photos: updatedPhotos },
         type: 'new_edit_request_work',
-        title: '💼 SOLICITUD DE NUEVAS FOTOS DE TRABAJOS',
+        title: 'ðŸ’¼ SOLICITUD DE NUEVAS FOTOS DE TRABAJOS',
         text: `El profesional ${finalUserData.name || 'Un profesional'} ha solicitado agregar fotos de trabajos realizados.`,
         read: false,
         createdAt: serverTimestamp(),
@@ -198,7 +220,7 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
       })
 
       alert(lang === 'es'
-        ? '¡Solicitud enviada! Las fotos de tus trabajos realizados han sido enviadas a la Central de Mando para su autorización.'
+        ? 'Â¡Solicitud enviada! Las fotos de tus trabajos realizados han sido enviadas a la Central de Mando para su autorizaciÃ³n.'
         : 'Request sent! Your work photos have been sent for approval.'
       )
     } catch (err) {
@@ -244,7 +266,7 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
           }
         }
         
-        // 2. Comportamiento por defecto: buscar el último pedido
+        // 2. Comportamiento por defecto: buscar el Ãºltimo pedido
         let q;
         if (isPro) {
           q = query(collection(db, 'orders'), where('proId', '==', finalUserData.uid))
@@ -324,16 +346,16 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
     }
 
     if (formData.calificacion <= 0) {
-      alert("Por favor selecciona una calificación de estrellas para finalizar.")
+      alert("Por favor selecciona una calificaciÃ³n de estrellas para finalizar.")
       return
     }
 
     setIsUploading(true)
     try {
-      // Auto-completar reseñas vacías para que no sean invisibles en el Home
+      // Auto-completar reseÃ±as vacÃ­as para que no sean invisibles en el Home
       let finalComment = formData.experiencia?.trim() || ''
       if (!finalComment && formData.calificacion >= 4) {
-        finalComment = "¡Excelente servicio! Muy recomendado."
+        finalComment = "Â¡Excelente servicio! Muy recomendado."
       } else if (!finalComment && formData.calificacion > 0) {
         finalComment = "Servicio completado."
       }
@@ -357,17 +379,17 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
       if (latestOrder.proId) {
         let notifText = lang==='es' ? `Recibiste ${formData.calificacion} estrellas por Trabajo Listo.` : `You received a ${formData.calificacion} star rating.`
         if (tipVal > 0) {
-          notifText += lang==='es' ? ` 🎁 ¡Además recibiste RD$ ${tipVal} de propina!` : ` 🎁 Plus you received a RD$ ${tipVal} tip!`
+          notifText += lang==='es' ? ` ðŸŽ Â¡AdemÃ¡s recibiste RD$ ${tipVal} de propina!` : ` ðŸŽ Plus you received a RD$ ${tipVal} tip!`
         }
 
         await addDoc(collection(db, 'notificaciones'), {
           userId:    latestOrder.proId,
           orderId:   latestOrder.id,
           type:      'new_review',
-          title:     tipVal > 0 ? (lang==='es' ? '⭐ ¡Reseña + 🎁 Propina Recibida!' : '⭐ Review + 🎁 Tip Received!') : (lang==='es' ? '⭐ ¡Nueva Reseña!' : '⭐ New Review!'),
+          title:     tipVal > 0 ? (lang==='es' ? 'â­ Â¡ReseÃ±a + ðŸŽ Propina Recibida!' : 'â­ Review + ðŸŽ Tip Received!') : (lang==='es' ? 'â­ Â¡Nueva ReseÃ±a!' : 'â­ New Review!'),
           text:      notifText,
           read:      false,
-          icon:      tipVal > 0 ? '🎁' : '⭐',
+          icon:      tipVal > 0 ? 'ðŸŽ' : 'â­',
           createdAt: serverTimestamp()
         })
 
@@ -391,10 +413,10 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
               await addDoc(collection(db, 'notificaciones'), {
                 userId: latestOrder.proId,
                 type: 'reward',
-                title: '🎰 ¡CONTRATO GRATIS OTORGADO POR 10 TRABAJOS!',
-                text: `¡Felicidades! Has completado ${newCompleted} trabajos. Te acreditamos +1 contrato gratis automáticamente a tu saldo.`,
+                title: 'ðŸŽ° Â¡CONTRATO GRATIS OTORGADO POR 10 TRABAJOS!',
+                text: `Â¡Felicidades! Has completado ${newCompleted} trabajos. Te acreditamos +1 contrato gratis automÃ¡ticamente a tu saldo.`,
                 read: false,
-                icon: '🎰',
+                icon: 'ðŸŽ°',
                 createdAt: serverTimestamp()
               });
             } else {
@@ -406,10 +428,10 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
                 await addDoc(collection(db, 'notificaciones'), {
                   userId: latestOrder.proId,
                   type: 'reward',
-                  title: '🎰 ¡1 CONTRATO GRATIS OTORGADO!',
-                  text: '¡Felicidades! Tu barra de la Ruleta Pedidos Listo se llenó al 100%. Te acreditamos +1 contrato gratis automáticamente a tu saldo.',
+                  title: 'ðŸŽ° Â¡1 CONTRATO GRATIS OTORGADO!',
+                  text: 'Â¡Felicidades! Tu barra de la Ruleta Pedidos Listo se llenÃ³ al 100%. Te acreditamos +1 contrato gratis automÃ¡ticamente a tu saldo.',
                   read: false,
-                  icon: '🎰',
+                  icon: 'ðŸŽ°',
                   createdAt: serverTimestamp()
                 });
               } else {
@@ -417,7 +439,7 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
               }
             }
 
-            // REGLA ESTRICTA: El profesional SOLO gana 1 giro en la Tómbola si recibe 4 o 5 estrellas
+            // REGLA ESTRICTA: El profesional SOLO gana 1 giro en la TÃ³mbola si recibe 4 o 5 estrellas
             if (formData.calificacion >= 4) {
               proUpdate.has5StarContract = true;
               proUpdate.completed5StarCount = (proData.completed5StarCount || 0) + 1;
@@ -425,10 +447,10 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
               await addDoc(collection(db, 'notificaciones'), {
                 userId: latestOrder.proId,
                 type: 'reward',
-                title: '🎰 ¡RULETA DESBLOQUEADA!',
-                text: `¡Felicidades por tu excelente trabajo! Recibiste ${formData.calificacion} estrellas ⭐ y desbloqueaste 1 giro en la Ruleta Pedidos Listo.`,
+                title: 'ðŸŽ° Â¡RULETA DESBLOQUEADA!',
+                text: `Â¡Felicidades por tu excelente trabajo! Recibiste ${formData.calificacion} estrellas â­ y desbloqueaste 1 giro en la Ruleta Pedidos Listo.`,
                 read: false,
-                icon: '🎰',
+                icon: 'ðŸŽ°',
                 createdAt: serverTimestamp()
               });
             }
@@ -457,7 +479,7 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
       setSubmitted(true)
     } catch (err) {
       console.error("Error submitting review:", err)
-      alert("Error al enviar evaluación. Revisa tu conexión.")
+      alert("Error al enviar evaluaciÃ³n. Revisa tu conexiÃ³n.")
     } finally {
       setIsUploading(false)
     }
@@ -470,7 +492,7 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
       return
     }
     if (!latestOrder) {
-      alert("No se encontró un pedido activo para subir evidencias.")
+      alert("No se encontrÃ³ un pedido activo para subir evidencias.")
       return
     }
     
@@ -497,7 +519,7 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
         evidenceText: formData.experiencia
       })
 
-      // Publicar automáticamente las 3 historias de 4 segundos del trabajo finalizado en Firestore
+      // Publicar automÃ¡ticamente las 3 historias de 4 segundos del trabajo finalizado en Firestore
       for (let i = 0; i < Math.min(downloadedURLs.length, 3); i++) {
         const photoUrl = downloadedURLs[i];
         try {
@@ -509,7 +531,7 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
             proRating: finalUserData?.rating || 5.0,
             proPlan: finalUserData?.currentPlan || finalUserData?.plan || 'Gratuito',
             imageUrl: photoUrl,
-            caption: `📸 Trabajo finalizado de ${latestOrder.category || 'servicio'}: ${formData.experiencia || '¡Trabajo completado con excelencia!'}`,
+            caption: `ðŸ“¸ Trabajo finalizado de ${latestOrder.category || 'servicio'}: ${formData.experiencia || 'Â¡Trabajo completado con excelencia!'}`,
             status: 'approved',
             moderated: true,
             createdAt: new Date().toISOString(),
@@ -539,10 +561,10 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
             await addDoc(collection(db, 'notificaciones'), {
               userId: latestOrder.proId,
               type: 'reward',
-              title: '📸 ¡HISTORIAS DE TRABAJO FINALIZADO PUBLICADAS!',
-              text: `Se han publicado automáticamente ${Math.min(downloadedURLs.length, 3)} historias de 4 segundos de tu trabajo completado en el carrusel de Historias en vivo.`,
+              title: 'ðŸ“¸ Â¡HISTORIAS DE TRABAJO FINALIZADO PUBLICADAS!',
+              text: `Se han publicado automÃ¡ticamente ${Math.min(downloadedURLs.length, 3)} historias de 4 segundos de tu trabajo completado en el carrusel de Historias en vivo.`,
               read: false,
-              icon: '📸',
+              icon: 'ðŸ“¸',
               createdAt: serverTimestamp()
             });
             
@@ -552,10 +574,10 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
               await addDoc(collection(db, 'notificaciones'), {
                 userId: latestOrder.proId,
                 type: 'reward',
-                title: '🎰 ¡1 CONTRATO GRATIS OTORGADO!',
-                text: `¡Felicidades! Has completado ${newCompleted} evidencias y la Ruleta Pedidos Listo alcanzó el 100%. Te acreditamos +1 contrato gratis automáticamente a tu saldo.`,
+                title: 'ðŸŽ° Â¡1 CONTRATO GRATIS OTORGADO!',
+                text: `Â¡Felicidades! Has completado ${newCompleted} evidencias y la Ruleta Pedidos Listo alcanzÃ³ el 100%. Te acreditamos +1 contrato gratis automÃ¡ticamente a tu saldo.`,
                 read: false,
-                icon: '🎰',
+                icon: 'ðŸŽ°',
                 createdAt: serverTimestamp()
               });
             } else {
@@ -567,10 +589,10 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
                 await addDoc(collection(db, 'notificaciones'), {
                   userId: latestOrder.proId,
                   type: 'reward',
-                  title: '🎰 ¡1 CONTRATO GRATIS OTORGADO!',
-                  text: '¡Felicidades! Tu barra de la Ruleta Pedidos Listo se llenó al 100%. Te acreditamos +1 contrato gratis automáticamente a tu saldo.',
+                  title: 'ðŸŽ° Â¡1 CONTRATO GRATIS OTORGADO!',
+                  text: 'Â¡Felicidades! Tu barra de la Ruleta Pedidos Listo se llenÃ³ al 100%. Te acreditamos +1 contrato gratis automÃ¡ticamente a tu saldo.',
                   read: false,
-                  icon: '🎰',
+                  icon: 'ðŸŽ°',
                   createdAt: serverTimestamp()
                 });
               } else {
@@ -592,7 +614,7 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
       setSubmitted(true)
     } catch (err) {
       console.error("Upload error:", err)
-      alert("Error subiendo evidencias. Revisa tu conexión de red o Storage rules.")
+      alert("Error subiendo evidencias. Revisa tu conexiÃ³n de red o Storage rules.")
     } finally {
       setIsUploading(false)
     }
@@ -612,15 +634,15 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
     return (
       <div style={s.page}>
         <div style={s.successBox}>
-          <div style={s.successIcon}>✓</div>
-          <h2 style={s.successTitle}>¡Trabajo registrado!</h2>
-          <p style={s.successSub}>Tu evaluación fue enviada correctamente.</p>
+          <div style={s.successIcon}>âœ“</div>
+          <h2 style={s.successTitle}>Â¡Trabajo registrado!</h2>
+          <p style={s.successSub}>Tu evaluaciÃ³n fue enviada correctamente.</p>
           
           <button 
             style={{ ...s.btnPrimary, background: 'linear-gradient(135deg, #10B981, #059669)', marginBottom: '10px' }} 
             onClick={() => setShowReciboModal(true)}
           >
-            🧾 {lang === 'es' ? 'Generar Comprobante Listo' : 'Generate Listo Receipt'}
+            ðŸ§¾ {lang === 'es' ? 'Generar Comprobante Listo' : 'Generate Listo Receipt'}
           </button>
 
           {!isPro && hasMoreUnrated ? (
@@ -658,8 +680,8 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
           </div>
         </div>
         <div style={{ ...s.successBox, minHeight: 'calc(100vh - 164px)' }}>
-          <div style={{ ...s.successIcon, background: 'linear-gradient(135deg, #10B981, #059669)', boxShadow: '0 8px 32px rgba(16,185,129,0.35)' }}>✓</div>
-          <h2 style={s.successTitle}>¡Todo al día!</h2>
+          <div style={{ ...s.successIcon, background: 'linear-gradient(135deg, #10B981, #059669)', boxShadow: '0 8px 32px rgba(16,185,129,0.35)' }}>âœ“</div>
+          <h2 style={s.successTitle}>Â¡Todo al dÃ­a!</h2>
           <p style={s.successSub}>No tienes trabajos recientes pendientes por evaluar.</p>
           <button style={{ ...s.btnPrimary, background: '#1A1A2E' }} onClick={() => navigate('home')}>
             Volver al inicio
@@ -669,7 +691,7 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
     )
   }
 
-  // Si el usuario es PROFESIONAL, cortamos aquí y devolvemos SU pantalla visual única.
+  // Si el usuario es PROFESIONAL, cortamos aquÃ­ y devolvemos SU pantalla visual Ãºnica.
   if (isPro) {
     return (
       <div style={s.page}>
@@ -679,26 +701,26 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
           </div>
           <div>
             <h1 style={s.headerTitle}>Trabajo Listo</h1>
-            <p style={s.headerSub}>Sube evidencia y revisa tu calificación</p>
+            <p style={s.headerSub}>Sube evidencia y revisa tu calificaciÃ³n</p>
           </div>
         </div>
 
         <div style={s.form}>
-          {/* Card de Gestión de Fotos del Profesional (Perfil, Portada, Trabajos Realizados) */}
+          {/* Card de GestiÃ³n de Fotos del Profesional (Perfil, Portada, Trabajos Realizados) */}
           <div style={{ ...s.card, background: 'linear-gradient(135deg, #1A1A2E, #252542)', color: 'white', border: '1px solid rgba(242,96,0,0.4)', boxShadow: '0 8px 24px rgba(0,0,0,0.3)' }}>
             <p style={{ ...s.sectionLabel, color: '#FF7A1A', fontSize: '15px', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-              <span>📸</span> {lang === 'es' ? 'Gestor de Fotos del Profesional' : 'Pro Photo Manager'}
+              <span>ðŸ“¸</span> {lang === 'es' ? 'Gestor de Fotos del Profesional' : 'Pro Photo Manager'}
             </p>
             <p style={{ fontSize: '12px', color: '#CCC', margin: '0 0 14px 0', lineHeight: '1.4' }}>
               {lang === 'es' 
-                ? 'Actualiza tu perfil público. Cambia tu foto de perfil, foto de portada o sube una foto por cada trabajo realizado a tu portafolio.'
+                ? 'Actualiza tu perfil pÃºblico. Cambia tu foto de perfil, foto de portada o sube una foto por cada trabajo realizado a tu portafolio.'
                 : 'Update your public profile. Change your profile photo, cover photo, or upload photos of your completed work.'}
             </p>
 
             {pendingRequests.length > 0 && (
               <div style={{ background: 'rgba(245, 158, 11, 0.15)', border: '1px solid #F59E0B', borderRadius: '10px', padding: '10px 12px', marginBottom: '14px', fontSize: '12px', color: '#FCD34D', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span>⏳</span>
-                <span>{lang === 'es' ? `Tienes ${pendingRequests.length} solicitud(es) de fotos en revisión por la Central de Mando.` : `${pendingRequests.length} photo request(s) under review by Central de Mando.`}</span>
+                <span>â³</span>
+                <span>{lang === 'es' ? `Tienes ${pendingRequests.length} solicitud(es) de fotos en revisiÃ³n por la Central de Mando.` : `${pendingRequests.length} photo request(s) under review by Central de Mando.`}</span>
               </div>
             )}
 
@@ -709,7 +731,7 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               <button 
                 type="button"
-                onClick={() => document.getElementById('pro-direct-avatar').click()}
+                onClick={() => handleRequestPhotoNotice('avatar')}
                 style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', background: 'linear-gradient(135deg, #F26000, #C24E00)', color: 'white', fontWeight: '800', fontSize: '13px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', boxShadow: '0 4px 12px rgba(242,96,0,0.4)' }}
               >
                 <span>📷</span> {lang === 'es' ? 'Cambiar Foto de Perfil' : 'Change Profile Photo'}
@@ -717,7 +739,7 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
 
               <button 
                 type="button"
-                onClick={() => document.getElementById('pro-direct-cover').click()}
+                onClick={() => handleRequestPhotoNotice('cover')}
                 style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', background: 'linear-gradient(135deg, #3B82F6, #1D4ED8)', color: 'white', fontWeight: '800', fontSize: '13px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', boxShadow: '0 4px 12px rgba(59,130,246,0.4)' }}
               >
                 <span>🖼️</span> {lang === 'es' ? 'Cambiar Foto de Portada' : 'Change Cover Photo'}
@@ -725,7 +747,7 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
 
               <button 
                 type="button"
-                onClick={() => document.getElementById('pro-direct-work').click()}
+                onClick={() => handleRequestPhotoNotice('work')}
                 style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', background: 'linear-gradient(135deg, #10B981, #047857)', color: 'white', fontWeight: '800', fontSize: '13px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', boxShadow: '0 4px 12px rgba(16,185,129,0.4)' }}
               >
                 <span>💼</span> {lang === 'es' ? 'Subir Foto de Trabajo Realizado (1 por trabajo)' : 'Upload Completed Work Photo (1 per job)'}
@@ -748,54 +770,54 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
           </div>
 
           <div style={s.card}>
-            <p style={s.sectionLabel}>⭐ Reseña del Cliente</p>
+            <p style={s.sectionLabel}>â­ ReseÃ±a del Cliente</p>
             <div style={s.stars}>
               {[1, 2, 3, 4, 5].map(star => (
-                 <span key={star} style={{ fontSize: '32px', color: (latestOrder?.ratingScore >= star ? '#F26000' : '#E0D0C0'), padding: '0 4px', stroke: (latestOrder?.ratingScore >= star ? '#F26000' : '#C0B0A0'), strokeWidth: 1 }}>★</span>
+                 <span key={star} style={{ fontSize: '32px', color: (latestOrder?.ratingScore >= star ? '#F26000' : '#E0D0C0'), padding: '0 4px', stroke: (latestOrder?.ratingScore >= star ? '#F26000' : '#C0B0A0'), strokeWidth: 1 }}>â˜…</span>
               ))}
             </div>
             <p style={{ textAlign: 'center', fontSize: '14px', color: '#666', marginTop: '12px', fontStyle: (latestOrder?.rated && latestOrder?.ratingComment) ? 'normal' : 'italic' }}>
               {latestOrder?.rated && latestOrder?.ratingComment 
-                ? `"${latestOrder.ratingComment}"\n— ${latestOrder.clientName || 'Cliente'}` 
-                : 'Aún no hay reseña del cliente para este trabajo. ¡Asegúrate de pedirle que te evalúe!'}
+                ? `"${latestOrder.ratingComment}"\nâ€” ${latestOrder.clientName || 'Cliente'}` 
+                : 'AÃºn no hay reseÃ±a del cliente para este trabajo. Â¡AsegÃºrate de pedirle que te evalÃºe!'}
             </p>
           </div>
 
           <div style={s.card}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-              <p style={{ ...s.sectionLabel, marginBottom: 0 }}>📷 Evidencia del trabajo finalizado</p>
-              <span style={{ fontSize: '12px', fontWeight: '600', color: '#666' }}>Máximo 3 fotos</span>
+              <p style={{ ...s.sectionLabel, marginBottom: 0 }}>ðŸ“· Evidencia del trabajo finalizado</p>
+              <span style={{ fontSize: '12px', fontWeight: '600', color: '#666' }}>MÃ¡ximo 3 fotos</span>
             </div>
             
             <div style={s.photoRow}>
               {fotos.map((foto, idx) => (
                 <div key={idx} style={s.photoThumb}>
                   <img src={foto.url} alt={`foto-${idx}`} style={s.photoImg} />
-                  <button type="button" onClick={() => removePhoto(idx)} style={s.photoRemove}>✕</button>
+                  <button type="button" onClick={() => removePhoto(idx)} style={s.photoRemove}>âœ•</button>
                 </div>
               ))}
               
               {fotos.length < 3 && (
-                <label style={s.photoAdd}>
-                  <input type="file" accept="image/*" multiple onChange={handleFotos} style={{ display: 'none' }} />
-                    <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-                      <path d="M14 6v16M6 14h16" stroke="#F26000" strokeWidth="2.5" strokeLinecap="round"/>
-                    </svg>
-                    <span style={{ fontSize: '12px', color: '#F26000', fontWeight: '600', marginTop: '4px' }}>
-                      {fotos.length === 0 ? 'Agregar foto' : 'Otra foto'}
-                    </span>
-                </label>
+                <div style={s.photoAdd} onClick={() => handleRequestPhotoNotice('evidence')}>
+                  <input ref={evidenceFileRef} type="file" accept="image/*" multiple onChange={handleFotos} style={{ display: 'none' }} />
+                  <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+                    <path d="M14 6v16M6 14h16" stroke="#F26000" strokeWidth="2.5" strokeLinecap="round"/>
+                  </svg>
+                  <span style={{ fontSize: '12px', color: '#F26000', fontWeight: '600', marginTop: '4px' }}>
+                    {fotos.length === 0 ? 'Agregar foto' : 'Otra foto'}
+                  </span>
+                </div>
               )}
             </div>
           </div>
 
           <div style={s.card}>
-            <p style={s.sectionLabel}>📝 Detalles del servicio</p>
+            <p style={s.sectionLabel}>ðŸ“ Detalles del servicio</p>
             <textarea
               name="experiencia"
               value={formData.experiencia}
               onChange={handleChange}
-              placeholder="Escribe brevemente los detalles técnicos del trabajo que realizaste..."
+              placeholder="Escribe brevemente los detalles tÃ©cnicos del trabajo que realizaste..."
               rows={4}
               style={{ ...s.input, resize: 'vertical', minHeight: '80px', marginTop: '4px' }}
             />
@@ -809,12 +831,19 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
             {isUploading ? 'Subiendo fotos a la nube...' : (submitted ? 'Evidencias Guardadas ✓' : 'Subir Fotos y Terminar ✓')}
           </button>
           <div style={{ height: '100px' }} />
+
+          <PhotoNoticeModal
+            isOpen={showPhotoNotice}
+            onClose={() => setShowPhotoNotice(false)}
+            onContinue={handlePhotoNoticeContinue}
+            lang={lang}
+          />
         </div>
       </div>
     )
   }
 
-  // ─── FLUJO CLIENTE (por defecto) ───
+  // â”€â”€â”€ FLUJO CLIENTE (por defecto) â”€â”€â”€
   return (
     <div style={s.page}>
       {/* Header */}
@@ -854,12 +883,12 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
               />
             )}
           </div>
-          {proName && <span style={s.proBadge}>✓</span>}
+          {proName && <span style={s.proBadge}>âœ“</span>}
         </div>
 
         {/* Fecha */}
         <div style={s.card}>
-          <p style={s.sectionLabel}>📅 Fecha de finalización</p>
+          <p style={s.sectionLabel}>ðŸ“… Fecha de finalizaciÃ³n</p>
           <input
             type="date"
             name="fechaFinalizacion"
@@ -873,14 +902,14 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
         {/* Si NO ES PRO, mostramos el formulario del CLIENTE */}
         {!isPro && (
           <>
-            {/* Preguntas rápidas */}
+            {/* Preguntas rÃ¡pidas */}
             <div style={s.card}>
-              <p style={s.sectionLabel}>✅ Evaluación del servicio</p>
+              <p style={s.sectionLabel}>âœ… EvaluaciÃ³n del servicio</p>
               
               <div style={s.field}>
-                <label style={s.label}>¿El trabajo se completó según lo acordado?</label>
+                <label style={s.label}>Â¿El trabajo se completÃ³ segÃºn lo acordado?</label>
                 <div style={s.optRow}>
-                  {['Sí', 'Parcialmente', 'No'].map(opt => (
+                  {['SÃ­', 'Parcialmente', 'No'].map(opt => (
                     <button key={opt} type="button"
                       style={formData.completado === opt ? s.optActive : s.opt}
                       onClick={() => setFormData({...formData, completado: opt})}>
@@ -891,9 +920,9 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
               </div>
 
               <div style={s.field}>
-                <label style={s.label}>¿Fue puntual?</label>
+                <label style={s.label}>Â¿Fue puntual?</label>
                 <div style={s.optRow}>
-                  {['Sí', 'No'].map(opt => (
+                  {['SÃ­', 'No'].map(opt => (
                     <button key={opt} type="button"
                       style={formData.puntualidad === opt ? s.optActive : s.opt}
                       onClick={() => setFormData({...formData, puntualidad: opt})}>
@@ -904,9 +933,9 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
               </div>
 
               <div style={s.field}>
-                <label style={s.label}>¿Recomendarías al profesional?</label>
+                <label style={s.label}>Â¿RecomendarÃ­as al profesional?</label>
                 <div style={s.optRow}>
-                  {['Sí', 'No'].map(opt => (
+                  {['SÃ­', 'No'].map(opt => (
                     <button key={opt} type="button"
                       style={formData.recomendaria === opt ? s.optActive : s.opt}
                       onClick={() => setFormData({...formData, recomendaria: opt})}>
@@ -919,7 +948,7 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
 
             {/* Costos */}
             <div style={s.card}>
-              <p style={s.sectionLabel}>💰 Información de pago</p>
+              <p style={s.sectionLabel}>ðŸ’° InformaciÃ³n de pago</p>
 
               <div style={s.row2}>
                 <div style={s.field}>
@@ -949,7 +978,7 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
                     <button key={opt} type="button"
                       style={formData.formaPago === opt ? s.optActive : s.opt}
                       onClick={() => setFormData({...formData, formaPago: opt})}>
-                      {opt === 'Efectivo' ? '💵' : '🏦'} {opt}
+                      {opt === 'Efectivo' ? 'ðŸ’µ' : 'ðŸ¦'} {opt}
                     </button>
                   ))}
                 </div>
@@ -962,13 +991,13 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
                   style={s.input} />
               </div>
 
-              {/* 🎁 Selector de Propina Digital */}
+              {/* ðŸŽ Selector de Propina Digital */}
               <div style={{ marginTop: '16px', background: 'linear-gradient(135deg, #FFF3EC 0%, #FFE4D6 100%)', padding: '14px', borderRadius: '16px', border: '1.5px solid #FFD4B0' }}>
                 <p style={{ margin: '0 0 4px', fontSize: '13px', fontWeight: '800', color: '#C24D00', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <span>🎁</span> {lang === 'es' ? 'Propina al Profesional (Opcional)' : 'Tip the Professional (Optional)'}
+                  <span>ðŸŽ</span> {lang === 'es' ? 'Propina al Profesional (Opcional)' : 'Tip the Professional (Optional)'}
                 </p>
                 <p style={{ margin: '0 0 10px', fontSize: '11px', color: '#883A00' }}>
-                  {lang === 'es' ? 'Recompensa su buen servicio. El 100% de la propina va directo al técnico.' : '100% of the tip goes directly to the technician.'}
+                  {lang === 'es' ? 'Recompensa su buen servicio. El 100% de la propina va directo al tÃ©cnico.' : '100% of the tip goes directly to the technician.'}
                 </p>
                 <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                   {[0, 100, 200, 500].map(val => (
@@ -1006,20 +1035,20 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
 
             {/* Experiencia (Solo Cliente) */}
             <div style={s.card}>
-              <p style={s.sectionLabel}>💬 Cuéntanos tu experiencia</p>
+              <p style={s.sectionLabel}>ðŸ’¬ CuÃ©ntanos tu experiencia</p>
               <textarea
                 name="experiencia"
                 rows="4"
-                placeholder="Describe cómo fue el servicio, qué se hizo, detalles importantes..."
+                placeholder="Describe cÃ³mo fue el servicio, quÃ© se hizo, detalles importantes..."
                 value={formData.experiencia}
                 onChange={handleChange}
                 style={s.textarea}
               />
             </div>
 
-            {/* Calificación estrellas */}
+            {/* CalificaciÃ³n estrellas */}
             <div style={s.card}>
-              <p style={s.sectionLabel}>⭐ Calificación del profesional</p>
+              <p style={s.sectionLabel}>â­ CalificaciÃ³n del profesional</p>
               <div style={s.stars}>
                 {[1,2,3,4,5].map(n => (
                   <button key={n} type="button" onClick={() => handleStar(n)} style={s.starBtn}>
@@ -1039,22 +1068,22 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
                  formData.calificacion === 1 ? 'Muy malo' :
                  formData.calificacion === 2 ? 'Regular' :
                  formData.calificacion === 3 ? 'Bueno' :
-                 formData.calificacion === 4 ? 'Muy bueno' : 'Excelente ✨'}
+                 formData.calificacion === 4 ? 'Muy bueno' : 'Excelente âœ¨'}
               </p>
             </div>
 
-            {/* ¿Alguna queja? (Opcional) */}
+            {/* Â¿Alguna queja? (Opcional) */}
             <div style={s.card}>
               <p style={{ ...s.sectionLabel, display: 'flex', alignItems: 'center', gap: '8px', color: '#B91C1C', marginBottom: '8px' }}>
-                <span style={{ fontSize: '18px' }}>🚨</span> ¿Alguna queja? (Opcional)
+                <span style={{ fontSize: '18px' }}>ðŸš¨</span> Â¿Alguna queja? (Opcional)
               </p>
               <label style={{ ...s.label, marginBottom: '10px', lineHeight: 1.4 }}>
-                Si el profesional tuvo un comportamiento extraño, inusual o sospechoso, escribe tu reporte aquí para que la Central de Mando lo audite de inmediato:
+                Si el profesional tuvo un comportamiento extraÃ±o, inusual o sospechoso, escribe tu reporte aquÃ­ para que la Central de Mando lo audite de inmediato:
               </label>
               <textarea
                 value={quejaTexto}
                 onChange={(e) => setQuejaTexto(e.target.value)}
-                placeholder="Escribe aquí tu reporte o queja..."
+                placeholder="Escribe aquÃ­ tu reporte o queja..."
                 rows={3}
                 style={s.textarea}
               />
@@ -1062,7 +1091,7 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
           </>
         )}
         <button type="submit" style={s.btnPrimary} disabled={submitted || isUploading}>
-          {isUploading ? 'Enviando...' : (submitted ? 'Evaluación enviada ✓' : 'Finalizar y Enviar ✓')}
+          {isUploading ? 'Enviando...' : (submitted ? 'EvaluaciÃ³n enviada âœ“' : 'Finalizar y Enviar âœ“')}
         </button>
 
         <div style={{ height: '100px' }} />

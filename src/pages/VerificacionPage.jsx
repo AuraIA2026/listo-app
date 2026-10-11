@@ -4,6 +4,7 @@ import { ref, uploadString, getDownloadURL } from "firebase/storage";
 import { db, auth, storage } from "../firebase";
 import { useUserData } from "../useUserData";
 import { CATEGORIES } from "../categories";
+import PhotoNoticeModal from "../components/PhotoNoticeModal";
 
 const COLORS = {
   mamey: "#F26000", mameyDark: "#C24E00", mameyLight: "#FF8534",
@@ -111,6 +112,23 @@ export default function VerificacionPage({ onBack }) {
   const refSelfieCam           = useRef(null);
   const refBuenaConductaCam    = useRef(null);
   const refPortafolioCam       = useRef(null);
+
+  const [showPhotoNotice, setShowPhotoNotice] = useState(false);
+  const [photoNoticeTarget, setPhotoNoticeTarget] = useState(null);
+
+  const handleRequestPortfolioNotice = (target) => {
+    setPhotoNoticeTarget(target);
+    setShowPhotoNotice(true);
+  };
+
+  const handlePortfolioNoticeContinue = () => {
+    setShowPhotoNotice(false);
+    if (photoNoticeTarget === 'file') {
+      refPortafolioFile.current?.click();
+    } else if (photoNoticeTarget === 'cam') {
+      refPortafolioCam.current?.click();
+    }
+  };
 
   const handleForm = (e) => setForm({ ...form, [e.target.name]: e.target.value });
   const toggleSection = (n) => setOpenSections((p) => ({ ...p, [n]: !p[n] }));
@@ -503,8 +521,8 @@ export default function VerificacionPage({ onBack }) {
                         </div>
                       )}
                       <div style={{ display:"flex", gap:8 }}>
-                        <button style={styles.btnFile} className="btn-hover" onClick={() => refPortafolioFile.current?.click()}>📁 Subir fotos</button>
-                        <button style={styles.btnCam}  className="btn-hover" onClick={() => refPortafolioCam.current?.click()}>📷 Tomar foto</button>
+                        <button type="button" style={styles.btnFile} className="btn-hover" onClick={() => handleRequestPortfolioNotice('file')}>📁 Subir fotos</button>
+                        <button type="button" style={styles.btnCam}  className="btn-hover" onClick={() => handleRequestPortfolioNotice('cam')}>📷 Tomar foto</button>
                       </div>
                     </div>
                   </div>
@@ -613,6 +631,13 @@ export default function VerificacionPage({ onBack }) {
 
         <div style={{ height: 40 }} />
       </div>
+
+      <PhotoNoticeModal
+        isOpen={showPhotoNotice}
+        onClose={() => setShowPhotoNotice(false)}
+        onContinue={handlePortfolioNoticeContinue}
+        lang="es"
+      />
     </div>
   );
 }

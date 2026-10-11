@@ -8,30 +8,31 @@ import HistoriasViewerModal from '../components/HistoriasViewerModal'
 import StoryAvatar from '../components/StoryAvatar'
 import { useStories } from '../hooks/useStories'
 import ExoticWorkPortfolio from '../components/ExoticWorkPortfolio'
+import PhotoNoticeModal from '../components/PhotoNoticeModal'
 import './ProfessionalProfilePage.css'
 
 const txt = {
   es: {
-    reviews: 'Reseñas',
+    reviews: 'ReseÃ±as',
     photos: 'Trabajos Realizados',
     book: 'Contratar',
     chat: 'Enviar mensaje',
     available: 'Disponible ahora',
     busy: 'Ocupado',
-    writeReview: 'Escribe tu reseña',
+    writeReview: 'Escribe tu reseÃ±a',
     reviewPlaceholder: 'Describe tu experiencia con este profesional...',
-    submitReview: 'Publicar reseña',
+    submitReview: 'Publicar reseÃ±a',
     reviewTitle: 'Calificar a',
-    selectRating: 'Selecciona una calificación',
-    reviewSent: '¡Reseña publicada!',
-    reviewSentSub: 'Gracias por tu opinión',
-    noPhotos: 'Este profesional aún no ha subido fotos',
-    noReviews: 'Aún no hay reseñas',
-    noReviewsSub: 'Sé el primero en calificar',
+    selectRating: 'Selecciona una calificaciÃ³n',
+    reviewSent: 'Â¡ReseÃ±a publicada!',
+    reviewSentSub: 'Gracias por tu opiniÃ³n',
+    noPhotos: 'Este profesional aÃºn no ha subido fotos',
+    noReviews: 'AÃºn no hay reseÃ±as',
+    noReviewsSub: 'SÃ© el primero en calificar',
     addPhoto: 'Subir foto de trabajo',
-    photoUploaded: '¡Foto subida!',
+    photoUploaded: 'Â¡Foto subida!',
     jobs: 'trabajos',
-    years: 'años exp.',
+    years: 'aÃ±os exp.',
     viewAll: 'Ver todas',
     hide: 'Ocultar',
     service: 'Servicio',
@@ -66,10 +67,10 @@ const txt = {
 }
 
 const mockReviews = [
-  { id: 1, user: 'María López', avatar: 'ML', color: '#F26000', rating: 5, comment: 'Excelente trabajo, muy profesional y puntual. Lo recomiendo al 100%.', date: '20 Feb 2026', service: 'Instalación eléctrica' },
-  { id: 2, user: 'Pedro Sánchez', avatar: 'PS', color: '#C24D00', rating: 4, comment: 'Buen trabajo, llegó a tiempo y resolvió el problema rápido.', date: '15 Feb 2026', service: 'Reparación de circuito' },
-  { id: 3, user: 'Ana Rodríguez', avatar: 'AR', color: '#FF8533', rating: 5, comment: '¡Increíble! Muy limpio y ordenado. Ya lo contraté dos veces.', date: '10 Feb 2026', service: 'Instalación eléctrica' },
-  { id: 4, user: 'Luis García', avatar: 'LG', color: '#7A3000', rating: 3, comment: 'Buen trabajo pero llegó un poco tarde.', date: '5 Feb 2026', service: 'Reparación general' },
+  { id: 1, user: 'MarÃ­a LÃ³pez', avatar: 'ML', color: '#F26000', rating: 5, comment: 'Excelente trabajo, muy profesional y puntual. Lo recomiendo al 100%.', date: '20 Feb 2026', service: 'InstalaciÃ³n elÃ©ctrica' },
+  { id: 2, user: 'Pedro SÃ¡nchez', avatar: 'PS', color: '#C24D00', rating: 4, comment: 'Buen trabajo, llegÃ³ a tiempo y resolviÃ³ el problema rÃ¡pido.', date: '15 Feb 2026', service: 'ReparaciÃ³n de circuito' },
+  { id: 3, user: 'Ana RodrÃ­guez', avatar: 'AR', color: '#FF8533', rating: 5, comment: 'Â¡IncreÃ­ble! Muy limpio y ordenado. Ya lo contratÃ© dos veces.', date: '10 Feb 2026', service: 'InstalaciÃ³n elÃ©ctrica' },
+  { id: 4, user: 'Luis GarcÃ­a', avatar: 'LG', color: '#7A3000', rating: 3, comment: 'Buen trabajo pero llegÃ³ un poco tarde.', date: '5 Feb 2026', service: 'ReparaciÃ³n general' },
 ]
 
 const compressImage = (file) => new Promise((resolve, reject) => {
@@ -103,7 +104,7 @@ function Stars({ rating, interactive = false, onRate }) {
           onMouseEnter={() => interactive && setHovered(n)}
           onMouseLeave={() => interactive && setHovered(0)}
           onClick={() => interactive && onRate && onRate(n)}
-        >★</span>
+        >â˜…</span>
       ))}
     </div>
   )
@@ -128,7 +129,7 @@ function ReviewCard({ review }) {
   )
 }
 
-function PhotoGrid({ photos, lang, isOwnProfile, onUploadPhoto, onDeletePhoto, hasPendingWork, proName = '', proCategory = '', onHireClick }) {
+function PhotoGrid({ photos, lang, isOwnProfile, onUploadPhoto, onDeletePhoto, hasPendingWork, proName = '', proCategory = '', onHireClick, onRequestPhotoNotice }) {
   const T = txt[lang]
   const [lightbox, setLightbox] = useState(null)
 
@@ -172,7 +173,7 @@ function PhotoGrid({ photos, lang, isOwnProfile, onUploadPhoto, onDeletePhoto, h
         proCategory={proCategory}
         onHireClick={onHireClick}
         isOwnProfile={isOwnProfile}
-        onUploadPhoto={onUploadPhoto}
+        onUploadPhoto={() => onRequestPhotoNotice ? onRequestPhotoNotice('work') : document.getElementById('pro-work-upload')?.click()}
       />
 
       <div className="photos-grid-title-wrap">
@@ -181,7 +182,7 @@ function PhotoGrid({ photos, lang, isOwnProfile, onUploadPhoto, onDeletePhoto, h
 
       <div className="photos-grid">
         {isOwnProfile && (
-          <button className="photo-upload-btn-new" onClick={() => document.getElementById('pro-work-upload').click()}>
+          <button className="photo-upload-btn-new" onClick={() => onRequestPhotoNotice ? onRequestPhotoNotice('work') : document.getElementById('pro-work-upload')?.click()}>
             <span className="upload-icon">➕</span>
             <span className="upload-text">Subir Trabajo</span>
           </button>
@@ -197,11 +198,14 @@ function PhotoGrid({ photos, lang, isOwnProfile, onUploadPhoto, onDeletePhoto, h
             <div key={photoId} className="photo-thumb-wrapper">
               <button className="photo-thumb" onClick={() => setLightbox({ url: photoUrl, caption })}>
                 <img src={photoUrl} alt={caption} loading="lazy" decoding="async" />
+                <div className="listo-brand-watermark" style={{ top: '8px', right: '8px' }}>
+                  <img src={logoListo} alt="Listo" className="listo-brand-watermark-img" />
+                </div>
                 <div className="photo-overlay"><span>{caption}</span></div>
               </button>
               {isOwnProfile && !isMockPhoto && (
                 <button className="delete-photo-btn" onClick={(e) => { e.stopPropagation(); onDeletePhoto(photoUrl, isPortfolioPhoto) }} title="Eliminar foto">
-                  ✕
+                  âœ•
                 </button>
               )}
             </div>
@@ -212,7 +216,7 @@ function PhotoGrid({ photos, lang, isOwnProfile, onUploadPhoto, onDeletePhoto, h
       {lightbox && (
         <div className="lightbox" onClick={() => setLightbox(null)}>
           <div className="lightbox-content" onClick={e => e.stopPropagation()}>
-            <button className="lightbox-close" onClick={() => setLightbox(null)}>✕</button>
+            <button className="lightbox-close" onClick={() => setLightbox(null)}>âœ•</button>
             <img src={lightbox.url} alt={lightbox.caption} />
             <p className="lightbox-caption">{lightbox.caption}</p>
           </div>
@@ -237,7 +241,7 @@ function WriteReview({ lang, proName, onSubmit }) {
 
   if (sent) return (
     <div className="review-sent">
-      <span>🎉</span>
+      <span>ðŸŽ‰</span>
       <p>{T.reviewSent}</p>
       <span className="review-sent-sub">{T.reviewSentSub}</span>
     </div>
@@ -325,8 +329,8 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
   const { userData } = useUserData()
 
   const pro = professional || {
-    name: 'Carlos Méndez', categoryEs: 'Mecánico', categoryEn: 'Mechanic',
-    icon: '🔧', rating: 4.9, reviews: 128, price: 'RD$800/hr',
+    name: 'Carlos MÃ©ndez', categoryEs: 'MecÃ¡nico', categoryEn: 'Mechanic',
+    icon: 'ðŸ”§', rating: 4.9, reviews: 128, price: 'RD$800/hr',
     location: 'Santo Domingo', avatar: 'CM', available: true, id: 1
   }
 
@@ -344,6 +348,26 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
   const [showStoryViewer, setShowStoryViewer] = useState(false)
   const [hasHiredPro, setHasHiredPro] = useState(false)
   const [showGuaranteeModal, setShowGuaranteeModal] = useState(false)
+  const [showPhotoNotice, setShowPhotoNotice] = useState(false)
+  const [photoNoticeTarget, setPhotoNoticeTarget] = useState(null)
+
+  const handleRequestPhotoNotice = (target) => {
+    setPhotoNoticeTarget(target)
+    setShowPhotoNotice(true)
+  }
+
+  const handlePhotoNoticeContinue = () => {
+    setShowPhotoNotice(false)
+    if (photoNoticeTarget === 'work') {
+      document.getElementById('pro-work-upload')?.click()
+    } else if (photoNoticeTarget === 'cover') {
+      document.getElementById('pro-cover-upload')?.click()
+    } else if (photoNoticeTarget === 'avatar') {
+      document.getElementById('pro-avatar-upload')?.click()
+    } else if (photoNoticeTarget === 'avatar-cam') {
+      document.getElementById('pro-avatar-camera')?.click()
+    }
+  }
 
   const { getProStoryData } = useStories()
   const fetchedStoryData = getProStoryData(displayPro)
@@ -479,7 +503,7 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
   const handleNewReview = ({ rating, comment, service }) => {
     setReviews(prev => [{
       id: prev.length + 1,
-      user: 'Tú',
+      user: 'TÃº',
       avatar: 'TU',
       color: '#F26000',
       rating,
@@ -506,7 +530,7 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
         type: 'cover'
       })
 
-      // Registrar notificación para el administrador
+      // Registrar notificaciÃ³n para el administrador
       await addDoc(collection(db, 'notificaciones'), {
         userId: 'admin',
         fromUserId: userData.uid,
@@ -515,7 +539,7 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
         userName: userData.name || displayPro.name || 'Profesional',
         requestedChanges: { coverURL: base64 },
         type: 'new_edit_request_cover',
-        title: '🖼️ SOLICITUD DE CAMBIO DE PORTADA',
+        title: 'ðŸ–¼ï¸ SOLICITUD DE CAMBIO DE PORTADA',
         text: `El profesional ${userData.name || displayPro.name || 'Un profesional'} ha solicitado actualizar su foto de portada.`,
         read: false,
         createdAt: serverTimestamp(),
@@ -523,7 +547,7 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
       })
 
       alert(lang === 'es' 
-        ? "Tu solicitud de cambio de foto de portada ha sido enviada al administrador para su aprobación. Se actualizará una vez sea aprobada por Central de Mando."
+        ? "Tu solicitud de cambio de foto de portada ha sido enviada al administrador para su aprobaciÃ³n. Se actualizarÃ¡ una vez sea aprobada por Central de Mando."
         : "Your cover photo change request has been sent to the administrator for approval. It will update once approved by Central de Mando."
       )
     } catch (err) {
@@ -548,7 +572,7 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
         type: 'photo'
       })
 
-      // Registrar notificación para el administrador
+      // Registrar notificaciÃ³n para el administrador
       await addDoc(collection(db, 'notificaciones'), {
         userId: 'admin',
         fromUserId: userData.uid,
@@ -557,7 +581,7 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
         userName: userData.name || displayPro.name || 'Profesional',
         requestedChanges: { photoURL: base64 },
         type: 'new_edit_request_photo',
-        title: '🖼️ SOLICITUD DE CAMBIO DE FOTO',
+        title: 'ðŸ–¼ï¸ SOLICITUD DE CAMBIO DE FOTO',
         text: `El profesional ${userData.name || displayPro.name || 'Un profesional'} ha solicitado actualizar su foto de perfil.`,
         read: false,
         createdAt: serverTimestamp(),
@@ -565,7 +589,7 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
       })
 
       alert(lang === 'es' 
-        ? "Tu solicitud de cambio de foto de perfil ha sido enviada al administrador para su aprobación. Se actualizará una vez sea aprobada por Central de Mando."
+        ? "Tu solicitud de cambio de foto de perfil ha sido enviada al administrador para su aprobaciÃ³n. Se actualizarÃ¡ una vez sea aprobada por Central de Mando."
         : "Your profile photo change request has been sent to the administrator for approval. It will update once approved by Central de Mando."
       )
     } catch (err) {
@@ -575,7 +599,7 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
   }
 
   const handleDeleteAvatar = async () => {
-    if (!window.confirm(lang === 'es' ? "¿Seguro que deseas eliminar tu foto de perfil?" : "Are you sure you want to delete your profile photo?")) return;
+    if (!window.confirm(lang === 'es' ? "Â¿Seguro que deseas eliminar tu foto de perfil?" : "Are you sure you want to delete your profile photo?")) return;
     try {
       await updateDoc(doc(db, 'users', userData.uid), {
         photoURL: null
@@ -589,7 +613,7 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
   };
 
   const handleDeleteCover = async () => {
-    if (!window.confirm(lang === 'es' ? "¿Seguro que deseas eliminar tu foto de portada?" : "Are you sure you want to delete your cover photo?")) return;
+    if (!window.confirm(lang === 'es' ? "Â¿Seguro que deseas eliminar tu foto de portada?" : "Are you sure you want to delete your cover photo?")) return;
     try {
       await updateDoc(doc(db, 'users', userData.uid), {
         coverURL: null,
@@ -609,7 +633,7 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
         await updateDoc(doc(db, 'users', userData.uid), { coverPos: pos });
       }
     } catch (err) {
-      console.error("Error al cambiar posición de portada:", err);
+      console.error("Error al cambiar posiciÃ³n de portada:", err);
     }
   };
 
@@ -619,7 +643,7 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
         await updateDoc(doc(db, 'users', userData.uid), { avatarPos: pos });
       }
     } catch (err) {
-      console.error("Error al cambiar posición de avatar:", err);
+      console.error("Error al cambiar posiciÃ³n de avatar:", err);
     }
   };
 
@@ -641,7 +665,7 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
         type: 'work_photo'
       })
 
-      // Registrar notificación para el administrador
+      // Registrar notificaciÃ³n para el administrador
       await addDoc(collection(db, 'notificaciones'), {
         userId: 'admin',
         fromUserId: userData.uid,
@@ -650,7 +674,7 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
         userName: userData.name || displayPro.name || 'Profesional',
         requestedChanges: { photos: updatedPhotos },
         type: 'new_edit_request_work',
-        title: '📷 SOLICITUD DE NUEVO TRABAJO',
+        title: 'ðŸ“· SOLICITUD DE NUEVO TRABAJO',
         text: `El profesional ${userData.name || displayPro.name || 'Un profesional'} ha solicitado subir fotos de trabajos realizados a su portafolio.`,
         read: false,
         createdAt: serverTimestamp(),
@@ -658,7 +682,7 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
       })
 
       alert(lang === 'es' 
-        ? "Tu solicitud para subir fotos de trabajos realizados ha sido enviada al administrador para su aprobación. Se publicará una vez sea aprobada por Central de Mando."
+        ? "Tu solicitud para subir fotos de trabajos realizados ha sido enviada al administrador para su aprobaciÃ³n. Se publicarÃ¡ una vez sea aprobada por Central de Mando."
         : "Your request to upload completed work photos has been sent to the administrator for approval. It will publish once approved by Central de Mando."
       )
     } catch (err) {
@@ -708,13 +732,13 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
   const getPlanDetails = (planId) => {
     const p = (planId || '').toLowerCase()
     if (p.includes('vip') || p.includes('elite') || p.includes('ilimitado')) {
-      return { label: 'PLAN VIP', medal: '👑', grad: 'linear-gradient(135deg, #F97316, #EF4444)' }
+      return { label: 'PLAN VIP', medal: 'ðŸ‘‘', grad: 'linear-gradient(135deg, #F97316, #EF4444)' }
     } else if (p.includes('platinum') || p.includes('platino')) {
-      return { label: 'PLAN PLATINUM', medal: '💎', grad: 'linear-gradient(135deg, #B0BEC5, #78909C)' }
+      return { label: 'PLAN PLATINUM', medal: 'ðŸ’Ž', grad: 'linear-gradient(135deg, #B0BEC5, #78909C)' }
     } else if (p.includes('gold')) {
-      return { label: 'PLAN GOLD', medal: '⭐', grad: 'linear-gradient(135deg, #FDE047, #EAB308)' }
+      return { label: 'PLAN GOLD', medal: 'â­', grad: 'linear-gradient(135deg, #FDE047, #EAB308)' }
     }
-    return { label: 'PLAN BÁSICO', medal: '🛠️', grad: 'linear-gradient(135deg, #94A3B8, #64748B)' }
+    return { label: 'PLAN BÃSICO', medal: 'ðŸ› ï¸', grad: 'linear-gradient(135deg, #94A3B8, #64748B)' }
   }
 
   const planInfo = getPlanDetails(displayPro.currentPlan || displayPro.planId || displayPro.plan)
@@ -728,10 +752,10 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
 
       {/* Header naranja superior de 25.png */}
       <div className="pro-header-bar">
-        <button className="pro-back-btn-new" onClick={() => navigate('search')}>←</button>
+        <button className="pro-back-btn-new" onClick={() => navigate('search')}>â†</button>
         <span className="pro-header-title">PERFIL PROFESIONAL</span>
         <div className="pro-bell-wrap">
-          <span className="pro-bell-icon">🔔</span>
+          <span className="pro-bell-icon">ðŸ””</span>
           <span className="pro-bell-badge">1</span>
         </div>
       </div>
@@ -767,11 +791,11 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
         {isOwnProfile && (
           <div style={{ position: 'absolute', top: '12px', right: '12px', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px', zIndex: 10 }}>
             <button className="edit-cover-btn-facebook" onClick={() => setShowPhotoOptions(true)} title="Editar Foto de Portada">
-              📷 {lang === 'es' ? 'Editar Portada' : 'Edit Cover'}
+              ðŸ“· {lang === 'es' ? 'Editar Portada' : 'Edit Cover'}
             </button>
             {hasPendingCover && (
               <span style={{ background: 'rgba(245, 158, 11, 0.95)', color: '#fff', fontSize: '10px', fontWeight: '800', padding: '3px 8px', borderRadius: '12px', backdropFilter: 'blur(4px)', boxShadow: '0 2px 6px rgba(0,0,0,0.3)' }}>
-                ⏳ {lang === 'es' ? 'Portada en revisión' : 'Cover pending'}
+                â³ {lang === 'es' ? 'Portada en revisiÃ³n' : 'Cover pending'}
               </span>
             )}
           </div>
@@ -800,35 +824,35 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
 
           {hasPendingPhoto && (
             <span style={{ position: 'absolute', bottom: '-10px', left: '50%', transform: 'translateX(-50%)', background: '#F59E0B', color: '#fff', fontSize: '9px', fontWeight: '800', padding: '2px 7px', borderRadius: '10px', whiteSpace: 'nowrap', zIndex: 12, boxShadow: '0 2px 6px rgba(0,0,0,0.2)' }}>
-              ⏳ {lang === 'es' ? 'En revisión' : 'Pending'}
+              â³ {lang === 'es' ? 'En revisiÃ³n' : 'Pending'}
             </span>
           )}
 
           {isOwnProfile ? (
             <button className="edit-avatar-btn" onClick={(e) => { e.stopPropagation(); setShowPhotoOptions(true); }} title="Cambiar Foto de Perfil" style={{ zIndex: 15 }}>
-              ✏️
+              âœï¸
             </button>
           ) : hasHiredPro ? (
             <button className="pro-chat-floating-btn" onClick={(e) => { e.stopPropagation(); navigate('chat', displayPro); }} title="Enviar mensaje" style={{ zIndex: 15 }}>
-              💬
+              ðŸ’¬
             </button>
           ) : null}
         </div>
 
         <div className="pro-info-main">
-          <p className="pro-location">📍 {displayPro.location}</p>
+          <p className="pro-location">ðŸ“ {displayPro.location}</p>
           <div className="pro-badges">
             <span className={`pro-status-badge ${displayPro.available ? 'avail' : 'busy'}`}>
               {displayPro.available ? T.available : T.busy}
             </span>
-            <span className="pro-verified-badge">✓ {T.verifiedPro}</span>
-            <span className="pro-verified-badge" style={{ background: '#ECFDF5', color: '#059669', borderColor: '#A7F3D0' }}>🪪 {lang === 'es' ? 'Cédula Validada' : 'ID Verified'}</span>
-            <span className="pro-verified-badge" onClick={() => setShowGuaranteeModal(true)} style={{ background: '#FFF3EC', color: '#F26000', borderColor: '#FFD4B0', cursor: 'pointer' }}>🛡️ {lang === 'es' ? 'Respaldo 24h' : '24h Support'}</span>
+            <span className="pro-verified-badge">âœ“ {T.verifiedPro}</span>
+            <span className="pro-verified-badge" style={{ background: '#ECFDF5', color: '#059669', borderColor: '#A7F3D0' }}>ðŸªª {lang === 'es' ? 'CÃ©dula Validada' : 'ID Verified'}</span>
+            <span className="pro-verified-badge" onClick={() => setShowGuaranteeModal(true)} style={{ background: '#FFF3EC', color: '#F26000', borderColor: '#FFD4B0', cursor: 'pointer' }}>ðŸ›¡ï¸ {lang === 'es' ? 'Respaldo 24h' : '24h Support'}</span>
           </div>
         </div>
       </div>
 
-      {/* Banner interactivo de Garantía de Satisfacción 24h */}
+      {/* Banner interactivo de GarantÃ­a de SatisfacciÃ³n 24h */}
       <div 
         onClick={() => setShowGuaranteeModal(true)}
         style={{
@@ -846,26 +870,26 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <span style={{ fontSize: '26px' }}>🛡️</span>
+          <span style={{ fontSize: '26px' }}>ðŸ›¡ï¸</span>
           <div>
             <p style={{ margin: 0, fontWeight: '900', fontSize: '13px', color: '#F26000', letterSpacing: '0.3px' }}>
-              {lang === 'es' ? 'RESPALDO Y MEDIACIÓN PEDIDOS LISTO (24 HORAS)' : 'LISTO PATRON 24H SUPPORT & MEDIATION'}
+              {lang === 'es' ? 'RESPALDO Y MEDIACIÃ“N PEDIDOS LISTO (24 HORAS)' : 'LISTO PATRON 24H SUPPORT & MEDIATION'}
             </p>
             <p style={{ margin: '2px 0 0', fontSize: '11px', color: '#94A3B8' }}>
-              {lang === 'es' ? 'Soporte y mediación directa si surge cualquier detalle.' : 'Direct support and mediation for any service details.'}
+              {lang === 'es' ? 'Soporte y mediaciÃ³n directa si surge cualquier detalle.' : 'Direct support and mediation for any service details.'}
             </p>
           </div>
         </div>
         <span style={{ fontSize: '12px', fontWeight: '800', background: 'rgba(242,96,0,0.2)', color: '#FF7A1A', padding: '6px 12px', borderRadius: '100px', whiteSpace: 'nowrap', border: '1px solid rgba(242,96,0,0.4)' }}>
-          {lang === 'es' ? 'Ver Cobertura →' : 'Details →'}
+          {lang === 'es' ? 'Ver Cobertura â†’' : 'Details â†’'}
         </span>
       </div>
 
       {/* Stats */}
       <div className="pro-stats-row">
         <div className="pro-stat">
-          <span className="pro-stat-num">★ {avgRating}</span>
-          <span className="pro-stat-label">{lang === 'es' ? 'Calificación' : 'Rating'}</span>
+          <span className="pro-stat-num">â˜… {avgRating}</span>
+          <span className="pro-stat-label">{lang === 'es' ? 'CalificaciÃ³n' : 'Rating'}</span>
         </div>
         <div className="pro-stat-divider" />
         <div className="pro-stat">
@@ -887,10 +911,10 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
       {/* Tabs */}
       <div className="pro-tabs">
         <button className={`pro-tab ${activeTab === 'photos' ? 'active' : ''}`} onClick={() => setActiveTab('photos')}>
-          📷 {T.photos}
+          ðŸ“· {T.photos}
         </button>
         <button className={`pro-tab ${activeTab === 'reviews' ? 'active' : ''}`} onClick={() => setActiveTab('reviews')}>
-          ⭐ {T.reviews} ({reviews.length})
+          â­ {T.reviews} ({reviews.length})
         </button>
       </div>
 
@@ -907,10 +931,11 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
             proName={displayPro.name}
             proCategory={displayPro.category || displayPro.especialidad || displayPro.categoryEs || ''}
             onHireClick={handleBookClick}
+            onRequestPhotoNotice={handleRequestPhotoNotice}
           />
         )}
 
-        {/* RESEÑAS */}
+        {/* RESEÃ‘AS */}
         {activeTab === 'reviews' && (
           <div className="reviews-section">
             {/* Rating summary */}
@@ -923,7 +948,7 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
               <div className="rating-bars">
                 {ratingDist.map(({ n, count, pct }) => (
                   <div key={n} className="rating-bar-row">
-                    <span className="rbar-label">{n}★</span>
+                    <span className="rbar-label">{n}â˜…</span>
                     <div className="rbar-track">
                       <div className="rbar-fill" style={{ width: `${pct}%` }} />
                     </div>
@@ -933,10 +958,10 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
               </div>
             </div>
 
-            {/* Botón escribir reseña */}
+            {/* BotÃ³n escribir reseÃ±a */}
             {!isOwnProfile && (
               <button className="write-review-toggle" onClick={() => setShowWriteReview(v => !v)}>
-                ✏️ {T.writeReview}
+                âœï¸ {T.writeReview}
               </button>
             )}
 
@@ -944,12 +969,12 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
               <WriteReview lang={lang} proName={displayPro.name} onSubmit={handleNewReview} />
             )}
 
-            {/* Lista de reseñas */}
+            {/* Lista de reseÃ±as */}
             <div className="reviews-list">
-              {loadingReviews && <p style={{textAlign: 'center', color: '#666', padding: '20px'}}>{lang === 'es' ? 'Cargando reseñas...' : 'Loading reviews...'}</p>}
+              {loadingReviews && <p style={{textAlign: 'center', color: '#666', padding: '20px'}}>{lang === 'es' ? 'Cargando reseÃ±as...' : 'Loading reviews...'}</p>}
               {!loadingReviews && reviews.length === 0 && (
                  <div style={{ textAlign: 'center', padding: '40px 20px' }}>
-                    <span style={{ fontSize: 40 }}>⭐</span>
+                    <span style={{ fontSize: 40 }}>â­</span>
                     <p style={{ fontWeight: 'bold', margin: '12px 0 4px' }}>{T.noReviews}</p>
                     <p style={{ color: '#666', fontSize: 14 }}>{T.noReviewsSub}</p>
                  </div>
@@ -984,14 +1009,14 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
             if (!isUnlimited && typeof displayPro.contracts !== 'undefined' && displayPro.contracts <= 0) {
               return (
                 <button className="book-btn-premium" style={{ background: '#E0E0E0', color: '#888', boxShadow: 'none', cursor: 'not-allowed' }} disabled>
-                  🚫 {lang === 'es' ? 'Sin turnos disponibles' : 'No available slots'}
+                  ðŸš« {lang === 'es' ? 'Sin turnos disponibles' : 'No available slots'}
                 </button>
               )
             }
             return (
               <button className={`book-btn-premium ${planClass}`} onClick={() => navigate('booking', displayPro)}>
-                <span className="btn-star-anim btn-star-anim-1">✦</span>
-                <span className="btn-star-anim btn-star-anim-2">★</span>
+                <span className="btn-star-anim btn-star-anim-1">âœ¦</span>
+                <span className="btn-star-anim btn-star-anim-2">â˜…</span>
                 {icon} {T.book}
               </button>
             )
@@ -1002,35 +1027,35 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
         <div className="modal-overlay" onClick={() => setShowPhotoOptions(false)}>
           <div className="modal-card" onClick={e => e.stopPropagation()} style={{ maxWidth: 440, padding: 24, borderRadius: 24 }}>
             <div style={{ textAlign: 'center', marginBottom: 16 }}>
-              <span style={{ fontSize: 32, display: 'block', marginBottom: 4 }}>📸</span>
+              <span style={{ fontSize: 32, display: 'block', marginBottom: 4 }}>ðŸ“¸</span>
               <h3 style={{ margin: 0, fontSize: 18, fontWeight: 900, color: '#0F172A' }}>
-                {lang === 'es' ? 'Gestión de Fotos & Posicionamiento' : 'Photo Management & Alignment'}
+                {lang === 'es' ? 'GestiÃ³n de Fotos & Posicionamiento' : 'Photo Management & Alignment'}
               </h3>
               <p style={{ margin: '4px 0 0', fontSize: 12, color: '#64748B' }}>
                 {lang === 'es' ? 'Personaliza, cambia, centra o elimina tus fotos del perfil' : 'Customize, change, center or remove your profile photos'}
               </p>
             </div>
 
-            {/* SECCIÓN FOTO DE PERFIL */}
+            {/* SECCIÃ“N FOTO DE PERFIL */}
             <div style={{ background: '#F8FAFC', borderRadius: 16, padding: 14, marginBottom: 14, border: '1px solid #E2E8F0', textAlign: 'left' }}>
               <h4 style={{ margin: '0 0 10px', fontSize: 13, fontWeight: 800, color: '#1E293B', display: 'flex', alignItems: 'center', gap: 6 }}>
-                👤 {lang === 'es' ? 'Foto de Perfil (Avatar)' : 'Profile Photo'}
+                ðŸ‘¤ {lang === 'es' ? 'Foto de Perfil (Avatar)' : 'Profile Photo'}
               </h4>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 10 }}>
                 <button className="modal-btn" style={{ background: 'linear-gradient(135deg,#F26000,#C24E00)', color: '#fff', padding: '10px 8px', fontSize: 12, fontWeight: 700, borderRadius: 10, border: 'none', cursor: 'pointer' }}
-                  onClick={() => { setShowPhotoOptions(false); document.getElementById('pro-avatar-upload').click(); }}>
+                  onClick={() => { setShowPhotoOptions(false); handleRequestPhotoNotice('avatar'); }}>
                   📷 Galería
                 </button>
                 <button className="modal-btn" style={{ background: 'linear-gradient(135deg,#3B82F6,#2563EB)', color: '#fff', padding: '10px 8px', fontSize: 12, fontWeight: 700, borderRadius: 10, border: 'none', cursor: 'pointer' }}
-                  onClick={() => { setShowPhotoOptions(false); document.getElementById('pro-avatar-camera').click(); }}>
+                  onClick={() => { setShowPhotoOptions(false); handleRequestPhotoNotice('avatar-cam'); }}>
                   🤳 Cámara
                 </button>
               </div>
 
-              {/* Alineación / Centrar Foto Perfil */}
+              {/* AlineaciÃ³n / Centrar Foto Perfil */}
               <div style={{ marginTop: 8 }}>
                 <span style={{ fontSize: 11, fontWeight: 700, color: '#64748B', display: 'block', marginBottom: 6 }}>
-                  🎯 {lang === 'es' ? 'Centrar / Posicionar Perfil:' : 'Align Profile Position:'}
+                  ðŸŽ¯ {lang === 'es' ? 'Centrar / Posicionar Perfil:' : 'Align Profile Position:'}
                 </span>
                 <div style={{ display: 'flex', gap: 6 }}>
                   <button 
@@ -1038,21 +1063,21 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
                     style={{ flex: 1, padding: '6px 4px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: (displayPro.avatarPos === 'top center') ? '2px solid #F26000' : '1px solid #CBD5E1', background: '#fff', cursor: 'pointer' }}
                     onClick={() => handleSetAvatarPosition('top center')}
                   >
-                    ⬆️ Arriba
+                    â¬†ï¸ Arriba
                   </button>
                   <button 
                     type="button"
                     style={{ flex: 1, padding: '6px 4px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: (displayPro.avatarPos === 'center center' || !displayPro.avatarPos) ? '2px solid #F26000' : '1px solid #CBD5E1', background: '#fff', cursor: 'pointer' }}
                     onClick={() => handleSetAvatarPosition('center center')}
                   >
-                    🎯 Centro
+                    ðŸŽ¯ Centro
                   </button>
                   <button 
                     type="button"
                     style={{ flex: 1, padding: '6px 4px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: (displayPro.avatarPos === 'bottom center') ? '2px solid #F26000' : '1px solid #CBD5E1', background: '#fff', cursor: 'pointer' }}
                     onClick={() => handleSetAvatarPosition('bottom center')}
                   >
-                    ⬇️ Abajo
+                    â¬‡ï¸ Abajo
                   </button>
                 </div>
               </div>
@@ -1060,25 +1085,25 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
               {(displayPro.photoURL || displayPro.profilePhoto) && (
                 <button className="modal-btn" style={{ width: '100%', background: '#FEE2E2', color: '#DC2626', padding: '8px', fontSize: 12, fontWeight: 700, borderRadius: 10, border: 'none', cursor: 'pointer', marginTop: 10 }}
                   onClick={handleDeleteAvatar}>
-                  🗑️ {lang === 'es' ? 'Eliminar Foto de Perfil' : 'Delete Profile Photo'}
+                  ðŸ—‘ï¸ {lang === 'es' ? 'Eliminar Foto de Perfil' : 'Delete Profile Photo'}
                 </button>
               )}
             </div>
 
-            {/* SECCIÓN FOTO DE PORTADA */}
+            {/* SECCIÃ“N FOTO DE PORTADA */}
             <div style={{ background: '#F8FAFC', borderRadius: 16, padding: 14, marginBottom: 14, border: '1px solid #E2E8F0', textAlign: 'left' }}>
               <h4 style={{ margin: '0 0 10px', fontSize: 13, fontWeight: 800, color: '#1E293B', display: 'flex', alignItems: 'center', gap: 6 }}>
-                🖼️ {lang === 'es' ? 'Foto de Portada' : 'Cover Photo'}
+                ðŸ–¼ï¸ {lang === 'es' ? 'Foto de Portada' : 'Cover Photo'}
               </h4>
               <button className="modal-btn" style={{ width: '100%', background: 'linear-gradient(135deg,#10B981,#059669)', color: '#fff', padding: '10px', fontSize: 12, fontWeight: 700, borderRadius: 10, border: 'none', cursor: 'pointer', marginBottom: 10 }}
-                onClick={() => { setShowPhotoOptions(false); document.getElementById('pro-cover-upload').click(); }}>
-                🖼️ {lang === 'es' ? 'Cambiar Foto de Portada' : 'Change Cover Photo'}
+                onClick={() => { setShowPhotoOptions(false); handleRequestPhotoNotice('cover'); }}>
+                ðŸ–¼ï¸ {lang === 'es' ? 'Cambiar Foto de Portada' : 'Change Cover Photo'}
               </button>
 
-              {/* Alineación / Centrar Foto Portada */}
+              {/* AlineaciÃ³n / Centrar Foto Portada */}
               <div>
                 <span style={{ fontSize: 11, fontWeight: 700, color: '#64748B', display: 'block', marginBottom: 6 }}>
-                  🎯 {lang === 'es' ? 'Centrar / Posicionar Portada:' : 'Align Cover Position:'}
+                  ðŸŽ¯ {lang === 'es' ? 'Centrar / Posicionar Portada:' : 'Align Cover Position:'}
                 </span>
                 <div style={{ display: 'flex', gap: 6 }}>
                   <button 
@@ -1086,21 +1111,21 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
                     style={{ flex: 1, padding: '6px 4px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: (displayPro.coverPos === 'top center') ? '2px solid #10B981' : '1px solid #CBD5E1', background: '#fff', cursor: 'pointer' }}
                     onClick={() => handleSetCoverPosition('top center')}
                   >
-                    ⬆️ Arriba
+                    â¬†ï¸ Arriba
                   </button>
                   <button 
                     type="button"
                     style={{ flex: 1, padding: '6px 4px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: (displayPro.coverPos === 'center center' || !displayPro.coverPos) ? '2px solid #10B981' : '1px solid #CBD5E1', background: '#fff', cursor: 'pointer' }}
                     onClick={() => handleSetCoverPosition('center center')}
                   >
-                    🎯 Centro
+                    ðŸŽ¯ Centro
                   </button>
                   <button 
                     type="button"
                     style={{ flex: 1, padding: '6px 4px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: (displayPro.coverPos === 'bottom center') ? '2px solid #10B981' : '1px solid #CBD5E1', background: '#fff', cursor: 'pointer' }}
                     onClick={() => handleSetCoverPosition('bottom center')}
                   >
-                    ⬇️ Abajo
+                    â¬‡ï¸ Abajo
                   </button>
                 </div>
               </div>
@@ -1108,7 +1133,7 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
               {(displayPro.coverURL || displayPro.coverPhoto) && (
                 <button className="modal-btn" style={{ width: '100%', background: '#FEE2E2', color: '#DC2626', padding: '8px', fontSize: 12, fontWeight: 700, borderRadius: 10, border: 'none', cursor: 'pointer', marginTop: 10 }}
                   onClick={handleDeleteCover}>
-                  🗑️ {lang === 'es' ? 'Eliminar Foto de Portada' : 'Delete Cover Photo'}
+                  ðŸ—‘ï¸ {lang === 'es' ? 'Eliminar Foto de Portada' : 'Delete Cover Photo'}
                 </button>
               )}
             </div>
@@ -1134,48 +1159,48 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
         navigate={navigate}
       />
 
-      {/* Modal de Cobertura de Garantía 24h */}
-      {/* Modal de Asistencia y Mediación Pedidos Listo 24h */}
+      {/* Modal de Cobertura de GarantÃ­a 24h */}
+      {/* Modal de Asistencia y MediaciÃ³n Pedidos Listo 24h */}
       {showGuaranteeModal && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 99999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }} onClick={() => setShowGuaranteeModal(false)}>
           <div style={{ background: '#fff', borderRadius: 24, padding: '28px 24px', width: '100%', maxWidth: 420, textAlign: 'left', boxShadow: '0 20px 40px rgba(0,0,0,0.25)', maxHeight: '90vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
-            <div style={{ width: 52, height: 52, borderRadius: '50%', background: '#FFF3EC', color: '#F26000', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26, marginBottom: 16 }}>🛡️</div>
+            <div style={{ width: 52, height: 52, borderRadius: '50%', background: '#FFF3EC', color: '#F26000', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26, marginBottom: 16 }}>ðŸ›¡ï¸</div>
             <h3 style={{ margin: '0 0 8px', fontSize: 18, color: '#1A1A2E', fontWeight: 800 }}>
-              {lang === 'es' ? 'Respaldo y Mediación Pedidos Listo' : 'Pedidos Listo Support & Mediation'}
+              {lang === 'es' ? 'Respaldo y MediaciÃ³n Pedidos Listo' : 'Pedidos Listo Support & Mediation'}
             </h3>
             <p style={{ fontSize: 13, color: '#64748B', lineHeight: 1.5, margin: '0 0 16px' }}>
               {lang === 'es' 
-                ? 'Facilitamos una contratación transparente. Los servicios reservados a través de Pedidos Listo cuentan con soporte de mediación directa durante las primeras 24 horas.' 
+                ? 'Facilitamos una contrataciÃ³n transparente. Los servicios reservados a travÃ©s de Pedidos Listo cuentan con soporte de mediaciÃ³n directa durante las primeras 24 horas.' 
                 : 'We facilitate transparent bookings with direct support mediation during the first 24 hours.'}
             </p>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 16 }}>
               <div style={{ background: '#F8FAFC', padding: 12, borderRadius: 14, border: '1px solid #E2E8F0', display: 'flex', gap: 10 }}>
-                <span style={{ fontSize: 18 }}>✅</span>
+                <span style={{ fontSize: 18 }}>âœ…</span>
                 <div>
                   <h4 style={{ margin: 0, fontSize: 13, color: '#1E293B', fontWeight: 700 }}>{lang === 'es' ? 'Identidad Auditada' : 'Audited Identity'}</h4>
-                  <p style={{ margin: '2px 0 0', fontSize: '11px', color: '#64748B' }}>{lang === 'es' ? 'Cédula oficial del profesional auditada y registrada por Central de Mando.' : 'Official ID audited by Central Command.'}</p>
+                  <p style={{ margin: '2px 0 0', fontSize: '11px', color: '#64748B' }}>{lang === 'es' ? 'CÃ©dula oficial del profesional auditada y registrada por Central de Mando.' : 'Official ID audited by Central Command.'}</p>
                 </div>
               </div>
               <div style={{ background: '#F8FAFC', padding: 12, borderRadius: 14, border: '1px solid #E2E8F0', display: 'flex', gap: 10 }}>
-                <span style={{ fontSize: 18 }}>🛠️</span>
+                <span style={{ fontSize: 18 }}>ðŸ› ï¸</span>
                 <div>
-                  <h4 style={{ margin: 0, fontSize: 13, color: '#1E293B', fontWeight: 700 }}>{lang === 'es' ? 'Revisión por el Profesional' : 'Pro Revision Agreement'}</h4>
+                  <h4 style={{ margin: 0, fontSize: 13, color: '#1E293B', fontWeight: 700 }}>{lang === 'es' ? 'RevisiÃ³n por el Profesional' : 'Pro Revision Agreement'}</h4>
                   <p style={{ margin: '2px 0 0', fontSize: '11px', color: '#64748B' }}>{lang === 'es' ? 'El profesional independiente se compromete a solucionar cualquier detalle de mano de obra sin cargo extra en 24h.' : 'Independent pro agrees to correct labor issues without extra charge.'}</p>
                 </div>
               </div>
               <div style={{ background: '#F8FAFC', padding: 12, borderRadius: 14, border: '1px solid #E2E8F0', display: 'flex', gap: 10 }}>
-                <span style={{ fontSize: 18 }}>📞</span>
+                <span style={{ fontSize: 18 }}>ðŸ“ž</span>
                 <div>
-                  <h4 style={{ margin: 0, fontSize: 13, color: '#1E293B', fontWeight: 700 }}>{lang === 'es' ? 'Soporte y Mediación Directa' : 'Direct Support & Mediation'}</h4>
-                  <p style={{ margin: '2px 0 0', fontSize: '11px', color: '#64748B' }}>{lang === 'es' ? 'Nuestro equipo asiste vía WhatsApp para canalizar reclamos y facilitar soluciones.' : 'Our team assists via WhatsApp to route claims & solutions.'}</p>
+                  <h4 style={{ margin: 0, fontSize: 13, color: '#1E293B', fontWeight: 700 }}>{lang === 'es' ? 'Soporte y MediaciÃ³n Directa' : 'Direct Support & Mediation'}</h4>
+                  <p style={{ margin: '2px 0 0', fontSize: '11px', color: '#64748B' }}>{lang === 'es' ? 'Nuestro equipo asiste vÃ­a WhatsApp para canalizar reclamos y facilitar soluciones.' : 'Our team assists via WhatsApp to route claims & solutions.'}</p>
                 </div>
               </div>
             </div>
 
             <div style={{ background: '#FFFBEB', border: '1px solid #FDE68A', padding: '10px 12px', borderRadius: 12, marginBottom: 20 }}>
               <p style={{ margin: 0, fontSize: '11px', color: '#B45309', lineHeight: 1.4, fontStyle: 'italic' }}>
-                ⚖️ <strong>{lang === 'es' ? 'Términos de la Plataforma:' : 'Platform Terms:'}</strong> {lang === 'es' ? 'Pedidos Listo es una plataforma tecnológica de conexión e intermediación entre usuarios y profesionales independientes. La ejecución física del servicio y cualquier garantía técnica o de materiales es responsabilidad exclusiva del profesional contratado.' : 'Pedidos Listo is a technological platform connecting clients and independent pros. Physical execution & damages are the sole responsibility of the hired professional.'}
+                âš–ï¸ <strong>{lang === 'es' ? 'TÃ©rminos de la Plataforma:' : 'Platform Terms:'}</strong> {lang === 'es' ? 'Pedidos Listo es una plataforma tecnolÃ³gica de conexiÃ³n e intermediaciÃ³n entre usuarios y profesionales independientes. La ejecuciÃ³n fÃ­sica del servicio y cualquier garantÃ­a tÃ©cnica o de materiales es responsabilidad exclusiva del profesional contratado.' : 'Pedidos Listo is a technological platform connecting clients and independent pros. Physical execution & damages are the sole responsibility of the hired professional.'}
               </p>
             </div>
 
@@ -1183,7 +1208,7 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
               onClick={() => setShowGuaranteeModal(false)}
               style={{ width: '100%', padding: '14px', borderRadius: 16, border: 'none', background: 'linear-gradient(135deg, #F26000, #C24D00)', color: '#fff', fontWeight: 'bold', fontSize: 14, cursor: 'pointer', boxShadow: '0 4px 14px rgba(242,96,0,0.3)' }}
             >
-              Entendido 👍
+              Entendido ðŸ‘
             </button>
           </div>
         </div>
@@ -1200,6 +1225,13 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
           navigate={navigate}
         />
       )}
+
+      <PhotoNoticeModal
+        isOpen={showPhotoNotice}
+        onClose={() => setShowPhotoNotice(false)}
+        onContinue={handlePhotoNoticeContinue}
+        lang={lang}
+      />
     </div>
   )
 }
