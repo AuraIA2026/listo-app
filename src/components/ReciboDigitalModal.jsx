@@ -60,7 +60,7 @@ export default function ReciboDigitalModal({ lang = 'es', onClose, orderData, or
             <div className="recibo-brand">
               <img src={logoListo} alt="Listo Patrón" className="recibo-logo" />
               <div>
-                <h2 className="recibo-company-name">Listo Patrón RD</h2>
+                <h2 className="recibo-company-name">Listo Patrón</h2>
                 <p className="recibo-company-sub">Servicios Profesionales de Confianza</p>
                 <a href="https://www.listopatron.com.do/" target="_blank" rel="noreferrer" className="recibo-company-link">
                   🌐 www.listopatron.com.do
