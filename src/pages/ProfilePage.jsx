@@ -754,7 +754,6 @@ export default function ProfilePage({ lang, setLang, navigate, onLogout, initial
       cameraInputRef.current?.click()
     }
   }
-  const [hideUpgrade, setHideUpgrade] = useState(() => localStorage.getItem('hideUpgrade_Listo_' + (userData?.uid || 'guest')) === 'true')
 
   const { getProStoryData } = useStories()
   const userStoryData = getProStoryData(userData)

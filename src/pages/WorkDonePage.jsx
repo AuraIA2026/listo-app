@@ -124,7 +124,7 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
         userName: finalUserData.name || 'Profesional',
         requestedChanges: { photoURL: base64 },
         type: 'new_edit_request_photo',
-        title: '📸 SOLICITUD DE CAMBIO DE FOTO DE PERFIL',
+        title: '📷 SOLICITUD DE CAMBIO DE FOTO DE PERFIL',
         text: `El profesional ${finalUserData.name || 'Un profesional'} ha solicitado actualizar su foto de perfil.`,
         read: false,
         createdAt: serverTimestamp(),
@@ -165,7 +165,7 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
         userName: finalUserData.name || 'Profesional',
         requestedChanges: { coverURL: base64 },
         type: 'new_edit_request_cover',
-        title: '🖼️ï¸ SOLICITUD DE CAMBIO DE PORTADA',
+        title: '🖼️ SOLICITUD DE CAMBIO DE PORTADA',
         text: `El profesional ${finalUserData.name || 'Un profesional'} ha solicitado actualizar su foto de portada.`,
         read: false,
         createdAt: serverTimestamp(),
@@ -379,17 +379,17 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
       if (latestOrder.proId) {
         let notifText = lang==='es' ? `Recibiste ${formData.calificacion} estrellas por Trabajo Listo.` : `You received a ${formData.calificacion} star rating.`
         if (tipVal > 0) {
-          notifText += lang==='es' ? ` ðŸŽ ¡Además recibiste RD$ ${tipVal} de propina!` : ` ðŸŽ Plus you received a RD$ ${tipVal} tip!`
+          notifText += lang==='es' ? ` 🎁 ¡Además recibiste RD$ ${tipVal} de propina!` : ` 🎁 Plus you received a RD$ ${tipVal} tip!`
         }
 
         await addDoc(collection(db, 'notificaciones'), {
           userId:    latestOrder.proId,
           orderId:   latestOrder.id,
           type:      'new_review',
-          title:     tipVal > 0 ? (lang==='es' ? 'â­ ¡Reseña + ðŸŽ Propina Recibida!' : 'â­ Review + ðŸŽ Tip Received!') : (lang==='es' ? 'â­ ¡Nueva Reseña!' : 'â­ New Review!'),
+          title:     tipVal > 0 ? (lang==='es' ? '⭐ ¡Reseña + 🎁 Propina Recibida!' : '⭐ Review + 🎁 Tip Received!') : (lang==='es' ? '⭐ ¡Nueva Reseña!' : '⭐ New Review!'),
           text:      notifText,
           read:      false,
-          icon:      tipVal > 0 ? 'ðŸŽ' : 'â­',
+          icon:      tipVal > 0 ? '🎁' : '⭐',
           createdAt: serverTimestamp()
         })
 
@@ -448,7 +448,7 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
                 userId: latestOrder.proId,
                 type: 'reward',
                 title: '🎰 ¡RULETA DESBLOQUEADA!',
-                text: `¡Felicidades por tu excelente trabajo! Recibiste ${formData.calificacion} estrellas â­ y desbloqueaste 1 giro en la Ruleta Pedidos Listo.`,
+                text: `¡Felicidades por tu excelente trabajo! Recibiste ${formData.calificacion} estrellas ⭐ y desbloqueaste 1 giro en la Ruleta Pedidos Listo.`,
                 read: false,
                 icon: '🎰',
                 createdAt: serverTimestamp()
@@ -719,7 +719,7 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
 
             {pendingRequests.length > 0 && (
               <div style={{ background: 'rgba(245, 158, 11, 0.15)', border: '1px solid #F59E0B', borderRadius: '10px', padding: '10px 12px', marginBottom: '14px', fontSize: '12px', color: '#FCD34D', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span>â³</span>
+                <span>⏳</span>
                 <span>{lang === 'es' ? `Tienes ${pendingRequests.length} solicitud(es) de fotos en revisión por la Central de Mando.` : `${pendingRequests.length} photo request(s) under review by Central de Mando.`}</span>
               </div>
             )}
@@ -770,7 +770,7 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
           </div>
 
           <div style={s.card}>
-            <p style={s.sectionLabel}>â­ Reseña del Cliente</p>
+            <p style={s.sectionLabel}>⭐ Reseña del Cliente</p>
             <div style={s.stars}>
               {[1, 2, 3, 4, 5].map(star => (
                  <span key={star} style={{ fontSize: '32px', color: (latestOrder?.ratingScore >= star ? '#F26000' : '#E0D0C0'), padding: '0 4px', stroke: (latestOrder?.ratingScore >= star ? '#F26000' : '#C0B0A0'), strokeWidth: 1 }}>★</span>
@@ -785,7 +785,7 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
 
           <div style={s.card}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-              <p style={{ ...s.sectionLabel, marginBottom: 0 }}>📸 Evidencia del trabajo finalizado</p>
+              <p style={{ ...s.sectionLabel, marginBottom: 0 }}>📷 Evidencia del trabajo finalizado</p>
               <span style={{ fontSize: '12px', fontWeight: '600', color: '#666' }}>Máximo 3 fotos</span>
             </div>
             
@@ -812,7 +812,7 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
           </div>
 
           <div style={s.card}>
-            <p style={s.sectionLabel}>ðŸ“ Detalles del servicio</p>
+            <p style={s.sectionLabel}>📝 Detalles del servicio</p>
             <textarea
               name="experiencia"
               value={formData.experiencia}
@@ -843,7 +843,7 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
     )
   }
 
-  // ——— FLUJO CLIENTE (por defecto) ———
+  // ─── FLUJO CLIENTE (por defecto) ───
   return (
     <div style={s.page}>
       {/* Header */}
@@ -978,7 +978,7 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
                     <button key={opt} type="button"
                       style={formData.formaPago === opt ? s.optActive : s.opt}
                       onClick={() => setFormData({...formData, formaPago: opt})}>
-                      {opt === 'Efectivo' ? '💵' : 'ðŸ¦'} {opt}
+                      {opt === 'Efectivo' ? '💵' : '🏦'} {opt}
                     </button>
                   ))}
                 </div>
@@ -991,10 +991,10 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
                   style={s.input} />
               </div>
 
-              {/* ðŸŽ Selector de Propina Digital */}
+              {/* 🎁 Selector de Propina Digital */}
               <div style={{ marginTop: '16px', background: 'linear-gradient(135deg, #FFF3EC 0%, #FFE4D6 100%)', padding: '14px', borderRadius: '16px', border: '1.5px solid #FFD4B0' }}>
                 <p style={{ margin: '0 0 4px', fontSize: '13px', fontWeight: '800', color: '#C24D00', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <span>ðŸŽ</span> {lang === 'es' ? 'Propina al Profesional (Opcional)' : 'Tip the Professional (Optional)'}
+                  <span>🎁</span> {lang === 'es' ? 'Propina al Profesional (Opcional)' : 'Tip the Professional (Optional)'}
                 </p>
                 <p style={{ margin: '0 0 10px', fontSize: '11px', color: '#883A00' }}>
                   {lang === 'es' ? 'Recompensa su buen servicio. El 100% de la propina va directo al técnico.' : '100% of the tip goes directly to the technician.'}
@@ -1048,7 +1048,7 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
 
             {/* Calificación estrellas */}
             <div style={s.card}>
-              <p style={s.sectionLabel}>â­ Calificación del profesional</p>
+              <p style={s.sectionLabel}>⭐ Calificación del profesional</p>
               <div style={s.stars}>
                 {[1,2,3,4,5].map(n => (
                   <button key={n} type="button" onClick={() => handleStar(n)} style={s.starBtn}>

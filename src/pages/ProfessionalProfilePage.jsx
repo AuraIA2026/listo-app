@@ -3,7 +3,7 @@ import { collection, query, where, getDocs, doc, updateDoc, arrayUnion, arrayRem
 import { db } from '../firebase'
 import { CATEGORIES, ALL_SUBCATEGORIES } from '../categories'
 import { useUserData } from '../useUserData'
-import logoListo from '../assets/logo-mamey.png'
+import logoListo from '../assets/logo_listo.png'
 import HistoriasViewerModal from '../components/HistoriasViewerModal'
 import StoryAvatar from '../components/StoryAvatar'
 import { useStories } from '../hooks/useStories'
@@ -173,7 +173,7 @@ function PhotoGrid({ photos, lang, isOwnProfile, onUploadPhoto, onDeletePhoto, h
         proCategory={proCategory}
         onHireClick={onHireClick}
         isOwnProfile={isOwnProfile}
-        onUploadPhoto={() => onRequestPhotoNotice ? onRequestPhotoNotice('work') : document.getElementById('pro-work-upload')?.click()}
+        onUploadPhoto={onUploadPhoto}
       />
 
       <div className="photos-grid-title-wrap">
@@ -182,7 +182,7 @@ function PhotoGrid({ photos, lang, isOwnProfile, onUploadPhoto, onDeletePhoto, h
 
       <div className="photos-grid">
         {isOwnProfile && (
-          <button className="photo-upload-btn-new" onClick={() => onRequestPhotoNotice ? onRequestPhotoNotice('work') : document.getElementById('pro-work-upload')?.click()}>
+          <button className="photo-upload-btn-new" onClick={() => document.getElementById('pro-work-upload').click()}>
             <span className="upload-icon">➕</span>
             <span className="upload-text">Subir Trabajo</span>
           </button>
@@ -198,9 +198,6 @@ function PhotoGrid({ photos, lang, isOwnProfile, onUploadPhoto, onDeletePhoto, h
             <div key={photoId} className="photo-thumb-wrapper">
               <button className="photo-thumb" onClick={() => setLightbox({ url: photoUrl, caption })}>
                 <img src={photoUrl} alt={caption} loading="lazy" decoding="async" />
-                <div className="listo-brand-watermark" style={{ top: '8px', right: '8px' }}>
-                  <img src={logoListo} alt="Listo" className="listo-brand-watermark-img" />
-                </div>
                 <div className="photo-overlay"><span>{caption}</span></div>
               </button>
               {isOwnProfile && !isMockPhoto && (
@@ -539,7 +536,7 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
         userName: userData.name || displayPro.name || 'Profesional',
         requestedChanges: { coverURL: base64 },
         type: 'new_edit_request_cover',
-        title: '🖼️ï¸ SOLICITUD DE CAMBIO DE PORTADA',
+        title: '🖼️ SOLICITUD DE CAMBIO DE PORTADA',
         text: `El profesional ${userData.name || displayPro.name || 'Un profesional'} ha solicitado actualizar su foto de portada.`,
         read: false,
         createdAt: serverTimestamp(),
@@ -581,7 +578,7 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
         userName: userData.name || displayPro.name || 'Profesional',
         requestedChanges: { photoURL: base64 },
         type: 'new_edit_request_photo',
-        title: '🖼️ï¸ SOLICITUD DE CAMBIO DE FOTO',
+        title: '🖼️ SOLICITUD DE CAMBIO DE FOTO',
         text: `El profesional ${userData.name || displayPro.name || 'Un profesional'} ha solicitado actualizar su foto de perfil.`,
         read: false,
         createdAt: serverTimestamp(),
@@ -674,7 +671,7 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
         userName: userData.name || displayPro.name || 'Profesional',
         requestedChanges: { photos: updatedPhotos },
         type: 'new_edit_request_work',
-        title: '📸 SOLICITUD DE NUEVO TRABAJO',
+        title: '📷 SOLICITUD DE NUEVO TRABAJO',
         text: `El profesional ${userData.name || displayPro.name || 'Un profesional'} ha solicitado subir fotos de trabajos realizados a su portafolio.`,
         read: false,
         createdAt: serverTimestamp(),
@@ -736,9 +733,9 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
     } else if (p.includes('platinum') || p.includes('platino')) {
       return { label: 'PLAN PLATINUM', medal: '💎', grad: 'linear-gradient(135deg, #B0BEC5, #78909C)' }
     } else if (p.includes('gold')) {
-      return { label: 'PLAN GOLD', medal: 'â­', grad: 'linear-gradient(135deg, #FDE047, #EAB308)' }
+      return { label: 'PLAN GOLD', medal: '⭐', grad: 'linear-gradient(135deg, #FDE047, #EAB308)' }
     }
-    return { label: 'PLAN BÁSICO', medal: '🛠️ï¸', grad: 'linear-gradient(135deg, #94A3B8, #64748B)' }
+    return { label: 'PLAN BÁSICO', medal: '🛠️', grad: 'linear-gradient(135deg, #94A3B8, #64748B)' }
   }
 
   const planInfo = getPlanDetails(displayPro.currentPlan || displayPro.planId || displayPro.plan)
@@ -752,7 +749,7 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
 
       {/* Header naranja superior de 25.png */}
       <div className="pro-header-bar">
-        <button className="pro-back-btn-new" onClick={() => navigate('search')}>â†</button>
+        <button className="pro-back-btn-new" onClick={() => navigate('search')}>←</button>
         <span className="pro-header-title">PERFIL PROFESIONAL</span>
         <div className="pro-bell-wrap">
           <span className="pro-bell-icon">🔔</span>
@@ -791,11 +788,11 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
         {isOwnProfile && (
           <div style={{ position: 'absolute', top: '12px', right: '12px', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px', zIndex: 10 }}>
             <button className="edit-cover-btn-facebook" onClick={() => setShowPhotoOptions(true)} title="Editar Foto de Portada">
-              📸 {lang === 'es' ? 'Editar Portada' : 'Edit Cover'}
+              📷 {lang === 'es' ? 'Editar Portada' : 'Edit Cover'}
             </button>
             {hasPendingCover && (
               <span style={{ background: 'rgba(245, 158, 11, 0.95)', color: '#fff', fontSize: '10px', fontWeight: '800', padding: '3px 8px', borderRadius: '12px', backdropFilter: 'blur(4px)', boxShadow: '0 2px 6px rgba(0,0,0,0.3)' }}>
-                â³ {lang === 'es' ? 'Portada en revisión' : 'Cover pending'}
+                ⏳ {lang === 'es' ? 'Portada en revisión' : 'Cover pending'}
               </span>
             )}
           </div>
@@ -824,13 +821,13 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
 
           {hasPendingPhoto && (
             <span style={{ position: 'absolute', bottom: '-10px', left: '50%', transform: 'translateX(-50%)', background: '#F59E0B', color: '#fff', fontSize: '9px', fontWeight: '800', padding: '2px 7px', borderRadius: '10px', whiteSpace: 'nowrap', zIndex: 12, boxShadow: '0 2px 6px rgba(0,0,0,0.2)' }}>
-              â³ {lang === 'es' ? 'En revisión' : 'Pending'}
+              ⏳ {lang === 'es' ? 'En revisión' : 'Pending'}
             </span>
           )}
 
           {isOwnProfile ? (
             <button className="edit-avatar-btn" onClick={(e) => { e.stopPropagation(); setShowPhotoOptions(true); }} title="Cambiar Foto de Perfil" style={{ zIndex: 15 }}>
-              âœï¸
+              ✏️
             </button>
           ) : hasHiredPro ? (
             <button className="pro-chat-floating-btn" onClick={(e) => { e.stopPropagation(); navigate('chat', displayPro); }} title="Enviar mensaje" style={{ zIndex: 15 }}>
@@ -847,7 +844,7 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
             </span>
             <span className="pro-verified-badge">✓ {T.verifiedPro}</span>
             <span className="pro-verified-badge" style={{ background: '#ECFDF5', color: '#059669', borderColor: '#A7F3D0' }}>🪪 {lang === 'es' ? 'Cédula Validada' : 'ID Verified'}</span>
-            <span className="pro-verified-badge" onClick={() => setShowGuaranteeModal(true)} style={{ background: '#FFF3EC', color: '#F26000', borderColor: '#FFD4B0', cursor: 'pointer' }}>🛡️ï¸ {lang === 'es' ? 'Respaldo 24h' : '24h Support'}</span>
+            <span className="pro-verified-badge" onClick={() => setShowGuaranteeModal(true)} style={{ background: '#FFF3EC', color: '#F26000', borderColor: '#FFD4B0', cursor: 'pointer' }}>🛡️ {lang === 'es' ? 'Respaldo 24h' : '24h Support'}</span>
           </div>
         </div>
       </div>
@@ -870,7 +867,7 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <span style={{ fontSize: '26px' }}>🛡️ï¸</span>
+          <span style={{ fontSize: '26px' }}>🛡️</span>
           <div>
             <p style={{ margin: 0, fontWeight: '900', fontSize: '13px', color: '#F26000', letterSpacing: '0.3px' }}>
               {lang === 'es' ? 'RESPALDO Y MEDIACIÓN PEDIDOS LISTO (24 HORAS)' : 'LISTO PATRON 24H SUPPORT & MEDIATION'}
@@ -911,10 +908,10 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
       {/* Tabs */}
       <div className="pro-tabs">
         <button className={`pro-tab ${activeTab === 'photos' ? 'active' : ''}`} onClick={() => setActiveTab('photos')}>
-          📸 {T.photos}
+          📷 {T.photos}
         </button>
         <button className={`pro-tab ${activeTab === 'reviews' ? 'active' : ''}`} onClick={() => setActiveTab('reviews')}>
-          â­ {T.reviews} ({reviews.length})
+          ⭐ {T.reviews} ({reviews.length})
         </button>
       </div>
 
@@ -931,7 +928,6 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
             proName={displayPro.name}
             proCategory={displayPro.category || displayPro.especialidad || displayPro.categoryEs || ''}
             onHireClick={handleBookClick}
-            onRequestPhotoNotice={handleRequestPhotoNotice}
           />
         )}
 
@@ -961,7 +957,7 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
             {/* Botón escribir reseña */}
             {!isOwnProfile && (
               <button className="write-review-toggle" onClick={() => setShowWriteReview(v => !v)}>
-                âœï¸ {T.writeReview}
+                ✏️ {T.writeReview}
               </button>
             )}
 
@@ -974,7 +970,7 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
               {loadingReviews && <p style={{textAlign: 'center', color: '#666', padding: '20px'}}>{lang === 'es' ? 'Cargando reseñas...' : 'Loading reviews...'}</p>}
               {!loadingReviews && reviews.length === 0 && (
                  <div style={{ textAlign: 'center', padding: '40px 20px' }}>
-                    <span style={{ fontSize: 40 }}>â­</span>
+                    <span style={{ fontSize: 40 }}>⭐</span>
                     <p style={{ fontWeight: 'bold', margin: '12px 0 4px' }}>{T.noReviews}</p>
                     <p style={{ color: '#666', fontSize: 14 }}>{T.noReviewsSub}</p>
                  </div>
@@ -1043,11 +1039,11 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
               </h4>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 10 }}>
                 <button className="modal-btn" style={{ background: 'linear-gradient(135deg,#F26000,#C24E00)', color: '#fff', padding: '10px 8px', fontSize: 12, fontWeight: 700, borderRadius: 10, border: 'none', cursor: 'pointer' }}
-                  onClick={() => { setShowPhotoOptions(false); handleRequestPhotoNotice('avatar'); }}>
+                  onClick={() => { setShowPhotoOptions(false); document.getElementById('pro-avatar-upload').click(); }}>
                   📷 Galería
                 </button>
                 <button className="modal-btn" style={{ background: 'linear-gradient(135deg,#3B82F6,#2563EB)', color: '#fff', padding: '10px 8px', fontSize: 12, fontWeight: 700, borderRadius: 10, border: 'none', cursor: 'pointer' }}
-                  onClick={() => { setShowPhotoOptions(false); handleRequestPhotoNotice('avatar-cam'); }}>
+                  onClick={() => { setShowPhotoOptions(false); document.getElementById('pro-avatar-camera').click(); }}>
                   🤳 Cámara
                 </button>
               </div>
@@ -1063,7 +1059,7 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
                     style={{ flex: 1, padding: '6px 4px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: (displayPro.avatarPos === 'top center') ? '2px solid #F26000' : '1px solid #CBD5E1', background: '#fff', cursor: 'pointer' }}
                     onClick={() => handleSetAvatarPosition('top center')}
                   >
-                    â¬†ï¸ Arriba
+                    ⬆️ Arriba
                   </button>
                   <button 
                     type="button"
@@ -1077,7 +1073,7 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
                     style={{ flex: 1, padding: '6px 4px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: (displayPro.avatarPos === 'bottom center') ? '2px solid #F26000' : '1px solid #CBD5E1', background: '#fff', cursor: 'pointer' }}
                     onClick={() => handleSetAvatarPosition('bottom center')}
                   >
-                    â¬‡ï¸ Abajo
+                    ⬇️ Abajo
                   </button>
                 </div>
               </div>
@@ -1085,7 +1081,7 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
               {(displayPro.photoURL || displayPro.profilePhoto) && (
                 <button className="modal-btn" style={{ width: '100%', background: '#FEE2E2', color: '#DC2626', padding: '8px', fontSize: 12, fontWeight: 700, borderRadius: 10, border: 'none', cursor: 'pointer', marginTop: 10 }}
                   onClick={handleDeleteAvatar}>
-                  🗑️ï¸ {lang === 'es' ? 'Eliminar Foto de Perfil' : 'Delete Profile Photo'}
+                  🗑️ {lang === 'es' ? 'Eliminar Foto de Perfil' : 'Delete Profile Photo'}
                 </button>
               )}
             </div>
@@ -1093,11 +1089,11 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
             {/* SECCIÓN FOTO DE PORTADA */}
             <div style={{ background: '#F8FAFC', borderRadius: 16, padding: 14, marginBottom: 14, border: '1px solid #E2E8F0', textAlign: 'left' }}>
               <h4 style={{ margin: '0 0 10px', fontSize: 13, fontWeight: 800, color: '#1E293B', display: 'flex', alignItems: 'center', gap: 6 }}>
-                🖼️ï¸ {lang === 'es' ? 'Foto de Portada' : 'Cover Photo'}
+                🖼️ {lang === 'es' ? 'Foto de Portada' : 'Cover Photo'}
               </h4>
               <button className="modal-btn" style={{ width: '100%', background: 'linear-gradient(135deg,#10B981,#059669)', color: '#fff', padding: '10px', fontSize: 12, fontWeight: 700, borderRadius: 10, border: 'none', cursor: 'pointer', marginBottom: 10 }}
-                onClick={() => { setShowPhotoOptions(false); handleRequestPhotoNotice('cover'); }}>
-                🖼️ï¸ {lang === 'es' ? 'Cambiar Foto de Portada' : 'Change Cover Photo'}
+                onClick={() => { setShowPhotoOptions(false); document.getElementById('pro-cover-upload').click(); }}>
+                🖼️ {lang === 'es' ? 'Cambiar Foto de Portada' : 'Change Cover Photo'}
               </button>
 
               {/* Alineación / Centrar Foto Portada */}
@@ -1111,7 +1107,7 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
                     style={{ flex: 1, padding: '6px 4px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: (displayPro.coverPos === 'top center') ? '2px solid #10B981' : '1px solid #CBD5E1', background: '#fff', cursor: 'pointer' }}
                     onClick={() => handleSetCoverPosition('top center')}
                   >
-                    â¬†ï¸ Arriba
+                    ⬆️ Arriba
                   </button>
                   <button 
                     type="button"
@@ -1125,7 +1121,7 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
                     style={{ flex: 1, padding: '6px 4px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: (displayPro.coverPos === 'bottom center') ? '2px solid #10B981' : '1px solid #CBD5E1', background: '#fff', cursor: 'pointer' }}
                     onClick={() => handleSetCoverPosition('bottom center')}
                   >
-                    â¬‡ï¸ Abajo
+                    ⬇️ Abajo
                   </button>
                 </div>
               </div>
@@ -1133,7 +1129,7 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
               {(displayPro.coverURL || displayPro.coverPhoto) && (
                 <button className="modal-btn" style={{ width: '100%', background: '#FEE2E2', color: '#DC2626', padding: '8px', fontSize: 12, fontWeight: 700, borderRadius: 10, border: 'none', cursor: 'pointer', marginTop: 10 }}
                   onClick={handleDeleteCover}>
-                  🗑️ï¸ {lang === 'es' ? 'Eliminar Foto de Portada' : 'Delete Cover Photo'}
+                  🗑️ {lang === 'es' ? 'Eliminar Foto de Portada' : 'Delete Cover Photo'}
                 </button>
               )}
             </div>
@@ -1164,7 +1160,7 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
       {showGuaranteeModal && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 99999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }} onClick={() => setShowGuaranteeModal(false)}>
           <div style={{ background: '#fff', borderRadius: 24, padding: '28px 24px', width: '100%', maxWidth: 420, textAlign: 'left', boxShadow: '0 20px 40px rgba(0,0,0,0.25)', maxHeight: '90vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
-            <div style={{ width: 52, height: 52, borderRadius: '50%', background: '#FFF3EC', color: '#F26000', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26, marginBottom: 16 }}>🛡️ï¸</div>
+            <div style={{ width: 52, height: 52, borderRadius: '50%', background: '#FFF3EC', color: '#F26000', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26, marginBottom: 16 }}>🛡️</div>
             <h3 style={{ margin: '0 0 8px', fontSize: 18, color: '#1A1A2E', fontWeight: 800 }}>
               {lang === 'es' ? 'Respaldo y Mediación Pedidos Listo' : 'Pedidos Listo Support & Mediation'}
             </h3>
@@ -1183,7 +1179,7 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
                 </div>
               </div>
               <div style={{ background: '#F8FAFC', padding: 12, borderRadius: 14, border: '1px solid #E2E8F0', display: 'flex', gap: 10 }}>
-                <span style={{ fontSize: 18 }}>🛠️ï¸</span>
+                <span style={{ fontSize: 18 }}>🛠️</span>
                 <div>
                   <h4 style={{ margin: 0, fontSize: 13, color: '#1E293B', fontWeight: 700 }}>{lang === 'es' ? 'Revisión por el Profesional' : 'Pro Revision Agreement'}</h4>
                   <p style={{ margin: '2px 0 0', fontSize: '11px', color: '#64748B' }}>{lang === 'es' ? 'El profesional independiente se compromete a solucionar cualquier detalle de mano de obra sin cargo extra en 24h.' : 'Independent pro agrees to correct labor issues without extra charge.'}</p>
@@ -1200,7 +1196,7 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
 
             <div style={{ background: '#FFFBEB', border: '1px solid #FDE68A', padding: '10px 12px', borderRadius: 12, marginBottom: 20 }}>
               <p style={{ margin: 0, fontSize: '11px', color: '#B45309', lineHeight: 1.4, fontStyle: 'italic' }}>
-                ⚖️ï¸ <strong>{lang === 'es' ? 'Términos de la Plataforma:' : 'Platform Terms:'}</strong> {lang === 'es' ? 'Pedidos Listo es una plataforma tecnológica de conexión e intermediación entre usuarios y profesionales independientes. La ejecución física del servicio y cualquier garantía técnica o de materiales es responsabilidad exclusiva del profesional contratado.' : 'Pedidos Listo is a technological platform connecting clients and independent pros. Physical execution & damages are the sole responsibility of the hired professional.'}
+                ⚖️ <strong>{lang === 'es' ? 'Términos de la Plataforma:' : 'Platform Terms:'}</strong> {lang === 'es' ? 'Pedidos Listo es una plataforma tecnológica de conexión e intermediación entre usuarios y profesionales independientes. La ejecución física del servicio y cualquier garantía técnica o de materiales es responsabilidad exclusiva del profesional contratado.' : 'Pedidos Listo is a technological platform connecting clients and independent pros. Physical execution & damages are the sole responsibility of the hired professional.'}
               </p>
             </div>
 
