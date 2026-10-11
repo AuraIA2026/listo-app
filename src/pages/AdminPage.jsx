@@ -1492,8 +1492,20 @@ export default function AdminPage({ navigate }) {
     }
   };
 
-  // Separemos los pagos en completados y pendientes
-  const completedPayments = payments.filter(p => p.status === 'paid');
+  // Filtrar pagos de prueba históricos previos al lanzamiento oficial (11 de octubre de 2026, 12:35 PM)
+  const LAUNCH_DATE_MS = new Date('2026-10-11T16:35:00Z').getTime();
+
+  const realCompletedPayments = payments.filter(p => {
+    if (p.status !== 'paid') return false;
+    if (p.isTest) return false;
+    const payTime = p.createdAt?.seconds 
+      ? p.createdAt.seconds * 1000 
+      : (p.createdAt ? new Date(p.createdAt).getTime() : (p.date ? new Date(p.date).getTime() : 0));
+    return payTime >= LAUNCH_DATE_MS;
+  });
+
+  const completedPayments = realCompletedPayments;
+  const legacyTestPayments = payments.filter(p => p.status === 'paid' && !realCompletedPayments.includes(p));
   const pendingPayments   = payments.filter(p => p.status === 'pending');
   // Usuarios bloqueados/pendientes de aprobar (solo profesionales)
   const blockedUsers      = users.filter(u => u.role === 'professional' && (!u.approved || u.planStatus === 'inactive'));
@@ -1504,6 +1516,19 @@ export default function AdminPage({ navigate }) {
   const totalVentas = completedPayments.reduce((a,p) => a + (p.planPriceVal || p.transferAmount || 0), 0);
   const planesVendidos = completedPayments.length;
   const planesPorVerificar = pendingPayments.reduce((a,p) => a + (p.planPriceVal || p.transferAmount || 0), 0);
+
+  const handleCleanTestPayments = async () => {
+    if (!window.confirm(`¿Seguro que deseas eliminar definitivamente los ${legacyTestPayments.length} pagos de prueba de Firebase?`)) return;
+    try {
+      for (const p of legacyTestPayments) {
+        await deleteDoc(doc(db, 'payments', p.id));
+      }
+      showToast('✅ Pagos de prueba eliminados de Firebase');
+    } catch(err) {
+      console.error(err);
+      showToast('❌ Error al eliminar pagos de prueba');
+    }
+  };
 
   if (!isAuthenticated) {
     return (
@@ -2558,8 +2583,19 @@ export default function AdminPage({ navigate }) {
         {tab === 'pagos' && (
           <div className="admin-section" style={{marginTop:16}}>
             <div className="section-header">
-              <span className="section-title">Todos los pagos</span>
-              <button className="section-action" onClick={() => showToast('⏳ Exportación CSV en desarrollo')}>Exportar →</button>
+              <span className="section-title">Todos los pagos ({completedPayments.length})</span>
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                {legacyTestPayments.length > 0 && (
+                  <button 
+                    className="section-action" 
+                    onClick={handleCleanTestPayments}
+                    style={{ background: '#FEE2E2', color: '#DC2626', borderColor: '#FCA5A5', fontWeight: '800' }}
+                  >
+                    🗑️ Purgar pruebas ({legacyTestPayments.length})
+                  </button>
+                )}
+                <button className="section-action" onClick={() => showToast('⏳ Exportación CSV en desarrollo')}>Exportar →</button>
+              </div>
             </div>
             {completedPayments.length === 0 && (
                <div className="empty-admin"><p>Aún no hay transacciones validadas.</p></div>
