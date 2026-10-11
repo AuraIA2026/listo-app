@@ -176,6 +176,9 @@ export default function ReciboDigitalModal({ lang = 'es', onClose, orderData, or
           <button type="button" className="recibo-btn whatsapp" onClick={handleWhatsAppShare}>
             📲 {lang === 'es' ? 'Enviar por WhatsApp' : 'Send to WhatsApp'}
           </button>
+          <button type="button" className="recibo-btn close" onClick={onClose} title="Cerrar factura">
+            ✕ {lang === 'es' ? 'Cerrar' : 'Close'}
+          </button>
         </div>
       </div>
     </div>
