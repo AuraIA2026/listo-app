@@ -19,6 +19,34 @@ const BANCOS_ORIGEN = [
   'Otro / Efectivo'
 ];
 
+// Comprime imagen a base64 (o lee directamente si es PDF)
+const compressImage = (file) => new Promise((resolve, reject) => {
+  const reader = new FileReader();
+  if (file.type === 'application/pdf' || (file.name && file.name.toLowerCase().endsWith('.pdf'))) {
+    reader.onload = (e) => resolve(e.target.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+    return;
+  }
+  reader.onload = (e) => {
+    const img = new Image();
+    img.onload = () => {
+      const MAX = 900;
+      let { width, height } = img;
+      if (width > height) { if (width > MAX) { height = Math.round(height * MAX / width); width = MAX; } }
+      else { if (height > MAX) { width = Math.round(width * MAX / height); height = MAX; } }
+      const canvas = document.createElement("canvas");
+      canvas.width = width; canvas.height = height;
+      canvas.getContext("2d").drawImage(img, 0, 0, width, height);
+      resolve(canvas.toDataURL("image/jpeg", 0.8));
+    };
+    img.onerror = reject;
+    img.src = e.target.result;
+  };
+  reader.onerror = reject;
+  reader.readAsDataURL(file);
+});
+
 export default function PlanSelectionModal({ isOpen, onClose, onSelectPlan, proInfo: propProInfo }) {
   if (!isOpen) return null;
 
@@ -46,6 +74,8 @@ export default function PlanSelectionModal({ isOpen, onClose, onSelectPlan, proI
   const [proPhone, setProPhone] = useState('');
   const [originBank, setOriginBank] = useState('');
   const [depositorName, setDepositorName] = useState('');
+  const [voucherFile, setVoucherFile] = useState(null);
+  const [voucherPreview, setVoucherPreview] = useState(null);
   const [receiptUploaded, setReceiptUploaded] = useState(false);
   const [copiedIdx, setCopiedIdx] = useState(null);
   const [submitting, setSubmitting] = useState(false);
@@ -211,6 +241,15 @@ export default function PlanSelectionModal({ isOpen, onClose, onSelectPlan, proI
 
     setSubmitting(true);
     try {
+      let receiptBase64 = null;
+      if (voucherFile) {
+        try {
+          receiptBase64 = await compressImage(voucherFile);
+        } catch (errImg) {
+          console.warn('Error comprimiendo comprobante:', errImg);
+        }
+      }
+
       // Guardar pago en Firestore
       await addDoc(collection(db, 'payments'), {
         proId: proData.uid || '',
@@ -228,6 +267,7 @@ export default function PlanSelectionModal({ isOpen, onClose, onSelectPlan, proI
         paymentMethod: activeTab,
         bank: originBank || 'Banreservas',
         depositorName: depositorName || proName,
+        receiptUrl: receiptBase64 || null,
         createdAt: serverTimestamp()
       });
 
@@ -493,7 +533,7 @@ export default function PlanSelectionModal({ isOpen, onClose, onSelectPlan, proI
             </div>
 
             {/* Nombre del Depositante */}
-            <div style={{ textAlign: 'left', marginBottom: '20px' }}>
+            <div style={{ textAlign: 'left', marginBottom: '16px' }}>
               <label style={{ fontSize: '12px', fontWeight: '800', color: '#1E293B', display: 'block', marginBottom: '6px' }}>
                 Nombre del Depositante
               </label>
@@ -507,6 +547,57 @@ export default function PlanSelectionModal({ isOpen, onClose, onSelectPlan, proI
                   border: '1.5px solid #E2E8F0', background: '#F8FAFC', fontSize: '13.5px',
                   fontWeight: '600', color: '#1E293B', outline: 'none', boxSizing: 'border-box'
                 }}
+              />
+            </div>
+
+            {/* Subir Comprobante Foto o PDF */}
+            <div style={{
+              border: voucherPreview ? '2px solid #10B981' : '2px dashed #CBD5E1',
+              borderRadius: '16px', padding: '14px',
+              textAlign: 'center', marginBottom: '18px',
+              background: voucherPreview ? '#F0FDF4' : '#F8FAFC',
+              transition: 'all 0.2s'
+            }}>
+              {voucherPreview && voucherPreview !== 'pdf' ? (
+                <div style={{ marginBottom: '8px' }}>
+                  <img 
+                    src={voucherPreview} 
+                    alt="Comprobante" 
+                    style={{ maxHeight: '140px', maxWidth: '100%', borderRadius: '10px', border: '1px solid #86EFAC', objectFit: 'contain' }} 
+                  />
+                  <div style={{ fontSize: '11px', color: '#15803D', fontWeight: '800', marginTop: '4px' }}>
+                    ✓ Foto de comprobante cargada ({voucherFile?.name})
+                  </div>
+                </div>
+              ) : voucherPreview === 'pdf' ? (
+                <div style={{ marginBottom: '8px', color: '#2563EB', fontWeight: '800', fontSize: '12px' }}>
+                  📑 Archivo PDF cargado ({voucherFile?.name})
+                </div>
+              ) : (
+                <>
+                  <div style={{ fontSize: '24px', marginBottom: '4px' }}>📎</div>
+                  <div style={{ fontSize: '12px', fontWeight: '700', color: '#475569' }}>
+                    Arrastra tu comprobante o haz clic para subir foto
+                  </div>
+                </>
+              )}
+              <input
+                type="file"
+                accept="image/*,.pdf"
+                onChange={e => {
+                  const f = e.target.files[0];
+                  if (f) {
+                    setVoucherFile(f);
+                    if (f.type.startsWith('image/')) {
+                      const reader = new FileReader();
+                      reader.onload = ev => setVoucherPreview(ev.target.result);
+                      reader.readAsDataURL(f);
+                    } else {
+                      setVoucherPreview('pdf');
+                    }
+                  }
+                }}
+                style={{ marginTop: '6px', fontSize: '11px' }}
               />
             </div>
 

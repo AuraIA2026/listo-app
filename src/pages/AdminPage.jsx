@@ -632,6 +632,34 @@ const fmtDate = (timestamp) => {
   return d.toLocaleDateString('es-DO', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
 };
 
+// Comprime imagen a base64 (o lee directamente si es PDF)
+const compressImage = (file) => new Promise((resolve, reject) => {
+  const reader = new FileReader();
+  if (file.type === 'application/pdf' || (file.name && file.name.toLowerCase().endsWith('.pdf'))) {
+    reader.onload = (e) => resolve(e.target.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+    return;
+  }
+  reader.onload = (e) => {
+    const img = new Image();
+    img.onload = () => {
+      const MAX = 900;
+      let { width, height } = img;
+      if (width > height) { if (width > MAX) { height = Math.round(height * MAX / width); width = MAX; } }
+      else { if (height > MAX) { width = Math.round(width * MAX / height); height = MAX; } }
+      const canvas = document.createElement("canvas");
+      canvas.width = width; canvas.height = height;
+      canvas.getContext("2d").drawImage(img, 0, 0, width, height);
+      resolve(canvas.toDataURL("image/jpeg", 0.8));
+    };
+    img.onerror = reject;
+    img.src = e.target.result;
+  };
+  reader.onerror = reject;
+  reader.readAsDataURL(file);
+});
+
 /* ─── ICONOS EXÓTICOS MAMEY PARA TABS ADMIN ──────────────── */
 function ExoticTabIcon({ id, active }) {
   const strokeColor = active ? '#FFFFFF' : '#F26000';
@@ -800,6 +828,22 @@ export default function AdminPage({ navigate }) {
       // Si no existe documento en Firestore (demo) se gestiona de forma transparente en estado local
     }
     showToast(`⚙️ Comisión para el comercio configurada a ${validPct}%`);
+  };
+
+  // Subir o adjuntar comprobante manualmente por el Administrador
+  const handleUploadVoucherAdmin = async (paymentId, file) => {
+    if (!file) return;
+    try {
+      showToast('⏳ Subiendo y procesando comprobante...');
+      const base64 = await compressImage(file);
+      await updateDoc(doc(db, 'payments', paymentId), {
+        receiptUrl: base64
+      });
+      showToast('✅ Comprobante adjuntado con éxito');
+    } catch (err) {
+      console.error('Error al subir comprobante:', err);
+      showToast('❌ Error al subir comprobante');
+    }
   };
 
   useEffect(() => {
@@ -2575,33 +2619,266 @@ export default function AdminPage({ navigate }) {
                     <div className="cc-amount">{fmtRD(amount)}</div>
                   </div>
                   
-                  {c.receiptUrl && (
-                    <div style={{marginBottom:12, marginTop: 8}}>
-                      <div style={{fontSize:11, color:'var(--muted)', marginBottom:6, fontWeight:700}}>📄 COMPROBANTE DE PAGO:</div>
-                      {c.receiptUrl.toLowerCase().includes('.pdf') ? (
-                        <a href={c.receiptUrl} target="_blank" rel="noreferrer" style={{color:'var(--blue)', fontSize:13, textDecoration:'underline', fontWeight:'700'}}>
-                          📄 Ver comprobante PDF (Abrir en nueva pestaña)
-                        </a>
-                      ) : (
-                        <img 
-                          src={c.receiptUrl} 
-                          alt="comprobante" 
-                          style={{
-                            width: '100%', 
-                            maxHeight: '200px', 
-                            objectFit: 'contain', 
-                            borderRadius: '12px', 
-                            border: '1.5px solid var(--border)',
-                            cursor: 'pointer',
-                            background: '#F8FAFC'
-                          }}
-                          onClick={() => window.open(c.receiptUrl, '_blank')}
-                        />
-                      )}
-                    </div>
-                  )}
+                  {/* ── SECCIÓN COMPROBANTE DE DEPÓSITO ── */}
+                  {(() => {
+                    const receiptUrl = c.receiptUrl || c.voucherUrl || c.comprobanteUrl || c.receipt || c.voucher;
+                    const isPdf = receiptUrl && (receiptUrl.toLowerCase().includes('.pdf') || receiptUrl.startsWith('data:application/pdf'));
+
+                    if (receiptUrl) {
+                      return (
+                        <div style={{
+                          marginBottom: 14, marginTop: 10,
+                          background: '#F8FAFC',
+                          border: '1.5px solid #E2E8F0',
+                          borderRadius: '16px',
+                          padding: '12px 14px',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '10px'
+                        }}>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              <span style={{ fontSize: '15px' }}>📄</span>
+                              <span style={{ fontSize: '12px', fontWeight: '800', color: '#1E293B', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
+                                Comprobante de Depósito
+                              </span>
+                              <span style={{ fontSize: '10.5px', background: '#DCFCE7', color: '#15803D', fontWeight: '800', padding: '2px 8px', borderRadius: '12px' }}>
+                                ✓ Adjunto
+                              </span>
+                            </div>
+                            
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (isPdf) {
+                                  window.open(receiptUrl, '_blank');
+                                } else {
+                                  setPreviewImageModal({
+                                    url: receiptUrl,
+                                    title: `Comprobante de Depósito - ${c.proName} (${fmtRD(amount)})`
+                                  });
+                                }
+                              }}
+                              style={{
+                                background: 'linear-gradient(135deg, #F26000, #EA580C)',
+                                color: '#FFF',
+                                border: 'none',
+                                borderRadius: '10px',
+                                padding: '6px 14px',
+                                fontSize: '12px',
+                                fontWeight: '800',
+                                cursor: 'pointer',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '6px',
+                                boxShadow: '0 2px 8px rgba(242,96,0,0.3)',
+                                transition: 'all 0.2s'
+                              }}
+                              onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.03)'}
+                              onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+                            >
+                              👁️ Ver Foto Comprobante
+                            </button>
+                          </div>
+
+                          {isPdf ? (
+                            <div 
+                              onClick={() => window.open(receiptUrl, '_blank')}
+                              style={{
+                                background: '#FFF',
+                                border: '1px dashed #CBD5E1',
+                                borderRadius: '10px',
+                                padding: '12px',
+                                textAlign: 'center',
+                                cursor: 'pointer'
+                              }}
+                            >
+                              <span style={{ fontSize: '24px' }}>📑</span>
+                              <div style={{ fontSize: '12px', fontWeight: '700', color: '#2563EB', marginTop: '4px' }}>
+                                Documento PDF adjunto — Clic para abrir en nueva pestaña
+                              </div>
+                            </div>
+                          ) : (
+                            <div
+                              onClick={() => setPreviewImageModal({
+                                url: receiptUrl,
+                                title: `Comprobante de Depósito - ${c.proName} (${fmtRD(amount)})`
+                              })}
+                              style={{
+                                position: 'relative',
+                                width: '100%',
+                                maxHeight: '220px',
+                                borderRadius: '12px',
+                                overflow: 'hidden',
+                                border: '1.5px solid #CBD5E1',
+                                background: '#0F172A',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center'
+                              }}
+                            >
+                              <img
+                                src={receiptUrl}
+                                alt="Comprobante"
+                                style={{
+                                  width: '100%',
+                                  maxHeight: '220px',
+                                  objectFit: 'contain',
+                                  display: 'block'
+                                }}
+                              />
+                              <div style={{
+                                position: 'absolute',
+                                bottom: '8px',
+                                right: '8px',
+                                background: 'rgba(0,0,0,0.75)',
+                                color: '#FFF',
+                                padding: '4px 10px',
+                                borderRadius: '8px',
+                                fontSize: '11px',
+                                fontWeight: '700',
+                                backdropFilter: 'blur(4px)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '4px'
+                              }}>
+                                🔍 Toca para ampliar HD
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <div style={{
+                        marginBottom: 14, marginTop: 10,
+                        background: '#FFFBEB',
+                        border: '1.5px dashed #FDE68A',
+                        borderRadius: '16px',
+                        padding: '12px 14px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '10px'
+                      }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <span style={{ fontSize: '16px' }}>⚠️</span>
+                            <div>
+                              <div style={{ fontSize: '12px', fontWeight: '800', color: '#92400E' }}>
+                                Sin comprobante adjunto
+                              </div>
+                              <div style={{ fontSize: '11px', color: '#B45309' }}>
+                                No se ha cargado foto del depósito para esta transferencia
+                              </div>
+                            </div>
+                          </div>
+
+                          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
+                            {c.phone && (
+                              <a
+                                href={`https://wa.me/${(c.phone || '').replace(/[^0-9]/g, '')}?text=${encodeURIComponent(`Hola ${c.proName}, para activar tu ${c.planName || 'Plan'} (${fmtRD(amount)}) en Listo Patrón, por favor envíanos la foto de tu comprobante de depósito.`)}`}
+                                target="_blank"
+                                rel="noreferrer"
+                                style={{
+                                  background: '#25D366',
+                                  color: '#FFF',
+                                  borderRadius: '8px',
+                                  padding: '6px 12px',
+                                  fontSize: '11.5px',
+                                  fontWeight: '800',
+                                  textDecoration: 'none',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '4px'
+                                }}
+                              >
+                                💬 Pedir por WhatsApp
+                              </a>
+                            )}
+
+                            <label style={{
+                              background: '#1E293B',
+                              color: '#FFF',
+                              borderRadius: '8px',
+                              padding: '6px 12px',
+                              fontSize: '11.5px',
+                              fontWeight: '800',
+                              cursor: 'pointer',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px'
+                            }}>
+                              📷 Adjuntar Foto
+                              <input
+                                type="file"
+                                accept="image/*,.pdf"
+                                style={{ display: 'none' }}
+                                onChange={(e) => handleUploadVoucherAdmin(c.id, e.target.files[0])}
+                              />
+                            </label>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })()}
 
                   <div className="cc-actions">
+                    {/* Botón Ver Comprobante si existe o Adjuntar si no existe */}
+                    {(() => {
+                      const receiptUrl = c.receiptUrl || c.voucherUrl || c.comprobanteUrl || c.receipt || c.voucher;
+                      if (receiptUrl) {
+                        return (
+                          <button
+                            className="cc-btn"
+                            style={{
+                              background: '#EFF6FF',
+                              color: '#1D4ED8',
+                              border: '1.5px solid rgba(59, 130, 246, 0.4)',
+                              fontWeight: '800'
+                            }}
+                            onClick={() => {
+                              if (receiptUrl.toLowerCase().includes('.pdf') || receiptUrl.startsWith('data:application/pdf')) {
+                                window.open(receiptUrl, '_blank');
+                              } else {
+                                setPreviewImageModal({
+                                  url: receiptUrl,
+                                  title: `Comprobante de Depósito - ${c.proName} (${fmtRD(amount)})`
+                                });
+                              }
+                            }}
+                          >
+                            👁️ Ver Foto
+                          </button>
+                        );
+                      }
+                      return (
+                        <label
+                          className="cc-btn"
+                          style={{
+                            background: '#FFF7ED',
+                            color: '#C2410C',
+                            border: '1.5px dashed rgba(242, 96, 0, 0.5)',
+                            fontWeight: '800',
+                            textAlign: 'center',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                          }}
+                        >
+                          📷 Subir Foto
+                          <input
+                            type="file"
+                            accept="image/*,.pdf"
+                            style={{ display: 'none' }}
+                            onChange={(e) => handleUploadVoucherAdmin(c.id, e.target.files[0])}
+                          />
+                        </label>
+                      );
+                    })()}
+
                     <button className="cc-btn remind"
                       onClick={() => setConfirm({type:'remind', obj:c})}>
                       📱 Mensaje
