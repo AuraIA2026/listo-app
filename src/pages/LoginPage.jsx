@@ -472,23 +472,6 @@ export default function LoginPage({ lang, navigate }) {
             <p className="auth-sub">{T.sub}</p>
           </div>
 
-          <div className="user-type-toggle">
-            <button
-              type="button"
-              className={userType === 'client' ? 'active' : ''}
-              onClick={() => setUserType('client')}
-            >
-              👤 {T.asClient}
-            </button>
-            <button
-              type="button"
-              className={userType === 'pro' ? 'active' : ''}
-              onClick={() => setUserType('pro')}
-            >
-              ⚡ {T.asPro}
-            </button>
-          </div>
-
           <div className="auth-form">
             <div className="field">
               <label>{T.email}</label>
