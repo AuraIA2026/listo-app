@@ -44,6 +44,7 @@ import ninera     from '../assets/pros/Niñera.jpg'
 import ninera1    from '../assets/pros/Niñera1.jpg'
 import bannerPros from '../assets/banner_pros.jpg'
 import logoListo  from '../assets/logo-mamey.png'
+import pedidosListo2Img from '../assets/pedidos-listo-2.png'
 
 const testimonials = [
   { nameEs:'María González',  photo: electrica1, rating:5, dateEs:'Hace 2 días',    dateEn:'2 days ago',   specEs:'Electricista', specEn:'Electrician', textEs:'Excelente servicio, llegó puntual y resolvió el problema en menos de una hora. Lo recomiendo 100%.', textEn:'Excellent service, arrived on time and fixed the problem in less than an hour. 100% recommended.' },
@@ -1522,6 +1523,48 @@ export default function HomePage({ lang, navigate, userRole }) {
               )}
             </div>
           </section>
+
+          {/* ── CINTA OFICIAL DE PEDIDOS LISTO (AL FINAL DE TODOS LOS PROFESIONALES) ── */}
+          <div 
+            className="pedidos-ribbon-banner"
+            onClick={() => navigate('mandame')}
+            title={lang === 'es' ? 'Ir a Pedidos Listo - Delivery y Mandados' : 'Go to Pedidos Listo - Delivery & Errands'}
+          >
+            <div className="pedidos-ribbon-shimmer" />
+            <div className="pedidos-ribbon-content">
+              <div className="pedidos-ribbon-brand-wrap">
+                <span className="pedidos-ribbon-icon">🛵</span>
+                <img 
+                  src={pedidosListo2Img} 
+                  alt="Pedidos Listo" 
+                  className="pedidos-ribbon-logo-img" 
+                />
+              </div>
+              <div className="pedidos-ribbon-text-group">
+                <p className="pedidos-ribbon-title">
+                  {lang === 'es' ? (
+                    <>Envíos y mandados express con <strong>Pedidos Listo</strong></>
+                  ) : (
+                    <>Express delivery & errands with <strong>Pedidos Listo</strong></>
+                  )}
+                </p>
+                <p className="pedidos-ribbon-sub">
+                  {lang === 'es' 
+                    ? 'Comida, compras, farmacia y envíos en minutos a tu puerta' 
+                    : 'Food, shopping, pharmacy & deliveries to your door in minutes'}
+                </p>
+              </div>
+            </div>
+            <button 
+              className="pedidos-ribbon-btn"
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate('mandame');
+              }}
+            >
+              🛵 {lang === 'es' ? 'Pedir Ahora ›' : 'Order Now ›'}
+            </button>
+          </div>
 
           <section ref={catListRef} className={`cat-list-section${catListVisible ? ' reveal' : ''}`}>
             <div className="hp-sec-header">
