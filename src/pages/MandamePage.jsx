@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { doc, updateDoc, serverTimestamp, collection, query, where, onSnapshot } from 'firebase/firestore';
+import { doc, updateDoc, serverTimestamp, collection, query, where, onSnapshot, addDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import './MandamePage.css';
 import './HomePage.css';
@@ -262,59 +262,105 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
     } catch (e) {}
   };
 
-  // Escuchar comercios reales aprobados en la colección 'locales'
+  const [partnerStores, setPartnerStores] = useState([]);
+  const [dbProducts, setDbProducts] = useState([]);
+
+  // 1. Escuchar comercios reales aprobados en 'locales' y 'partner_requests'
   useEffect(() => {
+    let unsubLocales = () => {};
+    let unsubPartnerReqs = () => {};
+
     try {
-      const qLoc = query(collection(db, 'locales'), where('activo', '==', true));
-      const unsubLocales = onSnapshot(qLoc, (snap) => {
+      const qLoc = query(collection(db, 'locales'));
+      unsubLocales = onSnapshot(qLoc, (snap) => {
         const list = snap.docs.map(d => {
           const data = d.data();
           return {
             id: d.id,
-            name: data.nombre || data.businessName || 'Comercio Partner',
+            ...data,
+            name: data.nombre || data.businessName || data.name || 'Comercio Partner',
+            rating: data.rating || 5.0,
+            ratingText: `${data.rating || '5.0'} ⭐ (Activo)`,
+            timeMinutes: 20,
+            time: '15-25 min',
+            deliveryFee: 0,
+            badge: data.plan || 'Comercio Validado 🇩🇴',
+            category: (data.categoria || data.category || '').toLowerCase().includes('comida') || (data.categoria || data.category || '').toLowerCase().includes('restaurante') ? 'criollo' : 'bocado',
+            image: data.image || data.portadaURL || data.logoURL || data.logo || 'assets/burger_3d.png',
+            phone: data.telefono || data.phone || data.whatsapp || '',
+            city: data.ciudad || data.city || 'Santiago',
+            ownerName: data.propietario || data.ownerName || '',
+            email: (data.email || '').toLowerCase().trim(),
+            activo: data.activo !== false
+          };
+        }).filter(st => st.activo !== false);
+        setDbStores(list);
+      }, (err) => console.warn("Locales listener error:", err));
+    } catch (e) {}
+
+    try {
+      const qPart = query(collection(db, 'partner_requests'), where('status', '==', 'approved'));
+      unsubPartnerReqs = onSnapshot(qPart, (snap) => {
+        const list = snap.docs.map(d => {
+          const data = d.data();
+          return {
+            id: d.id,
+            name: data.businessName || 'Comercio Partner',
             rating: 5.0,
             ratingText: '5.0 ⭐ (Activo)',
             timeMinutes: 20,
             time: '15-25 min',
             deliveryFee: 0,
-            badge: data.plan || 'Comercio Validado 🇩🇴',
-            category: (data.categoria || '').toLowerCase().includes('comida') || (data.categoria || '').toLowerCase().includes('restaurante') ? 'criollo' : 'bocado',
-            image: data.image || data.logo || 'assets/burger_3d.png',
-            phone: data.telefono || data.phone || '',
-            city: data.ciudad || data.city || 'Santiago',
-            ownerName: data.propietario || data.ownerName || '',
-            email: data.email || ''
+            badge: 'Comercio Partner 🇩🇴',
+            category: (data.businessType || '').toLowerCase().includes('comida') || (data.businessType || '').toLowerCase().includes('restaurante') ? 'criollo' : 'bocado',
+            image: data.image || 'assets/burger_3d.png',
+            phone: data.phone || '',
+            city: data.city || 'Santiago',
+            ownerName: `${data.ownerName || ''} ${data.ownerLastName || ''}`.trim(),
+            email: (data.email || '').toLowerCase().trim()
           };
         });
-        setDbStores(list);
-      }, (err) => {
-        console.warn("Locales listener error:", err);
-      });
-      return () => unsubLocales();
+        setPartnerStores(list);
+      }, (err) => console.warn("Partner requests listener error:", err));
+    } catch (e) {}
+
+    return () => {
+      unsubLocales();
+      unsubPartnerReqs();
+    };
+  }, []);
+
+  // 2. Escuchar platillos/productos en tiempo real de todos los comercios
+  useEffect(() => {
+    try {
+      const qProd = query(collection(db, 'productos'));
+      const unsubProd = onSnapshot(qProd, (snap) => {
+        const list = snap.docs.map(d => {
+          const data = d.data();
+          return {
+            id: d.id,
+            ...data,
+            name: data.name || data.nombre || 'Platillo',
+            price: data.price !== undefined ? data.price : (data.precio || 0),
+            description: data.description || data.descripcion || '',
+            image: data.image || data.images?.[0] || 'assets/burger_3d.png',
+            images: Array.isArray(data.images) && data.images.length > 0 ? data.images : [data.image || 'assets/burger_3d.png'],
+            storeName: data.storeName || data.tienda || 'Comercio Partner',
+            storeId: data.storeId || '',
+            inStock: data.inStock !== false
+          };
+        });
+        setDbProducts(list);
+      }, (err) => console.warn("Productos listener error:", err));
+      return () => unsubProd();
     } catch (e) {
-      console.warn("Error subscribing to locales:", e);
+      console.warn("Error listening to productos:", e);
     }
   }, []);
 
-  // Combinar comercios aprobados de la base de datos con las tiendas base
-  const combinedStores = [
-    ...dbStores,
-    ...INITIAL_STORES.filter(init => !dbStores.some(dbS => (dbS.name || '').toLowerCase() === (init.name || '').toLowerCase()))
-  ];
-
-  // Escuchar cambios de pestaña desde la barra de navegación global (Ej: Mercado, Buscar, Pedidos)
-  useEffect(() => {
-    const handleSwitch = (e) => {
-      if (e.detail) setActiveTab(e.detail);
-    };
-    window.addEventListener('mandame-switch-tab', handleSwitch);
-    return () => window.removeEventListener('mandame-switch-tab', handleSwitch);
-  }, []);
-
+  // Estados principales de navegación y búsqueda
   const [activeTab, setActiveTab] = useState('inicio'); // 'inicio' | 'mercado' | 'promociones' | 'pedidos' | 'buscar'
   const [merchantTab, setMerchantTab] = useState('catalogo'); // 'resumen' | 'pedidos' | 'catalogo' | 'promos' | 'resenas' | 'finanzas' | 'perfil'
-
-  // Cart & State
   const [cart, setCart] = useState([]);
   const [selectedTip, setSelectedTip] = useState(50);
   const [searchQuery, setSearchQuery] = useState('');
@@ -325,6 +371,67 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
   const [isCartModalOpen, setIsCartModalOpen] = useState(false);
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
+
+  // Combinar todos los comercios aprobados de la base de datos sin duplicar
+  const allDbStores = [
+    ...dbStores,
+    ...partnerStores.filter(ps => !dbStores.some(ds => (ds.name || '').toLowerCase().trim() === (ps.name || '').toLowerCase().trim() || (ds.email && ps.email && ds.email === ps.email)))
+  ];
+
+  const combinedStores = [
+    ...allDbStores,
+    ...INITIAL_STORES.filter(init => !allDbStores.some(dbS => (dbS.name || '').toLowerCase().trim() === (init.name || '').toLowerCase().trim()))
+  ];
+
+  // Todos los platillos/productos disponibles en la plataforma (en la nube + base inicial)
+  const allPlatformProducts = [
+    ...dbProducts,
+    ...INITIAL_PRODUCTS.filter(init => !dbProducts.some(dbP => (dbP.name || '').toLowerCase().trim() === (init.name || '').toLowerCase().trim()))
+  ];
+
+  // Función para normalizar texto en búsquedas (sin acentos, minúsculas, espacios limpios)
+  const normStr = (str) => {
+    if (!str) return '';
+    return str
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]/g, "")
+      .trim();
+  };
+
+  const cleanQuery = normStr(searchQuery);
+
+  // Platillos coincidentes en tiempo real
+  const searchMatchedProducts = cleanQuery ? allPlatformProducts.filter(p => {
+    const n = normStr(p.name);
+    const d = normStr(p.description);
+    const c = normStr(p.category);
+    const s = normStr(p.storeName);
+    return n.includes(cleanQuery) || d.includes(cleanQuery) || c.includes(cleanQuery) || s.includes(cleanQuery) ||
+      (cleanQuery.includes('chicharon') && (n.includes('chicharron') || d.includes('chicharron'))) ||
+      (cleanQuery.includes('chicharron') && (n.includes('chicharon') || d.includes('chicharon'))) ||
+      (cleanQuery.includes('yaroa') && (n.includes('yaroa') || d.includes('yaroa'))) ||
+      (cleanQuery.includes('pollo') && (n.includes('pollo') || n.includes('pechurina'))) ||
+      (cleanQuery.includes('pizza') && n.includes('pizza'));
+  }) : [];
+
+  // Comercios / Restaurantes coincidentes en tiempo real
+  const searchMatchedStores = cleanQuery ? combinedStores.filter(st => {
+    const n = normStr(st.name);
+    const c = normStr(st.category);
+    const city = normStr(st.city);
+    return n.includes(cleanQuery) || c.includes(cleanQuery) || city.includes(cleanQuery);
+  }) : [];
+
+  // Escuchar cambios de pestaña desde la barra de navegación global (Ej: Mercado, Buscar, Pedidos)
+  useEffect(() => {
+    const handleSwitch = (e) => {
+      if (e.detail) setActiveTab(e.detail);
+    };
+    window.addEventListener('mandame-switch-tab', handleSwitch);
+    return () => window.removeEventListener('mandame-switch-tab', handleSwitch);
+  }, []);
 
   // Abrir automáticamente el comercio si fue solicitado desde el panel de Admin en vista pública
   useEffect(() => {
@@ -378,12 +485,30 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
 
     setIsRegisteringCommerce(true);
     try {
+      const cleanStoreName = regStoreName.trim();
+      const cleanEmail = (userData?.email || '').toLowerCase().trim();
+
+      // Guardar en 'locales' para que aparezca de una vez en los comercios de la App
+      await addDoc(collection(db, 'locales'), {
+        nombre: cleanStoreName,
+        propietario: userData?.name || userData?.displayName || 'Dueño Comercio',
+        email: cleanEmail,
+        telefono: regStorePhone.trim(),
+        ciudad: regStoreAddress.trim() || 'Santiago',
+        categoria: regStoreCategory || 'Restaurante / Comida',
+        activo: true,
+        verificado: true,
+        plan: 'PedidosListo Partner',
+        proId: userData?.uid || null,
+        createdAt: new Date().toISOString()
+      });
+
       if (userData?.uid) {
         await updateDoc(doc(db, 'users', userData.uid), {
           isMerchant: true,
           role: 'comercio',
           hasCommerce: true,
-          storeName: regStoreName.trim(),
+          storeName: cleanStoreName,
           storeCategory: regStoreCategory,
           storePhone: regStorePhone.trim(),
           storeAddress: regStoreAddress.trim(),
@@ -393,17 +518,14 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
 
       setMerchantState(prev => ({
         ...prev,
-        storeName: regStoreName.trim(),
+        storeName: cleanStoreName,
         address: regStoreAddress.trim(),
         prepTime: regPrepTime
       }));
 
-      localStorage.setItem('force_listo_merchant_mode', 'true');
-      localStorage.setItem('pedidos_listo_view_mode', 'merchant');
-
       handleSetViewMode('merchant');
       setIsRegisterCommerceModalOpen(false);
-      showToast(`🎉 ¡Comercio Activado! Bienvenido a ${regStoreName.trim()} en Pedidos Listo Partner`);
+      showToast(`🎉 ¡Comercio "${cleanStoreName}" activado y publicado en la App!`);
     } catch (err) {
       console.error('Error registrando comercio:', err);
       setMerchantState(prev => ({
@@ -1354,16 +1476,22 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
     showToast('⭐ Foto establecida como portada principal');
   };
 
-  const handleAddNewProduct = (e) => {
+  const handleAddNewProduct = async (e) => {
     e.preventDefault();
+    if (!newProdName.trim()) {
+      showToast('⚠️ Por favor escribe el nombre del platillo');
+      return;
+    }
     const coverImage = newProdImages[0] || 'assets/burger_3d.png';
+    const activeStoreName = merchantState.storeName || userData?.storeName || userData?.commerceName || 'Comercio Partner';
+    const activeStoreId = userData?.uid || userData?.email || 'store-' + Date.now();
+    const activeStoreEmail = (userData?.email || '').toLowerCase().trim();
+
     const newProd = {
-      id: 'prod-' + Date.now(),
-      storeId: 'store-1',
-      name: newProdName || 'Platillo Especial Pedidos Listo',
+      name: newProdName.trim(),
       price: parseFloat(newProdPrice) || 450,
       category: newProdCategory,
-      description: newProdDesc || 'Platillo especial preparado fresco al momento.',
+      description: (newProdDesc || '').trim() || 'Platillo especial preparado fresco al momento.',
       image: coverImage,
       images: newProdImages.length > 0 ? newProdImages : [coverImage],
       inStock: true,
@@ -1371,15 +1499,32 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
       dietaryTags: selectedDietaryTags,
       guarniciones: selectedGuarniciones,
       bebidas: selectedBebidas,
-      extras: selectedExtras
+      extras: selectedExtras,
+      storeId: activeStoreId,
+      storeName: activeStoreName,
+      storeEmail: activeStoreEmail,
+      createdAt: new Date().toISOString()
     };
+
+    // Guardar en Firestore colección 'productos' para que aparezca al instante en las búsquedas de los clientes
+    try {
+      const docRef = await addDoc(collection(db, 'productos'), newProd);
+      newProd.id = docRef.id;
+    } catch (eDb) {
+      console.warn("Error guardando producto en Firestore:", eDb);
+      newProd.id = 'prod-' + Date.now();
+    }
 
     setMerchantState(prev => ({
       ...prev,
-      products: [newProd, ...prev.products]
+      products: [newProd, ...(prev.products || [])]
     }));
 
-    showToast(`✨ ¡"${newProd.name}" publicado con ${newProd.images.length} foto(s)!`);
+    showToast(`✨ ¡"${newProd.name}" publicado en tiempo real en Pedidos Listo!`);
+    setNewProdName('');
+    setNewProdPrice('');
+    setNewProdDesc('');
+    setNewProdImages(['assets/burger_3d.png']);
   };
 
   const handleQuickEditPrice = (prodId) => {
@@ -1595,6 +1740,135 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
           <div className="screen-panel active">
             {activeTab === 'inicio' && (
               <>
+                {/* BUSCADOR INSTANTÁNEO EN TIEMPO REAL (CHICHARRÓN, PLATILLOS, RESTAURANTES) */}
+                <div style={{ padding: '12px 16px 4px 16px' }}>
+                  <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                    <span style={{ position: 'absolute', left: 14, fontSize: 16 }}>🔍</span>
+                    <input
+                      type="text"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder="Busca comida o negocios: Chicharrón, Yaroa, Pizza..."
+                      style={{
+                        width: '100%',
+                        padding: '11px 36px 11px 40px',
+                        borderRadius: '24px',
+                        border: searchQuery ? '2px solid #FF6B00' : '1.5px solid #E2E8F0',
+                        background: '#FFFFFF',
+                        fontSize: '13px',
+                        fontWeight: '700',
+                        color: '#0F172A',
+                        boxShadow: '0 4px 14px rgba(0,0,0,0.04)',
+                        outline: 'none'
+                      }}
+                    />
+                    {searchQuery && (
+                      <button
+                        onClick={() => setSearchQuery('')}
+                        style={{ position: 'absolute', right: 12, background: 'none', border: 'none', fontSize: '13px', cursor: 'pointer', color: '#94A3B8', fontWeight: 'bold' }}
+                      >
+                        ✕
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* RESULTADOS EN VIVO DE BÚSQUEDA */}
+                {searchQuery.trim().length > 0 && (
+                  <div style={{ padding: '12px 16px 20px', animation: 'fadeIn 0.2s ease' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                      <h4 style={{ margin: 0, fontSize: 15, fontWeight: 900, color: '#0F172A' }}>
+                        Resultados para "{searchQuery}" ({searchMatchedProducts.length + searchMatchedStores.length})
+                      </h4>
+                      <button onClick={() => setSearchQuery('')} style={{ background: 'none', border: 'none', color: '#FF6B00', fontWeight: 800, fontSize: 12, cursor: 'pointer' }}>
+                        Limpiar
+                      </button>
+                    </div>
+
+                    {/* 1. Platillos encontrados */}
+                    {searchMatchedProducts.length > 0 && (
+                      <div style={{ marginBottom: 16 }}>
+                        <div style={{ fontSize: 12, fontWeight: 900, color: '#FF6B00', textTransform: 'uppercase', marginBottom: 8 }}>
+                          🍲 Platillos & Comidas ({searchMatchedProducts.length})
+                        </div>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 10 }}>
+                          {searchMatchedProducts.map(prod => (
+                            <div key={prod.id} style={{ background: '#FFFFFF', borderRadius: 16, padding: 10, border: '1.5px solid #FED7AA', boxShadow: '0 4px 12px rgba(255,107,0,0.08)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                              <div style={{ position: 'relative' }}>
+                                <img src={prod.image} alt={prod.name} style={{ width: '100%', height: 95, objectFit: 'cover', borderRadius: 12, marginBottom: 8 }} />
+                                {prod.storeName && (
+                                  <span style={{ position: 'absolute', bottom: 12, left: 4, background: 'rgba(0,0,0,0.75)', color: '#FFF', fontSize: '9px', fontWeight: 800, padding: '2px 6px', borderRadius: 6, backdropFilter: 'blur(4px)' }}>
+                                    🏪 {prod.storeName}
+                                  </span>
+                                )}
+                              </div>
+                              <div>
+                                <div style={{ fontWeight: 800, fontSize: 12.5, color: '#0F172A', lineHeight: 1.2, marginBottom: 4 }}>
+                                  {prod.name}
+                                </div>
+                                <div style={{ fontWeight: 900, color: '#FF6B00', fontSize: 14 }}>
+                                  RD$ {prod.price}
+                                </div>
+                              </div>
+                              <button
+                                onClick={() => handleAddToCartCustom(prod, 'Tostones', 'Refresco')}
+                                style={{ width: '100%', marginTop: 8, background: 'linear-gradient(135deg, #FF6B00, #E65100)', color: '#FFF', border: 'none', padding: '7px 0', borderRadius: 10, fontWeight: 900, fontSize: 11.5, cursor: 'pointer', boxShadow: '0 3px 8px rgba(255,107,0,0.3)' }}
+                              >
+                                + Agregar
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* 2. Comercios / Restaurantes encontrados */}
+                    {searchMatchedStores.length > 0 && (
+                      <div style={{ marginBottom: 16 }}>
+                        <div style={{ fontSize: 12, fontWeight: 900, color: '#2563EB', textTransform: 'uppercase', marginBottom: 8 }}>
+                          🏪 Comercios & Restaurantes ({searchMatchedStores.length})
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                          {searchMatchedStores.map(st => (
+                            <div 
+                              key={st.id} 
+                              onClick={() => setActiveStoreModal(st)}
+                              style={{ background: '#FFFFFF', borderRadius: 14, padding: 10, border: '1.5px solid #E2E8F0', display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}
+                            >
+                              <img src={st.image} alt={st.name} style={{ width: 50, height: 50, borderRadius: 12, objectFit: 'cover' }} />
+                              <div style={{ flex: 1 }}>
+                                <div style={{ fontWeight: 900, fontSize: 13, color: '#0F172A' }}>{st.name}</div>
+                                <div style={{ fontSize: 11, color: '#64748B', display: 'flex', gap: 8, marginTop: 2 }}>
+                                  <span>⭐ {st.ratingText || '5.0'}</span>
+                                  <span>•</span>
+                                  <span>⏱️ {st.time || '15-25 min'}</span>
+                                  <span>•</span>
+                                  <span>📍 {st.city || 'Santiago'}</span>
+                                </div>
+                              </div>
+                              <button style={{ padding: '6px 12px', borderRadius: 10, background: '#EFF6FF', border: '1px solid #BFDBFE', color: '#1D4ED8', fontSize: 11, fontWeight: 800, cursor: 'pointer' }}>
+                                Ver Menú
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {searchMatchedProducts.length === 0 && searchMatchedStores.length === 0 && (
+                      <div style={{ textAlign: 'center', padding: '24px 16px', background: '#F8FAFC', borderRadius: 16, border: '1.5px dashed #CBD5E1' }}>
+                        <div style={{ fontSize: 32, marginBottom: 6 }}>🔍</div>
+                        <div style={{ fontWeight: 800, fontSize: 14, color: '#334155' }}>
+                          No encontramos platillos o comercios para "{searchQuery}"
+                        </div>
+                        <div style={{ fontSize: 12, color: '#64748B', marginTop: 4 }}>
+                          Prueba buscando por "Chicharrón", "Yaroa", "Pollo", "Pizza" o el nombre de un restaurante.
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 {/* 2. Main Hero Banner - Mamey Gradient Style (IMG_4455.png) */}
                 <div style={{ padding: '0 16px', marginBottom: 16 }}>
                   <div style={{
@@ -2100,35 +2374,226 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                 <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 900, fontSize: 18, marginBottom: 12, color: '#1e293b' }}>
                   🔍 Buscador de Platillos, Productos & Comercios
                 </h3>
-                <div className="custom-search-container" style={{ marginBottom: 16 }}>
+
+                <div className="custom-search-container" style={{ marginBottom: 12, position: 'relative' }}>
                   <input
                     type="text"
                     className="custom-search-input"
-                    style={{ background: 'white', color: '#1e293b', border: '2px solid #ff6b00' }}
-                    placeholder="Busca en Pedidos Listo: Yaroas, Pizzas, Pollo, Leche, Víveres..."
+                    style={{ background: 'white', color: '#1e293b', border: '2px solid #ff6b00', paddingRight: searchQuery ? 40 : 16 }}
+                    placeholder="Busca comida o comercios: Chicharrón, Yaroas, Pollo, Pizza..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                   />
-                  <button className="custom-search-btn">🔍</button>
+                  {searchQuery ? (
+                    <button 
+                      onClick={() => setSearchQuery('')}
+                      style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', fontSize: 14, color: '#94a3b8', cursor: 'pointer', fontWeight: 900 }}
+                    >
+                      ✕
+                    </button>
+                  ) : (
+                    <button className="custom-search-btn">🔍</button>
+                  )}
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 16 }}>
-                  {INITIAL_PRODUCTS.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase()) || p.description.toLowerCase().includes(searchQuery.toLowerCase())).map(prod => (
-                    <div key={prod.id} style={{ background: 'white', borderRadius: 16, padding: 12, boxShadow: '0 4px 14px rgba(0,0,0,0.06)', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                      <img src={prod.image} alt={prod.name} style={{ width: '100%', height: 90, objectFit: 'contain', marginBottom: 8 }} />
-                      <div>
-                        <div style={{ fontWeight: 800, fontSize: 12, color: '#1e293b', marginBottom: 4 }}>{prod.name}</div>
-                        <div style={{ fontWeight: 900, color: '#ff6b00', fontSize: 14 }}>RD$ {prod.price}</div>
-                      </div>
-                      <button 
-                        onClick={() => handleAddToCartCustom(prod, 'Tostones', 'Soda')}
-                        style={{ width: '100%', marginTop: 8, background: '#ff6b00', color: 'white', border: 'none', padding: '6px 0', borderRadius: 10, fontWeight: 900, fontSize: 11, cursor: 'pointer' }}
-                      >
-                        + Agregar
-                      </button>
-                    </div>
+                {/* Filtro de Píldoras Rápidas */}
+                <div style={{ display: 'flex', gap: 8, overflowX: 'auto', scrollbarWidth: 'none', marginBottom: 16, paddingBottom: 4 }}>
+                  {[
+                    { label: '🔥 Todos', val: '' },
+                    { label: '🥓 Chicharrón', val: 'chicharron' },
+                    { label: '🍗 Pica Pollo', val: 'pollo' },
+                    { label: '🧀 Yaroas', val: 'yaroa' },
+                    { label: '🍕 Pizzas', val: 'pizza' },
+                    { label: '🥟 Empanadas', val: 'empanada' },
+                    { label: '🍔 Burgers', val: 'burger' },
+                    { label: '🥤 Bebidas', val: 'bebida' }
+                  ].map(pill => (
+                    <button
+                      key={pill.label}
+                      onClick={() => setSearchQuery(pill.val)}
+                      style={{
+                        padding: '6px 12px',
+                        borderRadius: 20,
+                        border: searchQuery === pill.val ? '2px solid #ff6b00' : '1px solid #e2e8f0',
+                        background: searchQuery === pill.val ? '#ff6b00' : '#ffffff',
+                        color: searchQuery === pill.val ? '#ffffff' : '#475569',
+                        fontWeight: 800,
+                        fontSize: 12,
+                        cursor: 'pointer',
+                        whiteSpace: 'nowrap',
+                        boxShadow: '0 2px 6px rgba(0,0,0,0.04)'
+                      }}
+                    >
+                      {pill.label}
+                    </button>
                   ))}
                 </div>
+
+                {/* Si hay búsqueda activa */}
+                {searchQuery.trim().length > 0 ? (
+                  <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                      <span style={{ fontSize: 13, fontWeight: 800, color: '#64748b' }}>
+                        Resultados para "{searchQuery}" ({searchMatchedProducts.length + searchMatchedStores.length})
+                      </span>
+                      <button onClick={() => setSearchQuery('')} style={{ background: 'none', border: 'none', color: '#ff6b00', fontWeight: 800, fontSize: 12, cursor: 'pointer' }}>
+                        Limpiar
+                      </button>
+                    </div>
+
+                    {/* 1. Platillos Coincidentes */}
+                    {searchMatchedProducts.length > 0 && (
+                      <div style={{ marginBottom: 20 }}>
+                        <div style={{ fontWeight: 900, fontSize: 13, color: '#ff6b00', textTransform: 'uppercase', marginBottom: 10 }}>
+                          🍲 Platillos Encontrados ({searchMatchedProducts.length})
+                        </div>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 10 }}>
+                          {searchMatchedProducts.map(prod => (
+                            <div key={prod.id} style={{ background: 'white', borderRadius: 16, padding: 10, boxShadow: '0 4px 14px rgba(0,0,0,0.06)', border: '1.5px solid #fed7aa', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                              <div style={{ position: 'relative' }}>
+                                <img src={prod.image} alt={prod.name} style={{ width: '100%', height: 95, objectFit: 'cover', borderRadius: 12, marginBottom: 8 }} />
+                                {prod.storeName && (
+                                  <span style={{ position: 'absolute', bottom: 12, left: 4, background: 'rgba(0,0,0,0.75)', color: '#fff', fontSize: '9px', fontWeight: 800, padding: '2px 6px', borderRadius: 6, backdropFilter: 'blur(4px)' }}>
+                                    🏪 {prod.storeName}
+                                  </span>
+                                )}
+                              </div>
+                              <div>
+                                <div style={{ fontWeight: 800, fontSize: 12.5, color: '#1e293b', marginBottom: 4, lineHeight: 1.2 }}>{prod.name}</div>
+                                {prod.description && (
+                                  <div style={{ fontSize: 10.5, color: '#64748b', marginBottom: 4, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                                    {prod.description}
+                                  </div>
+                                )}
+                                <div style={{ fontWeight: 900, color: '#ff6b00', fontSize: 14 }}>RD$ {prod.price}</div>
+                              </div>
+                              <button 
+                                onClick={() => handleAddToCartCustom(prod, 'Tostones', 'Refresco')}
+                                style={{ width: '100%', marginTop: 8, background: 'linear-gradient(135deg, #ff6b00, #e65100)', color: 'white', border: 'none', padding: '7px 0', borderRadius: 10, fontWeight: 900, fontSize: 11.5, cursor: 'pointer', boxShadow: '0 3px 8px rgba(255,107,0,0.3)' }}
+                              >
+                                + Agregar
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* 2. Comercios Coincidentes */}
+                    {searchMatchedStores.length > 0 && (
+                      <div style={{ marginBottom: 20 }}>
+                        <div style={{ fontWeight: 900, fontSize: 13, color: '#2563eb', textTransform: 'uppercase', marginBottom: 10 }}>
+                          🏪 Comercios & Restaurantes ({searchMatchedStores.length})
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                          {searchMatchedStores.map(st => (
+                            <div 
+                              key={st.id} 
+                              onClick={() => setActiveStoreModal(st)}
+                              style={{ background: 'white', borderRadius: 16, padding: 12, border: '1.5px solid #e2e8f0', display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}
+                            >
+                              <img src={st.image} alt={st.name} style={{ width: 56, height: 56, borderRadius: 14, objectFit: 'cover' }} />
+                              <div style={{ flex: 1 }}>
+                                <div style={{ fontWeight: 900, fontSize: 14, color: '#0f172a' }}>{st.name}</div>
+                                <div style={{ fontSize: 11, color: '#64748b', display: 'flex', gap: 8, marginTop: 3 }}>
+                                  <span>⭐ {st.ratingText || '5.0'}</span>
+                                  <span>•</span>
+                                  <span>⏱️ {st.time || '15-25 min'}</span>
+                                  <span>•</span>
+                                  <span>📍 {st.city || 'Santiago'}</span>
+                                </div>
+                              </div>
+                              <button style={{ padding: '8px 14px', borderRadius: 10, background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1d4ed8', fontSize: 11.5, fontWeight: 800, cursor: 'pointer' }}>
+                                Ver Menú
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {searchMatchedProducts.length === 0 && searchMatchedStores.length === 0 && (
+                      <div style={{ textAlign: 'center', padding: '32px 16px', background: '#f8fafc', borderRadius: 20, border: '1.5px dashed #cbd5e1' }}>
+                        <div style={{ fontSize: 36, marginBottom: 8 }}>🔍</div>
+                        <div style={{ fontWeight: 800, fontSize: 15, color: '#334155' }}>
+                          No encontramos resultados para "{searchQuery}"
+                        </div>
+                        <div style={{ fontSize: 12, color: '#64748b', marginTop: 4 }}>
+                          Prueba buscando por "Chicharrón", "Yaroa", "Pollo", "Pizza" o el nombre de un restaurante.
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div>
+                    {/* Catálogo de Platillos Disponibles */}
+                    <div style={{ marginBottom: 20 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                        <div style={{ fontWeight: 900, fontSize: 14, color: '#1e293b' }}>
+                          🍲 Platillos Disponibles en Pedidos Listo
+                        </div>
+                        <span style={{ fontSize: 11, color: '#64748b', fontWeight: 800 }}>
+                          {allPlatformProducts.length} platillos
+                        </span>
+                      </div>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 10 }}>
+                        {allPlatformProducts.map(prod => (
+                          <div key={prod.id} style={{ background: 'white', borderRadius: 16, padding: 10, boxShadow: '0 4px 14px rgba(0,0,0,0.06)', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                            <div style={{ position: 'relative' }}>
+                              <img src={prod.image} alt={prod.name} style={{ width: '100%', height: 95, objectFit: 'cover', borderRadius: 12, marginBottom: 8 }} />
+                              {prod.storeName && (
+                                <span style={{ position: 'absolute', bottom: 12, left: 4, background: 'rgba(0,0,0,0.75)', color: '#fff', fontSize: '9px', fontWeight: 800, padding: '2px 6px', borderRadius: 6, backdropFilter: 'blur(4px)' }}>
+                                  🏪 {prod.storeName}
+                                </span>
+                              )}
+                            </div>
+                            <div>
+                              <div style={{ fontWeight: 800, fontSize: 12.5, color: '#1e293b', marginBottom: 4, lineHeight: 1.2 }}>{prod.name}</div>
+                              <div style={{ fontWeight: 900, color: '#ff6b00', fontSize: 14 }}>RD$ {prod.price}</div>
+                            </div>
+                            <button 
+                              onClick={() => handleAddToCartCustom(prod, 'Tostones', 'Refresco')}
+                              style={{ width: '100%', marginTop: 8, background: '#ff6b00', color: 'white', border: 'none', padding: '6px 0', borderRadius: 10, fontWeight: 900, fontSize: 11, cursor: 'pointer' }}
+                            >
+                              + Agregar
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Todos los Comercios */}
+                    <div>
+                      <div style={{ fontWeight: 900, fontSize: 14, color: '#1e293b', marginBottom: 10 }}>
+                        🏪 Restaurantes & Comercios en la App
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                        {combinedStores.map(st => (
+                          <div 
+                            key={st.id} 
+                            onClick={() => setActiveStoreModal(st)}
+                            style={{ background: 'white', borderRadius: 16, padding: 12, border: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}
+                          >
+                            <img src={st.image} alt={st.name} style={{ width: 50, height: 50, borderRadius: 12, objectFit: 'cover' }} />
+                            <div style={{ flex: 1 }}>
+                              <div style={{ fontWeight: 900, fontSize: 13.5, color: '#0f172a' }}>{st.name}</div>
+                              <div style={{ fontSize: 11, color: '#64748b', display: 'flex', gap: 8, marginTop: 2 }}>
+                                <span>⭐ {st.ratingText || '5.0'}</span>
+                                <span>•</span>
+                                <span>⏱️ {st.time || '15-25 min'}</span>
+                                <span>•</span>
+                                <span>📍 {st.city || 'Santiago'}</span>
+                              </div>
+                            </div>
+                            <button style={{ padding: '6px 12px', borderRadius: 10, background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1d4ed8', fontSize: 11, fontWeight: 800, cursor: 'pointer' }}>
+                              Ver Menú
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
@@ -3709,33 +4174,42 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
             {storeModalTab === 'menu' ? (
               <div>
                 <div style={{ fontSize: 12, fontWeight: 800, color: '#64748b', marginBottom: 10 }}>📜 Platillos Disponibles</div>
-                {merchantState.products.map(prod => {
-                  const prodImgCount = (prod.images && prod.images.length) || 1;
-                  return (
-                    <div key={prod.id} style={{ display: 'flex', gap: 12, background: '#f8fafc', padding: 12, borderRadius: 14, marginBottom: 10, border: '1px solid #e2e8f0', alignItems: 'center', cursor: 'pointer' }} onClick={() => { setCustomizeProduct(prod); setCustomizeModalImgIndex(0); }}>
-                      <div style={{ position: 'relative', flexShrink: 0 }}>
-                        <img src={prod.image} style={{ width: 65, height: 65, borderRadius: 10, objectFit: 'cover' }} alt={prod.name} />
-                        {prodImgCount > 1 && (
-                          <span style={{ position: 'absolute', bottom: 2, right: 2, background: 'rgba(10,14,26,0.85)', color: 'white', fontSize: 8, fontWeight: 900, padding: '1px 4px', borderRadius: 4 }}>
-                            📸 {prodImgCount}
-                          </span>
-                        )}
-                      </div>
-                      <div style={{ flexGrow: 1 }}>
-                        <div style={{ fontWeight: 800, fontSize: 14 }}>{prod.name}</div>
-                        <div style={{ fontSize: 11, color: '#64748b' }}>{prod.description}</div>
-                        <div style={{ fontWeight: 900, color: '#ff6b00', marginTop: 4 }}>RD$ {prod.price}</div>
-                      </div>
-                      <button style={{ background: '#ff6b00', color: 'white', border: 'none', width: 32, height: 32, borderRadius: 10, fontWeight: 900, fontSize: 16 }}>+</button>
-                    </div>
+                {(() => {
+                  const storeDishes = allPlatformProducts.filter(p => 
+                    (p.storeId && activeStoreModal.id && p.storeId === activeStoreModal.id) ||
+                    (p.storeName && activeStoreModal.name && p.storeName.toLowerCase().trim() === activeStoreModal.name.toLowerCase().trim()) ||
+                    (p.storeEmail && activeStoreModal.email && p.storeEmail.toLowerCase().trim() === activeStoreModal.email.toLowerCase().trim())
                   );
-                })}
+                  const dishesToShow = storeDishes.length > 0 ? storeDishes : merchantState.products;
+                  return dishesToShow.map(prod => {
+                    const prodImgCount = (prod.images && prod.images.length) || 1;
+                    return (
+                      <div key={prod.id} style={{ display: 'flex', gap: 12, background: '#f8fafc', padding: 12, borderRadius: 14, marginBottom: 10, border: '1px solid #e2e8f0', alignItems: 'center', cursor: 'pointer' }} onClick={() => { setCustomizeProduct(prod); setCustomizeModalImgIndex(0); }}>
+                        <div style={{ position: 'relative', flexShrink: 0 }}>
+                          <img src={prod.image} style={{ width: 65, height: 65, borderRadius: 10, objectFit: 'cover' }} alt={prod.name} />
+                          {prodImgCount > 1 && (
+                            <span style={{ position: 'absolute', bottom: 2, right: 2, background: 'rgba(10,14,26,0.85)', color: 'white', fontSize: 8, fontWeight: 900, padding: '1px 4px', borderRadius: 4 }}>
+                              📸 {prodImgCount}
+                            </span>
+                          )}
+                        </div>
+                        <div style={{ flexGrow: 1 }}>
+                          <div style={{ fontWeight: 800, fontSize: 14 }}>{prod.name}</div>
+                          <div style={{ fontSize: 11, color: '#64748b' }}>{prod.description}</div>
+                          <div style={{ fontWeight: 900, color: '#ff6b00', marginTop: 4 }}>RD$ {prod.price}</div>
+                        </div>
+                        <button style={{ background: '#ff6b00', color: 'white', border: 'none', width: 32, height: 32, borderRadius: 10, fontWeight: 900, fontSize: 16 }}>+</button>
+                      </div>
+                    );
+                  });
+                })()}
               </div>
             ) : (
               <div style={{ background: '#f8fafc', padding: 16, borderRadius: 16, border: '1px solid #e2e8f0' }}>
                 <h4 style={{ fontWeight: 900, fontSize: 15, marginBottom: 10 }}>ℹ️ Información del Restaurante</h4>
-                <p style={{ fontSize: 12, color: '#64748b' }}>📍 {merchantState.address}</p>
+                <p style={{ fontSize: 12, color: '#64748b' }}>📍 {activeStoreModal.city ? `${activeStoreModal.city}, RD` : (activeStoreModal.address || merchantState.address)}</p>
                 <p style={{ fontSize: 12, color: '#64748b', marginTop: 6 }}>⏱️ Horario: 08:00 AM - 11:00 PM</p>
+                {activeStoreModal.phone && <p style={{ fontSize: 12, color: '#64748b', marginTop: 6 }}>📞 Contacto: {activeStoreModal.phone}</p>}
                 <p style={{ fontSize: 12, color: '#64748b', marginTop: 6 }}>🛡️ Garantía Pedidos Listo con Token PIN OTP</p>
               </div>
             )}

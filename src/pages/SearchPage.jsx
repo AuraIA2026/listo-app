@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { collection, query, where, getDocs, doc, getDoc, addDoc, serverTimestamp } from 'firebase/firestore'
+import { collection, query, where, getDocs, doc, getDoc, addDoc, serverTimestamp, onSnapshot } from 'firebase/firestore'
 import { db } from '../firebase'
 import { CATEGORIES, FILTERS, ALL_SUBCATEGORIES, PROVINCES_LIST } from '../categories'
 import { detectGpsLocation } from '../utils/gpsLocation'
@@ -615,6 +615,40 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
   const [sortBy,            setSortBy]            = useState('all')
   const [professionals,     setProfessionals]     = useState([])
   const [loading,           setLoading]           = useState(true)
+  const [foodProducts,      setFoodProducts]      = useState([])
+  const [foodStores,        setFoodStores]        = useState([])
+
+  useEffect(() => {
+    let unsubProd = () => {}
+    let unsubLoc = () => {}
+    try {
+      unsubProd = onSnapshot(collection(db, 'productos'), (snap) => {
+        const list = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+        setFoodProducts(list)
+      }, (err) => console.warn('SearchPage productos listener:', err))
+    } catch(e){}
+
+    try {
+      unsubLoc = onSnapshot(collection(db, 'locales'), (snap) => {
+        const list = snap.docs.map(d => {
+          const data = d.data()
+          return {
+            id: d.id,
+            ...data,
+            name: data.nombre || data.businessName || data.name || 'Comercio',
+            image: data.image || data.portadaURL || data.logoURL || data.logo || 'assets/burger_3d.png',
+            city: data.ciudad || data.city || 'Santiago'
+          }
+        }).filter(s => s.activo !== false)
+        setFoodStores(list)
+      }, (err) => console.warn('SearchPage locales listener:', err))
+    } catch(e){}
+
+    return () => {
+      unsubProd()
+      unsubLoc()
+    }
+  }, [])
 
   const [likedPros, setLikedPros] = useState(() => {
     try {
@@ -865,6 +899,38 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
       img: p.photoURL || p.img
     }))
 
+  const normStr = (str) => {
+    if (!str) return ''
+    return str
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]/g, "")
+      .trim()
+  }
+
+  const cleanSearch = normStr(search)
+
+  const matchedFoodProducts = cleanSearch ? foodProducts.filter(p => {
+    const n = normStr(p.name || p.nombre)
+    const d = normStr(p.description || p.descripcion)
+    const c = normStr(p.category || p.categoria)
+    const s = normStr(p.storeName || p.tienda)
+    return n.includes(cleanSearch) || d.includes(cleanSearch) || c.includes(cleanSearch) || s.includes(cleanSearch) ||
+      (cleanSearch.includes('chicharon') && (n.includes('chicharron') || d.includes('chicharron'))) ||
+      (cleanSearch.includes('chicharron') && (n.includes('chicharon') || d.includes('chicharon'))) ||
+      (cleanSearch.includes('yaroa') && n.includes('yaroa')) ||
+      (cleanSearch.includes('pollo') && n.includes('pollo')) ||
+      (cleanSearch.includes('pizza') && n.includes('pizza'))
+  }) : []
+
+  const matchedFoodStores = cleanSearch ? foodStores.filter(st => {
+    const n = normStr(st.name || st.nombre)
+    const c = normStr(st.categoria || st.category)
+    const city = normStr(st.city || st.ciudad)
+    return n.includes(cleanSearch) || c.includes(cleanSearch) || city.includes(cleanSearch)
+  }) : []
+
   return (
     <div className="services-page">
 
@@ -888,6 +954,79 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
           {search && <button className="search-clear" onClick={() => setSearch('')} style={{ zIndex: 3 }}>✕</button>}
         </div>
       </div>
+
+      {/* ── SECCIÓN DE RESULTADOS DE PLATILLOS & RESTAURANTES EN PEDIDOS LISTO ── */}
+      {search.trim().length > 0 && (matchedFoodProducts.length > 0 || matchedFoodStores.length > 0) && (
+        <div style={{ margin: '12px 16px 16px', background: 'linear-gradient(135deg, #FFF7ED 0%, #FFEDD5 100%)', borderRadius: '20px', padding: '16px', border: '2px solid #FF6B00', boxShadow: '0 8px 24px rgba(255,107,0,0.14)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontSize: 24 }}>🍔</span>
+              <div>
+                <h3 style={{ margin: 0, fontSize: 16, fontWeight: 900, color: '#C2410C' }}>
+                  Pedidos Listo • Comida & Restaurantes
+                </h3>
+                <p style={{ margin: 0, fontSize: 11, color: '#9A3412', fontWeight: 700 }}>
+                  Encontramos opciones para "{search}"
+                </p>
+              </div>
+            </div>
+            <button 
+              onClick={() => navigate('mandame')}
+              style={{ background: '#FF6B00', color: '#FFF', border: 'none', padding: '7px 14px', borderRadius: 12, fontWeight: 900, fontSize: 11.5, cursor: 'pointer', boxShadow: '0 4px 10px rgba(255,107,0,0.25)' }}
+            >
+              Pedir Ahora →
+            </button>
+          </div>
+
+          {matchedFoodProducts.length > 0 && (
+            <div style={{ marginBottom: matchedFoodStores.length > 0 ? 12 : 0 }}>
+              <div style={{ fontSize: 11, fontWeight: 900, color: '#EA580C', textTransform: 'uppercase', marginBottom: 8 }}>
+                🍲 Platillos ({matchedFoodProducts.length}):
+              </div>
+              <div style={{ display: 'flex', gap: 10, overflowX: 'auto', scrollbarWidth: 'none', paddingBottom: 4 }}>
+                {matchedFoodProducts.map(fp => (
+                  <div 
+                    key={fp.id} 
+                    onClick={() => navigate('mandame')}
+                    style={{ minWidth: 140, maxWidth: 140, background: '#FFFFFF', borderRadius: 14, padding: 8, border: '1.5px solid #FED7AA', cursor: 'pointer', flexShrink: 0, boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}
+                  >
+                    <img src={fp.image || fp.images?.[0] || 'assets/burger_3d.png'} alt={fp.name || fp.nombre} style={{ width: '100%', height: 75, objectFit: 'cover', borderRadius: 10, marginBottom: 6 }} />
+                    <div style={{ fontWeight: 800, fontSize: 12, color: '#0F172A', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{fp.name || fp.nombre}</div>
+                    <div style={{ fontWeight: 900, color: '#EA580C', fontSize: 13, marginTop: 2 }}>RD$ {fp.price || fp.precio}</div>
+                    {(fp.storeName || fp.tienda) && <div style={{ fontSize: 10, color: '#64748B', marginTop: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>🏪 {fp.storeName || fp.tienda}</div>}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {matchedFoodStores.length > 0 && (
+            <div>
+              <div style={{ fontSize: 11, fontWeight: 900, color: '#EA580C', textTransform: 'uppercase', marginBottom: 8 }}>
+                🏪 Restaurantes & Comercios ({matchedFoodStores.length}):
+              </div>
+              <div style={{ display: 'flex', gap: 10, overflowX: 'auto', scrollbarWidth: 'none', paddingBottom: 4 }}>
+                {matchedFoodStores.map(fs => (
+                  <div 
+                    key={fs.id} 
+                    onClick={() => {
+                      try { localStorage.setItem('pedidos_listo_active_store_id', fs.id); } catch(e){}
+                      navigate('mandame');
+                    }}
+                    style={{ minWidth: 160, maxWidth: 160, background: '#FFFFFF', borderRadius: 14, padding: 8, border: '1.5px solid #FED7AA', cursor: 'pointer', flexShrink: 0, display: 'flex', alignItems: 'center', gap: 8, boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}
+                  >
+                    <img src={fs.image || fs.portadaURL || fs.logoURL || 'assets/burger_3d.png'} alt={fs.name} style={{ width: 42, height: 42, borderRadius: 10, objectFit: 'cover' }} />
+                    <div style={{ overflow: 'hidden' }}>
+                      <div style={{ fontWeight: 900, fontSize: 12, color: '#0F172A', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{fs.name}</div>
+                      <div style={{ fontSize: 10, color: '#64748B' }}>📍 {fs.city || 'Santiago'}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
 
       {/* ── CARRUSEL DE HISTORIAS DE TRABAJOS REALIZADOS (STORIES 24H) ── */}
