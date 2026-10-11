@@ -96,105 +96,31 @@ const CATEGORIES = [
 
 const STORES = [
   {
-    id: 'st1',
-    name: 'Burger Mamey House',
+    id: 'st-fiera',
+    name: 'La Fiera Hot Dog',
     cat: 'restaurantes',
-    sub: 'Hamburguesas, Alitas & Grill',
-    time: '20-30 min',
-    rating: '4.9',
-    reviews: '340',
-    delivery: 'RD$ 75',
-    img: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=400&q=80',
-    cover: 'https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=800&q=80',
-    logo: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=200&q=80',
-    address: 'Av. 27 de Febrero esq. Winston Churchill, Ensanche Naco, Santo Domingo',
-    phone: '809-583-2020',
-    whatsapp: '18095832020',
-    socials: {
-      instagram: '@burgermamey.rd',
-      facebook: 'facebook.com/burgermameyrd',
-      tiktok: '@burgermameydo'
-    },
-    bannerTag: '🔥 2x1 Martes',
-    menu: [
-      { id: 'm1', name: 'Burger Mamey Especial', price: 390, desc: 'Doble carne angus, queso cheddar fundido, tocineta crujiente y salsa secreta mamey.', img: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=200&q=80' },
-      { id: 'm2', name: 'Papas Supremos Mamey', price: 180, desc: 'Papas rizadas crujientes con queso derretido, tocineta y cebollín.', img: 'https://images.unsplash.com/photo-1573080496219-bb080dd4f877?auto=format&fit=crop&w=200&q=80' }
-    ]
-  },
-  {
-    id: 'st2',
-    name: 'Listo Market - Súper Express',
-    cat: 'market',
-    sub: 'Supermercado, Frescos & Despensa',
-    time: '12-18 min',
+    sub: 'Hot Dogs Dominicanos & Fast Food Criollo',
+    time: '10-20 min',
     rating: '5.0',
-    reviews: '890',
-    delivery: 'GRATIS',
-    img: 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=400&q=80',
-    cover: 'https://images.unsplash.com/photo-1578916171728-46686eac8d58?auto=format&fit=crop&w=800&q=80',
-    logo: 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=200&q=80',
-    address: 'Calle Del Sol #45, Santiago Centro, República Dominicana',
-    phone: '809-582-8800',
-    whatsapp: '18095828800',
+    reviews: '980',
+    delivery: 'Envío GRATIS',
+    img: 'https://images.unsplash.com/photo-1619740455993-9e612b1af08a?auto=format&fit=crop&w=400&q=80',
+    cover: 'https://images.unsplash.com/photo-1541214113241-21578d2d9b62?auto=format&fit=crop&w=1000&q=80',
+    logo: 'https://images.unsplash.com/photo-1619740455993-9e612b1af08a?auto=format&fit=crop&w=200&q=80',
+    address: 'Av. 27 de Febrero esq. Estrella Sadhalá, Santiago, República Dominicana',
+    phone: '809-583-1020',
+    whatsapp: '18095831020',
     socials: {
-      instagram: '@listomarket.rd',
-      facebook: 'facebook.com/listomarketdo',
-      tiktok: '@listomarket'
+      instagram: '@lafierahotdog.rd',
+      facebook: 'facebook.com/lafierahotdog',
+      tiktok: '@lafierahotdog'
     },
-    bannerTag: '⚡ Entrega en 15m',
+    bannerTag: '🌭 #1 en Santiago',
     menu: [
-      { id: 'p1', name: 'Leche Entera 1L', price: 110, desc: '1 Litro fresca grado A pasteurizada.', img: 'https://images.unsplash.com/photo-1563636619-e9143da7973b?auto=format&fit=crop&w=200&q=80' },
-      { id: 'p2', name: 'Cerveza Presidente 6-Pack', price: 650, desc: 'Lata 12oz bien fría como la ceniza.', img: 'https://images.unsplash.com/photo-1608270586620-248524c67de9?auto=format&fit=crop&w=200&q=80' }
-    ]
-  },
-  {
-    id: 'st3',
-    name: 'Pizzeria Don Mamey',
-    cat: 'restaurantes',
-    sub: 'Pizza Artesanal, Calzones & Pastas',
-    time: '25-35 min',
-    rating: '4.8',
-    reviews: '520',
-    delivery: 'RD$ 50',
-    img: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=400&q=80',
-    cover: 'https://images.unsplash.com/photo-1579751626657-72bc17010498?auto=format&fit=crop&w=800&q=80',
-    logo: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=200&q=80',
-    address: 'Av. Juan Pablo Duarte #12, Villa Olga, Santiago',
-    phone: '809-241-1122',
-    whatsapp: '18092411122',
-    socials: {
-      instagram: '@pizzeriadonmamey',
-      facebook: 'facebook.com/donmameypizza',
-      tiktok: '@donmameypizza'
-    },
-    bannerTag: '🍕 Masa Madre',
-    menu: [
-      { id: 'm3', name: 'Pizza Pepperoni Mamey Grande', price: 650, desc: 'Queso mozzarella premium, pepperoni italiano y salsa pomodoro artesanal.', img: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=200&q=80' }
-    ]
-  },
-  {
-    id: 'st4',
-    name: 'Comida Criolla Doña Rosa',
-    cat: 'restaurantes',
-    sub: 'Sancocho, Mofongo, Chivo & Pollo',
-    time: '15-25 min',
-    rating: '4.9',
-    reviews: '610',
-    delivery: 'RD$ 60',
-    img: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=400&q=80',
-    cover: 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=800&q=80',
-    logo: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=200&q=80',
-    address: 'Calle Restauración #77, Los Jardines Metropolitanos, Santiago',
-    phone: '809-581-9933',
-    whatsapp: '18095819933',
-    socials: {
-      instagram: '@donarosa.criollo',
-      facebook: 'facebook.com/donarosacriollo',
-      tiktok: '@donarosafood'
-    },
-    bannerTag: '🇩🇴 Sabor Dominicano',
-    menu: [
-      { id: 'm4', name: 'Mofongo Especial con Chicharrón', price: 420, desc: 'Mofongo de plátano verde con chicharrón crujiente, ajo asado y caldo caliente.', img: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=200&q=80' }
+      { id: 'm-f1', name: '🌭 Hot Dog La Fiera Especial', price: 220, desc: 'Salchicha parrillera artesanal, repollo criollo dulce, tocineta crocante y salsa de la casa.', img: 'https://images.unsplash.com/photo-1619740455993-9e612b1af08a?auto=format&fit=crop&w=200&q=80' },
+      { id: 'm-f2', name: '🧀 Hot Dog Triple Queso Fundido', price: 260, desc: 'Pan brioche tostado, salchicha gigante, triple queso cheddar, mozzarella y maíz.', img: 'https://images.unsplash.com/photo-1627054234553-91147a46979a?auto=format&fit=crop&w=200&q=80' },
+      { id: 'm-f3', name: '🍟 Papas Fritas Fiera Monster', price: 250, desc: 'Papas fritas con salchicha parrillera troceada, tocineta y salsa cheddar caliente.', img: 'https://images.unsplash.com/photo-1576107232684-1279f3908594?auto=format&fit=crop&w=200&q=80' },
+      { id: 'm-f4', name: '🥤 Refresco Cola 20oz Bien Frío', price: 65, desc: 'Refresco dominicano helado de 20oz.', img: 'assets/drinks_3d_1791137124884.png' }
     ]
   }
 ];
@@ -307,7 +233,13 @@ export default function PedidosListoHub({ lang = 'es', navigate }) {
     return () => unsub();
   }, []);
 
-  const allAvailableStores = [...dbStores, ...STORES];
+  const isFieraStore = (st) => {
+    const n = (st?.name || '').toLowerCase();
+    return n.includes('fiera') || n.includes('hot dog') || n.includes('hotdog');
+  };
+
+  const filteredDbStores = dbStores.filter(isFieraStore);
+  const allAvailableStores = filteredDbStores.length > 0 ? filteredDbStores : STORES;
 
   // Filter stores by category
   const filteredStores = allAvailableStores.filter(st => {
@@ -745,22 +677,58 @@ export default function PedidosListoHub({ lang = 'es', navigate }) {
         </div>
       )}
 
-      {/* 9. MODAL DETALLE DE TIENDA / MENÚ */}
       {/* 9. MODAL DETALLE DE TIENDA / MENÚ CON PORTADA, LOGO, DIRECCIÓN, TELÉFONO Y REDES SOCIALES */}
       {selectedStore && (
-        <div className="pl-modal-overlay" onClick={() => setSelectedStore(null)}>
-          <div className="pl-cart-drawer" onClick={(e) => e.stopPropagation()} style={{ borderRadius: '28px 28px 0 0', maxHeight: '90vh', overflowY: 'auto', padding: 0 }}>
+        <div 
+          className="pl-modal-overlay" 
+          onClick={() => setSelectedStore(null)}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 100000,
+            background: 'rgba(10, 14, 26, 0.78)',
+            backdropFilter: 'blur(8px)',
+            WebkitBackdropFilter: 'blur(8px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '12px',
+            boxSizing: 'border-box',
+            overflowY: 'auto'
+          }}
+        >
+          <div 
+            className="pl-store-modal-card" 
+            onClick={(e) => e.stopPropagation()} 
+            style={{ 
+              display: 'block',
+              borderRadius: '24px', 
+              maxHeight: '92vh', 
+              overflowY: 'auto', 
+              overflowX: 'hidden', 
+              padding: 0,
+              width: '100%',
+              maxWidth: 480,
+              margin: 'auto',
+              background: '#FFFFFF',
+              boxShadow: '0 25px 60px rgba(0,0,0,0.35)',
+              border: '1.5px solid rgba(255,107,0,0.2)',
+              boxSizing: 'border-box'
+            }}
+          >
             
             {/* 1. PORTADA DEL RESTAURANTE (COMPLETA Y ESPACIOSA SIN CORTAR) */}
             <div style={{
               position: 'relative',
               width: '100%',
-              height: 220,
+              height: 190,
               overflow: 'hidden',
-              background: '#0F172A'
+              background: '#0F172A',
+              borderTopLeftRadius: 24,
+              borderTopRightRadius: 24
             }}>
               <img
-                src={selectedStore.cover || selectedStore.img}
+                src={selectedStore.cover || selectedStore.img || 'https://images.unsplash.com/photo-1541214113241-21578d2d9b62?auto=format&fit=crop&w=1000&q=80'}
                 alt={selectedStore.name}
                 style={{
                   width: '100%',
@@ -776,33 +744,33 @@ export default function PedidosListoHub({ lang = 'es', navigate }) {
                 top: 0,
                 left: 0,
                 right: 0,
-                height: 70,
-                background: 'linear-gradient(180deg, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0) 100%)',
+                padding: '12px 14px',
+                background: 'linear-gradient(180deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 100%)',
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
-                padding: '14px 16px',
                 zIndex: 2
               }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span style={{ background: '#FF6000', color: '#FFF', padding: '5px 12px', borderRadius: 14, fontSize: 11, fontWeight: 900, boxShadow: '0 4px 10px rgba(0,0,0,0.3)' }}>
-                    {selectedStore.bannerTag || '👑 Restaurante Verificado 🇩🇴'}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                  <span style={{ background: '#FF6000', color: '#FFF', padding: '4px 10px', borderRadius: 12, fontSize: 10.5, fontWeight: 900, boxShadow: '0 4px 10px rgba(0,0,0,0.3)', whiteSpace: 'nowrap' }}>
+                    {selectedStore.bannerTag || '🌭 #1 en Santiago 🇩🇴'}
                   </span>
                   <button
                     onClick={() => setShowConfigModal(true)}
                     style={{
                       background: 'rgba(0,0,0,0.65)',
                       color: '#FFF',
-                      border: '1px solid rgba(255,255,255,0.3)',
-                      padding: '5px 12px',
-                      borderRadius: 14,
-                      fontSize: 11,
+                      border: '1px solid rgba(255,255,255,0.4)',
+                      padding: '4px 10px',
+                      borderRadius: 12,
+                      fontSize: 10.5,
                       fontWeight: 900,
                       cursor: 'pointer',
                       backdropFilter: 'blur(4px)',
                       display: 'flex',
                       alignItems: 'center',
-                      gap: 4
+                      gap: 4,
+                      whiteSpace: 'nowrap'
                     }}
                   >
                     ⚙️ Configurar
@@ -810,7 +778,7 @@ export default function PedidosListoHub({ lang = 'es', navigate }) {
                 </div>
                 <button
                   onClick={() => setSelectedStore(null)}
-                  style={{ width: 34, height: 34, borderRadius: '50%', background: 'rgba(0,0,0,0.65)', color: '#FFF', border: 'none', cursor: 'pointer', fontSize: 16, fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(4px)' }}
+                  style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(0,0,0,0.65)', color: '#FFF', border: '1px solid rgba(255,255,255,0.3)', cursor: 'pointer', fontSize: 15, fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(4px)', flexShrink: 0 }}
                 >
                   ✕
                 </button>
@@ -818,18 +786,18 @@ export default function PedidosListoHub({ lang = 'es', navigate }) {
             </div>
 
             {/* CONTENIDO INTERNO */}
-            <div style={{ padding: '0 20px 28px' }}>
+            <div style={{ padding: '0 16px 24px', boxSizing: 'border-box', width: '100%' }}>
               
               {/* 2. FILA DE PERFIL: LOGO FLOTANTE + NOMBRE + BOTÓN CONFIGURAR */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: -42, marginBottom: 14, position: 'relative', zIndex: 3, flexWrap: 'wrap', gap: 8 }}>
-                <div style={{ display: 'flex', alignItems: 'flex-end', gap: 14 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: -38, marginBottom: 14, position: 'relative', zIndex: 3, flexWrap: 'wrap', gap: 10 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0, flex: '1 1 200px' }}>
                   <img
                     src={selectedStore.logo || selectedStore.img}
                     alt={selectedStore.name}
                     style={{
-                      width: 82,
-                      height: 82,
-                      borderRadius: 24,
+                      width: 72,
+                      height: 72,
+                      borderRadius: 20,
                       objectFit: 'cover',
                       border: '4px solid #FFFFFF',
                       boxShadow: '0 8px 24px rgba(0,0,0,0.18)',
@@ -837,27 +805,31 @@ export default function PedidosListoHub({ lang = 'es', navigate }) {
                       flexShrink: 0
                     }}
                   />
-                  <div style={{ paddingBottom: 4 }}>
-                    <h3 style={{ margin: 0, fontSize: 21, fontWeight: 900, color: '#0F172A', lineHeight: 1.2 }}>{selectedStore.name}</h3>
-                    <p style={{ margin: '3px 0 0', fontSize: 12, color: '#64748B', fontWeight: 700 }}>{selectedStore.sub}</p>
+                  <div style={{ minWidth: 0, flex: 1 }}>
+                    <h3 style={{ margin: 0, fontSize: 19, fontWeight: 900, color: '#0F172A', lineHeight: 1.2, wordBreak: 'break-word' }}>
+                      {selectedStore.name}
+                    </h3>
+                    <p style={{ margin: '3px 0 0', fontSize: 11.5, color: '#64748B', fontWeight: 700, wordBreak: 'break-word' }}>
+                      {selectedStore.sub}
+                    </p>
                   </div>
                 </div>
 
                 <button
                   onClick={() => setShowConfigModal(true)}
                   style={{
-                    padding: '8px 14px',
+                    padding: '7px 12px',
                     borderRadius: 12,
                     background: '#FFF7ED',
                     color: '#EA580C',
                     border: '1.5px solid #FFEDD5',
-                    fontSize: 12,
+                    fontSize: 11.5,
                     fontWeight: 900,
                     cursor: 'pointer',
                     display: 'flex',
                     alignItems: 'center',
-                    gap: 6,
-                    marginBottom: 4,
+                    gap: 5,
+                    flexShrink: 0,
                     boxShadow: '0 2px 8px rgba(234,88,12,0.1)'
                   }}
                 >
@@ -866,15 +838,15 @@ export default function PedidosListoHub({ lang = 'es', navigate }) {
               </div>
               
               {/* BADGES METADATA */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 14 }}>
-                <span style={{ fontSize: 12, fontWeight: 900, background: '#FFF7ED', color: '#EA580C', padding: '4px 10px', borderRadius: 12, border: '1px solid #FFEDD5' }}>
-                  ⭐ {selectedStore.rating} ({selectedStore.reviews} opiniones)
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', marginBottom: 12 }}>
+                <span style={{ fontSize: 11.5, fontWeight: 900, background: '#FFF7ED', color: '#EA580C', padding: '4px 8px', borderRadius: 10, border: '1px solid #FFEDD5' }}>
+                  ⭐ {selectedStore.rating || '5.0'} ({selectedStore.reviews || 'Opiniones'})
                 </span>
-                <span style={{ fontSize: 12, fontWeight: 800, background: '#F1F5F9', color: '#475569', padding: '4px 10px', borderRadius: 12 }}>
-                  ⏱️ {selectedStore.time}
+                <span style={{ fontSize: 11.5, fontWeight: 800, background: '#F1F5F9', color: '#475569', padding: '4px 8px', borderRadius: 10 }}>
+                  ⏱️ {selectedStore.time || '10-20 min'}
                 </span>
-                <span style={{ fontSize: 12, fontWeight: 800, background: '#ECFDF5', color: '#059669', padding: '4px 10px', borderRadius: 12 }}>
-                  🛵 {selectedStore.delivery}
+                <span style={{ fontSize: 11.5, fontWeight: 800, background: '#ECFDF5', color: '#059669', padding: '4px 8px', borderRadius: 10 }}>
+                  🛵 {selectedStore.delivery || 'Envío GRATIS'}
                 </span>
               </div>
 
@@ -882,30 +854,32 @@ export default function PedidosListoHub({ lang = 'es', navigate }) {
               <div style={{
                 background: '#F8FAFC',
                 border: '1.5px solid #E2E8F0',
-                borderRadius: 16,
-                padding: '12px 14px',
+                borderRadius: 14,
+                padding: '10px 12px',
                 marginBottom: 10,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
-                gap: 10
+                flexWrap: 'wrap',
+                gap: 8,
+                boxSizing: 'border-box'
               }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#EFF6FF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, color: '#2563EB', flexShrink: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0, flex: '1 1 200px' }}>
+                  <div style={{ width: 34, height: 34, borderRadius: '50%', background: '#EFF6FF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, color: '#2563EB', flexShrink: 0 }}>
                     📍
                   </div>
-                  <div>
-                    <span style={{ fontSize: 10, fontWeight: 900, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block' }}>
+                  <div style={{ minWidth: 0 }}>
+                    <span style={{ fontSize: 9.5, fontWeight: 900, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block' }}>
                       DIRECCIÓN DEL RESTAURANTE
                     </span>
-                    <span style={{ fontSize: 13, fontWeight: 800, color: '#1E293B', lineHeight: 1.3 }}>
-                      {selectedStore.address || 'Av. 27 de Febrero, Santiago, República Dominicana'}
+                    <span style={{ fontSize: 12.5, fontWeight: 800, color: '#1E293B', lineHeight: 1.3, wordBreak: 'break-word', display: 'block' }}>
+                      {selectedStore.address || 'Av. 27 de Febrero esq. Estrella Sadhalá, Santiago, RD'}
                     </span>
                   </div>
                 </div>
                 <button
                   onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(selectedStore.address || selectedStore.name)}`, '_blank')}
-                  style={{ padding: '6px 12px', borderRadius: 10, background: '#EFF6FF', color: '#2563EB', border: '1px solid #BFDBFE', fontSize: 11, fontWeight: 900, cursor: 'pointer', whiteSpace: 'nowrap' }}
+                  style={{ padding: '6px 12px', borderRadius: 10, background: '#EFF6FF', color: '#2563EB', border: '1px solid #BFDBFE', fontSize: 11, fontWeight: 900, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}
                 >
                   🗺️ Mapa
                 </button>
@@ -915,32 +889,34 @@ export default function PedidosListoHub({ lang = 'es', navigate }) {
               <div style={{
                 background: '#F8FAFC',
                 border: '1.5px solid #E2E8F0',
-                borderRadius: 16,
-                padding: '12px 14px',
+                borderRadius: 14,
+                padding: '10px 12px',
                 marginBottom: 10,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
-                gap: 10
+                flexWrap: 'wrap',
+                gap: 8,
+                boxSizing: 'border-box'
               }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#ECFDF5', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, color: '#10B981', flexShrink: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0, flex: '1 1 180px' }}>
+                  <div style={{ width: 34, height: 34, borderRadius: '50%', background: '#ECFDF5', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, color: '#10B981', flexShrink: 0 }}>
                     📞
                   </div>
-                  <div>
-                    <span style={{ fontSize: 10, fontWeight: 900, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block' }}>
+                  <div style={{ minWidth: 0 }}>
+                    <span style={{ fontSize: 9.5, fontWeight: 900, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block' }}>
                       NÚMERO DE TELÉFONO
                     </span>
-                    <span style={{ fontSize: 14, fontWeight: 900, color: '#1E293B', fontFamily: 'monospace' }}>
-                      {selectedStore.phone || '809-583-2020'}
+                    <span style={{ fontSize: 13, fontWeight: 900, color: '#1E293B', fontFamily: 'monospace', wordBreak: 'break-all' }}>
+                      {selectedStore.phone || '809-583-1020'}
                     </span>
                   </div>
                 </div>
-                <div style={{ display: 'flex', gap: 6 }}>
+                <div style={{ display: 'flex', gap: 6, flexShrink: 0, flexWrap: 'wrap' }}>
                   {selectedStore.phone && (
                     <a
                       href={`tel:${selectedStore.phone.replace(/[^0-9]/g, '')}`}
-                      style={{ padding: '7px 12px', borderRadius: 10, background: '#10B981', color: '#FFF', textDecoration: 'none', fontSize: 11, fontWeight: 900, display: 'flex', alignItems: 'center', gap: 4, boxShadow: '0 2px 6px rgba(16,185,129,0.3)' }}
+                      style={{ padding: '6px 10px', borderRadius: 10, background: '#10B981', color: '#FFF', textDecoration: 'none', fontSize: 11, fontWeight: 900, display: 'flex', alignItems: 'center', gap: 4, boxShadow: '0 2px 6px rgba(16,185,129,0.3)', whiteSpace: 'nowrap' }}
                     >
                       📞 Llamar
                     </a>
@@ -950,7 +926,7 @@ export default function PedidosListoHub({ lang = 'es', navigate }) {
                       href={`https://wa.me/${selectedStore.whatsapp.replace(/[^0-9]/g, '')}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      style={{ padding: '7px 12px', borderRadius: 10, background: '#25D366', color: '#FFF', textDecoration: 'none', fontSize: 11, fontWeight: 900, display: 'flex', alignItems: 'center', gap: 4, boxShadow: '0 2px 6px rgba(37,211,102,0.3)' }}
+                      style={{ padding: '6px 10px', borderRadius: 10, background: '#25D366', color: '#FFF', textDecoration: 'none', fontSize: 11, fontWeight: 900, display: 'flex', alignItems: 'center', gap: 4, boxShadow: '0 2px 6px rgba(37,211,102,0.3)', whiteSpace: 'nowrap' }}
                     >
                       💬 WhatsApp
                     </a>
@@ -962,57 +938,53 @@ export default function PedidosListoHub({ lang = 'es', navigate }) {
               <div style={{
                 background: '#FFF7ED',
                 border: '1.5px solid #FFEDD5',
-                borderRadius: 16,
-                padding: '12px 14px',
-                marginBottom: 16
+                borderRadius: 14,
+                padding: '10px 12px',
+                marginBottom: 14,
+                boxSizing: 'border-box'
               }}>
-                <span style={{ fontSize: 10, fontWeight: 900, color: '#EA580C', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: 8 }}>
+                <span style={{ fontSize: 9.5, fontWeight: 900, color: '#EA580C', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: 6 }}>
                   🌐 REDES SOCIALES DEL RESTAURANTE
                 </span>
-                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                  {selectedStore.socials?.instagram ? (
-                    <a
-                      href={`https://instagram.com/${selectedStore.socials.instagram.replace('@', '')}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{
-                        padding: '6px 12px',
-                        borderRadius: 10,
-                        background: 'linear-gradient(45deg, #F58529, #DD2A7B, #8134AF)',
-                        color: '#FFF',
-                        textDecoration: 'none',
-                        fontSize: 11,
-                        fontWeight: 900,
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 5,
-                        boxShadow: '0 2px 8px rgba(221,42,123,0.3)'
-                      }}
-                    >
-                      📸 {selectedStore.socials.instagram}
-                    </a>
-                  ) : (
-                    <span style={{ padding: '6px 12px', borderRadius: 10, background: 'linear-gradient(45deg, #F58529, #DD2A7B, #8134AF)', color: '#FFF', fontSize: 11, fontWeight: 800 }}>
-                      📸 @{selectedStore.name.toLowerCase().replace(/[^a-z0-9]/g, '')}.rd
-                    </span>
-                  )}
+                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                  <a
+                    href={`https://instagram.com/${(selectedStore.socials?.instagram || 'lafierahotdog.rd').replace('@', '')}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      padding: '5px 10px',
+                      borderRadius: 10,
+                      background: 'linear-gradient(45deg, #F58529, #DD2A7B, #8134AF)',
+                      color: '#FFF',
+                      textDecoration: 'none',
+                      fontSize: 10.5,
+                      fontWeight: 900,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 4,
+                      boxShadow: '0 2px 6px rgba(221,42,123,0.3)',
+                      whiteSpace: 'nowrap'
+                    }}
+                  >
+                    📸 {selectedStore.socials?.instagram || '@lafierahotdog.rd'}
+                  </a>
                   {selectedStore.socials?.facebook && (
                     <a
                       href={selectedStore.socials.facebook.startsWith('http') ? selectedStore.socials.facebook : `https://${selectedStore.socials.facebook}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       style={{
-                        padding: '6px 12px',
+                        padding: '5px 10px',
                         borderRadius: 10,
                         background: '#1877F2',
                         color: '#FFF',
                         textDecoration: 'none',
-                        fontSize: 11,
+                        fontSize: 10.5,
                         fontWeight: 900,
                         display: 'flex',
                         alignItems: 'center',
-                        gap: 5,
-                        boxShadow: '0 2px 8px rgba(24,119,242,0.3)'
+                        gap: 4,
+                        whiteSpace: 'nowrap'
                       }}
                     >
                       👥 Facebook
@@ -1024,16 +996,17 @@ export default function PedidosListoHub({ lang = 'es', navigate }) {
                       target="_blank"
                       rel="noopener noreferrer"
                       style={{
-                        padding: '6px 12px',
+                        padding: '5px 10px',
                         borderRadius: 10,
                         background: '#000000',
                         color: '#FFF',
                         textDecoration: 'none',
-                        fontSize: 11,
+                        fontSize: 10.5,
                         fontWeight: 900,
                         display: 'flex',
                         alignItems: 'center',
-                        gap: 5
+                        gap: 4,
+                        whiteSpace: 'nowrap'
                       }}
                     >
                       🎵 {selectedStore.socials.tiktok}
@@ -1041,6 +1014,7 @@ export default function PedidosListoHub({ lang = 'es', navigate }) {
                   )}
                 </div>
               </div>
+
 
               {/* SEPARADOR DE MENÚ */}
               <div style={{ margin: '14px 0 10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

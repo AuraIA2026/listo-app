@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { doc, updateDoc, serverTimestamp, collection, query, where, onSnapshot, addDoc } from 'firebase/firestore';
+import { doc, updateDoc, serverTimestamp, collection, query, where, onSnapshot, addDoc, deleteDoc } from 'firebase/firestore';
 import { auth, db } from '../firebase';
 import './MandamePage.css';
 import './HomePage.css';
@@ -130,110 +130,118 @@ const ANIMATED_BANNERS_CATALOG = [
   { id: 'b-party-10', category: '🎉 Fiestas & Celebraciones', title: '🍻 Cubetazo Cervezas', text: '🍻 CUBETAZO CERVEZAS FRÍAS 🧊', bg: 'linear-gradient(135deg, #0284c7, #075985)', border: '#38bdf8', anim: 'studio-neon-border' }
 ];
 
+// LA FIERA HOT DOG: Restaurante oficial y exclusivo de Pedidos Listo
 const INITIAL_STORES = [
   {
-    id: 'store-1',
-    name: 'KFC Las Colinas Santiago',
-    rating: 4.8,
-    ratingText: '4.8 ⭐',
-    timeMinutes: 20,
-    time: '15-25 min',
-    deliveryFee: 0,
-    badge: 'Bucket 33% OFF',
-    category: 'bocado',
-    image: 'https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?auto=format&fit=crop&w=400&q=80',
-    cover: 'https://images.unsplash.com/photo-1513639776629-7b61b0ac49cb?auto=format&fit=crop&w=800&q=80',
-    logo: 'https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?auto=format&fit=crop&w=200&q=80',
-    address: 'Av. Imbert #120, Las Colinas, Santiago de los Caballeros, RD',
-    phone: '809-581-2222',
-    whatsapp: '18095812222',
-    socials: {
-      instagram: '@kfc_rd',
-      facebook: 'facebook.com/kfcrepublicadominicana',
-      tiktok: '@kfcrd'
-    }
-  },
-  {
-    id: 'store-2',
-    name: 'Cartel De Los Tacos',
-    rating: 4.3,
-    ratingText: '4.3 ⭐',
+    id: 'store-la-fiera-hotdog',
+    name: 'La Fiera Hot Dog',
+    rating: 5.0,
+    ratingText: '5.0 ⭐ (Oficial Pedidos Listo)',
     timeMinutes: 15,
-    time: '10-25 min',
-    deliveryFee: 100,
-    badge: 'Envío Gratis Mándame',
-    category: 'bocado',
-    image: 'https://images.unsplash.com/photo-1551504734-5ee1c4a1479b?auto=format&fit=crop&w=400&q=80',
-    cover: 'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?auto=format&fit=crop&w=800&q=80',
-    logo: 'https://images.unsplash.com/photo-1551504734-5ee1c4a1479b?auto=format&fit=crop&w=200&q=80',
-    address: 'Calle Los Jardines Metropolitanos #14, Santiago, RD',
+    time: '10-20 min',
+    deliveryFee: 0,
+    badge: '🌭 #1 Hot Dogs de Santiago 🇩🇴',
+    category: 'criollo',
+    image: 'https://images.unsplash.com/photo-1619740455993-9e612b1af08a?auto=format&fit=crop&w=400&q=80',
+    cover: 'https://images.unsplash.com/photo-1541214113241-21578d2d9b62?auto=format&fit=crop&w=1000&q=80',
+    logo: 'https://images.unsplash.com/photo-1619740455993-9e612b1af08a?auto=format&fit=crop&w=300&q=80',
+    address: 'Av. 27 de Febrero esq. Estrella Sadhalá, Santiago de los Caballeros, RD',
     phone: '809-583-1020',
     whatsapp: '18095831020',
     socials: {
-      instagram: '@carteldelostacos.rd',
-      facebook: 'facebook.com/carteldelostacos',
-      tiktok: '@carteltacos'
-    }
-  },
-  {
-    id: 'store-3',
-    name: 'Mofongo Xpress & Yaroa',
-    rating: 4.9,
-    ratingText: '4.9 ⭐',
-    timeMinutes: 18,
-    time: '12-20 min',
-    deliveryFee: 0,
-    badge: '⭐ El Más Vendido',
-    category: 'criollo',
-    image: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=400&q=80',
-    cover: 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=800&q=80',
-    logo: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=200&q=80',
-    address: 'Av. Juan Pablo Duarte esq. Estrella Sadhalá, Santiago, RD',
-    phone: '809-587-8899',
-    whatsapp: '18095878899',
-    socials: {
-      instagram: '@mofongoxpress.do',
-      facebook: 'facebook.com/mofongoxpress',
-      tiktok: '@mofongoxpress'
-    }
+      instagram: '@lafierahotdog.rd',
+      facebook: 'facebook.com/lafierahotdog',
+      tiktok: '@lafierahotdog'
+    },
+    menu: [
+      {
+        id: 'fiera-1',
+        name: '🌭 Hot Dog La Fiera Especial',
+        price: 220,
+        description: 'Salchicha parrillera artesanal, repollo criollo agridulce, tocineta crocante, papitas y salsa tártara de la casa.',
+        image: 'https://images.unsplash.com/photo-1619740455993-9e612b1af08a?auto=format&fit=crop&w=400&q=80'
+      },
+      {
+        id: 'fiera-2',
+        name: '🧀 Hot Dog Triple Queso Fundido',
+        price: 260,
+        description: 'Pan brioche tostado, salchicha gigante, abundante queso cheddar derretido, queso mozzarella y maíz dulce.',
+        image: 'https://images.unsplash.com/photo-1627054234553-91147a46979a?auto=format&fit=crop&w=400&q=80'
+      },
+      {
+        id: 'fiera-3',
+        name: '🔥 Hot Dog Fiera Picante Dominicano',
+        price: 240,
+        description: 'Salchicha con toque ahumado y jalapeños, papitas ralladas crujientes, mayokétchup criollo y queso gratinado.',
+        image: 'https://images.unsplash.com/photo-1541214113241-21578d2d9b62?auto=format&fit=crop&w=400&q=80'
+      },
+      {
+        id: 'fiera-4',
+        name: '🍟 Papas Fritas Fiera Monster',
+        price: 250,
+        description: 'Porción grande de papas fritas con trozos de salchicha parrillera, tocineta, maíz dulce y salsa cheddar líquida.',
+        image: 'https://images.unsplash.com/photo-1576107232684-1279f3908594?auto=format&fit=crop&w=400&q=80'
+      },
+      {
+        id: 'fiera-5',
+        name: '🥤 Refresco Cola 20oz Bien Frío',
+        price: 65,
+        description: 'Refresco dominicano 20oz servido como la ceniza para acompañar tu Fiera Hot Dog.',
+        image: 'assets/drinks_3d_1791137124884.png'
+      }
+    ]
   }
 ];
 
 const INITIAL_PRODUCTS = [
   {
-    id: 'prod-1',
-    storeId: 'store-1',
-    name: 'Bucket Familiar KFC (8 Pzs)',
-    price: 999,
-    description: '8 piezas de pollo crujiente receta secreta con papas grandes.',
-    image: 'assets/burger_3d.png',
+    id: 'prod-fiera-1',
+    storeId: 'store-la-fiera-hotdog',
+    storeName: 'La Fiera Hot Dog',
+    name: '🌭 Hot Dog La Fiera Especial',
+    price: 220,
+    description: 'Salchicha parrillera artesanal, repollo criollo agridulce, tocineta crocante, papitas y salsa tártara de la casa.',
+    image: 'https://images.unsplash.com/photo-1619740455993-9e612b1af08a?auto=format&fit=crop&w=400&q=80',
     inStock: true
   },
   {
-    id: 'prod-2',
-    storeId: 'store-1',
-    name: 'Combo Yaroa Especial Mándame',
-    price: 330,
-    description: 'Yaroa de papa con pollo, carne molida y extra queso fundido.',
-    image: 'assets/burger_3d.png',
+    id: 'prod-fiera-2',
+    storeId: 'store-la-fiera-hotdog',
+    storeName: 'La Fiera Hot Dog',
+    name: '🧀 Hot Dog Triple Queso Fundido',
+    price: 260,
+    description: 'Pan brioche tostado, salchicha gigante, abundante queso cheddar derretido, queso mozzarella y maíz dulce.',
+    image: 'https://images.unsplash.com/photo-1627054234553-91147a46979a?auto=format&fit=crop&w=400&q=80',
     inStock: true
   },
   {
-    id: 'prod-3',
-    storeId: 'store-1',
-    name: 'Refresco Cola 2L',
-    price: 55,
-    description: 'Refresco sabor cola bien frío 2 Litros.',
+    id: 'prod-fiera-3',
+    storeId: 'store-la-fiera-hotdog',
+    storeName: 'La Fiera Hot Dog',
+    name: '🔥 Hot Dog Fiera Picante Dominicano',
+    price: 240,
+    description: 'Salchicha con toque ahumado y jalapeños, papitas ralladas crujientes, mayokétchup criollo y queso gratinado.',
+    image: 'https://images.unsplash.com/photo-1541214113241-21578d2d9b62?auto=format&fit=crop&w=400&q=80',
+    inStock: true
+  },
+  {
+    id: 'prod-fiera-4',
+    storeId: 'store-la-fiera-hotdog',
+    storeName: 'La Fiera Hot Dog',
+    name: '🍟 Papas Fritas Fiera Monster',
+    price: 250,
+    description: 'Porción grande de papas fritas con trozos de salchicha parrillera, tocineta, maíz dulce y salsa cheddar líquida.',
+    image: 'https://images.unsplash.com/photo-1576107232684-1279f3908594?auto=format&fit=crop&w=400&q=80',
+    inStock: true
+  },
+  {
+    id: 'prod-fiera-5',
+    storeId: 'store-la-fiera-hotdog',
+    storeName: 'La Fiera Hot Dog',
+    name: '🥤 Refresco Cola 20oz Bien Frío',
+    price: 65,
+    description: 'Refresco dominicano 20oz servido como la ceniza para acompañar tu Fiera Hot Dog.',
     image: 'assets/drinks_3d_1791137124884.png',
-    inStock: true
-  },
-  {
-    id: 'prod-4',
-    storeId: 'store-1',
-    name: 'Salcocho Criollo 7 Carnes',
-    price: 480,
-    description: 'Sancocho dominicano espeso con víveres, carne de res, cerdo y pollo con arroz.',
-    image: 'assets/burger_3d.png',
     inStock: true
   }
 ];
@@ -301,42 +309,64 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
     let unsubLocales = () => {};
     let unsubPartnerReqs = () => {};
 
+    // Helper: Solo permitir 'La Fiera Hot Dog'
+    const isFieraMatch = (nameStr) => {
+      const n = (nameStr || '').toLowerCase();
+      return n.includes('fiera') || n.includes('hot dog') || n.includes('hotdog');
+    };
+
     try {
       const qLoc = query(collection(db, 'locales'));
       unsubLocales = onSnapshot(qLoc, (snap) => {
-        const list = snap.docs.map(d => {
-          const data = d.data();
-          return {
-            id: d.id,
-            ...data,
-            name: data.nombre || data.businessName || data.name || 'Comercio Partner',
-            rating: data.rating || 5.0,
-            ratingText: `${data.rating || '5.0'} ⭐ (Activo)`,
-            timeMinutes: 20,
-            time: '15-25 min',
-            deliveryFee: 0,
-            badge: data.plan || 'Comercio Validado 🇩🇴',
-            category: (data.categoria || data.category || '').toLowerCase().includes('comida') || (data.categoria || data.category || '').toLowerCase().includes('restaurante') ? 'criollo' : 'bocado',
-            image: data.image || data.portadaURL || data.logoURL || data.logo || 'assets/burger_3d.png',
-            cover: data.portadaURL || data.coverURL || data.image || 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=800&q=80',
-            logo: data.logoURL || data.logo || data.portadaURL || 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=200&q=80',
-            address: data.direccion || data.address || (data.ciudad ? `${data.ciudad}, RD` : 'Santiago, República Dominicana'),
-            phone: data.telefono || data.phone || data.whatsapp || '809-583-2020',
-            whatsapp: data.whatsapp || data.telefono || '',
-            socials: {
-              instagram: data.instagram || '',
-              facebook: data.facebook || '',
-              tiktok: data.tiktok || ''
-            },
-            instagram: data.instagram || '',
-            facebook: data.facebook || '',
-            tiktok: data.tiktok || '',
-            city: data.ciudad || data.city || 'Santiago',
-            ownerName: data.propietario || data.ownerName || '',
-            email: (data.email || '').toLowerCase().trim(),
-            activo: data.activo !== false
-          };
-        }).filter(st => st.activo !== false);
+        // Borrar de Firestore cualquier local de prueba que no sea La Fiera Hot Dog
+        snap.docs.forEach(async (docSnap) => {
+          const d = docSnap.data();
+          const name = d.nombre || d.businessName || d.name || '';
+          if (!isFieraMatch(name)) {
+            try {
+              await deleteDoc(doc(db, 'locales', docSnap.id));
+            } catch (err) {
+              // Silently ignore if permission restricted
+            }
+          }
+        });
+
+        const list = snap.docs
+          .map(d => {
+            const data = d.data();
+            return {
+              id: d.id,
+              ...data,
+              name: data.nombre || data.businessName || data.name || 'La Fiera Hot Dog',
+              rating: data.rating || 5.0,
+              ratingText: '5.0 ⭐ (Oficial Pedidos Listo)',
+              timeMinutes: 15,
+              time: '10-20 min',
+              deliveryFee: 0,
+              badge: '🌭 #1 Hot Dogs de Santiago 🇩🇴',
+              category: 'criollo',
+              image: data.image || data.portadaURL || data.logoURL || data.logo || 'https://images.unsplash.com/photo-1619740455993-9e612b1af08a?auto=format&fit=crop&w=400&q=80',
+              cover: data.portadaURL || data.coverURL || data.image || 'https://images.unsplash.com/photo-1541214113241-21578d2d9b62?auto=format&fit=crop&w=1000&q=80',
+              logo: data.logoURL || data.logo || data.portadaURL || 'https://images.unsplash.com/photo-1619740455993-9e612b1af08a?auto=format&fit=crop&w=300&q=80',
+              address: data.direccion || data.address || 'Av. 27 de Febrero esq. Estrella Sadhalá, Santiago, RD',
+              phone: data.telefono || data.phone || data.whatsapp || '809-583-1020',
+              whatsapp: data.whatsapp || data.telefono || '18095831020',
+              socials: {
+                instagram: data.instagram || '@lafierahotdog.rd',
+                facebook: data.facebook || 'facebook.com/lafierahotdog',
+                tiktok: data.tiktok || '@lafierahotdog'
+              },
+              instagram: data.instagram || '@lafierahotdog.rd',
+              facebook: data.facebook || 'facebook.com/lafierahotdog',
+              tiktok: data.tiktok || '@lafierahotdog',
+              city: data.ciudad || data.city || 'Santiago',
+              ownerName: data.propietario || data.ownerName || '',
+              email: (data.email || '').toLowerCase().trim(),
+              activo: data.activo !== false
+            };
+          })
+          .filter(st => isFieraMatch(st.name) && st.activo !== false);
+
         setDbStores(list);
       }, (err) => console.warn("Locales listener error:", err));
     } catch (e) {}
@@ -344,25 +374,27 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
     try {
       const qPart = query(collection(db, 'partner_requests'), where('status', '==', 'approved'));
       unsubPartnerReqs = onSnapshot(qPart, (snap) => {
-        const list = snap.docs.map(d => {
-          const data = d.data();
-          return {
-            id: d.id,
-            name: data.businessName || 'Comercio Partner',
-            rating: 5.0,
-            ratingText: '5.0 ⭐ (Activo)',
-            timeMinutes: 20,
-            time: '15-25 min',
-            deliveryFee: 0,
-            badge: 'Comercio Partner 🇩🇴',
-            category: (data.businessType || '').toLowerCase().includes('comida') || (data.businessType || '').toLowerCase().includes('restaurante') ? 'criollo' : 'bocado',
-            image: data.image || 'assets/burger_3d.png',
-            phone: data.phone || '',
-            city: data.city || 'Santiago',
-            ownerName: `${data.ownerName || ''} ${data.ownerLastName || ''}`.trim(),
-            email: (data.email || '').toLowerCase().trim()
-          };
-        });
+        const list = snap.docs
+          .map(d => {
+            const data = d.data();
+            return {
+              id: d.id,
+              name: data.businessName || 'La Fiera Hot Dog',
+              rating: 5.0,
+              ratingText: '5.0 ⭐ (Oficial Pedidos Listo)',
+              timeMinutes: 15,
+              time: '10-20 min',
+              deliveryFee: 0,
+              badge: '🌭 #1 Hot Dogs de Santiago 🇩🇴',
+              category: 'criollo',
+              image: data.image || 'https://images.unsplash.com/photo-1619740455993-9e612b1af08a?auto=format&fit=crop&w=400&q=80',
+              phone: data.phone || '809-583-1020',
+              city: data.city || 'Santiago',
+              ownerName: `${data.ownerName || ''} ${data.ownerLastName || ''}`.trim(),
+              email: (data.email || '').toLowerCase().trim()
+            };
+          })
+          .filter(st => isFieraMatch(st.name));
         setPartnerStores(list);
       }, (err) => console.warn("Partner requests listener error:", err));
     } catch (e) {}
@@ -388,7 +420,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
             description: data.description || data.descripcion || '',
             image: data.image || data.images?.[0] || 'assets/burger_3d.png',
             images: Array.isArray(data.images) && data.images.length > 0 ? data.images : [data.image || 'assets/burger_3d.png'],
-            storeName: data.storeName || data.tienda || 'Comercio Partner',
+            storeName: data.storeName || data.tienda || 'La Fiera Hot Dog',
             storeId: data.storeId || '',
             inStock: data.inStock !== false
           };
@@ -433,16 +465,20 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
   const [tempAddressInput, setTempAddressInput] = useState('');
   const [isDetectingGps, setIsDetectingGps] = useState(false);
 
-  // Combinar todos los comercios aprobados de la base de datos sin duplicar
+  // Combinar comercios con La Fiera Hot Dog como protagonista exclusivo
+  const isFieraStore = (st) => {
+    const n = (st?.name || '').toLowerCase();
+    return n.includes('fiera') || n.includes('hot dog') || n.includes('hotdog');
+  };
+
   const allDbStores = [
-    ...dbStores,
-    ...partnerStores.filter(ps => !dbStores.some(ds => (ds.name || '').toLowerCase().trim() === (ps.name || '').toLowerCase().trim() || (ds.email && ps.email && ds.email === ps.email)))
+    ...dbStores.filter(isFieraStore),
+    ...partnerStores.filter(isFieraStore)
   ];
 
-  const combinedStores = [
-    ...allDbStores,
-    ...INITIAL_STORES.filter(init => !allDbStores.some(dbS => (dbS.name || '').toLowerCase().trim() === (init.name || '').toLowerCase().trim()))
-  ];
+  const combinedStores = allDbStores.length > 0 
+    ? allDbStores 
+    : INITIAL_STORES;
 
   // Todos los platillos/productos disponibles en la plataforma (en la nube + base inicial)
   const allPlatformProducts = [
@@ -4367,19 +4403,56 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
          STORE DETAIL MODAL WITH PORTADA, LOGO, DIRECCIÓN, TELÉFONO Y REDES SOCIALES
          ========================================================================= */}
       {activeStoreModal && (
-        <div className="modal-backdrop active" onClick={() => setActiveStoreModal(null)}>
-          <div className="modal-card" onClick={(e) => e.stopPropagation()} style={{ borderRadius: '28px 28px 0 0', maxHeight: '90vh', overflowY: 'auto', padding: 0 }}>
+        <div 
+          className="modal-backdrop active" 
+          onClick={() => setActiveStoreModal(null)}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 100000,
+            background: 'rgba(10, 14, 26, 0.78)',
+            backdropFilter: 'blur(8px)',
+            WebkitBackdropFilter: 'blur(8px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '12px',
+            boxSizing: 'border-box',
+            overflowY: 'auto'
+          }}
+        >
+          <div 
+            className="modal-card" 
+            onClick={(e) => e.stopPropagation()} 
+            style={{ 
+              display: 'block',
+              borderRadius: '24px', 
+              maxHeight: '92vh', 
+              overflowY: 'auto', 
+              overflowX: 'hidden',
+              padding: 0,
+              width: '100%',
+              maxWidth: 480,
+              margin: 'auto',
+              background: '#FFFFFF',
+              boxShadow: '0 25px 60px rgba(0,0,0,0.35)',
+              border: '1.5px solid rgba(255,107,0,0.2)',
+              boxSizing: 'border-box'
+            }}
+          >
             
             {/* 1. ESPACIO PARA LA PORTADA DEL RESTAURANTE (COMPLETA Y SIN CORTAR) */}
             <div style={{
               position: 'relative',
               width: '100%',
-              height: 220,
+              height: 190,
               overflow: 'hidden',
-              background: '#0F172A'
+              background: '#0F172A',
+              borderTopLeftRadius: 24,
+              borderTopRightRadius: 24
             }}>
               <img
-                src={activeStoreModal.cover || activeStoreModal.portadaURL || activeStoreModal.image || 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=800&q=80'}
+                src={activeStoreModal.cover || activeStoreModal.portadaURL || activeStoreModal.image || 'https://images.unsplash.com/photo-1541214113241-21578d2d9b62?auto=format&fit=crop&w=1000&q=80'}
                 alt={activeStoreModal.name}
                 style={{
                   width: '100%',
@@ -4395,33 +4468,33 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                 top: 0,
                 left: 0,
                 right: 0,
-                height: 70,
-                background: 'linear-gradient(180deg, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0) 100%)',
+                padding: '12px 14px',
+                background: 'linear-gradient(180deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 100%)',
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
-                padding: '14px 16px',
                 zIndex: 2
               }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span style={{ background: '#ff6b00', color: '#fff', padding: '5px 12px', borderRadius: 14, fontSize: 11, fontWeight: 900, boxShadow: '0 4px 10px rgba(0,0,0,0.3)' }}>
-                    {activeStoreModal.badge || '👑 Restaurante Verificado 🇩🇴'}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                  <span style={{ background: '#ff6b00', color: '#fff', padding: '4px 10px', borderRadius: 12, fontSize: 10.5, fontWeight: 900, boxShadow: '0 4px 10px rgba(0,0,0,0.3)', whiteSpace: 'nowrap' }}>
+                    {activeStoreModal.badge || '🌭 #1 Hot Dogs de Santiago 🇩🇴'}
                   </span>
                   <button
                     onClick={() => setShowStoreConfigModal(true)}
                     style={{
                       background: 'rgba(0,0,0,0.65)',
                       color: '#FFF',
-                      border: '1px solid rgba(255,255,255,0.3)',
-                      padding: '5px 12px',
-                      borderRadius: 14,
-                      fontSize: 11,
+                      border: '1px solid rgba(255,255,255,0.4)',
+                      padding: '4px 10px',
+                      borderRadius: 12,
+                      fontSize: 10.5,
                       fontWeight: 900,
                       cursor: 'pointer',
                       backdropFilter: 'blur(4px)',
                       display: 'flex',
                       alignItems: 'center',
-                      gap: 4
+                      gap: 4,
+                      whiteSpace: 'nowrap'
                     }}
                   >
                     ⚙️ Configurar
@@ -4429,7 +4502,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                 </div>
                 <button
                   onClick={() => setActiveStoreModal(null)}
-                  style={{ width: 34, height: 34, borderRadius: '50%', background: 'rgba(0,0,0,0.65)', color: '#fff', border: 'none', cursor: 'pointer', fontSize: 16, fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(4px)' }}
+                  style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(0,0,0,0.65)', color: '#fff', border: '1px solid rgba(255,255,255,0.3)', cursor: 'pointer', fontSize: 15, fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(4px)', flexShrink: 0 }}
                 >
                   ✕
                 </button>
@@ -4437,18 +4510,18 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
             </div>
 
             {/* CONTENIDO INTERNO */}
-            <div style={{ padding: '0 20px 28px' }}>
+            <div style={{ padding: '0 16px 24px', boxSizing: 'border-box', width: '100%' }}>
               
               {/* 2. FILA DE PERFIL: LOGO FLOTANTE + NOMBRE + BOTÓN CONFIGURAR */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: -42, marginBottom: 14, position: 'relative', zIndex: 3, flexWrap: 'wrap', gap: 8 }}>
-                <div style={{ display: 'flex', alignItems: 'flex-end', gap: 14 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: -38, marginBottom: 14, position: 'relative', zIndex: 3, flexWrap: 'wrap', gap: 10 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0, flex: '1 1 200px' }}>
                   <img
-                    src={activeStoreModal.logo || activeStoreModal.logoURL || activeStoreModal.image || 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=200&q=80'}
+                    src={activeStoreModal.logo || activeStoreModal.logoURL || activeStoreModal.image || 'https://images.unsplash.com/photo-1619740455993-9e612b1af08a?auto=format&fit=crop&w=200&q=80'}
                     alt={activeStoreModal.name}
                     style={{
-                      width: 82,
-                      height: 82,
-                      borderRadius: 24,
+                      width: 72,
+                      height: 72,
+                      borderRadius: 20,
                       objectFit: 'cover',
                       border: '4px solid #FFFFFF',
                       boxShadow: '0 8px 24px rgba(0,0,0,0.18)',
@@ -4456,9 +4529,11 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                       flexShrink: 0
                     }}
                   />
-                  <div style={{ paddingBottom: 4 }}>
-                    <h3 style={{ margin: 0, fontSize: 21, fontWeight: 900, color: '#0F172A', lineHeight: 1.2 }}>{activeStoreModal.name}</h3>
-                    <p style={{ margin: '3px 0 0', fontSize: 12, color: '#64748B', fontWeight: 700 }}>
+                  <div style={{ minWidth: 0, flex: 1 }}>
+                    <h3 style={{ margin: 0, fontSize: 19, fontWeight: 900, color: '#0F172A', lineHeight: 1.2, wordBreak: 'break-word' }}>
+                      {activeStoreModal.name}
+                    </h3>
+                    <p style={{ margin: '3px 0 0', fontSize: 11.5, color: '#64748B', fontWeight: 700, wordBreak: 'break-word' }}>
                       {activeStoreModal.category || activeStoreModal.badge || 'Comercio Partner Pedidos Listo'}
                     </p>
                   </div>
@@ -4467,18 +4542,18 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                 <button
                   onClick={() => setShowStoreConfigModal(true)}
                   style={{
-                    padding: '8px 14px',
+                    padding: '7px 12px',
                     borderRadius: 12,
                     background: '#FFF7ED',
                     color: '#EA580C',
                     border: '1.5px solid #FFEDD5',
-                    fontSize: 12,
+                    fontSize: 11.5,
                     fontWeight: 900,
                     cursor: 'pointer',
                     display: 'flex',
                     alignItems: 'center',
-                    gap: 6,
-                    marginBottom: 4,
+                    gap: 5,
+                    flexShrink: 0,
                     boxShadow: '0 2px 8px rgba(234,88,12,0.1)'
                   }}
                 >
@@ -4487,15 +4562,15 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
               </div>
               
               {/* BADGES METADATA */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 14 }}>
-                <span style={{ fontSize: 12, fontWeight: 900, background: '#FFF7ED', color: '#EA580C', padding: '4px 10px', borderRadius: 12, border: '1px solid #FFEDD5' }}>
-                  ⭐ {activeStoreModal.rating || '4.9'} ({activeStoreModal.ratingText || 'Opiniones'})
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', marginBottom: 12 }}>
+                <span style={{ fontSize: 11.5, fontWeight: 900, background: '#FFF7ED', color: '#EA580C', padding: '4px 8px', borderRadius: 10, border: '1px solid #FFEDD5' }}>
+                  ⭐ {activeStoreModal.rating || '5.0'} (Opiniones)
                 </span>
-                <span style={{ fontSize: 12, fontWeight: 800, background: '#F1F5F9', color: '#475569', padding: '4px 10px', borderRadius: 12 }}>
-                  ⏱️ {activeStoreModal.time || '15-25 min'}
+                <span style={{ fontSize: 11.5, fontWeight: 800, background: '#F1F5F9', color: '#475569', padding: '4px 8px', borderRadius: 10 }}>
+                  ⏱️ {activeStoreModal.time || '10-20 min'}
                 </span>
-                <span style={{ fontSize: 12, fontWeight: 800, background: '#ECFDF5', color: '#059669', padding: '4px 10px', borderRadius: 12 }}>
-                  🛵 {activeStoreModal.deliveryFee === 0 ? 'Envío GRATIS' : `Envío RD$ ${activeStoreModal.deliveryFee || 55}`}
+                <span style={{ fontSize: 11.5, fontWeight: 800, background: '#ECFDF5', color: '#059669', padding: '4px 8px', borderRadius: 10 }}>
+                  🛵 {activeStoreModal.deliveryFee === 0 || !activeStoreModal.deliveryFee ? 'Envío GRATIS' : `Envío RD$ ${activeStoreModal.deliveryFee}`}
                 </span>
               </div>
 
@@ -4503,30 +4578,32 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
               <div style={{
                 background: '#F8FAFC',
                 border: '1.5px solid #E2E8F0',
-                borderRadius: 16,
-                padding: '12px 14px',
+                borderRadius: 14,
+                padding: '10px 12px',
                 marginBottom: 10,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
-                gap: 10
+                flexWrap: 'wrap',
+                gap: 8,
+                boxSizing: 'border-box'
               }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#EFF6FF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, color: '#2563EB', flexShrink: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0, flex: '1 1 200px' }}>
+                  <div style={{ width: 34, height: 34, borderRadius: '50%', background: '#EFF6FF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, color: '#2563EB', flexShrink: 0 }}>
                     📍
                   </div>
-                  <div>
-                    <span style={{ fontSize: 10, fontWeight: 900, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block' }}>
+                  <div style={{ minWidth: 0 }}>
+                    <span style={{ fontSize: 9.5, fontWeight: 900, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block' }}>
                       DIRECCIÓN DEL RESTAURANTE
                     </span>
-                    <span style={{ fontSize: 13, fontWeight: 800, color: '#1E293B', lineHeight: 1.3 }}>
-                      {activeStoreModal.address || activeStoreModal.direccion || (activeStoreModal.city ? `${activeStoreModal.city}, República Dominicana` : 'Santiago Centro, República Dominicana')}
+                    <span style={{ fontSize: 12.5, fontWeight: 800, color: '#1E293B', lineHeight: 1.3, wordBreak: 'break-word', display: 'block' }}>
+                      {activeStoreModal.address || activeStoreModal.direccion || 'Av. 27 de Febrero esq. Estrella Sadhalá, Santiago, RD'}
                     </span>
                   </div>
                 </div>
                 <button
                   onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(activeStoreModal.address || activeStoreModal.direccion || activeStoreModal.name)}`, '_blank')}
-                  style={{ padding: '6px 12px', borderRadius: 10, background: '#EFF6FF', color: '#2563EB', border: '1px solid #BFDBFE', fontSize: 11, fontWeight: 900, cursor: 'pointer', whiteSpace: 'nowrap' }}
+                  style={{ padding: '6px 12px', borderRadius: 10, background: '#EFF6FF', color: '#2563EB', border: '1px solid #BFDBFE', fontSize: 11, fontWeight: 900, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}
                 >
                   🗺️ Mapa
                 </button>
@@ -4536,46 +4613,46 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
               <div style={{
                 background: '#F8FAFC',
                 border: '1.5px solid #E2E8F0',
-                borderRadius: 16,
-                padding: '12px 14px',
+                borderRadius: 14,
+                padding: '10px 12px',
                 marginBottom: 10,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
-                gap: 10
+                flexWrap: 'wrap',
+                gap: 8,
+                boxSizing: 'border-box'
               }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#ECFDF5', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, color: '#10B981', flexShrink: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0, flex: '1 1 180px' }}>
+                  <div style={{ width: 34, height: 34, borderRadius: '50%', background: '#ECFDF5', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, color: '#10B981', flexShrink: 0 }}>
                     📞
                   </div>
-                  <div>
-                    <span style={{ fontSize: 10, fontWeight: 900, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block' }}>
+                  <div style={{ minWidth: 0 }}>
+                    <span style={{ fontSize: 9.5, fontWeight: 900, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block' }}>
                       NÚMERO DE TELÉFONO
                     </span>
-                    <span style={{ fontSize: 14, fontWeight: 900, color: '#1E293B', fontFamily: 'monospace' }}>
-                      {activeStoreModal.phone || activeStoreModal.telefono || '809-583-2020'}
+                    <span style={{ fontSize: 13, fontWeight: 900, color: '#1E293B', fontFamily: 'monospace', wordBreak: 'break-all' }}>
+                      {activeStoreModal.phone || activeStoreModal.telefono || '809-583-1020'}
                     </span>
                   </div>
                 </div>
-                <div style={{ display: 'flex', gap: 6 }}>
+                <div style={{ display: 'flex', gap: 6, flexShrink: 0, flexWrap: 'wrap' }}>
                   {(activeStoreModal.phone || activeStoreModal.telefono) && (
                     <a
                       href={`tel:${(activeStoreModal.phone || activeStoreModal.telefono).replace(/[^0-9]/g, '')}`}
-                      style={{ padding: '7px 12px', borderRadius: 10, background: '#10B981', color: '#FFF', textDecoration: 'none', fontSize: 11, fontWeight: 900, display: 'flex', alignItems: 'center', gap: 4, boxShadow: '0 2px 6px rgba(16,185,129,0.3)' }}
+                      style={{ padding: '6px 10px', borderRadius: 10, background: '#10B981', color: '#FFF', textDecoration: 'none', fontSize: 11, fontWeight: 900, display: 'flex', alignItems: 'center', gap: 4, boxShadow: '0 2px 6px rgba(16,185,129,0.3)', whiteSpace: 'nowrap' }}
                     >
                       📞 Llamar
                     </a>
                   )}
-                  {(activeStoreModal.whatsapp || activeStoreModal.phone || activeStoreModal.telefono) && (
-                    <a
-                      href={`https://wa.me/${(activeStoreModal.whatsapp || activeStoreModal.phone || activeStoreModal.telefono).replace(/[^0-9]/g, '')}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{ padding: '7px 12px', borderRadius: 10, background: '#25D366', color: '#FFF', textDecoration: 'none', fontSize: 11, fontWeight: 900, display: 'flex', alignItems: 'center', gap: 4, boxShadow: '0 2px 6px rgba(37,211,102,0.3)' }}
-                    >
-                      💬 WhatsApp
-                    </a>
-                  )}
+                  <a
+                    href={`https://wa.me/${(activeStoreModal.whatsapp || activeStoreModal.phone || activeStoreModal.telefono || '18095831020').replace(/[^0-9]/g, '')}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ padding: '6px 10px', borderRadius: 10, background: '#25D366', color: '#FFF', textDecoration: 'none', fontSize: 11, fontWeight: 900, display: 'flex', alignItems: 'center', gap: 4, boxShadow: '0 2px 6px rgba(37,211,102,0.3)', whiteSpace: 'nowrap' }}
+                  >
+                    💬 WhatsApp
+                  </a>
                 </div>
               </div>
 
@@ -4583,57 +4660,53 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
               <div style={{
                 background: '#FFF7ED',
                 border: '1.5px solid #FFEDD5',
-                borderRadius: 16,
-                padding: '12px 14px',
-                marginBottom: 16
+                borderRadius: 14,
+                padding: '10px 12px',
+                marginBottom: 14,
+                boxSizing: 'border-box'
               }}>
-                <span style={{ fontSize: 10, fontWeight: 900, color: '#EA580C', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: 8 }}>
+                <span style={{ fontSize: 9.5, fontWeight: 900, color: '#EA580C', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: 6 }}>
                   🌐 REDES SOCIALES DEL RESTAURANTE
                 </span>
-                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                  {activeStoreModal.socials?.instagram || activeStoreModal.instagram ? (
-                    <a
-                      href={`https://instagram.com/${(activeStoreModal.socials?.instagram || activeStoreModal.instagram).replace('@', '')}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{
-                        padding: '6px 12px',
-                        borderRadius: 10,
-                        background: 'linear-gradient(45deg, #F58529, #DD2A7B, #8134AF)',
-                        color: '#FFF',
-                        textDecoration: 'none',
-                        fontSize: 11,
-                        fontWeight: 900,
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 5,
-                        boxShadow: '0 2px 8px rgba(221,42,123,0.3)'
-                      }}
-                    >
-                      📸 {activeStoreModal.socials?.instagram || activeStoreModal.instagram}
-                    </a>
-                  ) : (
-                    <span style={{ padding: '6px 12px', borderRadius: 10, background: 'linear-gradient(45deg, #F58529, #DD2A7B, #8134AF)', color: '#FFF', fontSize: 11, fontWeight: 800 }}>
-                      📸 @{activeStoreModal.name.toLowerCase().replace(/[^a-z0-9]/g, '')}.rd
-                    </span>
-                  )}
+                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                  <a
+                    href={`https://instagram.com/${(activeStoreModal.socials?.instagram || activeStoreModal.instagram || 'lafierahotdog.rd').replace('@', '')}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      padding: '5px 10px',
+                      borderRadius: 10,
+                      background: 'linear-gradient(45deg, #F58529, #DD2A7B, #8134AF)',
+                      color: '#FFF',
+                      textDecoration: 'none',
+                      fontSize: 10.5,
+                      fontWeight: 900,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 4,
+                      boxShadow: '0 2px 6px rgba(221,42,123,0.3)',
+                      whiteSpace: 'nowrap'
+                    }}
+                  >
+                    📸 {activeStoreModal.socials?.instagram || activeStoreModal.instagram || '@lafierahotdog.rd'}
+                  </a>
                   {(activeStoreModal.socials?.facebook || activeStoreModal.facebook) && (
                     <a
                       href={(activeStoreModal.socials?.facebook || activeStoreModal.facebook).startsWith('http') ? (activeStoreModal.socials?.facebook || activeStoreModal.facebook) : `https://${(activeStoreModal.socials?.facebook || activeStoreModal.facebook)}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       style={{
-                        padding: '6px 12px',
+                        padding: '5px 10px',
                         borderRadius: 10,
                         background: '#1877F2',
                         color: '#FFF',
                         textDecoration: 'none',
-                        fontSize: 11,
+                        fontSize: 10.5,
                         fontWeight: 900,
                         display: 'flex',
                         alignItems: 'center',
-                        gap: 5,
-                        boxShadow: '0 2px 8px rgba(248,119,242,0.3)'
+                        gap: 4,
+                        whiteSpace: 'nowrap'
                       }}
                     >
                       👥 Facebook
@@ -4645,16 +4718,17 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                       target="_blank"
                       rel="noopener noreferrer"
                       style={{
-                        padding: '6px 12px',
+                        padding: '5px 10px',
                         borderRadius: 10,
                         background: '#000000',
                         color: '#FFF',
                         textDecoration: 'none',
-                        fontSize: 11,
+                        fontSize: 10.5,
                         fontWeight: 900,
                         display: 'flex',
                         alignItems: 'center',
-                        gap: 5
+                        gap: 4,
+                        whiteSpace: 'nowrap'
                       }}
                     >
                       🎵 {activeStoreModal.socials?.tiktok || activeStoreModal.tiktok}
