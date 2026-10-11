@@ -642,14 +642,14 @@ export default function OrdersPage({ lang = 'es', navigate, userData, userRole }
         const d = docSnap.data()
         const o = {
           id:         docSnap.id,
-          pro:        userRole==='pro' ? (d.clientName||d.clientEmail||'Cliente') : (d.proName||'Profesional'),
-          specialty:  d.proSpecialty||'Servicio',
-          avatar:     userRole==='pro' ? (d.clientName?d.clientName.substring(0,2).toUpperCase():'👤') : (d.proAvatar||'P'),
+          pro:        userRole==='pro' ? (d.clientName||d.clientEmail||'Cliente') : (d.storeName || d.proName || 'Profesional'),
+          specialty:  d.fulfillmentType === 'pickup' ? '🛍️ Retiro en el Local (Mostrador)' : (d.driverType === 'own' ? '🏪 Delivery Propio del Restaurante' : (d.proSpecialty || (d.type === 'delivery' ? 'Delivery Express 🛵' : 'Servicio'))),
+          avatar:     userRole==='pro' ? (d.clientName?d.clientName.substring(0,2).toUpperCase():'👤') : (d.type === 'delivery' ? '🍔' : (d.proAvatar||'P')),
           photoURL:   userRole==='pro' ? (d.clientPhotoURL||null) : d.proPhotoURL,
-          date:       `${d.dateToken} - ${d.timeToken}`,
-          price:      d.price||'RD$0',
+          date:       `${d.dateToken || 'Hoy'} - ${d.timeToken || '15-25 min'}`,
+          price:      d.total ? (`RD$ ${Number(d.total).toLocaleString()}`) : (d.price || 'RD$0'),
           status:     d.status||'pending',
-          icon:       '🔧',
+          icon:       d.fulfillmentType === 'pickup' ? '🛍️' : (d.type === 'delivery' ? (d.driverType === 'own' ? '🏪' : '🛵') : '🔧'),
           rated:      d.rated||false,
           otherUid:   userRole==='pro' ? d.clientId  : d.proId,
           otherPhone: userRole==='pro' ? (d.clientPhone||null) : (d.proPhone||null),
@@ -878,7 +878,9 @@ export default function OrdersPage({ lang = 'es', navigate, userData, userRole }
                     <span>🔒 PIN DE ENTREGA:</span>
                     <span style={{ color: '#FDE047', fontFamily: 'monospace', letterSpacing: '2px', fontSize: '15px', fontWeight: '900' }}>{o.pinOTP}</span>
                   </div>
-                  <span style={{ fontSize: '10px', color: '#C7D2FE' }}>Díselo al repartidor</span>
+                  <span style={{ fontSize: '10px', color: '#C7D2FE' }}>
+                    {o.fulfillmentType === 'pickup' ? 'Díselo al cajero al retirar' : 'Díselo al repartidor'}
+                  </span>
                 </div>
               )}
 
@@ -892,8 +894,8 @@ export default function OrdersPage({ lang = 'es', navigate, userData, userRole }
                     </div>
                   ))}
                   {o.deliveryAddress && (
-                    <p style={{ margin: '6px 0 0', fontSize: '11px', color: '#64748B', borderTop: '1px dashed #CBD5E1', paddingTop: '4px' }}>
-                      📍 {o.deliveryAddress}
+                    <p style={{ margin: '6px 0 0', fontSize: '11px', color: o.fulfillmentType === 'pickup' ? '#047857' : '#64748B', borderTop: '1px dashed #CBD5E1', paddingTop: '4px', fontWeight: o.fulfillmentType === 'pickup' ? 800 : 500 }}>
+                      {o.fulfillmentType === 'pickup' ? `🛍️ Retiro en el Local: ${o.storeName || 'Mostrador del Restaurante'}` : `📍 Entrega: ${o.deliveryAddress}`}
                     </p>
                   )}
                 </div>

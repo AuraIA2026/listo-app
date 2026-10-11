@@ -145,6 +145,7 @@ export default function PedidosListoHub({ lang = 'es', navigate }) {
   const [showMandameModal, setShowMandameModal] = useState(false);
   const [activeTrackingOrder, setActiveTrackingOrder] = useState(null);
   const [deliveryAddress, setDeliveryAddress] = useState('Villa Olga, Calle 5 #12, Santiago');
+  const [hubFulfillmentType, setHubFulfillmentType] = useState('delivery'); // 'delivery' | 'pickup'
   const [paymentMethod, setPaymentMethod] = useState('efectivo');
   const [tipAmount, setTipAmount] = useState(50);
 
@@ -272,17 +273,24 @@ export default function PedidosListoHub({ lang = 'es', navigate }) {
     });
   };
 
+  const isPickupHub = hubFulfillmentType === 'pickup';
   const subtotal = cartItems.reduce((acc, item) => acc + (item.price * item.qty), 0);
-  const deliveryFee = subtotal > 500 ? 0 : 75;
-  const serviceFee = Math.round(subtotal * 0.05);
-  const total = subtotal + deliveryFee + serviceFee + tipAmount;
+  const deliveryFee = isPickupHub ? 0 : (subtotal > 500 ? 0 : 75);
+  const serviceFee = isPickupHub ? 0 : Math.round(subtotal * 0.05);
+  const total = subtotal + deliveryFee + serviceFee + (isPickupHub ? 0 : tipAmount);
 
   const handleConfirmOrder = async () => {
     if (cartItems.length === 0) return;
     const pin = Math.floor(1000 + Math.random() * 9000).toString();
+    const finalAddress = isPickupHub 
+      ? '🛍️ Retiro en el Local: La Fiera Hot Dog' 
+      : deliveryAddress;
+
     const orderData = {
       orderId: 'PL-' + Math.floor(100000 + Math.random() * 900000),
       type: 'delivery',
+      fulfillmentType: isPickupHub ? 'pickup' : 'delivery',
+      driverType: isPickupHub ? 'pickup' : 'mandame',
       clientId: auth.currentUser?.uid || 'guest_client',
       clientName: auth.currentUser?.displayName || 'Cliente Listo',
       clientEmail: auth.currentUser?.email || '',
@@ -291,22 +299,23 @@ export default function PedidosListoHub({ lang = 'es', navigate }) {
       subtotal: subtotal,
       deliveryFee: deliveryFee,
       serviceFee: serviceFee,
-      tipAmount: tipAmount,
+      tipAmount: isPickupHub ? 0 : tipAmount,
       total: total,
-      deliveryAddress: deliveryAddress,
-      address: deliveryAddress,
+      price: `RD$ ${total.toLocaleString()}`,
+      deliveryAddress: finalAddress,
+      address: finalAddress,
       paymentMethod: paymentMethod,
       pinOTP: pin,
       storeName: 'La Fiera Hot Dog',
       status: 'pending',
       createdAt: serverTimestamp(),
       dateToken: 'Hoy',
-      timeToken: '15-25 min',
-      proName: 'Juan Carlos M. (Mándame Rider)',
-      proSpecialty: 'Delivery & Reparto Express',
-      proAvatar: '🛵',
+      timeToken: isPickupHub ? 'Listo en 10-15 min' : '15-25 min',
+      proName: isPickupHub ? 'Retiro en Local (La Fiera Hot Dog)' : 'Juan Carlos M. (Mándame Rider)',
+      proSpecialty: isPickupHub ? '🛍️ Retiro en el Local (Mostrador)' : 'Delivery & Reparto Express',
+      proAvatar: isPickupHub ? '🛍️' : '🛵',
       proPhone: '809-555-0192',
-      estimatedTime: 18,
+      estimatedTime: isPickupHub ? 10 : 18,
       coords: { lat: 18.4861, lng: -69.9312 }
     };
 
@@ -316,10 +325,12 @@ export default function PedidosListoHub({ lang = 'es', navigate }) {
         userId: auth.currentUser?.uid || 'guest_client',
         orderId: docRef.id,
         type: 'new_order',
-        title: '🛵 ¡Pedido Confirmado!',
-        text: `Tu pedido #${orderData.orderId} por RD$ ${total} está en camino. Tu PIN de seguridad es: ${pin}`,
+        title: isPickupHub ? '🛍️ ¡Pedido Listo para Retirar!' : '🛵 ¡Pedido Confirmado!',
+        text: isPickupHub 
+          ? `Tu pedido #${orderData.orderId} por RD$ ${total} está registrado para retirar en tienda. PIN: ${pin}`
+          : `Tu pedido #${orderData.orderId} por RD$ ${total} está en camino. Tu PIN de seguridad es: ${pin}`,
         read: false,
-        icon: '🛵',
+        icon: isPickupHub ? '🛍️' : '🛵',
         createdAt: serverTimestamp()
       });
 
@@ -1150,10 +1161,61 @@ export default function PedidosListoHub({ lang = 'es', navigate }) {
               <button className="pl-close-btn" onClick={() => setShowCartDrawer(false)}>✕</button>
             </div>
 
+            {/* Modalidad de Pedido: Delivery vs Pasar por el Local */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 14 }}>
+              <button
+                type="button"
+                onClick={() => setHubFulfillmentType('delivery')}
+                style={{
+                  padding: '9px 6px',
+                  borderRadius: 12,
+                  border: hubFulfillmentType === 'delivery' ? '2px solid #F26000' : '1.5px solid #E2E8F0',
+                  background: hubFulfillmentType === 'delivery' ? '#FFF4EE' : '#FFFFFF',
+                  color: hubFulfillmentType === 'delivery' ? '#C2410C' : '#475569',
+                  fontWeight: 800,
+                  fontSize: 11.5,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: 2
+                }}
+              >
+                <span style={{ fontSize: 16 }}>🛵</span>
+                <span>Envío a Domicilio</span>
+                <span style={{ fontSize: 10, color: '#F26000', fontWeight: 700 }}>RD$ 75</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setHubFulfillmentType('pickup')}
+                style={{
+                  padding: '9px 6px',
+                  borderRadius: 12,
+                  border: hubFulfillmentType === 'pickup' ? '2px solid #059669' : '1.5px solid #E2E8F0',
+                  background: hubFulfillmentType === 'pickup' ? '#ECFDF5' : '#FFFFFF',
+                  color: hubFulfillmentType === 'pickup' ? '#047857' : '#475569',
+                  fontWeight: 800,
+                  fontSize: 11.5,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: 2
+                }}
+              >
+                <span style={{ fontSize: 16 }}>🛍️</span>
+                <span>Pasar por el Local</span>
+                <span style={{ fontSize: 10, color: '#059669', fontWeight: 900 }}>¡GRATIS!</span>
+              </button>
+            </div>
+
             <div style={{ marginBottom: 14 }}>
-              <p style={{ fontSize: 12, fontWeight: 800, color: '#666', margin: '0 0 6px' }}>📍 DIRECCIÓN DE ENTREGA</p>
-              <div style={{ background: '#F8F9FA', padding: '10px 14px', borderRadius: 14, fontSize: 13, fontWeight: 700, color: '#1A1A2E' }}>
-                {deliveryAddress}
+              <p style={{ fontSize: 12, fontWeight: 800, color: '#666', margin: '0 0 6px' }}>
+                {isPickupHub ? '🏪 LOCAL DE RETIRO' : '📍 DIRECCIÓN DE ENTREGA'}
+              </p>
+              <div style={{ background: isPickupHub ? '#ECFDF5' : '#F8F9FA', padding: '10px 14px', borderRadius: 14, fontSize: 13, fontWeight: 700, color: isPickupHub ? '#047857' : '#1A1A2E', border: isPickupHub ? '1px solid #A7F3D0' : 'none' }}>
+                {isPickupHub ? '🛍️ La Fiera Hot Dog - Mostrador (Santiago Centro, RD)' : deliveryAddress}
               </div>
             </div>
 
@@ -1181,7 +1243,7 @@ export default function PedidosListoHub({ lang = 'es', navigate }) {
                 <span>RD$ {subtotal.toLocaleString()}</span>
               </div>
               <div className="pl-sum-row">
-                <span>Costo de Envío 🛵</span>
+                <span>Costo de Envío {isPickupHub ? '🛍️' : '🛵'}</span>
                 <span>{deliveryFee === 0 ? 'GRATIS' : `RD$ ${deliveryFee}`}</span>
               </div>
               <div className="pl-sum-row">
@@ -1190,12 +1252,18 @@ export default function PedidosListoHub({ lang = 'es', navigate }) {
               </div>
               <div className="pl-sum-row total">
                 <span>Total a Pagar</span>
-                <span style={{ color: 'var(--mamey-primary)' }}>RD$ {total.toLocaleString()}</span>
+                <span style={{ color: isPickupHub ? '#059669' : 'var(--mamey-primary)' }}>RD$ {total.toLocaleString()}</span>
               </div>
             </div>
 
-            <button className="pl-order-confirm-btn" onClick={handleConfirmOrder}>
-              🚀 Confirmar & Realizar Pedido
+            <button 
+              className="pl-order-confirm-btn" 
+              onClick={handleConfirmOrder}
+              style={{
+                background: isPickupHub ? 'linear-gradient(135deg, #059669, #10B981)' : undefined
+              }}
+            >
+              {isPickupHub ? `🛍️ Confirmar Retiro en Local (RD$ ${total.toLocaleString()})` : '🚀 Confirmar & Realizar Pedido'}
             </button>
           </div>
         </div>
