@@ -990,7 +990,14 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
               </div>
             </div>
             <button 
-              onClick={() => navigate('mandame')}
+              onClick={() => {
+              const isAdmin = Boolean(userData?.email === 'listopatron.app@gmail.com' || userData?.role === 'admin' || userData?.isAdmin === true);
+              if (isAdmin) {
+                navigate('mandame');
+              } else {
+                alert('🚀 Pedidos Listo estará disponible muy pronto.');
+              }
+            }}
               style={{ background: '#FF6B00', color: '#FFF', border: 'none', padding: '7px 14px', borderRadius: 12, fontWeight: 900, fontSize: 11.5, cursor: 'pointer', boxShadow: '0 4px 10px rgba(255,107,0,0.25)' }}
             >
               Pedir Ahora →
@@ -1006,7 +1013,14 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
                 {matchedFoodProducts.map(fp => (
                   <div 
                     key={fp.id} 
-                    onClick={() => navigate('mandame')}
+                    onClick={() => {
+              const isAdmin = Boolean(userData?.email === 'listopatron.app@gmail.com' || userData?.role === 'admin' || userData?.isAdmin === true);
+              if (isAdmin) {
+                navigate('mandame');
+              } else {
+                alert('🚀 Pedidos Listo estará disponible muy pronto.');
+              }
+            }}
                     style={{ minWidth: 140, maxWidth: 140, background: '#FFFFFF', borderRadius: 14, padding: 8, border: '1.5px solid #FED7AA', cursor: 'pointer', flexShrink: 0, boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}
                   >
                     <img src={fp.image || fp.images?.[0] || 'assets/burger_3d.png'} alt={fp.name || fp.nombre} style={{ width: '100%', height: 75, objectFit: 'cover', borderRadius: 10, marginBottom: 6 }} />
@@ -1030,7 +1044,12 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
                     key={fs.id} 
                     onClick={() => {
                       try { localStorage.setItem('pedidos_listo_active_store_id', fs.id); } catch(e){}
-                      navigate('mandame');
+                      const isAdmin = Boolean(userData?.email === 'listopatron.app@gmail.com' || userData?.role === 'admin' || userData?.isAdmin === true);
+                      if (isAdmin) {
+                        navigate('mandame');
+                      } else {
+                        alert('🚀 Pedidos Listo estará disponible muy pronto.');
+                      }
                     }}
                     style={{ minWidth: 160, maxWidth: 160, background: '#FFFFFF', borderRadius: 14, padding: 8, border: '1.5px solid #FED7AA', cursor: 'pointer', flexShrink: 0, display: 'flex', alignItems: 'center', gap: 8, boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}
                   >
@@ -1070,6 +1089,7 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
         strictVipOnly={true}
         getProStoryData={getProStoryData}
         onOpenStory={handleOpenStoryViewer}
+        userData={userData}
       />
 
       <PromoBanner lang={lang} userRole={userRole} />

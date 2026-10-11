@@ -1433,6 +1433,7 @@ export default function HomePage({ lang, navigate, userRole }) {
         sectionSub={null}
         getProStoryData={getProStoryData}
         onOpenStory={handleOpenStoryViewer}
+        userData={userData}
       />
 
       {/* ── CINTA / ANUNCIO LARGO Y FINO INVITANDO A LA TIENDA WEB (DEBAJO DE PROFESIONALES DESTACADOS) ── */}
@@ -1532,7 +1533,14 @@ export default function HomePage({ lang, navigate, userRole }) {
           {/* ── CINTA OFICIAL DE PEDIDOS LISTO (AL FINAL DE TODOS LOS PROFESIONALES) ── */}
           <div 
             className="pedidos-ribbon-banner"
-            onClick={() => navigate('mandame')}
+            onClick={() => {
+              const isAdmin = Boolean(userData?.email === 'listopatron.app@gmail.com' || userData?.role === 'admin' || userData?.isAdmin === true);
+              if (isAdmin) {
+                navigate('mandame');
+              } else {
+                alert('🚀 Pedidos Listo estará disponible muy pronto.');
+              }
+            }}
             title={lang === 'es' ? 'Ir a Pedidos Listo - Delivery y Mandados' : 'Go to Pedidos Listo - Delivery & Errands'}
           >
             <div className="pedidos-ribbon-shimmer" />
@@ -1546,13 +1554,26 @@ export default function HomePage({ lang, navigate, userRole }) {
                 />
               </div>
               <div className="pedidos-ribbon-text-group">
-                <p className="pedidos-ribbon-title">
-                  {lang === 'es' ? (
-                    <>Envíos y mandados express con <strong>Pedidos Listo</strong></>
-                  ) : (
-                    <>Express delivery & errands with <strong>Pedidos Listo</strong></>
-                  )}
-                </p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <p className="pedidos-ribbon-title" style={{ margin: 0 }}>
+                    {lang === 'es' ? (
+                      <>Envíos y mandados express con <strong>Pedidos Listo</strong></>
+                    ) : (
+                      <>Express delivery & errands with <strong>Pedidos Listo</strong></>
+                    )}
+                  </p>
+                  <span style={{
+                    background: '#FFD700',
+                    color: '#1A1A2E',
+                    fontSize: '9.5px',
+                    fontWeight: '900',
+                    padding: '2px 6px',
+                    borderRadius: '6px',
+                    letterSpacing: '0.5px'
+                  }}>
+                    🚀 PRÓXIMAMENTE
+                  </span>
+                </div>
                 <p className="pedidos-ribbon-sub">
                   {lang === 'es' 
                     ? 'Comida, compras, farmacia y envíos en minutos a tu puerta' 
@@ -1564,10 +1585,17 @@ export default function HomePage({ lang, navigate, userRole }) {
               className="pedidos-ribbon-btn"
               onClick={(e) => {
                 e.stopPropagation();
-                navigate('mandame');
+                const isAdmin = Boolean(userData?.email === 'listopatron.app@gmail.com' || userData?.role === 'admin' || userData?.isAdmin === true);
+                if (isAdmin) {
+                  navigate('mandame');
+                } else {
+                  alert('🚀 Pedidos Listo estará disponible muy pronto.');
+                }
               }}
             >
-              🛵 {lang === 'es' ? 'Pedir Ahora ›' : 'Order Now ›'}
+              {(userData?.email === 'listopatron.app@gmail.com' || userData?.role === 'admin')
+                ? (lang === 'es' ? '👑 Modo Admin ›' : '👑 Admin Mode ›')
+                : (lang === 'es' ? '🔒 Próximamente ›' : '🔒 Coming Soon ›')}
             </button>
           </div>
 

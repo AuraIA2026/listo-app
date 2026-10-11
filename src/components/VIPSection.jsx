@@ -3,6 +3,7 @@ import './VIPSection.css'
 import StoryAvatar from './StoryAvatar'
 import { getProPlanTheme } from '../planTheme'
 import { CATEGORIES, ALL_SUBCATEGORIES } from '../categories'
+import { auth } from '../firebase'
 
 import mecanico1  from '../assets/pros/Mecanico1.jpg'
 import electrica1 from '../assets/pros/Electricista1.jpg'
@@ -104,9 +105,9 @@ const demoVipPros = [
 ]
 
 const innerPhotos = [
-  { video: '/assets/delivery_rider_video.mp4', titleEs: 'Pedidos Listo — Entrega de Paquetes & Envíos', titleEn: 'Pedidos Listo — Package & Express Delivery', badge: '📦 ENTREGA EN MANO 24/7' },
-  { video: '/assets/delivery_worker_scooter.mp4', titleEs: 'Pedidos Listo — Delivery en Moto a Toda Velocidad', titleEn: 'Pedidos Listo — High Speed Scooter Delivery', badge: '🛵 DELIVERIES EN MOTO 24/7' },
-  { titleEs: 'Pedidos Listo — Mandados, Compras & Servicios', titleEn: 'Pedidos Listo — Errands, Shopping & Services', badge: '⚡ TODO EN UN SOLO LUGAR' }
+  { video: '/assets/delivery_rider_video.mp4', titleEs: 'Pedidos Listo — Entrega de Paquetes & Envíos', titleEn: 'Pedidos Listo — Package & Express Delivery', badge: '🚀 PRÓXIMAMENTE 24/7' },
+  { video: '/assets/delivery_worker_scooter.mp4', titleEs: 'Pedidos Listo — Delivery en Moto a Toda Velocidad', titleEn: 'Pedidos Listo — High Speed Scooter Delivery', badge: '🛵 PRÓXIMAMENTE' },
+  { titleEs: 'Pedidos Listo — Mandados, Compras & Servicios', titleEn: 'Pedidos Listo — Errands, Shopping & Services', badge: '⏳ MUY PRONTO' }
 ]
 
 export const getProTier = (pro) => {
@@ -436,13 +437,28 @@ export default function VIPSection({
   showSeeAll = true,
   strictVipOnly = true,
   getProStoryData,
-  onOpenStory
+  onOpenStory,
+  userData
 }) {
   const displayPros = (realVipPros && realVipPros.length > 0) ? realVipPros : demoVipPros
   const containerRef = React.useRef(null)
   const isInteracting = React.useRef(false)
   const [activeInnerSlide, setActiveInnerSlide] = React.useState(0)
   const [isHeroPlaying, setIsHeroPlaying] = React.useState(true)
+  const [showProximamenteModal, setShowProximamenteModal] = React.useState(false)
+
+  const isAdmin = Boolean(
+    userData?.email === 'listopatron.app@gmail.com' ||
+    auth?.currentUser?.email === 'listopatron.app@gmail.com' ||
+    userData?.role === 'admin' ||
+    userData?.isAdmin === true ||
+    (typeof window !== 'undefined' && (() => {
+      try {
+        const stored = JSON.parse(localStorage.getItem('listoUserData') || '{}');
+        return stored?.email === 'listopatron.app@gmail.com' || stored?.role === 'admin' || stored?.isAdmin === true;
+      } catch(e) { return false; }
+    })())
+  );
 
   React.useEffect(() => {
     const timer = setInterval(() => {
@@ -507,7 +523,11 @@ export default function VIPSection({
         <div 
           className="vip-card-hero amz-blue-hero-card"
           onClick={() => {
-            navigate('mandame');
+            if (isAdmin) {
+              navigate('mandame');
+            } else {
+              setShowProximamenteModal(true);
+            }
           }}
           style={{
             background: 'linear-gradient(160deg, #FF7A1A 0%, #F26000 60%, #C24D00 100%)',
@@ -515,12 +535,13 @@ export default function VIPSection({
             borderColor: '#FF8533',
             display: 'flex',
             flexDirection: 'column',
-            justify: 'space-between',
+            justifyContent: 'space-between',
             padding: '18px 16px',
             position: 'relative',
             overflow: 'hidden',
             minHeight: '360px',
-            boxShadow: '0 10px 30px rgba(242, 96, 0, 0.35)'
+            boxShadow: '0 10px 30px rgba(242, 96, 0, 0.35)',
+            cursor: 'pointer'
           }}
         >
           {/* Shimmer Effect */}
@@ -568,20 +589,54 @@ export default function VIPSection({
             padding: '4px 8px',
             display: 'flex',
             alignItems: 'center',
-            justify: 'space-between',
+            justifyContent: 'space-between',
             zIndex: 2,
             backdropFilter: 'blur(4px)'
           }}>
             <span style={{ fontSize: '10px', fontWeight: '800', color: '#FFFFFF' }}>
               ⚡ ENVIOS & DELIVERIES
             </span>
-            <span style={{ fontSize: '10px', fontWeight: '900', color: '#1A1A2E', background: '#FFD700', padding: '2px 6px', borderRadius: '6px' }}>
-              ENTREGA HOY
+            <span style={{ 
+              fontSize: '10px', 
+              fontWeight: '900', 
+              color: '#1A1A2E', 
+              background: '#FFD700', 
+              padding: '2px 8px', 
+              borderRadius: '6px',
+              letterSpacing: '0.5px',
+              boxShadow: '0 1px 4px rgba(0,0,0,0.2)' 
+            }}>
+              {isAdmin ? '👑 MODO ADMIN' : '🚀 PRÓXIMAMENTE'}
             </span>
           </div>
 
           {/* Carrusel Deslizante Interno de Fotos y Video exclusivo de Pedidos Listo */}
-          <div className="amz-inner-carousel-wrapper" style={{ zIndex: 2 }}>
+          <div className="amz-inner-carousel-wrapper" style={{ zIndex: 2, position: 'relative' }}>
+            {/* Badge Flotante Sobre el Video */}
+            <div style={{
+              position: 'absolute',
+              top: '8px',
+              right: '8px',
+              zIndex: 5,
+              background: 'rgba(15, 23, 42, 0.85)',
+              backdropFilter: 'blur(4px)',
+              WebkitBackdropFilter: 'blur(4px)',
+              color: '#FFD700',
+              border: '1px solid #FFD700',
+              padding: '3px 8px',
+              borderRadius: '12px',
+              fontSize: '10px',
+              fontWeight: '900',
+              letterSpacing: '0.6px',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.4)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              pointerEvents: 'none'
+            }}>
+              <span>🚀</span> PRÓXIMAMENTE
+            </div>
+
             <div 
               className="amz-inner-carousel-track"
               style={{ transform: `translateX(-${activeInnerSlide * 100}%)` }}
@@ -602,7 +657,9 @@ export default function VIPSection({
                     <img src={item.img} alt={item.titleEs} className="amz-inner-slide-img" />
                   )}
                   <div className="amz-inner-slide-overlay">
-                    <span className="amz-inner-slide-badge">{item.badge}</span>
+                    <span className="amz-inner-slide-badge" style={{ background: '#FFD700', color: '#1A1A2E', fontWeight: '900' }}>
+                      {item.badge}
+                    </span>
                     <span className="amz-inner-slide-title">{lang === 'es' ? item.titleEs : item.titleEn}</span>
                   </div>
                 </div>
@@ -625,12 +682,31 @@ export default function VIPSection({
           </div>
 
           {/* Typography exclusivo de Pedidos Listo */}
-          <div style={{ margin: '2px 0 8px', zIndex: 2 }}>
-            <h3 style={{ fontSize: '18px', fontWeight: '900', color: '#ffffff', margin: 0, lineHeight: '1.15', textShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>
-              Pedidos Listo
-            </h3>
+          <div style={{ margin: '4px 0 8px', zIndex: 2 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+              <h3 style={{ fontSize: '18px', fontWeight: '900', color: '#ffffff', margin: 0, lineHeight: '1.15', textShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>
+                Pedidos Listo
+              </h3>
+              <span style={{
+                background: '#FFD700',
+                color: '#1A1A2E',
+                fontSize: '10px',
+                fontWeight: '900',
+                padding: '2px 7px',
+                borderRadius: '6px',
+                letterSpacing: '0.4px',
+                boxShadow: '0 2px 6px rgba(0,0,0,0.25)',
+                textTransform: 'uppercase'
+              }}>
+                🚀 PRÓXIMAMENTE
+              </span>
+            </div>
             <p style={{ fontSize: '11px', color: '#FFF8F2', fontWeight: '700', margin: '4px 0 0', lineHeight: '1.3' }}>
-              ⭐ 5.0 • {lang === 'es' ? 'Entregas express y servicios al instante' : 'Express deliveries & instant services'}
+              {isAdmin ? (
+                <>👑 <strong>Modo Administrador Activo</strong> • Acceso total para desarrollo</>
+              ) : (
+                <>⭐ 5.0 • <strong>Próximamente disponible</strong> en tu ciudad</>
+              )}
             </p>
           </div>
 
@@ -639,11 +715,15 @@ export default function VIPSection({
             <button 
               onClick={(e) => {
                 e.stopPropagation();
-                navigate('mandame');
+                if (isAdmin) {
+                  navigate('mandame');
+                } else {
+                  setShowProximamenteModal(true);
+                }
               }}
               style={{
-                background: '#FFFFFF',
-                color: '#F26000',
+                background: isAdmin ? '#FFFFFF' : 'rgba(255, 255, 255, 0.95)',
+                color: isAdmin ? '#F26000' : '#8A3B00',
                 border: 'none',
                 borderRadius: '22px',
                 padding: '10px 18px',
@@ -652,12 +732,20 @@ export default function VIPSection({
                 cursor: 'pointer',
                 boxShadow: '0 4px 14px rgba(0, 0, 0, 0.25)',
                 width: '100%',
-                transition: 'transform 0.15s ease'
+                transition: 'transform 0.15s ease',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px'
               }}
               onMouseDown={(e) => e.currentTarget.style.transform = 'scale(0.96)'}
               onMouseUp={(e) => e.currentTarget.style.transform = 'scale(1)'}
             >
-              ⚡ {lang === 'es' ? 'Ir a Pedidos Listo ›' : 'Go to Pedidos Listo ›'}
+              {isAdmin ? (
+                <>⚡ {lang === 'es' ? 'Ir a Pedidos Listo › (Admin 👑)' : 'Go to Pedidos Listo › (Admin 👑)'}</>
+              ) : (
+                <>🔒 {lang === 'es' ? 'Próximamente disponible ›' : 'Coming soon ›'}</>
+              )}
             </button>
           </div>
         </div>
@@ -673,6 +761,112 @@ export default function VIPSection({
           />
         ))}
       </div>
+      {/* Modal Proximamente para usuarios normales */}
+      {showProximamenteModal && (
+        <div 
+          onClick={(e) => { e.stopPropagation(); setShowProximamenteModal(false); }}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0, 0, 0, 0.75)',
+            backdropFilter: 'blur(8px)',
+            WebkitBackdropFilter: 'blur(8px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '20px',
+            zIndex: 99999
+          }}
+        >
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: 'linear-gradient(180deg, #FFFFFF 0%, #FFF8F2 100%)',
+              borderRadius: '24px',
+              maxWidth: '360px',
+              width: '100%',
+              padding: '28px 22px 22px',
+              textAlign: 'center',
+              boxShadow: '0 20px 50px rgba(0,0,0,0.4)',
+              border: '2px solid #FFD4B0',
+              animation: 'scaleUp 0.25s ease'
+            }}
+          >
+            <div style={{
+              width: '68px',
+              height: '68px',
+              borderRadius: '50%',
+              background: 'linear-gradient(135deg, #FF7A00, #F26000)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 16px',
+              boxShadow: '0 8px 24px rgba(242, 96, 0, 0.35)',
+              border: '3px solid #FFF'
+            }}>
+              <img 
+                src={logoListo} 
+                alt="Logo Listo" 
+                style={{ width: '42px', height: '42px', objectFit: 'contain' }}
+              />
+            </div>
+
+            <div style={{
+              display: 'inline-block',
+              background: '#FFE8D6',
+              color: '#D44800',
+              padding: '4px 12px',
+              borderRadius: '20px',
+              fontSize: '11px',
+              fontWeight: '900',
+              letterSpacing: '0.8px',
+              textTransform: 'uppercase',
+              marginBottom: '10px'
+            }}>
+              🚀 Próximamente
+            </div>
+
+            <h3 style={{
+              fontSize: '20px',
+              fontWeight: '900',
+              color: '#1A1A2E',
+              margin: '0 0 10px',
+              lineHeight: '1.25'
+            }}>
+              ¡Pedidos Listo está llegando!
+            </h3>
+
+            <p style={{
+              fontSize: '13.5px',
+              color: '#4A5568',
+              lineHeight: '1.5',
+              margin: '0 0 20px',
+              fontWeight: '500'
+            }}>
+              Estamos preparando la mejor experiencia de <strong>envíos, mandados y delivery en tiempo real</strong>. 
+              ¡Muy pronto disponible para todos nuestros clientes! 🛵💨
+            </p>
+
+            <button
+              onClick={() => setShowProximamenteModal(false)}
+              style={{
+                width: '100%',
+                padding: '13px 20px',
+                background: 'linear-gradient(135deg, #FF7A00 0%, #F26000 100%)',
+                color: '#FFFFFF',
+                border: 'none',
+                borderRadius: '16px',
+                fontSize: '14px',
+                fontWeight: '900',
+                cursor: 'pointer',
+                boxShadow: '0 6px 18px rgba(242, 96, 0, 0.35)'
+              }}
+            >
+              ¡Excelente, estaré atento! ✨
+            </button>
+          </div>
+        </div>
+      )}
     </section>
   )
 }

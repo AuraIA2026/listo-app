@@ -798,6 +798,13 @@ export default function App() {
   const showTop     = PAGES_WITH_TOP_NAV.includes(currentPage)
   const commonProps = { lang, navigate }
   const userProps   = { ...commonProps, userData, userRole }
+  const isAdminUser = Boolean(
+    userData?.email === 'listopatron.app@gmail.com' ||
+    authUser?.email === 'listopatron.app@gmail.com' ||
+    userData?.role === 'admin' ||
+    userRole === 'admin' ||
+    userData?.isAdmin === true
+  )
 
   if (updateRequired) return <UpdateBlocker lang={lang} />
 
@@ -821,7 +828,95 @@ export default function App() {
       {currentPage === 'localDetalle' && <LocalDetalle {...userProps} local={selectedLocal} />}
       {currentPage === 'crearLocal'   && <CrearLocal   {...userProps} />}  {/* ✅ AGREGADO */}
       {currentPage === 'editarLocal'  && <EditarLocal  {...userProps} local={selectedLocal} />}
-      {currentPage === 'mandame'      && <MandamePage  {...userProps} />}
+      {currentPage === 'mandame'      && (
+        isAdminUser ? (
+          <MandamePage {...userProps} />
+        ) : (
+          <div style={{
+            minHeight: '100vh',
+            background: 'linear-gradient(180deg, #0F172A 0%, #1E293B 100%)',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '30px 20px',
+            textAlign: 'center',
+            color: '#FFFFFF',
+            position: 'relative',
+            zIndex: 10
+          }}>
+            <div style={{
+              width: '84px',
+              height: '84px',
+              borderRadius: '50%',
+              background: 'linear-gradient(135deg, #FF7A00, #F26000)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 12px 30px rgba(242, 96, 0, 0.45)',
+              marginBottom: '20px',
+              border: '3px solid #FFFFFF'
+            }}>
+              <span style={{ fontSize: '42px' }}>🛵</span>
+            </div>
+
+            <div style={{
+              background: 'rgba(242, 96, 0, 0.18)',
+              border: '1px solid #F26000',
+              color: '#FF944D',
+              padding: '6px 16px',
+              borderRadius: '20px',
+              fontSize: '12px',
+              fontWeight: '900',
+              letterSpacing: '1px',
+              textTransform: 'uppercase',
+              marginBottom: '14px'
+            }}>
+              🚀 PRÓXIMAMENTE
+            </div>
+
+            <h1 style={{
+              fontSize: '26px',
+              fontWeight: '900',
+              margin: '0 0 12px',
+              letterSpacing: '-0.5px',
+              color: '#FFFFFF'
+            }}>
+              Pedidos Listo
+            </h1>
+
+            <p style={{
+              fontSize: '15px',
+              color: '#94A3B8',
+              maxWidth: '380px',
+              lineHeight: '1.6',
+              margin: '0 0 28px'
+            }}>
+              Esta sección se encuentra actualmente en desarrollo y pruebas exclusivas. Muy pronto estará disponible para todos los usuarios.
+            </p>
+
+            <button
+              onClick={() => navigate('home')}
+              style={{
+                background: 'linear-gradient(135deg, #FF7A00, #F26000)',
+                color: '#FFFFFF',
+                border: 'none',
+                borderRadius: '16px',
+                padding: '14px 28px',
+                fontSize: '15px',
+                fontWeight: '900',
+                cursor: 'pointer',
+                boxShadow: '0 8px 24px rgba(242, 96, 0, 0.4)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}
+            >
+              ← Volver al Inicio
+            </button>
+          </div>
+        )
+      )}
       {currentPage === 'notificaciones' && <NotificacionPage {...userProps} />}
       {currentPage === 'policies'     && <PoliciesPage {...commonProps} />}
 
