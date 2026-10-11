@@ -648,94 +648,59 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
       if (saved) {
         const parsed = JSON.parse(saved);
         if (parsed && typeof parsed === 'object') {
+          // Filtrar cualquier orden de ejemplo previa (ORD-7719, ORD-7718)
+          const cleanOrders = (Array.isArray(parsed.orders) ? parsed.orders : [])
+            .filter(o => o.id !== 'ORD-7719' && o.id !== 'ORD-7718' && !String(o.id || '').startsWith('ORD-77'));
+
           return {
-            storeName: parsed.storeName || 'KFC Las Colinas Santiago',
+            storeName: (parsed.storeName && !parsed.storeName.includes('KFC')) ? parsed.storeName : 'La Fiera Hot Dog',
             status: parsed.status || 'open',
             prepTime: parsed.prepTime || '15-25',
-            address: parsed.address || 'Av. Juan Pablo Duarte #10, Santiago',
-            todaySales: typeof parsed.todaySales === 'number' ? parsed.todaySales : 0,
-            todayOrdersCount: typeof parsed.todayOrdersCount === 'number' ? parsed.todayOrdersCount : 0,
+            address: parsed.address || 'Av. 27 de Febrero esq. Estrella Sadhalá, Santiago, RD',
+            todaySales: cleanOrders.filter(o => o.status === 'completed').reduce((sum, o) => sum + (o.total || 0), 0),
+            todayOrdersCount: cleanOrders.filter(o => o.status === 'completed').length,
             products: (Array.isArray(parsed.products) && parsed.products.length > 0) ? parsed.products : INITIAL_PRODUCTS,
-            orders: (Array.isArray(parsed.orders) && parsed.orders.length > 0) ? parsed.orders : [
-              {
-                id: 'ORD-7719',
-                customerName: 'Juan Pérez',
-                customerPhone: '809-555-0199',
-                address: 'Av. Juan Pablo Duarte #10, Apt 3B, Santiago',
-                items: [
-                  { name: 'Bucket Familiar KFC (8 Pzs)', qty: 1, price: 999, details: 'Con Tostones Crujientes y Coca Cola 2L' },
-                  { name: 'Refresco Cola 2L', qty: 1, price: 55, details: 'Bien Frío' }
-                ],
-                total: 1054,
-                pinOTP: '7492',
-                status: 'new',
-                driverName: 'Kelvin Santos (Mándame 🛵)',
-                createdAt: 'Hace 2 mins',
-                paymentMethod: '💳 Tarjeta Banreservas'
-              },
-              {
-                id: 'ORD-7718',
-                customerName: 'María Rodríguez',
-                customerPhone: '809-555-0842',
-                address: 'C. Perimetral Oeste #45, Santiago',
-                items: [
-                  { name: 'Combo Yaroa Especial Mándame', qty: 2, price: 330, details: 'Extra Queso Frito y Chicharrón' }
-                ],
-                total: 715,
-                pinOTP: '3819',
-                status: 'cooking',
-                driverName: 'Asignando Conductor 🛵',
-                createdAt: 'Hace 12 mins',
-                paymentMethod: '💵 Efectivo Contra Entrega'
-              }
-            ]
+            orders: cleanOrders
           };
         }
       }
     } catch (e) {}
     return {
-      storeName: 'KFC Las Colinas Santiago',
+      storeName: 'La Fiera Hot Dog',
       status: 'open',
       prepTime: '15-25',
-      address: 'Av. Juan Pablo Duarte #10, Santiago',
+      address: 'Av. 27 de Febrero esq. Estrella Sadhalá, Santiago, RD',
       todaySales: 0,
       todayOrdersCount: 0,
       products: INITIAL_PRODUCTS,
-      orders: [
-        {
-          id: 'ORD-7719',
-          customerName: 'Juan Pérez',
-          customerPhone: '809-555-0199',
-          address: 'Av. Juan Pablo Duarte #10, Apt 3B, Santiago',
-          items: [
-            { name: 'Bucket Familiar KFC (8 Pzs)', qty: 1, price: 999, details: 'Con Tostones Crujientes y Coca Cola 2L' },
-            { name: 'Refresco Cola 2L', qty: 1, price: 55, details: 'Bien Frío' }
-          ],
-          total: 1054,
-          pinOTP: '7492',
-          status: 'new',
-          driverName: 'Kelvin Santos (Mándame 🛵)',
-          createdAt: 'Hace 2 mins',
-          paymentMethod: '💳 Tarjeta Banreservas'
-        },
-        {
-          id: 'ORD-7718',
-          customerName: 'María Rodríguez',
-          customerPhone: '809-555-0842',
-          address: 'C. Perimetral Oeste #45, Santiago',
-          items: [
-            { name: 'Combo Yaroa Especial Mándame', qty: 2, price: 330, details: 'Extra Queso Frito y Chicharrón' }
-          ],
-          total: 715,
-          pinOTP: '3819',
-          status: 'cooking',
-          driverName: 'Asignando Conductor 🛵',
-          createdAt: 'Hace 12 mins',
-          paymentMethod: '💵 Efectivo Contra Entrega'
-        }
-      ]
     };
   });
+
+  // Limpiar automáticamente cualquier rastro de órdenes de ejemplo del localStorage del usuario
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('pedidos_listo_merchant_state');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        const hasMockOrders = parsed?.orders?.some(o => o.id === 'ORD-7719' || o.id === 'ORD-7718' || String(o.id || '').startsWith('ORD-77'));
+        const hasFakeSales = parsed?.todaySales === 18450 || (parsed?.orders?.length === 0 && parsed?.todaySales > 0);
+        if (hasMockOrders || hasFakeSales || parsed?.storeName?.includes('KFC')) {
+          const cleanOrders = (parsed.orders || []).filter(o => o.id !== 'ORD-7719' && o.id !== 'ORD-7718' && !String(o.id || '').startsWith('ORD-77'));
+          const realCompletedSales = cleanOrders.filter(o => o.status === 'completed').reduce((sum, o) => sum + (o.total || 0), 0);
+          const realCompletedCount = cleanOrders.filter(o => o.status === 'completed').length;
+          const updated = {
+            ...parsed,
+            storeName: 'La Fiera Hot Dog',
+            orders: cleanOrders,
+            todaySales: realCompletedSales,
+            todayOrdersCount: realCompletedCount
+          };
+          localStorage.setItem('pedidos_listo_merchant_state', JSON.stringify(updated));
+          setMerchantState(prev => ({ ...prev, ...updated }));
+        }
+      }
+    } catch (e) {}
+  }, []);
 
   // Form New Product Controls
   const [newProdName, setNewProdName] = useState('Yaroa de Pollo & Queso Mofongo');
@@ -958,18 +923,19 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
         // Ordenar pedidos: los más recientes arriba
         liveOrders.sort((a, b) => b.rawTime - a.rawTime);
 
-        if (liveOrders.length > 0) {
-          setMerchantState(prev => {
-            const completedCount = liveOrders.filter(o => o.status === 'completed').length;
-            const completedSales = liveOrders.filter(o => o.status === 'completed').reduce((sum, o) => sum + o.total, 0);
-            return {
-              ...prev,
-              orders: liveOrders,
-              todaySales: completedSales > 0 ? completedSales : prev.todaySales,
-              todayOrdersCount: completedCount > 0 ? completedCount : prev.todayOrdersCount
-            };
-          });
-        }
+        // Filtrar para que solo entren órdenes reales (borrar mocks ORD-7719 y ORD-7718)
+        const cleanLiveOrders = liveOrders.filter(o => o.id !== 'ORD-7719' && o.id !== 'ORD-7718' && !String(o.id || '').startsWith('ORD-77'));
+
+        setMerchantState(prev => {
+          const completedCount = cleanLiveOrders.filter(o => o.status === 'completed').length;
+          const completedSales = cleanLiveOrders.filter(o => o.status === 'completed').reduce((sum, o) => sum + o.total, 0);
+          return {
+            ...prev,
+            orders: cleanLiveOrders,
+            todaySales: completedSales,
+            todayOrdersCount: completedCount
+          };
+        });
 
         // Si entró un pedido nuevo en vivo a la Comandera:
         if (hasNewIncoming && latestNewOrder) {
@@ -3123,9 +3089,12 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
             {activeTab === 'pedidos' && (
               <div style={{ padding: 16 }}>
                 <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 900, fontSize: 18, marginBottom: 12 }}>📋 Mis Pedidos Activos</h3>
-                <div style={{ background: '#f8fafc', padding: 14, borderRadius: 16, border: '1px solid #e2e8f0' }}>
-                  <div style={{ fontWeight: 800, fontSize: 14 }}>🛵 Pedido ORD-7719 • KFC Santiago</div>
-                  <div style={{ fontSize: 12, color: 'var(--brand-mamey)', fontWeight: 800, marginTop: 4 }}>PIN OTP de Entrega: 7492</div>
+                <div style={{ textAlign: 'center', padding: '36px 16px', background: '#F8FAFC', borderRadius: 18, border: '1.5px dashed #CBD5E1' }}>
+                  <div style={{ fontSize: 36, marginBottom: 8 }}>🛵</div>
+                  <div style={{ fontWeight: 800, fontSize: 15, color: '#1E293B' }}>No tienes pedidos activos</div>
+                  <div style={{ fontSize: 12, color: '#64748B', marginTop: 4 }}>
+                    Cuando realices un pedido a La Fiera Hot Dog, podrás seguirlo en vivo aquí con tu PIN de entrega.
+                  </div>
                 </div>
               </div>
             )}
@@ -4580,6 +4549,25 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                       </div>
                     );
                   })}
+
+                {merchantState.orders.filter(o => kitchenFilterTab === 'all' || o.status === kitchenFilterTab).length === 0 && (
+                  <div style={{
+                    textAlign: 'center',
+                    padding: '44px 20px',
+                    background: '#121829',
+                    borderRadius: 20,
+                    border: '1.5px dashed rgba(255,255,255,0.18)',
+                    color: '#94a3b8'
+                  }}>
+                    <div style={{ fontSize: 44, marginBottom: 12 }}>👨‍🍳</div>
+                    <div style={{ fontWeight: 900, fontSize: 16, color: '#FFFFFF', marginBottom: 6 }}>
+                      Comandera lista y en espera
+                    </div>
+                    <div style={{ fontSize: 12.5, color: '#94a3b8', maxWidth: 320, margin: '0 auto', lineHeight: 1.4 }}>
+                      No hay pedidos pendientes en esta sección. En cuanto un cliente confirme una orden real, sonará la alarma y aparecerá aquí al instante.
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           )}
