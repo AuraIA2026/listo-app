@@ -5,6 +5,7 @@ import './MandamePage.css';
 import './HomePage.css';
 import PedidosListoHub from '../components/PedidosListoHub';
 import HistoriasCarrusel from '../components/HistoriasCarrusel';
+import ConfigurarRestauranteModal from '../components/ConfigurarRestauranteModal';
 
 // Initial Mock State
 const ANIMATED_BANNERS_CATALOG = [
@@ -408,6 +409,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategoryFilter, setSelectedCategoryFilter] = useState('all');
   const [activeStoreModal, setActiveStoreModal] = useState(null);
+  const [showStoreConfigModal, setShowStoreConfigModal] = useState(false);
   const [storeModalTab, setStoreModalTab] = useState('menu'); // 'menu' | 'info'
   const [customizeProduct, setCustomizeProduct] = useState(null);
   const [isCartModalOpen, setIsCartModalOpen] = useState(false);
@@ -4368,23 +4370,63 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
         <div className="modal-backdrop active" onClick={() => setActiveStoreModal(null)}>
           <div className="modal-card" onClick={(e) => e.stopPropagation()} style={{ borderRadius: '28px 28px 0 0', maxHeight: '90vh', overflowY: 'auto', padding: 0 }}>
             
-            {/* 1. ESPACIO PARA LA PORTADA DEL RESTAURANTE */}
+            {/* 1. ESPACIO PARA LA PORTADA DEL RESTAURANTE (COMPLETA Y SIN CORTAR) */}
             <div style={{
               position: 'relative',
               width: '100%',
-              height: 175,
-              backgroundImage: `linear-gradient(180deg, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.8) 100%), url(${activeStoreModal.cover || activeStoreModal.portadaURL || activeStoreModal.image || 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=800&q=80'})`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'space-between',
-              padding: '16px'
+              height: 220,
+              overflow: 'hidden',
+              background: '#0F172A'
             }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ background: '#ff6b00', color: '#fff', padding: '5px 12px', borderRadius: 14, fontSize: 11, fontWeight: 900, boxShadow: '0 4px 10px rgba(0,0,0,0.3)' }}>
-                  {activeStoreModal.badge || '👑 Restaurante Verificado 🇩🇴'}
-                </span>
+              <img
+                src={activeStoreModal.cover || activeStoreModal.portadaURL || activeStoreModal.image || 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=800&q=80'}
+                alt={activeStoreModal.name}
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover',
+                  objectPosition: 'center',
+                  display: 'block'
+                }}
+              />
+              {/* GRADIENTE SUPERIOR SUTIL PARA BOTONES */}
+              <div style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                height: 70,
+                background: 'linear-gradient(180deg, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0) 100%)',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                padding: '14px 16px',
+                zIndex: 2
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ background: '#ff6b00', color: '#fff', padding: '5px 12px', borderRadius: 14, fontSize: 11, fontWeight: 900, boxShadow: '0 4px 10px rgba(0,0,0,0.3)' }}>
+                    {activeStoreModal.badge || '👑 Restaurante Verificado 🇩🇴'}
+                  </span>
+                  <button
+                    onClick={() => setShowStoreConfigModal(true)}
+                    style={{
+                      background: 'rgba(0,0,0,0.65)',
+                      color: '#FFF',
+                      border: '1px solid rgba(255,255,255,0.3)',
+                      padding: '5px 12px',
+                      borderRadius: 14,
+                      fontSize: 11,
+                      fontWeight: 900,
+                      cursor: 'pointer',
+                      backdropFilter: 'blur(4px)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 4
+                    }}
+                  >
+                    ⚙️ Configurar
+                  </button>
+                </div>
                 <button
                   onClick={() => setActiveStoreModal(null)}
                   style={{ width: 34, height: 34, borderRadius: '50%', background: 'rgba(0,0,0,0.65)', color: '#fff', border: 'none', cursor: 'pointer', fontSize: 16, fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(4px)' }}
@@ -4392,33 +4434,57 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                   ✕
                 </button>
               </div>
-
-              {/* 2. ESPACIO PARA EL LOGO DEL RESTAURANTE SUPERPUESTO */}
-              <div style={{ display: 'flex', alignItems: 'flex-end', gap: 14 }}>
-                <img
-                  src={activeStoreModal.logo || activeStoreModal.logoURL || activeStoreModal.image || 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=200&q=80'}
-                  alt={activeStoreModal.name}
-                  style={{
-                    width: 72,
-                    height: 72,
-                    borderRadius: 22,
-                    objectFit: 'cover',
-                    border: '3px solid #FFF',
-                    boxShadow: '0 8px 20px rgba(0,0,0,0.45)',
-                    background: '#FFF'
-                  }}
-                />
-                <div style={{ color: '#FFF', textShadow: '0 2px 8px rgba(0,0,0,0.85)' }}>
-                  <h3 style={{ margin: 0, fontSize: 20, fontWeight: 900 }}>{activeStoreModal.name}</h3>
-                  <p style={{ margin: '3px 0 0', fontSize: 12, opacity: 0.95, fontWeight: 700 }}>
-                    {activeStoreModal.category || activeStoreModal.badge || 'Comercio Partner Pedidos Listo'}
-                  </p>
-                </div>
-              </div>
             </div>
 
             {/* CONTENIDO INTERNO */}
-            <div style={{ padding: '16px 20px 28px' }}>
+            <div style={{ padding: '0 20px 28px' }}>
+              
+              {/* 2. FILA DE PERFIL: LOGO FLOTANTE + NOMBRE + BOTÓN CONFIGURAR */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: -42, marginBottom: 14, position: 'relative', zIndex: 3, flexWrap: 'wrap', gap: 8 }}>
+                <div style={{ display: 'flex', alignItems: 'flex-end', gap: 14 }}>
+                  <img
+                    src={activeStoreModal.logo || activeStoreModal.logoURL || activeStoreModal.image || 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=200&q=80'}
+                    alt={activeStoreModal.name}
+                    style={{
+                      width: 82,
+                      height: 82,
+                      borderRadius: 24,
+                      objectFit: 'cover',
+                      border: '4px solid #FFFFFF',
+                      boxShadow: '0 8px 24px rgba(0,0,0,0.18)',
+                      background: '#FFFFFF',
+                      flexShrink: 0
+                    }}
+                  />
+                  <div style={{ paddingBottom: 4 }}>
+                    <h3 style={{ margin: 0, fontSize: 21, fontWeight: 900, color: '#0F172A', lineHeight: 1.2 }}>{activeStoreModal.name}</h3>
+                    <p style={{ margin: '3px 0 0', fontSize: 12, color: '#64748B', fontWeight: 700 }}>
+                      {activeStoreModal.category || activeStoreModal.badge || 'Comercio Partner Pedidos Listo'}
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => setShowStoreConfigModal(true)}
+                  style={{
+                    padding: '8px 14px',
+                    borderRadius: 12,
+                    background: '#FFF7ED',
+                    color: '#EA580C',
+                    border: '1.5px solid #FFEDD5',
+                    fontSize: 12,
+                    fontWeight: 900,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 6,
+                    marginBottom: 4,
+                    boxShadow: '0 2px 8px rgba(234,88,12,0.1)'
+                  }}
+                >
+                  ⚙️ Configurar Local
+                </button>
+              </div>
               
               {/* BADGES METADATA */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 14 }}>
@@ -4722,6 +4788,18 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
             </div>
           </div>
         </div>
+      )}
+
+      {/* MODAL DE CONFIGURACIÓN DEL RESTAURANTE PARA EL DUEÑO */}
+      {showStoreConfigModal && activeStoreModal && (
+        <ConfigurarRestauranteModal
+          store={activeStoreModal}
+          onClose={() => setShowStoreConfigModal(false)}
+          onSave={(updated) => {
+            setActiveStoreModal(updated);
+            setDbStores(prev => prev.map(s => s.id === updated.id ? updated : s));
+          }}
+        />
       )}
 
       {/* CUSTOMIZE DISH MODAL WITH INTERACTIVE MULTI-PHOTO GALLERY */}

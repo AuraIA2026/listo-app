@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { collection, addDoc, serverTimestamp, query, onSnapshot } from 'firebase/firestore';
 import { db, auth } from '../firebase';
 import './PedidosListoHub.css';
+import ConfigurarRestauranteModal from './ConfigurarRestauranteModal';
 
 const HERO_BANNERS = [
   {
@@ -214,6 +215,7 @@ export default function PedidosListoHub({ lang = 'es', navigate }) {
   const [cartItems, setCartItems] = useState([]);
   const [showCartDrawer, setShowCartDrawer] = useState(false);
   const [selectedStore, setSelectedStore] = useState(null);
+  const [showConfigModal, setShowConfigModal] = useState(false);
   const [showMandameModal, setShowMandameModal] = useState(false);
   const [activeTrackingOrder, setActiveTrackingOrder] = useState(null);
   const [deliveryAddress, setDeliveryAddress] = useState('Villa Olga, Calle 5 #12, Santiago');
@@ -749,23 +751,63 @@ export default function PedidosListoHub({ lang = 'es', navigate }) {
         <div className="pl-modal-overlay" onClick={() => setSelectedStore(null)}>
           <div className="pl-cart-drawer" onClick={(e) => e.stopPropagation()} style={{ borderRadius: '28px 28px 0 0', maxHeight: '90vh', overflowY: 'auto', padding: 0 }}>
             
-            {/* 1. PORTADA DEL RESTAURANTE */}
+            {/* 1. PORTADA DEL RESTAURANTE (COMPLETA Y ESPACIOSA SIN CORTAR) */}
             <div style={{
               position: 'relative',
               width: '100%',
-              height: 170,
-              backgroundImage: `linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.75) 100%), url(${selectedStore.cover || selectedStore.img})`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'space-between',
-              padding: '16px'
+              height: 220,
+              overflow: 'hidden',
+              background: '#0F172A'
             }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ background: '#FF6000', color: '#FFF', padding: '5px 12px', borderRadius: 14, fontSize: 11, fontWeight: 900, boxShadow: '0 4px 10px rgba(0,0,0,0.3)' }}>
-                  {selectedStore.bannerTag || '👑 Restaurante Verificado 🇩🇴'}
-                </span>
+              <img
+                src={selectedStore.cover || selectedStore.img}
+                alt={selectedStore.name}
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover',
+                  objectPosition: 'center',
+                  display: 'block'
+                }}
+              />
+              {/* GRADIENTE SUPERIOR SUTIL PARA BOTONES */}
+              <div style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                height: 70,
+                background: 'linear-gradient(180deg, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0) 100%)',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                padding: '14px 16px',
+                zIndex: 2
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ background: '#FF6000', color: '#FFF', padding: '5px 12px', borderRadius: 14, fontSize: 11, fontWeight: 900, boxShadow: '0 4px 10px rgba(0,0,0,0.3)' }}>
+                    {selectedStore.bannerTag || '👑 Restaurante Verificado 🇩🇴'}
+                  </span>
+                  <button
+                    onClick={() => setShowConfigModal(true)}
+                    style={{
+                      background: 'rgba(0,0,0,0.65)',
+                      color: '#FFF',
+                      border: '1px solid rgba(255,255,255,0.3)',
+                      padding: '5px 12px',
+                      borderRadius: 14,
+                      fontSize: 11,
+                      fontWeight: 900,
+                      cursor: 'pointer',
+                      backdropFilter: 'blur(4px)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 4
+                    }}
+                  >
+                    ⚙️ Configurar
+                  </button>
+                </div>
                 <button
                   onClick={() => setSelectedStore(null)}
                   style={{ width: 34, height: 34, borderRadius: '50%', background: 'rgba(0,0,0,0.65)', color: '#FFF', border: 'none', cursor: 'pointer', fontSize: 16, fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(4px)' }}
@@ -773,31 +815,55 @@ export default function PedidosListoHub({ lang = 'es', navigate }) {
                   ✕
                 </button>
               </div>
-
-              {/* 2. LOGO DEL RESTAURANTE SUPERPUESTO */}
-              <div style={{ display: 'flex', alignItems: 'flex-end', gap: 14 }}>
-                <img
-                  src={selectedStore.logo || selectedStore.img}
-                  alt={selectedStore.name}
-                  style={{
-                    width: 72,
-                    height: 72,
-                    borderRadius: 22,
-                    objectFit: 'cover',
-                    border: '3px solid #FFF',
-                    boxShadow: '0 8px 20px rgba(0,0,0,0.4)',
-                    background: '#FFF'
-                  }}
-                />
-                <div style={{ color: '#FFF', textShadow: '0 2px 8px rgba(0,0,0,0.85)' }}>
-                  <h3 style={{ margin: 0, fontSize: 20, fontWeight: 900 }}>{selectedStore.name}</h3>
-                  <p style={{ margin: '3px 0 0', fontSize: 12, opacity: 0.95, fontWeight: 700 }}>{selectedStore.sub}</p>
-                </div>
-              </div>
             </div>
 
             {/* CONTENIDO INTERNO */}
-            <div style={{ padding: '16px 20px 28px' }}>
+            <div style={{ padding: '0 20px 28px' }}>
+              
+              {/* 2. FILA DE PERFIL: LOGO FLOTANTE + NOMBRE + BOTÓN CONFIGURAR */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: -42, marginBottom: 14, position: 'relative', zIndex: 3, flexWrap: 'wrap', gap: 8 }}>
+                <div style={{ display: 'flex', alignItems: 'flex-end', gap: 14 }}>
+                  <img
+                    src={selectedStore.logo || selectedStore.img}
+                    alt={selectedStore.name}
+                    style={{
+                      width: 82,
+                      height: 82,
+                      borderRadius: 24,
+                      objectFit: 'cover',
+                      border: '4px solid #FFFFFF',
+                      boxShadow: '0 8px 24px rgba(0,0,0,0.18)',
+                      background: '#FFFFFF',
+                      flexShrink: 0
+                    }}
+                  />
+                  <div style={{ paddingBottom: 4 }}>
+                    <h3 style={{ margin: 0, fontSize: 21, fontWeight: 900, color: '#0F172A', lineHeight: 1.2 }}>{selectedStore.name}</h3>
+                    <p style={{ margin: '3px 0 0', fontSize: 12, color: '#64748B', fontWeight: 700 }}>{selectedStore.sub}</p>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => setShowConfigModal(true)}
+                  style={{
+                    padding: '8px 14px',
+                    borderRadius: 12,
+                    background: '#FFF7ED',
+                    color: '#EA580C',
+                    border: '1.5px solid #FFEDD5',
+                    fontSize: 12,
+                    fontWeight: 900,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 6,
+                    marginBottom: 4,
+                    boxShadow: '0 2px 8px rgba(234,88,12,0.1)'
+                  }}
+                >
+                  ⚙️ Configurar Local
+                </button>
+              </div>
               
               {/* BADGES METADATA */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 14 }}>
@@ -1196,6 +1262,17 @@ export default function PedidosListoHub({ lang = 'es', navigate }) {
             </button>
           </div>
         </div>
+      )}
+      {/* 13. MODAL DE CONFIGURACIÓN DEL RESTAURANTE */}
+      {showConfigModal && selectedStore && (
+        <ConfigurarRestauranteModal
+          store={selectedStore}
+          onClose={() => setShowConfigModal(false)}
+          onSave={(updated) => {
+            setSelectedStore(updated);
+            setDbStores(prev => prev.map(s => s.id === updated.id ? updated : s));
+          }}
+        />
       )}
     </div>
   );
