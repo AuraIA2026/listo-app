@@ -1132,63 +1132,6 @@ export default function HomePage({ lang, navigate, userRole }) {
             </div>
           </div>
         )}
-
-        {/* ── TARJETA HERO DE PEDIDOS LISTO CON VIDEO EN VIVO Y HISTORIAS SUPERPUESTAS ── */}
-        <div 
-          className="hp-hero-dark-card" 
-          style={{ 
-            position: 'relative', 
-            borderRadius: '24px', 
-            overflow: 'hidden', 
-            boxShadow: '0 10px 30px rgba(0,0,0,0.3)',
-            border: '1.5px solid rgba(242, 96, 0, 0.45)',
-            background: '#0F172A'
-          }}
-        >
-          {/* Video Promocional en Vivo de Pedidos Listo al Fondo */}
-          <video 
-            src="/assets/delivery_rider_video.mp4" 
-            autoPlay 
-            loop 
-            muted 
-            playsInline 
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              width: '100%',
-              height: '100%',
-              objectFit: 'cover',
-              opacity: 0.55,
-              zIndex: 1
-            }} 
-          />
-
-          {/* Overlay Gradient Oscuro para Máxima Legibilidad */}
-          <div 
-            style={{
-              position: 'absolute',
-              inset: 0,
-              background: 'linear-gradient(180deg, rgba(15, 23, 42, 0.35) 0%, rgba(15, 23, 42, 0.85) 100%)',
-              zIndex: 2,
-              pointerEvents: 'none'
-            }} 
-          />
-
-          {/* Contenido de Historias Superpuesto Encima del Video */}
-          <div style={{ position: 'relative', zIndex: 3 }}>
-            <HistoriasCarrusel 
-              userData={userData} 
-              isPro={isPro} 
-              onHirePro={(proId) => { 
-                const proObj = (allProsToUse || []).find(p => p.id === proId) || { id: proId }; 
-                navigate('proProfile', proObj); 
-              }} 
-              navigate={navigate}
-              hideRibbon={true}
-            />
-          </div>
-        </div>
       </div>
 
       {/* ── BOTÓN / PANEL SOCIO "¡HOLA, SOCIO!" (UBICADO DEBAJO DEL PANEL DE HISTORIAS DE ARRIBA) ── */}
