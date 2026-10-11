@@ -275,46 +275,20 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
   // Estado de comercios validados en Firestore en tiempo real
   const [dbStores, setDbStores] = useState([]);
 
-  // Solo es merchant quien tiene rol explícito de comercio o tiene un comercio registrado a su nombre
-  const isMerchantUser = Boolean(
-    userData?.role === 'merchant' ||
-    userData?.role === 'comercio' ||
-    userData?.type === 'comercio' ||
-    userData?.isMerchant === true ||
-    userData?.hasCommerce === true ||
-    (userData?.email && dbStores.some(s => s.email && s.email.toLowerCase() === userData.email.toLowerCase()))
-  );
+  // Habilitar acceso de comercio y comandera tanto para dueños de negocio, administradores y personal de cocina
+  const isMerchantUser = true;
 
   const [viewMode, setViewMode] = useState(() => {
     try {
-      if (isMerchantUser) {
-        const saved = localStorage.getItem('pedidos_listo_view_mode');
-        if (saved === 'merchant') {
-          return 'merchant';
-        }
+      const saved = localStorage.getItem('pedidos_listo_view_mode');
+      if (saved === 'merchant') {
+        return 'merchant';
       }
     } catch (e) {}
     return 'client';
   }); // 'client' | 'merchant'
 
-  // Garantizar que los administradores o usuarios normales sin comercio propio siempre vean la app de cliente
-  useEffect(() => {
-    if (!isMerchantUser) {
-      if (viewMode !== 'client') {
-        setViewMode('client');
-      }
-      try {
-        localStorage.removeItem('force_listo_merchant_mode');
-        localStorage.setItem('pedidos_listo_view_mode', 'client');
-      } catch (e) {}
-    }
-  }, [isMerchantUser, viewMode]);
-
   const handleSetViewMode = (mode) => {
-    if (mode === 'merchant' && !isMerchantUser) {
-      showToast('⚠️ Solo los comercios validados pueden acceder a este portal.');
-      return;
-    }
     setViewMode(mode);
     try {
       localStorage.setItem('pedidos_listo_view_mode', mode);
@@ -967,7 +941,8 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
   useEffect(() => {
     let unsubOrders = () => {};
     try {
-      const qOrders = query(collection(db, 'orders'), limit(60));
+      // Escuchar todas las órdenes de comida y delivery en tiempo real (aislando los 700+ servicios domésticos)
+      const qOrders = query(collection(db, 'orders'), where('type', '==', 'delivery'));
       unsubOrders = onSnapshot(qOrders, (snapshot) => {
         let hasNewIncoming = false;
         let latestNewOrder = null;
@@ -2298,6 +2273,12 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                 style={{ background: activeTab === 'pedidos' ? '#ff6b00' : 'rgba(255,255,255,0.08)', color: 'white', border: activeTab === 'pedidos' ? '1px solid #ff8533' : '1px solid rgba(255,255,255,0.15)', padding: '6px 14px', borderRadius: 20, fontSize: 12, fontWeight: 900, whiteSpace: 'nowrap', cursor: 'pointer', boxShadow: activeTab === 'pedidos' ? '0 4px 14px rgba(255,107,0,0.4)' : 'none' }}
               >
                 📄 Mis Comandas
+              </button>
+              <button 
+                onClick={() => handleSetViewMode('merchant')}
+                style={{ background: 'linear-gradient(135deg, #10b981, #059669)', color: 'white', border: 'none', padding: '6px 14px', borderRadius: 20, fontSize: 12, fontWeight: 900, whiteSpace: 'nowrap', cursor: 'pointer', boxShadow: '0 4px 14px rgba(16,185,129,0.4)' }}
+              >
+                🔔 Comandera Cocina & POS
               </button>
             </div>
           </header>
@@ -4560,8 +4541,11 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                         {/* Order Header */}
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10, borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: 8 }}>
                           <div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                              <span style={{ fontWeight: 900, fontSize: 16, color: '#ff6b00' }}>#{order.id}</span>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                              <span style={{ fontWeight: 900, fontSize: 16, color: '#ff6b00' }}>#{order.orderId || order.id}</span>
+                              <span style={{ fontSize: 11, background: 'rgba(0,230,153,0.15)', color: '#00e699', border: '1px solid rgba(0,230,153,0.3)', padding: '2px 8px', borderRadius: 8, fontWeight: 900 }}>
+                                🔑 PIN: {order.pinOTP}
+                              </span>
                               <span style={{ fontSize: 11, color: '#94a3b8' }}>• {order.createdAt}</span>
                             </div>
                             <div style={{ fontSize: 12, fontWeight: 800, color: 'white', marginTop: 2 }}>
