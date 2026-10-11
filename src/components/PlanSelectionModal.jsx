@@ -176,10 +176,31 @@ export default function PlanSelectionModal({ isOpen, onClose, onSelectPlan, proI
     setTimeout(() => setCopiedIdx(null), 1800);
   };
 
+  const openWebCheckout = (p) => {
+    const targetPlan = p || selectedPlan;
+    const uid = encodeURIComponent(proData?.uid || propProInfo?.uid || '');
+    const name = encodeURIComponent(proName || proData?.name || propProInfo?.name || '');
+    const email = encodeURIComponent(proEmail || proData?.email || propProInfo?.email || '');
+    const phone = encodeURIComponent(proPhone || proData?.phone || propProInfo?.phone || '');
+    const cedula = encodeURIComponent(proData?.cedula || propProInfo?.cedula || '');
+    const category = encodeURIComponent(proCategory || proData?.category || propProInfo?.category || '');
+    const planId = encodeURIComponent(targetPlan?.id || 'gold');
+
+    const webUrl = `https://www.listopatron.com.do/?comprar-plan=true&plan=${planId}&step=checkout&uid=${uid}&name=${name}&email=${email}&phone=${phone}&cedula=${cedula}&category=${category}`;
+    try {
+      if (typeof window !== 'undefined' && window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()) {
+        window.open(webUrl, '_system');
+        return;
+      }
+    } catch (err) {}
+    window.open(webUrl, '_blank');
+  };
+
   const handleChoosePlan = (p) => {
     setSelectedPlan(p);
-    setStep('checkout');
+    openWebCheckout(p);
     if (onSelectPlan) onSelectPlan(p);
+    if (onClose) onClose();
   };
 
   const handleConfirmPayment = async () => {

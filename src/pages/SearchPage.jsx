@@ -591,6 +591,25 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
   const [showSolicitudExpress, setShowSolicitudExpress] = useState(false)
   const [showCalcModal,     setShowCalcModal]     = useState(false)
   const [viewMode,           setViewMode]          = useState('list') // 'list' | 'map'
+
+  const openWebPlanPage = (planId = null) => {
+    const uid = encodeURIComponent(userData?.uid || userData?.id || '');
+    const name = encodeURIComponent(userData?.name || userData?.verificacion?.nombre || '');
+    const email = encodeURIComponent(userData?.email || userData?.verificacion?.correo || '');
+    const phone = encodeURIComponent(userData?.phone || userData?.verificacion?.telefono || '');
+    const cedula = encodeURIComponent(userData?.cedula || userData?.verificacion?.cedula || '');
+    const category = encodeURIComponent(userData?.category || userData?.especialidad || '');
+    const planParam = planId ? `&plan=${encodeURIComponent(planId)}` : '';
+
+    const webUrl = `https://www.listopatron.com.do/?comprar-plan=true&uid=${uid}&name=${name}&email=${email}&phone=${phone}&cedula=${cedula}&category=${category}${planParam}`;
+    try {
+      if (typeof window !== 'undefined' && window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()) {
+        window.open(webUrl, '_system');
+        return;
+      }
+    } catch (err) {}
+    window.open(webUrl, '_blank');
+  };
   
   // Hook para historias de 24h activas en tiempo real
   const { stories: allStories, getProStoryData } = useStories()
@@ -1057,7 +1076,7 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
       <ProDelMes lang={lang} navigate={navigate} userRole={userRole} />
 
       {/* ── ALERTA INTELIGENTE DE PLAN Y CONTRATOS PARA PROFESIONALES ── */}
-      <ProPlanAlertWidget userData={userData} onOpenPlanModal={() => setShowPlanModal(true)} />
+      <ProPlanAlertWidget userData={userData} onOpenPlanModal={() => openWebPlanPage()} />
 
       <div className="pill-filters" style={{ display: 'flex', gap: '8px', overflowX: 'auto', alignItems: 'center' }}>
         <button className={`pill-btn ${quickFilter === 'all' ? 'active' : ''}`} onClick={() => setQuickFilter('all')}>

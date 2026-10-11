@@ -956,7 +956,7 @@ export default function HomePage({ lang, navigate, userRole }) {
     }
   }, []);
 
-  const openWebPlanPage = (e) => {
+  const openWebPlanPage = (e, planId = null) => {
     if (e) {
       if (e.stopPropagation) e.stopPropagation();
       if (e.preventDefault) e.preventDefault();
@@ -967,8 +967,9 @@ export default function HomePage({ lang, navigate, userRole }) {
     const phone = encodeURIComponent(userData?.phone || userData?.verificacion?.telefono || '');
     const cedula = encodeURIComponent(userData?.cedula || userData?.verificacion?.cedula || '');
     const category = encodeURIComponent(userData?.category || userData?.especialidad || '');
+    const planParam = planId ? `&plan=${encodeURIComponent(planId)}` : '';
 
-    const webUrl = `https://www.listopatron.com.do/?comprar-plan=true&uid=${uid}&name=${name}&email=${email}&phone=${phone}&cedula=${cedula}&category=${category}`;
+    const webUrl = `https://www.listopatron.com.do/?comprar-plan=true&uid=${uid}&name=${name}&email=${email}&phone=${phone}&cedula=${cedula}&category=${category}${planParam}`;
     try {
       if (typeof window !== 'undefined' && window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()) {
         window.open(webUrl, '_system');

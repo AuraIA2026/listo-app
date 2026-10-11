@@ -875,6 +875,29 @@ export default function ProfilePage({ lang, setLang, navigate, onLogout, initial
     }
   }
 
+  const openWebPlanPage = (e = null, planId = null) => {
+    if (e) {
+      if (e.stopPropagation) e.stopPropagation();
+      if (e.preventDefault) e.preventDefault();
+    }
+    const uid = encodeURIComponent(userData?.uid || userData?.id || '');
+    const name = encodeURIComponent(userData?.name || userData?.verificacion?.nombre || '');
+    const email = encodeURIComponent(userData?.email || userData?.verificacion?.correo || '');
+    const phone = encodeURIComponent(userData?.phone || userData?.verificacion?.telefono || '');
+    const cedula = encodeURIComponent(userData?.cedula || userData?.verificacion?.cedula || '');
+    const category = encodeURIComponent(userData?.category || userData?.especialidad || '');
+    const planParam = planId ? `&plan=${encodeURIComponent(planId)}` : '';
+
+    const webUrl = `https://www.listopatron.com.do/?comprar-plan=true&uid=${uid}&name=${name}&email=${email}&phone=${phone}&cedula=${cedula}&category=${category}${planParam}`;
+    try {
+      if (typeof window !== 'undefined' && window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()) {
+        window.open(webUrl, '_system');
+        return;
+      }
+    } catch (err) {}
+    window.open(webUrl, '_blank');
+  };
+
   const renderScreen = () => {
     const back = () => setScreen(null)
     switch (screen) {
@@ -989,7 +1012,7 @@ export default function ProfilePage({ lang, setLang, navigate, onLogout, initial
           {userRole === 'pro' && (
             <>
               <div className="stat-divider" />
-              <div className="stat-item">
+              <div className="stat-item" style={{ cursor: 'pointer' }} onClick={(e) => openWebPlanPage(e)} title={lang === 'es' ? 'Toca para administrar o cambiar tu plan' : 'Manage your plan'}>
                 <span 
                   className="stat-num" 
                   style={{ 
@@ -1001,7 +1024,7 @@ export default function ProfilePage({ lang, setLang, navigate, onLogout, initial
                 >
                   {(userData?.planStatus === 'expired') ? '0' : ((userData?.planId === 'vip' || userData?.planId === 'platinum' || (userData?.currentPlan||'').toLowerCase().includes('vip') || (userData?.plan||'').toLowerCase().includes('vip')) ? 'ILIMITADO' : (userData?.contracts || 0))}
                 </span>
-                <span className="stat-label">{T.contracts}</span>
+                <span className="stat-label">{T.contracts} 💎</span>
               </div>
             </>
           )}
@@ -1068,28 +1091,8 @@ export default function ProfilePage({ lang, setLang, navigate, onLogout, initial
             
             {(!hideUpgrade && (!userData?.planId || userData?.planId === 'basico' || userData?.currentPlan === 'basico' || localStorage.getItem('showUpgradeOverride_Listo_' + userData?.uid) === 'true')) && (
               <div style={{ position: 'relative', marginTop: '12px' }}>
-                <button data-tour="comprar-plan" className="perf-action" onClick={(e) => {
-                  if (e) {
-                    if (e.stopPropagation) e.stopPropagation();
-                    if (e.preventDefault) e.preventDefault();
-                  }
-                  const uid = encodeURIComponent(userData?.uid || userData?.id || '');
-                  const name = encodeURIComponent(userData?.name || userData?.verificacion?.nombre || '');
-                  const email = encodeURIComponent(userData?.email || userData?.verificacion?.correo || '');
-                  const phone = encodeURIComponent(userData?.phone || userData?.verificacion?.telefono || '');
-                  const cedula = encodeURIComponent(userData?.cedula || userData?.verificacion?.cedula || '');
-                  const category = encodeURIComponent(userData?.category || userData?.especialidad || '');
-
-                  const webUrl = `https://www.listopatron.com.do/?comprar-plan=true&uid=${uid}&name=${name}&email=${email}&phone=${phone}&cedula=${cedula}&category=${category}`;
-                  try {
-                    if (typeof window !== 'undefined' && window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()) {
-                      window.open(webUrl, '_system');
-                      return;
-                    }
-                  } catch (err) {}
-                  window.open(webUrl, '_blank');
-                }} style={{ margin: 0, width: '100%', cursor: 'pointer' }}>
-                  <span>💎 {lang === 'es' ? 'Certificación & Verificación' : 'Certification & Verification'}</span>
+                <button data-tour="comprar-plan" className="perf-action" onClick={(e) => openWebPlanPage(e)} style={{ margin: 0, width: '100%', cursor: 'pointer' }}>
+                  <span>💎 {lang === 'es' ? 'Certificación, Verificación & Planes' : 'Certification, Verification & Plans'}</span>
                   <span style={{ fontSize: '18px' }}>›</span>
                 </button>
                 <button 
