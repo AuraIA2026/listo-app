@@ -39,7 +39,11 @@ export default function EditarLocal({ lang = 'es', navigate, local }) {
   const [portadaPreview,setPortadaPreview]= useState(local?.portadaURL  || null)
   
   const [whatsapp,      setWhatsapp]      = useState(local?.whatsapp    || '')
+  const [telefono,      setTelefono]      = useState(local?.telefono    || '')
+  const [direccion,     setDireccion]     = useState(local?.direccion   || '')
   const [instagram,     setInstagram]     = useState(local?.instagram   || '')
+  const [facebook,      setFacebook]      = useState(local?.facebook    || '')
+  const [tiktok,        setTiktok]        = useState(local?.tiktok      || '')
   const [horario,       setHorario]       = useState(local?.horario     || 'Lunes a Viernes, 8:00 AM - 6:00 PM')
   const [pagos,         setPagos]         = useState(local?.pagos       || ['transferencia', 'tarjeta'])
 
@@ -90,8 +94,12 @@ export default function EditarLocal({ lang = 'es', navigate, local }) {
         categoria:    categoria.trim(),
         descripcion:  descripcion.trim(),
         logoURL, portadaURL,
+        direccion:    direccion.trim(),
+        telefono:     telefono.trim(),
         whatsapp:     whatsapp.trim(),
         instagram:    instagram.trim(),
+        facebook:     facebook.trim(),
+        tiktok:       tiktok.trim(),
         horario:      horario.trim(),
         pagos:        pagos,
         servicios:    servicios.filter(s => s.nombre.trim()),
@@ -203,12 +211,28 @@ export default function EditarLocal({ lang = 'es', navigate, local }) {
             <input className="crear-local-input" placeholder="Ej: Lun-Vie 8am - 6pm, Sábados 9am - 2pm" value={horario} onChange={e => setHorario(e.target.value)} />
           </div>
           <div className="crear-local-field">
+            <label className="crear-local-label">📍 Dirección Física del Restaurante / Local</label>
+            <input className="crear-local-input" placeholder="Ej: Av. 27 de Febrero esq. Tiradentes #45, Santo Domingo" value={direccion} onChange={e => setDireccion(e.target.value)} />
+          </div>
+          <div className="crear-local-field">
+            <label className="crear-local-label">📞 Teléfono del Restaurante (Llamadas)</label>
+            <input className="crear-local-input" placeholder="Ej: 809-583-2020" value={telefono} onChange={e => setTelefono(e.target.value)} />
+          </div>
+          <div className="crear-local-field">
             <label className="crear-local-label">📱 WhatsApp del Negocio (Opcional)</label>
             <input className="crear-local-input" placeholder="+1 809-000-0000" value={whatsapp} onChange={e => setWhatsapp(e.target.value)} />
           </div>
           <div className="crear-local-field">
             <label className="crear-local-label">📸 Usuario de Instagram (Opcional)</label>
-            <input className="crear-local-input" placeholder="@tu_negocio_rd" value={instagram} onChange={e => setInstagram(e.target.value)} />
+            <input className="crear-local-input" placeholder="@tu_restaurante_rd" value={instagram} onChange={e => setInstagram(e.target.value)} />
+          </div>
+          <div className="crear-local-field">
+            <label className="crear-local-label">👥 Facebook del Restaurante (Opcional)</label>
+            <input className="crear-local-input" placeholder="facebook.com/mirestaurante" value={facebook} onChange={e => setFacebook(e.target.value)} />
+          </div>
+          <div className="crear-local-field">
+            <label className="crear-local-label">🎵 TikTok del Restaurante (Opcional)</label>
+            <input className="crear-local-input" placeholder="@mirestaurante" value={tiktok} onChange={e => setTiktok(e.target.value)} />
           </div>
           <div className="crear-local-field">
             <label className="crear-local-label">💳 Métodos de Pago Aceptados</label>

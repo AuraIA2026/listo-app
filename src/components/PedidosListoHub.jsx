@@ -1,6 +1,6 @@
 // src/components/PedidosListoHub.jsx
 import React, { useState, useEffect } from 'react';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, query, onSnapshot } from 'firebase/firestore';
 import { db, auth } from '../firebase';
 import './PedidosListoHub.css';
 
@@ -98,62 +98,102 @@ const STORES = [
     id: 'st1',
     name: 'Burger Mamey House',
     cat: 'restaurantes',
-    sub: 'Hamburguesas & Grill',
+    sub: 'Hamburguesas, Alitas & Grill',
     time: '20-30 min',
     rating: '4.9',
     reviews: '340',
     delivery: 'RD$ 75',
     img: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=400&q=80',
+    cover: 'https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=800&q=80',
+    logo: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=200&q=80',
+    address: 'Av. 27 de Febrero esq. Winston Churchill, Ensanche Naco, Santo Domingo',
+    phone: '809-583-2020',
+    whatsapp: '18095832020',
+    socials: {
+      instagram: '@burgermamey.rd',
+      facebook: 'facebook.com/burgermameyrd',
+      tiktok: '@burgermameydo'
+    },
     bannerTag: '🔥 2x1 Martes',
     menu: [
-      { id: 'm1', name: 'Burger Mamey Especial', price: 390, desc: 'Doble carne angus, queso cheddar, tocino crujiente y salsa mamey.', img: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=200&q=80' },
-      { id: 'm2', name: 'Papas Supremos Mamey', price: 180, desc: 'Papas rizadas con queso derretido y tocineta.', img: 'https://images.unsplash.com/photo-1573080496219-bb080dd4f877?auto=format&fit=crop&w=200&q=80' }
+      { id: 'm1', name: 'Burger Mamey Especial', price: 390, desc: 'Doble carne angus, queso cheddar fundido, tocineta crujiente y salsa secreta mamey.', img: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=200&q=80' },
+      { id: 'm2', name: 'Papas Supremos Mamey', price: 180, desc: 'Papas rizadas crujientes con queso derretido, tocineta y cebollín.', img: 'https://images.unsplash.com/photo-1573080496219-bb080dd4f877?auto=format&fit=crop&w=200&q=80' }
     ]
   },
   {
     id: 'st2',
     name: 'Listo Market - Súper Express',
     cat: 'market',
-    sub: 'Supermercado & Frescos',
+    sub: 'Supermercado, Frescos & Despensa',
     time: '12-18 min',
     rating: '5.0',
     reviews: '890',
     delivery: 'GRATIS',
     img: 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=400&q=80',
+    cover: 'https://images.unsplash.com/photo-1578916171728-46686eac8d58?auto=format&fit=crop&w=800&q=80',
+    logo: 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=200&q=80',
+    address: 'Calle Del Sol #45, Santiago Centro, República Dominicana',
+    phone: '809-582-8800',
+    whatsapp: '18095828800',
+    socials: {
+      instagram: '@listomarket.rd',
+      facebook: 'facebook.com/listomarketdo',
+      tiktok: '@listomarket'
+    },
     bannerTag: '⚡ Entrega en 15m',
     menu: [
-      { id: 'p1', name: 'Leche Entera 1L', price: 110, desc: '1 Litro fresca.', img: 'https://images.unsplash.com/photo-1563636619-e9143da7973b?auto=format&fit=crop&w=200&q=80' },
-      { id: 'p2', name: 'Cerveza Presidente 6-Pack', price: 650, desc: 'Lata 12oz bien fría.', img: 'https://images.unsplash.com/photo-1608270586620-248524c67de9?auto=format&fit=crop&w=200&q=80' }
+      { id: 'p1', name: 'Leche Entera 1L', price: 110, desc: '1 Litro fresca grado A pasteurizada.', img: 'https://images.unsplash.com/photo-1563636619-e9143da7973b?auto=format&fit=crop&w=200&q=80' },
+      { id: 'p2', name: 'Cerveza Presidente 6-Pack', price: 650, desc: 'Lata 12oz bien fría como la ceniza.', img: 'https://images.unsplash.com/photo-1608270586620-248524c67de9?auto=format&fit=crop&w=200&q=80' }
     ]
   },
   {
     id: 'st3',
     name: 'Pizzeria Don Mamey',
     cat: 'restaurantes',
-    sub: 'Pizza Artesanal & Pastas',
+    sub: 'Pizza Artesanal, Calzones & Pastas',
     time: '25-35 min',
     rating: '4.8',
     reviews: '520',
     delivery: 'RD$ 50',
     img: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=400&q=80',
+    cover: 'https://images.unsplash.com/photo-1579751626657-72bc17010498?auto=format&fit=crop&w=800&q=80',
+    logo: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=200&q=80',
+    address: 'Av. Juan Pablo Duarte #12, Villa Olga, Santiago',
+    phone: '809-241-1122',
+    whatsapp: '18092411122',
+    socials: {
+      instagram: '@pizzeriadonmamey',
+      facebook: 'facebook.com/donmameypizza',
+      tiktok: '@donmameypizza'
+    },
     bannerTag: '🍕 Masa Madre',
     menu: [
-      { id: 'm3', name: 'Pizza Pepperoni Mamey Grande', price: 650, desc: 'Quеsо mоzzаrеllа, pеppеrоnі іtаlіаnо y sаlsа dе lа cаsа.', img: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=200&q=80' }
+      { id: 'm3', name: 'Pizza Pepperoni Mamey Grande', price: 650, desc: 'Queso mozzarella premium, pepperoni italiano y salsa pomodoro artesanal.', img: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=200&q=80' }
     ]
   },
   {
     id: 'st4',
     name: 'Comida Criolla Doña Rosa',
     cat: 'restaurantes',
-    sub: 'Sancocho, Mofongo & Pollo',
+    sub: 'Sancocho, Mofongo, Chivo & Pollo',
     time: '15-25 min',
     rating: '4.9',
     reviews: '610',
     delivery: 'RD$ 60',
     img: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=400&q=80',
+    cover: 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=800&q=80',
+    logo: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=200&q=80',
+    address: 'Calle Restauración #77, Los Jardines Metropolitanos, Santiago',
+    phone: '809-581-9933',
+    whatsapp: '18095819933',
+    socials: {
+      instagram: '@donarosa.criollo',
+      facebook: 'facebook.com/donarosacriollo',
+      tiktok: '@donarosafood'
+    },
     bannerTag: '🇩🇴 Sabor Dominicano',
     menu: [
-      { id: 'm4', name: 'Mofongo Especial con Chicharrón', price: 420, desc: 'Mofongo de plátano verde con chicharrón crujiente y caldo.', img: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=200&q=80' }
+      { id: 'm4', name: 'Mofongo Especial con Chicharrón', price: 420, desc: 'Mofongo de plátano verde con chicharrón crujiente, ajo asado y caldo caliente.', img: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=200&q=80' }
     ]
   }
 ];
@@ -216,8 +256,59 @@ export default function PedidosListoHub({ lang = 'es', navigate }) {
     return () => clearInterval(dualTimer);
   }, []);
 
+  const [dbStores, setDbStores] = useState([]);
+
+  useEffect(() => {
+    let unsub = () => {};
+    try {
+      const q = query(collection(db, 'locales'));
+      unsub = onSnapshot(q, (snap) => {
+        const loaded = snap.docs.map(doc => {
+          const d = doc.data();
+          return {
+            id: doc.id,
+            name: d.nombre || 'Restaurante Partner',
+            cat: (d.categoria || '').toLowerCase().includes('market') ? 'market' : 'restaurantes',
+            sub: d.categoria || 'Gastronomía & Platos',
+            time: d.horario || '20-30 min',
+            rating: Number(d.rating || 5.0).toFixed(1),
+            reviews: d.totalResenas || 48,
+            delivery: 'RD$ 75',
+            img: d.portadaURL || d.logoURL || 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=400&q=80',
+            cover: d.portadaURL || 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=800&q=80',
+            logo: d.logoURL || d.portadaURL || 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=200&q=80',
+            address: d.direccion || 'Santiago Centro, República Dominicana',
+            phone: d.telefono || d.phone || d.whatsapp || '809-555-0100',
+            whatsapp: d.whatsapp || '',
+            socials: {
+              instagram: d.instagram || '',
+              facebook: d.facebook || '',
+              tiktok: d.tiktok || ''
+            },
+            bannerTag: '👑 Local VIP Partner',
+            menu: (d.servicios && d.servicios.length > 0)
+              ? d.servicios.map((s, idx) => ({
+                  id: `db_${doc.id}_${idx}`,
+                  name: s.nombre,
+                  price: parseFloat(String(s.precio).replace(/[^0-9.]/g, '')) || 250,
+                  desc: s.descripcion || 'Especialidad de la casa preparada al momento.',
+                  img: s.fotoURL || 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=200&q=80'
+                }))
+              : [
+                  { id: `db_combo_${doc.id}`, name: 'Combo Especial de la Casa', price: 350, desc: 'Plato principal con guarnición y bebida fría.', img: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=200&q=80' }
+                ]
+          };
+        }).filter(st => st.activo !== false);
+        setDbStores(loaded);
+      }, () => {});
+    } catch(e) {}
+    return () => unsub();
+  }, []);
+
+  const allAvailableStores = [...dbStores, ...STORES];
+
   // Filter stores by category
-  const filteredStores = STORES.filter(st => {
+  const filteredStores = allAvailableStores.filter(st => {
     const matchesCat = selectedCat === 'todos' || st.cat === selectedCat;
     const matchesSearch = st.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           st.sub.toLowerCase().includes(searchQuery.toLowerCase());
@@ -305,24 +396,40 @@ export default function PedidosListoHub({ lang = 'es', navigate }) {
       if (navigate) {
         setTimeout(() => {
           navigate('tracking', confirmed);
-        }, 800);
+        }, 500);
       }
     } catch (err) {
-      console.error('Error guardando pedido:', err);
+      console.warn('Fallback local order:', err);
       const fallback = {
         id: 'PL-' + Math.floor(100000 + Math.random() * 900000),
+        orderId: 'PL-' + Math.floor(100000 + Math.random() * 900000),
+        type: 'delivery',
         items: cartItems,
         total: total,
         address: deliveryAddress,
-        status: 'confirmado',
+        deliveryAddress: deliveryAddress,
+        status: 'pending',
         pinOTP: pin,
         time: '15-25 min',
+        dateToken: 'Hoy',
+        timeToken: '15-25 min',
+        proName: 'Juan Carlos M. (Mándame Rider)',
+        proSpecialty: 'Delivery & Reparto Express',
+        proAvatar: '🛵',
+        proPhone: '809-555-0192',
         riderName: 'Juan Carlos M. (Mándame Rider)',
-        riderPhone: '809-555-0192'
+        riderPhone: '809-555-0192',
+        coords: { lat: 18.4861, lng: -69.9312 }
       };
       setActiveTrackingOrder(fallback);
       setCartItems([]);
       setShowCartDrawer(false);
+
+      if (navigate) {
+        setTimeout(() => {
+          navigate('tracking', fallback);
+        }, 500);
+      }
     }
   };
 
@@ -637,34 +744,281 @@ export default function PedidosListoHub({ lang = 'es', navigate }) {
       )}
 
       {/* 9. MODAL DETALLE DE TIENDA / MENÚ */}
+      {/* 9. MODAL DETALLE DE TIENDA / MENÚ CON PORTADA, LOGO, DIRECCIÓN, TELÉFONO Y REDES SOCIALES */}
       {selectedStore && (
         <div className="pl-modal-overlay" onClick={() => setSelectedStore(null)}>
-          <div className="pl-cart-drawer" onClick={(e) => e.stopPropagation()} style={{ borderRadius: '28px 28px 0 0' }}>
-            <div className="pl-drawer-header">
-              <h3 className="pl-drawer-title">{selectedStore.name}</h3>
-              <button className="pl-close-btn" onClick={() => setSelectedStore(null)}>✕</button>
-            </div>
-            <p style={{ margin: '0 0 12px', fontSize: 13, color: '#666', fontWeight: 600 }}>
-              ⏱️ {selectedStore.time} • ⭐ {selectedStore.rating} ({selectedStore.reviews} opiniones)
-            </p>
+          <div className="pl-cart-drawer" onClick={(e) => e.stopPropagation()} style={{ borderRadius: '28px 28px 0 0', maxHeight: '90vh', overflowY: 'auto', padding: 0 }}>
+            
+            {/* 1. PORTADA DEL RESTAURANTE */}
+            <div style={{
+              position: 'relative',
+              width: '100%',
+              height: 170,
+              backgroundImage: `linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.75) 100%), url(${selectedStore.cover || selectedStore.img})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-between',
+              padding: '16px'
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ background: '#FF6000', color: '#FFF', padding: '5px 12px', borderRadius: 14, fontSize: 11, fontWeight: 900, boxShadow: '0 4px 10px rgba(0,0,0,0.3)' }}>
+                  {selectedStore.bannerTag || '👑 Restaurante Verificado 🇩🇴'}
+                </span>
+                <button
+                  onClick={() => setSelectedStore(null)}
+                  style={{ width: 34, height: 34, borderRadius: '50%', background: 'rgba(0,0,0,0.65)', color: '#FFF', border: 'none', cursor: 'pointer', fontSize: 16, fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(4px)' }}
+                >
+                  ✕
+                </button>
+              </div>
 
-            <div style={{ maxHeight: 340, overflowY: 'auto' }}>
-              {selectedStore.menu.map(item => (
-                <div key={item.id} className="pl-cart-item-row" style={{ padding: '12px 0' }}>
-                  <div className="pl-cart-item-info">
-                    <img src={item.img} alt={item.name} style={{ width: 54, height: 54, borderRadius: 12, objectFit: 'cover' }} />
-                    <div>
-                      <p className="pl-cart-item-name">{item.name}</p>
-                      <p className="pl-cart-item-sub">{item.desc}</p>
-                      <span style={{ fontSize: 14, fontWeight: 900, color: 'var(--mamey-primary)' }}>RD$ {item.price}</span>
-                    </div>
-                  </div>
-                  <button className="pl-product-add-btn" onClick={() => {
-                    addToCart(item);
-                    alert(`Añadido al pedido: ${item.name}`);
-                  }}>+</button>
+              {/* 2. LOGO DEL RESTAURANTE SUPERPUESTO */}
+              <div style={{ display: 'flex', alignItems: 'flex-end', gap: 14 }}>
+                <img
+                  src={selectedStore.logo || selectedStore.img}
+                  alt={selectedStore.name}
+                  style={{
+                    width: 72,
+                    height: 72,
+                    borderRadius: 22,
+                    objectFit: 'cover',
+                    border: '3px solid #FFF',
+                    boxShadow: '0 8px 20px rgba(0,0,0,0.4)',
+                    background: '#FFF'
+                  }}
+                />
+                <div style={{ color: '#FFF', textShadow: '0 2px 8px rgba(0,0,0,0.85)' }}>
+                  <h3 style={{ margin: 0, fontSize: 20, fontWeight: 900 }}>{selectedStore.name}</h3>
+                  <p style={{ margin: '3px 0 0', fontSize: 12, opacity: 0.95, fontWeight: 700 }}>{selectedStore.sub}</p>
                 </div>
-              ))}
+              </div>
+            </div>
+
+            {/* CONTENIDO INTERNO */}
+            <div style={{ padding: '16px 20px 28px' }}>
+              
+              {/* BADGES METADATA */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 14 }}>
+                <span style={{ fontSize: 12, fontWeight: 900, background: '#FFF7ED', color: '#EA580C', padding: '4px 10px', borderRadius: 12, border: '1px solid #FFEDD5' }}>
+                  ⭐ {selectedStore.rating} ({selectedStore.reviews} opiniones)
+                </span>
+                <span style={{ fontSize: 12, fontWeight: 800, background: '#F1F5F9', color: '#475569', padding: '4px 10px', borderRadius: 12 }}>
+                  ⏱️ {selectedStore.time}
+                </span>
+                <span style={{ fontSize: 12, fontWeight: 800, background: '#ECFDF5', color: '#059669', padding: '4px 10px', borderRadius: 12 }}>
+                  🛵 {selectedStore.delivery}
+                </span>
+              </div>
+
+              {/* 3. ESPACIO PARA LA DIRECCIÓN DEL RESTAURANTE */}
+              <div style={{
+                background: '#F8FAFC',
+                border: '1.5px solid #E2E8F0',
+                borderRadius: 16,
+                padding: '12px 14px',
+                marginBottom: 10,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: 10
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#EFF6FF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, color: '#2563EB', flexShrink: 0 }}>
+                    📍
+                  </div>
+                  <div>
+                    <span style={{ fontSize: 10, fontWeight: 900, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block' }}>
+                      DIRECCIÓN DEL RESTAURANTE
+                    </span>
+                    <span style={{ fontSize: 13, fontWeight: 800, color: '#1E293B', lineHeight: 1.3 }}>
+                      {selectedStore.address || 'Av. 27 de Febrero, Santiago, República Dominicana'}
+                    </span>
+                  </div>
+                </div>
+                <button
+                  onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(selectedStore.address || selectedStore.name)}`, '_blank')}
+                  style={{ padding: '6px 12px', borderRadius: 10, background: '#EFF6FF', color: '#2563EB', border: '1px solid #BFDBFE', fontSize: 11, fontWeight: 900, cursor: 'pointer', whiteSpace: 'nowrap' }}
+                >
+                  🗺️ Mapa
+                </button>
+              </div>
+
+              {/* 4. ESPACIO PARA EL NÚMERO DE TELÉFONO */}
+              <div style={{
+                background: '#F8FAFC',
+                border: '1.5px solid #E2E8F0',
+                borderRadius: 16,
+                padding: '12px 14px',
+                marginBottom: 10,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: 10
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#ECFDF5', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, color: '#10B981', flexShrink: 0 }}>
+                    📞
+                  </div>
+                  <div>
+                    <span style={{ fontSize: 10, fontWeight: 900, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block' }}>
+                      NÚMERO DE TELÉFONO
+                    </span>
+                    <span style={{ fontSize: 14, fontWeight: 900, color: '#1E293B', fontFamily: 'monospace' }}>
+                      {selectedStore.phone || '809-583-2020'}
+                    </span>
+                  </div>
+                </div>
+                <div style={{ display: 'flex', gap: 6 }}>
+                  {selectedStore.phone && (
+                    <a
+                      href={`tel:${selectedStore.phone.replace(/[^0-9]/g, '')}`}
+                      style={{ padding: '7px 12px', borderRadius: 10, background: '#10B981', color: '#FFF', textDecoration: 'none', fontSize: 11, fontWeight: 900, display: 'flex', alignItems: 'center', gap: 4, boxShadow: '0 2px 6px rgba(16,185,129,0.3)' }}
+                    >
+                      📞 Llamar
+                    </a>
+                  )}
+                  {selectedStore.whatsapp && (
+                    <a
+                      href={`https://wa.me/${selectedStore.whatsapp.replace(/[^0-9]/g, '')}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ padding: '7px 12px', borderRadius: 10, background: '#25D366', color: '#FFF', textDecoration: 'none', fontSize: 11, fontWeight: 900, display: 'flex', alignItems: 'center', gap: 4, boxShadow: '0 2px 6px rgba(37,211,102,0.3)' }}
+                    >
+                      💬 WhatsApp
+                    </a>
+                  )}
+                </div>
+              </div>
+
+              {/* 5. ESPACIO PARA REDES SOCIALES */}
+              <div style={{
+                background: '#FFF7ED',
+                border: '1.5px solid #FFEDD5',
+                borderRadius: 16,
+                padding: '12px 14px',
+                marginBottom: 16
+              }}>
+                <span style={{ fontSize: 10, fontWeight: 900, color: '#EA580C', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: 8 }}>
+                  🌐 REDES SOCIALES DEL RESTAURANTE
+                </span>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  {selectedStore.socials?.instagram ? (
+                    <a
+                      href={`https://instagram.com/${selectedStore.socials.instagram.replace('@', '')}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        padding: '6px 12px',
+                        borderRadius: 10,
+                        background: 'linear-gradient(45deg, #F58529, #DD2A7B, #8134AF)',
+                        color: '#FFF',
+                        textDecoration: 'none',
+                        fontSize: 11,
+                        fontWeight: 900,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 5,
+                        boxShadow: '0 2px 8px rgba(221,42,123,0.3)'
+                      }}
+                    >
+                      📸 {selectedStore.socials.instagram}
+                    </a>
+                  ) : (
+                    <span style={{ padding: '6px 12px', borderRadius: 10, background: 'linear-gradient(45deg, #F58529, #DD2A7B, #8134AF)', color: '#FFF', fontSize: 11, fontWeight: 800 }}>
+                      📸 @{selectedStore.name.toLowerCase().replace(/[^a-z0-9]/g, '')}.rd
+                    </span>
+                  )}
+                  {selectedStore.socials?.facebook && (
+                    <a
+                      href={selectedStore.socials.facebook.startsWith('http') ? selectedStore.socials.facebook : `https://${selectedStore.socials.facebook}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        padding: '6px 12px',
+                        borderRadius: 10,
+                        background: '#1877F2',
+                        color: '#FFF',
+                        textDecoration: 'none',
+                        fontSize: 11,
+                        fontWeight: 900,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 5,
+                        boxShadow: '0 2px 8px rgba(24,119,242,0.3)'
+                      }}
+                    >
+                      👥 Facebook
+                    </a>
+                  )}
+                  {selectedStore.socials?.tiktok && (
+                    <a
+                      href={`https://tiktok.com/@${selectedStore.socials.tiktok.replace('@', '')}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        padding: '6px 12px',
+                        borderRadius: 10,
+                        background: '#000000',
+                        color: '#FFF',
+                        textDecoration: 'none',
+                        fontSize: 11,
+                        fontWeight: 900,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 5
+                      }}
+                    >
+                      🎵 {selectedStore.socials.tiktok}
+                    </a>
+                  )}
+                </div>
+              </div>
+
+              {/* SEPARADOR DE MENÚ */}
+              <div style={{ margin: '14px 0 10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <h4 style={{ margin: 0, fontSize: 16, fontWeight: 900, color: '#1E293B' }}>🍽️ Menú & Especialidades</h4>
+                <span style={{ fontSize: 12, color: 'var(--mamey-primary)', fontWeight: 800 }}>{selectedStore.menu?.length || 0} platillos</span>
+              </div>
+
+              {/* LISTADO DE PLATILLOS */}
+              <div style={{ maxHeight: 300, overflowY: 'auto' }}>
+                {selectedStore.menu?.map(item => (
+                  <div key={item.id} className="pl-cart-item-row" style={{ padding: '12px 0', borderBottom: '1px solid #F1F5F9' }}>
+                    <div className="pl-cart-item-info">
+                      <img src={item.img} alt={item.name} style={{ width: 62, height: 62, borderRadius: 14, objectFit: 'cover' }} />
+                      <div style={{ flex: 1, minWidth: 0, paddingRight: 8 }}>
+                        <p className="pl-cart-item-name" style={{ fontSize: 14, fontWeight: 900, margin: '0 0 3px' }}>{item.name}</p>
+                        <p className="pl-cart-item-sub" style={{ fontSize: 11, color: '#64748B', margin: '0 0 6px', lineHeight: 1.3 }}>{item.desc}</p>
+                        <span style={{ fontSize: 15, fontWeight: 900, color: 'var(--mamey-primary)' }}>RD$ {item.price.toLocaleString()}</span>
+                      </div>
+                    </div>
+                    <button
+                      className="pl-product-add-btn"
+                      style={{ width: 36, height: 36, borderRadius: 12, fontSize: 18 }}
+                      onClick={() => {
+                        addToCart(item);
+                      }}
+                    >+</button>
+                  </div>
+                ))}
+              </div>
+
+              {/* BOTÓN IR AL CARRITO SI TIENE ITEMS */}
+              {cartItems.length > 0 && (
+                <button
+                  className="pl-order-confirm-btn"
+                  style={{ marginTop: 16 }}
+                  onClick={() => {
+                    setSelectedStore(null);
+                    setShowCartDrawer(true);
+                  }}
+                >
+                  🛒 Ver Mi Pedido (RD$ {total.toLocaleString()})
+                </button>
+              )}
+
             </div>
           </div>
         </div>

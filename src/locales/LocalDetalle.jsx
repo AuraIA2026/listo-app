@@ -208,6 +208,85 @@ export default function LocalDetalle({ lang = 'es', navigate, local: propLocal, 
           <div className="local-detalle-stat"><span className="ld-num">{servicios.length}</span><span className="ld-lbl">Servicios</span></div>
         </div>
 
+        {/* DIRECCIÓN, TELÉFONO Y REDES SOCIALES EN LA VISTA PRINCIPAL */}
+        {(local.direccion || local.address) && (
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(255,255,255,0.06)', padding: '10px 14px', borderRadius: '12px', margin: '10px 0 6px', border: '1px solid rgba(255,255,255,0.1)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontSize: '16px' }}>📍</span>
+              <span style={{ fontSize: '13px', color: '#E2E8F0', fontWeight: '600' }}>{local.direccion || local.address}</span>
+            </div>
+            <button
+              onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(local.direccion || local.address || local.nombre)}`, '_blank')}
+              style={{ background: 'rgba(59,130,246,0.15)', border: '1px solid #3B82F6', color: '#60A5FA', padding: '5px 12px', borderRadius: '8px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer', whiteSpace: 'nowrap' }}
+            >
+              🗺️ Mapa
+            </button>
+          </div>
+        )}
+
+        {(local.telefono || local.phone || local.whatsapp) && (
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(255,255,255,0.06)', padding: '10px 14px', borderRadius: '12px', margin: '6px 0', border: '1px solid rgba(255,255,255,0.1)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontSize: '16px' }}>📞</span>
+              <span style={{ fontSize: '13px', color: '#E2E8F0', fontWeight: 'bold' }}>{local.telefono || local.phone || local.whatsapp}</span>
+            </div>
+            <div style={{ display: 'flex', gap: '6px' }}>
+              {(local.telefono || local.phone) && (
+                <a
+                  href={`tel:${(local.telefono || local.phone).replace(/[^0-9]/g, '')}`}
+                  style={{ background: '#10B981', color: '#FFF', padding: '5px 10px', borderRadius: '8px', fontSize: '11px', fontWeight: 'bold', textDecoration: 'none' }}
+                >
+                  📞 Llamar
+                </a>
+              )}
+              {local.whatsapp && (
+                <button
+                  onClick={handleWhatsappClick}
+                  style={{ background: '#25D366', color: '#FFF', padding: '5px 10px', borderRadius: '8px', fontSize: '11px', fontWeight: 'bold', border: 'none', cursor: 'pointer' }}
+                >
+                  💬 WhatsApp
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* REDES SOCIALES */}
+        {(local.instagram || local.facebook || local.tiktok) && (
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', margin: '8px 0 14px' }}>
+            {local.instagram && (
+              <a
+                href={`https://instagram.com/${local.instagram.replace('@', '')}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ padding: '6px 12px', borderRadius: '10px', background: 'linear-gradient(45deg, #F58529, #DD2A7B, #8134AF)', color: '#FFF', textDecoration: 'none', fontSize: '11px', fontWeight: 'bold' }}
+              >
+                📸 {local.instagram}
+              </a>
+            )}
+            {local.facebook && (
+              <a
+                href={local.facebook.startsWith('http') ? local.facebook : `https://${local.facebook}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ padding: '6px 12px', borderRadius: '10px', background: '#1877F2', color: '#FFF', textDecoration: 'none', fontSize: '11px', fontWeight: 'bold' }}
+              >
+                👥 Facebook
+              </a>
+            )}
+            {local.tiktok && (
+              <a
+                href={`https://tiktok.com/@${local.tiktok.replace('@', '')}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ padding: '6px 12px', borderRadius: '10px', background: '#000000', border: '1px solid #333', color: '#FFF', textDecoration: 'none', fontSize: '11px', fontWeight: 'bold' }}
+              >
+                🎵 {local.tiktok}
+              </a>
+            )}
+          </div>
+        )}
+
         {profesionales.length > 0 && (
           <div className="ld-ver-equipo-banner" onClick={() => setActiveTab('equipo')} style={{ cursor: 'pointer', background: 'rgba(212, 175, 55, 0.08)', border: '1px solid rgba(212, 175, 55, 0.2)', borderRadius: '10px', padding: '10px', display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '14px', fontSize: '13px', fontWeight: 'bold', color: 'var(--vip-gold)', textTransform: 'uppercase', letterSpacing: '0.03em' }}>
             <span>👥 Ver Equipo y Reservar con Profesionales ({profesionales.length}) ➔</span>
@@ -359,7 +438,26 @@ export default function LocalDetalle({ lang = 'es', navigate, local: propLocal, 
               <p style={{ display:'flex', alignItems:'center', gap:8, fontWeight:600 }}><FaClock color="#D4AF37"/> {local.horario || 'No especificado'}</p>
             </div>
 
-            {/* Contacto Directo removido por requerimiento de contratación obligatoria */}
+            {(local.direccion || local.telefono || local.whatsapp || local.instagram || local.facebook || local.tiktok) && (
+              <div className="ld-acerca-card">
+                <h3>📍 Ubicación y Contacto</h3>
+                {local.direccion && (
+                  <p style={{ margin: '0 0 8px', fontSize: '13px', color: '#E2E8F0' }}>
+                    <strong>Dirección:</strong> {local.direccion}
+                  </p>
+                )}
+                {local.telefono && (
+                  <p style={{ margin: '0 0 8px', fontSize: '13px', color: '#E2E8F0' }}>
+                    <strong>Teléfono:</strong> <a href={`tel:${local.telefono.replace(/[^0-9]/g, '')}`} style={{ color: '#F26000', textDecoration: 'none', fontWeight: 'bold' }}>{local.telefono}</a>
+                  </p>
+                )}
+                {local.whatsapp && (
+                  <p style={{ margin: '0 0 8px', fontSize: '13px', color: '#E2E8F0' }}>
+                    <strong>WhatsApp:</strong> <span style={{ color: '#25D366', fontWeight: 'bold' }}>{local.whatsapp}</span>
+                  </p>
+                )}
+              </div>
+            )}
 
             {pagos.length > 0 && (
               <div className="ld-acerca-card">
