@@ -1,5 +1,7 @@
 // src/components/PedidosListoHub.jsx
 import React, { useState, useEffect } from 'react';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { db, auth } from '../firebase';
 import './PedidosListoHub.css';
 
 const HERO_BANNERS = [
@@ -250,42 +252,149 @@ export default function PedidosListoHub({ lang = 'es', navigate }) {
   const serviceFee = Math.round(subtotal * 0.05);
   const total = subtotal + deliveryFee + serviceFee + tipAmount;
 
-  const handleConfirmOrder = () => {
+  const handleConfirmOrder = async () => {
     if (cartItems.length === 0) return;
-    const newOrder = {
-      id: 'PL-' + Math.floor(100000 + Math.random() * 900000),
-      items: cartItems,
+    const pin = Math.floor(1000 + Math.random() * 9000).toString();
+    const orderData = {
+      orderId: 'PL-' + Math.floor(100000 + Math.random() * 900000),
+      type: 'delivery',
+      clientId: auth.currentUser?.uid || 'guest_client',
+      clientName: auth.currentUser?.displayName || 'Cliente Listo',
+      clientEmail: auth.currentUser?.email || '',
+      clientPhone: auth.currentUser?.phoneNumber || '809-555-0192',
+      items: cartItems.map(i => ({ id: i.id, name: i.name, price: i.price, qty: i.qty })),
+      subtotal: subtotal,
+      deliveryFee: deliveryFee,
+      serviceFee: serviceFee,
+      tipAmount: tipAmount,
       total: total,
+      deliveryAddress: deliveryAddress,
       address: deliveryAddress,
-      status: 'confirmado',
-      time: '15-25 min',
-      riderName: 'Juan Carlos M. (Mándame Rider)',
-      riderPhone: '809-555-0192'
+      paymentMethod: paymentMethod,
+      pinOTP: pin,
+      status: 'pending',
+      createdAt: serverTimestamp(),
+      dateToken: 'Hoy',
+      timeToken: '15-25 min',
+      proName: 'Juan Carlos M. (Mándame Rider)',
+      proSpecialty: 'Delivery & Reparto Express',
+      proAvatar: '🛵',
+      proPhone: '809-555-0192',
+      estimatedTime: 18,
+      coords: { lat: 18.4861, lng: -69.9312 }
     };
-    setActiveTrackingOrder(newOrder);
-    setCartItems([]);
-    setShowCartDrawer(false);
+
+    try {
+      const docRef = await addDoc(collection(db, 'orders'), orderData);
+      await addDoc(collection(db, 'notificaciones'), {
+        userId: auth.currentUser?.uid || 'guest_client',
+        orderId: docRef.id,
+        type: 'new_order',
+        title: '🛵 ¡Pedido Confirmado!',
+        text: `Tu pedido #${orderData.orderId} por RD$ ${total} está en camino. Tu PIN de seguridad es: ${pin}`,
+        read: false,
+        icon: '🛵',
+        createdAt: serverTimestamp()
+      });
+
+      const confirmed = { ...orderData, id: docRef.id };
+      setActiveTrackingOrder(confirmed);
+      setCartItems([]);
+      setShowCartDrawer(false);
+
+      if (navigate) {
+        setTimeout(() => {
+          navigate('tracking', confirmed);
+        }, 800);
+      }
+    } catch (err) {
+      console.error('Error guardando pedido:', err);
+      const fallback = {
+        id: 'PL-' + Math.floor(100000 + Math.random() * 900000),
+        items: cartItems,
+        total: total,
+        address: deliveryAddress,
+        status: 'confirmado',
+        pinOTP: pin,
+        time: '15-25 min',
+        riderName: 'Juan Carlos M. (Mándame Rider)',
+        riderPhone: '809-555-0192'
+      };
+      setActiveTrackingOrder(fallback);
+      setCartItems([]);
+      setShowCartDrawer(false);
+    }
   };
 
-  const handleRequestMandame = (e) => {
+  const handleRequestMandame = async (e) => {
     e.preventDefault();
     if (!mandameDropOff.trim()) {
       alert('Por favor ingresa la dirección de entrega para el envío Mándame.');
       return;
     }
-    const newOrder = {
-      id: 'MD-' + Math.floor(100000 + Math.random() * 900000),
+    const pin = Math.floor(1000 + Math.random() * 9000).toString();
+    const orderData = {
+      orderId: 'MD-' + Math.floor(100000 + Math.random() * 900000),
+      type: 'delivery',
+      clientId: auth.currentUser?.uid || 'guest_client',
+      clientName: auth.currentUser?.displayName || 'Cliente Listo',
+      clientEmail: auth.currentUser?.email || '',
+      clientPhone: auth.currentUser?.phoneNumber || '809-555-9988',
       items: [{ name: `Envío Mándame: ${mandameType}`, price: 120, qty: 1 }],
       total: 120 + 20,
+      deliveryAddress: mandameDropOff,
       address: mandameDropOff,
-      status: 'confirmado',
-      time: '10-20 min',
-      riderName: 'Pedro Rodríguez (Mándame Express)',
-      riderPhone: '809-555-9988'
+      status: 'pending',
+      pinOTP: pin,
+      createdAt: serverTimestamp(),
+      dateToken: 'Hoy',
+      timeToken: '10-20 min',
+      proName: 'Pedro Rodríguez (Mándame Express)',
+      proSpecialty: 'Courier & Encomiendas',
+      proAvatar: '🛵',
+      proPhone: '809-555-9988',
+      estimatedTime: 15,
+      coords: { lat: 18.4861, lng: -69.9312 }
     };
-    setActiveTrackingOrder(newOrder);
-    setShowMandameModal(false);
-    setMandameDropOff('');
+
+    try {
+      const docRef = await addDoc(collection(db, 'orders'), orderData);
+      await addDoc(collection(db, 'notificaciones'), {
+        userId: auth.currentUser?.uid || 'guest_client',
+        orderId: docRef.id,
+        type: 'new_order',
+        title: '📦 ¡Envío Mándame Asignado!',
+        text: `Tu mensajero va en camino a ${mandameDropOff}. PIN de entrega: ${pin}`,
+        read: false,
+        icon: '📦',
+        createdAt: serverTimestamp()
+      });
+      const confirmed = { ...orderData, id: docRef.id };
+      setActiveTrackingOrder(confirmed);
+      setShowMandameModal(false);
+      setMandameDropOff('');
+      if (navigate) {
+        setTimeout(() => {
+          navigate('tracking', confirmed);
+        }, 800);
+      }
+    } catch (err) {
+      console.error('Error guardando envío:', err);
+      const fallback = {
+        id: 'MD-' + Math.floor(100000 + Math.random() * 900000),
+        items: [{ name: `Envío Mándame: ${mandameType}`, price: 120, qty: 1 }],
+        total: 120 + 20,
+        address: mandameDropOff,
+        status: 'confirmado',
+        pinOTP: pin,
+        time: '10-20 min',
+        riderName: 'Pedro Rodríguez (Mándame Express)',
+        riderPhone: '809-555-9988'
+      };
+      setActiveTrackingOrder(fallback);
+      setShowMandameModal(false);
+      setMandameDropOff('');
+    }
   };
 
   const handleDualAction = (action) => {

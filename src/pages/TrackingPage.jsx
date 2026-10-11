@@ -44,6 +44,16 @@ const createWorkerIcon = () => L.divIcon({
   iconSize: [60, 60], iconAnchor: [30, 30], popupAnchor: [0, -30],
 })
 
+const createMotoIcon = () => L.divIcon({
+  className: 'leaflet-moto-icon',
+  html: `
+    <div style="background:#FF6000;border-radius:50%;padding:4px;border:3px solid #FFF;box-shadow:0 4px 14px rgba(255,96,0,0.6);display:flex;align-items:center;justify-content:center;width:46px;height:46px;animation:workerFloat 2s ease-in-out infinite alternate;">
+      <span style="font-size:24px;line-height:1;">🛵</span>
+    </div>
+  `,
+  iconSize: [46, 46], iconAnchor: [23, 23], popupAnchor: [0, -23],
+})
+
 const CLIENT_POS    = [18.4745, -69.9310]
 const PRO_START     = [18.4920, -69.9050]
 const PRO_WAYPOINTS = [
@@ -265,11 +275,20 @@ export default function TrackingPage({ lang = 'es', navigate, professional, user
   const targetAvT  = professional?.clientName?.substring(0,2).toUpperCase() || professional?.avatar || '👤'
   const targetCat  = professional?.specialty || professional?.proSpecialty || professional?.category || 'Servicio'
 
+  const isDelivery = professional?.type === 'delivery' || Boolean(professional?.items && professional?.items.length > 0)
+  const pinOTP = professional?.pinOTP || professional?.otp || '4821'
+  const deliveryAddress = professional?.deliveryAddress || professional?.address || 'Dirección de entrega'
+  const deliveryNotes = professional?.deliveryNotes || professional?.notes || ''
+  const items = professional?.items || []
+  const orderTotal = professional?.total ? `RD$ ${Number(professional.total).toLocaleString()}` : (professional?.price || 'RD$ 0')
+  const paymentMethod = professional?.paymentMethod || 'efectivo'
+  const tipAmount = professional?.tipAmount || 0
+
   const pro = {
     name:     targetName,
     avatar:   targetAvT,
     color:    professional?.color    || '#F26000',
-    category: targetCat,
+    category: isDelivery ? '🛵 Repartidor Mándame Express' : targetCat,
     rating:   professional?.rating   || 5.0,
     phone:    professional?.phone    || professional?.clientPhone || professional?.proPhone || null,
     uid:      userRole === 'pro' ? (professional?.clientId || professional?.otherUid) : (professional?.proId || professional?.otherUid || professional?.uid),
@@ -319,6 +338,7 @@ export default function TrackingPage({ lang = 'es', navigate, professional, user
 
   const vanIcon    = useMemo(() => createVanIcon(vanImg), [])
   const workerIcon = useMemo(() => createWorkerIcon(), [])
+  const motoIcon   = useMemo(() => createMotoIcon(), [])
   const intervalRef = useRef(null)
 
   // Sincronizar con el documento de la orden en Firestore
@@ -532,7 +552,12 @@ export default function TrackingPage({ lang = 'es', navigate, professional, user
     ))
   }
 
-  const flowSteps = [
+  const flowSteps = isDelivery ? [
+    { key:'confirmed', labelEs:'Confirmado', labelEn:'Confirmed' },
+    { key:'preparing', labelEs:'En preparación', labelEn:'Preparing' },
+    { key:'onway',     labelEs:'En camino 🛵', labelEn:'On the way 🛵' },
+    { key:'done',      labelEs:'Entregado 🎉', labelEn:'Delivered 🎉' },
+  ] : [
     { key:'confirmed', labelEs:'Confirmado', labelEn:'Confirmed' },
     { key:'onway',     labelEs:'En camino',  labelEn:'On the way' },
     { key:'arrived',   labelEs:'Llegó',      labelEn:'Arrived' },
@@ -540,7 +565,15 @@ export default function TrackingPage({ lang = 'es', navigate, professional, user
     { key:'working',   labelEs:'Trabajando', labelEn:'Working' },
     { key:'done',      labelEs:'Listo',      labelEn:'Done' },
   ]
-  const currentFlowIdx = () => workStatus==='done'?5:workStatus==='working'?4:workStatus==='awaiting_deal'?3:status==='arrived'?2:1
+  const currentFlowIdx = () => {
+    if (isDelivery) {
+      if (workStatus==='done' || status==='done') return 3
+      if (status==='on_way' || status==='onway' || workStatus==='tracking') return 2
+      if (status==='preparing' || status==='accepted') return 1
+      return 0
+    }
+    return workStatus==='done'?5:workStatus==='working'?4:workStatus==='awaiting_deal'?3:status==='arrived'?2:1
+  }
 
   return (
     <div className="tracking-page">
@@ -560,10 +593,10 @@ export default function TrackingPage({ lang = 'es', navigate, professional, user
             <div style={{ flex: 1 }}>
               <p className="arriving-alert-title">
                 <span className="arriving-alert-dot" />
-                {lang === 'es' ? '¡PROFESIONAL CERCA!' : 'PROFESSIONAL NEARBY!'}
+                {lang === 'es' ? '¡REPARTIDOR CERCA!' : 'RIDER NEARBY!'}
               </p>
               <p className="arriving-alert-desc">
-                {lang === 'es' ? 'El profesional está a menos de 30 metros de tu ubicación.' : 'The professional is less than 30 meters away.'}
+                {lang === 'es' ? 'El repartidor está a menos de 30 metros de tu ubicación.' : 'The rider is less than 30 meters away.'}
               </p>
             </div>
             <button 
@@ -579,7 +612,7 @@ export default function TrackingPage({ lang = 'es', navigate, professional, user
           <MapBoundsFitter pos1={clientLoc} pos2={proPos} />
           <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
           <Marker position={clientLoc} icon={clientIcon}><Popup>{lang==='es'?'Tu ubicación':'Your location'}</Popup></Marker>
-          {vanVisible && <SmoothMarker targetPos={proPos} icon={workStatus==='working'?workerIcon:vanIcon} visible={vanVisible} isVan={workStatus!=='working'}><Popup>{pro.name}</Popup></SmoothMarker>}
+          {vanVisible && <SmoothMarker targetPos={proPos} icon={isDelivery ? motoIcon : (workStatus==='working'?workerIcon:vanIcon)} visible={vanVisible} isVan={!isDelivery && workStatus!=='working'}><Popup>{pro.name}</Popup></SmoothMarker>}
           {workStatus === 'tracking' && (
             <Polyline 
               positions={[proPos, clientLoc]} 
@@ -593,7 +626,7 @@ export default function TrackingPage({ lang = 'es', navigate, professional, user
         </MapContainer>
         {workStatus==='tracking' && (
           <div className="map-eta-pill" style={{ background:getStatusColor()+'22', borderColor:getStatusColor()+'44' }}>
-            <span className="eta-icon">{getStatusIcon()}</span>
+            <span className="eta-icon">{isDelivery ? '🛵' : getStatusIcon()}</span>
             <span className="eta-text" style={{ color:getStatusColor() }}>{status==='arrived'?getStatusLabel():`${eta} min`}</span>
           </div>
         )}
@@ -603,13 +636,95 @@ export default function TrackingPage({ lang = 'es', navigate, professional, user
         {workStatus !== 'working' && (
           <div className="tracking-status-bar"
             style={{ background:getStatusColor()+'15', borderColor:getStatusColor()+'30' }}>
-            <span className="status-icon">{getStatusIcon()}</span>
+            <span className="status-icon">{isDelivery ? '🛵' : getStatusIcon()}</span>
             <div style={{ flex:1 }}>
-              <p className="status-label" style={{ color:getStatusColor() }}>{getStatusLabel()}</p>
-              <p className="status-desc">{getStatusDesc()}</p>
+              <p className="status-label" style={{ color:getStatusColor() }}>{isDelivery ? (lang==='es'?'🛵 Repartidor en Camino':'🛵 Rider on the way') : getStatusLabel()}</p>
+              <p className="status-desc">{isDelivery ? (lang==='es'?`Tu pedido está asignado a ${pro.name}`:`Your order is on the way with ${pro.name}`) : getStatusDesc()}</p>
             </div>
             {workStatus==='tracking' && status!=='arrived' && (
               <div className="eta-countdown"><span className="eta-number">{eta}</span><span className="eta-unit">min</span></div>
+            )}
+          </div>
+        )}
+
+        {/* ── PEDIDOS YA: PIN DE SEGURIDAD ── */}
+        {isDelivery && (
+          <div style={{
+            background: 'linear-gradient(135deg, #1E1B4B 0%, #312E81 100%)',
+            color: '#FFFFFF',
+            borderRadius: '18px',
+            padding: '14px 18px',
+            margin: '14px 0',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            boxShadow: '0 8px 24px rgba(30, 27, 75, 0.25)',
+            border: '1.5px solid rgba(255, 255, 255, 0.12)'
+          }}>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', fontWeight: '900', letterSpacing: '1px', textTransform: 'uppercase', color: '#A5B4FC' }}>
+                <span>🔒 PIN DE SEGURIDAD</span>
+              </div>
+              <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#E0E7FF' }}>
+                Dile este PIN al repartidor al recibir tu pedido
+              </p>
+            </div>
+            <div style={{
+              background: '#FFFFFF',
+              color: '#1E1B4B',
+              padding: '6px 16px',
+              borderRadius: '12px',
+              fontSize: '22px',
+              fontWeight: '900',
+              letterSpacing: '3px',
+              fontFamily: 'monospace',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+            }}>
+              {pinOTP}
+            </div>
+          </div>
+        )}
+
+        {/* ── DETALLE DE PRODUCTOS & DIRECCIÓN ── */}
+        {isDelivery && (
+          <div style={{
+            background: '#F8FAFC',
+            borderRadius: '16px',
+            padding: '14px 16px',
+            marginBottom: '14px',
+            border: '1.5px solid #E2E8F0'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+              <span style={{ fontSize: '11px', fontWeight: '900', color: '#64748B', textTransform: 'uppercase' }}>
+                📍 Entrega en Domicilio
+              </span>
+              <span style={{ fontSize: '11px', fontWeight: '800', background: '#ECFDF5', color: '#059669', padding: '3px 8px', borderRadius: '10px' }}>
+                {paymentMethod === 'efectivo' ? '💵 Efectivo' : '🏦 Transferencia'}
+              </span>
+            </div>
+
+            <p style={{ margin: '0 0 3px', fontSize: '13px', fontWeight: '800', color: '#1E293B' }}>
+              {deliveryAddress}
+            </p>
+            {deliveryNotes && (
+              <p style={{ margin: '0 0 8px', fontSize: '12px', color: '#64748B' }}>
+                📝 {deliveryNotes}
+              </p>
+            )}
+
+            {items.length > 0 && (
+              <div style={{ borderTop: '1px dashed #CBD5E1', paddingTop: '8px', marginTop: '8px' }}>
+                {items.map((it, idx) => (
+                  <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#334155', marginBottom: '3px' }}>
+                    <span>{it.qty || 1}x {it.name}</span>
+                    <span style={{ fontWeight: '700' }}>RD$ {((it.price || 0) * (it.qty || 1)).toLocaleString()}</span>
+                  </div>
+                ))}
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', fontWeight: '900', color: 'var(--mamey)', marginTop: '8px', borderTop: '1px solid #E2E8F0', paddingTop: '6px' }}>
+                  <span>Total Pedido:</span>
+                  <span>{orderTotal}</span>
+                </div>
+              </div>
             )}
           </div>
         )}

@@ -140,34 +140,23 @@ export default function BookingPage({ lang = 'es', navigate, professional, userD
   const canNext2 = address.trim().length > 0 || addressCoords !== null
 
   const handleConfirmOrder = async () => {
-    if (!auth.currentUser) { setErrorMsg('Debes iniciar sesión para hacer una reserva.'); return }
     setLoading(true); setErrorMsg('')
     try {
       let proSnap = null;
       if (pro.id !== 'unknown' && pro.id !== 'desconocido') {
         const proRef = doc(db, 'users', pro.id)
         proSnap = await getDoc(proRef)
-        if (proSnap.exists()) {
-          const proData = proSnap.data()
-          const plan = (proData.currentPlan || proData.planId || proData.plan || '').toLowerCase()
-          const isUnlimited = plan.includes('vip') || plan.includes('platinum') || plan.includes('platino') || plan.includes('elite') || plan.includes('ilimitado')
-          
-          if (!isUnlimited) {
-            const currentContracts = proData.contracts || 0
-            if (currentContracts <= 0) {
-              setErrorMsg(lang === 'es' ? 'Este profesional ya no tiene turnos disponibles.' : 'This professional has no available slots.')
-              setLoading(false)
-              return
-            }
-          }
-        }
       }
 
+      const clientUid = auth.currentUser ? auth.currentUser.uid : ('guest_' + Math.floor(100000 + Math.random() * 900000));
+      const clientEmail = auth.currentUser ? auth.currentUser.email : 'cliente@pedidoslisto.com';
+      const clientDisplayName = userData?.name || (auth.currentUser ? (auth.currentUser.displayName || auth.currentUser.email.split('@')[0]) : 'Cliente Listo');
+
       const orderData = {
-        clientId:       auth.currentUser.uid,
-        clientEmail:    auth.currentUser.email,
-        clientName:     userData?.name || auth.currentUser.displayName || auth.currentUser.email.split('@')[0],
-        clientPhotoURL: userData?.photoURL || auth.currentUser.photoURL || null,
+        clientId:       clientUid,
+        clientEmail:    clientEmail,
+        clientName:     clientDisplayName,
+        clientPhotoURL: userData?.photoURL || auth.currentUser?.photoURL || null,
         clientPhone:    userData?.phone || '',
         proId:          pro.id || 'desconocido',
         proName:        pro.name || pro.nameEs || '',
@@ -321,9 +310,35 @@ export default function BookingPage({ lang = 'es', navigate, professional, userD
           </div>
           
           <div className="eta-box glass-eta">
-            <span className="eta-label">⏳ {lang === 'es' ? 'VERIFICANDO DISPONIBILIDAD...' : 'VERIFYING AVAILABILITY...'}</span>
-            <p className="eta-subtext">{lang === 'es' ? 'En cuanto acepte, irás directo al mapa.' : 'Once accepted, you will jump directly to the map.'}</p>
+            <span className="eta-label">⏳ {lang === 'es' ? 'NOTIFICANDO A LOS PROFESIONALES...' : 'NOTIFYING PROFESSIONALS...'}</span>
+            <p className="eta-subtext">{lang === 'es' ? 'Tu solicitud está en marcha en tiempo real.' : 'Your request is active in real time.'}</p>
           </div>
+
+          <button
+            className="btn-confirm-radar"
+            style={{
+              width: '100%',
+              padding: '14px 20px',
+              borderRadius: '16px',
+              border: 'none',
+              background: 'linear-gradient(135deg, #FF6000 0%, #FF8533 100%)',
+              color: '#FFF',
+              fontWeight: 900,
+              fontSize: '15px',
+              cursor: 'pointer',
+              boxShadow: '0 8px 24px rgba(255, 96, 0, 0.4)',
+              marginBottom: '12px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px'
+            }}
+            onClick={() => {
+              if (navigate) navigate('tracking', confirmedOrder);
+            }}
+          >
+            🛵 {lang === 'es' ? 'Ver Seguimiento en Vivo del Pedido ➔' : 'View Live Order Tracking ➔'}
+          </button>
 
           <button className="btn-cancel-radar" onClick={() => {
             updateDoc(doc(db, 'orders', confirmedOrder.id), { status: 'cancelled' }).catch(()=>{})

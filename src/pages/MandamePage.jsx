@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { doc, updateDoc, serverTimestamp, collection, query, where, onSnapshot, addDoc } from 'firebase/firestore';
-import { db } from '../firebase';
+import { auth, db } from '../firebase';
 import './MandamePage.css';
 import './HomePage.css';
 import PedidosListoHub from '../components/PedidosListoHub';
@@ -371,6 +371,23 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
   const [isCartModalOpen, setIsCartModalOpen] = useState(false);
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
+
+  // ── ESTADOS DE CHECKOUT Y DIRECCIÓN ESTILO PEDIDOSYA ──
+  const [deliveryAddress, setDeliveryAddress] = useState(() => {
+    try {
+      return localStorage.getItem('pedidos_listo_address') || 'Santiago, República Dominicana';
+    } catch(e) {
+      return 'Santiago, República Dominicana';
+    }
+  });
+  const [deliveryNotes, setDeliveryNotes] = useState('');
+  const [checkoutPhone, setCheckoutPhone] = useState(userData?.phone || userData?.telefono || '');
+  const [checkoutName, setCheckoutName] = useState(userData?.name || userData?.displayName || 'Cliente');
+  const [checkoutPaymentMethod, setCheckoutPaymentMethod] = useState('efectivo'); // 'efectivo' | 'transferencia'
+  const [cashChangeAmount, setCashChangeAmount] = useState('exacto'); // 'exacto' | '500' | '1000' | '2000'
+  const [isPlacingOrder, setIsPlacingOrder] = useState(false);
+  const [tempAddressInput, setTempAddressInput] = useState('');
+  const [isDetectingGps, setIsDetectingGps] = useState(false);
 
   // Combinar todos los comercios aprobados de la base de datos sin duplicar
   const allDbStores = [
@@ -1587,6 +1604,151 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
   const cartSubtotal = cart.reduce((sum, i) => sum + (i.price * i.qty), 0);
   const cartTotal = cartSubtotal > 0 ? cartSubtotal + 55 + selectedTip : 0;
 
+  // ── FUNCIÓN DE CONFIRMACIÓN DE PEDIDO ESTILO PEDIDOSYA CON FIRESTORE Y SEGUIMIENTO ──
+  const handlePlaceOrder = async (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+    if (cart.length === 0) {
+      showToast('⚠️ Tu carrito está vacío');
+      return;
+    }
+    if (!deliveryAddress || deliveryAddress.trim().length < 3) {
+      alert('Por favor ingresa una dirección de entrega válida.');
+      setIsAddressModalOpen(true);
+      return;
+    }
+
+    let phoneToUse = (checkoutPhone || userData?.phone || userData?.telefono || '').trim();
+    if (!phoneToUse || phoneToUse.length < 7) {
+      const promptPhone = window.prompt('Por favor escribe tu número de teléfono / WhatsApp para que el repartidor pueda contactarte al llegar:', '809-');
+      if (!promptPhone || promptPhone.trim().length < 7) {
+        alert('Se requiere un número de contacto válido para que el repartidor entregue tu pedido.');
+        return;
+      }
+      phoneToUse = promptPhone.trim();
+      setCheckoutPhone(phoneToUse);
+    }
+
+    setIsPlacingOrder(true);
+    try {
+      const orderNum = Math.floor(100000 + Math.random() * 900000);
+      const generatedOrderId = `PL-${orderNum}`;
+      const generatedOtp = Math.floor(1000 + Math.random() * 9000).toString();
+      const currentUid = auth?.currentUser?.uid || userData?.uid || `guest_${Date.now()}`;
+      const clientNameClean = (checkoutName || userData?.name || userData?.displayName || 'Cliente').trim();
+
+      const orderPayload = {
+        orderId: generatedOrderId,
+        type: 'delivery',
+        orderType: 'delivery',
+        status: 'pending',
+        clientId: currentUid,
+        clientName: clientNameClean,
+        clientPhone: phoneToUse,
+        clientEmail: auth?.currentUser?.email || userData?.email || '',
+        clientAddress: deliveryAddress.trim(),
+        deliveryNotes: (deliveryNotes || '').trim(),
+        paymentMethod: checkoutPaymentMethod,
+        cashChangeFor: checkoutPaymentMethod === 'efectivo' ? cashChangeAmount : null,
+        items: cart.map(i => ({ name: i.name, price: i.price, qty: i.qty, subtotal: i.price * i.qty })),
+        subtotal: cartSubtotal,
+        deliveryFee: 55,
+        tip: selectedTip,
+        total: cartTotal,
+        pinOTP: generatedOtp,
+        storeName: activeStoreModal?.name || 'Restaurante / Comercio Partner',
+        proName: 'Kelvin Santos (Mándame Rider)',
+        proSpecialty: 'Delivery Express 🛵',
+        proPhone: '809-555-0192',
+        dateToken: 'Hoy',
+        timeToken: '15 - 25 min',
+        createdAt: serverTimestamp(),
+        invoiceNo: generatedOrderId,
+        rated: false
+      };
+
+      const docRef = await addDoc(collection(db, 'orders'), orderPayload);
+
+      // Crear Notificación oficial en Firestore
+      try {
+        await addDoc(collection(db, 'notificaciones'), {
+          userId: currentUid,
+          orderId: docRef.id,
+          type: 'new_order',
+          title: '🛵 ¡Pedido Listo Confirmado!',
+          text: `Tu orden #${generatedOrderId} por RD$ ${cartTotal.toLocaleString()} ha sido enviada. Tu PIN de entrega es ${generatedOtp}.`,
+          read: false,
+          icon: '🛵',
+          pinOTP: generatedOtp,
+          createdAt: serverTimestamp()
+        });
+      } catch (errNotif) {
+        console.warn('Notif write warning:', errNotif);
+      }
+
+      // Sonido de confirmación
+      try {
+        const audio = new Audio('/audio/notification_v3.mp3');
+        audio.volume = 0.6;
+        audio.play().catch(() => {});
+      } catch(e) {}
+
+      setCart([]);
+      setIsCartModalOpen(false);
+      showToast(`🎉 ¡Pedido #${generatedOrderId} enviado! Abriendo seguimiento en vivo...`);
+
+      const finalOrder = { id: docRef.id, ...orderPayload };
+      if (navigate) {
+        setTimeout(() => {
+          navigate('tracking', finalOrder);
+        }, 600);
+      }
+    } catch (err) {
+      console.error('Error al realizar pedido:', err);
+      alert('Error al confirmar pedido: ' + (err.message || 'Intente de nuevo'));
+    } finally {
+      setIsPlacingOrder(false);
+    }
+  };
+
+  const handleDetectAddressGps = () => {
+    if (!navigator.geolocation) {
+      alert('Tu navegador no soporta geolocalización.');
+      return;
+    }
+    setIsDetectingGps(true);
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        try {
+          const lat = pos.coords.latitude;
+          const lng = pos.coords.longitude;
+          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`);
+          const data = await res.json();
+          if (data && data.display_name) {
+            const shortName = data.display_name.split(',').slice(0, 3).join(',');
+            setDeliveryAddress(shortName);
+            try { localStorage.setItem('pedidos_listo_address', shortName); } catch(e) {}
+            showToast('📍 Ubicación GPS fijada');
+            setIsAddressModalOpen(false);
+          } else {
+            setDeliveryAddress(`${lat.toFixed(4)}, ${lng.toFixed(4)} (Santiago, RD)`);
+            setIsAddressModalOpen(false);
+          }
+        } catch (e) {
+          setDeliveryAddress('Santiago, República Dominicana');
+          setIsAddressModalOpen(false);
+        } finally {
+          setIsDetectingGps(false);
+        }
+      },
+      (err) => {
+        console.warn(err);
+        setIsDetectingGps(false);
+        alert('No se pudo obtener el GPS. Puedes escribir tu dirección manualmente.');
+      },
+      { timeout: 7000 }
+    );
+  };
+
   return (
     <div className={`app-viewport ${viewMode === 'merchant' ? 'merchant-app-viewport' : ''}`}>
       {/* Toast Notification */}
@@ -1675,7 +1837,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
 
             <div className="py-top-row" style={{ marginBottom: 12 }}>
               <div className="py-address-pill" onClick={() => setIsAddressModalOpen(true)}>
-                <span>📍 C. Perimetral Oeste, Santiago</span>
+                <span style={{ maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>📍 {deliveryAddress}</span>
                 <span style={{ fontSize: 10 }}>▼</span>
               </div>
               <div className="py-top-actions">
@@ -4770,31 +4932,316 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                   ))}
                 </div>
 
-                {/* Subtotals & Delivery breakdown */}
-                <div style={{ borderTop: '2px dashed #e2e8f0', marginTop: 14, paddingTop: 12 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: '#64748b', marginBottom: 4 }}>
-                    <span>Subtotal Platillos:</span>
-                    <span style={{ fontWeight: 800, color: '#0f172a' }}>RD$ {cartSubtotal}</span>
+                {/* DETALLES DE ENTREGA Y CHECKOUT ESTILO PEDIDOSYA */}
+                <div style={{ marginTop: 14, borderTop: '2px dashed #e2e8f0', paddingTop: 14 }}>
+                  {/* 1. DIRECCIÓN DE ENTREGA */}
+                  <div style={{ background: '#FFF4EE', border: '1.5px solid #FED7AA', borderRadius: 14, padding: '12px 14px', marginBottom: 12 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+                      <span style={{ fontSize: 11, fontWeight: 900, color: '#C2410C', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                        📍 Dirección de Entrega
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setIsAddressModalOpen(true)}
+                        style={{ background: '#ff6b00', color: '#fff', border: 'none', padding: '3px 10px', borderRadius: 10, fontSize: 11, fontWeight: 800, cursor: 'pointer' }}
+                      >
+                        ✏️ Cambiar
+                      </button>
+                    </div>
+                    <div style={{ fontSize: 13, fontWeight: 800, color: '#0F172A', lineHeight: 1.3 }}>
+                      {deliveryAddress}
+                    </div>
+                    <input
+                      type="text"
+                      placeholder="🏢 Apto, casa #, timbre o referencia (Ej: Portón negro, timbre 2B)"
+                      value={deliveryNotes}
+                      onChange={(e) => setDeliveryNotes(e.target.value)}
+                      style={{ width: '100%', marginTop: 8, padding: '8px 10px', borderRadius: 10, border: '1px solid #FDBA74', fontSize: 12, outline: 'none', background: '#FFFFFF', boxSizing: 'border-box' }}
+                    />
                   </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: '#64748b', marginBottom: 4 }}>
-                    <span>Costo Delivery 🛵:</span>
-                    <span style={{ fontWeight: 800, color: '#0f172a' }}>RD$ 55</span>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: '#64748b', marginBottom: 6 }}>
-                    <span>Propina Conductor 💛:</span>
-                    <span style={{ fontWeight: 800, color: '#0f172a' }}>RD$ {selectedTip}</span>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 16, fontWeight: 900, color: '#0f172a', paddingTop: 8, borderTop: '1px solid #e2e8f0' }}>
-                    <span>Total a Pagar:</span>
-                    <span style={{ color: '#ff6b00' }}>RD$ {cartTotal}</span>
-                  </div>
-                </div>
 
-                <button className="btn-mamey" style={{ width: '100%', marginTop: 14, padding: 14 }} onClick={() => { setCart([]); setIsCartModalOpen(false); showToast('🔒 ¡Pedido Confirmado con PIN OTP!'); }}>
-                  🔒 Confirmar Pedido (RD$ {cartTotal})
-                </button>
+                  {/* 2. TELÉFONO DE CONTACTO */}
+                  <div style={{ marginBottom: 12 }}>
+                    <label style={{ display: 'block', fontSize: 11, fontWeight: 900, color: '#475569', textTransform: 'uppercase', marginBottom: 4 }}>
+                      📞 Teléfono / WhatsApp para entrega *
+                    </label>
+                    <input
+                      type="tel"
+                      placeholder="809-555-0199"
+                      value={checkoutPhone}
+                      onChange={(e) => setCheckoutPhone(e.target.value)}
+                      style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '1.5px solid #CBD5E1', fontSize: 13, fontWeight: 700, outline: 'none', boxSizing: 'border-box' }}
+                    />
+                  </div>
+
+                  {/* 3. MÉTODO DE PAGO */}
+                  <div style={{ marginBottom: 12 }}>
+                    <label style={{ display: 'block', fontSize: 11, fontWeight: 900, color: '#475569', textTransform: 'uppercase', marginBottom: 6 }}>
+                      💳 Método de Pago
+                    </label>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                      <button
+                        type="button"
+                        onClick={() => setCheckoutPaymentMethod('efectivo')}
+                        style={{
+                          padding: '10px 8px',
+                          borderRadius: 12,
+                          border: checkoutPaymentMethod === 'efectivo' ? '2px solid #ff6b00' : '1.5px solid #E2E8F0',
+                          background: checkoutPaymentMethod === 'efectivo' ? '#FFF4EE' : '#FFFFFF',
+                          color: checkoutPaymentMethod === 'efectivo' ? '#C2410C' : '#334155',
+                          fontWeight: 800,
+                          fontSize: 12,
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: 6
+                        }}
+                      >
+                        💵 Efectivo al recibir
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setCheckoutPaymentMethod('transferencia')}
+                        style={{
+                          padding: '10px 8px',
+                          borderRadius: 12,
+                          border: checkoutPaymentMethod === 'transferencia' ? '2px solid #ff6b00' : '1.5px solid #E2E8F0',
+                          background: checkoutPaymentMethod === 'transferencia' ? '#FFF4EE' : '#FFFFFF',
+                          color: checkoutPaymentMethod === 'transferencia' ? '#C2410C' : '#334155',
+                          fontWeight: 800,
+                          fontSize: 12,
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: 6
+                        }}
+                      >
+                        🏦 Transferencia
+                      </button>
+                    </div>
+
+                    {checkoutPaymentMethod === 'efectivo' && (
+                      <div style={{ marginTop: 8, padding: '8px 10px', background: '#F8FAFC', borderRadius: 10, border: '1px solid #E2E8F0' }}>
+                        <span style={{ fontSize: 11, fontWeight: 800, color: '#64748B' }}>¿Con cuánto pagarás? (Para llevarte cambio):</span>
+                        <div style={{ display: 'flex', gap: 6, marginTop: 4 }}>
+                          {['exacto', '500', '1000', '2000'].map(val => (
+                            <button
+                              key={val}
+                              type="button"
+                              onClick={() => setCashChangeAmount(val)}
+                              style={{
+                                padding: '4px 8px',
+                                borderRadius: 8,
+                                border: cashChangeAmount === val ? '1.5px solid #ff6b00' : '1px solid #CBD5E1',
+                                background: cashChangeAmount === val ? '#ff6b00' : '#FFFFFF',
+                                color: cashChangeAmount === val ? '#FFFFFF' : '#334155',
+                                fontSize: 11,
+                                fontWeight: 800,
+                                cursor: 'pointer'
+                              }}
+                            >
+                              {val === 'exacto' ? 'Monto Exacto' : `RD$ ${val}`}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* 4. PROPINA AL REPARTIDOR */}
+                  <div style={{ marginBottom: 12 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+                      <span style={{ fontSize: 11, fontWeight: 800, color: '#64748B' }}>🛵 Propina voluntaria al repartidor:</span>
+                      <span style={{ fontSize: 12, fontWeight: 900, color: '#ff6b00' }}>RD$ {selectedTip}</span>
+                    </div>
+                    <div style={{ display: 'flex', gap: 6 }}>
+                      {[0, 30, 50, 100].map(tip => (
+                        <button
+                          key={tip}
+                          type="button"
+                          onClick={() => setSelectedTip(tip)}
+                          style={{
+                            flex: 1,
+                            padding: '6px 4px',
+                            borderRadius: 8,
+                            border: selectedTip === tip ? '1.5px solid #ff6b00' : '1px solid #CBD5E1',
+                            background: selectedTip === tip ? '#FFF4EE' : '#FFFFFF',
+                            color: selectedTip === tip ? '#C2410C' : '#334155',
+                            fontSize: 11,
+                            fontWeight: 800,
+                            cursor: 'pointer'
+                          }}
+                        >
+                          {tip === 0 ? 'Sin propina' : `+RD$ ${tip}`}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* 5. RESUMEN DE TOTALES */}
+                  <div style={{ borderTop: '1px solid #E2E8F0', paddingTop: 10, marginBottom: 12 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: '#64748B', marginBottom: 4 }}>
+                      <span>Subtotal Platillos:</span>
+                      <span style={{ fontWeight: 800, color: '#0F172A' }}>RD$ {cartSubtotal.toLocaleString()}</span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: '#64748B', marginBottom: 4 }}>
+                      <span>Costo de Envío 🛵:</span>
+                      <span style={{ fontWeight: 800, color: '#0F172A' }}>RD$ 55</span>
+                    </div>
+                    {selectedTip > 0 && (
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: '#64748B', marginBottom: 4 }}>
+                        <span>Propina Conductor 💛:</span>
+                        <span style={{ fontWeight: 800, color: '#0F172A' }}>RD$ {selectedTip}</span>
+                      </div>
+                    )}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 17, fontWeight: 900, color: '#0F172A', paddingTop: 8, borderTop: '1.5px solid #E2E8F0' }}>
+                      <span>Total General:</span>
+                      <span style={{ color: '#ff6b00' }}>RD$ {cartTotal.toLocaleString()}</span>
+                    </div>
+                  </div>
+
+                  {/* 6. BOTÓN CONFIRMAR Y REALIZAR PEDIDO */}
+                  <button 
+                    type="button" 
+                    className="btn-mamey" 
+                    disabled={isPlacingOrder}
+                    style={{ width: '100%', padding: 14, fontSize: 15, fontWeight: 900, borderRadius: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, boxShadow: '0 8px 24px rgba(255,107,0,0.35)', cursor: isPlacingOrder ? 'not-allowed' : 'pointer' }} 
+                    onClick={handlePlaceOrder}
+                  >
+                    {isPlacingOrder ? '⏳ Procesando Pedido...' : `🚀 Realizar Pedido Ahora (RD$ ${cartTotal.toLocaleString()})`}
+                  </button>
+                  <p style={{ textAlign: 'center', fontSize: 10, color: '#94A3B8', margin: '8px 0 0', fontWeight: 600 }}>
+                    🔒 Pago 100% seguro contra entrega • Seguimiento GPS en tiempo real
+                  </p>
+                </div>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* MODAL DE SELECCIÓN Y CAMBIO DE DIRECCIÓN DE ENTREGA */}
+      {isAddressModalOpen && (
+        <div className="pl-modal-overlay" onClick={() => setIsAddressModalOpen(false)}>
+          <div className="pl-cart-drawer" onClick={(e) => e.stopPropagation()} style={{ borderRadius: '24px 24px 0 0', maxWidth: 480, margin: '0 auto', background: '#FFFFFF', padding: 20 }}>
+            <div className="pl-drawer-header">
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontSize: 24 }}>📍</span>
+                <div>
+                  <h3 className="pl-drawer-title" style={{ margin: 0, fontSize: 17, color: '#0f172a' }}>Dirección de Entrega</h3>
+                  <p style={{ margin: 0, fontSize: 11, color: '#64748b', fontWeight: 600 }}>¿Dónde deseas recibir tu pedido?</p>
+                </div>
+              </div>
+              <button className="pl-close-btn" onClick={() => setIsAddressModalOpen(false)}>✕</button>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 12 }}>
+              {/* Botón GPS */}
+              <button
+                type="button"
+                onClick={handleDetectAddressGps}
+                disabled={isDetectingGps}
+                style={{
+                  background: 'linear-gradient(135deg, #10B981, #059669)',
+                  color: '#FFFFFF',
+                  border: 'none',
+                  padding: '12px 14px',
+                  borderRadius: 12,
+                  fontWeight: 800,
+                  fontSize: 13,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 8,
+                  boxShadow: '0 4px 14px rgba(16,185,129,0.3)'
+                }}
+              >
+                {isDetectingGps ? '📡 Obteniendo Ubicación GPS...' : '📍 Usar Mi Ubicación GPS Actual'}
+              </button>
+
+              {/* Input manual */}
+              <div>
+                <label style={{ fontSize: 11, fontWeight: 800, color: '#475569', textTransform: 'uppercase' }}>O escribe tu dirección:</label>
+                <input
+                  type="text"
+                  className="pl-search-input"
+                  style={{ marginTop: 4, width: '100%', boxSizing: 'border-box' }}
+                  placeholder="Ej: Villa Olga, Calle 5 #12, Santiago"
+                  value={tempAddressInput || deliveryAddress}
+                  onChange={(e) => setTempAddressInput(e.target.value)}
+                />
+              </div>
+
+              {/* Chips de ubicaciones frecuentes */}
+              <div>
+                <span style={{ fontSize: 11, fontWeight: 800, color: '#64748b' }}>Ubicaciones frecuentes en República Dominicana:</span>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 6 }}>
+                  {[
+                    { label: '🏠 Santiago Centro', addr: 'Centro Histórico, Santiago, República Dominicana' },
+                    { label: '🏡 Villa Olga', addr: 'Villa Olga, Santiago, República Dominicana' },
+                    { label: '🏢 Av. 27 de Febrero', addr: 'Av. 27 de Febrero, Santiago, República Dominicana' },
+                    { label: '🌴 Santo Domingo (Naco)', addr: 'Ensanche Naco, Santo Domingo, D.N.' },
+                    { label: '🌊 Puerto Plata', addr: 'Malecón, Puerto Plata, República Dominicana' }
+                  ].map((loc, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => {
+                        setDeliveryAddress(loc.addr);
+                        try { localStorage.setItem('pedidos_listo_address', loc.addr); } catch(e) {}
+                        showToast(`📍 Dirección fijada: ${loc.label}`);
+                        setIsAddressModalOpen(false);
+                      }}
+                      style={{
+                        background: '#F8FAFC',
+                        border: '1px solid #E2E8F0',
+                        padding: '8px 12px',
+                        borderRadius: 10,
+                        fontSize: 12,
+                        fontWeight: 700,
+                        color: '#1E293B',
+                        textAlign: 'left',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      {loc.label} — <span style={{ color: '#64748B', fontSize: 11 }}>{loc.addr}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Botón Guardar Dirección Manual */}
+              <button
+                type="button"
+                onClick={() => {
+                  const addrToSave = (tempAddressInput || deliveryAddress).trim();
+                  if (addrToSave.length < 3) {
+                    alert('Por favor escribe una dirección válida.');
+                    return;
+                  }
+                  setDeliveryAddress(addrToSave);
+                  try { localStorage.setItem('pedidos_listo_address', addrToSave); } catch(e) {}
+                  showToast('📍 Dirección guardada');
+                  setIsAddressModalOpen(false);
+                }}
+                style={{
+                  background: '#ff6b00',
+                  color: '#FFFFFF',
+                  border: 'none',
+                  padding: '12px',
+                  borderRadius: 12,
+                  fontWeight: 900,
+                  fontSize: 14,
+                  cursor: 'pointer',
+                  marginTop: 6
+                }}
+              >
+                ✓ Guardar y Usar Esta Dirección
+              </button>
+            </div>
           </div>
         </div>
       )}

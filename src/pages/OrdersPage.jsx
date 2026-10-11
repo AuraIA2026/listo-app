@@ -781,7 +781,7 @@ export default function OrdersPage({ lang = 'es', navigate, userData, userRole }
 
   const renderActions = (o) => (
     <div className="oc-actions">
-      {['accepted', 'onway', 'arrived', 'trato'].includes(o.status) && (
+      {['pending', 'confirmado', 'accepted', 'onway', 'arrived', 'trato'].includes(o.status) && (
         <button className="oc-btn track" onClick={()=>navigate('tracking',o)} style={{ width: '100%', marginBottom: 8 }}>📍 {T.track}</button>
       )}
       {o.status==='onway'   && userRole==='pro'  && <button className="oc-btn trato" onClick={()=>advanceStatus(o.id,o.status)}>{T.status.arrived}</button>}
@@ -869,8 +869,36 @@ export default function OrdersPage({ lang = 'es', navigate, userData, userRole }
               <div className="oc-top">
                 {o.photoURL ? <img src={o.photoURL} alt={o.specialty} style={{ width:44,height:44,borderRadius:'50%',objectFit:'cover',flexShrink:0 }}/> : <div className="oc-avatar" style={{ background:avatarColors[i%avatarColors.length],width:44,height:44 }}>{o.avatar}</div>}
                 <div className="oc-info"><p className="oc-name">{o.pro}</p><p className="oc-spec">{o.icon} {o.specialty}</p><p className="oc-date">📅 {o.date}</p></div>
-                <div className="oc-right"><span className="oc-status" style={{ color:statusColor(o.status),background:statusColor(o.status)+'18' }}>{T.status[o.status] || o.status || 'Pendiente'}</span><p className="oc-price">{o.price}</p></div>
+                <div className="oc-right"><span className="oc-status" style={{ color:statusColor(o.status),background:statusColor(o.status)+'18' }}>{T.status[o.status] || o.status || 'Pendiente'}</span><p className="oc-price">{o.price || (o.total ? `RD$ ${o.total}` : '')}</p></div>
               </div>
+
+              {o.pinOTP && (
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'linear-gradient(135deg, #1E1B4B 0%, #312E81 100%)', color: '#FFF', padding: '8px 14px', borderRadius: '12px', marginTop: '10px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', fontWeight: '800' }}>
+                    <span>🔒 PIN DE ENTREGA:</span>
+                    <span style={{ color: '#FDE047', fontFamily: 'monospace', letterSpacing: '2px', fontSize: '15px', fontWeight: '900' }}>{o.pinOTP}</span>
+                  </div>
+                  <span style={{ fontSize: '10px', color: '#C7D2FE' }}>Díselo al repartidor</span>
+                </div>
+              )}
+
+              {o.items && o.items.length > 0 && (
+                <div style={{ background: '#F8FAFC', borderRadius: '12px', padding: '10px 14px', marginTop: '8px', border: '1px solid #E2E8F0' }}>
+                  <p style={{ margin: '0 0 6px', fontSize: '11px', fontWeight: '800', color: '#64748B', textTransform: 'uppercase' }}>🛍️ Productos del Pedido:</p>
+                  {o.items.map((it, idx) => (
+                    <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#1E293B', marginBottom: '3px' }}>
+                      <span>{it.qty || 1}x {it.name}</span>
+                      <span style={{ fontWeight: '700' }}>RD$ {((it.price || 0) * (it.qty || 1)).toLocaleString()}</span>
+                    </div>
+                  ))}
+                  {o.deliveryAddress && (
+                    <p style={{ margin: '6px 0 0', fontSize: '11px', color: '#64748B', borderTop: '1px dashed #CBD5E1', paddingTop: '4px' }}>
+                      📍 {o.deliveryAddress}
+                    </p>
+                  )}
+                </div>
+              )}
+
               <div className="order-progress">
                 {PROGRESS_STEPS.map((s, idx, arr) => {
                   const isDone = PROGRESS_STEPS.indexOf(o.status) > idx;
