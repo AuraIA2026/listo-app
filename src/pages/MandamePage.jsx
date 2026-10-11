@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { doc, updateDoc, serverTimestamp, collection, query, where, onSnapshot, addDoc, deleteDoc } from 'firebase/firestore';
+import { doc, updateDoc, serverTimestamp, collection, query, where, onSnapshot, addDoc, deleteDoc, limit } from 'firebase/firestore';
 import { auth, db } from '../firebase';
 import './MandamePage.css';
 import './HomePage.css';
@@ -787,6 +787,18 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
   const [isSoundAlarmEnabled, setIsSoundAlarmEnabled] = useState(true);
   const [selectedTicketOrder, setSelectedTicketOrder] = useState(null);
   const [otpInputValues, setOtpInputValues] = useState({});
+  const [newOrderBanner, setNewOrderBanner] = useState(null);
+  const initialOrdersLoadedRef = useRef(false);
+  const knownOrdersSetRef = useRef(new Set());
+
+  // Solicitar permiso de notificaciones de navegador para la Comandera
+  useEffect(() => {
+    if ('Notification' in window && Notification.permission === 'default') {
+      try {
+        Notification.requestPermission().catch(() => {});
+      } catch (e) {}
+    }
+  }, []);
 
   // Sync to LocalStorage
   useEffect(() => {
@@ -850,7 +862,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
         osc.frequency.setValueAtTime(659.25, ctx.currentTime + 0.15); // E5
         osc.frequency.setValueAtTime(783.99, ctx.currentTime + 0.3); // G5
       } else {
-        // 'alarm_kitchen' por defecto
+        // 'alarm_kitchen' por defecto (tono agudo repetitivo de comanderas profesionales)
         osc.type = 'sawtooth';
         osc.frequency.setValueAtTime(880, ctx.currentTime);
         osc.frequency.exponentialRampToValueAtTime(1320, ctx.currentTime + 0.25);
@@ -867,34 +879,233 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
     } catch (e) {}
   };
 
-  const handleAcceptAndCookOrder = (orderId) => {
+  // ── ESCUCHA EN TIEMPO REAL DE FIRESTORE: COMANDERA DE COCINA Y NUEVOS PEDIDOS ──
+  useEffect(() => {
+    let unsubOrders = () => {};
+    try {
+      const qOrders = query(collection(db, 'orders'), limit(60));
+      unsubOrders = onSnapshot(qOrders, (snapshot) => {
+        let hasNewIncoming = false;
+        let latestNewOrder = null;
+
+        const liveOrders = snapshot.docs.map(docSnap => {
+          const d = docSnap.data();
+          const docId = docSnap.id;
+
+          let mappedStatus = d.status || 'new';
+          if (mappedStatus === 'pending') mappedStatus = 'new';
+          if (mappedStatus === 'accepted') mappedStatus = 'cooking';
+          if (mappedStatus === 'prepared' || mappedStatus === 'onway') mappedStatus = 'ready';
+
+          // Detectar si es un pedido nuevo real recién llegado
+          if (initialOrdersLoadedRef.current) {
+            if (!knownOrdersSetRef.current.has(docId) && mappedStatus === 'new') {
+              hasNewIncoming = true;
+              latestNewOrder = {
+                id: docId,
+                orderDocId: docId,
+                orderId: d.orderId || `ORD-${docId.slice(0, 5)}`,
+                customerName: d.clientName || d.customerName || 'Cliente Listo',
+                customerPhone: d.clientPhone || d.customerPhone || '809-583-2020',
+                address: d.clientAddress || d.address || 'Santiago Centro, RD',
+                total: Number(d.total || d.subtotal || 0),
+                items: d.items || []
+              };
+            }
+          }
+          knownOrdersSetRef.current.add(docId);
+
+          let createdAtStr = 'Hace un momento';
+          let rawTime = 0;
+          if (d.createdAt?.toDate) {
+            const dt = d.createdAt.toDate();
+            rawTime = dt.getTime();
+            createdAtStr = dt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+          } else if (typeof d.createdAt === 'string') {
+            rawTime = new Date(d.createdAt).getTime() || 0;
+            createdAtStr = d.dateToken || 'Hoy';
+          }
+
+          const items = Array.isArray(d.items) && d.items.length > 0
+            ? d.items.map(it => ({
+                name: it.name || it.title || 'Platillo',
+                qty: Number(it.qty || it.quantity || 1),
+                price: Number(it.price || it.subtotal || 0),
+                details: it.details || it.desc || ''
+              }))
+            : [{ name: 'Pedido Criollo ' + (d.storeName || 'La Fiera Hot Dog'), qty: 1, price: d.total || 0, details: '' }];
+
+          return {
+            id: docId,
+            orderDocId: docId,
+            orderId: d.orderId || `ORD-${docId.slice(0, 6)}`,
+            customerName: d.clientName || d.customerName || 'Cliente Listo',
+            customerPhone: d.clientPhone || d.customerPhone || '809-583-2020',
+            address: d.clientAddress || d.address || 'Santiago Centro, RD',
+            items,
+            total: Number(d.total || d.subtotal || 0),
+            pinOTP: String(d.pinOTP || d.pin || '1234'),
+            status: mappedStatus,
+            driverName: d.proName || d.driverName || 'Asignando Repartidor 🛵',
+            createdAt: createdAtStr,
+            rawTime,
+            paymentMethod: d.paymentMethod === 'efectivo' ? '💵 Efectivo Contra Entrega' : (d.paymentMethod === 'transferencia' ? '🏦 Transferencia Bancaria' : (d.paymentMethod || '💵 Efectivo')),
+            storeName: d.storeName || 'La Fiera Hot Dog',
+            clientId: d.clientId || null
+          };
+        });
+
+        // Ordenar pedidos: los más recientes arriba
+        liveOrders.sort((a, b) => b.rawTime - a.rawTime);
+
+        if (liveOrders.length > 0) {
+          setMerchantState(prev => {
+            const completedCount = liveOrders.filter(o => o.status === 'completed').length;
+            const completedSales = liveOrders.filter(o => o.status === 'completed').reduce((sum, o) => sum + o.total, 0);
+            return {
+              ...prev,
+              orders: liveOrders,
+              todaySales: completedSales > 0 ? completedSales : prev.todaySales,
+              todayOrdersCount: completedCount > 0 ? completedCount : prev.todayOrdersCount
+            };
+          });
+        }
+
+        // Si entró un pedido nuevo en vivo a la Comandera:
+        if (hasNewIncoming && latestNewOrder) {
+          // 1. Sonar Alarma de Cocina (3 repeticiones)
+          if (isSoundAlarmEnabled) {
+            playKitchenAlarmSound(selectedAlarmSound);
+            setTimeout(() => playKitchenAlarmSound(selectedAlarmSound), 450);
+            setTimeout(() => playKitchenAlarmSound(selectedAlarmSound), 900);
+          }
+
+          // 2. Vibración háptica en dispositivos móviles
+          if (navigator.vibrate) {
+            navigator.vibrate([300, 150, 300, 150, 500]);
+          }
+
+          // 3. Banner flotante con acceso directo
+          setNewOrderBanner(latestNewOrder);
+
+          // 4. Toast visible
+          showToast(`🚨 ¡NUEVO PEDIDO ENTRÓ A LA COMANDERA! #${latestNewOrder.orderId} (${latestNewOrder.customerName}) - RD$ ${latestNewOrder.total.toLocaleString()}`);
+
+          // 5. Notificación nativa de navegador
+          if ('Notification' in window && Notification.permission === 'granted') {
+            try {
+              new Notification('🚨 ¡NUEVO PEDIDO EN COMANDERA COCINA!', {
+                body: `#${latestNewOrder.orderId} - ${latestNewOrder.customerName} (RD$ ${latestNewOrder.total.toLocaleString()})`,
+                icon: '/assets/logo-mamey-Cpg_4Nm5.png'
+              });
+            } catch (e) {}
+          }
+        }
+
+        initialOrdersLoadedRef.current = true;
+      }, (err) => {
+        console.warn("Orders live listener warning:", err);
+      });
+    } catch (e) {
+      console.warn("Error subscribing to orders in Comandera:", e);
+    }
+    return () => unsubOrders();
+  }, [isSoundAlarmEnabled, selectedAlarmSound]);
+
+  const handleAcceptAndCookOrder = async (orderId) => {
     setMerchantState(prev => ({
       ...prev,
-      orders: prev.orders.map(o => o.id === orderId ? { ...o, status: 'cooking' } : o)
+      orders: prev.orders.map(o => (o.id === orderId || o.orderId === orderId) ? { ...o, status: 'cooking' } : o)
     }));
+    try {
+      await updateDoc(doc(db, 'orders', orderId), {
+        status: 'cooking',
+        acceptedAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      });
+      const targetOrder = merchantState.orders.find(o => o.id === orderId || o.orderId === orderId);
+      if (targetOrder?.clientId) {
+        await addDoc(collection(db, 'notificaciones'), {
+          userId: targetOrder.clientId,
+          orderId: orderId,
+          type: 'order_cooking',
+          title: '👨‍🍳 ¡Tu pedido se está preparando!',
+          text: `La Fiera Hot Dog ha aceptado tu pedido #${targetOrder.orderId || orderId} y está en la cocina.`,
+          read: false,
+          icon: '👨‍🍳',
+          createdAt: serverTimestamp()
+        });
+      }
+    } catch (e) {
+      console.warn("Error updating order cooking status:", e);
+    }
     showToast('👨‍🍳 Pedido Aceptado. ¡Cocinando en Comandera!');
   };
 
-  const handleMarkOrderReady = (orderId) => {
+  const handleMarkOrderReady = async (orderId) => {
     setMerchantState(prev => ({
       ...prev,
-      orders: prev.orders.map(o => o.id === orderId ? { ...o, status: 'ready', driverName: 'Kelvin Santos (Mándame 🛵)' } : o)
+      orders: prev.orders.map(o => (o.id === orderId || o.orderId === orderId) ? { ...o, status: 'ready', driverName: 'Kelvin Santos (Mándame 🛵)' } : o)
     }));
+    try {
+      await updateDoc(doc(db, 'orders', orderId), {
+        status: 'ready',
+        driverName: 'Kelvin Santos (Mándame 🛵)',
+        readyAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      });
+      const targetOrder = merchantState.orders.find(o => o.id === orderId || o.orderId === orderId);
+      if (targetOrder?.clientId) {
+        await addDoc(collection(db, 'notificaciones'), {
+          userId: targetOrder.clientId,
+          orderId: orderId,
+          type: 'order_ready',
+          title: '🟢 ¡Tu pedido está listo!',
+          text: `Tu pedido #${targetOrder.orderId || orderId} está empacado y esperando al repartidor Mándame.`,
+          read: false,
+          icon: '🟢',
+          createdAt: serverTimestamp()
+        });
+      }
+    } catch (e) {
+      console.warn("Error updating order ready status:", e);
+    }
     showToast('🟢 Pedido listo en mostrador. Asignado a Repartidor Mándame.');
   };
 
-  const handleVerifyOTPAndCompleteOrder = (orderId) => {
-    const enteredOTP = otpInputValues[orderId] || '';
-    const targetOrder = merchantState.orders.find(o => o.id === orderId);
+  const handleVerifyOTPAndCompleteOrder = async (orderId) => {
+    const enteredOTP = (otpInputValues[orderId] || '').trim();
+    const targetOrder = merchantState.orders.find(o => o.id === orderId || o.orderId === orderId);
     if (!targetOrder) return;
 
-    if (enteredOTP.trim() === targetOrder.pinOTP) {
+    if (enteredOTP === targetOrder.pinOTP) {
       setMerchantState(prev => ({
         ...prev,
         todaySales: prev.todaySales + targetOrder.total,
         todayOrdersCount: prev.todayOrdersCount + 1,
-        orders: prev.orders.map(o => o.id === orderId ? { ...o, status: 'completed' } : o)
+        orders: prev.orders.map(o => (o.id === orderId || o.orderId === orderId) ? { ...o, status: 'completed' } : o)
       }));
+      try {
+        await updateDoc(doc(db, 'orders', orderId), {
+          status: 'completed',
+          completedAt: serverTimestamp(),
+          updatedAt: serverTimestamp()
+        });
+        if (targetOrder.clientId) {
+          await addDoc(collection(db, 'notificaciones'), {
+            userId: targetOrder.clientId,
+            orderId: orderId,
+            type: 'order_completed',
+            title: '🏁 ¡Pedido Entregado!',
+            text: `¡Buen provecho! Tu pedido #${targetOrder.orderId || orderId} ha sido entregado exitosamente.`,
+            read: false,
+            icon: '🏁',
+            createdAt: serverTimestamp()
+          });
+        }
+      } catch (e) {
+        console.warn("Error completing order:", e);
+      }
       showToast('🔒 ¡Token PIN OTP Validado! Pedido entregado con éxito.');
     } else {
       alert(`❌ Token PIN OTP incorrecto. El cliente/repartidor debe proporcionar la clave válida (${targetOrder.pinOTP}).`);
@@ -1728,7 +1939,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
       tip: selectedTip,
       total: cartTotal,
       pinOTP: generatedOtp,
-      storeName: activeStoreModal?.name || 'Restaurante Partner Pedidos Listo',
+      storeName: activeStoreModal?.name || 'La Fiera Hot Dog',
       proName: 'Kelvin Santos (Mándame Rider)',
       proSpecialty: 'Delivery Express 🛵',
       proPhone: '809-555-0192',
@@ -1743,7 +1954,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
     try {
       const docRef = await addDoc(collection(db, 'orders'), orderPayload);
 
-      // Crear Notificación oficial en Firestore
+      // Crear Notificación oficial para el Cliente
       try {
         await addDoc(collection(db, 'notificaciones'), {
           userId: currentUid,
@@ -1758,6 +1969,23 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
         });
       } catch (errNotif) {
         console.warn('Notif write warning:', errNotif);
+      }
+
+      // Crear Notificación para la Comandera Cocina del Restaurante
+      try {
+        await addDoc(collection(db, 'notificaciones'), {
+          userId: 'merchant',
+          orderId: docRef.id,
+          type: 'kitchen_order',
+          title: '🚨 ¡Nuevo Pedido en Comandera Cocina!',
+          text: `Pedido #${generatedOrderId} (${clientNameClean}) por RD$ ${cartTotal.toLocaleString()} recibido para preparar.`,
+          read: false,
+          icon: '🔔',
+          pinOTP: generatedOtp,
+          createdAt: serverTimestamp()
+        });
+      } catch (errNotifM) {
+        console.warn('Notif merchant warning:', errNotifM);
       }
 
       // Sonido de confirmación
@@ -2913,6 +3141,64 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
          ========================================================================= */}
       {viewMode === 'merchant' && (
         <div style={{ flexGrow: 1, overflowY: 'auto', padding: 16, paddingBottom: 80 }}>
+          {/* BANNER NOTIFICACIÓN FLOTANTE DE NUEVO PEDIDO ENTRANTE EN COMANDERA */}
+          {newOrderBanner && (
+            <div style={{
+              background: 'linear-gradient(135deg, #EF4444 0%, #B91C1C 100%)',
+              color: '#FFFFFF',
+              padding: '14px 16px',
+              borderRadius: '20px',
+              marginBottom: 16,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: 10,
+              boxShadow: '0 8px 24px rgba(239,68,68,0.45)',
+              border: '2px solid #FFFFFF',
+              animation: 'pulse 1s infinite alternate'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
+                <span style={{ fontSize: 26, flexShrink: 0 }}>🚨</span>
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontWeight: 900, fontSize: 14.5, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    ¡NUEVO PEDIDO ENTRANTE #{newOrderBanner.orderId}!
+                  </div>
+                  <div style={{ fontSize: 12, opacity: 0.95, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    👤 {newOrderBanner.customerName} • 💵 RD$ {newOrderBanner.total.toLocaleString()}
+                  </div>
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexShrink: 0 }}>
+                <button
+                  onClick={() => {
+                    setMerchantTab('pedidos');
+                    setNewOrderBanner(null);
+                  }}
+                  style={{
+                    background: '#FFFFFF',
+                    color: '#DC2626',
+                    border: 'none',
+                    padding: '8px 14px',
+                    borderRadius: 12,
+                    fontWeight: 900,
+                    fontSize: 12,
+                    cursor: 'pointer',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+                    whiteSpace: 'nowrap'
+                  }}
+                >
+                  🔔 Ver en Comandera
+                </button>
+                <button
+                  onClick={() => setNewOrderBanner(null)}
+                  style={{ background: 'rgba(0,0,0,0.2)', border: 'none', color: '#FFF', width: 28, height: 28, borderRadius: '50%', cursor: 'pointer', fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Header 4 Botones Mamey: 2 Arriba y 2 Abajo (Fuera del cuadro azul) */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: 16 }}>
             {/* 1. POS CAJA */}

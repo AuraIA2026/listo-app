@@ -297,6 +297,7 @@ export default function PedidosListoHub({ lang = 'es', navigate }) {
       address: deliveryAddress,
       paymentMethod: paymentMethod,
       pinOTP: pin,
+      storeName: 'La Fiera Hot Dog',
       status: 'pending',
       createdAt: serverTimestamp(),
       dateToken: 'Hoy',
@@ -321,6 +322,21 @@ export default function PedidosListoHub({ lang = 'es', navigate }) {
         icon: '🛵',
         createdAt: serverTimestamp()
       });
+
+      // Notificación directa a la Comandera Cocina del Restaurante
+      try {
+        await addDoc(collection(db, 'notificaciones'), {
+          userId: 'merchant',
+          orderId: docRef.id,
+          type: 'kitchen_order',
+          title: '🚨 ¡Nuevo Pedido en Comandera Cocina!',
+          text: `Pedido #${orderData.orderId} por RD$ ${total.toLocaleString()} recibido para preparar.`,
+          read: false,
+          icon: '🔔',
+          pinOTP: pin,
+          createdAt: serverTimestamp()
+        });
+      } catch (eM) {}
 
       const confirmed = { ...orderData, id: docRef.id };
       setActiveTrackingOrder(confirmed);
