@@ -120,7 +120,7 @@ const STORES = [
       { id: 'm-f1', name: '🌭 Hot Dog La Fiera Especial', price: 220, desc: 'Salchicha parrillera artesanal, repollo criollo dulce, tocineta crocante y salsa de la casa.', img: 'https://images.unsplash.com/photo-1619740455993-9e612b1af08a?auto=format&fit=crop&w=200&q=80' },
       { id: 'm-f2', name: '🧀 Hot Dog Triple Queso Fundido', price: 260, desc: 'Pan brioche tostado, salchicha gigante, triple queso cheddar, mozzarella y maíz.', img: 'https://images.unsplash.com/photo-1627054234553-91147a46979a?auto=format&fit=crop&w=200&q=80' },
       { id: 'm-f3', name: '🍟 Papas Fritas Fiera Monster', price: 250, desc: 'Papas fritas con salchicha parrillera troceada, tocineta y salsa cheddar caliente.', img: 'https://images.unsplash.com/photo-1576107232684-1279f3908594?auto=format&fit=crop&w=200&q=80' },
-      { id: 'm-f4', name: '🥤 Refresco Cola 20oz Bien Frío', price: 65, desc: 'Refresco dominicano helado de 20oz.', img: 'assets/drinks_3d_1791137124884.png' }
+      { id: 'm-f4', name: '🥤 Refresco Cola 20oz Bien Frío', price: 65, desc: 'Refresco dominicano helado de 20oz.', img: 'https://images.unsplash.com/photo-1622483767028-3f66f32aef97?auto=format&fit=crop&w=400&q=80' }
     ]
   }
 ];

@@ -1,5 +1,4 @@
-// src/components/ConfigurarRestauranteModal.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { doc, setDoc, addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { db, auth } from '../firebase';
 
@@ -28,28 +27,39 @@ const compressImage = (file, maxRes = 800) => new Promise((resolve, reject) => {
   reader.readAsDataURL(file);
 });
 
-export default function ConfigurarRestauranteModal({ store, onClose, onSave }) {
-  const [name, setName] = useState(store?.name || store?.nombre || '');
-  const [category, setCategory] = useState(store?.sub || store?.categoria || store?.category || 'Hamburguesas & Grill');
-  const [coverUrl, setCoverUrl] = useState(store?.cover || store?.portadaURL || store?.image || store?.img || '');
-  const [logoUrl, setLogoUrl] = useState(store?.logo || store?.logoURL || store?.image || store?.img || '');
-  const [address, setAddress] = useState(store?.address || store?.direccion || 'Santiago Centro, República Dominicana');
-  const [phone, setPhone] = useState(store?.phone || store?.telefono || '809-583-2020');
-  const [whatsapp, setWhatsapp] = useState(store?.whatsapp || store?.phone || '8095832020');
-  const [instagram, setInstagram] = useState(store?.socials?.instagram || store?.instagram || '@restaurantepartner.rd');
-  const [facebook, setFacebook] = useState(store?.socials?.facebook || store?.facebook || 'facebook.com/restaurantepartner');
-  const [tiktok, setTiktok] = useState(store?.socials?.tiktok || store?.tiktok || '@restaurantepartner');
+export default function ConfigurarRestauranteModal({ store, onClose, onSave, initialTab = 'perfil' }) {
+  const [name, setName] = useState(store?.name || store?.nombre || 'La Fiera Hot Dog');
+  const [category, setCategory] = useState(store?.sub || store?.categoria || store?.category || 'Hot Dogs Dominicanos & Fast Food Criollo');
+  const [coverUrl, setCoverUrl] = useState(store?.cover || store?.portadaURL || store?.image || store?.img || 'https://images.unsplash.com/photo-1541214113241-21578d2d9b62?auto=format&fit=crop&w=1000&q=80');
+  const [logoUrl, setLogoUrl] = useState(store?.logo || store?.logoURL || store?.image || store?.img || 'https://images.unsplash.com/photo-1619740455993-9e612b1af08a?auto=format&fit=crop&w=300&q=80');
+  const [address, setAddress] = useState(store?.address || store?.direccion || 'Av. 27 de Febrero esq. Estrella Sadhalá, Santiago, RD');
+  const [phone, setPhone] = useState(store?.phone || store?.telefono || '809-583-1020');
+  const [whatsapp, setWhatsapp] = useState(store?.whatsapp || store?.phone || '18095831020');
+  const [instagram, setInstagram] = useState(store?.socials?.instagram || store?.instagram || '@lafierahotdog.rd');
+  const [facebook, setFacebook] = useState(store?.socials?.facebook || store?.facebook || 'facebook.com/lafierahotdog');
+  const [tiktok, setTiktok] = useState(store?.socials?.tiktok || store?.tiktok || '@lafierahotdog');
   const [schedule, setSchedule] = useState(store?.time || store?.horario || 'Lunes a Domingo, 08:00 AM - 11:30 PM');
 
   // Menu items list
   const [menuList, setMenuList] = useState(
-    store?.menu || (store?.servicios?.map((s, i) => ({
-      id: `m_${i}`,
-      name: s.nombre,
-      price: parseFloat(s.precio) || 250,
-      desc: s.descripcion || '',
-      img: s.fotoURL || 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=200&q=80'
-    }))) || []
+    (Array.isArray(store?.menu) && store.menu.length > 0)
+      ? store.menu
+      : (Array.isArray(store?.servicios) && store.servicios.length > 0
+          ? store.servicios.map((s, i) => ({
+              id: `m_${i}`,
+              name: s.nombre || s.name,
+              price: parseFloat(s.precio || s.price) || 250,
+              desc: s.descripcion || s.desc || '',
+              img: s.fotoURL || s.img || 'https://images.unsplash.com/photo-1619740455993-9e612b1af08a?auto=format&fit=crop&w=400&q=80'
+            }))
+          : [
+              { id: 'm_1', name: '🌭 Hot Dog La Fiera Especial', price: 220, desc: 'Salchicha parrillera artesanal, repollo criollo agridulce, tocineta crocante y salsa tártara.', img: 'https://images.unsplash.com/photo-1619740455993-9e612b1af08a?auto=format&fit=crop&w=400&q=80' },
+              { id: 'm_2', name: '🧀 Hot Dog Triple Queso Fundido', price: 260, desc: 'Pan brioche tostado, salchicha gigante, abundante queso cheddar derretido y mozzarella.', img: 'https://images.unsplash.com/photo-1627054234553-91147a46979a?auto=format&fit=crop&w=400&q=80' },
+              { id: 'm_3', name: '🔥 Hot Dog Fiera Picante', price: 240, desc: 'Salchicha ahumada con jalapeños, papitas ralladas crujientes y mayokétchup criollo.', img: 'https://images.unsplash.com/photo-1541214113241-21578d2d9b62?auto=format&fit=crop&w=400&q=80' },
+              { id: 'm_4', name: '🍟 Papas Fritas Fiera Monster', price: 250, desc: 'Papas fritas con trozos de salchicha parrillera, tocineta y salsa cheddar caliente.', img: 'https://images.unsplash.com/photo-1576107232684-1279f3908594?auto=format&fit=crop&w=400&q=80' },
+              { id: 'm_5', name: '🥤 Refresco Cola 20oz Bien Frío', price: 65, desc: 'Refresco dominicano 20oz bien helado para acompañar tu Fiera Hot Dog.', img: 'https://images.unsplash.com/photo-1622483767028-3f66f32aef97?auto=format&fit=crop&w=400&q=80' }
+            ]
+        )
   );
 
   // New dish form
@@ -59,7 +69,13 @@ export default function ConfigurarRestauranteModal({ store, onClose, onSave }) {
   const [newDishImg, setNewDishImg] = useState('');
 
   const [saving, setSaving] = useState(false);
-  const [activeTab, setActiveTab] = useState('perfil'); // 'perfil' | 'menu'
+  const [activeTab, setActiveTab] = useState(initialTab || 'perfil'); // 'perfil' | 'menu'
+
+  useEffect(() => {
+    if (initialTab) {
+      setActiveTab(initialTab);
+    }
+  }, [initialTab]);
 
   const handleCoverUpload = async (e) => {
     const file = e.target.files?.[0];
@@ -108,7 +124,7 @@ export default function ConfigurarRestauranteModal({ store, onClose, onSave }) {
       name: newDishName.trim(),
       price: priceNum,
       desc: newDishDesc.trim() || 'Especialidad preparada al instante.',
-      img: newDishImg || 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=200&q=80'
+      img: newDishImg || 'https://images.unsplash.com/photo-1619740455993-9e612b1af08a?auto=format&fit=crop&w=400&q=80'
     };
     setMenuList(prev => [...prev, newDish]);
     setNewDishName('');
@@ -489,9 +505,12 @@ export default function ConfigurarRestauranteModal({ store, onClose, onSave }) {
                     style={{ padding: '8px 10px', borderRadius: 10, border: '1px solid #CBD5E1', fontSize: 12 }}
                   />
                   <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                    {newDishImg && (
+                      <img src={newDishImg} alt="Preview" style={{ width: 36, height: 36, borderRadius: 8, objectFit: 'cover', border: '1.5px solid #FF6000', flexShrink: 0 }} />
+                    )}
                     <label style={{
                       flex: 1,
-                      background: '#FFF',
+                      background: newDishImg ? '#FFF7ED' : '#FFF',
                       border: '1px dashed #FF6000',
                       color: '#FF6000',
                       padding: '8px 10px',
@@ -499,9 +518,13 @@ export default function ConfigurarRestauranteModal({ store, onClose, onSave }) {
                       fontSize: 11,
                       fontWeight: 800,
                       textAlign: 'center',
-                      cursor: 'pointer'
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: 4
                     }}>
-                      📷 {newDishImg ? 'Foto seleccionada' : 'Subir Foto del Platillo'}
+                      📷 {newDishImg ? '✓ Foto lista (cambiar)' : 'Subir Foto del Platillo'}
                       <input type="file" accept="image/*" onChange={handleDishUpload} style={{ display: 'none' }} />
                     </label>
                     <button
@@ -515,7 +538,8 @@ export default function ConfigurarRestauranteModal({ store, onClose, onSave }) {
                         borderRadius: 10,
                         fontWeight: 900,
                         fontSize: 12,
-                        cursor: 'pointer'
+                        cursor: 'pointer',
+                        whiteSpace: 'nowrap'
                       }}
                     >
                       + Añadir al Menú
@@ -549,7 +573,15 @@ export default function ConfigurarRestauranteModal({ store, onClose, onSave }) {
                       }}
                     >
                       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                        <img src={item.img} alt={item.name} style={{ width: 44, height: 44, borderRadius: 10, objectFit: 'cover' }} />
+                        <img
+                          src={item.img || item.image || item.fotoURL || 'https://images.unsplash.com/photo-1619740455993-9e612b1af08a?auto=format&fit=crop&w=200&q=80'}
+                          alt={item.name}
+                          onError={(e) => {
+                            e.currentTarget.onerror = null;
+                            e.currentTarget.src = 'https://images.unsplash.com/photo-1619740455993-9e612b1af08a?auto=format&fit=crop&w=200&q=80';
+                          }}
+                          style={{ width: 44, height: 44, borderRadius: 10, objectFit: 'cover' }}
+                        />
                         <div>
                           <div style={{ fontSize: 13, fontWeight: 900, color: '#1E293B' }}>{item.name}</div>
                           <div style={{ fontSize: 12, fontWeight: 800, color: '#FF6000' }}>RD$ {item.price}</div>

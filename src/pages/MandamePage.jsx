@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { doc, updateDoc, serverTimestamp, collection, query, where, onSnapshot, addDoc, deleteDoc, limit } from 'firebase/firestore';
+import { doc, setDoc, updateDoc, serverTimestamp, collection, query, where, onSnapshot, addDoc, deleteDoc, limit } from 'firebase/firestore';
 import { auth, db } from '../firebase';
 import './MandamePage.css';
 import './HomePage.css';
@@ -187,7 +187,7 @@ const INITIAL_STORES = [
         name: '🥤 Refresco Cola 20oz Bien Frío',
         price: 65,
         description: 'Refresco dominicano 20oz servido como la ceniza para acompañar tu Fiera Hot Dog.',
-        image: 'assets/drinks_3d_1791137124884.png'
+        image: 'https://images.unsplash.com/photo-1622483767028-3f66f32aef97?auto=format&fit=crop&w=400&q=80'
       }
     ]
   }
@@ -241,10 +241,35 @@ const INITIAL_PRODUCTS = [
     name: '🥤 Refresco Cola 20oz Bien Frío',
     price: 65,
     description: 'Refresco dominicano 20oz servido como la ceniza para acompañar tu Fiera Hot Dog.',
-    image: 'assets/drinks_3d_1791137124884.png',
+    image: 'https://images.unsplash.com/photo-1622483767028-3f66f32aef97?auto=format&fit=crop&w=400&q=80',
     inStock: true
   }
 ];
+
+const compressImage = (file, maxRes = 800) => new Promise((resolve, reject) => {
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const img = new Image();
+    img.onload = () => {
+      let { width, height } = img;
+      if (width > height) {
+        if (width > maxRes) { height = Math.round((height * maxRes) / width); width = maxRes; }
+      } else {
+        if (height > maxRes) { width = Math.round((width * maxRes) / height); height = maxRes; }
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, width, height);
+      resolve(canvas.toDataURL('image/jpeg', 0.8));
+    };
+    img.onerror = reject;
+    img.src = e.target.result;
+  };
+  reader.onerror = reject;
+  reader.readAsDataURL(file);
+});
 
 export default function MandamePage({ navigate, userData, userRole, lang }) {
   // Estado de comercios validados en Firestore en tiempo real
@@ -341,24 +366,32 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
               rating: data.rating || 5.0,
               ratingText: '5.0 ⭐ (Oficial Pedidos Listo)',
               timeMinutes: 15,
-              time: '10-20 min',
+              time: data.time || data.horario || '10-20 min',
               deliveryFee: 0,
               badge: '🌭 #1 Hot Dogs de Santiago 🇩🇴',
-              category: 'criollo',
+              category: data.sub || data.categoria || data.category || 'criollo',
               image: data.image || data.portadaURL || data.logoURL || data.logo || 'https://images.unsplash.com/photo-1619740455993-9e612b1af08a?auto=format&fit=crop&w=400&q=80',
-              cover: data.portadaURL || data.coverURL || data.image || 'https://images.unsplash.com/photo-1541214113241-21578d2d9b62?auto=format&fit=crop&w=1000&q=80',
-              logo: data.logoURL || data.logo || data.portadaURL || 'https://images.unsplash.com/photo-1619740455993-9e612b1af08a?auto=format&fit=crop&w=300&q=80',
-              address: data.direccion || data.address || 'Av. 27 de Febrero esq. Estrella Sadhalá, Santiago, RD',
-              phone: data.telefono || data.phone || data.whatsapp || '809-583-1020',
+              cover: data.cover || data.portadaURL || data.coverURL || data.image || 'https://images.unsplash.com/photo-1541214113241-21578d2d9b62?auto=format&fit=crop&w=1000&q=80',
+              logo: data.logo || data.logoURL || data.image || 'https://images.unsplash.com/photo-1619740455993-9e612b1af08a?auto=format&fit=crop&w=300&q=80',
+              address: data.address || data.direccion || 'Av. 27 de Febrero esq. Estrella Sadhalá, Santiago, RD',
+              phone: data.phone || data.telefono || data.whatsapp || '809-583-1020',
               whatsapp: data.whatsapp || data.telefono || '18095831020',
               socials: {
-                instagram: data.instagram || '@lafierahotdog.rd',
-                facebook: data.facebook || 'facebook.com/lafierahotdog',
-                tiktok: data.tiktok || '@lafierahotdog'
+                instagram: data.socials?.instagram || data.instagram || '@lafierahotdog.rd',
+                facebook: data.socials?.facebook || data.facebook || 'facebook.com/lafierahotdog',
+                tiktok: data.socials?.tiktok || data.tiktok || '@lafierahotdog'
               },
-              instagram: data.instagram || '@lafierahotdog.rd',
-              facebook: data.facebook || 'facebook.com/lafierahotdog',
-              tiktok: data.tiktok || '@lafierahotdog',
+              instagram: data.instagram || data.socials?.instagram || '@lafierahotdog.rd',
+              facebook: data.facebook || data.socials?.facebook || 'facebook.com/lafierahotdog',
+              tiktok: data.tiktok || data.socials?.tiktok || '@lafierahotdog',
+              menu: Array.isArray(data.menu) ? data.menu : (Array.isArray(data.servicios) ? data.servicios.map((s, idx) => ({
+                id: s.id || `srv_${idx}`,
+                name: s.nombre || s.name || 'Platillo',
+                price: parseFloat(s.precio || s.price) || 200,
+                desc: s.descripcion || s.desc || '',
+                img: s.fotoURL || s.img || s.image || 'https://images.unsplash.com/photo-1619740455993-9e612b1af08a?auto=format&fit=crop&w=400&q=80'
+              })) : null),
+              servicios: Array.isArray(data.servicios) ? data.servicios : null,
               city: data.ciudad || data.city || 'Santiago',
               ownerName: data.propietario || data.ownerName || '',
               email: (data.email || '').toLowerCase().trim(),
@@ -368,6 +401,13 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
           .filter(st => isFieraMatch(st.name) && st.activo !== false);
 
         setDbStores(list);
+        if (list.length > 0) {
+          setActiveStoreModal(prev => {
+            if (!prev) return prev;
+            const updatedMatching = list.find(s => s.id === prev.id || isFieraMatch(s.name));
+            return updatedMatching ? { ...prev, ...updatedMatching } : prev;
+          });
+        }
       }, (err) => console.warn("Locales listener error:", err));
     } catch (e) {}
 
@@ -410,21 +450,36 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
     try {
       const qProd = query(collection(db, 'productos'));
       const unsubProd = onSnapshot(qProd, (snap) => {
-        const list = snap.docs.map(d => {
-          const data = d.data();
-          return {
-            id: d.id,
-            ...data,
-            name: data.name || data.nombre || 'Platillo',
-            price: data.price !== undefined ? data.price : (data.precio || 0),
-            description: data.description || data.descripcion || '',
-            image: data.image || data.images?.[0] || 'assets/burger_3d.png',
-            images: Array.isArray(data.images) && data.images.length > 0 ? data.images : [data.image || 'assets/burger_3d.png'],
-            storeName: data.storeName || data.tienda || 'La Fiera Hot Dog',
-            storeId: data.storeId || '',
-            inStock: data.inStock !== false
-          };
+        // Borrar productos obsoletos o mocks de prueba de Firestore
+        snap.docs.forEach(async (dSnap) => {
+          const pData = dSnap.data();
+          const pName = (pData.name || pData.nombre || '').toLowerCase();
+          const pImg = pData.image || '';
+          if (pName.includes('kfc') || pName.includes('bucket') || pImg.includes('drinks_3d_1791137124884')) {
+            try {
+              await deleteDoc(doc(db, 'productos', dSnap.id));
+            } catch (e) {}
+          }
         });
+
+        const list = snap.docs
+          .map(d => {
+            const data = d.data();
+            return {
+              id: d.id,
+              ...data,
+              name: data.name || data.nombre || 'Platillo',
+              price: data.price !== undefined ? data.price : (data.precio || 0),
+              description: data.description || data.descripcion || '',
+              image: data.image || data.images?.[0] || 'https://images.unsplash.com/photo-1619740455993-9e612b1af08a?auto=format&fit=crop&w=400&q=80',
+              images: Array.isArray(data.images) && data.images.length > 0 ? data.images : [data.image || 'https://images.unsplash.com/photo-1619740455993-9e612b1af08a?auto=format&fit=crop&w=400&q=80'],
+              storeName: data.storeName || data.tienda || 'La Fiera Hot Dog',
+              storeId: data.storeId || '',
+              inStock: data.inStock !== false
+            };
+          })
+          .filter(p => !((p.name || '').toLowerCase().includes('kfc') || (p.name || '').toLowerCase().includes('bucket')));
+
         setDbProducts(list);
       }, (err) => console.warn("Productos listener error:", err));
       return () => unsubProd();
@@ -442,11 +497,75 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
   const [selectedCategoryFilter, setSelectedCategoryFilter] = useState('all');
   const [activeStoreModal, setActiveStoreModal] = useState(null);
   const [showStoreConfigModal, setShowStoreConfigModal] = useState(false);
+  const [configModalInitialTab, setConfigModalInitialTab] = useState('perfil');
   const [storeModalTab, setStoreModalTab] = useState('menu'); // 'menu' | 'info'
   const [customizeProduct, setCustomizeProduct] = useState(null);
   const [isCartModalOpen, setIsCartModalOpen] = useState(false);
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
+
+  const handleOpenConfigModal = (tab = 'perfil') => {
+    setConfigModalInitialTab(tab);
+    setShowStoreConfigModal(true);
+  };
+
+  const handleQuickUploadCover = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file || !activeStoreModal) return;
+    try {
+      showToast('⏳ Subiendo y optimizando foto de portada...');
+      const base64 = await compressImage(file, 900);
+      const updated = {
+        ...activeStoreModal,
+        cover: base64,
+        portadaURL: base64,
+        image: base64
+      };
+      setActiveStoreModal(updated);
+      setDbStores(prev => prev.map(s => s.id === updated.id ? updated : s));
+      if (activeStoreModal.id) {
+        await setDoc(doc(db, 'locales', activeStoreModal.id), {
+          cover: base64,
+          portadaURL: base64,
+          image: base64,
+          updatedAt: serverTimestamp()
+        }, { merge: true });
+      }
+      showToast('📷 ¡Foto de portada actualizada con éxito!');
+    } catch (err) {
+      console.error(err);
+      showToast('⚠️ Error al subir foto de portada');
+    }
+  };
+
+  const handleQuickUploadLogo = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file || !activeStoreModal) return;
+    try {
+      showToast('⏳ Subiendo logo de perfil...');
+      const base64 = await compressImage(file, 400);
+      const updated = {
+        ...activeStoreModal,
+        logo: base64,
+        logoURL: base64,
+        img: base64
+      };
+      setActiveStoreModal(updated);
+      setDbStores(prev => prev.map(s => s.id === updated.id ? updated : s));
+      if (activeStoreModal.id) {
+        await setDoc(doc(db, 'locales', activeStoreModal.id), {
+          logo: base64,
+          logoURL: base64,
+          img: base64,
+          updatedAt: serverTimestamp()
+        }, { merge: true });
+      }
+      showToast('🏷️ ¡Foto de perfil / logo actualizado con éxito!');
+    } catch (err) {
+      console.error(err);
+      showToast('⚠️ Error al subir foto de perfil');
+    }
+  };
 
   // ── ESTADOS DE CHECKOUT Y DIRECCIÓN ESTILO PEDIDOSYA ──
   const [deliveryAddress, setDeliveryAddress] = useState(() => {
@@ -4728,6 +4847,10 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
               <img
                 src={activeStoreModal.cover || activeStoreModal.portadaURL || activeStoreModal.image || 'https://images.unsplash.com/photo-1541214113241-21578d2d9b62?auto=format&fit=crop&w=1000&q=80'}
                 alt={activeStoreModal.name}
+                onError={(e) => {
+                  e.currentTarget.onerror = null;
+                  e.currentTarget.src = 'https://images.unsplash.com/photo-1541214113241-21578d2d9b62?auto=format&fit=crop&w=1000&q=80';
+                }}
                 style={{
                   width: '100%',
                   height: '100%',
@@ -4743,7 +4866,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                 left: 0,
                 right: 0,
                 padding: '12px 14px',
-                background: 'linear-gradient(180deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 100%)',
+                background: 'linear-gradient(180deg, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0) 100%)',
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
@@ -4753,10 +4876,31 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                   <span style={{ background: '#ff6b00', color: '#fff', padding: '4px 10px', borderRadius: 12, fontSize: 10.5, fontWeight: 900, boxShadow: '0 4px 10px rgba(0,0,0,0.3)', whiteSpace: 'nowrap' }}>
                     {activeStoreModal.badge || '🌭 #1 Hot Dogs de Santiago 🇩🇴'}
                   </span>
-                  <button
-                    onClick={() => setShowStoreConfigModal(true)}
+                  <label
                     style={{
-                      background: 'rgba(0,0,0,0.65)',
+                      background: 'rgba(0,0,0,0.7)',
+                      color: '#FFF',
+                      border: '1px solid rgba(255,255,255,0.4)',
+                      padding: '4px 10px',
+                      borderRadius: 12,
+                      fontSize: 10.5,
+                      fontWeight: 900,
+                      cursor: 'pointer',
+                      backdropFilter: 'blur(4px)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 4,
+                      whiteSpace: 'nowrap'
+                    }}
+                    title="Subir nueva foto de portada desde tu dispositivo"
+                  >
+                    📷 Portada
+                    <input type="file" accept="image/*" onChange={handleQuickUploadCover} style={{ display: 'none' }} />
+                  </label>
+                  <button
+                    onClick={() => handleOpenConfigModal('perfil')}
+                    style={{
+                      background: 'rgba(0,0,0,0.7)',
                       color: '#FFF',
                       border: '1px solid rgba(255,255,255,0.4)',
                       padding: '4px 10px',
@@ -4786,27 +4930,78 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
             {/* CONTENIDO INTERNO */}
             <div style={{ padding: '0 16px 24px', boxSizing: 'border-box', width: '100%' }}>
               
-              {/* 2. FILA DE PERFIL: LOGO FLOTANTE + NOMBRE + BOTÓN CONFIGURAR */}
+              {/* 2. FILA DE PERFIL: LOGO FLOTANTE CON BOTÓN DE FOTO + NOMBRE + BOTÓN CONFIGURAR */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: -38, marginBottom: 14, position: 'relative', zIndex: 3, flexWrap: 'wrap', gap: 10 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0, flex: '1 1 200px' }}>
-                  <img
-                    src={activeStoreModal.logo || activeStoreModal.logoURL || activeStoreModal.image || 'https://images.unsplash.com/photo-1619740455993-9e612b1af08a?auto=format&fit=crop&w=200&q=80'}
-                    alt={activeStoreModal.name}
-                    style={{
-                      width: 72,
-                      height: 72,
-                      borderRadius: 20,
-                      objectFit: 'cover',
-                      border: '4px solid #FFFFFF',
-                      boxShadow: '0 8px 24px rgba(0,0,0,0.18)',
-                      background: '#FFFFFF',
-                      flexShrink: 0
-                    }}
-                  />
+                  <div style={{ position: 'relative', flexShrink: 0 }}>
+                    <img
+                      src={activeStoreModal.logo || activeStoreModal.logoURL || activeStoreModal.image || 'https://images.unsplash.com/photo-1619740455993-9e612b1af08a?auto=format&fit=crop&w=200&q=80'}
+                      alt={activeStoreModal.name}
+                      onError={(e) => {
+                        e.currentTarget.onerror = null;
+                        e.currentTarget.src = 'https://images.unsplash.com/photo-1619740455993-9e612b1af08a?auto=format&fit=crop&w=200&q=80';
+                      }}
+                      style={{
+                        width: 72,
+                        height: 72,
+                        borderRadius: 20,
+                        objectFit: 'cover',
+                        border: '4px solid #FFFFFF',
+                        boxShadow: '0 8px 24px rgba(0,0,0,0.18)',
+                        background: '#FFFFFF',
+                        display: 'block'
+                      }}
+                    />
+                    <label
+                      style={{
+                        position: 'absolute',
+                        bottom: -3,
+                        right: -3,
+                        background: '#ff6b00',
+                        color: '#FFF',
+                        borderRadius: '50%',
+                        width: 26,
+                        height: 26,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                        border: '2px solid #FFFFFF',
+                        boxShadow: '0 2px 6px rgba(0,0,0,0.3)',
+                        fontSize: 12,
+                        zIndex: 4
+                      }}
+                      title="Cambiar Foto de Perfil / Logo"
+                    >
+                      📷
+                      <input type="file" accept="image/*" onChange={handleQuickUploadLogo} style={{ display: 'none' }} />
+                    </label>
+                  </div>
                   <div style={{ minWidth: 0, flex: 1 }}>
-                    <h3 style={{ margin: 0, fontSize: 19, fontWeight: 900, color: '#0F172A', lineHeight: 1.2, wordBreak: 'break-word' }}>
-                      {activeStoreModal.name}
-                    </h3>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                      <h3 style={{ margin: 0, fontSize: 19, fontWeight: 900, color: '#0F172A', lineHeight: 1.2, wordBreak: 'break-word' }}>
+                        {activeStoreModal.name}
+                      </h3>
+                      <button
+                        onClick={() => handleOpenConfigModal('perfil')}
+                        title="Editar nombre y datos del restaurante"
+                        style={{
+                          background: '#FFF7ED',
+                          color: '#EA580C',
+                          border: '1px solid #FED7AA',
+                          padding: '2px 7px',
+                          borderRadius: 8,
+                          fontSize: 10,
+                          fontWeight: 900,
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 3
+                        }}
+                      >
+                        ✏️
+                      </button>
+                    </div>
                     <p style={{ margin: '3px 0 0', fontSize: 11.5, color: '#64748B', fontWeight: 700, wordBreak: 'break-word' }}>
                       {activeStoreModal.category || activeStoreModal.badge || 'Comercio Partner Pedidos Listo'}
                     </p>
@@ -4814,7 +5009,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                 </div>
 
                 <button
-                  onClick={() => setShowStoreConfigModal(true)}
+                  onClick={() => handleOpenConfigModal('perfil')}
                   style={{
                     padding: '7px 12px',
                     borderRadius: 12,
@@ -4862,7 +5057,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                 gap: 8,
                 boxSizing: 'border-box'
               }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0, flex: '1 1 200px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0, flex: '1 1 180px' }}>
                   <div style={{ width: 34, height: 34, borderRadius: '50%', background: '#EFF6FF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, color: '#2563EB', flexShrink: 0 }}>
                     📍
                   </div>
@@ -4875,12 +5070,20 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                     </span>
                   </div>
                 </div>
-                <button
-                  onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(activeStoreModal.address || activeStoreModal.direccion || activeStoreModal.name)}`, '_blank')}
-                  style={{ padding: '6px 12px', borderRadius: 10, background: '#EFF6FF', color: '#2563EB', border: '1px solid #BFDBFE', fontSize: 11, fontWeight: 900, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}
-                >
-                  🗺️ Mapa
-                </button>
+                <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+                  <button
+                    onClick={() => handleOpenConfigModal('perfil')}
+                    style={{ padding: '6px 10px', borderRadius: 10, background: '#FFF7ED', color: '#EA580C', border: '1px solid #FED7AA', fontSize: 11, fontWeight: 900, cursor: 'pointer', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 4 }}
+                  >
+                    ✏️ Editar
+                  </button>
+                  <button
+                    onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(activeStoreModal.address || activeStoreModal.direccion || activeStoreModal.name)}`, '_blank')}
+                    style={{ padding: '6px 12px', borderRadius: 10, background: '#EFF6FF', color: '#2563EB', border: '1px solid #BFDBFE', fontSize: 11, fontWeight: 900, cursor: 'pointer', whiteSpace: 'nowrap' }}
+                  >
+                    🗺️ Mapa
+                  </button>
+                </div>
               </div>
 
               {/* 4. ESPACIO PARA EL NÚMERO DE TELÉFONO */}
@@ -4911,6 +5114,12 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                   </div>
                 </div>
                 <div style={{ display: 'flex', gap: 6, flexShrink: 0, flexWrap: 'wrap' }}>
+                  <button
+                    onClick={() => handleOpenConfigModal('perfil')}
+                    style={{ padding: '6px 10px', borderRadius: 10, background: '#FFF7ED', color: '#EA580C', border: '1px solid #FED7AA', fontSize: 11, fontWeight: 900, cursor: 'pointer', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 4 }}
+                  >
+                    ✏️ Editar
+                  </button>
                   {(activeStoreModal.phone || activeStoreModal.telefono) && (
                     <a
                       href={`tel:${(activeStoreModal.phone || activeStoreModal.telefono).replace(/[^0-9]/g, '')}`}
@@ -4939,9 +5148,29 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                 marginBottom: 14,
                 boxSizing: 'border-box'
               }}>
-                <span style={{ fontSize: 9.5, fontWeight: 900, color: '#EA580C', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: 6 }}>
-                  🌐 REDES SOCIALES DEL RESTAURANTE
-                </span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                  <span style={{ fontSize: 9.5, fontWeight: 900, color: '#EA580C', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                    🌐 REDES SOCIALES DEL RESTAURANTE
+                  </span>
+                  <button
+                    onClick={() => handleOpenConfigModal('perfil')}
+                    style={{
+                      background: '#FFF',
+                      color: '#EA580C',
+                      border: '1px solid #FED7AA',
+                      borderRadius: 8,
+                      padding: '2px 8px',
+                      fontSize: 10,
+                      fontWeight: 900,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 3
+                    }}
+                  >
+                    ✏️ Editar Redes
+                  </button>
+                </div>
                 <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                   <a
                     href={`https://instagram.com/${(activeStoreModal.socials?.instagram || activeStoreModal.instagram || 'lafierahotdog.rd').replace('@', '')}`}
@@ -5048,23 +5277,77 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
               {/* CONTENIDO TAB MENÚ */}
               {storeModalTab === 'menu' ? (
                 <div>
-                  <div style={{ fontSize: 13, fontWeight: 900, color: '#1E293B', marginBottom: 10, display: 'flex', justifyContent: 'space-between' }}>
+                  <div style={{ fontSize: 13, fontWeight: 900, color: '#1E293B', marginBottom: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 6 }}>
                     <span>Platillos Disponibles</span>
-                    <span style={{ color: '#ff6b00', fontSize: 11 }}>Listo para entrega 🛵</span>
+                    <button
+                      onClick={() => handleOpenConfigModal('menu')}
+                      style={{
+                        background: '#ff6b00',
+                        color: '#FFF',
+                        border: 'none',
+                        padding: '6px 12px',
+                        borderRadius: 10,
+                        fontSize: 11.5,
+                        fontWeight: 900,
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 4,
+                        boxShadow: '0 2px 8px rgba(255,107,0,0.25)'
+                      }}
+                    >
+                      + 🍔 Añadir / Editar Platillos
+                    </button>
                   </div>
                   {(() => {
-                    const storeDishes = allPlatformProducts.filter(p => 
-                      (p.storeId && activeStoreModal.id && p.storeId === activeStoreModal.id) ||
-                      (p.storeName && activeStoreModal.name && p.storeName.toLowerCase().trim() === activeStoreModal.name.toLowerCase().trim()) ||
-                      (p.storeEmail && activeStoreModal.email && p.storeEmail.toLowerCase().trim() === activeStoreModal.email.toLowerCase().trim())
-                    );
-                    const dishesToShow = storeDishes.length > 0 ? storeDishes : merchantState.products;
+                    let dishesToShow = [];
+                    if (Array.isArray(activeStoreModal.menu) && activeStoreModal.menu.length > 0) {
+                      dishesToShow = activeStoreModal.menu.map((m, idx) => ({
+                        id: m.id || `dish-${idx}`,
+                        name: m.name || m.nombre || 'Platillo',
+                        price: parseFloat(m.price || m.precio) || 0,
+                        description: m.desc || m.description || m.descripcion || '',
+                        image: m.img || m.image || m.fotoURL || 'https://images.unsplash.com/photo-1619740455993-9e612b1af08a?auto=format&fit=crop&w=400&q=80',
+                        images: m.images || [m.img || m.image || m.fotoURL || 'https://images.unsplash.com/photo-1619740455993-9e612b1af08a?auto=format&fit=crop&w=400&q=80']
+                      }));
+                    } else if (Array.isArray(activeStoreModal.servicios) && activeStoreModal.servicios.length > 0) {
+                      dishesToShow = activeStoreModal.servicios.map((s, idx) => ({
+                        id: s.id || `srv-${idx}`,
+                        name: s.nombre || s.name || 'Platillo',
+                        price: parseFloat(s.precio || s.price) || 0,
+                        description: s.descripcion || s.desc || '',
+                        image: s.fotoURL || s.img || s.image || 'https://images.unsplash.com/photo-1619740455993-9e612b1af08a?auto=format&fit=crop&w=400&q=80',
+                        images: [s.fotoURL || s.img || s.image || 'https://images.unsplash.com/photo-1619740455993-9e612b1af08a?auto=format&fit=crop&w=400&q=80']
+                      }));
+                    } else {
+                      const storeDishes = allPlatformProducts.filter(p => {
+                        const isStoreMatch = (p.storeId && activeStoreModal.id && p.storeId === activeStoreModal.id) ||
+                          (p.storeName && activeStoreModal.name && p.storeName.toLowerCase().trim() === activeStoreModal.name.toLowerCase().trim()) ||
+                          (p.storeEmail && activeStoreModal.email && p.storeEmail.toLowerCase().trim() === activeStoreModal.email.toLowerCase().trim());
+                        const isNotMockKfc = !((p.name || '').toLowerCase().includes('kfc') || (p.name || '').toLowerCase().includes('bucket'));
+                        return isStoreMatch && isNotMockKfc;
+                      });
+                      dishesToShow = storeDishes.length > 0 ? storeDishes : INITIAL_PRODUCTS;
+                    }
+
+                    // Purge any KFC remnant
+                    dishesToShow = dishesToShow.filter(d => !((d.name || '').toLowerCase().includes('kfc') || (d.name || '').toLowerCase().includes('bucket')));
+
                     return dishesToShow.map(prod => {
                       const prodImgCount = (prod.images && prod.images.length) || 1;
+                      const dishImg = prod.image || prod.img || prod.fotoURL || 'https://images.unsplash.com/photo-1619740455993-9e612b1af08a?auto=format&fit=crop&w=400&q=80';
                       return (
                         <div key={prod.id} style={{ display: 'flex', gap: 12, background: '#F8FAFC', padding: 12, borderRadius: 16, marginBottom: 10, border: '1.5px solid #E2E8F0', alignItems: 'center' }}>
                           <div style={{ position: 'relative', flexShrink: 0, cursor: 'pointer' }} onClick={() => { setCustomizeProduct(prod); setCustomizeModalImgIndex(0); }}>
-                            <img src={prod.image || 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=200&q=80'} style={{ width: 68, height: 68, borderRadius: 14, objectFit: 'cover' }} alt={prod.name} />
+                            <img
+                              src={dishImg}
+                              alt={prod.name}
+                              onError={(e) => {
+                                e.currentTarget.onerror = null;
+                                e.currentTarget.src = 'https://images.unsplash.com/photo-1619740455993-9e612b1af08a?auto=format&fit=crop&w=400&q=80';
+                              }}
+                              style={{ width: 68, height: 68, borderRadius: 14, objectFit: 'cover' }}
+                            />
                             {prodImgCount > 1 && (
                               <span style={{ position: 'absolute', bottom: 2, right: 2, background: 'rgba(10,14,26,0.85)', color: 'white', fontSize: 8, fontWeight: 900, padding: '1px 4px', borderRadius: 4 }}>
                                 📸 {prodImgCount}
@@ -5096,8 +5379,30 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                 </div>
               ) : (
                 <div style={{ background: '#F8FAFC', padding: 16, borderRadius: 16, border: '1.5px solid #E2E8F0' }}>
-                  <h4 style={{ fontWeight: 900, fontSize: 15, margin: '0 0 10px', color: '#1E293B' }}>ℹ️ Horarios y Garantías</h4>
-                  <p style={{ fontSize: 12, color: '#64748B', margin: '0 0 8px' }}>⏱️ Horario de Atención: 08:00 AM - 11:30 PM (Lunes a Domingo)</p>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                    <h4 style={{ fontWeight: 900, fontSize: 15, margin: 0, color: '#1E293B' }}>ℹ️ Horarios y Garantías</h4>
+                    <button
+                      onClick={() => handleOpenConfigModal('perfil')}
+                      style={{
+                        background: '#FFF7ED',
+                        color: '#EA580C',
+                        border: '1px solid #FED7AA',
+                        borderRadius: 8,
+                        padding: '4px 10px',
+                        fontSize: 11,
+                        fontWeight: 900,
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 4
+                      }}
+                    >
+                      ✏️ Editar Horario
+                    </button>
+                  </div>
+                  <p style={{ fontSize: 12, color: '#64748B', margin: '0 0 8px' }}>
+                    ⏱️ Horario de Atención: {activeStoreModal.time || activeStoreModal.horario || '08:00 AM - 11:30 PM (Lunes a Domingo)'}
+                  </p>
                   <p style={{ fontSize: 12, color: '#64748B', margin: '0 0 8px' }}>🛡️ Garantía de Entrega Pedidos Listo con Token PIN OTP de 4 dígitos</p>
                   <p style={{ fontSize: 12, color: '#64748B', margin: 0 }}>🛵 Reparto oficial con Mándame Riders rastreados por GPS</p>
                 </div>
@@ -5142,6 +5447,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
       {showStoreConfigModal && activeStoreModal && (
         <ConfigurarRestauranteModal
           store={activeStoreModal}
+          initialTab={configModalInitialTab}
           onClose={() => setShowStoreConfigModal(false)}
           onSave={(updated) => {
             setActiveStoreModal(updated);
