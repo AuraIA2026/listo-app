@@ -2,8 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import './LandingPage.css';
 import useLandingLogic from '../useLandingLogic';
 import PlanSelectionModal from '../components/PlanSelectionModal';
-import { collection, addDoc } from 'firebase/firestore';
-import { db } from '../firebase';
+import { collection, addDoc, doc, onSnapshot } from 'firebase/firestore';
+import { db, auth } from '../firebase';
 import ad15 from '../assets/landing/extracted_15.png';
 import ad16 from '../assets/landing/extracted_16.png';
 import ad17 from '../assets/landing/extracted_17.png';
@@ -31,12 +31,27 @@ function DeliveryPartnerModal({ onClose, navigate }) {
   });
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [createdRequestId, setCreatedRequestId] = useState(null);
+  const [isApprovedLive, setIsApprovedLive] = useState(false);
+
+  useEffect(() => {
+    if (!createdRequestId) return;
+    const unsub = onSnapshot(doc(db, 'partner_requests', createdRequestId), (snap) => {
+      if (snap.exists() && snap.data().status === 'approved') {
+        setIsApprovedLive(true);
+      }
+    });
+    return () => unsub();
+  }, [createdRequestId]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
     try {
-      // 1. Guardar la solicitud en la colección 'partner_requests'
+      const currentUid = auth?.currentUser?.uid || null;
+      const currentEmail = auth?.currentUser?.email || (formData.email || '').toLowerCase().trim();
+
+      // 1. Guardar la solicitud en la colección 'partner_requests' con el UID del usuario
       const docRef = await addDoc(collection(db, 'partner_requests'), {
         businessName: (formData.businessName || '').trim(),
         ownerName: (formData.ownerName || '').trim(),
@@ -47,9 +62,13 @@ function DeliveryPartnerModal({ onClose, navigate }) {
         businessType: formData.businessType || 'Restaurante / Comida',
         branches: parseInt(formData.branches || '1'),
         isStreetStore: formData.isStreetStore || 'Si',
+        userId: currentUid,
+        userEmail: currentEmail,
         status: 'pending',
         createdAt: new Date().toISOString()
       });
+
+      setCreatedRequestId(docRef.id);
 
       // 2. Notificar al administrador en la colección 'notificaciones'
       await addDoc(collection(db, 'notificaciones'), {
@@ -146,29 +165,55 @@ function DeliveryPartnerModal({ onClose, navigate }) {
           
           {submitted ? (
             <div style={{ textAlign: 'center', padding: '40px 20px', background: '#FFFFFF', borderRadius: '20px', border: '1.5px solid #E2E8F0' }}>
-              <div style={{ fontSize: '60px', marginBottom: '16px' }}>🎉</div>
+              <div style={{ fontSize: '60px', marginBottom: '16px' }}>{isApprovedLive ? '🚀' : '🎉'}</div>
               <h3 style={{ fontSize: '24px', fontWeight: '900', color: '#0d0e15', marginBottom: '8px' }}>
-                ¡Solicitud recibida con éxito!
+                {isApprovedLive ? '¡Tu Comercio ha sido Validado y Aprobado!' : '¡Solicitud recibida con éxito!'}
               </h3>
               <p style={{ fontSize: '15px', color: '#64748B', maxWidth: '480px', margin: '0 auto 24px', lineHeight: '1.5' }}>
-                Un ejecutivo de <strong>PedidosListo Partner</strong> revisará tu información y se pondrá en contacto contigo a través de WhatsApp o llamada telefónica en menos de 24 horas para completar la activación.
+                {isApprovedLive 
+                  ? '¡Excelente! El administrador acaba de validar tu negocio. Ya se encuentra activo en el catálogo público y tienes acceso al portal de gestión.'
+                  : 'Un ejecutivo de PedidosListo Partner revisará tu información para completar la activación de tu negocio.'
+                }
               </p>
-              <button
-                onClick={onClose}
-                style={{
-                  padding: '12px 28px',
-                  background: 'linear-gradient(135deg, #ff6b00, #ff3d00)',
-                  color: '#FFF',
-                  border: 'none',
-                  borderRadius: '30px',
-                  fontWeight: '800',
-                  fontSize: '14px',
-                  cursor: 'pointer',
-                  boxShadow: '0 4px 15px rgba(255,107,0,0.4)'
-                }}
-              >
-                Entendido / Cerrar
-              </button>
+              <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                {isApprovedLive && navigate && (
+                  <button
+                    onClick={() => {
+                      onClose();
+                      navigate('mandame');
+                    }}
+                    style={{
+                      padding: '12px 28px',
+                      background: 'linear-gradient(135deg, #10B981, #059669)',
+                      color: '#FFF',
+                      border: 'none',
+                      borderRadius: '30px',
+                      fontWeight: '800',
+                      fontSize: '14px',
+                      cursor: 'pointer',
+                      boxShadow: '0 4px 15px rgba(16,185,129,0.4)'
+                    }}
+                  >
+                    🏪 Ver Mi Comercio en la App
+                  </button>
+                )}
+                <button
+                  onClick={onClose}
+                  style={{
+                    padding: '12px 28px',
+                    background: 'linear-gradient(135deg, #ff6b00, #ff3d00)',
+                    color: '#FFF',
+                    border: 'none',
+                    borderRadius: '30px',
+                    fontWeight: '800',
+                    fontSize: '14px',
+                    cursor: 'pointer',
+                    boxShadow: '0 4px 15px rgba(255,107,0,0.4)'
+                  }}
+                >
+                  Entendido / Cerrar
+                </button>
+              </div>
             </div>
           ) : (
             <div>

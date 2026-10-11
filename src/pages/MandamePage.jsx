@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, updateDoc, serverTimestamp, collection, query, where, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase';
 import './MandamePage.css';
 import './HomePage.css';
@@ -208,21 +208,24 @@ const INITIAL_PRODUCTS = [
 ];
 
 export default function MandamePage({ navigate, userData, userRole, lang }) {
+  // Estado de comercios validados en Firestore en tiempo real
+  const [dbStores, setDbStores] = useState([]);
+
+  // Solo es merchant quien tiene rol explícito de comercio o tiene un comercio registrado a su nombre
   const isMerchantUser = Boolean(
     userData?.role === 'merchant' ||
     userData?.role === 'comercio' ||
     userData?.type === 'comercio' ||
     userData?.isMerchant === true ||
-    userData?.email === 'listopatron.app@gmail.com' ||
-    userData?.email === 'admin@listopatron.com.do' ||
-    (typeof localStorage !== 'undefined' && localStorage.getItem('force_listo_merchant_mode') === 'true')
+    userData?.hasCommerce === true ||
+    (userData?.email && dbStores.some(s => s.email && s.email.toLowerCase() === userData.email.toLowerCase()))
   );
 
   const [viewMode, setViewMode] = useState(() => {
     try {
       if (isMerchantUser) {
         const saved = localStorage.getItem('pedidos_listo_view_mode');
-        if (saved === 'merchant' || localStorage.getItem('force_listo_merchant_mode') === 'true') {
+        if (saved === 'merchant') {
           return 'merchant';
         }
       }
@@ -230,14 +233,24 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
     return 'client';
   }); // 'client' | 'merchant'
 
-  // Garantizar que los usuarios normales sin comercio siempre vean la app de cliente normal
+  // Garantizar que los administradores o usuarios normales sin comercio propio siempre vean la app de cliente
   useEffect(() => {
-    if (!isMerchantUser && viewMode !== 'client') {
-      setViewMode('client');
+    if (!isMerchantUser) {
+      if (viewMode !== 'client') {
+        setViewMode('client');
+      }
+      try {
+        localStorage.removeItem('force_listo_merchant_mode');
+        localStorage.setItem('pedidos_listo_view_mode', 'client');
+      } catch (e) {}
     }
   }, [isMerchantUser, viewMode]);
 
   const handleSetViewMode = (mode) => {
+    if (mode === 'merchant' && !isMerchantUser) {
+      showToast('⚠️ Solo los comercios validados pueden acceder a este portal.');
+      return;
+    }
     setViewMode(mode);
     try {
       localStorage.setItem('pedidos_listo_view_mode', mode);
@@ -248,6 +261,46 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
       }
     } catch (e) {}
   };
+
+  // Escuchar comercios reales aprobados en la colección 'locales'
+  useEffect(() => {
+    try {
+      const qLoc = query(collection(db, 'locales'), where('activo', '==', true));
+      const unsubLocales = onSnapshot(qLoc, (snap) => {
+        const list = snap.docs.map(d => {
+          const data = d.data();
+          return {
+            id: d.id,
+            name: data.nombre || data.businessName || 'Comercio Partner',
+            rating: 5.0,
+            ratingText: '5.0 ⭐ (Activo)',
+            timeMinutes: 20,
+            time: '15-25 min',
+            deliveryFee: 0,
+            badge: data.plan || 'Comercio Validado 🇩🇴',
+            category: (data.categoria || '').toLowerCase().includes('comida') || (data.categoria || '').toLowerCase().includes('restaurante') ? 'criollo' : 'bocado',
+            image: data.image || data.logo || 'assets/burger_3d.png',
+            phone: data.telefono || data.phone || '',
+            city: data.ciudad || data.city || 'Santiago',
+            ownerName: data.propietario || data.ownerName || '',
+            email: data.email || ''
+          };
+        });
+        setDbStores(list);
+      }, (err) => {
+        console.warn("Locales listener error:", err);
+      });
+      return () => unsubLocales();
+    } catch (e) {
+      console.warn("Error subscribing to locales:", e);
+    }
+  }, []);
+
+  // Combinar comercios aprobados de la base de datos con las tiendas base
+  const combinedStores = [
+    ...dbStores,
+    ...INITIAL_STORES.filter(init => !dbStores.some(dbS => (dbS.name || '').toLowerCase() === (init.name || '').toLowerCase()))
+  ];
 
   // Escuchar cambios de pestaña desde la barra de navegación global (Ej: Mercado, Buscar, Pedidos)
   useEffect(() => {
@@ -272,6 +325,40 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
   const [isCartModalOpen, setIsCartModalOpen] = useState(false);
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
+
+  // Abrir automáticamente el comercio si fue solicitado desde el panel de Admin en vista pública
+  useEffect(() => {
+    try {
+      const targetStoreId = localStorage.getItem('pedidos_listo_active_store_id');
+      if (targetStoreId && combinedStores.length > 0) {
+        const found = combinedStores.find(s => 
+          s.id === targetStoreId || 
+          s.name.toLowerCase().includes(targetStoreId.toLowerCase())
+        );
+        if (found) {
+          setActiveStoreModal(found);
+          localStorage.removeItem('pedidos_listo_active_store_id');
+        }
+      }
+    } catch (e) {}
+  }, [combinedStores]);
+
+  // Si el usuario autenticado tiene un comercio aprobado, sincronizar su información en merchantState
+  useEffect(() => {
+    if (userData?.email && dbStores.length > 0) {
+      const myStore = dbStores.find(s => s.email && s.email.toLowerCase() === userData.email.toLowerCase());
+      if (myStore) {
+        setMerchantState(prev => ({
+          ...prev,
+          storeName: myStore.name,
+          address: `${myStore.city}, RD`,
+          phone: myStore.phone || prev.phone,
+          email: myStore.email || prev.email,
+          ownerName: myStore.ownerName || prev.ownerName
+        }));
+      }
+    }
+  }, [userData, dbStores]);
 
   // Registro de Comercio Vinculado a la Cuenta del Usuario
   const [isRegisterCommerceModalOpen, setIsRegisterCommerceModalOpen] = useState(false);
@@ -1981,11 +2068,11 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                       Comercios & Restaurantes Destacados
                     </h3>
                     <span style={{ fontSize: 11, fontWeight: 800, color: '#ff6b00', cursor: 'pointer' }}>
-                      Ver Todos ({INITIAL_STORES.length})
+                      Ver Todos ({combinedStores.length})
                     </span>
                   </div>
 
-                  {INITIAL_STORES.filter(st => selectedCategoryFilter === 'all' || st.category === selectedCategoryFilter).map(st => (
+                  {combinedStores.filter(st => selectedCategoryFilter === 'all' || st.category === selectedCategoryFilter).map(st => (
                     <div key={st.id} className="custom-store-card" onClick={() => setActiveStoreModal(st)}>
                       <div style={{ position: 'relative' }}>
                         <img src={st.image} alt={st.name} className="store-header-image" />

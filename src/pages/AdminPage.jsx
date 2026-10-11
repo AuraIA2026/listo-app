@@ -1,6 +1,6 @@
 import React, { useState, useEffect, Component, useRef } from "react";
-import { collection, query, where, onSnapshot, doc, updateDoc, orderBy, addDoc, deleteDoc, writeBatch } from 'firebase/firestore';
-import { db } from '../firebase';
+import { collection, query, where, onSnapshot, doc, updateDoc, orderBy, addDoc, deleteDoc, writeBatch, getDocs } from 'firebase/firestore';
+import { db, auth } from '../firebase';
 
 class ErrorBoundary extends Component {
   constructor(props) {
@@ -1355,31 +1355,69 @@ export default function AdminPage({ navigate }) {
            console.error("Error creando registro en locales:", eLoc);
          }
 
-         // Si el usuario tiene una cuenta registrada en 'users', activarle rol de comercio
-         if (obj.email) {
+         // Si el usuario tiene una cuenta registrada en 'users', activarle rol de comercio y enviarle notificación
+         if (obj.email || obj.userId) {
            try {
-             const userQuery = query(collection(db, 'users'), where('email', '==', obj.email.toLowerCase().trim()));
-             const userSnap = await getDocs(userQuery);
-             userSnap.forEach(async (uDoc) => {
-               await updateDoc(doc(db, 'users', uDoc.id), {
-                 role: 'comercio',
-                 isMerchant: true,
-                  hasCommerce: true,
-                  storeName: obj.businessName || 'Mi Comercio',
-                 commerceName: obj.businessName || 'Mi Comercio',
-                 commerceStatus: 'active'
+             const cleanEmail = (obj.email || '').toLowerCase().trim();
+             let matchedUsers = users.filter(u => 
+               (obj.userId && u.id === obj.userId) ||
+               (u.email && u.email.toLowerCase().trim() === cleanEmail)
+             );
+
+             // Si no lo encuentra en memoria, intentar consulta Firestore
+             if (matchedUsers.length === 0 && cleanEmail) {
+               const userQuery = query(collection(db, 'users'), where('email', '==', cleanEmail));
+               const userSnap = await getDocs(userQuery);
+               userSnap.forEach(uDoc => {
+                 matchedUsers.push({ id: uDoc.id, ...uDoc.data() });
                });
+             }
+
+             // Actualizar cada cuenta de usuario encontrada
+             for (const uDoc of matchedUsers) {
+               try {
+                 await updateDoc(doc(db, 'users', uDoc.id), {
+                   role: 'comercio',
+                   isMerchant: true,
+                   hasCommerce: true,
+                   storeName: obj.businessName || 'Mi Comercio',
+                   commerceName: obj.businessName || 'Mi Comercio',
+                   commerceStatus: 'active'
+                 });
+               } catch (eUpd) {
+                 console.warn("Error actualizando usuario:", eUpd);
+               }
+             }
+
+             // Enviar notificación oficial de aprobación
+             const notifyTargetId = matchedUsers.length > 0 ? matchedUsers[0].id : (obj.userId || cleanEmail);
+             await addDoc(collection(db, 'notificaciones'), {
+               userId: notifyTargetId,
+               userEmail: cleanEmail,
+               type: 'system',
+               title: '🎉 ¡Tu Comercio ha sido Validado y Activado!',
+               text: `¡Felicidades! Tu comercio "${obj.businessName}" ha sido aprobado y validado en Pedidos Listo Partner. Ya puedes ingresar al portal Comercio para gestionar tu catálogo y recibir órdenes.`,
+               date: new Date().toISOString(),
+               createdAt: new Date().toISOString(),
+               read: false
+             });
+
+             // Si el ID no era el correo, enviar también copia indexada por correo por seguridad
+             if (cleanEmail && notifyTargetId !== cleanEmail) {
                await addDoc(collection(db, 'notificaciones'), {
-                 userId: uDoc.id,
+                 userId: cleanEmail,
+                 userEmail: cleanEmail,
                  type: 'system',
                  title: '🎉 ¡Tu Comercio ha sido Validado y Activado!',
-                 text: `¡Felicidades! Tu comercio "${obj.businessName}" ha sido aprobado y validado en Pedidos Listo Partner. Ya puedes ingresar al portal Comercio para recibir órdenes.`,
+                 text: `¡Felicidades! Tu comercio "${obj.businessName}" ha sido aprobado y validado en Pedidos Listo Partner.`,
                  date: new Date().toISOString(),
                  createdAt: new Date().toISOString(),
                  read: false
-               });
-             });
-           } catch (eUser) {}
+               }).catch(() => {});
+             }
+           } catch (eUser) {
+             console.error("Error asignando rol o enviando notificación:", eUser);
+           }
          }
 
          // Marcar alertas/notificaciones asociadas como leídas
@@ -1566,8 +1604,29 @@ export default function AdminPage({ navigate }) {
             return 10;
           };
 
-          // Función para conectar y abrir el portal Comercio Partner de una tienda específica
+          // Función para conectar y abrir el portal Comercio Partner o ver tienda en la App
           const handleOpenStorePortal = (store) => {
+            const currentEmail = (auth?.currentUser?.email || '').toLowerCase().trim();
+            const storeEmail = (store?.email || '').toLowerCase().trim();
+            const isOwner = Boolean(currentEmail && storeEmail && currentEmail === storeEmail);
+
+            if (!isOwner) {
+              // El usuario logueado en Admin NO es el dueño de este comercio.
+              // NO puede ingresar al panel de administración del comercio (Mi Comercio Partner / POS / Subir Platillos).
+              // Solo se abre la tienda en vista cliente pública para visualizar sus datos en la App.
+              try {
+                localStorage.setItem('pedidos_listo_view_mode', 'client');
+                localStorage.removeItem('force_listo_merchant_mode');
+                localStorage.setItem('pedidos_listo_active_store_id', store.id || store.businessName || '');
+              } catch (e) {}
+              showToast(`👁️ Abriendo "${store.businessName || 'Comercio'}" en Vista Cliente (Modo Público)...`);
+              if (navigate) {
+                navigate('mandame');
+              }
+              return;
+            }
+
+            // Si el usuario autenticado realmente ES el dueño registrado de ese comercio:
             try {
               localStorage.setItem('force_listo_merchant_mode', 'true');
               localStorage.setItem('pedidos_listo_view_mode', 'merchant');
@@ -1579,11 +1638,11 @@ export default function AdminPage({ navigate }) {
                 address: `${store.city || 'Santo Domingo'}, RD`,
                 phone: store.phone || '',
                 email: store.email || '',
-                ownerName: `${store.ownerName || ''} ${store.ownerLastName || ''}`
+                ownerName: `${store.ownerName || ''} ${store.ownerLastName || ''}`.trim()
               };
               localStorage.setItem('pedidos_listo_merchant_state', JSON.stringify(updatedState));
             } catch (e) {}
-            showToast(`🏪 Conectando portal Comercio Partner de ${store.businessName || 'Comercio'}...`);
+            showToast(`🏪 Abriendo Mi Comercio Partner de "${store.businessName || 'Comercio'}"...`);
             if (navigate) {
               navigate('mandame');
             }
@@ -2019,12 +2078,31 @@ export default function AdminPage({ navigate }) {
                     {/* BOTONES DE ACCIÓN: IMPRIMIR, PDF, ABRIR COMERCIO PARTNER, HISTORIAL Y WHATSAPP */}
                     <div className="cc-actions" style={{ marginTop: '16px', paddingTop: '12px', borderTop: '1px solid var(--border)', display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between' }}>
                       <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                        <button 
-                          onClick={() => handleOpenStorePortal(req)}
-                          style={{ padding: '10px 14px', borderRadius: '12px', background: 'linear-gradient(135deg, #FF6B00, #E65100)', color: '#FFF', border: 'none', fontWeight: '900', fontSize: '12.5px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px', boxShadow: '0 4px 12px rgba(255,107,0,0.3)' }}
-                        >
-                          🏪 Abrir Comercio Partner
-                        </button>
+                        {(() => {
+                          const currentAuthEmail = (auth?.currentUser?.email || '').toLowerCase().trim();
+                          const isMyStore = Boolean(currentAuthEmail && req.email && currentAuthEmail === req.email.toLowerCase().trim());
+                          return (
+                            <button 
+                              onClick={() => handleOpenStorePortal(req)}
+                              style={{ 
+                                padding: '10px 14px', 
+                                borderRadius: '12px', 
+                                background: isMyStore ? 'linear-gradient(135deg, #FF6B00, #E65100)' : '#0F172A', 
+                                color: '#FFF', 
+                                border: 'none', 
+                                fontWeight: '900', 
+                                fontSize: '12.5px', 
+                                cursor: 'pointer', 
+                                display: 'inline-flex', 
+                                alignItems: 'center', 
+                                gap: '6px', 
+                                boxShadow: isMyStore ? '0 4px 12px rgba(255,107,0,0.3)' : '0 4px 12px rgba(15,23,42,0.25)' 
+                              }}
+                            >
+                              {isMyStore ? '🏪 Abrir Mi Comercio Partner' : '👁️ Ver Tienda (Vista Cliente)'}
+                            </button>
+                          );
+                        })()}
 
                         <button 
                           onClick={() => setSelectedPartnerDetail({...req, monthlySales, monthlyOrders, monthlyDeliveries, monthlyPickups, commission10, netPayout, cutoffDay, commissionPct: commPct})}
@@ -2183,9 +2261,31 @@ export default function AdminPage({ navigate }) {
 
                       {/* Botones de Pie del Modal */}
                       <div style={{ marginTop: '20px', display: 'flex', gap: '10px', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
-                        <button onClick={() => handleOpenStorePortal(selectedPartnerDetail)} style={{ padding: '10px 18px', borderRadius: '12px', background: 'linear-gradient(135deg, #FF6B00, #E65100)', color: '#FFF', border: 'none', fontWeight: '900', fontSize: '13px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px', boxShadow: '0 4px 12px rgba(255,107,0,0.3)' }}>
-                          🏪 Abrir Comercio Partner
-                        </button>
+                        {(() => {
+                          const currentAuthEmail = (auth?.currentUser?.email || '').toLowerCase().trim();
+                          const isMyStore = Boolean(currentAuthEmail && selectedPartnerDetail?.email && currentAuthEmail === selectedPartnerDetail.email.toLowerCase().trim());
+                          return (
+                            <button 
+                              onClick={() => handleOpenStorePortal(selectedPartnerDetail)} 
+                              style={{ 
+                                padding: '10px 18px', 
+                                borderRadius: '12px', 
+                                background: isMyStore ? 'linear-gradient(135deg, #FF6B00, #E65100)' : '#0F172A', 
+                                color: '#FFF', 
+                                border: 'none', 
+                                fontWeight: '900', 
+                                fontSize: '13px', 
+                                cursor: 'pointer', 
+                                display: 'inline-flex', 
+                                alignItems: 'center', 
+                                gap: '6px', 
+                                boxShadow: isMyStore ? '0 4px 12px rgba(255,107,0,0.3)' : '0 4px 12px rgba(15,23,42,0.25)' 
+                              }}
+                            >
+                              {isMyStore ? '🏪 Abrir Mi Comercio Partner' : '👁️ Ver Tienda (Vista Cliente)'}
+                            </button>
+                          );
+                        })()}
 
                         <button onClick={() => printMonthlyClosing(selectedPartnerDetail)} style={{ padding: '10px 18px', borderRadius: '12px', background: '#0D0E15', color: '#FFF', border: 'none', fontWeight: '800', fontSize: '13px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
                           🖨️ Imprimir Cuadre

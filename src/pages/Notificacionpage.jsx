@@ -73,7 +73,9 @@ export default function NotificacionPage({ lang = 'es', navigate, userData }) {
       return;
     }
 
-    const targetIds = userData.email === 'listopatron.app@gmail.com' ? [userData.uid, 'admin'] : [userData.uid];
+    const targetIds = [userData.uid];
+    if (userData.email) targetIds.push(userData.email.toLowerCase().trim());
+    if (userData.email === 'listopatron.app@gmail.com') targetIds.push('admin');
     const q = query(
       collection(db, 'notificaciones'),
       where('userId', 'in', targetIds)

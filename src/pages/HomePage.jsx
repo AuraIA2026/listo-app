@@ -716,7 +716,9 @@ export default function HomePage({ lang, navigate, userRole }) {
 
   useEffect(() => {
     if (!userData?.uid) return
-    const targetIds = userData.email === 'listopatron.app@gmail.com' ? [userData.uid, 'admin'] : [userData.uid]
+    const targetIds = [userData.uid]
+    if (userData.email) targetIds.push(userData.email.toLowerCase().trim())
+    if (userData.email === 'listopatron.app@gmail.com') targetIds.push('admin')
     const q = query(collection(db, 'notificaciones'), where('userId', 'in', targetIds), where('read', '==', false))
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const appNotifs = snapshot.docs.filter(docSnap => {
@@ -751,7 +753,9 @@ export default function HomePage({ lang, navigate, userRole }) {
       setUnreadChats(count)
     }, () => {})
 
-    const targetIds = userData?.email === 'listopatron.app@gmail.com' ? [uid, 'admin'] : [uid]
+    const targetIds = [uid]
+    if (userData?.email) targetIds.push(userData.email.toLowerCase().trim())
+    if (userData?.email === 'listopatron.app@gmail.com') targetIds.push('admin')
     const qNotifs = query(collection(db, 'notificaciones'), where('userId', 'in', targetIds), where('read', '==', false))
     const unsubNotifs = onSnapshot(qNotifs, snap => {
       let tempMsgs = 0
