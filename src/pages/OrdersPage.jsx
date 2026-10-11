@@ -462,22 +462,71 @@ function ReviewModal({ order, lang, onClose, onSubmit }) {
 }
 
 function ReceiptModal({ order, lang, onClose, onApprove }) {
+  const receiptUrl = order.receiptUrl || order.voucherUrl || order.comprobanteUrl || order.receipt;
+  const isPdf = receiptUrl && (receiptUrl.toLowerCase().includes('.pdf') || receiptUrl.startsWith('data:application/pdf'));
+
   return (
-    <div className="review-overlay" onClick={onClose}>
-      <div className="review-modal" onClick={e => e.stopPropagation()}>
+    <div className="review-overlay" onClick={onClose} style={{ zIndex: 1000000 }}>
+      <div className="review-modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 440, width: '92%' }}>
         <button className="review-close" onClick={onClose}>✕</button>
         <div style={{ textAlign:'center', marginBottom:16 }}>
           <span style={{ fontSize:40 }}>{order.paymentMethod==='transfer'?'🏦':'💵'}</span>
-          <h3 style={{ margin:'8px 0', fontSize:18, fontWeight:900, color:'#1A1A2E' }}>{lang==='es'?'Pago Recibido':'Payment Received'}</h3>
-          <p style={{ margin:0, fontSize:14, color:'#666' }}>{order.price}</p>
+          <h3 style={{ margin:'8px 0', fontSize:18, fontWeight:900, color:'#1A1A2E' }}>
+            {lang==='es' ? (order.paymentMethod==='transfer' ? 'Validar Transferencia' : 'Pago en Efectivo') : 'Payment Verification'}
+          </h3>
+          <p style={{ margin:0, fontSize:16, fontWeight:800, color:'#F26000' }}>{order.price || 'RD$0'}</p>
         </div>
-        <div style={{ background:'#FAFAFA', borderRadius:12, padding:16, marginBottom:20, border:'1px solid #eee' }}>
-          {order.paymentMethod==='transfer'
-            ? <><p style={{ fontSize:13, color:'#555', margin:'0 0 8px' }}><strong>Depositante:</strong> {order.depositorName||'No especificado'}</p><p style={{ fontSize:13, color:'#555', margin:'0 0 8px' }}><strong>Banco:</strong> {order.depositBank||'No especificado'}</p><div style={{ width:'100%', height:140, background:'#eee', borderRadius:8, display:'flex', alignItems:'center', justifyContent:'center', color:'#999', fontSize:12, marginTop:12 }}>[Foto de Comprobante Adjunta]</div></>
-            : <><p style={{ fontSize:13, color:'#555', margin:'0 0 8px' }}><strong>Método de pago:</strong> Efectivo</p><p style={{ fontSize:13, color:'#555', margin:'0 0 8px' }}><strong>Estado:</strong> Aprobado</p></>
-          }
+        <div style={{ background:'#FAFAFA', borderRadius:16, padding:16, marginBottom:20, border:'1px solid #E2E8F0' }}>
+          {order.paymentMethod==='transfer' ? (
+            <>
+              <p style={{ fontSize:13, color:'#555', margin:'0 0 6px' }}><strong>Titular que transfirió:</strong> {order.depositorName || 'No especificado'}</p>
+              <p style={{ fontSize:13, color:'#555', margin:'0 0 10px' }}><strong>Banco receptor:</strong> {order.depositBank || 'No especificado'}</p>
+              
+              {receiptUrl ? (
+                <div style={{ marginTop: 10, textAlign: 'center' }}>
+                  <p style={{ fontSize: 12, color: '#334155', fontWeight: 800, marginBottom: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                    <span>📸 Comprobante de Pago Adjunto:</span>
+                  </p>
+                  {isPdf ? (
+                    <a 
+                      href={receiptUrl} 
+                      target="_blank" 
+                      rel="noreferrer"
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '10px 16px', background: '#EFF6FF', color: '#1D4ED8', borderRadius: 10, fontWeight: 700, fontSize: 13, textDecoration: 'none', border: '1px solid #BFDBFE' }}
+                    >
+                      📄 Abrir Comprobante PDF ↗
+                    </a>
+                  ) : (
+                    <div style={{ position: 'relative', borderRadius: 12, overflow: 'hidden', border: '2px solid #CBD5E1', background: '#0F172A', maxHeight: 250 }}>
+                      <img 
+                        src={receiptUrl} 
+                        alt="Comprobante" 
+                        style={{ width: '100%', maxHeight: 250, objectFit: 'contain', display: 'block', cursor: 'pointer' }}
+                        onClick={() => window.open(receiptUrl, '_blank')}
+                      />
+                    </div>
+                  )}
+                  <small style={{ fontSize: 11, color: '#64748B', display: 'block', marginTop: 6 }}>
+                    {lang==='es' ? '💡 Toca la foto para verla en tamaño completo ↗' : 'Click to view full size'}
+                  </small>
+                </div>
+              ) : (
+                <div style={{ width:'100%', padding:'12px', background:'#FEE2E2', borderRadius:10, color:'#991B1B', fontSize:12, textAlign:'center', marginTop:10, fontWeight: 600 }}>
+                  ⚠️ No se adjuntó foto de comprobante
+                </div>
+              )}
+            </>
+          ) : (
+            <>
+              <p style={{ fontSize:13, color:'#555', margin:'0 0 6px' }}><strong>Método de pago:</strong> 💵 Efectivo en mano</p>
+              <p style={{ fontSize:13, color:'#555', margin:'0 0 6px' }}><strong>Monto a cobrar:</strong> {order.price}</p>
+              <div style={{ marginTop: 8, padding: 10, background: '#ECFDF5', borderRadius: 10, color: '#065F46', fontSize: 12, lineHeight: 1.4 }}>
+                💡 El cliente seleccionó pagar directamente en mano en efectivo. Confirma cuando recibas el dinero.
+              </div>
+            </>
+          )}
         </div>
-        <button style={{ width:'100%', padding:14, borderRadius:12, background:'#10B981', color:'white', border:'none', fontWeight:700, fontSize:15, cursor:'pointer' }} onClick={()=>onApprove(order.id)}>
+        <button style={{ width:'100%', padding:14, borderRadius:12, background:'#10B981', color:'white', border:'none', fontWeight:800, fontSize:15, cursor:'pointer', boxShadow:'0 4px 14px rgba(16,185,129,0.35)' }} onClick={()=>onApprove(order.id)}>
           {lang==='es'?'Validar y Completar Trabajo ✅':'Approve & Complete ✅'}
         </button>
       </div>
@@ -931,6 +980,7 @@ export default function OrdersPage({ lang = 'es', navigate, userData, userRole }
       {reciboModalOrder && (
         <ReciboDigitalModal
           order={reciboModalOrder}
+          orderData={reciboModalOrder}
           lang={lang}
           onClose={() => setReciboModalOrder(null)}
         />
