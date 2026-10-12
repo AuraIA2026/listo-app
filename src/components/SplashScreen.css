@@ -24,6 +24,16 @@
 }
 @keyframes pulseGlow { 0% { transform: scale(0.8); opacity: 0.5; } 100% { transform: scale(1.4); opacity: 1; } }
 
+.splash-intro-logo {
+  width: 250px;
+  max-width: 80vw;
+  height: auto;
+  object-fit: contain;
+  display: block;
+  margin: 0 auto;
+  filter: drop-shadow(0 14px 34px rgba(0,0,0,0.35));
+}
+
 .splash-logo {
   width: 200px; height: auto; object-fit: contain;
   filter: drop-shadow(0 12px 32px rgba(0,0,0,0.4));
