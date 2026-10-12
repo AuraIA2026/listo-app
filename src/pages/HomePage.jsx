@@ -89,31 +89,31 @@ const featuredStatic = [
 
 const sections = [
   { id:'mecanico',     image: '/icons/mecanico.webp', icon:'🔧', titleEs:'Mecánico',     titleEn:'Mechanic',    services:[
-    { img:mecanico1,  nameEs:'Diagnóstico vehicular', nameEn:'Vehicle diagnostic',  price:'A convenir',   tag:'Popular' },
+    { img:mecanico1,  nameEs:'Diagnóstico vehicular', nameEn:'Vehicle diagnostic',  price:'A convenir',   tag:'POPULAR', showListoBadge: true },
     { img:mecanico,   nameEs:'Cambio de aceite',      nameEn:'Oil change',          price:'A convenir',   tag:null },
   ]},
   { id:'electricista', image: '/icons/electricista.webp', icon:'⚡', titleEs:'Electricista', titleEn:'Electrician', services:[
-    { img:electrica1, nameEs:'Instalación eléctrica',  nameEn:'Electrical install', price:'A convenir',   tag:'Popular' },
+    { img:electrica1, nameEs:'Instalación eléctrica',  nameEn:'Electrical install', price:'A convenir',   tag:null },
     { img:electrica,  nameEs:'Reparación de circuito', nameEn:'Circuit repair',     price:'A convenir',   tag:null },
   ]},
   { id:'plomero',      image: '/icons/plomero.webp', icon:'🔩', titleEs:'Plomero',      titleEn:'Plumber',     services:[
-    { img:plomero,    nameEs:'Reparación de tubería', nameEn:'Pipe repair',          price:'A convenir',   tag:'Popular' },
+    { img:plomero,    nameEs:'Reparación de tubería', nameEn:'Pipe repair',          price:'A convenir',   tag:'POPULAR', showListoBadge: true },
     { img:refrig,     nameEs:'Refrigeración y A/C',   nameEn:'A/C & Refrigeration', price:'A convenir', tag:'24/7' },
   ]},
   { id:'cerrajero',    image: '/icons/cerrajero.webp', icon:'🔑', titleEs:'Cerrajero',    titleEn:'Locksmith',   services:[
-    { img:cerrajero,  nameEs:'Apertura de puertas',  nameEn:'Door opening',    price:'A convenir',   tag:'Urgente' },
+    { img:cerrajero,  nameEs:'Apertura de puertas',  nameEn:'Door opening',    price:'A convenir',   tag:'URGENTE', showListoBadge: true },
     { img:cerrajero1, nameEs:'Cambio de cerraduras', nameEn:'Lock replacement', price:'A convenir',   tag:null },
   ]},
   { id:'pintor',       image: '/icons/pintor.webp', icon:'🎨', titleEs:'Pintor',       titleEn:'Painter',     services:[
-    { img:pintor,     nameEs:'Pintura interior',   nameEn:'Interior painting', price:'A convenir', tag:'Popular' },
+    { img:pintor,     nameEs:'Pintura interior',   nameEn:'Interior painting', price:'A convenir', tag:'POPULAR', showListoBadge: true },
     { img:pintor1,    nameEs:'Pintura de fachada', nameEn:'Exterior painting', price:'A convenir', tag:null },
   ]},
   { id:'jardinero',    image: '/icons/jardinero.webp', icon:'🌿', titleEs:'Jardinero',    titleEn:'Gardener',    services:[
-    { img:jardinero,  nameEs:'Poda y mantenimiento', nameEn:'Pruning & maintenance', price:'A convenir',   tag:'Popular' },
+    { img:jardinero,  nameEs:'Poda y mantenimiento', nameEn:'Pruning & maintenance', price:'A convenir',   tag:'POPULAR', showListoBadge: true },
     { img:ninera,     nameEs:'Diseño de jardín',     nameEn:'Garden design',         price:'A convenir', tag:null },
   ]},
   { id:'ninera',       image: '/icons/ninera.webp', icon:'👶', titleEs:'Niñera',       titleEn:'Nanny',       services:[
-    { img:ninera,     nameEs:'Cuidado de niños', nameEn:'Child care',          price:'A convenir', tag:'Popular' },
+    { img:ninera,     nameEs:'Cuidado de niños', nameEn:'Child care',          price:'A convenir', tag:'POPULAR', showListoBadge: true },
     { img:ninera1,    nameEs:'Apoyo educativo',  nameEn:'Educational support', price:'A convenir', tag:null },
   ]},
 ]
@@ -1477,6 +1477,102 @@ export default function HomePage({ lang, navigate, userRole }) {
 
       {/* ── LO QUE DICEN NUESTROS CLIENTES (CARRUSEL 20 RESEÑAS) ── */}
       <TestimonialsCarousel lang={lang} navigate={navigate} />
+
+      {/* ── ABARROTES Y SERVICIOS CON ENTREGA HOY (2X2 GRID) ── */}
+      <section className="amz-bento-section">
+        <div className="amz-bento-header">
+          <h2 className="amz-bento-title">
+            🛍️ {lang === 'es' ? 'Abarrotes y servicios con entrega hoy' : 'Same day services'}
+          </h2>
+          <button className="hp-see-all amz-see-all" onClick={() => navigate('search')}>
+            {lang === 'es' ? 'Ver todo ›' : 'See all ›'}
+          </button>
+        </div>
+        <div className="amz-bento-grid">
+          <div className="amz-bento-item" onClick={() => navigate('search', { catToSelect: 'mecanico' })}>
+            <div className="amz-bento-img-wrap">
+              <span className="amz-bento-item-tag" style={{ background: '#CC0C39' }}>🔥 MÁS VENDIDO</span>
+              <span className="bento-listo-badge">Listo</span>
+              <img src={mecanico1} alt="Mecánico" className="amz-bento-img" />
+            </div>
+            <p className="amz-bento-item-title">{lang === 'es' ? 'Diagnóstico Vehicular' : 'Auto Diagnostic'}</p>
+            <p className="amz-bento-item-sub">🤝 {lang === 'es' ? 'A convenir' : 'To agree'}</p>
+          </div>
+
+          <div className="amz-bento-item" onClick={() => navigate('search', { catToSelect: 'electricista' })}>
+            <div className="amz-bento-img-wrap">
+              <span className="amz-bento-item-tag" style={{ background: '#DC2626' }}>⚡ 24/7 URGENTE</span>
+              <span className="bento-listo-badge">Listo</span>
+              <img src={electrica1} alt="Electricista" className="amz-bento-img" />
+            </div>
+            <p className="amz-bento-item-title">{lang === 'es' ? 'Instalación Eléctrica' : 'Electrical Install'}</p>
+            <p className="amz-bento-item-sub">🤝 {lang === 'es' ? 'A convenir' : 'To agree'}</p>
+          </div>
+
+          <div className="amz-bento-item" onClick={() => navigate('search', { catToSelect: 'plomero' })}>
+            <div className="amz-bento-img-wrap">
+              <span className="amz-bento-item-tag" style={{ background: '#B91C1C' }}>🛡️ GARANTIZADO</span>
+              <span className="bento-listo-badge">Listo</span>
+              <img src={plomero} alt="Plomero" className="amz-bento-img" />
+            </div>
+            <p className="amz-bento-item-title">{lang === 'es' ? 'Reparación de Tubería' : 'Pipe Repair'}</p>
+            <p className="amz-bento-item-sub">🤝 {lang === 'es' ? 'A convenir' : 'To agree'}</p>
+          </div>
+
+          <div className="amz-bento-item" onClick={() => navigate('search', { catToSelect: 'cerrajero' })}>
+            <div className="amz-bento-img-wrap">
+              <span className="bento-listo-badge">Listo</span>
+              <img src={cerrajero1} alt="Cerrajero" className="amz-bento-img" />
+            </div>
+            <p className="amz-bento-item-title">{lang === 'es' ? 'Apertura de Puertas' : 'Door Opening'}</p>
+            <p className="amz-bento-item-sub">🤝 {lang === 'es' ? 'A convenir' : 'To agree'}</p>
+          </div>
+        </div>
+      </section>
+
+      {/* ── SECCIONES DE SERVICIOS POR OFICIO (MECÁNICO, ELECTRICISTA, PLOMERO, ETC.) ── */}
+      {sections.map((sec, idx) => {
+        const amzThemes = [
+          { bg: '#FFFFFF', color: '#1E3A8A', card: '#FFF' }, // Mecánico
+          { bg: '#FFFBEB', color: '#92400E', card: '#FFF' }, // Electricista
+          { bg: '#FFFFFF', color: '#1E3A8A', card: '#FFF' }, // Plomero
+          { bg: '#FAF5FF', color: '#4C1D95', card: '#FFF' }, // Cerrajero
+          { bg: '#F0FDF4', color: '#166534', card: '#FFF' }, // Pintor
+          { bg: '#FFF8F3', color: '#C2410C', card: '#FFF' }, // Jardinero
+          { bg: '#FDF4FF', color: '#831843', card: '#FFF' }, // Niñera
+        ];
+        const theme = amzThemes[idx % amzThemes.length];
+
+        return (
+          <section key={sec.id} className="hp-service-section reveal" style={{ background: theme.bg, margin: '6px 0', padding: '8px 0' }}>
+            <div className="hp-sec-header amz-sec-header">
+              <h2 className="hp-sec-title amz-sec-title" style={{ color: theme.color, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                {sec.image ? <img src={sec.image} alt={sec.titleEs} style={{ width: '24px', height: '24px', objectFit: 'contain' }} /> : sec.icon} 
+                {lang === 'es' ? sec.titleEs : sec.titleEn}
+              </h2>
+              <button className="hp-see-all amz-see-all" style={{ color: theme.color }} onClick={() => navigate('search', { catToSelect: sec.id })}>
+                {lang === 'es' ? 'Ver todo ›' : 'See all ›'}
+              </button>
+            </div>
+            <div className="hp-service-cards amz-cards-scroll">
+              {sec.services.map((s, i) => (
+                <div key={i} className="hp-svc-card amz-bento-card" style={{ background: theme.card }} onClick={() => navigate('booking', { specialty: sec.id })}>
+                  <div className="hp-svc-img-wrap">
+                    {s.tag && <span className="hp-svc-tag">{s.tag}</span>}
+                    {s.showListoBadge && <span className="bento-listo-badge">Listo</span>}
+                    <img src={s.img} alt={s.nameEs} className="hp-svc-img" />
+                  </div>
+                  <div className="hp-svc-info">
+                    <p className="hp-svc-name">{lang === 'es' ? s.nameEs : s.nameEn}</p>
+                    <p className="hp-svc-price">{s.price}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        );
+      })}
+
 
 
           <section ref={allProsRef} className={`all-pros-section${allProsVisible ? ' reveal' : ''}`} style={{ marginTop: 0, paddingTop: '2px' }}>
