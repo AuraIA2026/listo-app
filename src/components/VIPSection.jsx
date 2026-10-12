@@ -110,7 +110,13 @@ const demoVipPros = [
 const innerPhotos = [
   { video: '/assets/delivery_rider_video.mp4', titleEs: 'Pedidos Listo — Entrega de Paquetes & Envíos', titleEn: 'Pedidos Listo — Package & Express Delivery', badge: '🚀 PRÓXIMAMENTE 24/7' },
   { video: '/assets/delivery_worker_scooter.mp4', titleEs: 'Pedidos Listo — Delivery en Moto a Toda Velocidad', titleEn: 'Pedidos Listo — High Speed Scooter Delivery', badge: '🛵 PRÓXIMAMENTE' },
-  { titleEs: 'Pedidos Listo — Mandados, Compras & Servicios', titleEn: 'Pedidos Listo — Errands, Shopping & Services', badge: '⏳ MUY PRONTO' }
+  { img: pedidos2Img, titleEs: 'Pedidos Listo — Mandados, Compras & Servicios', titleEn: 'Pedidos Listo — Errands, Shopping & Services', badge: '⏳ MUY PRONTO' }
+]
+
+const innerPhotosNoVideo = [
+  { img: pedidosHeroImg, titleEs: 'Pedidos Listo — Entrega de Paquetes & Envíos', titleEn: 'Pedidos Listo — Package & Express Delivery', badge: '🚀 PRÓXIMAMENTE 24/7' },
+  { img: pedidosBannerImg, titleEs: 'Pedidos Listo — Delivery en Moto a Toda Velocidad', titleEn: 'Pedidos Listo — High Speed Scooter Delivery', badge: '🛵 PRÓXIMAMENTE' },
+  { img: pedidos2Img, titleEs: 'Pedidos Listo — Mandados, Compras & Servicios', titleEn: 'Pedidos Listo — Errands, Shopping & Services', badge: '⏳ MUY PRONTO' }
 ]
 
 export const getProTier = (pro) => {
@@ -441,7 +447,8 @@ export default function VIPSection({
   strictVipOnly = true,
   getProStoryData,
   onOpenStory,
-  userData
+  userData,
+  hideVideo = false
 }) {
   const displayPros = (realVipPros && realVipPros.length > 0) ? realVipPros : demoVipPros
   const containerRef = React.useRef(null)
@@ -449,6 +456,7 @@ export default function VIPSection({
   const [activeInnerSlide, setActiveInnerSlide] = React.useState(0)
   const [isHeroPlaying, setIsHeroPlaying] = React.useState(true)
   const [showProximamenteModal, setShowProximamenteModal] = React.useState(false)
+  const currentInnerSlides = hideVideo ? innerPhotosNoVideo : innerPhotos
 
   const isAdmin = Boolean(
     userData?.email === 'listopatron.app@gmail.com' ||
