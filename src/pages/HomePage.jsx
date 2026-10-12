@@ -260,9 +260,9 @@ function TestimonialsCarousel({ lang, navigate }) {
   if (!t) return null
 
   return (
-    <section ref={ref} className={`testimonials-section${visible ? ' reveal' : ''}`} style={{ marginTop: 0, marginBottom: 0 }}>
-      <div className="hp-sec-header" style={{ margin: '2px 0 4px', padding: '0 4px' }}>
-        <h2 className="hp-sec-title">💬 {lang === 'es' ? 'Lo que dicen nuestros clientes' : 'What our clients say'}</h2>
+    <section ref={ref} className={`testimonials-section${visible ? ' reveal' : ''}`} style={{ marginTop: 0, marginBottom: 0, padding: 0 }}>
+      <div className="hp-sec-header" style={{ margin: '0 0 2px 0', padding: '0 2px' }}>
+        <h2 className="hp-sec-title" style={{ fontSize: '15px', fontWeight: 800, margin: 0, padding: 0, lineHeight: 1.1 }}>💬 {lang === 'es' ? 'Lo que dicen nuestros clientes' : 'What our clients say'}</h2>
       </div>
 
       <div 
@@ -1457,7 +1457,7 @@ export default function HomePage({ lang, navigate, userRole }) {
         className="store-ribbon-banner"
         onClick={() => window.open('https://listopatron.com.do/?page=shop', '_blank')}
         title={lang === 'es' ? 'Visitar la Tienda Web de Listo Patrón' : 'Visit Listo Patrón Web Store'}
-        style={{ marginTop: '4px', marginBottom: '2px' }}
+        style={{ marginTop: '0px', marginBottom: '0px' }}
       >
         <div className="store-ribbon-content">
           <span className="store-ribbon-icon">🛍️</span>
@@ -1479,8 +1479,8 @@ export default function HomePage({ lang, navigate, userRole }) {
       <TestimonialsCarousel lang={lang} navigate={navigate} />
 
 
-          <section ref={allProsRef} className={`all-pros-section${allProsVisible ? ' reveal' : ''}`} style={{ marginTop: '4px' }}>
-            <div className="hp-sec-header" style={{ marginTop: 2, marginBottom: 8 }}>
+          <section ref={allProsRef} className={`all-pros-section${allProsVisible ? ' reveal' : ''}`} style={{ marginTop: 0, paddingTop: '2px' }}>
+            <div className="hp-sec-header" style={{ marginTop: 0, marginBottom: 4 }}>
               <h2 className="hp-sec-title">👥 {lang === 'es' ? 'Todos los Profesionales' : 'All Professionals'}</h2>
               <span className="pros-count">{filteredPros.length} {lang === 'es' ? 'disponibles' : 'available'}</span>
             </div>
