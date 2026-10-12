@@ -87,44 +87,46 @@ const featuredStatic = [
   { id: '6', nameEs: 'Carmen Díaz', nameEn: 'Carmen Díaz', specEs: 'Pintor', specEn: 'Painter', rating: 4.6, reviews: 78, price: 'A convenir', img: pintor1, badge: null, avail: true }
 ]
 
+export const getProPrimaryCategory = (pro) => {
+  if (!pro) return null;
+  const name = String(pro.name || pro.verificacion?.nombre || '').toLowerCase().trim();
+  const cat = String(pro.category || '').toLowerCase().trim();
+  const esp = String(pro.especialidad || '').toLowerCase().trim();
+  const vesp = String(pro.verificacion?.especialidad || '').toLowerCase().trim();
+
+  // 1. Prioridad por nombre explícito (ej: "Juan Plomero")
+  if (name.includes('plomer') || name.includes('plumb')) return 'plomero';
+  if (name.includes('electri')) return 'electricista';
+  if (name.includes('mecanic') || name.includes('mechanic')) return 'mecanico';
+  if (name.includes('cerraj')) return 'cerrajero';
+  if (name.includes('pintor')) return 'pintor';
+  if (name.includes('jardin')) return 'jardinero';
+  if (name.includes('niner') || name.includes('nann')) return 'ninera';
+  if (name.includes('refrig') || name.includes('aire')) return 'refrigeracion';
+
+  // 2. Desambiguación Refrigeración vs Mecánico
+  if (cat.includes('refrig') || cat.includes('aire') || esp.includes('refrig') || esp.includes('aire') || vesp.includes('aire')) {
+    return 'refrigeracion';
+  }
+
+  // 3. Mapeo estricto por campos de categoría y especialidad
+  const combined = `${cat} ${esp} ${vesp}`.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+
+  if (combined.includes('plomer') || combined.includes('plumb') || combined.includes('fontan')) return 'plomero';
+  if (combined.includes('electri')) return 'electricista';
+  if (combined.includes('refrig') || combined.includes('ac ') || combined.includes('aire')) return 'refrigeracion';
+  if (combined.includes('mecanic') || combined.includes('mechanic') || combined.includes('automotriz') || combined.includes('taller')) return 'mecanico';
+  if (combined.includes('cerraj') || combined.includes('locksmith')) return 'cerrajero';
+  if (combined.includes('pintor') || combined.includes('painter') || combined.includes('pintura')) return 'pintor';
+  if (combined.includes('jardin') || combined.includes('garden') || combined.includes('poda')) return 'jardinero';
+  if (combined.includes('niner') || combined.includes('nann') || combined.includes('babysit') || combined.includes('cuidado de nin')) return 'ninera';
+
+  return null;
+};
+
 export const matchesCategorySlug = (pro, slug) => {
   if (!pro || !slug) return false;
-  const fields = [
-    pro.category,
-    pro.especialidad,
-    pro.verificacion?.especialidad,
-    pro.subCategory,
-    pro.profession,
-    pro.specEs,
-    pro.specEn
-  ].filter(Boolean).map(s => String(s).toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, ""));
-
-  const fullText = fields.join(' ');
-  if (!fullText) return false;
-
-  const s = slug.toLowerCase().trim();
-  if (s === 'mecanico') {
-    return fullText.includes('mecanic') || fullText.includes('mechanic') || fullText.includes('automotriz') || fullText.includes('taller vehicular');
-  }
-  if (s === 'electricista') {
-    return fullText.includes('electri');
-  }
-  if (s === 'plomero') {
-    return fullText.includes('plomer') || fullText.includes('plumb') || fullText.includes('fontan');
-  }
-  if (s === 'cerrajero') {
-    return fullText.includes('cerraj') || fullText.includes('locksmith') || fullText.includes('cerradur');
-  }
-  if (s === 'pintor') {
-    return fullText.includes('pintor') || fullText.includes('painter') || fullText.includes('pintura');
-  }
-  if (s === 'jardinero') {
-    return fullText.includes('jardin') || fullText.includes('garden') || fullText.includes('poda');
-  }
-  if (s === 'ninera') {
-    return fullText.includes('niner') || fullText.includes('nann') || fullText.includes('babysit') || fullText.includes('cuidado de nin');
-  }
-  return fullText.includes(s);
+  return getProPrimaryCategory(pro) === slug.toLowerCase().trim();
 };
 
 const sections = [
@@ -138,7 +140,11 @@ const sections = [
   ]},
   { id:'plomero',      image: '/icons/plomero.webp', icon:'🔩', titleEs:'Plomero',      titleEn:'Plumber',     services:[
     { img:plomero,    nameEs:'Reparación de tubería', nameEn:'Pipe repair',          price:'A convenir',   tag:'POPULAR', showListoBadge: true },
-    { img:refrig,     nameEs:'Refrigeración y A/C',   nameEn:'A/C & Refrigeration', price:'A convenir', tag:'24/7' },
+    { img:plomero,    nameEs:'Instalación sanitaria', nameEn:'Plumbing install',     price:'A convenir',   tag:null },
+  ]},
+  { id:'refrigeracion',image: '/icons/refrigeracion.webp', icon:'❄️', titleEs:'Refrigeración y A/C', titleEn:'A/C & Refrigeration', services:[
+    { img:refrig,     nameEs:'Instalación de A/C',    nameEn:'A/C Installation',    price:'A convenir',   tag:'POPULAR', showListoBadge: true },
+    { img:refrig,     nameEs:'Mantenimiento de Aire', nameEn:'A/C Maintenance',     price:'A convenir',   tag:'24/7' },
   ]},
   { id:'cerrajero',    image: '/icons/cerrajero.webp', icon:'🔑', titleEs:'Cerrajero',    titleEn:'Locksmith',   services:[
     { img:cerrajero,  nameEs:'Apertura de puertas',  nameEn:'Door opening',    price:'A convenir',   tag:'URGENTE', showListoBadge: true },
@@ -150,13 +156,12 @@ const sections = [
   ]},
   { id:'jardinero',    image: '/icons/jardinero.webp', icon:'🌿', titleEs:'Jardinero',    titleEn:'Gardener',    services:[
     { img:jardinero,  nameEs:'Poda y mantenimiento', nameEn:'Pruning & maintenance', price:'A convenir',   tag:'POPULAR', showListoBadge: true },
-    { img:ninera,     nameEs:'Diseño de jardín',     nameEn:'Garden design',         price:'A convenir', tag:null },
   ]},
   { id:'ninera',       image: '/icons/ninera.webp', icon:'👶', titleEs:'Niñera',       titleEn:'Nanny',       services:[
     { img:ninera,     nameEs:'Cuidado de niños', nameEn:'Child care',          price:'A convenir', tag:'POPULAR', showListoBadge: true },
     { img:ninera1,    nameEs:'Apoyo educativo',  nameEn:'Educational support', price:'A convenir', tag:null },
   ]},
-]
+];
 
 function StarRating({ rating }) {
   if (!rating || rating <= 0) return null;
@@ -1598,12 +1603,13 @@ export default function HomePage({ lang, navigate, userRole }) {
         </div>
       </section>
 
-      {/* ── SECCIONES DE SERVICIOS POR OFICIO (MECÁNICO, ELECTRICISTA, PLOMERO, ETC.) ── */}
+      {/* ── SECCIONES DE SERVICIOS POR OFICIO (MECÁNICO, ELECTRICISTA, PLOMERO, REFRIGERACIÓN, ETC.) ── */}
       {sections.map((sec, idx) => {
         const amzThemes = [
           { bg: '#FFFFFF', color: '#1E3A8A', card: '#FFF' }, // Mecánico
           { bg: '#FFFBEB', color: '#92400E', card: '#FFF' }, // Electricista
           { bg: '#FFFFFF', color: '#1E3A8A', card: '#FFF' }, // Plomero
+          { bg: '#F0F9FF', color: '#0369A1', card: '#FFF' }, // Refrigeración y A/C
           { bg: '#FAF5FF', color: '#4C1D95', card: '#FFF' }, // Cerrajero
           { bg: '#F0FDF4', color: '#166534', card: '#FFF' }, // Pintor
           { bg: '#FFF8F3', color: '#C2410C', card: '#FFF' }, // Jardinero
@@ -1611,9 +1617,31 @@ export default function HomePage({ lang, navigate, userRole }) {
         ];
         const theme = amzThemes[idx % amzThemes.length];
 
-        // Buscar profesionales reales que coincidan con este oficio
-        const matchingPros = (allProsToUse || []).filter(p => matchesCategorySlug(p, sec.id));
-        const fallbackDefaultImg = sec.services[0]?.img || sec.image;
+        // 1. Filtrar SOLO profesionales que corresponden exactamente a esta profesión/oficio
+        const matchingPros = (allProsToUse || [])
+          .filter(p => matchesCategorySlug(p, sec.id))
+          .sort((a, b) => {
+            // A) Profesionales con foto real verificada primero
+            const aPhoto = Boolean(a.img || a.photoURL);
+            const bPhoto = Boolean(b.img || b.photoURL);
+            if (aPhoto && !bPhoto) return -1;
+            if (!aPhoto && bPhoto) return 1;
+            // B) Verificados primero
+            if (a.isVerified && !b.isVerified) return -1;
+            if (!a.isVerified && b.isVerified) return 1;
+            // C) Nuevos postulantes
+            if (a.isPostulated && !b.isPostulated) return -1;
+            if (!a.isPostulated && b.isPostulated) return 1;
+            // D) Mejor calificación
+            return (Number(b.rating) || 5.0) - (Number(a.rating) || 5.0);
+          });
+
+        // 2. Control de fotos únicas para evitar repeticiones en la misma fila
+        const stockPool = [
+          ...(sec.services || []).map(s => s.img).filter(Boolean),
+          sec.image
+        ].filter(Boolean);
+        const usedImgsInRow = new Set();
 
         return (
           <section key={sec.id} className="hp-service-section reveal" style={{ background: theme.bg, margin: '6px 0', padding: '8px 0' }}>
@@ -1639,69 +1667,126 @@ export default function HomePage({ lang, navigate, userRole }) {
               </button>
             </div>
             <div className="hp-service-cards amz-cards-scroll">
-              {/* Profesionales reales que se postulan y aparecen dinámicamente */}
-              {matchingPros.map((pro) => (
-                <div 
-                  key={`pro-${pro.id}`} 
-                  className="hp-svc-card amz-bento-card" 
-                  style={{ background: theme.card }} 
-                  onClick={() => navigate('booking', { professional: pro })}
-                >
-                  <div className="hp-svc-img-wrap" style={{ position: 'relative' }}>
-                    <span 
-                      className="hp-svc-tag" 
-                      style={{ 
-                        background: pro.isPostulated ? '#2563EB' : (pro.isVerified ? '#16A34A' : '#EA580C') 
-                      }}
-                    >
-                      {pro.badge || (pro.isPostulated ? '🚀 NUEVO' : (pro.isVerified ? '🛡️ VERIFICADO' : '⭐ PRO'))}
-                    </span>
-                    <span className="bento-listo-badge">Listo</span>
-                    <img 
-                      src={pro.img || pro.photoURL || fallbackDefaultImg} 
-                      alt={pro.nameEs || pro.name} 
-                      className="hp-svc-img"
-                      onError={(e) => { e.currentTarget.src = fallbackDefaultImg; }}
-                    />
-                  </div>
-                  <div className="hp-svc-info">
-                    <p className="hp-svc-name" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '4px' }}>
-                      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        {pro.nameEs || pro.name}
-                      </span>
-                      {pro.isVerified && <span title="Verificado" style={{ color: '#10B981', fontSize: '13px', flexShrink: 0 }}>✓</span>}
-                    </p>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '2px' }}>
-                      <p className="hp-svc-price" style={{ margin: 0 }}>
-                        {lang === 'es' ? 'A convenir' : 'To agree'}
-                      </p>
-                      <span style={{ fontSize: '11px', fontWeight: '800', color: '#B45309', display: 'flex', alignItems: 'center', gap: '2px' }}>
-                        ⭐ {(Number(pro.rating) || 5.0).toFixed(1)}
-                      </span>
-                    </div>
-                    {pro.location && (
-                      <p style={{ margin: '3px 0 0', fontSize: '10.5px', color: '#6B7280', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        📍 {pro.location}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              ))}
+              {/* Profesionales reales que coinciden y aparecen según se van postulando */}
+              {matchingPros.map((pro) => {
+                let cardImg = null;
+                const rawPhoto = pro.img || pro.photoURL;
 
-              {/* Si hay menos de 2 profesionales reales en la categoría, completar con tarjetas de servicio demo */}
-              {(matchingPros.length < 2 ? sec.services.slice(0, 2 - matchingPros.length) : []).map((s, i) => (
-                <div key={`demo-${i}`} className="hp-svc-card amz-bento-card" style={{ background: theme.card }} onClick={() => navigate('booking', { specialty: sec.id })}>
-                  <div className="hp-svc-img-wrap">
-                    {s.tag && <span className="hp-svc-tag">{s.tag}</span>}
-                    {s.showListoBadge && <span className="bento-listo-badge">Listo</span>}
-                    <img src={s.img} alt={s.nameEs} className="hp-svc-img" />
+                // Si el profesional tiene su propia foto real y no está duplicada en la fila
+                if (rawPhoto && !usedImgsInRow.has(rawPhoto)) {
+                  cardImg = rawPhoto;
+                  usedImgsInRow.add(rawPhoto);
+                }
+
+                // Si no tiene foto real, buscar una foto de stock de la categoría que no se haya usado en esta fila
+                if (!cardImg) {
+                  const availableStock = stockPool.find(img => !usedImgsInRow.has(img));
+                  if (availableStock) {
+                    cardImg = availableStock;
+                    usedImgsInRow.add(availableStock);
+                  }
+                }
+
+                return (
+                  <div 
+                    key={`pro-${pro.id}`} 
+                    className="hp-svc-card amz-bento-card" 
+                    style={{ background: theme.card }} 
+                    onClick={() => navigate('booking', { professional: pro })}
+                  >
+                    <div className="hp-svc-img-wrap" style={{ position: 'relative' }}>
+                      <span 
+                        className="hp-svc-tag" 
+                        style={{ 
+                          background: pro.isPostulated ? '#2563EB' : (pro.isVerified ? '#16A34A' : '#EA580C') 
+                        }}
+                      >
+                        {pro.badge || (pro.isPostulated ? '🚀 NUEVO' : (pro.isVerified ? '🛡️ VERIFICADO' : '⭐ PRO'))}
+                      </span>
+                      <span className="bento-listo-badge">Listo</span>
+                      {cardImg ? (
+                        <img 
+                          src={cardImg} 
+                          alt={pro.nameEs || pro.name} 
+                          className="hp-svc-img"
+                          onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                        />
+                      ) : (
+                        <div style={{
+                          width: '100%',
+                          height: '100%',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          background: 'linear-gradient(135deg, #1E293B, #0F172A)',
+                          color: '#FFF',
+                          userSelect: 'none'
+                        }}>
+                          <div style={{
+                            width: '56px',
+                            height: '56px',
+                            borderRadius: '50%',
+                            background: 'linear-gradient(135deg, #F26000, #FF8534)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: '22px',
+                            fontWeight: '900',
+                            color: '#FFF',
+                            boxShadow: '0 4px 14px rgba(242,96,0,0.4)',
+                            marginBottom: '6px'
+                          }}>
+                            {(pro.nameEs || pro.name || 'P').substring(0, 2).toUpperCase()}
+                          </div>
+                          <span style={{ fontSize: '11px', fontWeight: '800', opacity: 0.85, letterSpacing: '0.5px' }}>
+                            {sec.icon} {lang === 'es' ? 'PROFESIONAL' : 'PROFESSIONAL'}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="hp-svc-info">
+                      <p className="hp-svc-name" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '4px' }}>
+                        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {pro.nameEs || pro.name}
+                        </span>
+                        {pro.isVerified && <span title="Verificado" style={{ color: '#10B981', fontSize: '13px', flexShrink: 0 }}>✓</span>}
+                      </p>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '2px' }}>
+                        <p className="hp-svc-price" style={{ margin: 0 }}>
+                          {lang === 'es' ? 'A convenir' : 'To agree'}
+                        </p>
+                        <span style={{ fontSize: '11px', fontWeight: '800', color: '#B45309', display: 'flex', alignItems: 'center', gap: '2px' }}>
+                          ⭐ {(Number(pro.rating) || 5.0).toFixed(1)}
+                        </span>
+                      </div>
+                      {pro.location && (
+                        <p style={{ margin: '3px 0 0', fontSize: '10.5px', color: '#6B7280', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          📍 {pro.location}
+                        </p>
+                      )}
+                    </div>
                   </div>
-                  <div className="hp-svc-info">
-                    <p className="hp-svc-name">{lang === 'es' ? s.nameEs : s.nameEn}</p>
-                    <p className="hp-svc-price">{s.price}</p>
+                );
+              })}
+
+              {/* Si hay menos de 2 profesionales en la categoría, completar con tarjetas de servicio demo sin repetir fotos */}
+              {(matchingPros.length < 2 ? sec.services.filter(s => !usedImgsInRow.has(s.img)).slice(0, 2 - matchingPros.length) : []).map((s, i) => {
+                usedImgsInRow.add(s.img);
+                return (
+                  <div key={`demo-${i}`} className="hp-svc-card amz-bento-card" style={{ background: theme.card }} onClick={() => navigate('booking', { specialty: sec.id })}>
+                    <div className="hp-svc-img-wrap">
+                      {s.tag && <span className="hp-svc-tag">{s.tag}</span>}
+                      {s.showListoBadge && <span className="bento-listo-badge">Listo</span>}
+                      <img src={s.img} alt={s.nameEs} className="hp-svc-img" />
+                    </div>
+                    <div className="hp-svc-info">
+                      <p className="hp-svc-name">{lang === 'es' ? s.nameEs : s.nameEn}</p>
+                      <p className="hp-svc-price">{s.price}</p>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </section>
         );
