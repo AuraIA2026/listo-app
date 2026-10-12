@@ -11,6 +11,9 @@ import plomero    from '../assets/pros/Plomero.jpg'
 import cerrajero1 from '../assets/pros/Cerrajero1.jpg'
 import jardinero  from '../assets/pros/Jardinero.jpg'
 import logoListo  from '../assets/logo-mamey.png'
+import pedidosHeroImg from '../assets/pedidos_listo_hero.png'
+import pedidosBannerImg from '../assets/pedidos-listo-banner-oficial.png'
+import pedidos2Img from '../assets/pedidos-listo-2.png'
 
 const demoVipPros = [
   {
@@ -475,7 +478,7 @@ export default function VIPSection({
 
     const innerTimer = setInterval(() => {
       if (isHeroPlaying) {
-        setActiveInnerSlide((prev) => (prev + 1) % innerPhotos.length)
+        setActiveInnerSlide((prev) => (prev + 1) % currentInnerSlides.length)
       }
     }, 6000) // Duración de al menos 6 segundos antes de cambiar el slide
 
@@ -641,9 +644,9 @@ export default function VIPSection({
               className="amz-inner-carousel-track"
               style={{ transform: `translateX(-${activeInnerSlide * 100}%)` }}
             >
-              {innerPhotos.map((item, idx) => (
+              {currentInnerSlides.map((item, idx) => (
                 <div key={idx} className="amz-inner-slide">
-                  {item.video ? (
+                  {(!hideVideo && item.video) ? (
                     <video 
                       src={item.video} 
                       autoPlay 
@@ -654,7 +657,12 @@ export default function VIPSection({
                       style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
                     />
                   ) : (
-                    <img src={item.img} alt={item.titleEs} className="amz-inner-slide-img" />
+                    <img 
+                      src={item.img || pedidosHeroImg} 
+                      alt={item.titleEs} 
+                      className="amz-inner-slide-img" 
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                    />
                   )}
                   <div className="amz-inner-slide-overlay">
                     <span className="amz-inner-slide-badge" style={{ background: '#FFD700', color: '#1A1A2E', fontWeight: '900' }}>
@@ -668,7 +676,7 @@ export default function VIPSection({
 
             {/* Dots de navegación del carrusel interno */}
             <div className="amz-inner-dots">
-              {innerPhotos.map((_, idx) => (
+              {currentInnerSlides.map((_, idx) => (
                 <span 
                   key={idx} 
                   className={`amz-inner-dot ${idx === activeInnerSlide ? 'active' : ''}`}

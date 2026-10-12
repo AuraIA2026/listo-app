@@ -1093,6 +1093,7 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
         getProStoryData={getProStoryData}
         onOpenStory={handleOpenStoryViewer}
         userData={userData}
+        hideVideo={true}
       />
 
       <PromoBanner lang={lang} userRole={userRole} />
