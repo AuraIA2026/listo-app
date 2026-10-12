@@ -9,6 +9,7 @@ import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import './TrackingPage.css'
 import vanImg from '../assets/van_topdown.png'
+import motoListoImg from '../assets/moto_pedidos_listo_topdown.png'
 import { ReportModal } from './ChatPage'
 import CallModal from '../components/CallModal'
 import FloatingChat from '../components/FloatingChat'
@@ -44,14 +45,15 @@ const createWorkerIcon = () => L.divIcon({
   iconSize: [60, 60], iconAnchor: [30, 30], popupAnchor: [0, -30],
 })
 
-const createMotoIcon = () => L.divIcon({
+const createMotoIcon = (imgSrc = motoListoImg) => L.divIcon({
   className: 'leaflet-moto-icon',
   html: `
-    <div style="background:#FF6000;border-radius:50%;padding:4px;border:3px solid #FFF;box-shadow:0 4px 14px rgba(255,96,0,0.6);display:flex;align-items:center;justify-content:center;width:46px;height:46px;animation:workerFloat 2s ease-in-out infinite alternate;">
-      <span style="font-size:24px;line-height:1;">🛵</span>
+    <div class="moto-marker-container">
+      <div class="moto-marker-pulse"></div>
+      <img src="${imgSrc}" alt="moto Pedidos Listo" class="moto-marker-img" />
     </div>
   `,
-  iconSize: [46, 46], iconAnchor: [23, 23], popupAnchor: [0, -23],
+  iconSize: [52, 52], iconAnchor: [26, 26], popupAnchor: [0, -26],
 })
 
 const CLIENT_POS    = [18.4745, -69.9310]
@@ -123,12 +125,31 @@ function SmoothMarker({ targetPos, icon, children, visible = true, isVan = false
       
       if (markerRef.current) {
         markerRef.current.setLatLng([lat, lng])
+        const el = markerRef.current.getElement()
+        if (el) {
+          const img = el.querySelector('.moto-marker-img, .van-marker-img')
+          if (img) {
+            img.style.transform = `rotate(${rotationRef.current}deg)`
+          }
+        }
       }
       if (t < 1) animFrameRef.current = requestAnimationFrame(animate)
     }
     animFrameRef.current = requestAnimationFrame(animate)
     return () => { if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current) }
   }, [targetPos[0], targetPos[1]]) // eslint-disable-line
+
+  useEffect(() => {
+    if (markerRef.current) {
+      const el = markerRef.current.getElement()
+      if (el) {
+        const img = el.querySelector('.moto-marker-img, .van-marker-img')
+        if (img) {
+          img.style.transform = `rotate(${rotationRef.current}deg)`
+        }
+      }
+    }
+  }, [icon])
   
   if (!visible) return null
   // eslint-disable-next-line react-hooks/refs
@@ -275,7 +296,10 @@ export default function TrackingPage({ lang = 'es', navigate, professional, user
   const targetAvT  = professional?.clientName?.substring(0,2).toUpperCase() || professional?.avatar || '👤'
   const targetCat  = professional?.specialty || professional?.proSpecialty || professional?.category || 'Servicio'
 
-  const isDelivery = professional?.type === 'delivery' || Boolean(professional?.items && professional?.items.length > 0)
+  const isDelivery = professional?.type === 'delivery' || 
+                     professional?.type === 'pedidos_listo' || 
+                     Boolean(professional?.items && professional?.items.length > 0) || 
+                     Boolean(professional?.storeName || professional?.commerceName || professional?.storeId)
   const pinOTP = professional?.pinOTP || professional?.otp || '4821'
   const deliveryAddress = professional?.deliveryAddress || professional?.address || 'Dirección de entrega'
   const deliveryNotes = professional?.deliveryNotes || professional?.notes || ''
@@ -288,7 +312,9 @@ export default function TrackingPage({ lang = 'es', navigate, professional, user
     name:     targetName,
     avatar:   targetAvT,
     color:    professional?.color    || '#F26000',
-    category: isDelivery ? '🛵 Repartidor Mándame Express' : targetCat,
+    category: isDelivery 
+      ? (professional?.storeName ? `🛵 Delivery Pedidos Listo (${professional.storeName})` : '🛵 Repartidor Pedidos Listo') 
+      : targetCat,
     rating:   professional?.rating   || 5.0,
     phone:    professional?.phone    || professional?.clientPhone || professional?.proPhone || null,
     uid:      userRole === 'pro' ? (professional?.clientId || professional?.otherUid) : (professional?.proId || professional?.otherUid || professional?.uid),
