@@ -107,6 +107,11 @@ const demoVipPros = [
   }
 ]
 
+const innerPhotos = [
+  { video: '/assets/delivery_rider_video.mp4', titleEs: 'Pedidos Listo — Entrega de Paquetes & Envíos', titleEn: 'Pedidos Listo — Package & Express Delivery', badge: '🚀 PRÓXIMAMENTE 24/7' },
+  { video: '/assets/delivery_worker_scooter.mp4', titleEs: 'Pedidos Listo — Delivery en Moto a Toda Velocidad', titleEn: 'Pedidos Listo — High Speed Scooter Delivery', badge: '🛵 PRÓXIMAMENTE' },
+  { img: pedidos2Img, titleEs: 'Pedidos Listo — Mandados, Compras & Servicios', titleEn: 'Pedidos Listo — Errands, Shopping & Services', badge: '⏳ MUY PRONTO' }
+]
 
 export const getProTier = (pro) => {
   if (!pro) return 'standard';
@@ -442,6 +447,8 @@ export default function VIPSection({
   const displayPros = (realVipPros && realVipPros.length > 0) ? realVipPros : demoVipPros
   const containerRef = React.useRef(null)
   const isInteracting = React.useRef(false)
+  const [activeInnerSlide, setActiveInnerSlide] = React.useState(0)
+  const [isHeroPlaying, setIsHeroPlaying] = React.useState(true)
   const [showProximamenteModal, setShowProximamenteModal] = React.useState(false)
   
   const isAdmin = Boolean(
@@ -469,10 +476,21 @@ export default function VIPSection({
         }
       }
     }, 8000)
+
+    let innerTimer;
+    if (!hideVideo) {
+      innerTimer = setInterval(() => {
+        if (isHeroPlaying) {
+          setActiveInnerSlide((prev) => (prev + 1) % innerPhotos.length)
+        }
+      }, 6000)
+    }
+
     return () => {
       clearInterval(timer)
+      if (innerTimer) clearInterval(innerTimer)
     }
-  }, [])
+  }, [hideVideo, isHeroPlaying])
 
   return (
     <section className="vip-hero-section">
@@ -599,7 +617,7 @@ export default function VIPSection({
             </span>
           </div>
 
-          {/* Foto Fija Exclusiva de Pedidos Listo */}
+          {/* Carrusel Deslizante de Videos (Inicio) / Foto Fija (Buscar) */}
           <div className="amz-inner-carousel-wrapper" style={{ zIndex: 2, position: 'relative' }}>
             <div style={{
               position: 'absolute',
@@ -625,22 +643,74 @@ export default function VIPSection({
               <span>🚀</span> PRÓXIMAMENTE
             </div>
 
-            <div className="amz-inner-slide" style={{ width: '100%', borderRadius: '12px', overflow: 'hidden' }}>
-              <img 
-                src={pedidosHeroImg} 
-                alt="Pedidos Listo" 
-                className="amz-inner-slide-img" 
-                style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-              />
-              <div className="amz-inner-slide-overlay">
-                <span className="amz-inner-slide-badge" style={{ background: '#FFD700', color: '#1A1A2E', fontWeight: '900' }}>
-                  🚀 PRÓXIMAMENTE 24/7
-                </span>
-                <span className="amz-inner-slide-title">
-                  {lang === 'es' ? 'Pedidos Listo — Entrega de Paquetes & Envíos' : 'Pedidos Listo — Package & Express Delivery'}
-                </span>
+            {hideVideo ? (
+              <div className="amz-inner-slide" style={{ width: '100%', borderRadius: '12px', overflow: 'hidden' }}>
+                <img 
+                  src={pedidosHeroImg} 
+                  alt="Pedidos Listo" 
+                  className="amz-inner-slide-img" 
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                />
+                <div className="amz-inner-slide-overlay">
+                  <span className="amz-inner-slide-badge" style={{ background: '#FFD700', color: '#1A1A2E', fontWeight: '900' }}>
+                    🚀 PRÓXIMAMENTE 24/7
+                  </span>
+                  <span className="amz-inner-slide-title">
+                    {lang === 'es' ? 'Pedidos Listo — Entrega de Paquetes & Envíos' : 'Pedidos Listo — Package & Express Delivery'}
+                  </span>
+                </div>
               </div>
-            </div>
+            ) : (
+              <>
+                <div 
+                  className="amz-inner-carousel-track"
+                  style={{ transform: `translateX(-${activeInnerSlide * 100}%)` }}
+                >
+                  {innerPhotos.map((item, idx) => (
+                    <div key={idx} className="amz-inner-slide">
+                      {item.video ? (
+                        <video 
+                          src={item.video} 
+                          autoPlay 
+                          loop 
+                          muted 
+                          playsInline 
+                          className="amz-inner-slide-img" 
+                          style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                        />
+                      ) : (
+                        <img 
+                          src={item.img || pedidosHeroImg} 
+                          alt={item.titleEs} 
+                          className="amz-inner-slide-img" 
+                          style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                        />
+                      )}
+                      <div className="amz-inner-slide-overlay">
+                        <span className="amz-inner-slide-badge" style={{ background: '#FFD700', color: '#1A1A2E', fontWeight: '900' }}>
+                          {item.badge}
+                        </span>
+                        <span className="amz-inner-slide-title">{lang === 'es' ? item.titleEs : item.titleEn}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Dots de navegación del carrusel interno */}
+                <div className="amz-inner-dots">
+                  {innerPhotos.map((_, idx) => (
+                    <span 
+                      key={idx} 
+                      className={`amz-inner-dot ${idx === activeInnerSlide ? 'active' : ''}`}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setActiveInnerSlide(idx)
+                      }}
+                    />
+                  ))}
+                </div>
+              </>
+            )}
           </div>
 
           {/* Typography exclusivo de Pedidos Listo */}
