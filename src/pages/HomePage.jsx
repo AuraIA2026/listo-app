@@ -47,14 +47,13 @@ import logoListo  from '../assets/logo-mamey.png'
 import pedidosListo2Img from '../assets/pedidos-listo-2.png'
 
 const testimonials = [
-  { nameEs:'María González',  photo: electrica1, rating:5, dateEs:'Hace 2 días',    dateEn:'2 days ago',   specEs:'Electricista', specEn:'Electrician', textEs:'Excelente servicio, llegó puntual y resolvió el problema en menos de una hora. Lo recomiendo 100%.', textEn:'Excellent service, arrived on time and fixed the problem in less than an hour. 100% recommended.' },
-  { nameEs:'Juan Pérez',      photo: plomero,    rating:5, dateEs:'Hace 5 días',    dateEn:'5 days ago',   specEs:'Plomero',      specEn:'Plumber',      textEs:'Muy profesional y limpio en su trabajo. El precio fue justo y quedé muy satisfecho con el resultado.', textEn:'Very professional and clean work. The price was fair and I was very satisfied with the result.' },
-  { nameEs:'Carmen Díaz',     photo: pintor1,    rating:4, dateEs:'Hace 1 semana',  dateEn:'1 week ago',   specEs:'Pintora',      specEn:'Painter',      textEs:'Buen trabajo en general. La pintura quedó perfecta, aunque tardó un poco más de lo previsto.', textEn:'Good work overall. The paint job was perfect, though it took a bit longer than expected.' },
-  { nameEs:'Roberto Núñez',   photo: cerrajero1, rating:5, dateEs:'Hace 2 semanas', dateEn:'2 weeks ago',  specEs:'Cerrajero',    specEn:'Locksmith',    textEs:'Me quedé encerrado a las 11pm y llegó en 20 minutos. Un salvavidas, literalmente. Gracias!', textEn:'I was locked out at 11pm and he arrived in 20 minutes. A lifesaver, literally. Thank you!' },
-  { nameEs:'Luisa Martínez',  photo: mecanico1,  rating:5, dateEs:'Hace 3 semanas', dateEn:'3 weeks ago',  specEs:'Mecánico',     specEn:'Mechanic',     textEs:'El mejor mecánico que he encontrado. Honesto, rápido y con precios razonables. Ya es mi mecánico fijo.', textEn:'The best mechanic I have found. Honest, fast and with reasonable prices. Already my go-to mechanic.' },
-  { nameEs:'Carlos Herrera',  photo: jardinero,  rating:5, dateEs:'Hace 1 mes',     dateEn:'1 month ago',  specEs:'Jardinero',    specEn:'Gardener',     textEs:'Transformó mi jardín completamente. Muy creativo y trabajador. El resultado superó mis expectativas.', textEn:'He completely transformed my garden. Very creative and hardworking. The result exceeded my expectations.' },
+  { proName: 'MARIANO FCO. (papa piso)', nameEs:'María Isabel Pimentel', proPhoto: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=800&q=80', photo: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=800&q=80', rating:5, dateEs:'MAR 28', dateEn:'MAR 28', specEs:'PISOS', specEn:'FLOORING', textEs:'Gracias por su servicio quedó todo muy bien puntual resolver lo recomiendo', textEn:'Thanks for your service everything was great punctual solved I recommend him.' },
+  { proName: 'Juan Pablo', nameEs:'Adriana F.', photo: plomero, rating:5, dateEs:'MAR 25', dateEn:'MAR 25', specEs:'PLOMERO', specEn:'PLUMBER', textEs:'Muy profesional y limpio en su trabajo. El precio fue justo y quedé muy satisfecha con el resultado.', textEn:'Very professional and clean work. The price was fair and I was very satisfied with the result.' },
+  { proName: 'Ramón Matías', nameEs:'Mayerlin Fco.', photo: electrica1, rating:5, dateEs:'MAR 22', dateEn:'MAR 22', specEs:'ELECTRICISTA', specEn:'ELECTRICIAN', textEs:'Excelente labor muy dedicado en su trabajo, rápido y puntual.', textEn:'Excellent work, very dedicated to his work, fast and punctual.' },
+  { proName: 'David (La Leyenda)', nameEs:'Camila Gutiérrez', photo: cerrajero1, rating:5, dateEs:'MAR 18', dateEn:'MAR 18', specEs:'CERRAJERO', specEn:'LOCKSMITH', textEs:'Me quedé fuera de casa y llegó en 20 minutos. Un salvavidas, lo recomiendo.', textEn:'I got locked out and he arrived in 20 minutes. A lifesaver, I recommend him.' },
+  { proName: 'Fernando Franco', nameEs:'María Isabel Pimentel', photo: refrig, rating:5, dateEs:'MAR 15', dateEn:'MAR 15', specEs:'REFRIGERACIÓN', specEn:'REFRIGERATION', textEs:'Mi aire quedó nuevo, responsable, honesto y muy limpio en su trabajo.', textEn:'My A/C is like new, responsible, honest and very clean in his work.' },
+  { proName: 'Jose Peguero', nameEs:'Adriana F.', photo: mecanico1, rating:5, dateEs:'MAR 10', dateEn:'MAR 10', specEs:'TAPICERO', specEn:'UPHOLSTERY', textEs:'Me encantó cómo quedaron los muebles, puntual, eficiente y profesional.', textEn:'Loved how the furniture turned out, punctual, efficient and professional.' },
 ]
-
 const topHomeCategories = [
   { id: 'mecanico',    icon:'🔧', image: '/icons/mecanico.webp', labelEs:'Mecánico',      labelEn:'Mechanic' },
   { id: 'electricista', icon:'⚡', image: '/icons/electricista.webp', labelEs:'Electricista',  labelEn:'Electrician' },
@@ -191,21 +190,38 @@ function TestimonialsCarousel({ lang, navigate }) {
         snapshot.forEach(doc => docs.push({ id: doc.id, ...doc.data() }))
         const topReviews = docs.filter(d => (d.ratingScore >= 4 || d.moderated))
         topReviews.sort((a,b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0))
-        const formatted = topReviews.slice(0, 14).map(d => ({
-          id: d.proId || d.professionalId || null,
-          nameEs: d.reviewerName || d.clientName || 'Cliente',
-          clientPhoto: d.reviewerPhoto || d.clientPhoto || null,
-          proPhoto: d.proPhoto || d.professionalPhoto || d.proPhotoURL || null,
-          proName: d.proName || d.professionalName || 'Profesional',
-          rating: d.ratingScore || 5,
-          dateEs: d.dateToken || 'Reciente',
-          dateEn: d.dateToken || 'Recent',
-          specEs: d.proSpecialty || d.specialty || 'Servicio',
-          specEn: d.proSpecialty || d.specialty || 'Service',
-          textEs: d.ratingComment?.trim() ? d.ratingComment : (d.ratingScore >= 4 ? '¡Excelente servicio! Muy profesional.' : 'Servicio completado.'),
-          textEn: d.ratingComment?.trim() ? d.ratingComment : (d.ratingScore >= 4 ? 'Excellent service! Very professional.' : 'Service completed.')
-        }))
-        if (formatted.length > 0) setAllTestimonials([...formatted, ...testimonials])
+        const formatted = topReviews.slice(0, 20).map(d => {
+          let dateTag = 'RECIENTE';
+          if (d.dateToken && d.dateToken.trim()) {
+            dateTag = d.dateToken.trim().toUpperCase();
+          } else if (d.createdAt?.seconds) {
+            const dt = new Date(d.createdAt.seconds * 1000);
+            const m = dt.toLocaleDateString('es-ES', { month: 'short' }).toUpperCase().replace('.', '');
+            dateTag = `${m} ${dt.getDate()}`;
+          }
+
+          return {
+            id: d.proId || d.professionalId || null,
+            nameEs: (d.reviewerName || d.clientName || 'Cliente').trim(),
+            clientPhoto: d.reviewerPhoto || d.clientPhoto || null,
+            proPhoto: d.proPhoto || d.professionalPhoto || d.proPhotoURL || null,
+            proName: (d.proName || d.professionalName || 'Profesional').trim(),
+            rating: d.ratingScore || 5,
+            dateEs: dateTag,
+            dateEn: dateTag,
+            specEs: (d.proSpecialty || d.specialty || 'Servicio').toUpperCase(),
+            specEn: (d.proSpecialty || d.specialty || 'Service').toUpperCase(),
+            textEs: d.ratingComment?.trim() ? d.ratingComment.trim() : (d.ratingScore >= 4 ? '¡Excelente servicio! Muy profesional.' : 'Servicio completado.'),
+            textEn: d.ratingComment?.trim() ? d.ratingComment.trim() : (d.ratingScore >= 4 ? 'Excellent service! Very professional.' : 'Service completed.')
+          };
+        });
+        if (formatted.length > 0) {
+          const combined = [...formatted];
+          testimonials.forEach(t => {
+            if (combined.length < 20) combined.push(t);
+          });
+          setAllTestimonials(combined.slice(0, 20));
+        }
       } catch (e) {
         console.error("Error fetching top reviews", e)
       }
@@ -300,7 +316,7 @@ function TestimonialsCarousel({ lang, navigate }) {
               <p className="testi-new-heading">{lang === 'es' ? 'Socio Verificado' : 'Verified Partner'}</p>
               
               <div className="testi-new-border-box">
-                {lang === 'es' ? 'Servicio 100% garantizado con soporte de Pedidos Listo.' : '100% guaranteed service backed by Pedidos Listo.'}
+                {lang === 'es' ? 'Servicio 100% garantizado con soporte de Listo Patrón.' : '100% guaranteed service backed by Listo Patrón.'}
               </div>
             </div>
           </div>
@@ -1458,6 +1474,10 @@ export default function HomePage({ lang, navigate, userRole }) {
           🛒 {lang === 'es' ? 'Visitar Tienda ›' : 'Visit Store ›'}
         </button>
       </div>
+
+      {/* ── LO QUE DICEN NUESTROS CLIENTES (CARRUSEL 20 RESEÑAS) ── */}
+      <TestimonialsCarousel lang={lang} navigate={navigate} />
+
 
           <section ref={allProsRef} className={`all-pros-section${allProsVisible ? ' reveal' : ''}`}>
             <div className="hp-sec-header" style={{ marginBottom: 12 }}>
