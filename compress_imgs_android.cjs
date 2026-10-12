@@ -2,8 +2,8 @@ const fs = require('fs');
 const path = require('path');
 const sharp = require('sharp');
 
-// Find all heavy images recursively in android build
 function walkDir(dir, callback) {
+  if (!fs.existsSync(dir)) return;
   fs.readdirSync(dir).forEach(f => {
     let dirPath = path.join(dir, f);
     let isDirectory = fs.statSync(dirPath).isDirectory();
@@ -16,30 +16,55 @@ async function optimizeImages() {
   let filesToProcess = [];
 
   walkDir(assetsDir, (filePath) => {
-    if (filePath.endsWith('.jpg') || filePath.endsWith('.jpeg') || filePath.endsWith('.png')) {
+    const ext = path.extname(filePath).toLowerCase();
+    if (ext === '.jpg' || ext === '.jpeg' || ext === '.png') {
       const stat = fs.statSync(filePath);
-      if (stat.size > 500 * 1024) { // over 500kb
+      if (stat.size > 150 * 1024) { // over 150kb
         filesToProcess.push(filePath);
       }
     }
   });
 
+  console.log(`Encontrados ${filesToProcess.length} imágenes para optimizar...`);
+
   for (const filePath of filesToProcess) {
     const stat = fs.statSync(filePath);
-    console.log(`Optimizando: ${path.basename(filePath)} (${(stat.size / 1024 / 1024).toFixed(2)} MB)`);
+    const ext = path.extname(filePath).toLowerCase();
+    console.log(`Optimizando: ${path.basename(filePath)} (${(stat.size / 1024).toFixed(0)} KB)`);
     const tempPath = filePath + '.tmp';
-    
+
     try {
-      await sharp(filePath)
-        .resize(1000) 
-        .jpeg({ quality: 60 })
-        .toFile(tempPath);
-        
-      fs.unlinkSync(filePath);
-      fs.renameSync(tempPath, filePath);
-      console.log(`¡Hecho! -> ${(fs.statSync(filePath).size / 1024).toFixed(2)} KB`);
+      const meta = await sharp(filePath).metadata();
+      let pipeline = sharp(filePath);
+      
+      // Resize if exceptionally huge width
+      if (meta.width && meta.width > 1200) {
+        pipeline = pipeline.resize({ width: 1200, withoutEnlargement: true });
+      }
+
+      if (ext === '.png') {
+        if (meta.hasAlpha) {
+          await pipeline.png({ quality: 80, compressionLevel: 9 }).toFile(tempPath);
+        } else {
+          // No transparency: convert to jpeg or high-compression png
+          await pipeline.jpeg({ quality: 75, mozjpeg: true }).toFile(tempPath);
+        }
+      } else {
+        await pipeline.jpeg({ quality: 70, mozjpeg: true }).toFile(tempPath);
+      }
+
+      const newSize = fs.statSync(tempPath).size;
+      if (newSize < stat.size) {
+        fs.unlinkSync(filePath);
+        fs.renameSync(tempPath, filePath);
+        console.log(`  ¡Reducido! ${(stat.size / 1024).toFixed(0)} KB -> ${(newSize / 1024).toFixed(0)} KB`);
+      } else {
+        fs.unlinkSync(tempPath);
+        console.log(`  Mantenido original (ya óptimo)`);
+      }
     } catch (err) {
-      console.error(`Error optimizando ${filePath}:`, err);
+      if (fs.existsSync(tempPath)) fs.unlinkSync(tempPath);
+      console.error(`Error optimizando ${filePath}:`, err.message);
     }
   }
 }
