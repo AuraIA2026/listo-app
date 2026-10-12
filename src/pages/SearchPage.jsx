@@ -5,6 +5,7 @@ import { CATEGORIES, FILTERS, ALL_SUBCATEGORIES, PROVINCES_LIST } from '../categ
 import { detectGpsLocation } from '../utils/gpsLocation'
 import LocalesCarrusel from '../locales/LocalesCarrusel'  // ✅ importado
 import VIPSection, { isProVip, getProTier } from '../components/VIPSection'
+import HistoriasCarrusel from '../components/HistoriasCarrusel'
 import HistoriasViewerModal from '../components/HistoriasViewerModal'
 import StoryAvatar from '../components/StoryAvatar'
 import { useStories } from '../hooks/useStories'
@@ -1067,6 +1068,17 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
 
 
       
+
+      {/* ── CARRUSEL DE HISTORIAS DE TRABAJOS REALIZADOS (STORIES 24H) ── */}
+      <HistoriasCarrusel 
+        userData={userData} 
+        isPro={userRole === 'pro'} 
+        onHirePro={(proId) => { 
+          const proObj = (professionals || []).find(p => p.id === proId) || { id: proId }; 
+          navigate('proProfile', proObj); 
+        }} 
+        navigate={navigate}
+      />
 
       {/* ── CARRUSEL ÉPICO VIP DE PROFESIONALES DESTACADOS (ENCIMA DEL CUADRO MAMEY) ── */}
       <VIPSection 
