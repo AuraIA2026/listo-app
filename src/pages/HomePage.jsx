@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { collection, query, where, getDocs, limit, doc, updateDoc, onSnapshot, addDoc, serverTimestamp } from 'firebase/firestore'
+import { collection, query, where, getDocs, limit, doc, updateDoc, onSnapshot, addDoc, serverTimestamp, or } from 'firebase/firestore'
 import { db } from '../firebase'
 import './HomePage.css'
 import { Capacitor } from '@capacitor/core'
@@ -86,6 +86,46 @@ const featuredStatic = [
   { id: '5', nameEs: 'Luisa Martínez', nameEn: 'Luisa Martínez', specEs: 'Mecánico', specEn: 'Mechanic', rating: 4.7, reviews: 156, price: 'A convenir', img: mecanico1, badge: null, avail: true },
   { id: '6', nameEs: 'Carmen Díaz', nameEn: 'Carmen Díaz', specEs: 'Pintor', specEn: 'Painter', rating: 4.6, reviews: 78, price: 'A convenir', img: pintor1, badge: null, avail: true }
 ]
+
+export const matchesCategorySlug = (pro, slug) => {
+  if (!pro || !slug) return false;
+  const fields = [
+    pro.category,
+    pro.especialidad,
+    pro.verificacion?.especialidad,
+    pro.subCategory,
+    pro.profession,
+    pro.specEs,
+    pro.specEn
+  ].filter(Boolean).map(s => String(s).toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, ""));
+
+  const fullText = fields.join(' ');
+  if (!fullText) return false;
+
+  const s = slug.toLowerCase().trim();
+  if (s === 'mecanico') {
+    return fullText.includes('mecanic') || fullText.includes('mechanic') || fullText.includes('automotriz') || fullText.includes('taller vehicular');
+  }
+  if (s === 'electricista') {
+    return fullText.includes('electri');
+  }
+  if (s === 'plomero') {
+    return fullText.includes('plomer') || fullText.includes('plumb') || fullText.includes('fontan');
+  }
+  if (s === 'cerrajero') {
+    return fullText.includes('cerraj') || fullText.includes('locksmith') || fullText.includes('cerradur');
+  }
+  if (s === 'pintor') {
+    return fullText.includes('pintor') || fullText.includes('painter') || fullText.includes('pintura');
+  }
+  if (s === 'jardinero') {
+    return fullText.includes('jardin') || fullText.includes('garden') || fullText.includes('poda');
+  }
+  if (s === 'ninera') {
+    return fullText.includes('niner') || fullText.includes('nann') || fullText.includes('babysit') || fullText.includes('cuidado de nin');
+  }
+  return fullText.includes(s);
+};
 
 const sections = [
   { id:'mecanico',     image: '/icons/mecanico.webp', icon:'🔧', titleEs:'Mecánico',     titleEn:'Mechanic',    services:[
@@ -835,29 +875,45 @@ export default function HomePage({ lang, navigate, userRole }) {
   }, [])
 
   useEffect(() => {
-    const fetchPros = async () => {
+    // ─ Escuchar en tiempo real con onSnapshot: tanto profesionales activos como nuevos postulantes
+    const q = query(
+      collection(db, 'users'),
+      or(
+        where('type', '==', 'pro'),
+        where('role', '==', 'professional'),
+        where('role', '==', 'pro'),
+        where('verificacion.estado', '==', 'en_revision'),
+        where('verificacion.estado', '==', 'aprobada')
+      )
+    );
+
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
       try {
-        const q = query(collection(db, 'users'), where('type', '==', 'pro'))
-        const querySnapshot = await getDocs(q)
         const prosList = []
         const getMappedProCatId = (catString) => {
-          if (!catString) return 'all';
-          const cleanStr = catString.toLowerCase();
-          const foundSub = ALL_SUBCATEGORIES.find(s => s.id === cleanStr || s.labelEn.toLowerCase() === cleanStr);
+          if (!catString) return null;
+          const cleanStr = catString.toLowerCase().trim();
+          const foundSub = ALL_SUBCATEGORIES.find(s => s.id === cleanStr || s.labelEn?.toLowerCase() === cleanStr || s.labelEs?.toLowerCase() === cleanStr);
           if (foundSub) return foundSub;
-          const foundMain = CATEGORIES.find(c => c.id === cleanStr || c.labelEn.toLowerCase() === cleanStr);
+          const foundMain = CATEGORIES.find(c => c.id === cleanStr || c.labelEn?.toLowerCase() === cleanStr || c.labelEs?.toLowerCase() === cleanStr);
           return foundMain || null;
         }
-        querySnapshot.forEach((doc) => {
-          const data = doc.data()
 
-          // ─ Filtro estricto: Solo mostrar si completó el perfil y tiene plan activo o contratos
-          const isComplete = Boolean(data.profileComplete || data.verificacion?.estado === 'aprobada')
-          const hasPlan = Boolean(data.planStatus === 'active')
-          const hasContracts = Boolean(data.contracts && data.contracts > 0)
-          if (!isComplete || (!hasPlan && !hasContracts)) return;
+        querySnapshot.forEach((docSnap) => {
+          const data = docSnap.data()
 
-          const catObj = getMappedProCatId(data.category)
+          // Determinar si es profesional activo o postulante
+          const isPostulated = Boolean(data.verificacion?.estado === 'en_revision' || data.isPostulante);
+          const isComplete = Boolean(data.profileComplete || data.verificacion?.estado === 'aprobada' || data.verificacion?.estado === 'verificado');
+          const hasPlan = Boolean(data.planStatus === 'active');
+          const hasContracts = Boolean(data.contracts && data.contracts > 0);
+
+          // Si no tiene categoría ni está postulado/activo, omitir
+          const hasAnyCategory = Boolean(data.category || data.especialidad || data.verificacion?.especialidad);
+          if (!hasAnyCategory) return;
+          if (!isPostulated && !isComplete && !hasPlan && !hasContracts) return;
+
+          const catObj = getMappedProCatId(data.category || data.especialidad || data.verificacion?.especialidad)
           const candidates = [
             data.sector,
             data.municipio || data.ciudad || data.city,
@@ -875,14 +931,18 @@ export default function HomePage({ lang, navigate, userRole }) {
           });
           const finalLoc = cleanLoc.length > 0 ? cleanLoc.slice(0, 2).join(', ') : 'Santo Domingo, D.N.';
 
+          const isVerified = Boolean(data.verificacion?.estado === 'aprobada' || data.verificacion?.estado === 'verificado' || data.isVerified);
+
           prosList.push({
-            id: doc.id,
-            nameEs: data.name || 'Sin nombre',
-            nameEn: data.name || 'No name',
-            specEs: catObj ? catObj.labelEs : 'Servicios Integrales',
-            specEn: catObj ? catObj.labelEn : 'General services',
+            id: docSnap.id,
+            name: data.name || data.verificacion?.nombre || 'Profesional',
+            nameEs: data.name || data.verificacion?.nombre || 'Profesional',
+            nameEn: data.name || data.verificacion?.nombre || 'Professional',
+            specEs: catObj ? catObj.labelEs : (data.especialidad || data.verificacion?.especialidad || 'Servicios Integrales'),
+            specEn: catObj ? catObj.labelEn : (data.especialidad || data.verificacion?.especialidad || 'General services'),
             category: data.category || data.especialidad || data.verificacion?.especialidad || '',
-            rating: data.rating || 0.0,
+            especialidad: data.especialidad || data.verificacion?.especialidad || data.category || '',
+            rating: Number(data.rating) || 5.0,
             reviews: data.reviewCount || data.reviews || 0,
             location: finalLoc,
             sector: data.sector || data.verificacion?.sector || '',
@@ -890,15 +950,20 @@ export default function HomePage({ lang, navigate, userRole }) {
             provincia: data.provincia || data.verificacion?.provincia || '',
             direccion: data.direccion || data.verificacion?.direccion || '',
             verificacion: data.verificacion || null,
-            experience: (data.experience && !['nuevo', 'verificado'].includes(String(data.experience).trim().toLowerCase())) ? data.experience : '',
+            isVerified,
+            isPostulated,
+            experience: (data.experience && !['nuevo', 'verificado'].includes(String(data.experience).trim().toLowerCase())) ? data.experience : (data.verificacion?.experiencia || ''),
             avatar: (data.name || 'P').substring(0, 2).toUpperCase(),
             avail: data.profileComplete && data.available !== false,
-            img: data.photoURL || null,
+            img: data.photoURL || data.verificacion?.docs?.selfie || null,
+            photoURL: data.photoURL || data.verificacion?.docs?.selfie || null,
             currentPlan: data.currentPlan || data.planName || data.plan || data.planId || data.planType || data.tipoPlan || data.subscription?.planName || data.subscription?.plan || data.membership || data.verificacion?.plan || null,
             planName: data.planName || data.currentPlan || data.subscription?.planName || data.verificacion?.plan || data.plan || null,
-            contracts: data.contracts || 0
+            contracts: data.contracts || 0,
+            badge: isPostulated ? '🚀 NUEVO POSTULANTE' : (isVerified ? '🛡️ VERIFICADO' : null)
           })
         })
+
         const elitePros = prosList.filter(p => Number(p.rating || 0) >= 4.9).sort((a, b) => b.reviews - a.reviews);
         const finalFeatured = elitePros;
 
@@ -919,8 +984,11 @@ export default function HomePage({ lang, navigate, userRole }) {
       } catch (err) {
         console.error("Error fetching pros in Home: ", err)
       }
-    }
-    fetchPros()
+    }, (err) => {
+      console.error("Error onSnapshot in Home: ", err)
+    })
+
+    return () => unsubscribe()
   }, [])
 
   // Hook para historias de 24h activas en tiempo real
@@ -1543,20 +1611,86 @@ export default function HomePage({ lang, navigate, userRole }) {
         ];
         const theme = amzThemes[idx % amzThemes.length];
 
+        // Buscar profesionales reales que coincidan con este oficio
+        const matchingPros = (allProsToUse || []).filter(p => matchesCategorySlug(p, sec.id));
+        const fallbackDefaultImg = sec.services[0]?.img || sec.image;
+
         return (
           <section key={sec.id} className="hp-service-section reveal" style={{ background: theme.bg, margin: '6px 0', padding: '8px 0' }}>
             <div className="hp-sec-header amz-sec-header">
               <h2 className="hp-sec-title amz-sec-title" style={{ color: theme.color, display: 'flex', alignItems: 'center', gap: '8px' }}>
                 {sec.image ? <img src={sec.image} alt={sec.titleEs} style={{ width: '24px', height: '24px', objectFit: 'contain' }} /> : sec.icon} 
                 {lang === 'es' ? sec.titleEs : sec.titleEn}
+                {matchingPros.length > 0 && (
+                  <span style={{
+                    fontSize: '11px',
+                    fontWeight: '800',
+                    background: 'rgba(0,0,0,0.06)',
+                    color: theme.color,
+                    padding: '2px 7px',
+                    borderRadius: '12px'
+                  }}>
+                    {matchingPros.length} {lang === 'es' ? (matchingPros.length === 1 ? 'pro' : 'pros') : 'pros'}
+                  </span>
+                )}
               </h2>
               <button className="hp-see-all amz-see-all" style={{ color: theme.color }} onClick={() => navigate('search', { catToSelect: sec.id })}>
                 {lang === 'es' ? 'Ver todo ›' : 'See all ›'}
               </button>
             </div>
             <div className="hp-service-cards amz-cards-scroll">
-              {sec.services.map((s, i) => (
-                <div key={i} className="hp-svc-card amz-bento-card" style={{ background: theme.card }} onClick={() => navigate('booking', { specialty: sec.id })}>
+              {/* Profesionales reales que se postulan y aparecen dinámicamente */}
+              {matchingPros.map((pro) => (
+                <div 
+                  key={`pro-${pro.id}`} 
+                  className="hp-svc-card amz-bento-card" 
+                  style={{ background: theme.card }} 
+                  onClick={() => navigate('booking', { professional: pro })}
+                >
+                  <div className="hp-svc-img-wrap" style={{ position: 'relative' }}>
+                    <span 
+                      className="hp-svc-tag" 
+                      style={{ 
+                        background: pro.isPostulated ? '#2563EB' : (pro.isVerified ? '#16A34A' : '#EA580C') 
+                      }}
+                    >
+                      {pro.badge || (pro.isPostulated ? '🚀 NUEVO' : (pro.isVerified ? '🛡️ VERIFICADO' : '⭐ PRO'))}
+                    </span>
+                    <span className="bento-listo-badge">Listo</span>
+                    <img 
+                      src={pro.img || pro.photoURL || fallbackDefaultImg} 
+                      alt={pro.nameEs || pro.name} 
+                      className="hp-svc-img"
+                      onError={(e) => { e.currentTarget.src = fallbackDefaultImg; }}
+                    />
+                  </div>
+                  <div className="hp-svc-info">
+                    <p className="hp-svc-name" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '4px' }}>
+                      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {pro.nameEs || pro.name}
+                      </span>
+                      {pro.isVerified && <span title="Verificado" style={{ color: '#10B981', fontSize: '13px', flexShrink: 0 }}>✓</span>}
+                    </p>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '2px' }}>
+                      <p className="hp-svc-price" style={{ margin: 0 }}>
+                        {lang === 'es' ? 'A convenir' : 'To agree'}
+                      </p>
+                      <span style={{ fontSize: '11px', fontWeight: '800', color: '#B45309', display: 'flex', alignItems: 'center', gap: '2px' }}>
+                        ⭐ {(Number(pro.rating) || 5.0).toFixed(1)}
+                      </span>
+                    </div>
+                    {pro.location && (
+                      <p style={{ margin: '3px 0 0', fontSize: '10.5px', color: '#6B7280', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        📍 {pro.location}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              ))}
+
+              {/* Si hay menos de 2 profesionales reales en la categoría, completar con tarjetas de servicio demo */}
+              {(matchingPros.length < 2 ? sec.services.slice(0, 2 - matchingPros.length) : []).map((s, i) => (
+                <div key={`demo-${i}`} className="hp-svc-card amz-bento-card" style={{ background: theme.card }} onClick={() => navigate('booking', { specialty: sec.id })}>
                   <div className="hp-svc-img-wrap">
                     {s.tag && <span className="hp-svc-tag">{s.tag}</span>}
                     {s.showListoBadge && <span className="bento-listo-badge">Listo</span>}
