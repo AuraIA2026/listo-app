@@ -469,18 +469,10 @@ export default function VIPSection({
         }
       }
     }, 8000)
-
-    const innerTimer = setInterval(() => {
-      if (isHeroPlaying) {
-        setActiveInnerSlide((prev) => (prev + 1) % currentInnerSlides.length)
-      }
-    }, 6000) // Duración de al menos 6 segundos antes de cambiar el slide
-
     return () => {
       clearInterval(timer)
-      clearInterval(innerTimer)
     }
-  }, [isHeroPlaying])
+  }, [])
 
   return (
     <section className="vip-hero-section">
