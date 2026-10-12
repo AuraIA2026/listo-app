@@ -6,28 +6,24 @@
 /* ── CONTENEDOR PRINCIPAL DEL CARRUSEL (ESTRECHO EN ALTO) ── */
 .historias-carrusel-wrapper {
   width: 100%;
-  padding: 10px 12px 6px 12px;
-  background: rgba(15, 23, 42, 0.45);
-  border-radius: 20px;
-  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.25), 0 3px 10px rgba(242, 96, 0, 0.15);
+  padding: 4px 8px 6px 8px;
+  background: transparent !important;
+  border-radius: 0px !important;
+  box-shadow: none !important;
   margin-bottom: 0px;
   position: relative;
   overflow: hidden;
-  border: 1px solid rgba(242, 96, 0, 0.25);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  border: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.cinta-pedidos-listo-container {
+  display: none !important;
 }
 
 .historias-carrusel-wrapper::before {
-  content: '';
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: radial-gradient(circle at 20% 20%, rgba(242, 96, 0, 0.15) 0%, transparent 50%);
-  pointer-events: none;
-  animation: shimmerLight 8s ease-in-out infinite alternate;
+  display: none !important;
 }
 
 @keyframes shimmerLight {
@@ -532,13 +528,13 @@
 .historia-label {
   font-size: 11px;
   font-weight: 700;
-  color: #E2E8F0;
+  color: #1E293B;
   margin-top: 5px;
   width: 100%;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+  text-shadow: none;
   letter-spacing: -0.1px;
 }
 

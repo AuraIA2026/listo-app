@@ -1070,7 +1070,8 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
       
 
       {/* ── CARRUSEL DE HISTORIAS DE TRABAJOS REALIZADOS (STORIES 24H) ── */}
-      <HistoriasCarrusel 
+      <HistoriasCarrusel
+        hideRibbon={true} 
         userData={userData} 
         isPro={userRole === 'pro'} 
         onHirePro={(proId) => { 
