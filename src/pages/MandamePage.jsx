@@ -6,6 +6,7 @@ import './HomePage.css';
 import PedidosListoHub from '../components/PedidosListoHub';
 import HistoriasCarrusel from '../components/HistoriasCarrusel';
 import ConfigurarRestauranteModal from '../components/ConfigurarRestauranteModal';
+import { BUSINESS_TYPES, RENTAL_PERIODS } from '../data/businessTypes';
 
 // Initial Mock State
 const ANIMATED_BANNERS_CATALOG = [
@@ -840,6 +841,43 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
   const [isFlashOffer, setIsFlashOffer] = useState(false);
   const [prepTimeShift, setPrepTimeShift] = useState('15-25');
   const [menuShift, setMenuShift] = useState('all');
+
+  // ── Tipo de comercio: cambia categorías, etiquetas y opciones del menú ──
+  const [businessType, setBusinessType] = useState(() => {
+    try { return localStorage.getItem('pedidos_listo_business_type') || 'restaurante'; } catch (e) { return 'restaurante'; }
+  });
+  const bizCfg = BUSINESS_TYPES[businessType] || BUSINESS_TYPES.restaurante;
+  const [selectedBizTags, setSelectedBizTags] = useState([]);
+  const [selectedBizOptions, setSelectedBizOptions] = useState({});
+  const [rentalPrices, setRentalPrices] = useState({});
+
+  const handleChangeBusinessType = (type) => {
+    const cfg = BUSINESS_TYPES[type] || BUSINESS_TYPES.restaurante;
+    setBusinessType(type);
+    setNewProdCategory(cfg.categories[0][0]);
+    setSelectedBizTags([]);
+    setSelectedBizOptions({});
+    setRentalPrices({});
+    try { localStorage.setItem('pedidos_listo_business_type', type); } catch (e) {}
+  };
+
+  const handleToggleBizTag = (tag) => {
+    setSelectedBizTags(prev => prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]);
+  };
+
+  useEffect(() => {
+    if (!bizCfg.categories.some(([val]) => val === newProdCategory)) {
+      setNewProdCategory(bizCfg.categories[0][0]);
+    }
+  }, [businessType]); // eslint-disable-line
+
+  const handleToggleBizOption = (groupKey, opt) => {
+    setSelectedBizOptions(prev => {
+      const current = prev[groupKey] || [];
+      const next = current.includes(opt) ? current.filter(o => o !== opt) : [...current, opt];
+      return { ...prev, [groupKey]: next };
+    });
+  };
 
   // Kitchen Terminal & Comandera Realtime State
   const [kitchenFilterTab, setKitchenFilterTab] = useState('all'); // 'all' | 'new' | 'cooking' | 'ready' | 'completed'
@@ -1922,10 +1960,15 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
       images: newProdImages.length > 0 ? newProdImages : [coverImage],
       inStock: true,
       isFlash: isFlashOffer,
-      dietaryTags: selectedDietaryTags,
-      guarniciones: selectedGuarniciones,
-      bebidas: selectedBebidas,
-      extras: selectedExtras,
+      businessType,
+      dietaryTags: bizCfg.useFoodConfig ? selectedDietaryTags : selectedBizTags,
+      guarniciones: bizCfg.useFoodConfig ? selectedGuarniciones : [],
+      bebidas: bizCfg.useFoodConfig ? selectedBebidas : [],
+      extras: bizCfg.useFoodConfig ? selectedExtras : [],
+      attributes: bizCfg.useFoodConfig ? {} : selectedBizOptions,
+      rentalPrices: bizCfg.rental
+        ? Object.fromEntries(Object.entries(rentalPrices).filter(([, v]) => v !== '' && v != null).map(([k, v]) => [k, Number(v)]))
+        : null,
       storeId: activeStoreId,
       storeName: activeStoreName,
       storeEmail: activeStoreEmail,
@@ -4171,51 +4214,61 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
               {/* Form Card */}
               <div style={{ background: 'white', color: '#0f172a', borderRadius: 24, padding: 18, marginBottom: 16 }}>
                 <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 900, fontSize: 18, color: '#ff6b00', marginBottom: 14 }}>
-                  ➕ Subir Nuevo Platillo al Catálogo Pedidos Listo
+                  ➕ Subir Nuevo {bizCfg.itemLabel} al Catálogo Pedidos Listo
                 </h3>
+
+                {/* SELECTOR DE TIPO DE COMERCIO */}
+                <div style={{ background: 'linear-gradient(135deg, #fff7ed, #ffedd5)', border: '1.5px solid #fdba74', padding: 12, borderRadius: 16, marginBottom: 14 }}>
+                  <label style={{ fontSize: 12, fontWeight: 900, display: 'block', marginBottom: 6, color: '#9a3412' }}>🏪 Tipo de Comercio (cambia el menú y las opciones)</label>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 6 }}>
+                    {Object.entries(BUSINESS_TYPES).map(([key, cfg]) => (
+                      <button
+                        key={key}
+                        type="button"
+                        onClick={() => handleChangeBusinessType(key)}
+                        style={{
+                          padding: '8px 10px', borderRadius: 12, fontSize: 11.5, fontWeight: 800, cursor: 'pointer', textAlign: 'left',
+                          background: businessType === key ? 'linear-gradient(135deg, #ff6b00, #ff8533)' : '#ffffff',
+                          color: businessType === key ? '#ffffff' : '#334155',
+                          border: businessType === key ? '1.5px solid #ff6b00' : '1px solid #e2e8f0',
+                          boxShadow: businessType === key ? '0 4px 12px rgba(255,107,0,0.3)' : 'none',
+                          transition: 'all 0.2s ease'
+                        }}
+                      >
+                        {cfg.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
 
                 <form onSubmit={handleAddNewProduct}>
                   <div style={{ marginBottom: 12 }}>
-                    <label style={{ fontSize: 12, fontWeight: 800, display: 'block', marginBottom: 4 }}>Nombre del Platillo / Producto</label>
+                    <label style={{ fontSize: 12, fontWeight: 800, display: 'block', marginBottom: 4 }}>Nombre del {bizCfg.itemLabel}</label>
                     <input type="text" className="custom-search-input" style={{ border: '1px solid #cbd5e1' }} value={newProdName} onChange={e => setNewProdName(e.target.value)} required />
                   </div>
 
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 12 }}>
                     <div>
-                      <label style={{ fontSize: 12, fontWeight: 800, display: 'block', marginBottom: 4 }}>Precio (RD$)</label>
+                      <label style={{ fontSize: 12, fontWeight: 800, display: 'block', marginBottom: 4 }}>{bizCfg.priceLabel || 'Precio (RD$)'}</label>
                       <input type="number" className="custom-search-input" style={{ border: '1px solid #cbd5e1' }} value={newProdPrice} onChange={e => setNewProdPrice(e.target.value)} required />
                     </div>
                     <div>
                       <label style={{ fontSize: 12, fontWeight: 800, display: 'block', marginBottom: 4 }}>Categoría del Menú</label>
                       <select className="custom-search-input" style={{ border: '1px solid #cbd5e1' }} value={newProdCategory} onChange={e => setNewProdCategory(e.target.value)}>
-                        <option value="plato_dia">🍛 Plato del Día</option>
-                        <option value="desayuno">🍳 Desayuno Criollo</option>
-                        <option value="merienda">☕ Merienda / Snacks</option>
-                        <option value="antojitos">🍢 Antojitos & Picaderas</option>
-                        <option value="cena">🌙 Cena Especial</option>
-                        <option value="bocado">🍔 Bocado Rápido / Fast Food</option>
-                        <option value="pollos">🍗 Pollos & Piezas Crujientes</option>
-                        <option value="cubetas">🪣 Cubetas & Combos Familiares</option>
-                        <option value="criollo">🍛 Comida Criolla & Platos Fuertes</option>
-                        <option value="pizzas">🍕 Pizzas & Pastas</option>
-                        <option value="tacos">🌮 Tacos & Comida Mexicana</option>
-                        <option value="sushi">🍣 Sushi & Comida Asiática</option>
-                        <option value="saludable">🥗 Ensaladas & Comida Saludable</option>
-                        <option value="postres">🍰 Postres & Repostería</option>
-                        <option value="bebidas">🥤 Bebidas & Jugos Naturales</option>
-                        <option value="licor">🍾 Licores, Cervezas & Bebidas Frías</option>
-                        <option value="super">🛒 Supermercado, Víveres & Despensa</option>
-                        <option value="salud">💊 Farmacia & Cuidado Personal</option>
+                        {bizCfg.categories.map(([val, lbl]) => (
+                          <option key={val} value={val}>{lbl}</option>
+                        ))}
                       </select>
                     </div>
                   </div>
 
                   <div style={{ marginBottom: 14 }}>
-                    <label style={{ fontSize: 12, fontWeight: 800, display: 'block', marginBottom: 4 }}>Descripción / Ingredientes</label>
+                    <label style={{ fontSize: 12, fontWeight: 800, display: 'block', marginBottom: 4 }}>{bizCfg.descLabel}</label>
                     <textarea className="custom-search-input" style={{ border: '1px solid #cbd5e1', borderRadius: 14 }} rows="2" value={newProdDesc} onChange={e => setNewProdDesc(e.target.value)} />
                   </div>
 
-                  {/* ETIQUETAS DE DIETA & ALÉRGENOS (PEDIDOS LISTO) */}
+                  {/* ETIQUETAS DE DIETA & ALÉRGENOS (PEDIDOS LISTO) — solo restaurantes */}
+                  {bizCfg.useFoodConfig && (
                   <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', padding: 14, borderRadius: 16, marginBottom: 14 }}>
                     <div style={{ fontSize: 12, fontWeight: 800, color: '#0f172a', marginBottom: 8, display: 'flex', justifyContent: 'space-between' }}>
                       <span>🏷️ ETIQUETAS & DIETA ESPECIAL (PEDIDOS LISTO)</span>
@@ -4229,8 +4282,10 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                       ))}
                     </div>
                   </div>
+                  )}
 
-                  {/* CONFIGURADOR DE GUARNICIONES, BEBIDAS & EXTRAS PARA EL CLIENTE */}
+                  {/* CONFIGURADOR DE GUARNICIONES, BEBIDAS & EXTRAS PARA EL CLIENTE — solo restaurantes */}
+                  {bizCfg.useFoodConfig && (
                   <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', padding: 14, borderRadius: 16, marginBottom: 14 }}>
                     <div style={{ fontSize: 12, fontWeight: 800, color: '#ff6b00', marginBottom: 10, display: 'flex', justifyContent: 'space-between' }}>
                       <span>⚙️ CONFIGURAR GUARNICIONES, BEBIDAS & EXTRAS</span>
@@ -4288,6 +4343,88 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                       </div>
                     </div>
                   </div>
+                  )}
+
+                  {/* ── OPCIONES DINÁMICAS SEGÚN EL TIPO DE COMERCIO (ropa, herramientas, etc.) ── */}
+                  {!bizCfg.useFoodConfig && (
+                    <>
+                      {/* Etiquetas visibles al cliente */}
+                      <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', padding: 14, borderRadius: 16, marginBottom: 14 }}>
+                        <div style={{ fontSize: 12, fontWeight: 800, color: '#0f172a', marginBottom: 8, display: 'flex', justifyContent: 'space-between' }}>
+                          <span>🏷️ ETIQUETAS DEL {bizCfg.itemLabel.toUpperCase()}</span>
+                          <span style={{ fontSize: 10, background: '#e0f2fe', color: '#0284c7', padding: '2px 6px', borderRadius: 4, fontWeight: 700 }}>Visible al Cliente</span>
+                        </div>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 6 }}>
+                          {bizCfg.tags.map(tag => (
+                            <label key={tag} style={{ fontSize: 11, background: 'white', padding: '6px 8px', borderRadius: 8, border: '1px solid #cbd5e1', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
+                              <input type="checkbox" checked={selectedBizTags.includes(tag)} onChange={() => handleToggleBizTag(tag)} /> {tag}
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Tabla de precios de alquiler */}
+                      {bizCfg.rental && (
+                        <div style={{ background: '#fff7ed', border: '1.5px solid #fdba74', padding: 14, borderRadius: 16, marginBottom: 14 }}>
+                          <div style={{ fontSize: 12, fontWeight: 900, color: '#c2410c', marginBottom: 10, display: 'flex', justifyContent: 'space-between' }}>
+                            <span>💰 PRECIOS DE ALQUILER (RD$)</span>
+                            <span style={{ fontSize: 10, color: '#64748b', background: 'white', padding: '2px 6px', borderRadius: 4, fontWeight: 700 }}>Deja vacío lo que no ofreces</span>
+                          </div>
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
+                            {RENTAL_PERIODS.map(([key, lbl]) => (
+                              <div key={key}>
+                                <label style={{ fontSize: 11, fontWeight: 800, display: 'block', marginBottom: 3, color: '#334155' }}>{lbl}</label>
+                                <input
+                                  type="number"
+                                  min="0"
+                                  placeholder="RD$ 0"
+                                  className="custom-search-input"
+                                  style={{ border: '1px solid #cbd5e1', padding: '8px 12px' }}
+                                  value={rentalPrices[key] ?? ''}
+                                  onChange={e => setRentalPrices(prev => ({ ...prev, [key]: e.target.value }))}
+                                />
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Grupos de opciones (tallas, colores, modalidades, etc.) */}
+                      {bizCfg.optionGroups.length > 0 && (
+                        <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', padding: 14, borderRadius: 16, marginBottom: 14 }}>
+                          <div style={{ fontSize: 12, fontWeight: 800, color: '#ff6b00', marginBottom: 10, display: 'flex', justifyContent: 'space-between' }}>
+                            <span>⚙️ OPCIONES DISPONIBLES PARA EL CLIENTE</span>
+                            <span style={{ fontSize: 10, color: '#64748b', background: 'white', padding: '2px 6px', borderRadius: 4, fontWeight: 700 }}>Personalización Cliente</span>
+                          </div>
+                          {bizCfg.optionGroups.map(group => (
+                            <div key={group.key} style={{ marginBottom: 12 }}>
+                              <label style={{ fontSize: 11, fontWeight: 700, color: '#0f172a', display: 'block', marginBottom: 4 }}>{group.label}</label>
+                              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                                {group.options.map(opt => {
+                                  const active = (selectedBizOptions[group.key] || []).includes(opt);
+                                  return (
+                                    <button
+                                      key={opt}
+                                      type="button"
+                                      onClick={() => handleToggleBizOption(group.key, opt)}
+                                      style={{
+                                        fontSize: 11, fontWeight: 800, padding: '6px 12px', borderRadius: 20, cursor: 'pointer',
+                                        background: active ? '#ff6b00' : '#ffffff',
+                                        color: active ? '#ffffff' : '#475569',
+                                        border: active ? '1.5px solid #ff6b00' : '1px solid #cbd5e1'
+                                      }}
+                                    >
+                                      {active ? '✓ ' : ''}{opt}
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </>
+                  )}
 
                   {/* Photo Upload Zone (Multiple Photos Manager & Studio Pro Launcher) */}
                   <div style={{ background: '#f8fafc', border: '2px solid #ff6b00', padding: 16, borderRadius: 20, marginBottom: 14, boxShadow: '0 6px 20px rgba(255,107,0,0.08)' }}>
