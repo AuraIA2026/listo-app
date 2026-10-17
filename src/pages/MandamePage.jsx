@@ -12,6 +12,7 @@ import PedidosListoHub from '../components/PedidosListoHub';
 import HistoriasCarrusel from '../components/HistoriasCarrusel';
 import ConfigurarRestauranteModal from '../components/ConfigurarRestauranteModal';
 import { BUSINESS_TYPES, RENTAL_PERIODS, WHOLESALE_TIERS } from '../data/businessTypes';
+import DeliveryCercaScreen from '../components/DeliveryCercaScreen';
 
 // Initial Mock State
 const ANIMATED_BANNERS_CATALOG = [
@@ -535,6 +536,9 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
 
   // Estados principales de navegación y búsqueda
   const [activeTab, setActiveTab] = useState('inicio'); // 'inicio' | 'mercado' | 'promociones' | 'pedidos' | 'buscar'
+  const [deliveryCercaOpen, setDeliveryCercaOpen] = useState(false);
+  const [ownDeliveryEnabled, setOwnDeliveryEnabled] = useState(!!userData?.ownDelivery?.enabled);
+  useEffect(() => { if (userData?.ownDelivery) setOwnDeliveryEnabled(!!userData.ownDelivery.enabled); }, [userData?.ownDelivery?.enabled]);
   const [merchantTab, setMerchantTab] = useState('catalogo'); // 'resumen' | 'pedidos' | 'catalogo' | 'promos' | 'resenas' | 'finanzas' | 'perfil'
   const [cart, setCart] = useState([]);
   const [selectedTip, setSelectedTip] = useState(50);
@@ -1274,7 +1278,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
   const handleMarkOrderReady = async (orderId) => {
     const targetOrder = merchantState.orders.find(o => o.id === orderId || o.orderId === orderId);
     const isPickup = targetOrder?.fulfillmentType === 'pickup';
-    const isOwn = targetOrder?.driverType === 'own';
+    const isOwn = targetOrder?.driverType === 'own' || (!targetOrder?.driverType && ownDeliveryEnabled);
     const assignedDriver = isPickup 
       ? 'Retiro en Mostrador (Cliente)' 
       : (isOwn ? `Motorista de la Casa (${targetOrder?.storeName || 'Delivery Propio'})` : 'Kelvin Santos (Mándame 🛵)');
@@ -3729,6 +3733,29 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
               </span>
             </button>
           </div>
+
+          {/* 5. DELIVERY CERCA (pantalla aparte estilo Uber) */}
+          <button
+            id="btn-delivery-cerca"
+            onClick={() => setDeliveryCercaOpen(true)}
+            style={{ width: '100%', marginBottom: 16, padding: '14px 16px', borderRadius: 16, border: '1.5px solid #ff6b00', background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)', color: '#fff', display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer', boxShadow: '0 6px 18px rgba(255,107,0,0.25)' }}
+          >
+            <span style={{ width: 42, height: 42, borderRadius: '50%', background: '#ff6b00', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22 }}>🛵</span>
+            <span style={{ flex: 1, textAlign: 'left' }}>
+              <span style={{ display: 'block', fontWeight: 900, fontSize: 15 }}>Delivery Cerca</span>
+              <span style={{ display: 'block', fontSize: 11.5, color: '#94a3b8' }}>{ownDeliveryEnabled ? '🏪 Delivery propio activado • ver mapa' : 'Ver en el mapa los deliverys frente al local'}</span>
+            </span>
+            <span style={{ color: '#ff6b00', fontSize: 20, fontWeight: 900 }}>›</span>
+          </button>
+          <DeliveryCercaScreen
+            open={deliveryCercaOpen}
+            onClose={() => setDeliveryCercaOpen(false)}
+            userData={userData}
+            storeName={merchantState.storeName}
+            orders={merchantState.orders || []}
+            onOwnDeliveryChange={setOwnDeliveryEnabled}
+            showToast={showToast}
+          />
 
           {/* TAB: PUNTO DE VENTAS POS (PEDIDOS LISTO CAJA & MOSTRADOR TERMINAL) */}
           {merchantTab === 'pos' && (
