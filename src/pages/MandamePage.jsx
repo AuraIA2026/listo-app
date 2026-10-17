@@ -11,7 +11,7 @@ import './HomePage.css';
 import PedidosListoHub from '../components/PedidosListoHub';
 import HistoriasCarrusel from '../components/HistoriasCarrusel';
 import ConfigurarRestauranteModal from '../components/ConfigurarRestauranteModal';
-import { BUSINESS_TYPES, RENTAL_PERIODS, WHOLESALE_TIERS } from '../data/businessTypes';
+import { BUSINESS_TYPES, RENTAL_PERIODS, WHOLESALE_TIERS, findBusinessTypesForQuery, getCategoryLabel } from '../data/businessTypes';
 import DeliveryCercaScreen from '../components/DeliveryCercaScreen';
 import WelcomeIntro from '../components/WelcomeIntro';
 
@@ -551,6 +551,10 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
   const [selectedTip, setSelectedTip] = useState(50);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategoryFilter, setSelectedCategoryFilter] = useState('all');
+  // Mercado: tipo de comercio y sub-categoría seleccionados
+  const [mercadoType, setMercadoType] = useState(null);
+  const [mercadoSub, setMercadoSub] = useState('all');
+  const [mercadoQuery, setMercadoQuery] = useState('');
   const [activeStoreModal, setActiveStoreModal] = useState(null);
   const [showStoreConfigModal, setShowStoreConfigModal] = useState(false);
   const [configModalInitialTab, setConfigModalInitialTab] = useState('perfil');
@@ -675,6 +679,22 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
 
   const cleanQuery = normStr(searchQuery);
 
+  // Tipo de comercio de un producto (los antiguos sin tipo son de comida)
+  const getProdType = (p) => (p?.businessType && BUSINESS_TYPES[p.businessType]) ? p.businessType : 'restaurante';
+
+  // Categorías (farmacia, ferretería, alquiler...) a las que hace referencia la búsqueda
+  const searchMatchedTypes = findBusinessTypesForQuery(searchQuery);
+
+  // Texto extra buscable de un producto: tipo, sub-categoría y etiquetas
+  const prodMetaText = (p) => {
+    const t = getProdType(p);
+    return normStr([
+      BUSINESS_TYPES[t]?.label,
+      getCategoryLabel(t, p.category),
+      ...(Array.isArray(p.dietaryTags) ? p.dietaryTags : []),
+    ].join(' '));
+  };
+
   // Platillos coincidentes en tiempo real
   const searchMatchedProducts = cleanQuery ? allPlatformProducts.filter(p => {
     const n = normStr(p.name);
@@ -682,6 +702,8 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
     const c = normStr(p.category);
     const s = normStr(p.storeName);
     return n.includes(cleanQuery) || d.includes(cleanQuery) || c.includes(cleanQuery) || s.includes(cleanQuery) ||
+      prodMetaText(p).includes(cleanQuery) ||
+      (getProdType(p) !== 'restaurante' && searchMatchedTypes.includes(getProdType(p))) ||
       (cleanQuery.includes('chicharon') && (n.includes('chicharron') || d.includes('chicharron'))) ||
       (cleanQuery.includes('chicharron') && (n.includes('chicharon') || d.includes('chicharon'))) ||
       (cleanQuery.includes('yaroa') && (n.includes('yaroa') || d.includes('yaroa'))) ||
@@ -3278,6 +3300,29 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                       </button>
                     </div>
 
+                    {/* 0. Categorías del Mercado relacionadas con la búsqueda */}
+                    {searchMatchedTypes.length > 0 && (
+                      <div style={{ marginBottom: 18 }}>
+                        <div style={{ fontWeight: 900, fontSize: 13, color: '#7c3aed', textTransform: 'uppercase', marginBottom: 10 }}>
+                          🛍️ Categorías en Mercado ({searchMatchedTypes.length})
+                        </div>
+                        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                          {searchMatchedTypes.map(t => {
+                            const count = allPlatformProducts.filter(p => getProdType(p) === t).length;
+                            return (
+                              <button
+                                key={t}
+                                onClick={() => { setMercadoType(t); setMercadoSub('all'); setMercadoQuery(''); setActiveTab('mercado'); window.dispatchEvent(new CustomEvent('mandame-switch-tab', { detail: 'mercado' })); }}
+                                style={{ padding: '8px 12px', borderRadius: 14, border: '1.5px solid #ddd6fe', background: 'linear-gradient(135deg, #f5f3ff, #ffffff)', color: '#4c1d95', fontWeight: 800, fontSize: 12, cursor: 'pointer', boxShadow: '0 2px 8px rgba(124,58,237,0.08)' }}
+                              >
+                                {BUSINESS_TYPES[t].label} <span style={{ opacity: 0.7 }}>({count})</span> →
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
                     {/* 1. Platillos Coincidentes */}
                     {searchMatchedProducts.length > 0 && (
                       <div style={{ marginBottom: 20 }}>
@@ -3441,7 +3486,95 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                   <p style={{ margin: 0, fontSize: 12, opacity: 0.95 }}>Supermercados, víveres frescos criollos, farmacias y licorerías de Santiago directo a tu puerta.</p>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 }}>
+                {(() => {
+                  const mq = normStr(mercadoQuery);
+                  const typeEntries = Object.entries(BUSINESS_TYPES).filter(([k]) => k !== 'restaurante');
+                  const prodsOfType = (t) => allPlatformProducts.filter(p => getProdType(p) === t && p.inStock !== false);
+                  const renderProd = (prod) => {
+                    const t = getProdType(prod);
+                    const rp = prod.rentalPrices && Object.values(prod.rentalPrices).filter(v => v > 0);
+                    return (
+                      <div key={prod.id} onClick={() => { setCustomizeModalImgIndex(0); setCustomizeProduct(prod); }} style={{ cursor: 'pointer', background: 'white', borderRadius: 16, padding: 10, boxShadow: '0 4px 14px rgba(0,0,0,0.06)', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                        <div style={{ position: 'relative' }}>
+                          <img src={prod.image} alt={prod.name} style={{ width: '100%', height: 95, objectFit: 'cover', borderRadius: 12, marginBottom: 8 }} />
+                          {prod.storeName && (
+                            <span style={{ position: 'absolute', bottom: 12, left: 4, background: 'rgba(0,0,0,0.75)', color: '#fff', fontSize: '9px', fontWeight: 800, padding: '2px 6px', borderRadius: 6 }}>🏪 {prod.storeName}</span>
+                          )}
+                        </div>
+                        <div>
+                          <div style={{ fontSize: 9.5, fontWeight: 800, color: '#7c3aed', marginBottom: 2 }}>{getCategoryLabel(t, prod.category) || BUSINESS_TYPES[t]?.label}</div>
+                          <div style={{ fontWeight: 800, fontSize: 12.5, color: '#1e293b', marginBottom: 4, lineHeight: 1.2 }}>{prod.name}</div>
+                          <div style={{ fontWeight: 900, color: '#ff6b00', fontSize: 14 }}>
+                            {rp && rp.length > 0 ? `Desde RD$ ${Math.min(...rp)}` : `RD$ ${prod.price}`}
+                          </div>
+                        </div>
+                        <button onClick={(e) => { e.stopPropagation(); setCustomizeModalImgIndex(0); setCustomizeProduct(prod); }} style={{ width: '100%', marginTop: 8, background: '#ff6b00', color: 'white', border: 'none', padding: '6px 0', borderRadius: 10, fontWeight: 900, fontSize: 11, cursor: 'pointer' }}>
+                          {BUSINESS_TYPES[t]?.rental ? 'Ver Alquiler' : '+ Agregar'}
+                        </button>
+                      </div>
+                    );
+                  };
+
+                  // ── Vista de una categoría concreta ──
+                  if (mercadoType && BUSINESS_TYPES[mercadoType]) {
+                    const cfg = BUSINESS_TYPES[mercadoType];
+                    const list = prodsOfType(mercadoType).filter(p =>
+                      (mercadoSub === 'all' || p.category === mercadoSub) &&
+                      (!mq || normStr(p.name).includes(mq) || normStr(p.description).includes(mq) || normStr(p.storeName).includes(mq))
+                    );
+                    return (
+                      <div>
+                        <button onClick={() => { setMercadoType(null); setMercadoSub('all'); }} style={{ background: 'none', border: 'none', color: '#ff6b00', fontWeight: 900, fontSize: 13, cursor: 'pointer', marginBottom: 8, padding: 0 }}>← Todas las categorías</button>
+                        <div style={{ fontWeight: 900, fontSize: 17, color: '#1e293b', marginBottom: 10 }}>{cfg.label}</div>
+                        <input type="text" value={mercadoQuery} onChange={e => setMercadoQuery(e.target.value)} placeholder={`Buscar en ${cfg.label.replace(/^\S+\s/, '')}...`} style={{ width: '100%', boxSizing: 'border-box', padding: '10px 14px', borderRadius: 14, border: '2px solid #ff6b00', marginBottom: 10, fontSize: 13, outline: 'none' }} />
+                        <div style={{ display: 'flex', gap: 8, overflowX: 'auto', scrollbarWidth: 'none', marginBottom: 14, paddingBottom: 4 }}>
+                          {[['all', '🔥 Todo'], ...cfg.categories].map(([k, lbl]) => (
+                            <button key={k} onClick={() => setMercadoSub(k)} style={{ padding: '6px 12px', borderRadius: 20, whiteSpace: 'nowrap', fontWeight: 800, fontSize: 12, cursor: 'pointer', border: mercadoSub === k ? '2px solid #ff6b00' : '1px solid #e2e8f0', background: mercadoSub === k ? '#ff6b00' : '#fff', color: mercadoSub === k ? '#fff' : '#475569' }}>{lbl}</button>
+                          ))}
+                        </div>
+                        {list.length > 0 ? (
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 10 }}>{list.map(renderProd)}</div>
+                        ) : (
+                          <div style={{ textAlign: 'center', padding: '32px 16px', background: '#f8fafc', borderRadius: 20, border: '1.5px dashed #cbd5e1' }}>
+                            <div style={{ fontSize: 36, marginBottom: 8 }}>🛍️</div>
+                            <div style={{ fontWeight: 800, fontSize: 15, color: '#334155' }}>Aún no hay productos aquí</div>
+                            <div style={{ fontSize: 12, color: '#64748b', marginTop: 4 }}>Cuando un comercio de esta categoría publique algo, aparecerá aquí al instante.</div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  }
+
+                  // ── Vista general: todas las categorías ──
+                  const globalHits = mq ? allPlatformProducts.filter(p => getProdType(p) !== 'restaurante' && (normStr(p.name).includes(mq) || normStr(p.description).includes(mq) || prodMetaText(p).includes(mq))) : [];
+                  const typeHits = mq ? findBusinessTypesForQuery(mercadoQuery) : null;
+                  return (
+                    <div>
+                      <input type="text" value={mercadoQuery} onChange={e => setMercadoQuery(e.target.value)} placeholder="Buscar en Mercado: farmacia, taladro, ropa, celular..." style={{ width: '100%', boxSizing: 'border-box', padding: '10px 14px', borderRadius: 14, border: '2px solid #ff6b00', marginBottom: 14, fontSize: 13, outline: 'none' }} />
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 18 }}>
+                        {typeEntries.filter(([k]) => !typeHits || typeHits.includes(k)).map(([k, cfg]) => {
+                          const count = prodsOfType(k).length;
+                          const [emoji, ...rest] = cfg.label.split(' ');
+                          return (
+                            <div key={k} onClick={() => { setMercadoType(k); setMercadoSub('all'); setMercadoQuery(''); }} style={{ background: 'white', padding: 14, borderRadius: 16, border: '1.5px solid #e2e8f0', textAlign: 'center', cursor: 'pointer', boxShadow: '0 2px 10px rgba(0,0,0,0.04)', transition: 'transform .15s' }} onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'} onMouseLeave={e => e.currentTarget.style.transform = 'none'}>
+                              <div style={{ fontSize: 34, marginBottom: 4 }}>{emoji}</div>
+                              <div style={{ fontWeight: 900, fontSize: 12.5, color: '#1e293b', lineHeight: 1.2 }}>{rest.join(' ')}</div>
+                              <div style={{ fontSize: 10.5, color: count ? '#ff6b00' : '#94a3b8', fontWeight: 800, marginTop: 4 }}>{count} {count === 1 ? 'producto' : 'productos'}</div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                      {globalHits.length > 0 && (
+                        <div>
+                          <div style={{ fontWeight: 900, fontSize: 13, color: '#ff6b00', textTransform: 'uppercase', marginBottom: 10 }}>🔎 Productos encontrados ({globalHits.length})</div>
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 10 }}>{globalHits.map(renderProd)}</div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
+
+                <div style={{ display: 'none' }}>
                   <div style={{ background: 'white', padding: 14, borderRadius: 16, border: '1.5px solid #e2e8f0', textAlign: 'center', cursor: 'pointer' }} onClick={() => showToast('🛒 Abriendo Supermercados')}>
                     <img src="assets/grocery_bag_3d.png" style={{ width: 60, height: 60, objectFit: 'contain', margin: '0 auto 6px' }} alt="" />
                     <div style={{ fontWeight: 900, fontSize: 13, color: '#1e293b' }}>Supermercados</div>

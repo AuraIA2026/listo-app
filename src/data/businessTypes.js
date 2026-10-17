@@ -160,6 +160,123 @@ export const BUSINESS_TYPES = {
       { key: 'garantia', label: '🛡️ Garantía', options: ['Sin garantía', '30 días', '3 meses', '6 meses', '1 año'] },
     ],
   },
+
+  mascotas: {
+    label: '🐾 Mascotas & Veterinaria',
+    visitLabel: 'Ver tienda de mascotas',
+    itemLabel: 'Producto',
+    descLabel: 'Descripción',
+    categories: [
+      ['alimento', '🦴 Alimento'], ['accesorios_mascota', '🎾 Juguetes & Accesorios'],
+      ['higiene_mascota', '🛁 Higiene & Grooming'], ['salud_mascota', '💉 Salud Veterinaria'],
+    ],
+    tags: ['🐶 Perros', '🐱 Gatos', '🐦 Aves', '🔥 Más Vendido', '💸 En Oferta'],
+    optionGroups: [
+      { key: 'tamano_mascota', label: '📏 Tamaño de Mascota', options: ['Cachorro', 'Pequeño', 'Mediano', 'Grande'] },
+    ],
+  },
+
+  hogar: {
+    label: '🛋️ Hogar, Muebles & Decoración',
+    visitLabel: 'Ver tienda de hogar',
+    itemLabel: 'Artículo',
+    descLabel: 'Descripción / Medidas',
+    categories: [
+      ['muebles', '🛋️ Muebles'], ['cocina', '🍳 Cocina'], ['decoracion', '🖼️ Decoración'],
+      ['colchones', '🛏️ Colchones & Ropa de Cama'], ['bano', '🚿 Baño'],
+    ],
+    tags: ['🆕 Nuevo', '🔥 Más Vendido', '💸 En Oferta', '🚚 Entrega a Domicilio', '🔧 Incluye Instalación'],
+    optionGroups: [
+      { key: 'colores', label: '🎨 Colores', options: ['⚫ Negro', '⚪ Blanco', '🟤 Madera', '🩶 Gris', '🟤 Beige'] },
+    ],
+  },
+
+  papeleria: {
+    label: '📚 Papelería & Librería',
+    visitLabel: 'Ver papelería',
+    itemLabel: 'Producto',
+    descLabel: 'Descripción',
+    categories: [
+      ['escolar', '🎒 Útiles Escolares'], ['oficina', '🖇️ Oficina'], ['libros', '📖 Libros'],
+      ['impresion', '🖨️ Impresión & Copias'],
+    ],
+    tags: ['🔥 Más Vendido', '💸 En Oferta', '🎒 Regreso a Clases', '📦 Al por Mayor'],
+    optionGroups: [],
+  },
+
+  repuestos: {
+    label: '🚗 Repuestos & Accesorios de Vehículos',
+    visitLabel: 'Ver repuestos',
+    itemLabel: 'Repuesto',
+    descLabel: 'Descripción / Compatibilidad',
+    categories: [
+      ['motor', '⚙️ Motor'], ['frenos', '🛑 Frenos'], ['gomas', '🛞 Gomas & Aros'],
+      ['aceites', '🛢️ Aceites & Lubricantes'], ['baterias', '🔋 Baterías'], ['motos', '🏍️ Motores / Motos'],
+    ],
+    tags: ['🆕 Nuevo', '♻️ Usado', '🛡️ Con Garantía', '⭐ Original', '🔧 Instalación Incluida'],
+    optionGroups: [],
+  },
+
+  alquiler_eventos: {
+    label: '🎉 Alquiler para Eventos',
+    visitLabel: 'Ver alquiler de eventos',
+    itemLabel: 'Artículo',
+    descLabel: 'Descripción',
+    rental: true,
+    priceLabel: 'Precio Base (RD$)',
+    categories: [
+      ['sillas_mesas', '🪑 Sillas & Mesas'], ['carpas', '⛺ Carpas'], ['sonido', '🔊 Sonido & Luces'],
+      ['decoracion_evento', '🎈 Decoración'], ['inflables', '🏰 Inflables'],
+    ],
+    tags: ['✅ Disponible Hoy', '🚚 Entrega & Montaje', '🛡️ Requiere Depósito'],
+    optionGroups: [
+      { key: 'modalidad', label: '⏱️ Modalidad', options: ['Por Hora', 'Por Día', 'Fin de Semana'] },
+    ],
+  },
+};
+
+// Palabras que la gente escribe en "Buscar" y que apuntan a cada tipo de comercio
+export const BUSINESS_KEYWORDS = {
+  restaurante: ['comida', 'restaurante', 'comer', 'almuerzo', 'cena', 'desayuno', 'pizza', 'pollo', 'hamburguesa', 'burger', 'yaroa', 'chicharron', 'empanada', 'sushi', 'taco', 'postre', 'bebida', 'jugo'],
+  ropa: ['ropa', 'tienda', 'boutique', 'camisa', 'pantalon', 'jean', 'vestido', 'zapato', 'tenis', 'calzado', 'gorra', 'moda', 'uniforme', 'bolso'],
+  herramientas: ['alquiler', 'alquilar', 'rentar', 'renta', 'herramienta', 'equipo', 'taladro', 'andamio', 'generador', 'planta electrica', 'compresor', 'hidrolavadora', 'sierra', 'maquinaria', 'soldadora'],
+  ferreteria: ['ferreteria', 'material', 'cemento', 'block', 'tornillo', 'clavo', 'pintura', 'plomeria', 'tubo', 'cable', 'madera', 'martillo'],
+  farmacia: ['farmacia', 'medicina', 'medicamento', 'pastilla', 'remedio', 'salud', 'vitamina', 'jarabe', 'receta', 'panal', 'curita', 'botica'],
+  supermercado: ['supermercado', 'super', 'colmado', 'mercado', 'viveres', 'compra', 'arroz', 'habichuela', 'aceite', 'leche', 'huevo', 'carne', 'pan', 'cerveza', 'refresco', 'agua'],
+  belleza: ['belleza', 'cosmetico', 'maquillaje', 'perfume', 'crema', 'cabello', 'una', 'salon', 'barberia', 'shampoo'],
+  electronica: ['electronica', 'celular', 'telefono', 'iphone', 'samsung', 'computadora', 'laptop', 'tv', 'television', 'audifono', 'cargador', 'gaming', 'consola', 'nevera', 'estufa'],
+  mascotas: ['mascota', 'perro', 'gato', 'veterinaria', 'veterinario', 'alimento perro', 'dog chow', 'pet'],
+  hogar: ['hogar', 'mueble', 'sofa', 'cama', 'colchon', 'decoracion', 'cocina', 'mesa', 'silla', 'cortina'],
+  papeleria: ['papeleria', 'libreria', 'cuaderno', 'lapiz', 'libro', 'utiles', 'escolar', 'oficina', 'impresion', 'copia'],
+  repuestos: ['repuesto', 'pieza', 'carro', 'vehiculo', 'motor', 'moto', 'goma', 'llanta', 'aceite motor', 'bateria', 'freno'],
+  alquiler_eventos: ['evento', 'fiesta', 'boda', 'cumpleanos', 'carpa', 'silla', 'mesa', 'sonido', 'inflable', 'decoracion fiesta'],
+};
+
+// Normaliza texto: minúsculas, sin acentos, sin espacios/símbolos
+export const normBizText = (str) =>
+  (str || '').toString().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '');
+
+// Devuelve los tipos de comercio a los que hace referencia lo que el usuario escribió
+export const findBusinessTypesForQuery = (rawQuery) => {
+  const q = normBizText(rawQuery);
+  if (q.length < 3) return [];
+  return Object.entries(BUSINESS_TYPES)
+    .filter(([key, cfg]) => {
+      const words = [
+        cfg.label,
+        ...(BUSINESS_KEYWORDS[key] || []),
+        ...cfg.categories.map(([, lbl]) => lbl),
+      ].map(normBizText).filter(Boolean);
+      return words.some(w => w.includes(q) || (q.length >= 4 && w.length >= 4 && q.includes(w)));
+    })
+    .map(([key]) => key);
+};
+
+// Etiqueta legible de la sub-categoría de un producto
+export const getCategoryLabel = (type, catKey) => {
+  const cfg = BUSINESS_TYPES[type];
+  const found = cfg?.categories.find(([k]) => k === catKey);
+  return found ? found[1] : '';
 };
 
 export const RENTAL_PERIODS = [
