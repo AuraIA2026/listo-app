@@ -1,6 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { doc, setDoc, updateDoc, serverTimestamp, collection, query, where, onSnapshot, addDoc, deleteDoc, limit } from 'firebase/firestore';
-import { auth, db } from '../firebase';
+import { auth, db, functions as fbFunctions } from '../firebase';
+import { httpsCallable } from 'firebase/functions';
+
+// Pasarela AZUL (Payment Page). Cambia VITE_AZUL_URL a https://pagos.azul.com.do/paymentpage/Default.aspx en producción.
+const AZUL_PAYMENT_URL = import.meta.env.VITE_AZUL_URL || 'https://pruebas.azul.com.do/paymentpage/Default.aspx';
+const AZUL_WEBHOOK_URL = 'https://us-central1-listoapp-52b46.cloudfunctions.net/azulWebHook';
 import './MandamePage.css';
 import './HomePage.css';
 import PedidosListoHub from '../components/PedidosListoHub';
@@ -2115,7 +2120,9 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
       orderType: isPickup ? 'pickup' : 'delivery',
       fulfillmentType: isPickup ? 'pickup' : 'delivery',
       driverType: isPickup ? 'pickup' : 'mandame',
-      status: 'pending',
+      status: checkoutPaymentMethod === 'tarjeta' ? 'awaiting_payment' : 'pending',
+      paymentStatus: checkoutPaymentMethod === 'tarjeta' ? 'pendiente' : (checkoutPaymentMethod === 'efectivo' ? 'contra_entrega' : 'por_verificar'),
+      orderNumber: generatedOrderId,
       clientId: currentUid,
       clientName: clientNameClean,
       clientPhone: phoneToUse,
@@ -2146,6 +2153,43 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
 
     try {
       const docRef = await addDoc(collection(db, 'orders'), orderPayload);
+
+      // 💳 PAGO CON TARJETA: redirigir a la pasarela segura AZUL
+      if (checkoutPaymentMethod === 'tarjeta') {
+        const amountCents = String(Math.round(cartTotal * 100));
+        const base = window.location.origin;
+        const signData = {
+          MerchantName: 'Pedidos Listo',
+          MerchantType: 'E-Commerce',
+          CurrencyCode: '$',
+          OrderNumber: generatedOrderId,
+          Amount: amountCents,
+          ApprovedUrl: AZUL_WEBHOOK_URL,
+          DeclinedUrl: `${base}/?pedidoPago=declinado&orden=${generatedOrderId}`,
+          CancelUrl: `${base}/?pedidoPago=cancelado&orden=${generatedOrderId}`,
+        };
+        const { data: firma } = await httpsCallable(fbFunctions, 'generarFirmaAzul')(signData);
+        const fields = {
+          MerchantId: firma.MerchantId, ...signData, ITBIS: firma.ITBIS,
+          ResponsePostUrl: firma.ResponsePostUrl,
+          UseCustomField1: '0', CustomField1Label: '', CustomField1Value: '',
+          UseCustomField2: '0', CustomField2Label: '', CustomField2Value: '',
+          AuthHash: firma.AuthHash,
+        };
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = AZUL_PAYMENT_URL;
+        Object.entries(fields).forEach(([k, v]) => {
+          const inp = document.createElement('input');
+          inp.type = 'hidden'; inp.name = k; inp.value = v ?? '';
+          form.appendChild(inp);
+        });
+        document.body.appendChild(form);
+        showToast('🔒 Redirigiendo a la pasarela segura AZUL...');
+        setCart([]);
+        form.submit();
+        return;
+      }
 
       // Crear Notificación oficial para el Cliente
       try {
@@ -6586,7 +6630,37 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                       >
                         🏦 Transferencia
                       </button>
+                      <button
+                        type="button"
+                        id="pay-method-card"
+                        onClick={() => setCheckoutPaymentMethod('tarjeta')}
+                        style={{
+                          gridColumn: '1 / -1',
+                          padding: '10px 8px',
+                          borderRadius: 12,
+                          border: checkoutPaymentMethod === 'tarjeta' ? '2px solid #ff6b00' : '1.5px solid #E2E8F0',
+                          background: checkoutPaymentMethod === 'tarjeta' ? '#FFF4EE' : '#FFFFFF',
+                          color: checkoutPaymentMethod === 'tarjeta' ? '#C2410C' : '#334155',
+                          fontWeight: 800,
+                          fontSize: 12,
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: 6
+                        }}
+                      >
+                        💳 Tarjeta de Crédito / Débito
+                        <span style={{ fontSize: 9.5, fontWeight: 900, background: '#1e3a8a', color: '#fff', padding: '2px 6px', borderRadius: 5 }}>VISA</span>
+                        <span style={{ fontSize: 9.5, fontWeight: 900, background: '#ea580c', color: '#fff', padding: '2px 6px', borderRadius: 5 }}>MC</span>
+                      </button>
                     </div>
+
+                    {checkoutPaymentMethod === 'tarjeta' && (
+                      <div style={{ marginTop: 8, padding: '8px 10px', background: '#EFF6FF', borderRadius: 10, border: '1px solid #BFDBFE', fontSize: 11, color: '#1E3A8A', fontWeight: 700, lineHeight: 1.4 }}>
+                        🔒 Serás llevado a la pasarela segura de <strong>AZUL (Banco Popular)</strong> para pagar RD$ {cartTotal.toLocaleString()}. Tus datos de tarjeta nunca se guardan en Pedidos Listo.
+                      </div>
+                    )}
 
                     {checkoutPaymentMethod === 'efectivo' && (
                       <div style={{ marginTop: 8, padding: '8px 10px', background: '#F8FAFC', borderRadius: 10, border: '1px solid #E2E8F0' }}>

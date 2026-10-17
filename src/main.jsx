@@ -33,6 +33,23 @@ class GlobalErrorBoundary extends Component {
   }
 }
 
+// Resultado del pago con tarjeta (AZUL) al regresar a Pedidos Listo
+try {
+  const qp = new URLSearchParams(window.location.search);
+  const estadoPago = qp.get('pedidoPago');
+  if (estadoPago) {
+    const orden = qp.get('orden') || '';
+    const msgs = {
+      aprobado: `\u2705 \u00a1Pago aprobado! Tu pedido #${orden} fue confirmado y ya est\u00e1 en preparaci\u00f3n. Revisa tus notificaciones para ver tu PIN.`,
+      declinado: `\u274c El pago del pedido #${orden} fue declinado. Intenta con otra tarjeta o elige efectivo/transferencia.`,
+      cancelado: `\u26a0\ufe0f Cancelaste el pago del pedido #${orden}. No se realiz\u00f3 ning\u00fan cargo.`,
+      error: `\u26a0\ufe0f Hubo un problema verificando el pago del pedido #${orden}. Cont\u00e1ctanos si se hizo el cargo.`,
+    };
+    window.history.replaceState({}, '', window.location.pathname);
+    setTimeout(() => alert(msgs[estadoPago] || msgs.error), 800);
+  }
+} catch (e) {}
+
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <GlobalErrorBoundary>

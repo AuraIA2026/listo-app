@@ -160,6 +160,8 @@ exports.azulWebHook = functions.https.onRequest(async (req, res) => {
       console.warn(`⚠️ Pago NO aprobado. IsoCode: ${isoCode}, Mensaje: ${responseMessage}`);
       if (orderNumber.startsWith("PLAN_")) {
         return res.redirect(`https://listopatron.vercel.app/profile?planError=declined`);
+      } else if (orderNumber.startsWith("PL-")) {
+        return res.redirect(`https://listopatron.vercel.app/?pedidoPago=declinado&orden=${orderNumber}`);
       } else {
         return res.redirect(`https://listopatron.vercel.app/orders?payment=error`);
       }
@@ -202,6 +204,56 @@ exports.azulWebHook = functions.https.onRequest(async (req, res) => {
 
       // Plan inválido — redirigir con error
       return res.redirect(`https://listopatron.vercel.app/profile?planError=invalid`);
+    }
+
+    // ── PEDIDOS LISTO (comida / tiendas): formato PL-{numero} ──
+    if (orderNumber.startsWith("PL-")) {
+      const snap = await db.collection("orders").where("orderNumber", "==", orderNumber).limit(1).get();
+      if (snap.empty) {
+        console.warn(`⚠️ Pedido Listo no encontrado: ${orderNumber}`);
+        await db.collection("transacciones").add({
+          orderNumber, montoTotal: monto, tipo: "tarjeta", origen: "pedidos_listo",
+          nota: "orden_no_encontrada", fecha: admin.firestore.FieldValue.serverTimestamp(),
+        });
+        return res.redirect(`https://listopatron.vercel.app/?pedidoPago=error&orden=${orderNumber}`);
+      }
+      const orderDoc = snap.docs[0];
+      const order = orderDoc.data();
+      const comision = Math.round(monto * 0.10);
+
+      const batch = db.batch();
+      batch.update(orderDoc.ref, {
+        status: "pending",               // pasa a la comandera
+        paymentStatus: "pagado",
+        paymentMethod: "tarjeta",
+        montoPagado: monto,
+        transaccionId: payload.RRN || payload.AzulOrderId || orderNumber,
+        authorizationCode: payload.AuthorizationCode || null,
+        fechaPago: admin.firestore.FieldValue.serverTimestamp(),
+      });
+      batch.set(db.collection("transacciones").doc(), {
+        orderNumber, orderId: orderDoc.id, origen: "pedidos_listo",
+        clienteId: order.clientId || null, storeName: order.storeName || null,
+        montoTotal: monto, tuComision: comision, pagoComercio: monto - comision,
+        tipo: "tarjeta", fecha: admin.firestore.FieldValue.serverTimestamp(),
+      });
+      batch.set(db.collection("notificaciones").doc(), {
+        userId: order.clientId || "", orderId: orderDoc.id, type: "new_order",
+        title: "💳 ¡Pago aprobado! Pedido confirmado",
+        text: `Tu pago de RD$ ${monto.toLocaleString()} para la orden #${orderNumber} fue aprobado. Tu PIN es ${order.pinOTP || ""}.`,
+        read: false, icon: "💳", pinOTP: order.pinOTP || null,
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+      batch.set(db.collection("notificaciones").doc(), {
+        userId: "merchant", orderId: orderDoc.id, type: "kitchen_order",
+        title: "💳 ¡Nuevo pedido PAGADO con tarjeta!",
+        text: `Pedido #${orderNumber} (${order.clientName || "Cliente"}) por RD$ ${monto.toLocaleString()} ya está pagado. ¡A preparar!`,
+        read: false, icon: "🔔", pinOTP: order.pinOTP || null,
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+      await batch.commit();
+      console.log(`✅ Pedido Listo pagado | ${orderNumber} | RD$${monto}`);
+      return res.redirect(`https://listopatron.vercel.app/?pedidoPago=aprobado&orden=${orderNumber}`);
     }
 
     // ── SERVICIOS: formato ORD-{timestamp} ───────────────────
