@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { doc, setDoc, updateDoc, serverTimestamp, collection, query, where, onSnapshot, addDoc, deleteDoc, limit } from 'firebase/firestore';
+import { doc, getDoc, setDoc, updateDoc, serverTimestamp, collection, query, where, onSnapshot, addDoc, deleteDoc, limit } from 'firebase/firestore';
 import { auth, db, functions as fbFunctions } from '../firebase';
 import { httpsCallable } from 'firebase/functions';
 
@@ -287,14 +287,79 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
   const [viewMode, setViewMode] = useState(() => {
     try {
       const saved = localStorage.getItem('pedidos_listo_view_mode');
-      if (saved === 'merchant') {
+      // Solo entra directo al comercio si ya puso su contraseña en esta sesión
+      if (saved === 'merchant' && sessionStorage.getItem('pl_merchant_unlocked') === '1') {
         return 'merchant';
       }
     } catch (e) {}
     return 'client';
   }); // 'client' | 'merchant'
 
-  const handleSetViewMode = (mode) => {
+  // ── CONTRASEÑA (PIN) PARA ENTRAR A "MI COMERCIO" ──
+  const [pinModal, setPinModal] = useState(null); // null | 'create' | 'enter'
+  const [pinInput, setPinInput] = useState('');
+  const [pinConfirm, setPinConfirm] = useState('');
+  const [pinError, setPinError] = useState('');
+  const hashPin = async (pin) => {
+    const uid = auth?.currentUser?.uid || 'local';
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(`listo:${uid}:${pin}`));
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+  };
+  const getStoredPinHash = async () => {
+    const uid = auth?.currentUser?.uid;
+    if (uid) {
+      try {
+        const snap = await getDoc(doc(db, 'users', uid));
+        if (snap.exists() && snap.data().merchantPinHash) return snap.data().merchantPinHash;
+      } catch (e) {}
+    }
+    try { return localStorage.getItem('pl_merchant_pin_hash'); } catch (e) { return null; }
+  };
+  const unlockMerchant = () => {
+    try { sessionStorage.setItem('pl_merchant_unlocked', '1'); } catch (e) {}
+    setPinModal(null); setPinInput(''); setPinConfirm(''); setPinError('');
+    setViewMode('merchant');
+    try {
+      localStorage.setItem('pedidos_listo_view_mode', 'merchant');
+      localStorage.setItem('force_listo_merchant_mode', 'true');
+    } catch (e) {}
+  };
+  const handleSubmitPin = async () => {
+    if (!/^\d{4,6}$/.test(pinInput)) { setPinError('La contraseña debe tener de 4 a 6 números'); return; }
+    if (pinModal === 'create') {
+      if (pinInput !== pinConfirm) { setPinError('Las contraseñas no coinciden'); return; }
+      const h = await hashPin(pinInput);
+      try { localStorage.setItem('pl_merchant_pin_hash', h); } catch (e) {}
+      const uid = auth?.currentUser?.uid;
+      if (uid) { try { await setDoc(doc(db, 'users', uid), { merchantPinHash: h }, { merge: true }); } catch (e) {} }
+      showToast('🔐 ¡Contraseña de Mi Comercio creada!');
+      unlockMerchant();
+      return;
+    }
+    const stored = await getStoredPinHash();
+    if (stored && stored === await hashPin(pinInput)) {
+      unlockMerchant();
+    } else {
+      setPinError('❌ Contraseña incorrecta');
+      setPinInput('');
+    }
+  };
+
+  const handleSetViewMode = async (mode) => {
+    // 🔐 Pedir contraseña antes de entrar a Mi Comercio
+    if (mode === 'merchant') {
+      let unlocked = false;
+      try { unlocked = sessionStorage.getItem('pl_merchant_unlocked') === '1'; } catch (e) {}
+      if (!unlocked) {
+        const stored = await getStoredPinHash();
+        setPinError(''); setPinInput(''); setPinConfirm('');
+        setPinModal(stored ? 'enter' : 'create');
+        return;
+      }
+    } else {
+      // Al salir del comercio se vuelve a bloquear
+      try { sessionStorage.removeItem('pl_merchant_unlocked'); } catch (e) {}
+    }
     setViewMode(mode);
     try {
       localStorage.setItem('pedidos_listo_view_mode', mode);
@@ -1005,7 +1070,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
         let hasNewIncoming = false;
         let latestNewOrder = null;
 
-        const liveOrders = snapshot.docs.map(docSnap => {
+        const liveOrders = snapshot.docs.filter(s => !s.data().merchantArchived).map(docSnap => {
           const d = docSnap.data();
           const docId = docSnap.id;
 
@@ -1285,6 +1350,37 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
     } else {
       alert(`❌ Token PIN OTP incorrecto. El cliente/repartidor debe proporcionar la clave válida (${targetOrder.pinOTP}).`);
     }
+  };
+
+  // 🗑️ Borrar pedido de la Comandera (se archiva: el cliente conserva su historial)
+  const handleArchiveOrder = async (order) => {
+    if (!order?.id) return;
+    if (!window.confirm(`¿Borrar el pedido #${order.orderId} de la Comandera?`)) return;
+    setMerchantState(prev => ({ ...prev, orders: prev.orders.filter(o => o.id !== order.id) }));
+    try {
+      await updateDoc(doc(db, 'orders', order.id), { merchantArchived: true, archivedAt: serverTimestamp() });
+      showToast(`🗑️ Pedido #${order.orderId} borrado`);
+    } catch (e) {
+      console.warn('Error archivando pedido:', e);
+      showToast('⚠️ No se pudo borrar el pedido');
+    }
+  };
+
+  // 🗑️ Borrar en lote: entregados + los de días anteriores
+  const handleClearOldOrders = async () => {
+    const startOfToday = new Date(); startOfToday.setHours(0, 0, 0, 0);
+    const old = (merchantState.orders || []).filter(o =>
+      o.status === 'completed' || (o.rawTime && o.rawTime < startOfToday.getTime())
+    );
+    if (old.length === 0) { showToast('✅ No hay pedidos viejos para borrar'); return; }
+    if (!window.confirm(`¿Borrar ${old.length} pedido(s) viejo(s) de la Comandera?\n(Entregados o de días anteriores)`)) return;
+    const ids = new Set(old.map(o => o.id));
+    setMerchantState(prev => ({ ...prev, orders: prev.orders.filter(o => !ids.has(o.id)) }));
+    const results = await Promise.allSettled(old.map(o =>
+      updateDoc(doc(db, 'orders', o.id), { merchantArchived: true, archivedAt: serverTimestamp() })
+    ));
+    const ok = results.filter(r => r.status === 'fulfilled').length;
+    showToast(`🗑️ ${ok} pedido(s) viejo(s) borrado(s)`);
   };
 
   const handleSimulateNewIncomingOrder = () => {
@@ -4794,6 +4890,13 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                 >
                   ⚡ Simular Nuevo Pedido Entrante de Cliente (Prueba Live con Alarma)
                 </button>
+                <button
+                  id="btn-clear-old-orders"
+                  onClick={handleClearOldOrders}
+                  style={{ width: '100%', marginTop: 8, background: 'rgba(239,68,68,0.12)', color: '#FCA5A5', border: '1.5px solid rgba(239,68,68,0.5)', padding: '10px 12px', borderRadius: 12, fontWeight: 900, fontSize: 12.5, cursor: 'pointer' }}
+                >
+                  🗑️ Borrar pedidos viejos (entregados o de días anteriores)
+                </button>
               </div>
 
               {/* Status Filter Tabs */}
@@ -4973,12 +5076,21 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                             <div style={{ fontWeight: 900, fontSize: 16, color: '#00e699' }}>RD$ {order.total}</div>
                           </div>
 
-                          <button
-                            onClick={() => setSelectedTicketOrder(order)}
-                            style={{ background: 'rgba(255,255,255,0.1)', color: 'white', border: '1px solid rgba(255,255,255,0.2)', padding: '8px 12px', borderRadius: 10, fontWeight: 800, fontSize: 11, cursor: 'pointer' }}
-                          >
-                            🖨️ Ticket Térmico
-                          </button>
+                          <div style={{ display: 'flex', gap: 6 }}>
+                            <button
+                              onClick={() => handleArchiveOrder(order)}
+                              title="Borrar este pedido de la Comandera"
+                              style={{ background: 'rgba(239,68,68,0.15)', color: '#FCA5A5', border: '1px solid rgba(239,68,68,0.45)', padding: '8px 10px', borderRadius: 10, fontWeight: 800, fontSize: 11, cursor: 'pointer' }}
+                            >
+                              🗑️ Borrar
+                            </button>
+                            <button
+                              onClick={() => setSelectedTicketOrder(order)}
+                              style={{ background: 'rgba(255,255,255,0.1)', color: 'white', border: '1px solid rgba(255,255,255,0.2)', padding: '8px 12px', borderRadius: 10, fontWeight: 800, fontSize: 11, cursor: 'pointer' }}
+                            >
+                              🖨️ Ticket Térmico
+                            </button>
+                          </div>
                         </div>
 
                         {/* Dynamic Action Buttons per State */}
@@ -5832,6 +5944,46 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
             setDbStores(prev => prev.map(s => s.id === updated.id ? updated : s));
           }}
         />
+      )}
+
+      {/* 🔐 CONTRASEÑA PARA ENTRAR A MI COMERCIO */}
+      {pinModal && (
+        <div onClick={() => setPinModal(null)} style={{ position: 'fixed', inset: 0, zIndex: 100001, background: 'rgba(5,8,15,0.75)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+          <div onClick={(e) => e.stopPropagation()} style={{ width: 'min(360px, 92vw)', background: 'white', borderRadius: 24, padding: 22, boxShadow: '0 20px 50px rgba(0,0,0,0.35)', textAlign: 'center' }}>
+            <div style={{ width: 64, height: 64, margin: '0 auto 10px', borderRadius: '50%', background: 'linear-gradient(135deg, #ff6b00, #ff8533)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 30, boxShadow: '0 8px 20px rgba(255,107,0,0.4)' }}>🔐</div>
+            <h3 style={{ margin: '0 0 4px', fontWeight: 900, fontSize: 18, color: '#0f172a' }}>
+              {pinModal === 'create' ? 'Crea tu contraseña' : 'Mi Comercio'}
+            </h3>
+            <p style={{ margin: '0 0 14px', fontSize: 12.5, color: '#64748b' }}>
+              {pinModal === 'create' ? 'Protege tu panel de comercio con una clave de 4 a 6 números.' : 'Escribe tu contraseña para entrar al panel.'}
+            </p>
+            <input
+              id="merchant-pin-input"
+              type="password" inputMode="numeric" autoFocus maxLength={6}
+              placeholder="••••"
+              value={pinInput}
+              onChange={e => { setPinInput(e.target.value.replace(/\D/g, '')); setPinError(''); }}
+              onKeyDown={e => e.key === 'Enter' && handleSubmitPin()}
+              style={{ width: '100%', boxSizing: 'border-box', textAlign: 'center', fontSize: 26, letterSpacing: 10, fontWeight: 900, padding: '12px', borderRadius: 14, border: '2px solid #ff6b00', outline: 'none', marginBottom: 10 }}
+            />
+            {pinModal === 'create' && (
+              <input
+                id="merchant-pin-confirm"
+                type="password" inputMode="numeric" maxLength={6}
+                placeholder="Repite la contraseña"
+                value={pinConfirm}
+                onChange={e => { setPinConfirm(e.target.value.replace(/\D/g, '')); setPinError(''); }}
+                onKeyDown={e => e.key === 'Enter' && handleSubmitPin()}
+                style={{ width: '100%', boxSizing: 'border-box', textAlign: 'center', fontSize: 16, fontWeight: 800, padding: '11px', borderRadius: 14, border: '1.5px solid #cbd5e1', outline: 'none', marginBottom: 10 }}
+              />
+            )}
+            {pinError && <div style={{ color: '#dc2626', fontSize: 12.5, fontWeight: 800, marginBottom: 10 }}>{pinError}</div>}
+            <button id="merchant-pin-submit" className="btn-mamey" onClick={handleSubmitPin} style={{ width: '100%', padding: 13 }}>
+              {pinModal === 'create' ? '🔐 Guardar y entrar' : '🔓 Entrar a Mi Comercio'}
+            </button>
+            <button onClick={() => setPinModal(null)} style={{ marginTop: 8, background: 'none', border: 'none', color: '#64748b', fontWeight: 800, fontSize: 12.5, cursor: 'pointer' }}>Cancelar</button>
+          </div>
+        </div>
       )}
 
       {/* VISOR DE FOTO A PANTALLA COMPLETA */}
