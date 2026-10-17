@@ -5791,11 +5791,11 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
 
       {/* CUSTOMIZE DISH MODAL WITH INTERACTIVE MULTI-PHOTO GALLERY */}
       {customizeProduct && (
-        <div className="modal-backdrop active" onClick={() => setCustomizeProduct(null)} style={{ zIndex: 99999 }}>
-          <div className="modal-card" onClick={(e) => e.stopPropagation()} style={{ maxHeight: '92vh', overflowY: 'auto', paddingBottom: 0 }}>
+        <div className="modal-backdrop active" onClick={() => setCustomizeProduct(null)} style={{ zIndex: 99999, paddingBottom: 'calc(84px + env(safe-area-inset-bottom))', boxSizing: 'border-box' }}>
+          <div className="modal-card" onClick={(e) => e.stopPropagation()} style={{ maxHeight: 'calc(100dvh - 120px)', overflowY: 'auto', paddingBottom: 0 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
               <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 900, fontSize: 17, color: '#ff6b00', margin: 0 }}>
-                🍔 {customizeProduct.name}
+                {customizeProduct.name}
               </h3>
               <div className="close-btn" onClick={() => setCustomizeProduct(null)}>&times;</div>
             </div>
@@ -5882,7 +5882,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                   </div>
                   {st && (
                     <button onClick={() => { setCustomizeProduct(null); setActiveStoreModal(st); }} style={{ padding: '6px 10px', borderRadius: 10, background: '#ff6b00', color: '#fff', border: 'none', fontSize: 11, fontWeight: 800, cursor: 'pointer', whiteSpace: 'nowrap' }}>
-                      Ver tienda
+                      {(BUSINESS_TYPES[p.businessType || st?.businessType || st?.tipoComercio]?.visitLabel) || 'Ver restaurante'}
                     </button>
                   )}
                 </div>

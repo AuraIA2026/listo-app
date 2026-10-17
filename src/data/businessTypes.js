@@ -7,6 +7,7 @@
 export const BUSINESS_TYPES = {
   restaurante: {
     label: '🍔 Restaurante / Comida',
+    visitLabel: 'Ver restaurante',
     itemLabel: 'Platillo',
     descLabel: 'Descripción / Ingredientes',
     useFoodConfig: true, // Usa el configurador original de guarniciones/bebidas/extras
@@ -26,6 +27,7 @@ export const BUSINESS_TYPES = {
 
   ropa: {
     label: '👕 Tienda de Ropa & Calzado',
+    visitLabel: 'Ver tienda',
     itemLabel: 'Prenda / Artículo',
     descLabel: 'Descripción / Material',
     categories: [
@@ -55,6 +57,7 @@ export const BUSINESS_TYPES = {
 
   herramientas: {
     label: '🔧 Alquiler de Herramientas & Equipos',
+    visitLabel: 'Ver alquiler',
     itemLabel: 'Herramienta / Equipo',
     descLabel: 'Descripción / Especificaciones Técnicas',
     rental: true,
@@ -78,6 +81,7 @@ export const BUSINESS_TYPES = {
 
   ferreteria: {
     label: '🔩 Ferretería & Materiales',
+    visitLabel: 'Ver ferretería',
     itemLabel: 'Producto',
     descLabel: 'Descripción / Medidas',
     categories: [
@@ -94,6 +98,7 @@ export const BUSINESS_TYPES = {
 
   farmacia: {
     label: '💊 Farmacia & Salud',
+    visitLabel: 'Ver farmacia',
     itemLabel: 'Producto',
     descLabel: 'Descripción / Indicaciones',
     categories: [
@@ -109,6 +114,7 @@ export const BUSINESS_TYPES = {
 
   supermercado: {
     label: '🛒 Supermercado & Colmado',
+    visitLabel: 'Ver supermercado',
     itemLabel: 'Producto',
     descLabel: 'Descripción',
     categories: [
@@ -124,6 +130,7 @@ export const BUSINESS_TYPES = {
 
   belleza: {
     label: '💄 Belleza & Cosméticos',
+    visitLabel: 'Ver tienda de belleza',
     itemLabel: 'Producto',
     descLabel: 'Descripción / Beneficios',
     categories: [
@@ -139,6 +146,7 @@ export const BUSINESS_TYPES = {
 
   electronica: {
     label: '📱 Electrónica & Celulares',
+    visitLabel: 'Ver tienda de electrónica',
     itemLabel: 'Producto',
     descLabel: 'Descripción / Especificaciones',
     categories: [
