@@ -908,6 +908,10 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
   const [newProdImages, setNewProdImages] = useState(['assets/burger_3d.png']);
   const [activePreviewImageIndex, setActivePreviewImageIndex] = useState(0);
   const [customizeModalImgIndex, setCustomizeModalImgIndex] = useState(0);
+  // Selecciones del cliente en el modal de personalización
+  const [clientSelections, setClientSelections] = useState({ guarn: [], beb: [], ext: [] });
+  const [clientNote, setClientNote] = useState('');
+
   const [zoomImg, setZoomImg] = useState(null); // visor de foto a pantalla completa
   
   // Dish Photo Editor Ultra Pro State
@@ -956,6 +960,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
     { id: 'g12', name: '🥔 Puré de Papa al Ajo',   price: 0, enabled: false },
     { id: 'g13', name: '🍌 Mangú con Cebollita',   price: 0, enabled: false },
     { id: 'g14', name: '🌽 Arepitas de Maíz',      price: 0, enabled: false },
+    { id: 'g15', name: '🥑 Guacamole',             price: 0, enabled: false },
   ]);
   const [bebidaItems, setBebidaItems] = useState([
     { id: 'b1', name: 'Coca Cola 2L',        price: 0, enabled: true },
@@ -2200,7 +2205,17 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
       return [...prev, { id: (prod.id || Date.now()) + '-' + Date.now(), name: itemTitle, price: itemPrice, qty: 1 }];
     });
     setCustomizeProduct(null);
+    setClientSelections({ guarn: [], beb: [], ext: [] });
+    setClientNote('');
     showToast(`🛒 "${prod.name || 'Producto'}" añadido al carrito`);
+  };
+
+  // Abre el modal de personalización limpiando selecciones anteriores
+  const openCustomizeModal = (prod) => {
+    setCustomizeModalImgIndex(0);
+    setClientSelections({ guarn: [], beb: [], ext: [] });
+    setClientNote('');
+    setCustomizeProduct(prod);
   };
 
   const handleIncreaseQty = (itemId) => {
@@ -3345,7 +3360,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                         </div>
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 10 }}>
                           {searchMatchedProducts.map(prod => (
-                            <div key={prod.id} onClick={() => { setCustomizeModalImgIndex(0); setCustomizeProduct(prod); }} style={{ cursor: 'pointer', background: 'white', borderRadius: 16, padding: 10, boxShadow: '0 4px 14px rgba(0,0,0,0.06)', border: '1.5px solid #fed7aa', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                            <div key={prod.id} onClick={() => { openCustomizeModal(prod); }} style={{ cursor: 'pointer', background: 'white', borderRadius: 16, padding: 10, boxShadow: '0 4px 14px rgba(0,0,0,0.06)', border: '1.5px solid #fed7aa', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                               <div style={{ position: 'relative' }}>
                                 <img src={prod.image} alt={prod.name} style={{ width: '100%', height: 95, objectFit: 'cover', borderRadius: 12, marginBottom: 8 }} />
                                 {prod.storeName && (
@@ -3364,7 +3379,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                                 <div style={{ fontWeight: 900, color: '#ff6b00', fontSize: 14 }}>RD$ {prod.price}</div>
                               </div>
                               <button 
-                                onClick={(e) => { e.stopPropagation(); setCustomizeModalImgIndex(0); setCustomizeProduct(prod); }}
+                                onClick={(e) => { e.stopPropagation(); openCustomizeModal(prod); }}
                                 style={{ width: '100%', marginTop: 8, background: 'linear-gradient(135deg, #ff6b00, #e65100)', color: 'white', border: 'none', padding: '7px 0', borderRadius: 10, fontWeight: 900, fontSize: 11.5, cursor: 'pointer', boxShadow: '0 3px 8px rgba(255,107,0,0.3)' }}
                               >
                                 + Agregar
@@ -3434,7 +3449,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                       </div>
                       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 10 }}>
                         {allPlatformProducts.map(prod => (
-                          <div key={prod.id} onClick={() => { setCustomizeModalImgIndex(0); setCustomizeProduct(prod); }} style={{ cursor: 'pointer', background: 'white', borderRadius: 16, padding: 10, boxShadow: '0 4px 14px rgba(0,0,0,0.06)', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                          <div key={prod.id} onClick={() => { openCustomizeModal(prod); }} style={{ cursor: 'pointer', background: 'white', borderRadius: 16, padding: 10, boxShadow: '0 4px 14px rgba(0,0,0,0.06)', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                             <div style={{ position: 'relative' }}>
                               <img src={prod.image} alt={prod.name} style={{ width: '100%', height: 95, objectFit: 'cover', borderRadius: 12, marginBottom: 8 }} />
                               {prod.storeName && (
@@ -3448,7 +3463,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                               <div style={{ fontWeight: 900, color: '#ff6b00', fontSize: 14 }}>RD$ {prod.price}</div>
                             </div>
                             <button 
-                              onClick={(e) => { e.stopPropagation(); setCustomizeModalImgIndex(0); setCustomizeProduct(prod); }}
+                              onClick={(e) => { e.stopPropagation(); openCustomizeModal(prod); }}
                               style={{ width: '100%', marginTop: 8, background: '#ff6b00', color: 'white', border: 'none', padding: '6px 0', borderRadius: 10, fontWeight: 900, fontSize: 11, cursor: 'pointer' }}
                             >
                               + Agregar
@@ -3508,7 +3523,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                     const t = getProdType(prod);
                     const rp = prod.rentalPrices && Object.values(prod.rentalPrices).filter(v => v > 0);
                     return (
-                      <div key={prod.id} onClick={() => { setCustomizeModalImgIndex(0); setCustomizeProduct(prod); }} style={{ cursor: 'pointer', background: 'white', borderRadius: 16, padding: 10, boxShadow: '0 4px 14px rgba(0,0,0,0.06)', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                      <div key={prod.id} onClick={() => { openCustomizeModal(prod); }} style={{ cursor: 'pointer', background: 'white', borderRadius: 16, padding: 10, boxShadow: '0 4px 14px rgba(0,0,0,0.06)', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                         <div style={{ position: 'relative' }}>
                           <img src={prod.image} alt={prod.name} style={{ width: '100%', height: 95, objectFit: 'cover', borderRadius: 12, marginBottom: 8 }} />
                           {prod.storeName && (
@@ -3522,7 +3537,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                             {rp && rp.length > 0 ? `Desde RD$ ${Math.min(...rp)}` : `RD$ ${prod.price}`}
                           </div>
                         </div>
-                        <button onClick={(e) => { e.stopPropagation(); setCustomizeModalImgIndex(0); setCustomizeProduct(prod); }} style={{ width: '100%', marginTop: 8, background: '#ff6b00', color: 'white', border: 'none', padding: '6px 0', borderRadius: 10, fontWeight: 900, fontSize: 11, cursor: 'pointer' }}>
+                        <button onClick={(e) => { e.stopPropagation(); openCustomizeModal(prod); }} style={{ width: '100%', marginTop: 8, background: '#ff6b00', color: 'white', border: 'none', padding: '6px 0', borderRadius: 10, fontWeight: 900, fontSize: 11, cursor: 'pointer' }}>
                           {BUSINESS_TYPES[t]?.rental ? 'Ver Alquiler' : '+ Agregar'}
                         </button>
                       </div>
@@ -6414,9 +6429,103 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                 {customizeProduct.minOrderQty > 1 && <div style={{ fontSize: 11, color: '#9a3412', marginTop: 6, fontWeight: 700 }}>🔢 Pedido mínimo: {customizeProduct.minOrderQty} piezas</div>}
               </div>
             )}
+            {/* ── PERSONALIZACIÓN DEL CLIENTE: guarniciones, bebidas, extras ── */}
+            {(() => {
+              const p = customizeProduct;
+              // Parsear items guardados por el comerciante: "Nombre (+precio)" o solo "Nombre"
+              const parseItems = (arr) => (arr || []).map(str => {
+                const m = str.match(/^(.+?)\s*\(\+(\d+)\)$/);
+                return m ? { name: m[1].trim(), price: Number(m[2]) } : { name: str, price: 0 };
+              });
+              const guarnList = parseItems(p.guarniciones);
+              const bebList   = parseItems(p.bebidas);
+              const extraList = parseItems(p.extras);
+              const hasOptions = guarnList.length > 0 || bebList.length > 0 || extraList.length > 0;
+              if (!hasOptions) return null;
+              return (
+                <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 14, padding: 12, marginBottom: 14 }}>
+                  <div style={{ fontWeight: 900, fontSize: 12, color: '#ff6b00', marginBottom: 10, textTransform: 'uppercase' }}>🎛️ Personaliza tu pedido</div>
+                  {[{ label: '🍟 Guarniciones', list: guarnList, key: 'guarn' },
+                    { label: '🥤 Bebida incluida', list: bebList,   key: 'beb' },
+                    { label: '✨ Extras',          list: extraList, key: 'ext' }
+                  ].filter(s => s.list.length > 0).map(section => (
+                    <div key={section.key} style={{ marginBottom: 10 }}>
+                      <div style={{ fontSize: 11, fontWeight: 800, color: '#334155', marginBottom: 5 }}>{section.label}</div>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                        {section.list.map(item => {
+                          const sel = clientSelections;
+                          const arr = sel[section.key] || [];
+                          const isOn = arr.some(x => x.name === item.name);
+                          return (
+                            <button
+                              key={item.name}
+                              type="button"
+                              onClick={() => setClientSelections(prev => {
+                                const cur = prev[section.key] || [];
+                                const next = isOn ? cur.filter(x => x.name !== item.name) : [...cur, item];
+                                return { ...prev, [section.key]: next };
+                              })}
+                              style={{
+                                padding: '5px 11px', borderRadius: 20, fontSize: 11.5, fontWeight: 800,
+                                cursor: 'pointer', border: isOn ? '1.5px solid #ff6b00' : '1px solid #cbd5e1',
+                                background: isOn ? '#fff3e6' : 'white',
+                                color: isOn ? '#c2410c' : '#64748b',
+                                boxShadow: isOn ? '0 2px 8px rgba(255,107,0,0.15)' : 'none',
+                                transition: 'all .15s'
+                              }}
+                            >
+                              {isOn ? '✓ ' : ''}{item.name}
+                              {item.price > 0 && <span style={{ fontSize: 10, opacity: 0.8 }}> +RD${item.price}</span>}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                  {/* Nota especial */}
+                  <div style={{ marginTop: 6 }}>
+                    <div style={{ fontSize: 11, fontWeight: 800, color: '#334155', marginBottom: 4 }}>📝 Nota especial (opcional)</div>
+                    <textarea
+                      rows={2}
+                      placeholder="Ej: sin cebolla, extra picante, bien cocido..."
+                      value={clientNote}
+                      onChange={e => setClientNote(e.target.value)}
+                      style={{ width: '100%', boxSizing: 'border-box', border: '1px solid #cbd5e1', borderRadius: 10, padding: '7px 10px', fontSize: 12, resize: 'none', outline: 'none', fontFamily: 'inherit' }}
+                    />
+                  </div>
+                </div>
+              );
+            })()}
+
             <div style={{ position: 'sticky', bottom: 0, background: 'white', padding: '10px 0 16px', marginTop: 4, boxShadow: '0 -8px 12px -8px rgba(0,0,0,0.12)' }}>
-              <button className="btn-mamey" style={{ width: '100%', padding: 14 }} onClick={() => handleAddToCartCustom(customizeProduct, 'Tostones Crujientes', 'Coca-Cola 2L')}>
-                🛒 Agregar al Carrito • RD$ {customizeProduct.price}
+              {/* Total en vivo */}
+              {(() => {
+                const extrasTotal = [...(clientSelections.guarn||[]), ...(clientSelections.beb||[]), ...(clientSelections.ext||[])].reduce((s, x) => s + (x.price||0), 0);
+                const total = (customizeProduct.price || 0) + extrasTotal;
+                return (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                    <span style={{ fontSize: 12, color: '#64748b', fontWeight: 700 }}>
+                      {extrasTotal > 0 && <span style={{ color: '#ff6b00' }}>+RD${extrasTotal} extras • </span>}Total:
+                    </span>
+                    <span style={{ fontWeight: 900, fontSize: 18, color: '#ff6b00' }}>RD$ {total.toLocaleString()}</span>
+                  </div>
+                );
+              })()}
+              <button className="btn-mamey" style={{ width: '100%', padding: 14 }} onClick={() => {
+                const extrasTotal = [...(clientSelections.guarn||[]), ...(clientSelections.beb||[]), ...(clientSelections.ext||[])].reduce((s, x) => s + (x.price||0), 0);
+                handleAddToCartCustom(
+                  { ...customizeProduct, price: (customizeProduct.price || 0) + extrasTotal,
+                    selectedGuarniciones: (clientSelections.guarn||[]).map(x=>x.name),
+                    selectedBebidas: (clientSelections.beb||[]).map(x=>x.name),
+                    selectedExtras: (clientSelections.ext||[]).map(x=>x.name),
+                    clientNote },
+                  (clientSelections.guarn||[])[0]?.name || '',
+                  (clientSelections.beb||[])[0]?.name || ''
+                );
+                setClientSelections({ guarn:[], beb:[], ext:[] });
+                setClientNote('');
+              }}>
+                🛒 Agregar al Carrito • RD$ {(customizeProduct.price + [...(clientSelections.guarn||[]),...(clientSelections.beb||[]),...(clientSelections.ext||[])].reduce((s,x)=>s+(x.price||0),0)).toLocaleString()}
               </button>
             </div>
           </div>
@@ -7641,4 +7750,5 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
     </div>
   );
 }
+
 
