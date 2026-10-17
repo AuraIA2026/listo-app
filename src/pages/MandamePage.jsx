@@ -350,7 +350,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
   const [showIntro, setShowIntro] = useState(false);
   const openMerchantWithIntro = () => {
     if (viewMode === 'merchant') return;
-    setShowIntro(true);
+    handleSetViewMode('merchant'); // abre la intro con el cuadro de la clave encima
   };
 
   const handleSetViewMode = async (mode) => {
@@ -2423,8 +2423,6 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
           {toastMessage}
         </div>
       )}
-
-      <WelcomeIntro open={showIntro} onDone={() => { setShowIntro(false); handleSetViewMode('merchant'); }} />
 
       {/* Mode Switcher Pill Header - Visible si el usuario tiene comercio registrado */}
       {isMerchantUser && (
@@ -5987,8 +5985,8 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
 
       {/* 🔐 CONTRASEÑA PARA ENTRAR A MI COMERCIO */}
       {pinModal && (
-        <div onClick={() => setPinModal(null)} style={{ position: 'fixed', inset: 0, zIndex: 100001, background: 'rgba(5,8,15,0.75)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
-          <div onClick={(e) => e.stopPropagation()} style={{ width: 'min(360px, 92vw)', background: 'white', borderRadius: 24, padding: 22, boxShadow: '0 20px 50px rgba(0,0,0,0.35)', textAlign: 'center' }}>
+        <WelcomeIntro open persistent>
+          <div style={{ width: 'min(360px, 92vw)', background: 'white', borderRadius: 24, padding: 22, boxShadow: '0 20px 50px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,107,0,0.25)', textAlign: 'center' }}>
             <div style={{ width: 64, height: 64, margin: '0 auto 10px', borderRadius: '50%', background: 'linear-gradient(135deg, #ff6b00, #ff8533)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 30, boxShadow: '0 8px 20px rgba(255,107,0,0.4)' }}>🔐</div>
             <h3 style={{ margin: '0 0 4px', fontWeight: 900, fontSize: 18, color: '#0f172a' }}>
               {pinModal === 'create' ? 'Crea tu contraseña' : 'Mi Comercio'}
@@ -6022,7 +6020,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
             </button>
             <button onClick={() => setPinModal(null)} style={{ marginTop: 8, background: 'none', border: 'none', color: '#64748b', fontWeight: 800, fontSize: 12.5, cursor: 'pointer' }}>Cancelar</button>
           </div>
-        </div>
+        </WelcomeIntro>
       )}
 
       {/* VISOR DE FOTO A PANTALLA COMPLETA */}
