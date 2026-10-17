@@ -6,7 +6,7 @@ import './HomePage.css';
 import PedidosListoHub from '../components/PedidosListoHub';
 import HistoriasCarrusel from '../components/HistoriasCarrusel';
 import ConfigurarRestauranteModal from '../components/ConfigurarRestauranteModal';
-import { BUSINESS_TYPES, RENTAL_PERIODS } from '../data/businessTypes';
+import { BUSINESS_TYPES, RENTAL_PERIODS, WHOLESALE_TIERS } from '../data/businessTypes';
 
 // Initial Mock State
 const ANIMATED_BANNERS_CATALOG = [
@@ -850,6 +850,8 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
   const [selectedBizTags, setSelectedBizTags] = useState([]);
   const [selectedBizOptions, setSelectedBizOptions] = useState({});
   const [rentalPrices, setRentalPrices] = useState({});
+  const [wholesalePrices, setWholesalePrices] = useState({});
+  const [minOrderQty, setMinOrderQty] = useState('');
 
   const handleChangeBusinessType = (type) => {
     const cfg = BUSINESS_TYPES[type] || BUSINESS_TYPES.restaurante;
@@ -858,6 +860,13 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
     setSelectedBizTags([]);
     setSelectedBizOptions({});
     setRentalPrices({});
+    setWholesalePrices({});
+    setMinOrderQty('');
+    // Quitar el ejemplo de comida cuando no es restaurante
+    if (!cfg.useFoodConfig) {
+      if (newProdName === 'Yaroa de Pollo & Queso Mofongo') setNewProdName('');
+      if ((newProdDesc || '').startsWith('Plátano majado')) setNewProdDesc('');
+    }
     try { localStorage.setItem('pedidos_listo_business_type', type); } catch (e) {}
   };
 
@@ -868,6 +877,10 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
   useEffect(() => {
     if (!bizCfg.categories.some(([val]) => val === newProdCategory)) {
       setNewProdCategory(bizCfg.categories[0][0]);
+    }
+    if (!bizCfg.useFoodConfig) {
+      setNewProdName(n => n === 'Yaroa de Pollo & Queso Mofongo' ? '' : n);
+      setNewProdDesc(d => (d || '').startsWith('Plátano majado') ? '' : d);
     }
   }, [businessType]); // eslint-disable-line
 
@@ -1969,6 +1982,10 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
       rentalPrices: bizCfg.rental
         ? Object.fromEntries(Object.entries(rentalPrices).filter(([, v]) => v !== '' && v != null).map(([k, v]) => [k, Number(v)]))
         : null,
+      wholesalePrices: bizCfg.wholesale
+        ? Object.fromEntries(Object.entries({ unidad: newProdPrice, ...wholesalePrices }).filter(([, v]) => v !== '' && v != null).map(([k, v]) => [k, Number(v)]))
+        : null,
+      minOrderQty: bizCfg.wholesale && minOrderQty ? Number(minOrderQty) : null,
       storeId: activeStoreId,
       storeName: activeStoreName,
       storeEmail: activeStoreEmail,
@@ -1993,6 +2010,8 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
     setNewProdName('');
     setNewProdPrice('');
     setNewProdDesc('');
+    setWholesalePrices({});
+    setMinOrderQty('');
     setNewProdImages(['assets/burger_3d.png']);
   };
 
@@ -4384,6 +4403,45 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                         </div>
                       )}
 
+                      {/* Tabla de precios por cantidad (ropa / al por mayor) */}
+                      {bizCfg.wholesale && (
+                        <div style={{ background: '#fff7ed', border: '1.5px solid #fdba74', padding: 14, borderRadius: 16, marginBottom: 14 }}>
+                          <div style={{ fontSize: 12, fontWeight: 900, color: '#c2410c', marginBottom: 4, display: 'flex', justifyContent: 'space-between', gap: 6 }}>
+                            <span>💰 PRECIOS POR CANTIDAD (RD$ c/u)</span>
+                            <span style={{ fontSize: 10, color: '#64748b', background: 'white', padding: '2px 6px', borderRadius: 4, fontWeight: 700 }}>Deja vacío lo que no ofreces</span>
+                          </div>
+                          <div style={{ fontSize: 10.5, color: '#9a3412', marginBottom: 10 }}>Escribe el precio de <strong>cada pieza</strong> según la cantidad. El total se calcula solo.</div>
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
+                            {WHOLESALE_TIERS.map(([key, lbl, qty]) => {
+                              const val = key === 'unidad' ? newProdPrice : (wholesalePrices[key] ?? '');
+                              const unit = Number(val) || 0;
+                              return (
+                                <div key={key}>
+                                  <label style={{ fontSize: 11, fontWeight: 800, display: 'block', marginBottom: 3, color: '#334155' }}>{lbl}</label>
+                                  <input
+                                    type="number" min="0" placeholder="RD$ c/u"
+                                    className="custom-search-input"
+                                    style={{ border: '1px solid #cbd5e1', padding: '8px 12px' }}
+                                    value={val}
+                                    onChange={e => key === 'unidad' ? setNewProdPrice(e.target.value) : setWholesalePrices(prev => ({ ...prev, [key]: e.target.value }))}
+                                  />
+                                  {unit > 0 && qty > 1 && (
+                                    <div style={{ fontSize: 10, color: '#64748b', marginTop: 2, fontWeight: 700 }}>
+                                      Total: RD$ {(unit * qty).toLocaleString()}
+                                      {Number(newProdPrice) > unit && <span style={{ color: '#16a34a' }}> • ahorra {Math.round((1 - unit / Number(newProdPrice)) * 100)}%</span>}
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })}
+                            <div>
+                              <label style={{ fontSize: 11, fontWeight: 800, display: 'block', marginBottom: 3, color: '#334155' }}>🔢 Pedido Mínimo (piezas)</label>
+                              <input type="number" min="1" placeholder="Ej: 1" className="custom-search-input" style={{ border: '1px solid #cbd5e1', padding: '8px 12px' }} value={minOrderQty} onChange={e => setMinOrderQty(e.target.value)} />
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
                       {/* Grupos de opciones (tallas, colores, modalidades, etc.) */}
                       {bizCfg.optionGroups.length > 0 && (
                         <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', padding: 14, borderRadius: 16, marginBottom: 14 }}>
@@ -5843,6 +5901,37 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                 </div>
               )}
             </div>
+            {customizeProduct.attributes && Object.keys(customizeProduct.attributes).some(k => (customizeProduct.attributes[k] || []).length > 0) && (
+              <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 14, padding: 12, marginBottom: 14, textAlign: 'left' }}>
+                <div style={{ fontWeight: 900, fontSize: 12, color: '#1e293b', marginBottom: 8, textTransform: 'uppercase' }}>⚙️ Opciones Disponibles</div>
+                {Object.entries(customizeProduct.attributes).filter(([, v]) => (v || []).length > 0).map(([k, vals]) => {
+                  const grp = (BUSINESS_TYPES[customizeProduct.businessType]?.optionGroups || []).find(g => g.key === k);
+                  return (
+                    <div key={k} style={{ marginBottom: 8 }}>
+                      <div style={{ fontSize: 11, fontWeight: 800, color: '#475569', marginBottom: 4 }}>{grp?.label || k}</div>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
+                        {vals.map(v => <span key={v} style={{ fontSize: 11, fontWeight: 700, padding: '3px 9px', borderRadius: 14, background: 'white', border: '1px solid #cbd5e1', color: '#334155' }}>{v}</span>)}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+            {customizeProduct.wholesalePrices && Object.keys(customizeProduct.wholesalePrices).length > 0 && (
+              <div style={{ background: '#fff7ed', border: '1px solid #fed7aa', borderRadius: 14, padding: 12, marginBottom: 14, textAlign: 'left' }}>
+                <div style={{ fontWeight: 900, fontSize: 12, color: '#c2410c', marginBottom: 8, textTransform: 'uppercase' }}>💰 Precios por Cantidad</div>
+                {WHOLESALE_TIERS.filter(([k]) => customizeProduct.wholesalePrices[k] != null).map(([k, lbl, qty]) => {
+                  const u = customizeProduct.wholesalePrices[k];
+                  return (
+                    <div key={k} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, padding: '5px 0', borderBottom: '1px dashed #fed7aa' }}>
+                      <span style={{ fontWeight: 700, color: '#334155' }}>{lbl}</span>
+                      <span style={{ fontWeight: 900, color: '#ff6b00' }}>RD$ {u} c/u{qty > 1 && <span style={{ color: '#64748b', fontWeight: 700 }}> • RD$ {(u * qty).toLocaleString()}</span>}</span>
+                    </div>
+                  );
+                })}
+                {customizeProduct.minOrderQty > 1 && <div style={{ fontSize: 11, color: '#9a3412', marginTop: 6, fontWeight: 700 }}>🔢 Pedido mínimo: {customizeProduct.minOrderQty} piezas</div>}
+              </div>
+            )}
             <div style={{ position: 'sticky', bottom: 0, background: 'white', padding: '10px 0 16px', marginTop: 4, boxShadow: '0 -8px 12px -8px rgba(0,0,0,0.12)' }}>
               <button className="btn-mamey" style={{ width: '100%', padding: 14 }} onClick={() => handleAddToCartCustom(customizeProduct, 'Tostones Crujientes', 'Coca-Cola 2L')}>
                 🛒 Agregar al Carrito • RD$ {customizeProduct.price}

@@ -38,11 +38,18 @@ export const BUSINESS_TYPES = {
       ['uniformes', '🦺 Uniformes & Ropa de Trabajo'],
     ],
     tags: ['🆕 Nueva Colección', '🔥 Más Vendido', '💸 En Oferta', '👨 Hombre', '👩 Mujer', '🧒 Niños', '♻️ Unisex', '⭐ Original / Marca'],
+    wholesale: true, // Activa tabla de precios por unidad / docena / al por mayor
+    priceLabel: 'Precio por Unidad (RD$)',
     optionGroups: [
-      { key: 'tallas', label: '📏 Tallas Disponibles', options: ['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL'] },
-      { key: 'tallas_num', label: '👟 Tallas Numéricas (Calzado / Pantalón)', options: ['6', '7', '8', '9', '10', '11', '12', '28', '30', '32', '34', '36', '38'] },
-      { key: 'colores', label: '🎨 Colores Disponibles', options: ['⚫ Negro', '⚪ Blanco', '🔵 Azul', '🔴 Rojo', '🟢 Verde', '🟤 Marrón', '🩶 Gris', '🩷 Rosado', '🟡 Amarillo', '🟠 Naranja'] },
-      { key: 'material', label: '🧵 Material', options: ['Algodón', 'Denim / Mezclilla', 'Cuero', 'Poliéster', 'Lino', 'Lana', 'Sintético'] },
+      { key: 'tallas', label: '📏 Tallas Disponibles', options: ['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL', '4XL', 'Talla Única'] },
+      { key: 'tallas_num', label: '👟 Tallas Numéricas (Calzado / Pantalón)', options: ['5', '6', '7', '8', '9', '10', '11', '12', '13', '26', '28', '30', '32', '34', '36', '38', '40', '42'] },
+      { key: 'color_camisa', label: '👕 Colores de Camisa / T-Shirt / Polo', options: ['⚫ Negro', '⚪ Blanco', '🔵 Azul', '🔵 Azul Marino', '🔴 Rojo', '🍷 Vino', '🟢 Verde', '🩶 Gris', '🩷 Rosado', '🟡 Amarillo', '🟠 Naranja', '🟣 Morado', '🟤 Beige'] },
+      { key: 'color_pantalon', label: '👖 Colores de Pantalón / Jean', options: ['🔵 Azul Claro', '🔵 Azul Oscuro', '⚫ Negro', '🩶 Gris', '🟤 Kaki / Beige', '🟢 Verde Olivo', '⚪ Blanco', '🟤 Marrón'] },
+      { key: 'color_gorra', label: '🧢 Colores de Gorra / Sombrero', options: ['⚫ Negro', '⚪ Blanco', '🔵 Azul', '🔴 Rojo', '🩶 Gris', '🟢 Verde', '🟤 Beige', '🎨 Combinada'] },
+      { key: 'color_calzado', label: '👟 Colores de Calzado', options: ['⚫ Negro', '⚪ Blanco', '🟤 Marrón', '🩶 Gris', '🔵 Azul', '🔴 Rojo', '🎨 Combinado'] },
+      { key: 'manga', label: '✂️ Tipo de Manga / Corte', options: ['Manga Corta', 'Manga Larga', 'Sin Manga', 'Cuello Redondo', 'Cuello V', 'Slim Fit', 'Regular Fit', 'Oversize'] },
+      { key: 'material', label: '🧵 Material', options: ['Algodón', 'Denim / Mezclilla', 'Cuero', 'Poliéster', 'Lino', 'Lana', 'Sintético', 'Dry-Fit'] },
+      { key: 'personalizacion', label: '🖌️ Personalización', options: ['Bordado', 'Serigrafía', 'Sublimación', 'Vinil / Transfer', 'Logo de Empresa', 'Nombre Personalizado'] },
     ],
   },
 
@@ -155,4 +162,15 @@ export const RENTAL_PERIODS = [
   ['semana', '🗓️ Por Semana'],
   ['mes', '📆 Por Mes'],
   ['deposito', '🛡️ Depósito Reembolsable'],
+];
+
+// Escalas de precio por cantidad (ropa / ventas al por mayor)
+export const WHOLESALE_TIERS = [
+  ['unidad', '1️⃣ Por Unidad', 1],
+  ['media_docena', '📦 Media Docena (6)', 6],
+  ['docena', '📦 Por Docena (12)', 12],
+  ['tres_docenas', '📦 3 Docenas (36)', 36],
+  ['seis_docenas', '📦 6 Docenas (72)', 72],
+  ['doce_docenas', '🏭 12 Docenas (144)', 144],
+  ['mayor', '🚚 Al por Mayor (300+)', 300],
 ];
