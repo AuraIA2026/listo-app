@@ -31,11 +31,21 @@ const storeIcon = L.divIcon({
   iconSize: [54, 54], iconAnchor: [27, 27]
 });
 
-const driverIcon = (selected, own) => L.divIcon({
-  className: 'dc-driver-icon',
-  html: `<div style="width:${selected ? 46 : 38}px;height:${selected ? 46 : 38}px;border-radius:50%;background:${own ? '#0ea5e9' : MAMEY};border:3px solid #fff;display:flex;align-items:center;justify-content:center;font-size:${selected ? 22 : 18}px;box-shadow:0 4px 12px rgba(0,0,0,.35);transition:all .2s">🛵</div>`,
-  iconSize: [selected ? 46 : 38, selected ? 46 : 38], iconAnchor: [selected ? 23 : 19, selected ? 23 : 19]
-});
+const driverIcon = (selected, minLabel) => {
+  const s = selected ? 46 : 38;
+  return L.divIcon({
+    className: 'dc-driver-icon',
+    html: `<div style="position:relative;width:${s}px;height:${s}px">
+      <div style="width:${s}px;height:${s}px;border-radius:50%;background:${MAMEY};border:3px solid #fff;box-sizing:border-box;display:flex;align-items:center;justify-content:center;font-size:${selected ? 22 : 18}px;box-shadow:0 4px 12px rgba(0,0,0,.35)">🛵</div>
+      ${minLabel ? `<div style="position:absolute;top:${s - 4}px;left:50%;transform:translateX(-50%);background:#0f172a;color:#fff;font-weight:900;font-size:11px;padding:2px 7px;border-radius:10px;white-space:nowrap;border:1.5px solid ${MAMEY};box-shadow:0 2px 8px rgba(0,0,0,.3)">${minLabel}</div>` : ''}
+    </div>`,
+    iconSize: [s, s], iconAnchor: [s / 2, s / 2]
+  });
+};
+
+// Estimado sin internet de ruta: distancia recta × 1.4 (calles) a ~22 km/h en moto por ciudad
+const fallbackMin = (km) => Math.max(1, Math.round((km * 1.4) / 22 * 60));
+const fmtMin = (m) => m == null ? '' : (m <= 1 ? '1 min' : `${m} min`);
 
 function FlyTo({ pos }) {
   const map = useMap();
@@ -69,6 +79,7 @@ export default function DeliveryCercaScreen({ open, onClose, userData, storeName
   const [newPhone, setNewPhone] = useState('');
   const [orderForRequest, setOrderForRequest] = useState('');
   const [requesting, setRequesting] = useState(false);
+  const [etaMap, setEtaMap] = useState({}); // driverId -> minutos por calles (OSRM)
   const uid = userData?.uid;
 
   // Ubicación del local (GPS del dispositivo del comercio)
@@ -121,6 +132,28 @@ export default function DeliveryCercaScreen({ open, onClose, userData, storeName
       .sort((a, b) => a.km - b.km);
   }, [liveDrivers, center[0], center[1], isDemo]);
 
+  // ⏱️ Tiempo real por calles desde cada delivery hasta el local (OSRM, gratis, sin API key)
+  const driversKey = drivers.map(d => `${d.id}:${d.lat.toFixed(4)},${d.lng.toFixed(4)}`).join('|');
+  useEffect(() => {
+    if (!open || !storePos || drivers.length === 0) return;
+    const ctrl = new AbortController();
+    const list = drivers.slice(0, 40);
+    const coords = [`${center[1]},${center[0]}`, ...list.map(d => `${d.lng},${d.lat}`)].join(';');
+    const sources = list.map((_, i) => i + 1).join(';');
+    fetch(`https://router.project-osrm.org/table/v1/driving/${coords}?sources=${sources}&destinations=0&annotations=duration`, { signal: ctrl.signal })
+      .then(r => r.json())
+      .then(j => {
+        if (j.code !== 'Ok') return;
+        const m = {};
+        // OSRM calcula en carro; la moto en ciudad suele ser ~20% más rápida
+        list.forEach((d, i) => { const sec = j.durations?.[i]?.[0]; if (sec != null) m[d.id] = Math.max(1, Math.round(sec * 0.8 / 60)); });
+        setEtaMap(m);
+      })
+      .catch(() => {});
+    return () => ctrl.abort();
+  }, [open, driversKey, storePos?.[0], storePos?.[1]]);
+  const etaOf = (d) => etaMap[d.id] ?? fallbackMin(d.km);
+
   const pendingOrders = orders.filter(o => ['new', 'cooking', 'ready'].includes(o.status) && o.fulfillmentType !== 'pickup');
   const atDoor = drivers.filter(d => d.km <= 0.15).length;
 
@@ -161,13 +194,13 @@ export default function DeliveryCercaScreen({ open, onClose, userData, storeName
       {/* MAPA */}
       <div style={{ position: 'relative', flex: tab === 'red' ? '1 1 55%' : '0 0 34%', minHeight: 220, transition: 'flex .3s' }}>
         <MapContainer center={center} zoom={15} zoomControl={false} style={{ width: '100%', height: '100%' }}>
-          <TileLayer url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png" attribution="&copy; OpenStreetMap &copy; CARTO" />
+          <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution="&copy; OpenStreetMap" maxZoom={19} />
           <FlyTo pos={selected ? [selected.lat, selected.lng] : storePos} />
           <Circle center={center} radius={RADIUS_KM * 1000} pathOptions={{ color: MAMEY, weight: 1.5, fillColor: MAMEY, fillOpacity: 0.05, dashArray: '6 6' }} />
           <Circle center={center} radius={150} pathOptions={{ color: '#22c55e', weight: 1, fillColor: '#22c55e', fillOpacity: 0.12 }} />
           <Marker position={center} icon={storeIcon} />
           {tab === 'red' && drivers.map(d => (
-            <Marker key={d.id} position={[d.lat, d.lng]} icon={driverIcon(selected?.id === d.id)} eventHandlers={{ click: () => setSelected(d) }} />
+            <Marker key={d.id} position={[d.lat, d.lng]} icon={driverIcon(selected?.id === d.id, fmtMin(etaOf(d)))} eventHandlers={{ click: () => setSelected(d) }} />
           ))}
         </MapContainer>
 
@@ -229,7 +262,7 @@ export default function DeliveryCercaScreen({ open, onClose, userData, storeName
                   </div>
                   <div style={{ textAlign: 'right', color: '#fff' }}>
                     <div style={{ fontWeight: 900, fontSize: 18, color: MAMEY }}>{selected.km < 1 ? `${Math.round(selected.km * 1000)} m` : `${selected.km.toFixed(1)} km`}</div>
-                    <div style={{ fontSize: 11, color: '#94a3b8' }}>~{Math.max(1, Math.round(selected.km / 0.4))} min</div>
+                    <div style={{ fontSize: 11, color: '#94a3b8' }}>⏱️ ~{fmtMin(etaOf(selected))} del local</div>
                   </div>
                 </div>
                 <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
@@ -254,7 +287,8 @@ export default function DeliveryCercaScreen({ open, onClose, userData, storeName
                   <div style={{ fontSize: 11.5, color: '#94a3b8' }}>⭐ {d.rating || '5.0'} • {d.vehicle || 'Motor'}</div>
                 </div>
                 <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontWeight: 900, color: d.km <= 0.15 ? '#22c55e' : MAMEY, fontSize: 14 }}>{d.km < 1 ? `${Math.round(d.km * 1000)} m` : `${d.km.toFixed(1)} km`}</div>
+                  <div style={{ fontWeight: 900, color: d.km <= 0.15 ? '#22c55e' : MAMEY, fontSize: 15 }}>⏱️ {fmtMin(etaOf(d))}</div>
+                  <div style={{ fontSize: 11, color: '#94a3b8', fontWeight: 700 }}>{d.km < 1 ? `${Math.round(d.km * 1000)} m` : `${d.km.toFixed(1)} km`}</div>
                   {d.km <= 0.15 && <div style={{ fontSize: 10, color: '#22c55e', fontWeight: 900 }}>FRENTE AL LOCAL</div>}
                 </div>
               </button>
