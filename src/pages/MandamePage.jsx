@@ -939,9 +939,40 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
   const [activeEmojiId, setActiveEmojiId] = useState(null);
 
   const [selectedDietaryTags, setSelectedDietaryTags] = useState(['🔥 Más Vendido']);
-  const [selectedGuarniciones, setSelectedGuarniciones] = useState(['🍌 Tostones Crujientes', '🍟 Papas Fritas']);
-  const [selectedBebidas, setSelectedBebidas] = useState(['Coca Cola 2L', 'Jugo Chinola']);
-  const [selectedExtras, setSelectedExtras] = useState(['Chicharrón Extra (+120)', 'Queso Frito (+80)']);
+  // Guarniciones, bebidas y extras: cada ítem = { id, name, price, enabled }
+  const mkItem = (name, price = 0, enabled = false) => ({ id: name + Date.now() + Math.random(), name, price, enabled });
+  const [guarnicionItems, setGuarnicionItems] = useState([
+    { id: 'g1', name: '🍌 Tostones Crujientes', price: 0, enabled: true },
+    { id: 'g2', name: '🍟 Papas Fritas',          price: 0, enabled: true },
+    { id: 'g3', name: '🧄 Mofonguito de Ajo',      price: 0, enabled: false },
+    { id: 'g4', name: '🥑 Yuquita al Moho',        price: 0, enabled: false },
+    { id: 'g5', name: '🧀 Queso Frito Geo',        price: 0, enabled: false },
+    { id: 'g6', name: '🥓 Chicharrón Crocante',    price: 0, enabled: false },
+    { id: 'g7', name: '🍌 Maduritos Fritos',       price: 0, enabled: false },
+    { id: 'g8', name: '🍚 Arroz Blanco Criollo',   price: 0, enabled: false },
+    { id: 'g9', name: '🫘 Habichuelas Guisadas',   price: 0, enabled: false },
+    { id: 'g10', name: '🥑 Aguacate en Lajas',     price: 0, enabled: false },
+    { id: 'g11', name: '🥗 Ensalada Rusa',         price: 0, enabled: false },
+    { id: 'g12', name: '🥔 Puré de Papa al Ajo',   price: 0, enabled: false },
+    { id: 'g13', name: '🍌 Mangú con Cebollita',   price: 0, enabled: false },
+    { id: 'g14', name: '🌽 Arepitas de Maíz',      price: 0, enabled: false },
+  ]);
+  const [bebidaItems, setBebidaItems] = useState([
+    { id: 'b1', name: 'Coca Cola 2L',        price: 0, enabled: true },
+    { id: 'b2', name: 'Jugo Chinola',        price: 0, enabled: true },
+    { id: 'b3', name: 'Cerveza Presidente',  price: 0, enabled: false },
+    { id: 'b4', name: 'Agua Mineral',        price: 0, enabled: false },
+  ]);
+  const [extraItems, setExtraItems] = useState([
+    { id: 'e1', name: 'Chicharrón Extra', price: 120, enabled: true },
+    { id: 'e2', name: 'Queso Frito',      price: 80,  enabled: true },
+    { id: 'e3', name: 'Salsa de Ajo',     price: 35,  enabled: false },
+    { id: 'e4', name: 'Aguacate Fresco',  price: 60,  enabled: false },
+  ]);
+  // Para compatibilidad con el resto del código que usa arrays de strings
+  const selectedGuarniciones = guarnicionItems.filter(g => g.enabled).map(g => g.price > 0 ? `${g.name} (+${g.price})` : g.name);
+  const selectedBebidas = bebidaItems.filter(b => b.enabled).map(b => b.price > 0 ? `${b.name} (+${b.price})` : b.name);
+  const selectedExtras = extraItems.filter(x => x.enabled).map(x => x.price > 0 ? `${x.name} (+${x.price})` : x.name);
   const [isFlashOffer, setIsFlashOffer] = useState(false);
   const [prepTimeShift, setPrepTimeShift] = useState('15-25');
   const [menuShift, setMenuShift] = useState('all');
@@ -2026,29 +2057,12 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
     }
   };
 
-  const handleToggleGuarnicion = (val) => {
-    if (selectedGuarniciones.includes(val)) {
-      setSelectedGuarniciones(selectedGuarniciones.filter(v => v !== val));
-    } else {
-      setSelectedGuarniciones([...selectedGuarniciones, val]);
-    }
-  };
+  // Los toggles de guarniciones/bebidas/extras ahora se manejan inline en el UI
+  // (mantenemos las funciones para no romper referencias del compilador)
+  const handleToggleGuarnicion = () => {};
+  const handleToggleBebida = () => {};
+  const handleToggleExtra = () => {};
 
-  const handleToggleBebida = (val) => {
-    if (selectedBebidas.includes(val)) {
-      setSelectedBebidas(selectedBebidas.filter(v => v !== val));
-    } else {
-      setSelectedBebidas([...selectedBebidas, val]);
-    }
-  };
-
-  const handleToggleExtra = (val) => {
-    if (selectedExtras.includes(val)) {
-      setSelectedExtras(selectedExtras.filter(v => v !== val));
-    } else {
-      setSelectedExtras([...selectedExtras, val]);
-    }
-  };
 
   const handleMultipleImageUpload = (e) => {
     const files = Array.from(e.target.files || []);
@@ -4651,56 +4665,95 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                       <span style={{ fontSize: 10, color: '#64748b', background: 'white', padding: '2px 6px', borderRadius: 4, fontWeight: 700 }}>Personalización Cliente</span>
                     </div>
 
-                    {/* 1. Guarniciones */}
-                    <div style={{ marginBottom: 12 }}>
-                      <label style={{ fontSize: 11, fontWeight: 700, color: '#0f172a', display: 'block', marginBottom: 4 }}>🍟 Guarniciones & Acompañantes Disponibles (Pedidos Listo)</label>
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 6 }}>
-                        {[
-                          '🍌 Tostones Crujientes',
-                          '🍟 Papas Fritas',
-                          '🧄 Mofonguito de Ajo',
-                          '🥑 Yuquita al Moho',
-                          '🧀 Queso Frito Geo',
-                          '🥓 Chicharrón Crocante',
-                          '🍌 Maduritos Fritos',
-                          '🍚 Arroz Blanco Criollo',
-                          '🫘 Habichuelas Guisadas',
-                          '🥑 Aguacate en Lajas',
-                          '🥗 Ensalada Rusa',
-                          '🥔 Puré de Papa al Ajo',
-                          '🍌 Mangú con Cebollita',
-                          '🌽 Arepitas de Maíz'
-                        ].map(val => (
-                          <label key={val} style={{ fontSize: 11, background: 'white', padding: '6px 10px', borderRadius: 8, border: '1px solid #cbd5e1', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
-                            <input type="checkbox" checked={selectedGuarniciones.includes(val)} onChange={() => handleToggleGuarnicion(val)} /> {val}
-                          </label>
-                        ))}
+                    {/* Helper renderer reutilizable para las 3 secciones */}
+                    {[{
+                      icon: '🍟', title: 'Guarniciones & Acompañantes', hint: 'Precio 0 = incluido en el platillo',
+                      items: guarnicionItems, setItems: setGuarnicionItems,
+                      defaultName: '🍴 Nueva guarnición'
+                    }, {
+                      icon: '🥤', title: 'Bebidas a Elegir por el Cliente', hint: 'Precio 0 = incluida',
+                      items: bebidaItems, setItems: setBebidaItems,
+                      defaultName: '🥤 Nueva bebida'
+                    }, {
+                      icon: '🌟', title: 'Extras & Salsas Especiales', hint: 'Precio adicional que paga el cliente',
+                      items: extraItems, setItems: setExtraItems,
+                      defaultName: '✨ Nuevo extra'
+                    }].map(({ icon, title, hint, items, setItems, defaultName }) => (
+                      <div key={title} style={{ marginBottom: 14 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                          <label style={{ fontSize: 11, fontWeight: 800, color: '#0f172a' }}>{icon} {title}</label>
+                          <span style={{ fontSize: 9.5, color: '#94a3b8', fontWeight: 700 }}>{hint}</span>
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                          {items.map(item => (
+                            <div key={item.id} style={{
+                              display: 'grid', gridTemplateColumns: '20px 1fr 90px 28px',
+                              gap: 6, alignItems: 'center',
+                              background: item.enabled ? '#fff7ed' : 'white',
+                              border: item.enabled ? '1.5px solid #fdba74' : '1px solid #e2e8f0',
+                              borderRadius: 10, padding: '5px 8px', transition: 'all .15s'
+                            }}>
+                              {/* Checkbox activar */}
+                              <input
+                                type="checkbox"
+                                checked={item.enabled}
+                                onChange={() => setItems(prev => prev.map(x => x.id === item.id ? { ...x, enabled: !x.enabled } : x))}
+                                style={{ accentColor: '#ff6b00', width: 14, height: 14, cursor: 'pointer' }}
+                              />
+                              {/* Nombre editable */}
+                              <input
+                                type="text"
+                                value={item.name}
+                                onChange={e => setItems(prev => prev.map(x => x.id === item.id ? { ...x, name: e.target.value } : x))}
+                                style={{
+                                  border: 'none', background: 'transparent', fontSize: 11.5,
+                                  fontWeight: item.enabled ? 800 : 600,
+                                  color: item.enabled ? '#1e293b' : '#64748b',
+                                  outline: 'none', width: '100%', minWidth: 0
+                                }}
+                              />
+                              {/* Precio */}
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                <span style={{ fontSize: 9.5, color: '#94a3b8', fontWeight: 700, whiteSpace: 'nowrap' }}>RD$</span>
+                                <input
+                                  type="number"
+                                  min="0"
+                                  value={item.price}
+                                  onChange={e => setItems(prev => prev.map(x => x.id === item.id ? { ...x, price: Number(e.target.value) || 0 } : x))}
+                                  style={{
+                                    width: '100%', border: '1px solid #e2e8f0', borderRadius: 6,
+                                    padding: '3px 5px', fontSize: 11.5, fontWeight: 800,
+                                    color: item.price > 0 ? '#ff6b00' : '#94a3b8',
+                                    background: item.price > 0 ? '#fff3e6' : '#f8fafc',
+                                    outline: 'none', textAlign: 'right'
+                                  }}
+                                />
+                              </div>
+                              {/* Eliminar */}
+                              <button
+                                type="button"
+                                onClick={() => setItems(prev => prev.filter(x => x.id !== item.id))}
+                                style={{ background: 'none', border: 'none', color: '#cbd5e1', fontSize: 14, cursor: 'pointer', fontWeight: 900, lineHeight: 1, padding: 0 }}
+                                title="Eliminar"
+                              >×</button>
+                            </div>
+                          ))}
+                          {/* Agregar nuevo ítem */}
+                          <button
+                            type="button"
+                            onClick={() => setItems(prev => [...prev, { id: 'custom-' + Date.now(), name: defaultName, price: 0, enabled: true }])}
+                            style={{
+                              marginTop: 2, padding: '6px 10px', borderRadius: 10,
+                              border: '1.5px dashed #ff6b00', background: 'transparent',
+                              color: '#ff6b00', fontSize: 11.5, fontWeight: 900, cursor: 'pointer',
+                              display: 'flex', alignItems: 'center', gap: 5, justifyContent: 'center'
+                            }}
+                          >
+                            + Agregar {icon}
+                          </button>
+                        </div>
                       </div>
-                    </div>
-
-                    {/* 2. Bebidas */}
-                    <div style={{ marginBottom: 12 }}>
-                      <label style={{ fontSize: 11, fontWeight: 700, color: '#0f172a', display: 'block', marginBottom: 4 }}>🥤 Bebidas a Elegir por el Cliente</label>
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 6 }}>
-                        {['Coca Cola 2L', 'Jugo Chinola', 'Cerveza Presidente', 'Agua Mineral'].map(val => (
-                          <label key={val} style={{ fontSize: 11, background: 'white', padding: '6px 10px', borderRadius: 8, border: '1px solid #cbd5e1', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
-                            <input type="checkbox" checked={selectedBebidas.includes(val)} onChange={() => handleToggleBebida(val)} /> {val}
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* 3. Extras */}
-                    <div>
-                      <label style={{ fontSize: 11, fontWeight: 700, color: '#0f172a', display: 'block', marginBottom: 4 }}>🥓 Extras & Salsas Especiales</label>
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 6 }}>
-                        {['Chicharrón Extra (+120)', 'Queso Frito (+80)', 'Salsa Ajo (+35)', 'Aguacate Fresco (+60)'].map(val => (
-                          <label key={val} style={{ fontSize: 11, background: 'white', padding: '6px 10px', borderRadius: 8, border: '1px solid #cbd5e1', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
-                            <input type="checkbox" checked={selectedExtras.includes(val)} onChange={() => handleToggleExtra(val)} /> {val}
-                          </label>
-                        ))}
-                      </div>
-                    </div>
+                    ))}
                   </div>
                   )}
 
