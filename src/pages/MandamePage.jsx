@@ -3112,7 +3112,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                         </div>
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 10 }}>
                           {searchMatchedProducts.map(prod => (
-                            <div key={prod.id} style={{ background: 'white', borderRadius: 16, padding: 10, boxShadow: '0 4px 14px rgba(0,0,0,0.06)', border: '1.5px solid #fed7aa', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                            <div key={prod.id} onClick={() => { setCustomizeModalImgIndex(0); setCustomizeProduct(prod); }} style={{ cursor: 'pointer', background: 'white', borderRadius: 16, padding: 10, boxShadow: '0 4px 14px rgba(0,0,0,0.06)', border: '1.5px solid #fed7aa', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                               <div style={{ position: 'relative' }}>
                                 <img src={prod.image} alt={prod.name} style={{ width: '100%', height: 95, objectFit: 'cover', borderRadius: 12, marginBottom: 8 }} />
                                 {prod.storeName && (
@@ -3131,7 +3131,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                                 <div style={{ fontWeight: 900, color: '#ff6b00', fontSize: 14 }}>RD$ {prod.price}</div>
                               </div>
                               <button 
-                                onClick={() => handleAddToCartCustom(prod, 'Tostones', 'Refresco')}
+                                onClick={(e) => { e.stopPropagation(); setCustomizeModalImgIndex(0); setCustomizeProduct(prod); }}
                                 style={{ width: '100%', marginTop: 8, background: 'linear-gradient(135deg, #ff6b00, #e65100)', color: 'white', border: 'none', padding: '7px 0', borderRadius: 10, fontWeight: 900, fontSize: 11.5, cursor: 'pointer', boxShadow: '0 3px 8px rgba(255,107,0,0.3)' }}
                               >
                                 + Agregar
@@ -3201,7 +3201,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                       </div>
                       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 10 }}>
                         {allPlatformProducts.map(prod => (
-                          <div key={prod.id} style={{ background: 'white', borderRadius: 16, padding: 10, boxShadow: '0 4px 14px rgba(0,0,0,0.06)', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                          <div key={prod.id} onClick={() => { setCustomizeModalImgIndex(0); setCustomizeProduct(prod); }} style={{ cursor: 'pointer', background: 'white', borderRadius: 16, padding: 10, boxShadow: '0 4px 14px rgba(0,0,0,0.06)', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                             <div style={{ position: 'relative' }}>
                               <img src={prod.image} alt={prod.name} style={{ width: '100%', height: 95, objectFit: 'cover', borderRadius: 12, marginBottom: 8 }} />
                               {prod.storeName && (
@@ -3215,7 +3215,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                               <div style={{ fontWeight: 900, color: '#ff6b00', fontSize: 14 }}>RD$ {prod.price}</div>
                             </div>
                             <button 
-                              onClick={() => handleAddToCartCustom(prod, 'Tostones', 'Refresco')}
+                              onClick={(e) => { e.stopPropagation(); setCustomizeModalImgIndex(0); setCustomizeProduct(prod); }}
                               style={{ width: '100%', marginTop: 8, background: '#ff6b00', color: 'white', border: 'none', padding: '6px 0', borderRadius: 10, fontWeight: 900, fontSize: 11, cursor: 'pointer' }}
                             >
                               + Agregar
@@ -5738,8 +5738,8 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
 
       {/* CUSTOMIZE DISH MODAL WITH INTERACTIVE MULTI-PHOTO GALLERY */}
       {customizeProduct && (
-        <div className="modal-backdrop active">
-          <div className="modal-card">
+        <div className="modal-backdrop active" onClick={() => setCustomizeProduct(null)}>
+          <div className="modal-card" onClick={(e) => e.stopPropagation()} style={{ maxHeight: '90vh', overflowY: 'auto' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
               <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 900, fontSize: 17, color: '#ff6b00', margin: 0 }}>
                 🍔 {customizeProduct.name}
@@ -5807,7 +5807,24 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
               );
             })()}
 
-            <div style={{ fontWeight: 900, fontSize: 16, color: '#ff6b00', marginBottom: 12 }}>RD$ {customizeProduct.price}</div>
+            {customizeProduct.storeName && (
+              <div style={{ display: 'inline-block', background: '#fff3e6', color: '#c2410c', fontSize: 11, fontWeight: 800, padding: '3px 10px', borderRadius: 10, marginBottom: 8 }}>
+                🏪 {customizeProduct.storeName}
+              </div>
+            )}
+            <div style={{ fontWeight: 900, fontSize: 20, color: '#ff6b00', marginBottom: 10 }}>RD$ {customizeProduct.price}</div>
+            <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 14, padding: 12, marginBottom: 14 }}>
+              <div style={{ fontWeight: 900, fontSize: 12, color: '#1e293b', marginBottom: 4, textTransform: 'uppercase' }}>📝 Detalles</div>
+              <div style={{ fontSize: 13, color: '#475569', lineHeight: 1.45, whiteSpace: 'pre-wrap' }}>
+                {customizeProduct.description || customizeProduct.desc || customizeProduct.details || 'Este artículo no tiene descripción todavía.'}
+              </div>
+              {(customizeProduct.category || customizeProduct.prepTime) && (
+                <div style={{ display: 'flex', gap: 8, marginTop: 8, fontSize: 11, color: '#64748b', fontWeight: 700 }}>
+                  {customizeProduct.category && <span>🏷️ {customizeProduct.category}</span>}
+                  {customizeProduct.prepTime && <span>⏱️ {customizeProduct.prepTime}</span>}
+                </div>
+              )}
+            </div>
             <button className="btn-mamey" style={{ width: '100%', padding: 14 }} onClick={() => handleAddToCartCustom(customizeProduct, 'Tostones Crujientes', 'Coca-Cola 2L')}>
               🛒 Agregar al Carrito
             </button>
