@@ -5738,8 +5738,8 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
 
       {/* CUSTOMIZE DISH MODAL WITH INTERACTIVE MULTI-PHOTO GALLERY */}
       {customizeProduct && (
-        <div className="modal-backdrop active" onClick={() => setCustomizeProduct(null)}>
-          <div className="modal-card" onClick={(e) => e.stopPropagation()} style={{ maxHeight: '90vh', overflowY: 'auto' }}>
+        <div className="modal-backdrop active" onClick={() => setCustomizeProduct(null)} style={{ zIndex: 99999 }}>
+          <div className="modal-card" onClick={(e) => e.stopPropagation()} style={{ maxHeight: '92vh', overflowY: 'auto', paddingBottom: 0 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
               <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 900, fontSize: 17, color: '#ff6b00', margin: 0 }}>
                 🍔 {customizeProduct.name}
@@ -5807,11 +5807,34 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
               );
             })()}
 
-            {customizeProduct.storeName && (
-              <div style={{ display: 'inline-block', background: '#fff3e6', color: '#c2410c', fontSize: 11, fontWeight: 800, padding: '3px 10px', borderRadius: 10, marginBottom: 8 }}>
-                🏪 {customizeProduct.storeName}
-              </div>
-            )}
+            {(() => {
+              const p = customizeProduct;
+              const pool = [...dbStores, ...partnerStores, ...INITIAL_STORES];
+              const st = pool.find(s => (p.storeId && (s.id === p.storeId || s.uid === p.storeId)) || (p.storeName && (s.name || '').toLowerCase().trim() === p.storeName.toLowerCase().trim()));
+              const name = st?.name || p.storeName;
+              if (!name) return null;
+              const fee = st?.deliveryFee;
+              return (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: '#fff7ed', border: '1px solid #fed7aa', borderRadius: 14, padding: 10, marginBottom: 10, textAlign: 'left' }}>
+                  <img src={st?.image || st?.logo || 'assets/burger_3d.png'} alt={name} style={{ width: 48, height: 48, borderRadius: 12, objectFit: 'cover', flexShrink: 0, background: '#fff' }} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontWeight: 900, fontSize: 14, color: '#0f172a' }}>🏪 {name}</div>
+                    <div style={{ fontSize: 11, color: '#64748b', display: 'flex', flexWrap: 'wrap', gap: '2px 8px', marginTop: 2 }}>
+                      <span>⭐ {st?.ratingText || st?.rating || '5.0'}</span>
+                      <span>⏱️ {st?.time || '15-25 min'}</span>
+                      <span>🚚 {fee === 0 ? 'Envío gratis' : `RD$ ${fee ?? 55}`}</span>
+                      <span>📍 {st?.address || st?.city || 'Santiago'}</span>
+                    </div>
+                    {(st?.schedule || st?.horario) && <div style={{ fontSize: 11, color: '#64748b', marginTop: 2 }}>🕒 {st.schedule || st.horario}</div>}
+                  </div>
+                  {st && (
+                    <button onClick={() => { setCustomizeProduct(null); setActiveStoreModal(st); }} style={{ padding: '6px 10px', borderRadius: 10, background: '#ff6b00', color: '#fff', border: 'none', fontSize: 11, fontWeight: 800, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                      Ver tienda
+                    </button>
+                  )}
+                </div>
+              );
+            })()}
             <div style={{ fontWeight: 900, fontSize: 20, color: '#ff6b00', marginBottom: 10 }}>RD$ {customizeProduct.price}</div>
             <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 14, padding: 12, marginBottom: 14 }}>
               <div style={{ fontWeight: 900, fontSize: 12, color: '#1e293b', marginBottom: 4, textTransform: 'uppercase' }}>📝 Detalles</div>
@@ -5825,9 +5848,11 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                 </div>
               )}
             </div>
-            <button className="btn-mamey" style={{ width: '100%', padding: 14 }} onClick={() => handleAddToCartCustom(customizeProduct, 'Tostones Crujientes', 'Coca-Cola 2L')}>
-              🛒 Agregar al Carrito
-            </button>
+            <div style={{ position: 'sticky', bottom: 0, background: 'white', padding: '10px 0 16px', marginTop: 4, boxShadow: '0 -8px 12px -8px rgba(0,0,0,0.12)' }}>
+              <button className="btn-mamey" style={{ width: '100%', padding: 14 }} onClick={() => handleAddToCartCustom(customizeProduct, 'Tostones Crujientes', 'Coca-Cola 2L')}>
+                🛒 Agregar al Carrito • RD$ {customizeProduct.price}
+              </button>
+            </div>
           </div>
         </div>
       )}
