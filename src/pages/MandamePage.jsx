@@ -13,6 +13,7 @@ import HistoriasCarrusel from '../components/HistoriasCarrusel';
 import ConfigurarRestauranteModal from '../components/ConfigurarRestauranteModal';
 import { BUSINESS_TYPES, RENTAL_PERIODS, WHOLESALE_TIERS } from '../data/businessTypes';
 import DeliveryCercaScreen from '../components/DeliveryCercaScreen';
+import WelcomeIntro from '../components/WelcomeIntro';
 
 // Initial Mock State
 const ANIMATED_BANNERS_CATALOG = [
@@ -344,6 +345,12 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
       setPinError('❌ Contraseña incorrecta');
       setPinInput('');
     }
+  };
+
+  const [showIntro, setShowIntro] = useState(false);
+  const openMerchantWithIntro = () => {
+    if (viewMode === 'merchant') return;
+    setShowIntro(true);
   };
 
   const handleSetViewMode = async (mode) => {
@@ -2417,12 +2424,17 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
         </div>
       )}
 
+      <WelcomeIntro open={showIntro} onDone={() => { setShowIntro(false); handleSetViewMode('merchant'); }} />
+
       {/* Mode Switcher Pill Header - Visible si el usuario tiene comercio registrado */}
       {isMerchantUser && (
         <div style={{ background: '#0a0e1a', color: 'white', padding: '10px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid #ff6b00', fontSize: 11, fontWeight: 800 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <span style={{ fontSize: 16 }}>🍔</span>
-            <span style={{ color: '#ff6b00', fontWeight: 900, letterSpacing: '0.5px' }}>{viewMode === 'merchant' && (merchantState.storeName || userData?.storeName || userData?.commerceName) ? `🏪 ${(merchantState.storeName || userData?.storeName || userData?.commerceName).toUpperCase()}` : 'PEDIDOS LISTO'}</span>
+            {viewMode === 'merchant' && (merchantState.storeName || userData?.storeName || userData?.commerceName) ? (
+              <span style={{ color: '#ff6b00', fontWeight: 900, letterSpacing: '0.5px' }}>{`🏪 ${(merchantState.storeName || userData?.storeName || userData?.commerceName).toUpperCase()}`}</span>
+            ) : (
+              <img src="/brand/logo-texto-blanco.png" alt="Pedidos Listo" style={{ height: 20, width: 'auto', display: 'block' }} />
+            )}
           </div>
           <div style={{ display: 'flex', gap: 8 }}>
             <button 
@@ -2442,7 +2454,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
               📱 App Cliente
             </button>
             <button 
-              onClick={() => handleSetViewMode('merchant')} 
+              onClick={openMerchantWithIntro} 
               style={{ 
                 background: viewMode === 'merchant' ? '#ff6b00' : 'rgba(255,255,255,0.12)', 
                 color: 'white', 
