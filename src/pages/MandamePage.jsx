@@ -3559,6 +3559,40 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
           )}
 
           {/* Header 4 Botones Mamey: 2 Arriba y 2 Abajo (Fuera del cuadro azul) */}
+          {/* PANEL RESUMEN SOLO PC (oculto en celular vía CSS) */}
+          {(() => {
+            const ords = merchantState.orders || [];
+            const ventas = ords.reduce((s, o) => s + (Number(o.total) || 0), 0);
+            const kpis = [
+              { k: 'Pedidos', v: ords.length, ic: '🧾', c: '#ff6b00', bg: '#fff3e6', tab: 'pedidos' },
+              { k: 'Ventas', v: `RD$ ${ventas.toLocaleString()}`, ic: '💰', c: '#16a34a', bg: '#dcfce7', tab: 'dashboard' },
+              { k: 'En cocina', v: ords.filter(o => o.status === 'new' || o.status === 'cooking').length, ic: '🔥', c: '#2563eb', bg: '#dbeafe', tab: 'pedidos' },
+              { k: 'Productos', v: (merchantState.products || []).length, ic: '🍽️', c: '#9333ea', bg: '#f3e8ff', tab: 'catalogo' }
+            ];
+            return (
+              <div className="merchant-desk-hero">
+                <div className="mdh-top">
+                  <div>
+                    <div className="mdh-hello">¡Hola, Patrón! 👋</div>
+                    <div className="mdh-sub">Esto es lo que pasa hoy en tu comercio • {new Date().toLocaleDateString('es-DO', { weekday: 'long', day: 'numeric', month: 'long' })}</div>
+                  </div>
+                  <img src="/brand/logo-texto-mamey.png" alt="Pedidos Listo" className="mdh-logo" />
+                </div>
+                <div className="mdh-kpis">
+                  {kpis.map(x => (
+                    <button key={x.k} className="mdh-kpi" onClick={() => setMerchantTab(x.tab)}>
+                      <span className="mdh-ic" style={{ background: x.bg, color: x.c }}>{x.ic}</span>
+                      <span>
+                        <span className="mdh-k">{x.k}</span>
+                        <span className="mdh-v" style={{ color: x.c }}>{x.v}</span>
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
+
           <div className="merchant-tiles" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: 16 }}>
             {/* 1. POS CAJA */}
             <button 
@@ -4937,7 +4971,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
               </div>
 
               {/* Status Filter Tabs */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 4, marginBottom: 14, background: 'rgba(255,255,255,0.05)', padding: 4, borderRadius: 14 }}>
+              <div className="merchant-filter-tabs" style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 4, marginBottom: 14, background: 'rgba(255,255,255,0.05)', padding: 4, borderRadius: 14 }}>
                 {[
                   { id: 'all', label: 'Todos', count: merchantState.orders.length },
                   { id: 'new', label: '🟡 Nuevos', count: merchantState.orders.filter(o => o.status === 'new').length },
