@@ -106,17 +106,27 @@ export default function DeliveryCercaScreen({ open, onClose, userData, storeName
 
   // Configuración de delivery propio
   useEffect(() => {
-    if (!open || !uid) return;
+    if (!open) return;
+    const applyLocal = () => {
+      try {
+        const od = JSON.parse(localStorage.getItem('pl_own_delivery') || '{}');
+        setOwnEnabled(!!od.enabled);
+        setOwnDrivers(Array.isArray(od.drivers) ? od.drivers : []);
+      } catch (e) {}
+    };
+    if (!uid) { applyLocal(); return; }
     getDoc(doc(db, 'users', uid)).then(s => {
-      const od = s.data()?.ownDelivery || {};
+      const od = s.data()?.ownDelivery;
+      if (!od) { applyLocal(); return; }
       setOwnEnabled(!!od.enabled);
       setOwnDrivers(Array.isArray(od.drivers) ? od.drivers : []);
-    }).catch(() => {});
+    }).catch(applyLocal);
   }, [open, uid]);
 
   const saveOwn = async (enabled, drivers) => {
     setOwnEnabled(enabled); setOwnDrivers(drivers);
     onOwnDeliveryChange && onOwnDeliveryChange(enabled);
+    try { localStorage.setItem('pl_own_delivery', JSON.stringify({ enabled, drivers })); } catch (e) {}
     if (!uid) return;
     try { await setDoc(doc(db, 'users', uid), { ownDelivery: { enabled, drivers } }, { merge: true }); }
     catch (e) { console.warn('ownDelivery save:', e); }

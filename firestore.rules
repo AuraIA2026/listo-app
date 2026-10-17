@@ -111,6 +111,18 @@ service cloud.firestore {
       allow read, update, delete: if true; // Administrador y app pueden validar y activar comercios
     }
 
+    // 6h. DELIVERYS EN LÍNEA (ubicación en vivo) — el comercio los ve en el mapa
+    match /drivers_online/{driverId} {
+      allow read: if true;
+      allow write: if isAuth() && (request.auth.uid == driverId || isAdmin());
+    }
+
+    // 6i. SOLICITUDES DE DELIVERY (comercio -> delivery)
+    match /delivery_requests/{reqId} {
+      allow read, create, update: if true;
+      allow delete: if isAdmin();
+    }
+
     // 7. OTRAS COLECCIONES PUBLICAS TEMPORALES (comisiones, etc)
     match /{document=**} {
       allow read, write: if false;
