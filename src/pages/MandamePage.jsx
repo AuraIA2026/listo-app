@@ -810,6 +810,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
   const [newProdImages, setNewProdImages] = useState(['assets/burger_3d.png']);
   const [activePreviewImageIndex, setActivePreviewImageIndex] = useState(0);
   const [customizeModalImgIndex, setCustomizeModalImgIndex] = useState(0);
+  const [zoomImg, setZoomImg] = useState(null); // visor de foto a pantalla completa
   
   // Dish Photo Editor Ultra Pro State
   const [editingPhotoIndex, setEditingPhotoIndex] = useState(null);
@@ -5833,10 +5834,18 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
         />
       )}
 
+      {/* VISOR DE FOTO A PANTALLA COMPLETA */}
+      {zoomImg && (
+        <div onClick={() => setZoomImg(null)} style={{ position: 'fixed', inset: 0, zIndex: 100000, background: 'rgba(5,8,15,0.95)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 12, cursor: 'zoom-out' }}>
+          <img src={zoomImg} alt="Foto ampliada" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', borderRadius: 12 }} />
+          <button onClick={() => setZoomImg(null)} style={{ position: 'absolute', top: 16, right: 16, width: 42, height: 42, borderRadius: '50%', border: 'none', background: 'rgba(255,255,255,0.9)', fontSize: 20, fontWeight: 900, cursor: 'pointer' }}>✕</button>
+        </div>
+      )}
+
       {/* CUSTOMIZE DISH MODAL WITH INTERACTIVE MULTI-PHOTO GALLERY */}
       {customizeProduct && (
         <div className="modal-backdrop active" onClick={() => setCustomizeProduct(null)} style={{ zIndex: 99999, paddingBottom: 'calc(84px + env(safe-area-inset-bottom))', boxSizing: 'border-box' }}>
-          <div className="modal-card" onClick={(e) => e.stopPropagation()} style={{ maxHeight: 'calc(100dvh - 120px)', overflowY: 'auto', paddingBottom: 0 }}>
+          <div className="modal-card" onClick={(e) => e.stopPropagation()} style={{ width: 'min(560px, 94vw)', maxWidth: '94vw', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', alignItems: 'stretch', textAlign: 'left', maxHeight: 'calc(100dvh - 120px)', overflowY: 'auto', paddingBottom: 0 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
               <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 900, fontSize: 17, color: '#ff6b00', margin: 0 }}>
                 {customizeProduct.name}
@@ -5852,21 +5861,33 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
               const activeImg = galleryImages[customizeModalImgIndex] || galleryImages[0];
 
               return (
-                <div style={{ marginBottom: 12 }}>
-                  <div style={{ position: 'relative', width: '100%', height: 180, borderRadius: 16, overflow: 'hidden', background: '#0a0e1a' }}>
-                    <img src={activeImg} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt={customizeProduct.name} />
+                <div style={{ marginBottom: 14, width: '100%' }}>
+                  <div
+                    onClick={() => setZoomImg(activeImg)}
+                    onTouchStart={(e) => { e.currentTarget.dataset.tx = e.touches[0].clientX; }}
+                    onTouchEnd={(e) => {
+                      const dx = e.changedTouches[0].clientX - Number(e.currentTarget.dataset.tx || 0);
+                      if (Math.abs(dx) > 40 && galleryImages.length > 1) {
+                        setCustomizeModalImgIndex(prev => dx < 0 ? (prev + 1) % galleryImages.length : (prev - 1 + galleryImages.length) % galleryImages.length);
+                      }
+                    }}
+                    style={{ position: 'relative', width: '100%', height: 'min(46vh, 360px)', borderRadius: 20, overflow: 'hidden', background: '#0a0e1a', cursor: 'zoom-in', boxShadow: '0 10px 30px rgba(0,0,0,0.18)' }}
+                  >
+                    <img src={activeImg} aria-hidden="true" alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', filter: 'blur(22px) brightness(0.75)', transform: 'scale(1.2)' }} />
+                    <img key={activeImg} src={activeImg} style={{ position: 'relative', width: '100%', height: '100%', objectFit: 'contain', animation: 'fadeIn .25s ease' }} alt={customizeProduct.name} />
+                    <span style={{ position: 'absolute', top: 10, left: 10, background: 'rgba(10,14,26,0.7)', color: 'white', fontSize: 10.5, fontWeight: 800, padding: '4px 9px', borderRadius: 10, backdropFilter: 'blur(4px)' }}>🔍 Toca para ampliar</span>
                     
                     {galleryImages.length > 1 && (
                       <>
                         <button
                           onClick={(e) => { e.stopPropagation(); setCustomizeModalImgIndex(prev => prev > 0 ? prev - 1 : galleryImages.length - 1); }}
-                          style={{ position: 'absolute', left: 8, top: '50%', transform: 'translateY(-50%)', background: 'rgba(0,0,0,0.65)', color: 'white', border: 'none', width: 32, height: 32, borderRadius: '50%', cursor: 'pointer', fontWeight: 900, fontSize: 16, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                          style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', background: 'rgba(255,255,255,0.92)', color: '#0f172a', border: 'none', width: 40, height: 40, borderRadius: '50%', cursor: 'pointer', fontWeight: 900, fontSize: 22, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px rgba(0,0,0,0.25)' }}
                         >
                           ‹
                         </button>
                         <button
                           onClick={(e) => { e.stopPropagation(); setCustomizeModalImgIndex(prev => prev < galleryImages.length - 1 ? prev + 1 : 0); }}
-                          style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', background: 'rgba(0,0,0,0.65)', color: 'white', border: 'none', width: 32, height: 32, borderRadius: '50%', cursor: 'pointer', fontWeight: 900, fontSize: 16, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                          style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', background: 'rgba(255,255,255,0.92)', color: '#0f172a', border: 'none', width: 40, height: 40, borderRadius: '50%', cursor: 'pointer', fontWeight: 900, fontSize: 22, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px rgba(0,0,0,0.25)' }}
                         >
                           ›
                         </button>
@@ -5879,26 +5900,34 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
 
                   {/* Thumbnail Strip selector */}
                   {galleryImages.length > 1 && (
-                    <div style={{ display: 'flex', gap: 6, marginTop: 8, overflowX: 'auto', paddingBottom: 4 }}>
-                      {galleryImages.map((img, idx) => (
-                        <img
-                          key={idx}
-                          src={img}
-                          alt={`Thumb ${idx + 1}`}
-                          onClick={() => setCustomizeModalImgIndex(idx)}
-                          style={{
-                            width: 48,
-                            height: 48,
-                            borderRadius: 10,
-                            objectFit: 'cover',
-                            cursor: 'pointer',
-                            border: customizeModalImgIndex === idx ? '2px solid #ff6b00' : '1px solid #e2e8f0',
-                            opacity: customizeModalImgIndex === idx ? 1 : 0.6,
-                            transition: 'all 0.15s ease'
-                          }}
-                        />
-                      ))}
-                    </div>
+                    <>
+                      <div style={{ display: 'flex', justifyContent: 'center', gap: 5, marginTop: 8 }}>
+                        {galleryImages.map((_, idx) => (
+                          <span key={idx} style={{ width: customizeModalImgIndex === idx ? 18 : 6, height: 6, borderRadius: 3, background: customizeModalImgIndex === idx ? '#ff6b00' : '#cbd5e1', transition: 'all .2s ease' }} />
+                        ))}
+                      </div>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8, marginTop: 8 }}>
+                        {galleryImages.map((img, idx) => (
+                          <img
+                            key={idx}
+                            src={img}
+                            alt={`Foto ${idx + 1}`}
+                            onClick={() => setCustomizeModalImgIndex(idx)}
+                            style={{
+                              width: '100%',
+                              aspectRatio: '1 / 1',
+                              borderRadius: 12,
+                              objectFit: 'cover',
+                              cursor: 'pointer',
+                              border: customizeModalImgIndex === idx ? '2.5px solid #ff6b00' : '1.5px solid #e2e8f0',
+                              boxShadow: customizeModalImgIndex === idx ? '0 4px 12px rgba(255,107,0,0.35)' : 'none',
+                              opacity: customizeModalImgIndex === idx ? 1 : 0.7,
+                              transition: 'all 0.15s ease'
+                            }}
+                          />
+                        ))}
+                      </div>
+                    </>
                   )}
                 </div>
               );
