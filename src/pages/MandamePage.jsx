@@ -3559,7 +3559,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
           )}
 
           {/* Header 4 Botones Mamey: 2 Arriba y 2 Abajo (Fuera del cuadro azul) */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: 16 }}>
+          <div className="merchant-tiles" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: 16 }}>
             {/* 1. POS CAJA */}
             <button 
               onClick={() => setMerchantTab('pos')} 
@@ -4965,7 +4965,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
               </div>
 
               {/* Orders List Container */}
-              <div>
+              <div className="merchant-orders-grid">
                 {merchantState.orders
                   .filter(o => kitchenFilterTab === 'all' || o.status === kitchenFilterTab)
                   .map(order => {

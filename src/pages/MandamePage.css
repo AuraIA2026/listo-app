@@ -1795,3 +1795,25 @@ body {
 
 
 
+
+/* ===== ??? MI COMERCIO EN PC: PANTALLA COMPLETA ===== */
+@media (min-width: 900px) {
+  .app-viewport.merchant-app-viewport {
+    max-width: 100%;
+    box-shadow: none;
+    background: #f1f5f9;
+  }
+  .merchant-app-viewport > * { max-width: 1440px; margin-left: auto; margin-right: auto; }
+  .merchant-app-viewport .merchant-tiles { grid-template-columns: repeat(4, 1fr) !important; gap: 14px !important; }
+  .merchant-app-viewport .merchant-tiles > button { padding: 18px 12px !important; font-size: 15px !important; }
+  .merchant-app-viewport .merchant-orders-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+    gap: 16px;
+    align-items: start;
+  }
+  .merchant-app-viewport .merchant-orders-grid > * { margin-bottom: 0 !important; }
+}
+@media (min-width: 1500px) {
+  .merchant-app-viewport .merchant-orders-grid { grid-template-columns: repeat(3, 1fr); }
+}
