@@ -1817,3 +1817,15 @@ body {
 @media (min-width: 1500px) {
   .merchant-app-viewport .merchant-orders-grid { grid-template-columns: repeat(3, 1fr); }
 }
+
+/* ===== Escritorio: organizacion Mi Comercio (v2) ===== */
+@media (min-width: 900px) {
+  .merchant-scroll { padding: 24px 32px 110px !important; }
+  .merchant-scroll > * { max-width: 1440px; margin-left: auto; margin-right: auto; }
+  .merchant-tiles { position: sticky; top: 0; z-index: 20; padding: 10px 0; background: #f1f5f9; }
+  .merchant-catalog { display: grid !important; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 24px; align-items: start; }
+  .merchant-catalog-form { margin-bottom: 0 !important; padding: 26px !important; }
+  .merchant-inventory { position: sticky; top: 110px; max-height: calc(100vh - 140px); overflow-y: auto; display: grid !important; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 10px; align-content: start; padding: 20px !important; }
+  .merchant-inventory > h3 { grid-column: 1 / -1; margin-bottom: 4px !important; }
+  .merchant-inv-item { margin-bottom: 0 !important; }
+}

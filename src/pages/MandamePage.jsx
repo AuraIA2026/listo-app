@@ -3499,7 +3499,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
          MERCHANT PARTNER PORTAL VIEW MODE
          ========================================================================= */}
       {viewMode === 'merchant' && (
-        <div style={{ flexGrow: 1, overflowY: 'auto', padding: 16, paddingBottom: 80 }}>
+        <div className="merchant-scroll" style={{ flexGrow: 1, overflowY: 'auto', padding: 16, paddingBottom: 80 }}>
           {/* BANNER NOTIFICACIÓN FLOTANTE DE NUEVO PEDIDO ENTRANTE EN COMANDERA */}
           {newOrderBanner && (
             <div style={{
@@ -4407,9 +4407,9 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
 
           {/* TAB: EDICIÓN DE MENÚ & CATÁLOGO (UBER EATS STYLE) */}
           {merchantTab === 'catalogo' && (
-            <div>
+            <div className="merchant-catalog">
               {/* Form Card */}
-              <div style={{ background: 'white', color: '#0f172a', borderRadius: 24, padding: 18, marginBottom: 16 }}>
+              <div className="merchant-catalog-form" style={{ background: 'white', color: '#0f172a', borderRadius: 24, padding: 18, marginBottom: 16 }}>
                 <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 900, fontSize: 18, color: '#ff6b00', marginBottom: 14 }}>
                   ➕ Subir Nuevo {bizCfg.itemLabel} al Catálogo Pedidos Listo
                 </h3>
@@ -4803,14 +4803,14 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
               </div>
 
               {/* Inventory Active List */}
-              <div style={{ background: '#121829', borderRadius: 20, padding: 16, border: '1px solid rgba(255,255,255,0.08)' }}>
+              <div className="merchant-inventory" style={{ background: '#121829', borderRadius: 20, padding: 16, border: '1px solid rgba(255,255,255,0.08)' }}>
                 <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 900, fontSize: 16, marginBottom: 12, color: 'white' }}>
                   📋 Mi Inventario Activo ({merchantState.products.length} Productos)
                 </h3>
                 {merchantState.products.map(prod => {
                   const prodImgCount = (prod.images && prod.images.length) || 1;
                   return (
-                    <div key={prod.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(255,255,255,0.05)', padding: '10px 12px', borderRadius: 14, marginBottom: 8, border: '1px solid rgba(255,255,255,0.1)' }}>
+                    <div key={prod.id} className="merchant-inv-item" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(255,255,255,0.05)', padding: '10px 12px', borderRadius: 14, marginBottom: 8, border: '1px solid rgba(255,255,255,0.1)' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', flexGrow: 1, minWidth: 0 }} onClick={() => handleOpenDishPhotoManager(prod.id)}>
                         <div style={{ position: 'relative', flexShrink: 0 }}>
                           <img src={prod.image} style={{ width: 46, height: 46, borderRadius: 10, objectFit: 'cover' }} alt={prod.name} />
