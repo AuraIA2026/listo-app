@@ -45,15 +45,74 @@ const createWorkerIcon = () => L.divIcon({
   iconSize: [60, 60], iconAnchor: [30, 30], popupAnchor: [0, -30],
 })
 
-const createMotoIcon = (imgSrc = motoListoImg) => L.divIcon({
+/* ── Moto de delivery Pedidos Listo: 8 poses según el rumbo (color mamey) ── */
+const MAMEY = '#FF6B00', MAMEY_DARK = '#C2410C'
+const MOTO_SIDE_SVG = `
+<svg viewBox="0 0 64 48" width="56" height="42" xmlns="http://www.w3.org/2000/svg">
+  <ellipse cx="32" cy="45" rx="24" ry="2.5" fill="rgba(0,0,0,0.25)"/>
+  <circle cx="14" cy="37" r="7" fill="#1F2937"/><circle cx="14" cy="37" r="3" fill="#9CA3AF"/>
+  <circle cx="50" cy="37" r="7" fill="#1F2937"/><circle cx="50" cy="37" r="3" fill="#9CA3AF"/>
+  <path d="M9 31 L21 26 L41 26 L49 20 L56 30 L47 34 L19 34 Z" fill="${MAMEY}" stroke="${MAMEY_DARK}" stroke-width="1.2"/>
+  <line x1="49" y1="20" x2="52" y2="14" stroke="#334155" stroke-width="2.2" stroke-linecap="round"/>
+  <circle cx="56" cy="27" r="2.2" fill="#FDE047"/>
+  <rect x="3" y="11" width="19" height="15" rx="3" fill="${MAMEY}" stroke="${MAMEY_DARK}" stroke-width="1.2"/>
+  <text x="12.5" y="22" font-size="9" font-weight="900" fill="#fff" text-anchor="middle" font-family="Arial">L</text>
+  <path d="M28 27 L32 16 L40 16 L44 26 Z" fill="#334155"/>
+  <line x1="40" y1="18" x2="50" y2="16" stroke="#334155" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="36" cy="10" r="6.5" fill="${MAMEY}" stroke="${MAMEY_DARK}" stroke-width="1.2"/>
+  <path d="M37 7.5 h5 a1.5 1.5 0 0 1 0 5 h-5 Z" fill="#1E293B"/>
+</svg>`
+const MOTO_FRONT_SVG = `
+<svg viewBox="0 0 48 64" width="40" height="54" xmlns="http://www.w3.org/2000/svg">
+  <ellipse cx="24" cy="61" rx="14" ry="2.5" fill="rgba(0,0,0,0.25)"/>
+  <rect x="19" y="44" width="10" height="17" rx="5" fill="#1F2937"/>
+  <path d="M12 30 Q24 24 36 30 L33 48 Q24 52 15 48 Z" fill="${MAMEY}" stroke="${MAMEY_DARK}" stroke-width="1.2"/>
+  <circle cx="24" cy="39" r="4" fill="#FDE047" stroke="#CA8A04" stroke-width="1"/>
+  <line x1="6" y1="28" x2="42" y2="28" stroke="#334155" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="5" cy="24" r="2.5" fill="#94A3B8"/><circle cx="43" cy="24" r="2.5" fill="#94A3B8"/>
+  <path d="M15 28 L17 16 L31 16 L33 28 Z" fill="#334155"/>
+  <circle cx="24" cy="10" r="8" fill="${MAMEY}" stroke="${MAMEY_DARK}" stroke-width="1.2"/>
+  <rect x="18" y="8" width="12" height="5" rx="2.5" fill="#1E293B"/>
+</svg>`
+const MOTO_BACK_SVG = `
+<svg viewBox="0 0 48 64" width="40" height="54" xmlns="http://www.w3.org/2000/svg">
+  <ellipse cx="24" cy="61" rx="14" ry="2.5" fill="rgba(0,0,0,0.25)"/>
+  <rect x="19" y="46" width="10" height="15" rx="5" fill="#1F2937"/>
+  <path d="M14 40 L34 40 L31 50 L17 50 Z" fill="${MAMEY}" stroke="${MAMEY_DARK}" stroke-width="1.2"/>
+  <rect x="19" y="43" width="10" height="3" rx="1.5" fill="#EF4444"/>
+  <line x1="6" y1="27" x2="42" y2="27" stroke="#334155" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="24" cy="9" r="7.5" fill="${MAMEY}" stroke="${MAMEY_DARK}" stroke-width="1.2"/>
+  <rect x="9" y="16" width="30" height="25" rx="4" fill="${MAMEY}" stroke="${MAMEY_DARK}" stroke-width="1.4"/>
+  <rect x="9" y="22" width="30" height="3" fill="${MAMEY_DARK}"/>
+  <text x="24" y="36" font-size="8" font-weight="900" fill="#fff" text-anchor="middle" font-family="Arial">LISTO</text>
+</svg>`
+
+// 0=N 1=NE 2=E 3=SE 4=S 5=SO 6=O 7=NO  (N = se aleja hacia arriba del mapa → se ve de espalda)
+const MOTO_POSES = [
+  { svg: MOTO_BACK_SVG,  t: '' },
+  { svg: MOTO_SIDE_SVG,  t: 'rotate(-28deg)' },
+  { svg: MOTO_SIDE_SVG,  t: '' },
+  { svg: MOTO_SIDE_SVG,  t: 'rotate(28deg)' },
+  { svg: MOTO_FRONT_SVG, t: '' },
+  { svg: MOTO_SIDE_SVG,  t: 'scaleX(-1) rotate(28deg)' },
+  { svg: MOTO_SIDE_SVG,  t: 'scaleX(-1)' },
+  { svg: MOTO_SIDE_SVG,  t: 'scaleX(-1) rotate(-28deg)' },
+]
+const bearingToSector = (b) => Math.round(((b % 360) + 360) % 360 / 45) % 8
+const motoPoseHtml = (sector) => {
+  const p = MOTO_POSES[sector] || MOTO_POSES[2]
+  return `<div style="transform:${p.t};transition:transform .3s ease;display:flex;align-items:center;justify-content:center;filter:drop-shadow(0 3px 4px rgba(0,0,0,.3))">${p.svg}</div>`
+}
+
+const createMotoIcon = (sector = 2) => L.divIcon({
   className: 'leaflet-moto-icon',
   html: `
-    <div class="moto-marker-container">
-      <div class="moto-marker-pulse"></div>
-      <img src="${imgSrc}" alt="moto Pedidos Listo" class="moto-marker-img" />
+    <div class="moto-marker-container" style="position:relative;width:60px;height:60px;display:flex;align-items:center;justify-content:center">
+      <div class="moto-marker-pulse" style="background:rgba(255,107,0,0.25)"></div>
+      <div class="moto-pose" data-sector="${sector}" style="position:relative;z-index:2">${motoPoseHtml(sector)}</div>
     </div>
   `,
-  iconSize: [52, 52], iconAnchor: [26, 26], popupAnchor: [0, -26],
+  iconSize: [60, 60], iconAnchor: [30, 30], popupAnchor: [0, -30],
 })
 
 const CLIENT_POS    = [18.4745, -69.9310]
@@ -96,10 +155,10 @@ function getDistanceInMeters(coord1, coord2) {
   return R * c
 }
 
-function SmoothMarker({ targetPos, icon, children, visible = true, isVan = false }) {
+function SmoothMarker({ targetPos, icon, children, visible = true, isVan = false, faceTarget = null }) {
   const markerRef = useRef(null), currentPos = useRef(targetPos)
   const animFrameRef = useRef(null), startTimeRef = useRef(null), fromPos = useRef(targetPos)
-  const rotationRef = useRef(0)
+  const rotationRef = useRef(null)
 
   const getBearing = (lat1, lng1, lat2, lng2) => {
     const y = Math.sin((lng2 - lng1)*Math.PI/180) * Math.cos(lat2*Math.PI/180)
@@ -108,11 +167,35 @@ function SmoothMarker({ targetPos, icon, children, visible = true, isVan = false
     return (Math.atan2(y, x) * 180 / Math.PI + 360) % 360
   }
 
+  // Aplica la orientación: moto → cambia de pose (8 vistas); van → rota la imagen
+  const applyHeading = () => {
+    if (!markerRef.current || rotationRef.current == null) return
+    const el = markerRef.current.getElement()
+    if (!el) return
+    const pose = el.querySelector('.moto-pose')
+    if (pose) {
+      const sector = bearingToSector(rotationRef.current)
+      if (pose.dataset.sector !== String(sector)) {
+        pose.dataset.sector = String(sector)
+        pose.innerHTML = motoPoseHtml(sector)
+      }
+      return
+    }
+    const img = el.querySelector('.moto-marker-img, .van-marker-img')
+    if (img) img.style.transform = `rotate(${rotationRef.current}deg)`
+  }
+
   useEffect(() => {
     fromPos.current = [...currentPos.current]; startTimeRef.current = null
-    if (fromPos.current[0] !== targetPos[0] || fromPos.current[1] !== targetPos[1]) {
+    const moved = getDistanceInMeters(fromPos.current, targetPos) > 2
+    if (moved) {
+      // Rumbo real del movimiento
       rotationRef.current = getBearing(fromPos.current[0], fromPos.current[1], targetPos[0], targetPos[1])
+    } else if (faceTarget && getDistanceInMeters(targetPos, faceTarget) > 2) {
+      // Sin movimiento: mirar hacia el destino del pedido
+      rotationRef.current = getBearing(targetPos[0], targetPos[1], faceTarget[0], faceTarget[1])
     }
+    applyHeading()
     
     if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current)
     const animate = (ts) => {
@@ -122,34 +205,23 @@ function SmoothMarker({ targetPos, icon, children, visible = true, isVan = false
       const lat = lerp(fromPos.current[0], targetPos[0], e)
       const lng = lerp(fromPos.current[1], targetPos[1], e)
       currentPos.current = [lat, lng]
-      
       if (markerRef.current) {
         markerRef.current.setLatLng([lat, lng])
-        const el = markerRef.current.getElement()
-        if (el) {
-          const img = el.querySelector('.moto-marker-img, .van-marker-img')
-          if (img) {
-            img.style.transform = `rotate(${rotationRef.current}deg)`
-          }
-        }
+        applyHeading()
       }
       if (t < 1) animFrameRef.current = requestAnimationFrame(animate)
     }
     animFrameRef.current = requestAnimationFrame(animate)
     return () => { if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current) }
-  }, [targetPos[0], targetPos[1]]) // eslint-disable-line
+  }, [targetPos[0], targetPos[1], faceTarget?.[0], faceTarget?.[1]]) // eslint-disable-line
 
   useEffect(() => {
-    if (markerRef.current) {
-      const el = markerRef.current.getElement()
-      if (el) {
-        const img = el.querySelector('.moto-marker-img, .van-marker-img')
-        if (img) {
-          img.style.transform = `rotate(${rotationRef.current}deg)`
-        }
-      }
+    if (rotationRef.current == null && faceTarget) {
+      rotationRef.current = getBearing(targetPos[0], targetPos[1], faceTarget[0], faceTarget[1])
     }
-  }, [icon])
+    const id = setTimeout(applyHeading, 50) // esperar a que Leaflet cree el elemento
+    return () => clearTimeout(id)
+  }, [icon]) // eslint-disable-line
   
   if (!visible) return null
   // eslint-disable-next-line react-hooks/refs
@@ -301,6 +373,8 @@ export default function TrackingPage({ lang = 'es', navigate, professional, user
                      Boolean(professional?.items && professional?.items.length > 0) || 
                      Boolean(professional?.storeName || professional?.commerceName || professional?.storeId)
   const pinOTP = professional?.pinOTP || professional?.otp || '4821'
+  // 🛍️ El cliente pasa a buscar al local: no hay repartidor ni moto
+  const isPickup = isDelivery && (professional?.fulfillmentType === 'pickup' || professional?.orderType === 'pickup' || professional?.driverType === 'pickup')
   const deliveryAddress = professional?.deliveryAddress || professional?.address || 'Dirección de entrega'
   const deliveryNotes = professional?.deliveryNotes || professional?.notes || ''
   const items = professional?.items || []
@@ -336,6 +410,8 @@ export default function TrackingPage({ lang = 'es', navigate, professional, user
   const [showArrivingAlert, setShowArrivingAlert] = useState(false)
   const [alertDismissed, setAlertDismissed] = useState(false)
   const [paymentStatus, setPaymentStatus] = useState(professional?.paymentStatus || null)
+  // Estado real del pedido controlado por el comercio (Comandera): pending → cooking → ready → completed
+  const [orderStatus, setOrderStatus] = useState(professional?.status || 'pending')
   const [showImprevistoModal, setShowImprevistoModal] = useState(false)
 
   // Audio llegada y notificación
@@ -373,6 +449,7 @@ export default function TrackingPage({ lang = 'es', navigate, professional, user
     const unsub = onSnapshot(doc(db, 'orders', professional.id), (docSnap) => {
       if (docSnap.exists()) {
         const d = docSnap.data()
+        if (d.status) setOrderStatus(d.status)
         if (d.status === 'working') setWorkStatus('working')
         if (d.status === 'done') setWorkStatus('done')
         if (d.status === 'cancelled') setWorkStatus('declined_done')
@@ -389,7 +466,7 @@ export default function TrackingPage({ lang = 'es', navigate, professional, user
 
   // Alerta y notificación cuando el profesional está a menos de 30 metros del cliente
   useEffect(() => {
-    if (userRole !== 'pro' && workStatus === 'tracking' && status !== 'arrived') {
+    if (!isPickup && userRole !== 'pro' && workStatus === 'tracking' && status !== 'arrived') {
       const distance = getDistanceInMeters(clientLoc, proPos)
       if (distance > 0 && distance <= 30) {
         if (!alertDismissed) {
@@ -581,8 +658,8 @@ export default function TrackingPage({ lang = 'es', navigate, professional, user
   const flowSteps = isDelivery ? [
     { key:'confirmed', labelEs:'Confirmado', labelEn:'Confirmed' },
     { key:'preparing', labelEs:'En preparación', labelEn:'Preparing' },
-    { key:'onway',     labelEs:'En camino 🛵', labelEn:'On the way 🛵' },
-    { key:'done',      labelEs:'Entregado 🎉', labelEn:'Delivered 🎉' },
+    { key:'onway',     labelEs: isPickup ? 'Listo para retirar 🛍️' : 'En camino 🛵', labelEn: isPickup ? 'Ready for pickup 🛍️' : 'On the way 🛵' },
+    { key:'done',      labelEs: isPickup ? 'Retirado 🎉' : 'Entregado 🎉', labelEn: isPickup ? 'Picked up 🎉' : 'Delivered 🎉' },
   ] : [
     { key:'confirmed', labelEs:'Confirmado', labelEn:'Confirmed' },
     { key:'onway',     labelEs:'En camino',  labelEn:'On the way' },
@@ -591,13 +668,18 @@ export default function TrackingPage({ lang = 'es', navigate, professional, user
     { key:'working',   labelEs:'Trabajando', labelEn:'Working' },
     { key:'done',      labelEs:'Listo',      labelEn:'Done' },
   ]
+  // Paso del delivery según lo que marca el comercio (no avanza solo)
+  const deliveryStep = (() => {
+    const s = (orderStatus || '').toLowerCase()
+    if (['completed', 'done', 'delivered', 'entregado'].includes(s)) return 3
+    if (['ready', 'on_way', 'onway', 'picked_up', 'en_camino', 'dispatched'].includes(s)) return 2
+    if (['cooking', 'preparing', 'accepted', 'en_preparacion'].includes(s)) return 1
+    return 0
+  })()
+  const riderOnTheWay = !isDelivery || (deliveryStep === 2 && !isPickup)
+
   const currentFlowIdx = () => {
-    if (isDelivery) {
-      if (workStatus==='done' || status==='done') return 3
-      if (status==='on_way' || status==='onway' || workStatus==='tracking') return 2
-      if (status==='preparing' || status==='accepted') return 1
-      return 0
-    }
+    if (isDelivery) return deliveryStep
     return workStatus==='done'?5:workStatus==='working'?4:workStatus==='awaiting_deal'?3:status==='arrived'?2:1
   }
 
@@ -638,8 +720,8 @@ export default function TrackingPage({ lang = 'es', navigate, professional, user
           <MapBoundsFitter pos1={clientLoc} pos2={proPos} />
           <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
           <Marker position={clientLoc} icon={clientIcon}><Popup>{lang==='es'?'Tu ubicación':'Your location'}</Popup></Marker>
-          {vanVisible && <SmoothMarker targetPos={proPos} icon={isDelivery ? motoIcon : (workStatus==='working'?workerIcon:vanIcon)} visible={vanVisible} isVan={!isDelivery && workStatus!=='working'}><Popup>{pro.name}</Popup></SmoothMarker>}
-          {workStatus === 'tracking' && (
+          {vanVisible && riderOnTheWay && <SmoothMarker targetPos={proPos} icon={isDelivery ? motoIcon : (workStatus==='working'?workerIcon:vanIcon)} visible={vanVisible} isVan={!isDelivery && workStatus!=='working'} faceTarget={workStatus==='retreating' ? null : clientLoc}><Popup>{pro.name}</Popup></SmoothMarker>}
+          {workStatus === 'tracking' && riderOnTheWay && (
             <Polyline 
               positions={[proPos, clientLoc]} 
               color="#F26000" 
@@ -650,24 +732,27 @@ export default function TrackingPage({ lang = 'es', navigate, professional, user
             />
           )}
         </MapContainer>
-        {workStatus==='tracking' && (
-          <div className="map-eta-pill" style={{ background:getStatusColor()+'22', borderColor:getStatusColor()+'44' }}>
-            <span className="eta-icon">{isDelivery ? '🛵' : getStatusIcon()}</span>
-            <span className="eta-text" style={{ color:getStatusColor() }}>{status==='arrived'?getStatusLabel():`${eta} min`}</span>
-          </div>
-        )}
+        {/* ETA solo se muestra en la tarjeta de estado (no duplicado sobre el mapa) */}
       </div>
 
       <div className="tracking-card">
         {workStatus !== 'working' && (
           <div className="tracking-status-bar"
             style={{ background:getStatusColor()+'15', borderColor:getStatusColor()+'30' }}>
-            <span className="status-icon">{isDelivery ? '🛵' : getStatusIcon()}</span>
+            <span className="status-icon">{isPickup ? '🛍️' : isDelivery ? '🛵' : getStatusIcon()}</span>
             <div style={{ flex:1 }}>
-              <p className="status-label" style={{ color:getStatusColor() }}>{isDelivery ? (lang==='es'?'🛵 Repartidor en Camino':'🛵 Rider on the way') : getStatusLabel()}</p>
-              <p className="status-desc">{isDelivery ? (lang==='es'?`Tu pedido está asignado a ${pro.name}`:`Your order is on the way with ${pro.name}`) : getStatusDesc()}</p>
+              <p className="status-label" style={{ color:getStatusColor() }}>{isPickup
+                ? ['⏳ Esperando que el comercio acepte', '👨‍🍳 Tu pedido se está preparando', '🛍️ ¡Listo para retirar!', '🎉 ¡Pedido Retirado!'][deliveryStep]
+                : isDelivery ? (lang==='es'
+                ? ['⏳ Esperando que el comercio acepte', '👨‍🍳 Tu pedido se está preparando', '🛵 Repartidor en Camino', '🎉 ¡Pedido Entregado!'][deliveryStep]
+                : ['⏳ Waiting for the store', '👨‍🍳 Preparing your order', '🛵 Rider on the way', '🎉 Delivered!'][deliveryStep]) : getStatusLabel()}</p>
+              <p className="status-desc">{isPickup
+                ? [`${professional?.storeName || 'El comercio'} recibió tu pedido`, `Te avisaremos cuando esté listo en el mostrador`, `Pasa por ${professional?.storeName || 'el local'} y da tu PIN en caja`, 'Gracias por pedir con Pedidos Listo'][deliveryStep]
+                : isDelivery ? (lang==='es'
+                ? [`${professional?.storeName || 'El comercio'} recibió tu pedido y lo confirmará en breve`, `${professional?.storeName || 'El comercio'} está preparando tu pedido`, `Tu pedido va en camino con ${pro.name}`, 'Gracias por pedir con Pedidos Listo'][deliveryStep]
+                : ['The store will confirm shortly', 'The store is preparing your order', `On the way with ${pro.name}`, 'Thanks for ordering'][deliveryStep]) : getStatusDesc()}</p>
             </div>
-            {workStatus==='tracking' && status!=='arrived' && (
+            {workStatus==='tracking' && status!=='arrived' && riderOnTheWay && (
               <div className="eta-countdown"><span className="eta-number">{eta}</span><span className="eta-unit">min</span></div>
             )}
           </div>
@@ -692,7 +777,7 @@ export default function TrackingPage({ lang = 'es', navigate, professional, user
                 <span>🔒 PIN DE SEGURIDAD</span>
               </div>
               <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#E0E7FF' }}>
-                Dile este PIN al repartidor al recibir tu pedido
+                {isPickup ? 'Dile este PIN en caja al retirar tu pedido' : 'Dile este PIN al repartidor al recibir tu pedido'}
               </p>
             </div>
             <div style={{
@@ -722,10 +807,10 @@ export default function TrackingPage({ lang = 'es', navigate, professional, user
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
               <span style={{ fontSize: '11px', fontWeight: '900', color: '#64748B', textTransform: 'uppercase' }}>
-                📍 Entrega en Domicilio
+                {isPickup ? '🛍️ Retiro en el Local' : '📍 Entrega en Domicilio'}
               </span>
               <span style={{ fontSize: '11px', fontWeight: '800', background: '#ECFDF5', color: '#059669', padding: '3px 8px', borderRadius: '10px' }}>
-                {paymentMethod === 'efectivo' ? '💵 Efectivo' : '🏦 Transferencia'}
+                {paymentMethod === 'efectivo' ? '💵 Efectivo' : paymentMethod === 'tarjeta' ? '💳 Tarjeta' : '🏦 Transferencia'}
               </span>
             </div>
 
