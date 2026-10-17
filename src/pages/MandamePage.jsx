@@ -2291,7 +2291,13 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
       deliveryNotes: (deliveryNotes || '').trim(),
       paymentMethod: checkoutPaymentMethod,
       cashChangeFor: checkoutPaymentMethod === 'efectivo' ? cashChangeAmount : null,
-      items: cart.map(i => ({ name: i.name, price: i.price, qty: i.qty, subtotal: i.price * i.qty })),
+      items: cart.map(i => ({
+        name: i.name, price: i.price, qty: i.qty, subtotal: i.price * i.qty,
+        selectedGuarniciones: i.selectedGuarniciones || [],
+        selectedBebidas: i.selectedBebidas || [],
+        selectedExtras: i.selectedExtras || [],
+        clientNote: i.clientNote || ''
+      })),
       subtotal: cartSubtotal,
       deliveryFee: currentDeliveryFee,
       tip: currentTip,
@@ -5330,13 +5336,28 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                         <div style={{ marginBottom: 12 }}>
                           <div style={{ fontSize: 11, fontWeight: 900, color: '#ff6b00', marginBottom: 6 }}>📜 PLATILLOS A PREPARAR:</div>
                           {(order.items || []).map((item, idx) => (
-                            <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,255,255,0.06)', padding: '8px 10px', borderRadius: 10, marginBottom: 4 }}>
-                              <div>
-                                <span style={{ fontWeight: 900, fontSize: 13, color: '#00e699', marginRight: 6 }}>{item.qty}x</span>
-                                <span style={{ fontWeight: 800, fontSize: 13, color: 'white' }}>{item.name}</span>
-                                {item.details && <div style={{ fontSize: 10, color: '#94a3b8', marginTop: 1 }}>🔹 {item.details}</div>}
+                            <div key={idx} style={{ background: 'rgba(255,255,255,0.06)', padding: '8px 10px', borderRadius: 10, marginBottom: 4 }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                <div>
+                                  <span style={{ fontWeight: 900, fontSize: 13, color: '#00e699', marginRight: 6 }}>{item.qty}x</span>
+                                  <span style={{ fontWeight: 800, fontSize: 13, color: 'white' }}>{item.name}</span>
+                                </div>
+                                <div style={{ fontWeight: 900, fontSize: 12, color: 'white', flexShrink: 0, marginLeft: 8 }}>RD$ {item.price * item.qty}</div>
                               </div>
-                              <div style={{ fontWeight: 900, fontSize: 12, color: 'white' }}>RD$ {item.price * item.qty}</div>
+                              {/* Personalización del cliente */}
+                              {item.selectedGuarniciones?.length > 0 && (
+                                <div style={{ fontSize: 10.5, color: '#4ade80', fontWeight: 800, marginTop: 3 }}>🍟 Guarnición: {item.selectedGuarniciones.join(', ')}</div>
+                              )}
+                              {item.selectedBebidas?.length > 0 && (
+                                <div style={{ fontSize: 10.5, color: '#38bdf8', fontWeight: 800, marginTop: 2 }}>🥤 Bebida: {item.selectedBebidas.join(', ')}</div>
+                              )}
+                              {item.selectedExtras?.length > 0 && (
+                                <div style={{ fontSize: 10.5, color: '#fdba74', fontWeight: 800, marginTop: 2 }}>✨ Extras: {item.selectedExtras.join(', ')}</div>
+                              )}
+                              {item.clientNote && (
+                                <div style={{ fontSize: 10.5, color: '#fbbf24', fontWeight: 800, marginTop: 2, background: 'rgba(251,191,36,0.1)', borderRadius: 6, padding: '2px 6px', display: 'inline-block' }}>📝 Nota: "{item.clientNote}"</div>
+                              )}
+                              {item.details && <div style={{ fontSize: 10, color: '#94a3b8', marginTop: 1 }}>🔹 {item.details}</div>}
                             </div>
                           ))}
                         </div>
@@ -6985,6 +7006,19 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                         <div style={{ fontSize: 12, color: '#ff6b00', fontWeight: 900, marginTop: 2 }}>
                           RD$ {item.price} <span style={{ fontSize: 11, color: '#64748b', fontWeight: 700 }}>(Subtotal: RD$ {item.price * item.qty})</span>
                         </div>
+                        {/* Detalle de personalización elegida por el cliente */}
+                        {item.selectedGuarniciones?.length > 0 && (
+                          <div style={{ fontSize: 10.5, color: '#16a34a', fontWeight: 700, marginTop: 2 }}>🍟 {item.selectedGuarniciones.join(', ')}</div>
+                        )}
+                        {item.selectedBebidas?.length > 0 && (
+                          <div style={{ fontSize: 10.5, color: '#0284c7', fontWeight: 700, marginTop: 1 }}>🥤 {item.selectedBebidas.join(', ')}</div>
+                        )}
+                        {item.selectedExtras?.length > 0 && (
+                          <div style={{ fontSize: 10.5, color: '#ff6b00', fontWeight: 700, marginTop: 1 }}>✨ {item.selectedExtras.join(', ')}</div>
+                        )}
+                        {item.clientNote && (
+                          <div style={{ fontSize: 10.5, color: '#94a3b8', fontWeight: 700, marginTop: 1, fontStyle: 'italic' }}>📝 "{item.clientNote}"</div>
+                        )}
                       </div>
 
                       {/* Item Quantity Controls & Delete Button */}
