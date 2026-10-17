@@ -4220,25 +4220,20 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                 {/* SELECTOR DE TIPO DE COMERCIO */}
                 <div style={{ background: 'linear-gradient(135deg, #fff7ed, #ffedd5)', border: '1.5px solid #fdba74', padding: 12, borderRadius: 16, marginBottom: 14 }}>
                   <label style={{ fontSize: 12, fontWeight: 900, display: 'block', marginBottom: 6, color: '#9a3412' }}>🏪 Tipo de Comercio (cambia el menú y las opciones)</label>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 6 }}>
+                  <select
+                    id="business-type-select"
+                    value={businessType}
+                    onChange={e => handleChangeBusinessType(e.target.value)}
+                    style={{
+                      width: '100%', padding: '11px 36px 11px 12px', borderRadius: 12, fontSize: 13.5, fontWeight: 800, cursor: 'pointer',
+                      color: '#0f172a', background: '#ffffff url("data:image/svg+xml;utf8,<svg xmlns=%27http://www.w3.org/2000/svg%27 width=%2712%27 height=%278%27><path d=%27M1 1l5 5 5-5%27 stroke=%27%23ff6b00%27 stroke-width=%272.5%27 fill=%27none%27/></svg>") no-repeat right 12px center',
+                      border: '1.5px solid #ff6b00', boxShadow: '0 4px 12px rgba(255,107,0,0.15)', appearance: 'none', WebkitAppearance: 'none', outline: 'none'
+                    }}
+                  >
                     {Object.entries(BUSINESS_TYPES).map(([key, cfg]) => (
-                      <button
-                        key={key}
-                        type="button"
-                        onClick={() => handleChangeBusinessType(key)}
-                        style={{
-                          padding: '8px 10px', borderRadius: 12, fontSize: 11.5, fontWeight: 800, cursor: 'pointer', textAlign: 'left',
-                          background: businessType === key ? 'linear-gradient(135deg, #ff6b00, #ff8533)' : '#ffffff',
-                          color: businessType === key ? '#ffffff' : '#334155',
-                          border: businessType === key ? '1.5px solid #ff6b00' : '1px solid #e2e8f0',
-                          boxShadow: businessType === key ? '0 4px 12px rgba(255,107,0,0.3)' : 'none',
-                          transition: 'all 0.2s ease'
-                        }}
-                      >
-                        {cfg.label}
-                      </button>
+                      <option key={key} value={key}>{cfg.label}</option>
                     ))}
-                  </div>
+                  </select>
                 </div>
 
                 <form onSubmit={handleAddNewProduct}>
