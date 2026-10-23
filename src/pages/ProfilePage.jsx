@@ -724,12 +724,41 @@ function DeleteAccountModal({ lang, onConfirm, onCancel }) {
   )
 }
 
+function DeleteProModal({ lang, onConfirm, onCancel }) {
+  return (
+    <div className="modal-overlay" onClick={onCancel}>
+      <div className="modal-card" onClick={e => e.stopPropagation()}>
+        <span className="modal-icon" style={{ background: '#FFF3E0', color: '#F26000', fontSize: '32px' }}>👤</span>
+        <h3 className="modal-title" style={{ fontSize: '18px' }}>
+          {lang === 'es' ? 'Eliminar perfil de Profesional' : 'Remove Professional Profile'}
+        </h3>
+        <p className="modal-sub" style={{ fontSize: '13.5px', lineHeight: '1.6' }}>
+          {lang === 'es'
+            ? 'Tu cuenta de usuario se mantendrá activa. Solo se eliminará tu perfil como profesional: verificación, categoría, plan y disponibilidad. Esta acción es irreversible.'
+            : 'Your user account stays active. Only your professional profile will be removed: verification, category, plan and availability. This action is irreversible.'}
+        </p>
+        <button
+          className="modal-btn danger"
+          style={{ background: 'linear-gradient(135deg,#F26000,#C24E00)' }}
+          onClick={onConfirm}
+        >
+          {lang === 'es' ? '✅ Sí, quedarme solo como usuario' : '✅ Yes, keep only as user'}
+        </button>
+        <button className="modal-btn ghost" onClick={onCancel}>
+          {lang === 'es' ? 'Cancelar' : 'Cancel'}
+        </button>
+      </div>
+    </div>
+  )
+}
+
 export default function ProfilePage({ lang, setLang, navigate, onLogout, initialScreen }) {
   const { userData, userRole, profileComplete, getMemberSince } = useUserData()
 
-  const [screen,      setScreen]      = useState(initialScreen || null)
-  const [showLogout,  setShowLogout]  = useState(false)
-  const [showDelete,  setShowDelete]  = useState(false)
+  const [screen,         setScreen]         = useState(initialScreen || null)
+  const [showLogout,     setShowLogout]     = useState(false)
+  const [showDelete,     setShowDelete]     = useState(false)
+  const [showDeletePro,  setShowDeletePro]  = useState(false)
   const [showPhoto,   setShowPhoto]   = useState(false)
   const [photoStatus, setPhotoStatus] = useState(null)
   const [ordersCount, setOrdersCount] = useState(0)
@@ -880,6 +909,41 @@ export default function ProfilePage({ lang, setLang, navigate, onLogout, initial
     }
     if (onLogout) onLogout()
     else navigate('login')
+  }
+
+  const handleDeleteProfessional = async () => {
+    setShowDeletePro(false)
+    if (!userData?.uid) return
+    try {
+      const { deleteField } = await import('firebase/firestore')
+      await updateDoc(doc(db, 'users', userData.uid), {
+        type:               deleteField(),
+        role:               deleteField(),
+        verificacion:       deleteField(),
+        category:           deleteField(),
+        especialidad:       deleteField(),
+        plan:               deleteField(),
+        planId:             deleteField(),
+        planStatus:         deleteField(),
+        planExpirationDate: deleteField(),
+        currentPlan:        deleteField(),
+        contracts:          deleteField(),
+        contractsUsed:      deleteField(),
+        available:          deleteField(),
+        subscription:       deleteField(),
+        cedulaFrontal:      deleteField(),
+        cedulaTrasera:      deleteField(),
+        selfie:             deleteField(),
+        buenaConducta:      deleteField(),
+        profileComplete:    true,
+      })
+      alert(lang === 'es'
+        ? '✅ Perfil de profesional eliminado. Ahora eres usuario normal.'
+        : '✅ Professional profile removed. You are now a regular user.')
+    } catch (err) {
+      console.error('Error eliminando perfil de profesional:', err)
+      alert(lang === 'es' ? 'Error al eliminar el perfil profesional.' : 'Error removing professional profile.')
+    }
   }
 
   const toggleAvailability = async () => {
@@ -1246,6 +1310,17 @@ export default function ProfilePage({ lang, setLang, navigate, onLogout, initial
 
       <div className="profile-logout-wrap" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
         <button className="profile-logout" onClick={() => setShowLogout(true)}>🚪 {T.logout}</button>
+
+        {userRole === 'pro' && (
+          <button
+            className="profile-logout"
+            style={{ background: '#FFF3E0', color: '#F26000', borderColor: '#FED7AA', fontWeight: '800' }}
+            onClick={() => setShowDeletePro(true)}
+          >
+            👤 {lang === 'es' ? 'Eliminar perfil de Profesional' : 'Remove Professional Profile'}
+          </button>
+        )}
+
         <button className="profile-logout" style={{ background: '#FFF0F0', color: '#EF4444', borderColor: '#FECACA' }} onClick={() => setShowDelete(true)}>
           🗑️ {T.deleteTitle}
         </button>
@@ -1292,8 +1367,9 @@ export default function ProfilePage({ lang, setLang, navigate, onLogout, initial
         </div>
       )}
 
-      {showLogout && <LogoutModal lang={lang} onConfirm={handleLogout} onCancel={() => setShowLogout(false)} />}
-      {showDelete && <DeleteAccountModal lang={lang} onConfirm={handleDeleteAccount} onCancel={() => setShowDelete(false)} />}
+      {showLogout    && <LogoutModal        lang={lang} onConfirm={handleLogout}            onCancel={() => setShowLogout(false)} />}
+      {showDelete    && <DeleteAccountModal  lang={lang} onConfirm={handleDeleteAccount}     onCancel={() => setShowDelete(false)} />}
+      {showDeletePro && <DeleteProModal      lang={lang} onConfirm={handleDeleteProfessional} onCancel={() => setShowDeletePro(false)} />}
 
       {showFinanzasModal && (
         <ProFinanzasModal 
