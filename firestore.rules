@@ -123,7 +123,25 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
-    // 7. OTRAS COLECCIONES PUBLICAS TEMPORALES (comisiones, etc)
+    // 7. PERFILES DE COMERCIOS (app Pedidos Listo Sofware)
+    match /comercios/{uid} {
+      // El comercio puede leer y escribir solo su propio perfil
+      allow read, write: if isAuth() && request.auth.uid == uid;
+      // Admin puede leer todos
+      allow read: if isAdmin();
+    }
+
+    // 8. ESTADO POS DE COMERCIOS (pos_state)
+    match /pos_state/{docId} {
+      allow read, write: if isAuth();
+    }
+
+    // 9. VENTAS (sales)
+    match /sales/{saleId} {
+      allow read, write: if isAuth();
+    }
+
+    // 10. OTRAS COLECCIONES — denegar por defecto
     match /{document=**} {
       allow read, write: if false;
     }

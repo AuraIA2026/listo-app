@@ -14,6 +14,7 @@ import { getProPlanTheme } from '../planTheme'
 import PlanSelectionModal from '../components/PlanSelectionModal'
 
 import SolicitudExpressModal from '../components/SolicitudExpressModal'
+import DeliveryDashboard from '../components/DeliveryDashboard'
 import PedidosListoHub from '../components/PedidosListoHub'
 import BtnHamburguesa from '../components/BtnHamburguesa'
 import BtnHamburguesaUsuario from '../components/BtnHamburguesaUsuario'

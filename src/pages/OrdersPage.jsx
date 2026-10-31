@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import { collection, query, where, onSnapshot, doc, updateDoc, getDoc, deleteDoc,
          addDoc, serverTimestamp, orderBy, setDoc } from 'firebase/firestore'
 import { auth, db } from '../firebase'
@@ -40,6 +40,26 @@ const txt = {
     newOrderAlert:     '🤝 ¡Tienes un contrato nuevo!',
     newOrderDesc:      'Un cliente quiere contratar tus servicios',
     viewDetails:       'Ver detalles',
+    emptyCta:          '🔍 Buscar profesional',
+    rebookSame:        '↩ Repetir con este profesional',
+    confirmCancelTitle:'¿Cancelar este pedido?',
+    confirmDeclineTitle:'¿Rechazar este pedido?',
+    confirmCancelSub:  'Esta acción no se puede deshacer.',
+    reasonLabel:       'Motivo (opcional)',
+    reasons:           ['Ya no lo necesito', 'Tarda demasiado', 'Encontré otra opción', 'Me equivoqué al pedir', 'Otro'],
+    yesCancel:         'Sí, cancelar',
+    keep:              'No, mantener',
+    arrivesIn:         'Llega en',
+    arrivingNow:       'Llegando en cualquier momento',
+    filters:           { all:'Todos', done:'Completados', cancelled:'Cancelados', service:'Servicios', delivery:'Delivery' },
+    noFilterResults:   'No hay pedidos en este filtro',
+    statMonth:         'Pedidos este mes',
+    statSpent:         'Total gastado',
+    statToRate:        'Por calificar',
+    statToday:         'Ganado hoy',
+    statWeek:          'Esta semana',
+    statJobs:          'Trabajos listos',
+    statusChanged:     'Tu pedido cambió a',
   },
   en: {
     title:   'My Orders',
@@ -65,11 +85,32 @@ const txt = {
     emptySub:          'Book your first service',
     reviewTitle:       'Rate your professional',
     reviewSub:         'How was the service?',
+    reviewSend:        'Send review',
     reviewPlaceholder: 'Write a comment (optional)...',
     rated:             'Reviewed',
     newOrderAlert:     '🤝 New contract!',
     newOrderDesc:      'A client wants to hire your services',
     viewDetails:       'View details',
+    emptyCta:          '🔍 Find a professional',
+    rebookSame:        '↩ Rebook this professional',
+    confirmCancelTitle:'Cancel this order?',
+    confirmDeclineTitle:'Decline this order?',
+    confirmCancelSub:  'This action cannot be undone.',
+    reasonLabel:       'Reason (optional)',
+    reasons:           ['No longer needed', 'Taking too long', 'Found another option', 'Ordered by mistake', 'Other'],
+    yesCancel:         'Yes, cancel',
+    keep:              'No, keep it',
+    arrivesIn:         'Arrives in',
+    arrivingNow:       'Arriving any moment',
+    filters:           { all:'All', done:'Completed', cancelled:'Cancelled', service:'Services', delivery:'Delivery' },
+    noFilterResults:   'No orders in this filter',
+    statMonth:         'Orders this month',
+    statSpent:         'Total spent',
+    statToRate:        'To review',
+    statToday:         'Earned today',
+    statWeek:          'This week',
+    statJobs:          'Jobs done',
+    statusChanged:     'Your order is now',
   },
 }
 
@@ -95,10 +136,126 @@ const nextStatus = {
   working:  'done',
 }
 
-const PROGRESS_STEPS  = ['pending', 'onway', 'arrived', 'trato', 'working', 'done']
+const PROGRESS_STEPS  = ['pending', 'accepted', 'onway', 'arrived', 'trato', 'working', 'done']
 const PROGRESS_LABELS = {
-  es: ['Pendiente','Camino','Llegó','Trato','Trabajando','Listo'],
-  en: ['Pending','On way','Arrived','Deal','Working','Done'],
+  es: ['Pendiente','Aceptado','Camino','Llegó','Trato','Trabajo','Listo'],
+  en: ['Pending','Accepted','On way','Arrived','Deal','Working','Done'],
+}
+// 'confirmado' es un alias legado de 'accepted'
+const stepIndex = (status) => PROGRESS_STEPS.indexOf(status === 'confirmado' ? 'accepted' : status)
+
+// Pagos que ya cuentan como hechos / que permiten calificar
+const PAID_STATUSES   = ['approved', 'pending_cash', 'paid', 'verifying']
+const RATEABLE_PAYS   = ['approved', 'pending_cash', 'paid']
+
+const parseAmount = (o) => {
+  if (o.total) return Number(o.total) || 0
+  const n = Number(String(o.price || '').replace(/[^\d.]/g, ''))
+  return isNaN(n) ? 0 : n
+}
+const orderMs = (o) => (o.createdAt?.seconds ? o.createdAt.seconds * 1000 : 0)
+const isDeliveryOrder = (o) => o.type === 'delivery' || o.fulfillmentType === 'pickup'
+
+/* ── Confeti de celebración ── */
+function Confetti({ onDone }) {
+  const pieces = useMemo(() => Array.from({ length: 60 }, (_, i) => ({
+    left: Math.random() * 100,
+    delay: Math.random() * 0.6,
+    dur: 2.2 + Math.random() * 1.4,
+    color: ['#F26000', '#FFC107', '#10B981', '#3B82F6', '#EF4444', '#8B5CF6'][i % 6],
+    rot: Math.random() * 360,
+    size: 6 + Math.random() * 6,
+  })), [])
+  const doneRef = useRef(onDone)
+  doneRef.current = onDone
+  useEffect(() => { const t = setTimeout(() => doneRef.current(), 3800); return () => clearTimeout(t) }, [])
+  return (
+    <div className="confetti-layer" aria-hidden="true">
+      {pieces.map((p, i) => (
+        <span key={i} className="confetti-piece" style={{
+          left: `${p.left}%`, background: p.color, width: p.size, height: p.size * 0.45,
+          animationDelay: `${p.delay}s`, animationDuration: `${p.dur}s`, transform: `rotate(${p.rot}deg)`,
+        }} />
+      ))}
+    </div>
+  )
+}
+
+/* ── Cuenta regresiva real de llegada ── */
+function EtaCountdown({ order, lang, T }) {
+  const [now, setNow] = useState(Date.now())
+  useEffect(() => { const id = setInterval(() => setNow(Date.now()), 15000); return () => clearInterval(id) }, [])
+  const mins = Number(order.estimatedTime)
+  const base = order.acceptedAt?.seconds ? order.acceptedAt.seconds * 1000
+             : order.updatedAt?.seconds ? order.updatedAt.seconds * 1000
+             : orderMs(order)
+  if (!mins || !base || !['accepted', 'confirmado', 'onway'].includes(order.status)) {
+    const waiting = order.status === 'pending'
+    return (
+      <div className="oc-eta neutral">
+        <span className="oc-eta-icon">{waiting ? '⏳' : '🚚'}</span>
+        <p>{waiting
+          ? (lang === 'es' ? 'Esperando que el profesional acepte...' : 'Waiting for the professional to accept...')
+          : (lang === 'es' ? 'Pedido en curso' : 'Order in progress')}</p>
+      </div>
+    )
+  }
+  const left = Math.ceil((base + mins * 60000 - now) / 60000)
+  const pct  = Math.max(0, Math.min(100, 100 - (left / mins) * 100))
+  return (
+    <div className="oc-eta">
+      <span className="oc-eta-icon">🛵</span>
+      <div style={{ flex: 1 }}>
+        <p>{left > 0 ? <>{T.arrivesIn} <strong>{left} min</strong></> : T.arrivingNow}</p>
+        <div className="oc-eta-bar"><div style={{ width: `${pct}%` }} /></div>
+      </div>
+    </div>
+  )
+}
+
+/* ── Confirmación de cancelar / rechazar ── */
+function ConfirmCancelModal({ T, isPro, onConfirm, onClose }) {
+  const [reason, setReason] = useState('')
+  const [busy, setBusy] = useState(false)
+  return (
+    <div className="review-overlay" onClick={onClose}>
+      <div className="review-modal" onClick={e => e.stopPropagation()} style={{ textAlign: 'center' }}>
+        <button className="review-close" onClick={onClose}>✕</button>
+        <div className="cancel-icon">⚠️</div>
+        <h3 className="review-title">{isPro ? T.confirmDeclineTitle : T.confirmCancelTitle}</h3>
+        <p className="review-sub" style={{ marginBottom: 16 }}>{T.confirmCancelSub}</p>
+        <p className="cancel-reason-label">{T.reasonLabel}</p>
+        <div className="cancel-reasons">
+          {T.reasons.map(r => (
+            <button key={r} className={`cancel-chip ${reason === r ? 'on' : ''}`} onClick={() => setReason(reason === r ? '' : r)}>{r}</button>
+          ))}
+        </div>
+        <button className="cancel-confirm-btn" disabled={busy} onClick={async () => { setBusy(true); await onConfirm(reason) }}>
+          {busy ? '...' : T.yesCancel}
+        </button>
+        <button className="cancel-keep-btn" onClick={onClose}>{T.keep}</button>
+      </div>
+    </div>
+  )
+}
+
+/* ── Skeleton de carga ── */
+function OrderSkeleton() {
+  return (
+    <div className="order-card skeleton-card">
+      <div className="oc-top">
+        <div className="sk sk-avatar" />
+        <div style={{ flex: 1 }}>
+          <div className="sk sk-line" style={{ width: '60%' }} />
+          <div className="sk sk-line" style={{ width: '40%' }} />
+          <div className="sk sk-line" style={{ width: '30%' }} />
+        </div>
+        <div className="sk sk-pill" />
+      </div>
+      <div className="sk sk-bar" />
+      <div className="sk sk-btn" />
+    </div>
+  )
 }
 
 const isPaymentNotif  = (text = '') => {
@@ -159,28 +316,7 @@ function WorkingTimer({ startedAt, lang, isPro, onFinish }) {
     : (lang==='es'?'TIEMPO EXTENDIDO':'EXTENDED TIME')
 
   return (
-    <>
-      <style>{`
-        @keyframes timerSlide {
-          0%   { transform: translateX(-100%); }
-          100% { transform: translateX(250%); }
-        }
-        @keyframes timerPulse {
-          0%,100% { box-shadow: 0 0 0 0 ${glowColor}; }
-          50%      { box-shadow: 0 0 0 8px transparent; }
-        }
-        @keyframes timerFlicker {
-          0%,100% { opacity:1; }
-          92%     { opacity:1; }
-          93%     { opacity:0.7; }
-          94%     { opacity:1; }
-        }
-        @keyframes dotBlink {
-          0%,100% { opacity:1; }
-          50%     { opacity:0.2; }
-        }
-      `}</style>
-
+    <div style={{ '--glow': glowColor, '--bar': barColor }}>
       {isPro ? (
         /* ── PRO: botón compacto 3D ── */
         <button
@@ -311,7 +447,7 @@ function WorkingTimer({ startedAt, lang, isPro, onFinish }) {
           </div>
         </div>
       )}
-    </>
+    </div>
   )
 }
 
@@ -630,6 +766,12 @@ export default function OrdersPage({ lang = 'es', navigate, userData, userRole }
   const [workDoneOrder,  setWorkDoneOrder]  = useState(null)  // modal Pedidos Listo
   const [reciboModalOrder, setReciboModalOrder] = useState(null)
   const [showMantenimientoModal, setShowMantenimientoModal] = useState(false)
+  const [cancelTarget,   setCancelTarget]   = useState(null)   // pedido a cancelar/rechazar
+  const [historyFilter,  setHistoryFilter]  = useState('all')
+  const [celebrate,      setCelebrate]      = useState(false)
+  const [changedIds,     setChangedIds]     = useState([])     // tarjetas que acaban de cambiar de estado
+  const [toast,          setToast]          = useState(null)
+  const prevStatusRef = useRef(null)
 
   useEffect(() => {
     if (!auth.currentUser || !userRole) { setLoading(false); return }
@@ -660,10 +802,30 @@ export default function OrdersPage({ lang = 'es', navigate, userData, userRole }
       })
       active.sort((a,b) => (b.createdAt?.seconds||0)-(a.createdAt?.seconds||0))
       past.sort((a,b)   => (b.createdAt?.seconds||0)-(a.createdAt?.seconds||0))
+
+      // ── Detectar cambios de estado en vivo (sonido, vibración, confeti) ──
+      const all = [...active, ...past]
+      const prev = prevStatusRef.current
+      if (prev) {
+        const changed = all.filter(o => prev[o.id] && prev[o.id] !== o.status)
+        if (changed.length) {
+          playChatMsgSound()
+          try { navigator.vibrate && navigator.vibrate([120, 60, 120]) } catch(e) {}
+          if (changed.some(o => o.status === 'done')) setCelebrate(true)
+          const ids = changed.map(o => o.id)
+          setChangedIds(ids)
+          setTimeout(() => setChangedIds([]), 1600)
+          const c = changed[0]
+          setToast(`${txt[lang].statusChanged}: ${txt[lang].status[c.status] || c.status}`)
+          setTimeout(() => setToast(null), 3200)
+        }
+      }
+      prevStatusRef.current = Object.fromEntries(all.map(o => [o.id, o.status]))
+
       setOrders(active); setHistory(past); setLoading(false)
     }, () => setLoading(false))
     return () => unsub()
-  }, [userRole])
+  }, [userRole, lang])
 
   useEffect(() => {
     if (!auth.currentUser) return
@@ -697,16 +859,44 @@ export default function OrdersPage({ lang = 'es', navigate, userData, userRole }
   }
 
   const handleAccept = async (id, eta) => {
-    await updateDoc(doc(db, 'orders', id), { status:'accepted', estimatedTime: eta || 15 }).catch(()=>{})
+    await updateDoc(doc(db, 'orders', id), { status:'accepted', estimatedTime: eta || 15, acceptedAt: serverTimestamp() }).catch(()=>{})
     await deleteNotifsByOrderId(id, notifs)
     setDetailsOrder(null)
     if (detailsOrder) navigate('tracking', { ...detailsOrder, status:'accepted', estimatedTime: eta || 15 })
   }
 
-  const handleDecline = async (id) => {
-    await updateDoc(doc(db, 'orders', id), { status:'cancelled' }).catch(()=>{})
-    await deleteNotifsByOrderId(id, notifs)
+  // Rechazar desde el modal de detalles → pasa por la confirmación
+  const handleDecline = (id) => {
+    const o = [...orders, ...history].find(x => x.id === id) || detailsOrder
     setDetailsOrder(null)
+    setCancelTarget(o || { id })
+  }
+
+  const confirmCancel = async (reason) => {
+    const o = cancelTarget
+    if (!o) return
+    await updateDoc(doc(db, 'orders', o.id), {
+      status: 'cancelled',
+      cancelReason: reason || null,
+      cancelledBy: userRole === 'pro' ? 'pro' : 'client',
+      cancelledAt: serverTimestamp(),
+    }).catch(()=>{})
+    await deleteNotifsByOrderId(o.id, notifs)
+    setCancelTarget(null)
+  }
+
+  // Repetir con el mismo profesional
+  const rebookSamePro = (o) => {
+    if (!o.proId || o.type === 'delivery') { navigate('search'); return }
+    navigate('booking', {
+      id:       o.proId,
+      name:     o.proName || o.pro,
+      category: o.proSpecialty || o.specialty,
+      avatar:   o.proAvatar || (o.proName || 'P').substring(0, 2).toUpperCase(),
+      photoURL: o.proPhotoURL || null,
+      phone:    o.proPhone || '',
+      price:    o.price || '',
+    })
   }
 
   const handleReviewSubmit = async (id, stars, comment) => {
@@ -745,7 +935,36 @@ export default function OrdersPage({ lang = 'es', navigate, userData, userRole }
   const openChat = (o) => setChatTarget({ uid:o.otherUid, name:o.pro, color:avatarColors[0], phone:o.otherPhone })
 
   const allOrders     = [...orders, ...history]
-  const pendingReview = allOrders.filter(o => o.status==='done' && !o.rated)
+  const pendingReview = allOrders.filter(o => o.status==='done' && !o.rated && RATEABLE_PAYS.includes(o.paymentStatus))
+
+  // ── Resumen superior ──
+  const stats = useMemo(() => {
+    const now = new Date()
+    const startDay   = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()
+    const startWeek  = startDay - ((now.getDay() + 6) % 7) * 86400000
+    const startMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime()
+    const done = history.filter(o => o.status === 'done')
+    const sum = (arr) => arr.reduce((s, o) => s + parseAmount(o), 0)
+    return {
+      month: [...orders, ...history].filter(o => orderMs(o) >= startMonth && o.status !== 'cancelled').length,
+      spent: sum(done),
+      today: sum(done.filter(o => orderMs(o) >= startDay)),
+      week:  sum(done.filter(o => orderMs(o) >= startWeek)),
+      jobs:  done.length,
+    }
+  }, [orders, history])
+  const money = (n) => `RD$ ${Math.round(n).toLocaleString()}`
+
+  // ── Filtro del historial ──
+  const filteredHistory = history.filter(o => {
+    switch (historyFilter) {
+      case 'done':      return o.status === 'done'
+      case 'cancelled': return o.status === 'cancelled'
+      case 'service':   return !isDeliveryOrder(o)
+      case 'delivery':  return isDeliveryOrder(o)
+      default:          return true
+    }
+  })
 
   // Marcar trabajo como terminado + generar factura oficial y notificar al cliente
   const handleWorkDone = async (o) => {
@@ -809,12 +1028,12 @@ export default function OrdersPage({ lang = 'es', navigate, userData, userRole }
       )}
       {o.status==='pending' && userRole==='pro' && (
         <div style={{ display:'flex', gap:8, width:'100%' }}>
-          <button className="oc-btn decline" onClick={()=>advanceStatus(o.id,o.status,'cancelled')} style={{ flex:1, background:'#FFF0F0', color:'#E31837', border:'1px solid currentColor' }}>{T.decline}</button>
-          <button className="oc-btn listo"   onClick={() => setDetailsOrder(o)} style={{ flex:1 }}>Aceptar Servicio</button>
+          <button className="oc-btn decline" onClick={()=>setCancelTarget(o)} style={{ flex:1, background:'#FFF0F0', color:'#E31837', border:'1px solid currentColor' }}>{T.decline}</button>
+          <button className="oc-btn listo"   onClick={() => setDetailsOrder(o)} style={{ flex:1 }}>{lang==='es'?'Aceptar Servicio':'Accept Service'}</button>
         </div>
       )}
       {!['done', 'cancelled', 'working'].includes(o.status) && userRole!=='pro' && (
-        <button className="oc-btn decline" onClick={()=>advanceStatus(o.id,o.status,'cancelled')} style={{ width:'100%', background:'#F26000', color:'#FFFFFF', border:'none', marginTop: 4, fontWeight:'bold', boxShadow:'0 4px 10px rgba(242,96,0,0.3)' }}>{lang==='es'?'Cancelar Pedido':'Cancel Order'}</button>
+        <button className="oc-btn cancel-outline" onClick={()=>setCancelTarget(o)} style={{ width:'100%', marginTop: 4 }}>{lang==='es'?'Cancelar Pedido':'Cancel Order'}</button>
       )}
       {['accepted','onway','arrived','trato','working'].includes(o.status) && o.otherUid && (
         <button className="oc-btn track" style={{ background:'#FFF3EC', color:'#F26000', border:'1px solid #FFD4B0' }} onClick={()=>openChat(o)}>
@@ -825,7 +1044,7 @@ export default function OrdersPage({ lang = 'es', navigate, userData, userRole }
         <button className="oc-btn trato" onClick={()=>setVerifyingOrder(o)} style={{ background:'#ECFDF5', color:'#10B981', borderColor:'#A7F3D0', fontWeight:'bold' }}>👁️ Ver Recibo (Pago)</button>
       )}
       {o.status==='done' && userRole!=='pro' && (
-        ['approved', 'pending_cash', 'paid', 'verifying'].includes(o.paymentStatus) ? (
+        PAID_STATUSES.includes(o.paymentStatus) ? (
           <button className="oc-btn listo" style={{ background:'#94A3B8', cursor:'not-allowed', marginBottom:8 }} disabled>
             💳 {lang==='es'?'Trabajo Pago':'Work Paid'}
           </button>
@@ -844,28 +1063,63 @@ export default function OrdersPage({ lang = 'es', navigate, userData, userRole }
           🧾 {lang==='es'?'Ver Factura Oficial: Listo Patrón':'View Official Invoice: Listo Patrón'}
         </button>
       )}
-      {o.status==='done' && !o.rated && userRole!=='pro' && (o.paymentStatus==='approved'||o.paymentStatus==='pending_cash') && <button className="oc-btn review" onClick={()=>setReviewOrder(o)}>{T.review}</button>}
+      {o.status==='done' && !o.rated && userRole!=='pro' && RATEABLE_PAYS.includes(o.paymentStatus) && <button className="oc-btn review" onClick={()=>setReviewOrder(o)}>{T.review}</button>}
       {o.status==='done' && o.rated && <span className="oc-rated">⭐ {T.rated}</span>}
     </div>
   )
 
   return (
     <div className="orders-page">
-      <div className="orders-header" style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+      <header className="orders-header">
         <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-          <h1 className="orders-title" style={{ margin:0 }}>{T.title}</h1>
-          {pendingReview.length>0 && userRole!=='pro' && <span className="orders-badge">{pendingReview.length}</span>}
+          <h1 className="orders-title">{T.title}</h1>
+          {pendingReview.length>0 && userRole!=='pro' && <span className="orders-badge" title={T.statToRate}>{pendingReview.length}</span>}
         </div>
-      </div>
-      {loading && <p style={{ textAlign:'center', marginTop:30, color:'#666' }}>Cargando pedidos...</p>}
+        <button id="orders-bell-btn" className={`orders-bell ${unread > 0 ? 'ringing' : ''}`} onClick={() => setShowNotifs(true)} aria-label="Notificaciones">
+          🔔
+          {unread > 0 && <span className="orders-bell-count">{unread > 9 ? '9+' : unread}</span>}
+        </button>
+      </header>
+
+      {/* ── Resumen ── */}
+      {!loading && (orders.length > 0 || history.length > 0) && (
+        <div className="orders-stats">
+          {userRole === 'pro' ? (
+            <>
+              <div className="stat-card s1"><span>💰</span><strong>{money(stats.today)}</strong><small>{T.statToday}</small></div>
+              <div className="stat-card s2"><span>📈</span><strong>{money(stats.week)}</strong><small>{T.statWeek}</small></div>
+              <div className="stat-card s3"><span>✅</span><strong>{stats.jobs}</strong><small>{T.statJobs}</small></div>
+            </>
+          ) : (
+            <>
+              <div className="stat-card s1"><span>📦</span><strong>{stats.month}</strong><small>{T.statMonth}</small></div>
+              <div className="stat-card s2"><span>💳</span><strong>{money(stats.spent)}</strong><small>{T.statSpent}</small></div>
+              <div className="stat-card s3"><span>⭐</span><strong>{pendingReview.length}</strong><small>{T.statToRate}</small></div>
+            </>
+          )}
+        </div>
+      )}
+
+      {loading && (
+        <section className="orders-section">
+          <OrderSkeleton /><OrderSkeleton /><OrderSkeleton />
+        </section>
+      )}
       {!loading && orders.length===0 && history.length===0 && (
-        <div className="empty-state" style={{ marginTop:50 }}><span style={{ fontSize:40 }}>📋</span><p style={{ marginTop:10 }}>{T.empty}</p></div>
+        <div className="empty-state fancy">
+          <div className="empty-illus"><span>📋</span></div>
+          <h2 className="empty-title">{T.empty}</h2>
+          <p className="empty-sub">{T.emptySub}</p>
+          {userRole !== 'pro' && (
+            <button id="orders-empty-cta" className="empty-cta" onClick={() => navigate('search')}>{T.emptyCta}</button>
+          )}
+        </div>
       )}
       {orders.length>0 && (
         <section className="orders-section">
-          <h2 className="orders-section-title">⚡ {T.active}</h2>
+          <h2 className="orders-section-title">⚡ {T.active} <span className="live-dot" /></h2>
           {orders.map((o, i) => (
-            <div key={o.id} className="order-card active-card">
+            <div key={o.id} className={`order-card active-card card-enter ${changedIds.includes(o.id) ? 'status-changed' : ''}`} style={{ animationDelay: `${i * 0.06}s` }}>
               <div className="oc-top">
                 {o.photoURL ? <img src={o.photoURL} alt={o.specialty} style={{ width:44,height:44,borderRadius:'50%',objectFit:'cover',flexShrink:0 }}/> : <div className="oc-avatar" style={{ background:avatarColors[i%avatarColors.length],width:44,height:44 }}>{o.avatar}</div>}
                 <div className="oc-info"><p className="oc-name">{o.pro}</p><p className="oc-spec">{o.icon} {o.specialty}</p><p className="oc-date">📅 {o.date}</p></div>
@@ -903,8 +1157,8 @@ export default function OrdersPage({ lang = 'es', navigate, userData, userRole }
 
               <div className="order-progress">
                 {PROGRESS_STEPS.map((s, idx, arr) => {
-                  const isDone = PROGRESS_STEPS.indexOf(o.status) > idx;
-                  const isActive = PROGRESS_STEPS.indexOf(o.status) === idx;
+                  const isDone = stepIndex(o.status) > idx;
+                  const isActive = stepIndex(o.status) === idx;
                   const dotClass = isDone ? 'done' : (isActive ? 'active-step' : '');
                   return (
                     <div key={s} className="op-step">
@@ -916,28 +1170,31 @@ export default function OrdersPage({ lang = 'es', navigate, userData, userRole }
               </div>
               <div className="order-progress-labels">
                 {PROGRESS_LABELS[lang].map((l, idx) => {
-                  const isActive = PROGRESS_STEPS.indexOf(o.status) === idx;
-                  return <span key={idx} className="op-label" style={{ fontWeight: isActive ? 800 : 500, color: isActive ? '#F26000' : 'var(--gray)' }}>{l}</span>;
+                  const isActive = stepIndex(o.status) === idx;
+                  return <span key={idx} className={`op-label ${isActive ? 'on' : ''}`}>{l}</span>;
                 })}
               </div>
-              
-              {o.status !== 'done' && o.status !== 'cancelled' && (
-                <div style={{ background: '#FFFBEB', padding: '8px 12px', borderRadius: 8, display: 'flex', alignItems: 'center', gap: 8, marginTop: 8, marginBottom: 12, border: '1px solid #FEF3C7' }}>
-                  <span style={{ fontSize: 16 }}>🚚</span>
-                  <p style={{ margin: 0, fontSize: 11, color: '#D97706', fontWeight: 600 }}>
-                    {lang === 'es' ? 'Pedido en curso. Tiempo estimado: Alta demanda ⭐' : 'Order in progress. Estimated time: High demand ⭐'}
-                  </p>
-                </div>
-              )}
+
+              {o.status !== 'working' && <EtaCountdown order={o} lang={lang} T={T} />}
               {renderActions(o)}
             </div>
           ))}
         </section>
       )}
+      {history.length > 0 && (
       <section className="orders-section">
         <h2 className="orders-section-title">🕐 {T.history}</h2>
-        {history.map((o, i) => (
-          <div key={o.id} className="order-card">
+        <div className="history-filters" role="tablist">
+          {Object.entries(T.filters).map(([key, label]) => (
+            <button key={key} id={`orders-filter-${key}`} role="tab" aria-selected={historyFilter === key}
+              className={`hf-chip ${historyFilter === key ? 'on' : ''}`} onClick={() => setHistoryFilter(key)}>
+              {label}
+            </button>
+          ))}
+        </div>
+        {filteredHistory.length === 0 && <p className="hf-empty">{T.noFilterResults}</p>}
+        {filteredHistory.map((o, i) => (
+          <div key={o.id} className={`order-card card-enter ${o.status === 'cancelled' ? 'is-cancelled' : ''} ${changedIds.includes(o.id) ? 'status-changed' : ''}`} style={{ animationDelay: `${Math.min(i, 8) * 0.05}s` }}>
             <div className="oc-top">
               {o.photoURL ? <img src={o.photoURL} alt={o.specialty} style={{ width:44,height:44,borderRadius:'50%',objectFit:'cover',flexShrink:0 }}/> : <div className="oc-avatar" style={{ background:avatarColors[(i+2)%avatarColors.length],width:44,height:44 }}>{o.avatar}</div>}
               <div className="oc-info"><p className="oc-name">{o.pro}</p><p className="oc-spec">{o.icon} {o.specialty}</p><p className="oc-date">📅 {o.date}</p></div>
@@ -945,7 +1202,7 @@ export default function OrdersPage({ lang = 'es', navigate, userData, userRole }
             </div>
             <div className="oc-actions">
               {o.status==='done' && userRole!=='pro' && (
-                ['approved', 'pending_cash', 'paid', 'verifying'].includes(o.paymentStatus) ? (
+                PAID_STATUSES.includes(o.paymentStatus) ? (
                   <button className="oc-btn listo" style={{ background:'#94A3B8', cursor:'not-allowed', marginBottom:8 }} disabled>
                     💳 {lang==='es'?'Trabajo Pago':'Work Paid'}
                   </button>
@@ -955,7 +1212,7 @@ export default function OrdersPage({ lang = 'es', navigate, userData, userRole }
                   </button>
                 )
               )}
-              {o.status==='done' && !o.rated && userRole!=='pro' && (o.paymentStatus==='approved'||o.paymentStatus==='pending_cash') && <button className="oc-btn review" onClick={()=>setReviewOrder(o)}>{T.review}</button>}
+              {o.status==='done' && !o.rated && userRole!=='pro' && RATEABLE_PAYS.includes(o.paymentStatus) && <button className="oc-btn review" onClick={()=>setReviewOrder(o)}>{T.review}</button>}
               {o.status==='done' && o.rated && <span className="oc-rated">⭐ {T.rated}</span>}
               {o.status==='done' && userRole !== 'pro' && (
                 <button className="oc-btn track" style={{ background:'#FFF7ED', color:'#C2410C', border:'1px solid #FFEDD5', marginTop:4, fontWeight:'bold' }} onClick={()=>setShowMantenimientoModal(true)}>
@@ -971,7 +1228,11 @@ export default function OrdersPage({ lang = 'es', navigate, userData, userRole }
                   🧾 {lang==='es'?'Ver Factura Oficial: Listo Patrón':'View Official Invoice: Listo Patrón'}
                 </button>
               )}
-              {o.status!=='cancelled' && userRole !== 'pro' && <button className="oc-btn rebook" onClick={()=>navigate('search')}>{T.rebook}</button>}
+              {userRole !== 'pro' && (
+                <button className="oc-btn rebook" onClick={()=>rebookSamePro(o)}>
+                  {o.proId && o.type !== 'delivery' ? T.rebookSame : T.rebook}
+                </button>
+              )}
             </div>
             
             {/* ── VISUALIZAR RESEÑA ── */}
@@ -995,7 +1256,22 @@ export default function OrdersPage({ lang = 'es', navigate, userData, userRole }
           </div>
         ))}
       </section>
+      )}
       {reviewOrder    && <ReviewModal    order={reviewOrder}    lang={lang} onClose={()=>setReviewOrder(null)}    onSubmit={handleReviewSubmit} />}
+      {cancelTarget   && <ConfirmCancelModal T={T} isPro={userRole==='pro'} onConfirm={confirmCancel} onClose={()=>setCancelTarget(null)} />}
+      {showNotifs && (
+        <NotificacionesModal
+          onClose={() => setShowNotifs(false)}
+          notifs={notifs}
+          lang={lang}
+          onMarkAllRead={handleMarkAllRead}
+          navigate={navigate}
+          orders={allOrders}
+          onOpenOrder={handleOpenOrderFromNotif}
+        />
+      )}
+      {celebrate && <Confetti onDone={() => setCelebrate(false)} />}
+      {toast && <div className="orders-toast" role="status">🔔 {toast}</div>}
       {verifyingOrder && <ReceiptModal   order={verifyingOrder} lang={lang} onClose={()=>setVerifyingOrder(null)} onApprove={handlePaymentApprove} />}
       {detailsOrder   && <OrderDetailsModal order={detailsOrder} lang={lang} onClose={()=>setDetailsOrder(null)} onAccept={handleAccept} onDecline={handleDecline} />}
 
@@ -1014,7 +1290,7 @@ export default function OrdersPage({ lang = 'es', navigate, userData, userRole }
               {lang==='es' ? 'Al confirmar le llegará una notificación al cliente para proceder con el pago.' : 'The client will be notified to proceed with payment.'}
             </p>
             <button
-              onClick={()=>handleWorkDone(workDoneOrder)}
+              onClick={async ()=>{ await handleWorkDone(workDoneOrder); setCelebrate(true) }}
               style={{ width:'100%', padding:16, borderRadius:14, background:'#F26000', color:'#fff', border:'none', fontWeight:900, fontSize:17, cursor:'pointer', boxShadow:'0 4px 16px rgba(242,96,0,0.35)', marginBottom:12 }}
             >
               ✅ {lang==='es' ? '¡Pedidos Listo!' : 'Done Boss!'}

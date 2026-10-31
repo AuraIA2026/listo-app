@@ -74,10 +74,25 @@ const IconSvg = ({ type, active }) => {
       )
     case 'mercado':
       return (
-        <svg width="24" height="24" viewBox="0 0 24 24" fill={active ? color : 'none'} stroke={color} strokeWidth={active ? '2.2' : '2.2'} strokeLinecap="round" strokeLinejoin="round">
-          <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" fill={active ? color : 'none'} />
-          <line x1="3" y1="6" x2="21" y2="6" />
-          <path d="M16 10a4 4 0 0 1-8 0" />
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          {active ? (
+            <>
+              {/* Bolsa rellena */}
+              <path d="M6 2h12l2 5H4L6 2z" fill={color} />
+              <rect x="3" y="7" width="18" height="14" rx="2" fill={color} opacity="0.85" />
+              {/* Asa */}
+              <path d="M9 7V5a3 3 0 0 1 6 0v2" stroke="white" strokeWidth="2" fill="none" />
+              {/* Destellos internos */}
+              <line x1="9" y1="12" x2="15" y2="12" stroke="white" strokeWidth="1.8" />
+              <line x1="9" y1="15.5" x2="13" y2="15.5" stroke="white" strokeWidth="1.8" />
+            </>
+          ) : (
+            <>
+              <path d="M6 2h12l2 5H4L6 2z" />
+              <rect x="3" y="7" width="18" height="14" rx="2" />
+              <path d="M9 7V5a3 3 0 0 1 6 0v2" />
+            </>
+          )}
         </svg>
       )
     case 'chat':

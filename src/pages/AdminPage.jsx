@@ -878,8 +878,8 @@ export default function AdminPage({ navigate }) {
       setEditRequests(arr);
     });
 
-    // 6. Escuchar Alertas/Notificaciones de Admin
-    const unsubAlerts = onSnapshot(query(collection(db, 'notificaciones'), where('userId', '==', 'admin')), (snap) => {
+    // 6. Escuchar Alertas/Notificaciones de Admin (ordenadas, mas recientes primero)
+    const processAlerts = (snap) => {
       const arr = snap.docs.map(d => ({ id: d.id, ...d.data() }));
       arr.sort((a, b) => {
         const dateA = a.createdAt?.seconds ? a.createdAt.seconds * 1000 : new Date(a.date || a.createdAt || 0).getTime();
@@ -887,7 +887,20 @@ export default function AdminPage({ navigate }) {
         return dateB - dateA;
       });
       setAlerts(arr);
-    });
+    };
+    // Intentar con orderBy primero, fallback sin orden si falta el indice
+    let unsubAlerts;
+    try {
+      unsubAlerts = onSnapshot(
+        query(collection(db, 'notificaciones'), where('userId', '==', 'admin'), orderBy('createdAt', 'desc')),
+        processAlerts,
+        () => {
+          unsubAlerts = onSnapshot(query(collection(db, 'notificaciones'), where('userId', '==', 'admin')), processAlerts);
+        }
+      );
+    } catch(_e) {
+      unsubAlerts = onSnapshot(query(collection(db, 'notificaciones'), where('userId', '==', 'admin')), processAlerts);
+    }
 
     // 7. Escuchar Locales VIP
     const unsubLocales = onSnapshot(collection(db, 'locales'), (snap) => {
@@ -944,7 +957,17 @@ export default function AdminPage({ navigate }) {
       } catch (e) {
         console.error("Error playing audio:", e);
       }
-      showToast('🔔 Nueva alerta de plan recibida');
+      // Detectar tipo de nueva alerta
+      const latestNew = unreadAlerts[0];
+      if (latestNew?.type === 'new_verification_request') {
+        showToast('🛡️ ¡Nueva postulacion pendiente de revision!');
+      } else if (latestNew?.type === 'new_story_review' || (latestNew?.title && latestNew.title.includes('HISTORIA'))) {
+        showToast('📸 Nueva historia esperando validacion');
+      } else if (latestNew?.type === 'admin_plan_purchased') {
+        showToast('👑 Nuevo pago de plan recibido');
+      } else {
+        showToast('🔔 Nueva alerta recibida');
+      }
     }
     prevUnreadCount.current = unreadCount;
   }, [alerts]);
@@ -1661,7 +1684,7 @@ export default function AdminPage({ navigate }) {
             { id:'comercios',     label:'Comercio', count: partnerRequests.filter(r => r.status === 'pending').length },
             { id:'postulaciones', label:'Nuevos', count:verifications.length },
             { id:'historias',    label:'Historias', count: stories.length },
-            { id:'alertas',      label:'Alertas', count: alerts.filter(a => !a.read).length },
+            { id:'alertas',      label:'Alertas', count: alerts.filter(a => !a.read).length + verifications.length },
             { id:'pagos',        label:'Historial',  count:completedPayments.length },
             { id:'comisiones',   label:'Validar', count:pendienteCount },
             { id:'bloqueados',   label:'Directorio', count:users.length },
@@ -3121,18 +3144,29 @@ export default function AdminPage({ navigate }) {
         {tab === 'alertas' && (
           <div className="admin-section" style={{marginTop:16}}>
             <div className="section-header">
-              <span className="section-title">Alertas de Planes ({alerts.filter(a => !a.read).length} sin leer)</span>
+              <span className="section-title">Alertas ({alerts.filter(a => !a.read).length} sin leer{verifications.length > 0 ? ` · ${verifications.length} postulacion(es)` : ''})</span>
               {alerts.filter(a => !a.read).length > 0 && (
                 <button className="section-action" onClick={() => setConfirm({type:'mark_all_read', obj:null})}>
                   Marcar todas leídas ✓
                 </button>
               )}
             </div>
-            {alerts.length === 0 && (
+            {/* Banner si hay postulaciones pendientes */}
+            {verifications.length > 0 && (
+              <div style={{background:'linear-gradient(135deg,rgba(59,130,246,0.1),rgba(99,102,241,0.06))',border:'2px solid #3B82F6',borderRadius:16,padding:'14px 16px',marginBottom:14,display:'flex',alignItems:'center',gap:12,cursor:'pointer'}} onClick={() => setTab('postulaciones')}>
+                <span style={{fontSize:28}}>🛡️</span>
+                <div style={{flex:1}}>
+                  <div style={{fontWeight:800,fontSize:15,color:'#1E40AF'}}>!{verifications.length} postulacion(es) pendiente(s) de revision!</div>
+                  <div style={{fontSize:12,color:'#3B82F6',marginTop:2}}>Toca aqui para ir a la pestana "Nuevos" y revisar los documentos</div>
+                </div>
+                <span style={{fontSize:22,color:'#3B82F6'}}>›</span>
+              </div>
+            )}
+            {alerts.length === 0 && verifications.length === 0 && (
               <div className="empty-admin">
                 <span>🔔</span>
                 <p>Sin alertas</p>
-                <small>No se han registrado eventos o solicitudes de planes.</small>
+                <small>No se han registrado eventos o solicitudes.</small>
               </div>
             )}
             {alerts.map((a, i) => {
