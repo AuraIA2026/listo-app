@@ -160,6 +160,262 @@ export const BUSINESS_TYPES = {
       { key: 'garantia', label: '🛡️ Garantía', options: ['Sin garantía', '30 días', '3 meses', '6 meses', '1 año'] },
     ],
   },
+
+  mascotas: {
+    label: '🐾 Mascotas & Veterinaria',
+    visitLabel: 'Ver tienda de mascotas',
+    itemLabel: 'Producto',
+    descLabel: 'Descripción',
+    categories: [
+      ['alimento', '🦴 Alimento'], ['accesorios_mascota', '🎾 Juguetes & Accesorios'],
+      ['higiene_mascota', '🛁 Higiene & Grooming'], ['salud_mascota', '💉 Salud Veterinaria'],
+    ],
+    tags: ['🐶 Perros', '🐱 Gatos', '🐦 Aves', '🔥 Más Vendido', '💸 En Oferta'],
+    optionGroups: [
+      { key: 'tamano_mascota', label: '📏 Tamaño de Mascota', options: ['Cachorro', 'Pequeño', 'Mediano', 'Grande'] },
+    ],
+  },
+
+  hogar: {
+    label: '🛋️ Hogar, Muebles & Decoración',
+    visitLabel: 'Ver tienda de hogar',
+    itemLabel: 'Artículo',
+    descLabel: 'Descripción / Medidas',
+    categories: [
+      ['muebles', '🛋️ Muebles'], ['cocina', '🍳 Cocina'], ['decoracion', '🖼️ Decoración'],
+      ['colchones', '🛏️ Colchones & Ropa de Cama'], ['bano', '🚿 Baño'],
+    ],
+    tags: ['🆕 Nuevo', '🔥 Más Vendido', '💸 En Oferta', '🚚 Entrega a Domicilio', '🔧 Incluye Instalación'],
+    optionGroups: [
+      { key: 'colores', label: '🎨 Colores', options: ['⚫ Negro', '⚪ Blanco', '🟤 Madera', '🩶 Gris', '🟤 Beige'] },
+    ],
+  },
+
+  papeleria: {
+    label: '📚 Papelería & Librería',
+    visitLabel: 'Ver papelería',
+    itemLabel: 'Producto',
+    descLabel: 'Descripción',
+    categories: [
+      ['escolar', '🎒 Útiles Escolares'], ['oficina', '🖇️ Oficina'], ['libros', '📖 Libros'],
+      ['impresion', '🖨️ Impresión & Copias'],
+    ],
+    tags: ['🔥 Más Vendido', '💸 En Oferta', '🎒 Regreso a Clases', '📦 Al por Mayor'],
+    optionGroups: [],
+  },
+
+  repuestos: {
+    label: '🚗 Repuestos & Accesorios de Vehículos',
+    visitLabel: 'Ver repuestos',
+    itemLabel: 'Repuesto',
+    descLabel: 'Descripción / Compatibilidad',
+    categories: [
+      ['motor', '⚙️ Motor'], ['frenos', '🛑 Frenos'], ['gomas', '🛞 Gomas & Aros'],
+      ['aceites', '🛢️ Aceites & Lubricantes'], ['baterias', '🔋 Baterías'], ['motos', '🏍️ Motores / Motos'],
+    ],
+    tags: ['🆕 Nuevo', '♻️ Usado', '🛡️ Con Garantía', '⭐ Original', '🔧 Instalación Incluida'],
+    optionGroups: [],
+  },
+
+  alquiler_eventos: {
+    label: '🎉 Alquiler para Eventos',
+    visitLabel: 'Ver alquiler de eventos',
+    itemLabel: 'Artículo',
+    descLabel: 'Descripción',
+    rental: true,
+    priceLabel: 'Precio Base (RD$)',
+    categories: [
+      ['sillas_mesas', '🪑 Sillas & Mesas'], ['carpas', '⛺ Carpas'], ['sonido', '🔊 Sonido & Luces'],
+      ['decoracion_evento', '🎈 Decoración'], ['inflables', '🏰 Inflables'],
+    ],
+    tags: ['✅ Disponible Hoy', '🚚 Entrega & Montaje', '🛡️ Requiere Depósito'],
+    optionGroups: [
+      { key: 'modalidad', label: '⏱️ Modalidad', options: ['Por Hora', 'Por Día', 'Fin de Semana'] },
+    ],
+  },
+
+  alquiler_casas: {
+    label: '🏠 Alquiler de Casas & Apartamentos',
+    visitLabel: 'Ver propiedades',
+    itemLabel: 'Propiedad',
+    descLabel: 'Descripción / Características',
+    rental: true,
+    priceLabel: 'Precio Mensual (RD$)',
+    categories: [
+      ['apartamento', '🏢 Apartamentos'], ['casa', '🏠 Casas & Chalets'],
+      ['habitacion', '🛏️ Habitaciones'], ['villa', '🏖️ Villas & Chalets de Playa'],
+      ['local_comercial', '🏪 Locales Comerciales'], ['oficina', '🖥️ Oficinas'],
+      ['penthouse', '🌆 Penthouses'], ['vacacional', '🌴 Propiedades Vacacionales'],
+    ],
+    tags: ['🛋️ Amueblado', '🪑 Sin Muebles', '🌊 Vista al Mar', '🚗 Parking', '🏊 Piscina', '🔐 Vigilancia 24/7', '🐾 Acepta Mascotas', '⚡ A/C Incluido'],
+    optionGroups: [
+      { key: 'habitaciones', label: '🛏️ Habitaciones', options: ['Estudio', '1 Hab', '2 Hab', '3 Hab', '4 Hab', '5+ Hab'] },
+      { key: 'banos', label: '🚿 Baños', options: ['1 Baño', '1.5 Baños', '2 Baños', '3 Baños', '4+ Baños'] },
+      { key: 'modalidad_renta', label: '📅 Modalidad', options: ['Mensual', 'Anual', 'Por Día (Vacacional)', 'Por Semana'] },
+      { key: 'zona', label: '📍 Zona', options: ['Santiago Centro', 'Villa Olga', 'Bella Vista', 'Gurabo', 'Los Jardines', 'Ensanche Bermúdez', 'Moca', 'La Vega', 'Puerto Plata', 'Punta Cana', 'Santo Domingo'] },
+    ],
+  },
+
+  venta_vehiculos: {
+    label: '🚗 Venta de Vehículos',
+    visitLabel: 'Ver vehículos',
+    itemLabel: 'Vehículo',
+    descLabel: 'Descripción / Especificaciones',
+    categories: [
+      ['carros_nuevos', '🚘 Carros Nuevos'], ['carros_usados', '🚗 Carros Usados'],
+      ['jeepetas', '🚙 Jeepetas & SUVs'], ['camionetas', '🛻 Camionetas & Pick-Ups'],
+      ['motos', '🏍️ Motocicletas'], ['bicicletas', '🚲 Bicicletas & Scooters'],
+      ['camiones', '🚛 Camiones & Carga'], ['botes', '⛵ Botes & Embarcaciones'],
+      ['maquinaria_pesada', '🚜 Maquinaria Pesada'],
+    ],
+    tags: ['🆕 Nuevo', '♻️ Usado', '🛡️ Con Garantía', '📄 Documentos al Día', '🔑 Entrega Inmediata', '💳 Financiamiento', '🔧 Revisado por Mecánico'],
+    optionGroups: [
+      { key: 'marca', label: '🏷️ Marca', options: ['Toyota', 'Honda', 'Hyundai', 'Kia', 'Nissan', 'Ford', 'Chevrolet', 'Mitsubishi', 'BMW', 'Mercedes', 'Audi', 'Jeep', 'Suzuki', 'Yamaha'] },
+      { key: 'transmision', label: '⚙️ Transmisión', options: ['Automático', 'Manual', 'CVT'] },
+      { key: 'combustible', label: '⛽ Combustible', options: ['Gasolina', 'Diesel', 'Eléctrico', 'Híbrido', 'Gas'] },
+      { key: 'ano', label: '📅 Año', options: ['2024', '2023', '2022', '2021', '2020', '2019', '2018', '2017', '2015-2016', 'Antes 2015'] },
+      { key: 'color', label: '🎨 Color', options: ['⚫ Negro', '⚪ Blanco', '🩶 Plata', '🔵 Azul', '🔴 Rojo', '🟤 Marrón', '🟢 Verde', '🟡 Amarillo'] },
+    ],
+  },
+
+  bienes_raices: {
+    label: '🏗️ Bienes Raíces & Terrenos',
+    visitLabel: 'Ver propiedades',
+    itemLabel: 'Propiedad',
+    descLabel: 'Descripción / Ubicación',
+    categories: [
+      ['terrenos', '🌿 Terrenos & Solares'], ['casas_venta', '🏠 Casas en Venta'],
+      ['apartamentos_venta', '🏢 Apartamentos en Venta'], ['locales', '🏪 Locales Comerciales'],
+      ['fincas', '🌾 Fincas & Propiedades Agrícolas'], ['proyectos', '🏗️ Proyectos en Construcción'],
+      ['inversion', '💼 Propiedades de Inversión'],
+    ],
+    tags: ['📜 Título Limpio', '🏦 Con Financiamiento', '🔑 Entrega Inmediata', '🏗️ En Planos', '🌊 Cerca del Mar', '🏙️ Zona Urbana', '🌳 Zona Rural'],
+    optionGroups: [
+      { key: 'metros', label: '📐 Metros Cuadrados', options: ['Menos de 50 m²', '50-100 m²', '100-200 m²', '200-500 m²', '500 m²-1 Tarea', '1-5 Tareas', 'Más de 5 Tareas'] },
+      { key: 'zona_br', label: '📍 Zona / Provincia', options: ['Santiago', 'Santo Domingo', 'Puerto Plata', 'La Vega', 'Punta Cana', 'Samaná', 'San Pedro', 'La Romana', 'Barahona'] },
+    ],
+  },
+
+  deportes: {
+    label: '⚽ Deportes, Gym & Fitness',
+    visitLabel: 'Ver tienda deportiva',
+    itemLabel: 'Producto',
+    descLabel: 'Descripción / Especificaciones',
+    categories: [
+      ['gym', '🏋️ Equipos de Gym & Pesas'], ['futbol', '⚽ Fútbol'], ['baloncesto', '🏀 Baloncesto'],
+      ['natacion', '🏊 Natación'], ['bicicleta', '🚴 Ciclismo'], ['boxeo', '🥊 Boxeo & MMA'],
+      ['ropa_deportiva', '👟 Ropa & Calzado Deportivo'], ['suplementos', '💪 Suplementos & Proteínas'],
+      ['tenis', '🎾 Tenis & Padel'], ['camping', '⛺ Camping & Outdoor'],
+    ],
+    tags: ['🆕 Nuevo', '🔥 Más Vendido', '💸 En Oferta', '🏆 Marca Original', '🚚 Entrega a Domicilio'],
+    optionGroups: [
+      { key: 'tallas_dep', label: '📏 Tallas', options: ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'Talla Única'] },
+      { key: 'colores_dep', label: '🎨 Colores', options: ['⚫ Negro', '⚪ Blanco', '🔵 Azul', '🔴 Rojo', '🟢 Verde', '🩶 Gris'] },
+    ],
+  },
+
+  servicios_digitales: {
+    label: '💻 Servicios Digitales & Tecnología',
+    visitLabel: 'Ver servicios',
+    itemLabel: 'Servicio',
+    descLabel: 'Descripción del servicio',
+    categories: [
+      ['diseno', '🎨 Diseño Gráfico & Logos'], ['programacion', '💻 Desarrollo Web & Apps'],
+      ['redes_sociales', '📱 Manejo de Redes Sociales'], ['seo', '🔍 SEO & Marketing Digital'],
+      ['video', '🎬 Edición de Video & Fotos'], ['impresion', '🖨️ Impresión Digital'],
+      ['streaming', '🎮 Cuentas & Streaming'], ['soporte_tec', '🔧 Soporte Técnico Remoto'],
+    ],
+    tags: ['⚡ Entrega Rápida', '✅ Revisiones Incluidas', '🌐 Trabajo Remoto', '💼 Para Empresas', '📄 Incluye Factura'],
+    optionGroups: [
+      { key: 'tiempo_entrega', label: '⏱️ Tiempo de Entrega', options: ['24 horas', '48 horas', '3-5 días', '1 semana', '2 semanas', 'A convenir'] },
+    ],
+  },
+
+  joyeria: {
+    label: '💍 Joyería & Accesorios de Lujo',
+    visitLabel: 'Ver joyería',
+    itemLabel: 'Joya / Accesorio',
+    descLabel: 'Descripción / Material',
+    categories: [
+      ['anillos', '💍 Anillos & Sortijas'], ['collares', '📿 Collares & Cadenas'],
+      ['pulseras', '⌚ Pulseras & Brazaletes'], ['aretes', '💎 Aretes & Pendientes'],
+      ['relojes', '⌚ Relojes'], ['oro', '🥇 Oro & Plata'], ['bisuteria', '🛍️ Bisutería & Accesorios'],
+    ],
+    tags: ['💛 Oro 18K', '⚪ Plata .925', '💎 Diamantes', '🆕 Nueva Colección', '🎁 Para Regalar', '💸 En Oferta'],
+    optionGroups: [
+      { key: 'material_joya', label: '🪙 Material', options: ['Oro 10K', 'Oro 14K', 'Oro 18K', 'Plata .925', 'Acero Inoxidable', 'Titanio', 'Chapado en Oro'] },
+      { key: 'talla_anillo', label: '📏 Talla de Anillo', options: ['5', '6', '7', '8', '9', '10', '11', '12'] },
+    ],
+  },
+
+  juguetes: {
+    label: '🧸 Juguetes & Artículos para Bebés',
+    visitLabel: 'Ver juguetes',
+    itemLabel: 'Producto',
+    descLabel: 'Descripción / Edad recomendada',
+    categories: [
+      ['bebe_recien', '👶 Recién Nacido (0-12m)'], ['ninos_1_3', '🧒 Niños 1-3 años'],
+      ['ninos_4_8', '🚂 Niños 4-8 años'], ['ninos_9_12', '🎮 Niños 9-12 años'],
+      ['adolescentes', '🎯 Adolescentes'], ['munecos', '🪆 Muñecas & Peluches'],
+      ['educativo', '📚 Juguetes Educativos'], ['cochecitos', '🛒 Cochecitos & Coches'],
+      ['ropa_bebe', '🍼 Ropa & Accesorios de Bebé'],
+    ],
+    tags: ['🆕 Nuevo', '🔥 Más Vendido', '💸 En Oferta', '✅ No Tóxico', '🎁 Para Regalar', '📦 Importado'],
+    optionGroups: [
+      { key: 'edad', label: '👶 Edad Recomendada', options: ['0-6 meses', '6-12 meses', '1-2 años', '3-5 años', '6-8 años', '9-12 años', '13+ años'] },
+    ],
+  },
+};
+
+// Palabras que la gente escribe en "Buscar" y que apuntan a cada tipo de comercio
+export const BUSINESS_KEYWORDS = {
+  restaurante: ['comida', 'restaurante', 'comer', 'almuerzo', 'cena', 'desayuno', 'pizza', 'pollo', 'hamburguesa', 'burger', 'yaroa', 'chicharron', 'empanada', 'sushi', 'taco', 'postre', 'bebida', 'jugo'],
+  ropa: ['ropa', 'tienda', 'boutique', 'camisa', 'pantalon', 'jean', 'vestido', 'zapato', 'tenis', 'calzado', 'gorra', 'moda', 'uniforme', 'bolso'],
+  herramientas: ['alquiler', 'alquilar', 'rentar', 'renta', 'herramienta', 'equipo', 'taladro', 'andamio', 'generador', 'planta electrica', 'compresor', 'hidrolavadora', 'sierra', 'maquinaria', 'soldadora'],
+  ferreteria: ['ferreteria', 'material', 'cemento', 'block', 'tornillo', 'clavo', 'pintura', 'plomeria', 'tubo', 'cable', 'madera', 'martillo'],
+  farmacia: ['farmacia', 'medicina', 'medicamento', 'pastilla', 'remedio', 'salud', 'vitamina', 'jarabe', 'receta', 'panal', 'curita', 'botica'],
+  supermercado: ['supermercado', 'super', 'colmado', 'mercado', 'viveres', 'compra', 'arroz', 'habichuela', 'aceite', 'leche', 'huevo', 'carne', 'pan', 'cerveza', 'refresco', 'agua'],
+  belleza: ['belleza', 'cosmetico', 'maquillaje', 'perfume', 'crema', 'cabello', 'una', 'salon', 'barberia', 'shampoo'],
+  electronica: ['electronica', 'celular', 'telefono', 'iphone', 'samsung', 'computadora', 'laptop', 'tv', 'television', 'audifono', 'cargador', 'gaming', 'consola', 'nevera', 'estufa'],
+  mascotas: ['mascota', 'perro', 'gato', 'veterinaria', 'veterinario', 'alimento perro', 'dog chow', 'pet'],
+  hogar: ['hogar', 'mueble', 'sofa', 'cama', 'colchon', 'decoracion', 'cocina', 'mesa', 'silla', 'cortina'],
+  papeleria: ['papeleria', 'libreria', 'cuaderno', 'lapiz', 'libro', 'utiles', 'escolar', 'oficina', 'impresion', 'copia'],
+  repuestos: ['repuesto', 'pieza', 'carro', 'vehiculo', 'motor', 'moto', 'goma', 'llanta', 'aceite motor', 'bateria', 'freno'],
+  alquiler_eventos: ['evento', 'fiesta', 'boda', 'cumpleanos', 'carpa', 'silla', 'mesa', 'sonido', 'inflable', 'decoracion fiesta'],
+  alquiler_casas: ['alquiler casa', 'alquilar apartamento', 'renta casa', 'habitacion', 'apartamento', 'villa', 'penthouse', 'inmueble', 'residencia', 'alquiler'],
+  venta_vehiculos: ['carro', 'venta carro', 'vendo carro', 'jeepeta', 'camioneta', 'moto', 'vehiculo', 'auto', 'toyota', 'honda', 'nissan', 'hyundai', 'bmw', 'ford', 'bote', 'camion'],
+  bienes_raices: ['terreno', 'solar', 'bienes raices', 'propiedad', 'finca', 'casa venta', 'apartamento venta', 'local comercial', 'inversion inmobiliaria', 'constructora'],
+  deportes: ['gym', 'deporte', 'fitness', 'pesas', 'futbol', 'baloncesto', 'bicicleta', 'boxeo', 'suplemento', 'proteina', 'tenis', 'camping', 'natacion'],
+  servicios_digitales: ['diseño', 'logo', 'pagina web', 'app', 'programacion', 'redes sociales', 'marketing', 'seo', 'video', 'edicion', 'streaming', 'soporte tecnico'],
+  joyeria: ['joya', 'anillo', 'collar', 'pulsera', 'arete', 'reloj', 'oro', 'plata', 'diamante', 'bisuteria', 'joyeria'],
+  juguetes: ['juguete', 'juego', 'bebe', 'nino', 'muneca', 'peluche', 'coche bebe', 'cochecito', 'juguetes educativos'],
+};
+
+// Normaliza texto: minúsculas, sin acentos, sin espacios/símbolos
+export const normBizText = (str) =>
+  (str || '').toString().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '');
+
+// Devuelve los tipos de comercio a los que hace referencia lo que el usuario escribió
+export const findBusinessTypesForQuery = (rawQuery) => {
+  const q = normBizText(rawQuery);
+  if (q.length < 3) return [];
+  return Object.entries(BUSINESS_TYPES)
+    .filter(([key, cfg]) => {
+      const words = [
+        cfg.label,
+        ...(BUSINESS_KEYWORDS[key] || []),
+        ...cfg.categories.map(([, lbl]) => lbl),
+      ].map(normBizText).filter(Boolean);
+      return words.some(w => w.includes(q) || (q.length >= 4 && w.length >= 4 && q.includes(w)));
+    })
+    .map(([key]) => key);
+};
+
+// Etiqueta legible de la sub-categoría de un producto
+export const getCategoryLabel = (type, catKey) => {
+  const cfg = BUSINESS_TYPES[type];
+  const found = cfg?.categories.find(([k]) => k === catKey);
+  return found ? found[1] : '';
 };
 
 export const RENTAL_PERIODS = [
