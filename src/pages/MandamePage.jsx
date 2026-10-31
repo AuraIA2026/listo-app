@@ -11,7 +11,7 @@ import './HomePage.css';
 import PedidosListoHub from '../components/PedidosListoHub';
 import HistoriasCarrusel from '../components/HistoriasCarrusel';
 import ConfigurarRestauranteModal from '../components/ConfigurarRestauranteModal';
-import { BUSINESS_TYPES, RENTAL_PERIODS, WHOLESALE_TIERS } from '../data/businessTypes';
+import { BUSINESS_TYPES, RENTAL_PERIODS, WHOLESALE_TIERS, findBusinessTypesForQuery, getCategoryLabel } from '../data/businessTypes';
 import DeliveryCercaScreen from '../components/DeliveryCercaScreen';
 import WelcomeIntro from '../components/WelcomeIntro';
 
@@ -551,6 +551,10 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
   const [selectedTip, setSelectedTip] = useState(50);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategoryFilter, setSelectedCategoryFilter] = useState('all');
+  // Mercado: tipo de comercio y sub-categoría seleccionados
+  const [mercadoType, setMercadoType] = useState(null);
+  const [mercadoSub, setMercadoSub] = useState('all');
+  const [mercadoQuery, setMercadoQuery] = useState('');
   const [activeStoreModal, setActiveStoreModal] = useState(null);
   const [showStoreConfigModal, setShowStoreConfigModal] = useState(false);
   const [configModalInitialTab, setConfigModalInitialTab] = useState('perfil');
@@ -675,6 +679,22 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
 
   const cleanQuery = normStr(searchQuery);
 
+  // Tipo de comercio de un producto (los antiguos sin tipo son de comida)
+  const getProdType = (p) => (p?.businessType && BUSINESS_TYPES[p.businessType]) ? p.businessType : 'restaurante';
+
+  // Categorías (farmacia, ferretería, alquiler...) a las que hace referencia la búsqueda
+  const searchMatchedTypes = findBusinessTypesForQuery(searchQuery);
+
+  // Texto extra buscable de un producto: tipo, sub-categoría y etiquetas
+  const prodMetaText = (p) => {
+    const t = getProdType(p);
+    return normStr([
+      BUSINESS_TYPES[t]?.label,
+      getCategoryLabel(t, p.category),
+      ...(Array.isArray(p.dietaryTags) ? p.dietaryTags : []),
+    ].join(' '));
+  };
+
   // Platillos coincidentes en tiempo real
   const searchMatchedProducts = cleanQuery ? allPlatformProducts.filter(p => {
     const n = normStr(p.name);
@@ -682,6 +702,8 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
     const c = normStr(p.category);
     const s = normStr(p.storeName);
     return n.includes(cleanQuery) || d.includes(cleanQuery) || c.includes(cleanQuery) || s.includes(cleanQuery) ||
+      prodMetaText(p).includes(cleanQuery) ||
+      (getProdType(p) !== 'restaurante' && searchMatchedTypes.includes(getProdType(p))) ||
       (cleanQuery.includes('chicharon') && (n.includes('chicharron') || d.includes('chicharron'))) ||
       (cleanQuery.includes('chicharron') && (n.includes('chicharon') || d.includes('chicharon'))) ||
       (cleanQuery.includes('yaroa') && (n.includes('yaroa') || d.includes('yaroa'))) ||
@@ -886,6 +908,10 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
   const [newProdImages, setNewProdImages] = useState(['assets/burger_3d.png']);
   const [activePreviewImageIndex, setActivePreviewImageIndex] = useState(0);
   const [customizeModalImgIndex, setCustomizeModalImgIndex] = useState(0);
+  // Selecciones del cliente en el modal de personalización
+  const [clientSelections, setClientSelections] = useState({ guarn: [], beb: [], ext: [] });
+  const [clientNote, setClientNote] = useState('');
+
   const [zoomImg, setZoomImg] = useState(null); // visor de foto a pantalla completa
   
   // Dish Photo Editor Ultra Pro State
@@ -917,9 +943,41 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
   const [activeEmojiId, setActiveEmojiId] = useState(null);
 
   const [selectedDietaryTags, setSelectedDietaryTags] = useState(['🔥 Más Vendido']);
-  const [selectedGuarniciones, setSelectedGuarniciones] = useState(['🍌 Tostones Crujientes', '🍟 Papas Fritas']);
-  const [selectedBebidas, setSelectedBebidas] = useState(['Coca Cola 2L', 'Jugo Chinola']);
-  const [selectedExtras, setSelectedExtras] = useState(['Chicharrón Extra (+120)', 'Queso Frito (+80)']);
+  // Guarniciones, bebidas y extras: cada ítem = { id, name, price, enabled }
+  const mkItem = (name, price = 0, enabled = false) => ({ id: name + Date.now() + Math.random(), name, price, enabled });
+  const [guarnicionItems, setGuarnicionItems] = useState([
+    { id: 'g1', name: '🍌 Tostones Crujientes', price: 0, enabled: true },
+    { id: 'g2', name: '🍟 Papas Fritas',          price: 0, enabled: true },
+    { id: 'g3', name: '🧄 Mofonguito de Ajo',      price: 0, enabled: false },
+    { id: 'g4', name: '🥑 Yuquita al Moho',        price: 0, enabled: false },
+    { id: 'g5', name: '🧀 Queso Frito Geo',        price: 0, enabled: false },
+    { id: 'g6', name: '🥓 Chicharrón Crocante',    price: 0, enabled: false },
+    { id: 'g7', name: '🍌 Maduritos Fritos',       price: 0, enabled: false },
+    { id: 'g8', name: '🍚 Arroz Blanco Criollo',   price: 0, enabled: false },
+    { id: 'g9', name: '🫘 Habichuelas Guisadas',   price: 0, enabled: false },
+    { id: 'g10', name: '🥑 Aguacate en Lajas',     price: 0, enabled: false },
+    { id: 'g11', name: '🥗 Ensalada Rusa',         price: 0, enabled: false },
+    { id: 'g12', name: '🥔 Puré de Papa al Ajo',   price: 0, enabled: false },
+    { id: 'g13', name: '🍌 Mangú con Cebollita',   price: 0, enabled: false },
+    { id: 'g14', name: '🌽 Arepitas de Maíz',      price: 0, enabled: false },
+    { id: 'g15', name: '🥑 Guacamole',             price: 0, enabled: false },
+  ]);
+  const [bebidaItems, setBebidaItems] = useState([
+    { id: 'b1', name: 'Coca Cola 2L',        price: 0, enabled: true },
+    { id: 'b2', name: 'Jugo Chinola',        price: 0, enabled: true },
+    { id: 'b3', name: 'Cerveza Presidente',  price: 0, enabled: false },
+    { id: 'b4', name: 'Agua Mineral',        price: 0, enabled: false },
+  ]);
+  const [extraItems, setExtraItems] = useState([
+    { id: 'e1', name: 'Chicharrón Extra', price: 120, enabled: true },
+    { id: 'e2', name: 'Queso Frito',      price: 80,  enabled: true },
+    { id: 'e3', name: 'Salsa de Ajo',     price: 35,  enabled: false },
+    { id: 'e4', name: 'Aguacate Fresco',  price: 60,  enabled: false },
+  ]);
+  // Para compatibilidad con el resto del código que usa arrays de strings
+  const selectedGuarniciones = guarnicionItems.filter(g => g.enabled).map(g => g.price > 0 ? `${g.name} (+${g.price})` : g.name);
+  const selectedBebidas = bebidaItems.filter(b => b.enabled).map(b => b.price > 0 ? `${b.name} (+${b.price})` : b.name);
+  const selectedExtras = extraItems.filter(x => x.enabled).map(x => x.price > 0 ? `${x.name} (+${x.price})` : x.name);
   const [isFlashOffer, setIsFlashOffer] = useState(false);
   const [prepTimeShift, setPrepTimeShift] = useState('15-25');
   const [menuShift, setMenuShift] = useState('all');
@@ -2004,29 +2062,12 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
     }
   };
 
-  const handleToggleGuarnicion = (val) => {
-    if (selectedGuarniciones.includes(val)) {
-      setSelectedGuarniciones(selectedGuarniciones.filter(v => v !== val));
-    } else {
-      setSelectedGuarniciones([...selectedGuarniciones, val]);
-    }
-  };
+  // Los toggles de guarniciones/bebidas/extras ahora se manejan inline en el UI
+  // (mantenemos las funciones para no romper referencias del compilador)
+  const handleToggleGuarnicion = () => {};
+  const handleToggleBebida = () => {};
+  const handleToggleExtra = () => {};
 
-  const handleToggleBebida = (val) => {
-    if (selectedBebidas.includes(val)) {
-      setSelectedBebidas(selectedBebidas.filter(v => v !== val));
-    } else {
-      setSelectedBebidas([...selectedBebidas, val]);
-    }
-  };
-
-  const handleToggleExtra = (val) => {
-    if (selectedExtras.includes(val)) {
-      setSelectedExtras(selectedExtras.filter(v => v !== val));
-    } else {
-      setSelectedExtras([...selectedExtras, val]);
-    }
-  };
 
   const handleMultipleImageUpload = (e) => {
     const files = Array.from(e.target.files || []);
@@ -2164,7 +2205,17 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
       return [...prev, { id: (prod.id || Date.now()) + '-' + Date.now(), name: itemTitle, price: itemPrice, qty: 1 }];
     });
     setCustomizeProduct(null);
+    setClientSelections({ guarn: [], beb: [], ext: [] });
+    setClientNote('');
     showToast(`🛒 "${prod.name || 'Producto'}" añadido al carrito`);
+  };
+
+  // Abre el modal de personalización limpiando selecciones anteriores
+  const openCustomizeModal = (prod) => {
+    setCustomizeModalImgIndex(0);
+    setClientSelections({ guarn: [], beb: [], ext: [] });
+    setClientNote('');
+    setCustomizeProduct(prod);
   };
 
   const handleIncreaseQty = (itemId) => {
@@ -2240,7 +2291,13 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
       deliveryNotes: (deliveryNotes || '').trim(),
       paymentMethod: checkoutPaymentMethod,
       cashChangeFor: checkoutPaymentMethod === 'efectivo' ? cashChangeAmount : null,
-      items: cart.map(i => ({ name: i.name, price: i.price, qty: i.qty, subtotal: i.price * i.qty })),
+      items: cart.map(i => ({
+        name: i.name, price: i.price, qty: i.qty, subtotal: i.price * i.qty,
+        selectedGuarniciones: i.selectedGuarniciones || [],
+        selectedBebidas: i.selectedBebidas || [],
+        selectedExtras: i.selectedExtras || [],
+        clientNote: i.clientNote || ''
+      })),
       subtotal: cartSubtotal,
       deliveryFee: currentDeliveryFee,
       tip: currentTip,
@@ -2248,6 +2305,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
       price: `RD$ ${cartTotal.toLocaleString()}`,
       pinOTP: generatedOtp,
       storeName: storeDisplayName,
+      storeId: activeStoreModal?.id || null,
       proName: isPickup ? `Retiro en Local (${storeDisplayName})` : 'Kelvin Santos (Mándame Rider)',
       proSpecialty: isPickup ? '🛍️ Retiro en Mostrador (Sin Delivery)' : 'Delivery Express 🛵',
       proPhone: isPickup ? '809-583-2020' : '809-555-0192',
@@ -2425,51 +2483,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
       )}
 
       {/* Mode Switcher Pill Header - Visible si el usuario tiene comercio registrado */}
-      {isMerchantUser && (
-        <div style={{ background: '#0a0e1a', color: 'white', padding: '10px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid #ff6b00', fontSize: 11, fontWeight: 800 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            {viewMode === 'merchant' && (merchantState.storeName || userData?.storeName || userData?.commerceName) ? (
-              <span style={{ color: '#ff6b00', fontWeight: 900, letterSpacing: '0.5px' }}>{`🏪 ${(merchantState.storeName || userData?.storeName || userData?.commerceName).toUpperCase()}`}</span>
-            ) : (
-              <img src="/brand/logo-texto-blanco.png" alt="Pedidos Listo" style={{ height: 20, width: 'auto', display: 'block' }} />
-            )}
-          </div>
-          <div style={{ display: 'flex', gap: 8 }}>
-            <button 
-              onClick={() => handleSetViewMode('client')} 
-              style={{ 
-                background: viewMode === 'client' ? '#ff6b00' : 'rgba(255,255,255,0.12)', 
-                color: 'white', 
-                border: viewMode === 'client' ? '1px solid #ff8533' : '1px solid rgba(255,255,255,0.2)', 
-                padding: '6px 14px', 
-                borderRadius: 20, 
-                fontSize: 11, 
-                fontWeight: 900, 
-                cursor: 'pointer',
-                boxShadow: viewMode === 'client' ? '0 4px 12px rgba(255,107,0,0.4)' : 'none'
-              }}
-            >
-              📱 App Cliente
-            </button>
-            <button 
-              onClick={openMerchantWithIntro} 
-              style={{ 
-                background: viewMode === 'merchant' ? '#ff6b00' : 'rgba(255,255,255,0.12)', 
-                color: 'white', 
-                border: viewMode === 'merchant' ? '1px solid #ff8533' : '1px solid rgba(255,255,255,0.2)', 
-                padding: '6px 14px', 
-                borderRadius: 20, 
-                fontSize: 11, 
-                fontWeight: 900, 
-                cursor: 'pointer',
-                boxShadow: viewMode === 'merchant' ? '0 4px 12px rgba(255,107,0,0.4)' : 'none'
-              }}
-            >
-              🏪 Mi Comercio Partner
-            </button>
-          </div>
-        </div>
-      )}
+
 
 
       {/* =========================================================================
@@ -2477,99 +2491,116 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
          ========================================================================= */}
       {viewMode === 'client' && (
         <>
-          {/* Header */}
-          <header className="py-app-header" style={{ background: 'linear-gradient(135deg, #121829 0%, #0a0e1a 100%)', borderBottom: '3px solid #ff6b00', padding: '16px 16px 18px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-              <div 
-                className="cinta-pedidos-listo-wrapper"
+          {/* Header — Mamey: solo botón inicio, dirección, notificaciones y carrito */}
+          <header className="py-app-header" style={{
+            background: 'linear-gradient(135deg, #FF6B00 0%, #EA580C 60%, #C2410C 100%)',
+            borderBottom: '2px solid rgba(255,255,255,0.2)',
+            padding: '12px 16px',
+            boxShadow: '0 4px 18px rgba(255,107,0,0.4)'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+
+              {/* ← Botón regresar a página principal */}
+              <button
                 onClick={() => navigate && navigate('home')}
-                style={{ margin: 0, width: 'auto' }}
-                title="Volver a Listo Patrón (Servicios Profesionales)"
+                title="Volver a la página principal"
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 6,
+                  background: 'rgba(255,255,255,0.18)',
+                  border: '1.5px solid rgba(255,255,255,0.35)',
+                  borderRadius: 14,
+                  padding: '7px 13px',
+                  color: '#fff',
+                  fontWeight: 900,
+                  fontSize: 13,
+                  cursor: 'pointer',
+                  flexShrink: 0,
+                  backdropFilter: 'blur(8px)',
+                  WebkitBackdropFilter: 'blur(8px)'
+                }}
               >
-                <div className="cinta-pedidos-listo" style={{ padding: '6px 14px', background: 'linear-gradient(135deg, #2563eb 0%, #3b82f6 40%, #1d4ed8 100%)', borderColor: 'rgba(255,255,255,0.7)', boxShadow: '0 4px 14px rgba(37,99,235,0.45)' }}>
-                  <span className="sparkle-left">✨</span>
-                  <span className="cinta-icon">🤝</span>
-                  <div className="cinta-text-container">
-                    <span className="cinta-text" style={{ fontSize: 13 }}>LISTO PATRÓN</span>
-                    <span className="cinta-subtext">SERVICIOS</span>
-                  </div>
-                  <span className="cinta-icon">🛠️</span>
-                  <span className="sparkle-right">✨</span>
-                  <div className="cinta-shine"></div>
-                </div>
-              </div>
+                ←
+              </button>
 
-              <div style={{ fontSize: '11px', fontWeight: 900, color: '#ff6b00', background: 'rgba(255,107,0,0.15)', padding: '4px 12px', borderRadius: '16px', border: '1px solid rgba(255,107,0,0.4)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                🛵 PEDIDOS LISTO & MÁNDAME
-              </div>
-            </div>
-
-            <div className="py-top-row" style={{ marginBottom: 12 }}>
-              <div className="py-address-pill" onClick={() => setIsAddressModalOpen(true)}>
-                <span style={{ maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>📍 {deliveryAddress}</span>
-                <span style={{ fontSize: 10 }}>▼</span>
-              </div>
-              <div className="py-top-actions">
-                <div className="py-header-icon" onClick={() => showToast('Notificaciones')}>🔔</div>
-                <div className="py-header-icon" style={{ position: 'relative' }} onClick={() => setIsCartModalOpen(true)}>
-                  🛒
-                  {totalCartItems > 0 && (
-                    <span style={{
-                      position: 'absolute', top: -4, right: -4, background: '#ef4444', color: 'white',
-                      borderRadius: '50%', width: 20, height: 20, fontSize: 10, fontWeight: 900,
-                      display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid white'
-                    }}>
-                      {totalCartItems}
-                    </span>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* BARRA DE SUB-NAVEGACIÓN DE PÍLDORAS DESLIZABLES */}
-            <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 4, scrollbarWidth: 'none' }}>
-              <button 
-                onClick={() => setActiveTab('inicio')}
-                style={{ background: activeTab === 'inicio' ? '#ff6b00' : 'rgba(255,255,255,0.08)', color: 'white', border: activeTab === 'inicio' ? '1px solid #ff8533' : '1px solid rgba(255,255,255,0.15)', padding: '6px 14px', borderRadius: 20, fontSize: 12, fontWeight: 900, whiteSpace: 'nowrap', cursor: 'pointer', boxShadow: activeTab === 'inicio' ? '0 4px 14px rgba(255,107,0,0.4)' : 'none' }}
-              >
-                🏠 Inicio
-              </button>
-              <button 
-                onClick={() => setActiveTab('mercado')}
-                style={{ background: activeTab === 'mercado' ? '#ff6b00' : 'rgba(255,255,255,0.08)', color: 'white', border: activeTab === 'mercado' ? '1px solid #ff8533' : '1px solid rgba(255,255,255,0.15)', padding: '6px 14px', borderRadius: 20, fontSize: 12, fontWeight: 900, whiteSpace: 'nowrap', cursor: 'pointer', boxShadow: activeTab === 'mercado' ? '0 4px 14px rgba(255,107,0,0.4)' : 'none' }}
-              >
-                🛍️ Mercado & Súper
-              </button>
-              <button 
-                onClick={() => setActiveTab('promociones')}
-                style={{ background: activeTab === 'promociones' ? '#ff6b00' : 'rgba(255,255,255,0.08)', color: 'white', border: activeTab === 'promociones' ? '1px solid #ff8533' : '1px solid rgba(255,255,255,0.15)', padding: '6px 14px', borderRadius: 20, fontSize: 12, fontWeight: 900, whiteSpace: 'nowrap', cursor: 'pointer', boxShadow: activeTab === 'promociones' ? '0 4px 14px rgba(255,107,0,0.4)' : 'none' }}
-              >
-                🔥 Promos & Fuego
-              </button>
-              <button 
-                onClick={() => setActiveTab('buscar')}
-                style={{ background: activeTab === 'buscar' ? '#ff6b00' : 'rgba(255,255,255,0.08)', color: 'white', border: activeTab === 'buscar' ? '1px solid #ff8533' : '1px solid rgba(255,255,255,0.15)', padding: '6px 14px', borderRadius: 20, fontSize: 12, fontWeight: 900, whiteSpace: 'nowrap', cursor: 'pointer', boxShadow: activeTab === 'buscar' ? '0 4px 14px rgba(255,107,0,0.4)' : 'none' }}
-              >
-                🔍 Buscar Productos
-              </button>
-              <button 
+              {/* 📍 Dirección (ocupa todo el espacio central) */}
+              <div
                 onClick={() => setIsAddressModalOpen(true)}
-                style={{ background: 'linear-gradient(135deg, #a855f7, #7c3aed)', color: 'white', border: 'none', padding: '6px 14px', borderRadius: 20, fontSize: 12, fontWeight: 900, whiteSpace: 'nowrap', cursor: 'pointer', boxShadow: '0 4px 14px rgba(168,85,247,0.4)' }}
+                style={{
+                  flex: 1,
+                  display: 'flex', alignItems: 'center', gap: 6,
+                  background: 'rgba(255,255,255,0.18)',
+                  border: '1.5px solid rgba(255,255,255,0.35)',
+                  borderRadius: 14,
+                  padding: '7px 12px',
+                  cursor: 'pointer',
+                  backdropFilter: 'blur(8px)',
+                  WebkitBackdropFilter: 'blur(8px)',
+                  overflow: 'hidden'
+                }}
               >
-                🛵 Motor Mándame Express
-              </button>
-              <button 
-                onClick={() => setActiveTab('pedidos')}
-                style={{ background: activeTab === 'pedidos' ? '#ff6b00' : 'rgba(255,255,255,0.08)', color: 'white', border: activeTab === 'pedidos' ? '1px solid #ff8533' : '1px solid rgba(255,255,255,0.15)', padding: '6px 14px', borderRadius: 20, fontSize: 12, fontWeight: 900, whiteSpace: 'nowrap', cursor: 'pointer', boxShadow: activeTab === 'pedidos' ? '0 4px 14px rgba(255,107,0,0.4)' : 'none' }}
+                <span style={{ fontSize: 15, flexShrink: 0 }}>📍</span>
+                <span style={{
+                  color: '#fff', fontWeight: 700, fontSize: 12.5,
+                  whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', flex: 1
+                }}>
+                  {deliveryAddress}
+                </span>
+                <span style={{ color: 'rgba(255,255,255,0.8)', fontSize: 10, flexShrink: 0 }}>▼</span>
+              </div>
+
+              {/* 🔔 Notificaciones */}
+              <button
+                onClick={() => showToast('🔔 Notificaciones')}
+                title="Notificaciones"
+                style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  background: 'rgba(255,255,255,0.18)',
+                  border: '1.5px solid rgba(255,255,255,0.35)',
+                  borderRadius: 14,
+                  width: 42, height: 42,
+                  fontSize: 18,
+                  cursor: 'pointer',
+                  flexShrink: 0,
+                  backdropFilter: 'blur(8px)',
+                  WebkitBackdropFilter: 'blur(8px)'
+                }}
               >
-                📄 Mis Comandas
+                🔔
               </button>
-              <button 
-                onClick={() => handleSetViewMode('merchant')}
-                style={{ background: 'linear-gradient(135deg, #10b981, #059669)', color: 'white', border: 'none', padding: '6px 14px', borderRadius: 20, fontSize: 12, fontWeight: 900, whiteSpace: 'nowrap', cursor: 'pointer', boxShadow: '0 4px 14px rgba(16,185,129,0.4)' }}
+
+              {/* 🛒 Carrito */}
+              <button
+                onClick={() => setIsCartModalOpen(true)}
+                title="Ver carrito"
+                style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  background: 'rgba(255,255,255,0.18)',
+                  border: '1.5px solid rgba(255,255,255,0.35)',
+                  borderRadius: 14,
+                  width: 42, height: 42,
+                  fontSize: 18,
+                  cursor: 'pointer',
+                  flexShrink: 0,
+                  position: 'relative',
+                  backdropFilter: 'blur(8px)',
+                  WebkitBackdropFilter: 'blur(8px)'
+                }}
               >
-                🔔 Comandera Cocina & POS
+                🛒
+                {totalCartItems > 0 && (
+                  <span style={{
+                    position: 'absolute', top: -5, right: -5,
+                    background: '#fff', color: '#FF6B00',
+                    borderRadius: '50%', width: 19, height: 19,
+                    fontSize: 10, fontWeight: 900,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    border: '2px solid #FF6B00'
+                  }}>
+                    {totalCartItems}
+                  </span>
+                )}
               </button>
+
             </div>
           </header>
 
@@ -3278,6 +3309,29 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                       </button>
                     </div>
 
+                    {/* 0. Categorías del Mercado relacionadas con la búsqueda */}
+                    {searchMatchedTypes.length > 0 && (
+                      <div style={{ marginBottom: 18 }}>
+                        <div style={{ fontWeight: 900, fontSize: 13, color: '#7c3aed', textTransform: 'uppercase', marginBottom: 10 }}>
+                          🛍️ Categorías en Mercado ({searchMatchedTypes.length})
+                        </div>
+                        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                          {searchMatchedTypes.map(t => {
+                            const count = allPlatformProducts.filter(p => getProdType(p) === t).length;
+                            return (
+                              <button
+                                key={t}
+                                onClick={() => { setMercadoType(t); setMercadoSub('all'); setMercadoQuery(''); setActiveTab('mercado'); window.dispatchEvent(new CustomEvent('mandame-switch-tab', { detail: 'mercado' })); }}
+                                style={{ padding: '8px 12px', borderRadius: 14, border: '1.5px solid #ddd6fe', background: 'linear-gradient(135deg, #f5f3ff, #ffffff)', color: '#4c1d95', fontWeight: 800, fontSize: 12, cursor: 'pointer', boxShadow: '0 2px 8px rgba(124,58,237,0.08)' }}
+                              >
+                                {BUSINESS_TYPES[t].label} <span style={{ opacity: 0.7 }}>({count})</span> →
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
                     {/* 1. Platillos Coincidentes */}
                     {searchMatchedProducts.length > 0 && (
                       <div style={{ marginBottom: 20 }}>
@@ -3286,7 +3340,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                         </div>
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 10 }}>
                           {searchMatchedProducts.map(prod => (
-                            <div key={prod.id} onClick={() => { setCustomizeModalImgIndex(0); setCustomizeProduct(prod); }} style={{ cursor: 'pointer', background: 'white', borderRadius: 16, padding: 10, boxShadow: '0 4px 14px rgba(0,0,0,0.06)', border: '1.5px solid #fed7aa', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                            <div key={prod.id} onClick={() => { openCustomizeModal(prod); }} style={{ cursor: 'pointer', background: 'white', borderRadius: 16, padding: 10, boxShadow: '0 4px 14px rgba(0,0,0,0.06)', border: '1.5px solid #fed7aa', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                               <div style={{ position: 'relative' }}>
                                 <img src={prod.image} alt={prod.name} style={{ width: '100%', height: 95, objectFit: 'cover', borderRadius: 12, marginBottom: 8 }} />
                                 {prod.storeName && (
@@ -3305,7 +3359,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                                 <div style={{ fontWeight: 900, color: '#ff6b00', fontSize: 14 }}>RD$ {prod.price}</div>
                               </div>
                               <button 
-                                onClick={(e) => { e.stopPropagation(); setCustomizeModalImgIndex(0); setCustomizeProduct(prod); }}
+                                onClick={(e) => { e.stopPropagation(); openCustomizeModal(prod); }}
                                 style={{ width: '100%', marginTop: 8, background: 'linear-gradient(135deg, #ff6b00, #e65100)', color: 'white', border: 'none', padding: '7px 0', borderRadius: 10, fontWeight: 900, fontSize: 11.5, cursor: 'pointer', boxShadow: '0 3px 8px rgba(255,107,0,0.3)' }}
                               >
                                 + Agregar
@@ -3375,7 +3429,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                       </div>
                       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 10 }}>
                         {allPlatformProducts.map(prod => (
-                          <div key={prod.id} onClick={() => { setCustomizeModalImgIndex(0); setCustomizeProduct(prod); }} style={{ cursor: 'pointer', background: 'white', borderRadius: 16, padding: 10, boxShadow: '0 4px 14px rgba(0,0,0,0.06)', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                          <div key={prod.id} onClick={() => { openCustomizeModal(prod); }} style={{ cursor: 'pointer', background: 'white', borderRadius: 16, padding: 10, boxShadow: '0 4px 14px rgba(0,0,0,0.06)', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                             <div style={{ position: 'relative' }}>
                               <img src={prod.image} alt={prod.name} style={{ width: '100%', height: 95, objectFit: 'cover', borderRadius: 12, marginBottom: 8 }} />
                               {prod.storeName && (
@@ -3389,7 +3443,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                               <div style={{ fontWeight: 900, color: '#ff6b00', fontSize: 14 }}>RD$ {prod.price}</div>
                             </div>
                             <button 
-                              onClick={(e) => { e.stopPropagation(); setCustomizeModalImgIndex(0); setCustomizeProduct(prod); }}
+                              onClick={(e) => { e.stopPropagation(); openCustomizeModal(prod); }}
                               style={{ width: '100%', marginTop: 8, background: '#ff6b00', color: 'white', border: 'none', padding: '6px 0', borderRadius: 10, fontWeight: 900, fontSize: 11, cursor: 'pointer' }}
                             >
                               + Agregar
@@ -3441,7 +3495,191 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                   <p style={{ margin: 0, fontSize: 12, opacity: 0.95 }}>Supermercados, víveres frescos criollos, farmacias y licorerías de Santiago directo a tu puerta.</p>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 }}>
+                {(() => {
+                  const mq = normStr(mercadoQuery);
+                  const typeEntries = Object.entries(BUSINESS_TYPES).filter(([k]) => k !== 'restaurante');
+                  const prodsOfType = (t) => allPlatformProducts.filter(p => getProdType(p) === t && p.inStock !== false);
+                  const renderProd = (prod) => {
+                    const t = getProdType(prod);
+                    const rp = prod.rentalPrices && Object.values(prod.rentalPrices).filter(v => v > 0);
+                    return (
+                      <div key={prod.id} onClick={() => { openCustomizeModal(prod); }} style={{ cursor: 'pointer', background: 'white', borderRadius: 16, padding: 10, boxShadow: '0 4px 14px rgba(0,0,0,0.06)', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                        <div style={{ position: 'relative' }}>
+                          <img src={prod.image} alt={prod.name} style={{ width: '100%', height: 95, objectFit: 'cover', borderRadius: 12, marginBottom: 8 }} />
+                          {prod.storeName && (
+                            <span style={{ position: 'absolute', bottom: 12, left: 4, background: 'rgba(0,0,0,0.75)', color: '#fff', fontSize: '9px', fontWeight: 800, padding: '2px 6px', borderRadius: 6 }}>🏪 {prod.storeName}</span>
+                          )}
+                        </div>
+                        <div>
+                          <div style={{ fontSize: 9.5, fontWeight: 800, color: '#7c3aed', marginBottom: 2 }}>{getCategoryLabel(t, prod.category) || BUSINESS_TYPES[t]?.label}</div>
+                          <div style={{ fontWeight: 800, fontSize: 12.5, color: '#1e293b', marginBottom: 4, lineHeight: 1.2 }}>{prod.name}</div>
+                          <div style={{ fontWeight: 900, color: '#ff6b00', fontSize: 14 }}>
+                            {rp && rp.length > 0 ? `Desde RD$ ${Math.min(...rp)}` : `RD$ ${prod.price}`}
+                          </div>
+                        </div>
+                        <button onClick={(e) => { e.stopPropagation(); openCustomizeModal(prod); }} style={{ width: '100%', marginTop: 8, background: '#ff6b00', color: 'white', border: 'none', padding: '6px 0', borderRadius: 10, fontWeight: 900, fontSize: 11, cursor: 'pointer' }}>
+                          {BUSINESS_TYPES[t]?.rental ? 'Ver Alquiler' : '+ Agregar'}
+                        </button>
+                      </div>
+                    );
+                  };
+
+                  // ── Vista de una categoría concreta ──
+                  if (mercadoType && BUSINESS_TYPES[mercadoType]) {
+                    const cfg = BUSINESS_TYPES[mercadoType];
+                    const list = prodsOfType(mercadoType).filter(p =>
+                      (mercadoSub === 'all' || p.category === mercadoSub) &&
+                      (!mq || normStr(p.name).includes(mq) || normStr(p.description).includes(mq) || normStr(p.storeName).includes(mq))
+                    );
+                    return (
+                      <div>
+                        <button onClick={() => { setMercadoType(null); setMercadoSub('all'); }} style={{ background: 'none', border: 'none', color: '#ff6b00', fontWeight: 900, fontSize: 13, cursor: 'pointer', marginBottom: 8, padding: 0 }}>← Todas las categorías</button>
+                        <div style={{ fontWeight: 900, fontSize: 17, color: '#1e293b', marginBottom: 10 }}>{cfg.label}</div>
+                        <input type="text" value={mercadoQuery} onChange={e => setMercadoQuery(e.target.value)} placeholder={`Buscar en ${cfg.label.replace(/^\S+\s/, '')}...`} style={{ width: '100%', boxSizing: 'border-box', padding: '10px 14px', borderRadius: 14, border: '2px solid #ff6b00', marginBottom: 10, fontSize: 13, outline: 'none' }} />
+                        <div style={{ display: 'flex', gap: 8, overflowX: 'auto', scrollbarWidth: 'none', marginBottom: 14, paddingBottom: 4 }}>
+                          {[['all', '🔥 Todo'], ...cfg.categories].map(([k, lbl]) => (
+                            <button key={k} onClick={() => setMercadoSub(k)} style={{ padding: '6px 12px', borderRadius: 20, whiteSpace: 'nowrap', fontWeight: 800, fontSize: 12, cursor: 'pointer', border: mercadoSub === k ? '2px solid #ff6b00' : '1px solid #e2e8f0', background: mercadoSub === k ? '#ff6b00' : '#fff', color: mercadoSub === k ? '#fff' : '#475569' }}>{lbl}</button>
+                          ))}
+                        </div>
+                        {list.length > 0 ? (
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 10 }}>{list.map(renderProd)}</div>
+                        ) : (
+                          <div style={{ textAlign: 'center', padding: '32px 16px', background: '#f8fafc', borderRadius: 20, border: '1.5px dashed #cbd5e1' }}>
+                            <div style={{ fontSize: 36, marginBottom: 8 }}>🛍️</div>
+                            <div style={{ fontWeight: 800, fontSize: 15, color: '#334155' }}>Aún no hay productos aquí</div>
+                            <div style={{ fontSize: 12, color: '#64748b', marginTop: 4 }}>Cuando un comercio de esta categoría publique algo, aparecerá aquí al instante.</div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  }
+
+                  // ── Vista general: todas las categorías ──
+                  const globalHits = mq ? allPlatformProducts.filter(p => getProdType(p) !== 'restaurante' && (normStr(p.name).includes(mq) || normStr(p.description).includes(mq) || prodMetaText(p).includes(mq))) : [];
+                  const typeHits = mq ? findBusinessTypesForQuery(mercadoQuery) : null;
+                  return (
+                    <div>
+                      <input type="text" value={mercadoQuery} onChange={e => setMercadoQuery(e.target.value)} placeholder="Buscar en Mercado: farmacia, taladro, ropa, celular..." style={{ width: '100%', boxSizing: 'border-box', padding: '10px 14px', borderRadius: 14, border: '2px solid #ff6b00', marginBottom: 14, fontSize: 13, outline: 'none' }} />
+                      {/* Mapa de SVG profesionales por categoría */}
+                      {(() => {
+                        const CATICONS = {
+                          supermercado: (
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ff6b00" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4H6z" fill="rgba(255,107,0,0.12)" stroke="#ff6b00"/>
+                              <line x1="3" y1="6" x2="21" y2="6"/>
+                              <path d="M16 10a4 4 0 01-8 0"/>
+                            </svg>
+                          ),
+                          belleza: (
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ff6b00" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M12 2C8 2 5 5 5 9c0 5 7 13 7 13s7-8 7-13c0-4-3-7-7-7z" fill="rgba(255,107,0,0.12)" stroke="#ff6b00"/>
+                              <circle cx="12" cy="9" r="2.5" fill="#ff6b00"/>
+                            </svg>
+                          ),
+                          electronica: (
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ff6b00" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                              <rect x="5" y="2" width="14" height="20" rx="2" fill="rgba(255,107,0,0.12)" stroke="#ff6b00"/>
+                              <line x1="12" y1="18" x2="12" y2="18" strokeWidth="2.5" strokeLinecap="round"/>
+                              <rect x="8" y="6" width="8" height="7" rx="1" fill="rgba(255,107,0,0.25)"/>
+                            </svg>
+                          ),
+                          mascotas: (
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ff6b00" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                              <circle cx="7" cy="7" r="2" fill="#ff6b00"/>
+                              <circle cx="17" cy="7" r="2" fill="#ff6b00"/>
+                              <circle cx="4" cy="13" r="2" fill="rgba(255,107,0,0.5)"/>
+                              <circle cx="20" cy="13" r="2" fill="rgba(255,107,0,0.5)"/>
+                              <path d="M12 22c-4 0-8-3-8-7 0-2 2-4 4-4h8c2 0 4 2 4 4 0 4-4 7-8 7z" fill="rgba(255,107,0,0.12)" stroke="#ff6b00"/>
+                            </svg>
+                          ),
+                          hogar: (
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ff6b00" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" fill="rgba(255,107,0,0.12)" stroke="#ff6b00"/>
+                              <polyline points="9 22 9 12 15 12 15 22"/>
+                            </svg>
+                          ),
+                          papeleria: (
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ff6b00" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M4 19.5A2.5 2.5 0 016.5 17H20" stroke="#ff6b00"/>
+                              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z" fill="rgba(255,107,0,0.12)" stroke="#ff6b00"/>
+                              <line x1="9" y1="7" x2="15" y2="7"/>
+                              <line x1="9" y1="11" x2="15" y2="11"/>
+                            </svg>
+                          ),
+                          repuestos: (
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ff6b00" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                              <circle cx="12" cy="12" r="3" fill="#ff6b00"/>
+                              <path d="M19.07 4.93l-1.41 1.41M4.93 4.93l1.41 1.41M12 2v2M12 20v2M2 12h2M20 12h2M5.64 18.36l1.41-1.41M18.36 18.36l-1.41-1.41" stroke="#ff6b00"/>
+                              <circle cx="12" cy="12" r="7" fill="rgba(255,107,0,0.08)" stroke="#ff6b00"/>
+                            </svg>
+                          ),
+                          alquiler_eventos: (
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ff6b00" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6L12 2z" fill="rgba(255,107,0,0.12)" stroke="#ff6b00"/>
+                            </svg>
+                          ),
+                          ropa: (
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ff6b00" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M20.38 3.46L16 2a4 4 0 01-8 0L3.62 3.46a2 2 0 00-1.34 2.23l.58 3.57a1 1 0 00.99.84H6v10a2 2 0 002 2h8a2 2 0 002-2V10h2.15a1 1 0 00.99-.84l.58-3.57a2 2 0 00-1.34-2.23z" fill="rgba(255,107,0,0.12)" stroke="#ff6b00"/>
+                            </svg>
+                          ),
+                          herramientas: (
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ff6b00" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z" fill="rgba(255,107,0,0.12)" stroke="#ff6b00"/>
+                            </svg>
+                          ),
+                          ferreteria: (
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ff6b00" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z" fill="rgba(255,107,0,0.12)" stroke="#ff6b00"/>
+                              <path d="M13 13l6 6"/>
+                            </svg>
+                          ),
+                          farmacia: (
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ff6b00" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                              <rect x="3" y="3" width="18" height="18" rx="4" fill="rgba(255,107,0,0.12)" stroke="#ff6b00"/>
+                              <line x1="12" y1="8" x2="12" y2="16"/>
+                              <line x1="8" y1="12" x2="16" y2="12"/>
+                            </svg>
+                          ),
+                        };
+                        return (
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 18 }}>
+                            {typeEntries.filter(([k]) => !typeHits || typeHits.includes(k)).map(([k, cfg]) => {
+                              const count = prodsOfType(k).length;
+                              const [, ...rest] = cfg.label.split(' ');
+                              const icon = CATICONS[k] || (
+                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ff6b00" strokeWidth="1.8"><circle cx="12" cy="12" r="9" fill="rgba(255,107,0,0.12)"/><path d="M12 8v4l3 3"/></svg>
+                              );
+                              return (
+                                <div
+                                  key={k}
+                                  onClick={() => { setMercadoType(k); setMercadoSub('all'); setMercadoQuery(''); }}
+                                  style={{ background: 'white', padding: '16px 12px', borderRadius: 20, border: '1.5px solid #ffe8d6', textAlign: 'center', cursor: 'pointer', boxShadow: '0 4px 16px rgba(255,107,0,0.07)', transition: 'all .2s', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}
+                                  onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(255,107,0,0.18)'; e.currentTarget.style.borderColor = '#ff6b00'; }}
+                                  onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 4px 16px rgba(255,107,0,0.07)'; e.currentTarget.style.borderColor = '#ffe8d6'; }}
+                                >
+                                  <div style={{ width: 56, height: 56, borderRadius: 16, background: 'linear-gradient(135deg, #fff7ed, #ffedd5)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(255,107,0,0.15)' }}>
+                                    {icon}
+                                  </div>
+                                  <div style={{ fontWeight: 900, fontSize: 12.5, color: '#1e293b', lineHeight: 1.3 }}>{rest.join(' ')}</div>
+                                  <div style={{ fontSize: 10.5, color: count ? '#ff6b00' : '#94a3b8', fontWeight: 800, background: count ? 'rgba(255,107,0,0.08)' : '#f1f5f9', padding: '2px 10px', borderRadius: 20 }}>{count} {count === 1 ? 'producto' : 'productos'}</div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        );
+                      })()}
+                      {globalHits.length > 0 && (
+                        <div>
+                          <div style={{ fontWeight: 900, fontSize: 13, color: '#ff6b00', textTransform: 'uppercase', marginBottom: 10 }}>🔎 Productos encontrados ({globalHits.length})</div>
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 10 }}>{globalHits.map(renderProd)}</div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
+
+                <div style={{ display: 'none' }}>
                   <div style={{ background: 'white', padding: 14, borderRadius: 16, border: '1.5px solid #e2e8f0', textAlign: 'center', cursor: 'pointer' }} onClick={() => showToast('🛒 Abriendo Supermercados')}>
                     <img src="assets/grocery_bag_3d.png" style={{ width: 60, height: 60, objectFit: 'contain', margin: '0 auto 6px' }} alt="" />
                     <div style={{ fontWeight: 900, fontSize: 13, color: '#1e293b' }}>Supermercados</div>
@@ -4518,56 +4756,95 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                       <span style={{ fontSize: 10, color: '#64748b', background: 'white', padding: '2px 6px', borderRadius: 4, fontWeight: 700 }}>Personalización Cliente</span>
                     </div>
 
-                    {/* 1. Guarniciones */}
-                    <div style={{ marginBottom: 12 }}>
-                      <label style={{ fontSize: 11, fontWeight: 700, color: '#0f172a', display: 'block', marginBottom: 4 }}>🍟 Guarniciones & Acompañantes Disponibles (Pedidos Listo)</label>
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 6 }}>
-                        {[
-                          '🍌 Tostones Crujientes',
-                          '🍟 Papas Fritas',
-                          '🧄 Mofonguito de Ajo',
-                          '🥑 Yuquita al Moho',
-                          '🧀 Queso Frito Geo',
-                          '🥓 Chicharrón Crocante',
-                          '🍌 Maduritos Fritos',
-                          '🍚 Arroz Blanco Criollo',
-                          '🫘 Habichuelas Guisadas',
-                          '🥑 Aguacate en Lajas',
-                          '🥗 Ensalada Rusa',
-                          '🥔 Puré de Papa al Ajo',
-                          '🍌 Mangú con Cebollita',
-                          '🌽 Arepitas de Maíz'
-                        ].map(val => (
-                          <label key={val} style={{ fontSize: 11, background: 'white', padding: '6px 10px', borderRadius: 8, border: '1px solid #cbd5e1', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
-                            <input type="checkbox" checked={selectedGuarniciones.includes(val)} onChange={() => handleToggleGuarnicion(val)} /> {val}
-                          </label>
-                        ))}
+                    {/* Helper renderer reutilizable para las 3 secciones */}
+                    {[{
+                      icon: '🍟', title: 'Guarniciones & Acompañantes', hint: 'Precio 0 = incluido en el platillo',
+                      items: guarnicionItems, setItems: setGuarnicionItems,
+                      defaultName: '🍴 Nueva guarnición'
+                    }, {
+                      icon: '🥤', title: 'Bebidas a Elegir por el Cliente', hint: 'Precio 0 = incluida',
+                      items: bebidaItems, setItems: setBebidaItems,
+                      defaultName: '🥤 Nueva bebida'
+                    }, {
+                      icon: '🌟', title: 'Extras & Salsas Especiales', hint: 'Precio adicional que paga el cliente',
+                      items: extraItems, setItems: setExtraItems,
+                      defaultName: '✨ Nuevo extra'
+                    }].map(({ icon, title, hint, items, setItems, defaultName }) => (
+                      <div key={title} style={{ marginBottom: 14 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                          <label style={{ fontSize: 11, fontWeight: 800, color: '#0f172a' }}>{icon} {title}</label>
+                          <span style={{ fontSize: 9.5, color: '#94a3b8', fontWeight: 700 }}>{hint}</span>
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                          {items.map(item => (
+                            <div key={item.id} style={{
+                              display: 'grid', gridTemplateColumns: '20px 1fr 90px 28px',
+                              gap: 6, alignItems: 'center',
+                              background: item.enabled ? '#fff7ed' : 'white',
+                              border: item.enabled ? '1.5px solid #fdba74' : '1px solid #e2e8f0',
+                              borderRadius: 10, padding: '5px 8px', transition: 'all .15s'
+                            }}>
+                              {/* Checkbox activar */}
+                              <input
+                                type="checkbox"
+                                checked={item.enabled}
+                                onChange={() => setItems(prev => prev.map(x => x.id === item.id ? { ...x, enabled: !x.enabled } : x))}
+                                style={{ accentColor: '#ff6b00', width: 14, height: 14, cursor: 'pointer' }}
+                              />
+                              {/* Nombre editable */}
+                              <input
+                                type="text"
+                                value={item.name}
+                                onChange={e => setItems(prev => prev.map(x => x.id === item.id ? { ...x, name: e.target.value } : x))}
+                                style={{
+                                  border: 'none', background: 'transparent', fontSize: 11.5,
+                                  fontWeight: item.enabled ? 800 : 600,
+                                  color: item.enabled ? '#1e293b' : '#64748b',
+                                  outline: 'none', width: '100%', minWidth: 0
+                                }}
+                              />
+                              {/* Precio */}
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                <span style={{ fontSize: 9.5, color: '#94a3b8', fontWeight: 700, whiteSpace: 'nowrap' }}>RD$</span>
+                                <input
+                                  type="number"
+                                  min="0"
+                                  value={item.price}
+                                  onChange={e => setItems(prev => prev.map(x => x.id === item.id ? { ...x, price: Number(e.target.value) || 0 } : x))}
+                                  style={{
+                                    width: '100%', border: '1px solid #e2e8f0', borderRadius: 6,
+                                    padding: '3px 5px', fontSize: 11.5, fontWeight: 800,
+                                    color: item.price > 0 ? '#ff6b00' : '#94a3b8',
+                                    background: item.price > 0 ? '#fff3e6' : '#f8fafc',
+                                    outline: 'none', textAlign: 'right'
+                                  }}
+                                />
+                              </div>
+                              {/* Eliminar */}
+                              <button
+                                type="button"
+                                onClick={() => setItems(prev => prev.filter(x => x.id !== item.id))}
+                                style={{ background: 'none', border: 'none', color: '#cbd5e1', fontSize: 14, cursor: 'pointer', fontWeight: 900, lineHeight: 1, padding: 0 }}
+                                title="Eliminar"
+                              >×</button>
+                            </div>
+                          ))}
+                          {/* Agregar nuevo ítem */}
+                          <button
+                            type="button"
+                            onClick={() => setItems(prev => [...prev, { id: 'custom-' + Date.now(), name: defaultName, price: 0, enabled: true }])}
+                            style={{
+                              marginTop: 2, padding: '6px 10px', borderRadius: 10,
+                              border: '1.5px dashed #ff6b00', background: 'transparent',
+                              color: '#ff6b00', fontSize: 11.5, fontWeight: 900, cursor: 'pointer',
+                              display: 'flex', alignItems: 'center', gap: 5, justifyContent: 'center'
+                            }}
+                          >
+                            + Agregar {icon}
+                          </button>
+                        </div>
                       </div>
-                    </div>
-
-                    {/* 2. Bebidas */}
-                    <div style={{ marginBottom: 12 }}>
-                      <label style={{ fontSize: 11, fontWeight: 700, color: '#0f172a', display: 'block', marginBottom: 4 }}>🥤 Bebidas a Elegir por el Cliente</label>
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 6 }}>
-                        {['Coca Cola 2L', 'Jugo Chinola', 'Cerveza Presidente', 'Agua Mineral'].map(val => (
-                          <label key={val} style={{ fontSize: 11, background: 'white', padding: '6px 10px', borderRadius: 8, border: '1px solid #cbd5e1', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
-                            <input type="checkbox" checked={selectedBebidas.includes(val)} onChange={() => handleToggleBebida(val)} /> {val}
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* 3. Extras */}
-                    <div>
-                      <label style={{ fontSize: 11, fontWeight: 700, color: '#0f172a', display: 'block', marginBottom: 4 }}>🥓 Extras & Salsas Especiales</label>
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 6 }}>
-                        {['Chicharrón Extra (+120)', 'Queso Frito (+80)', 'Salsa Ajo (+35)', 'Aguacate Fresco (+60)'].map(val => (
-                          <label key={val} style={{ fontSize: 11, background: 'white', padding: '6px 10px', borderRadius: 8, border: '1px solid #cbd5e1', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
-                            <input type="checkbox" checked={selectedExtras.includes(val)} onChange={() => handleToggleExtra(val)} /> {val}
-                          </label>
-                        ))}
-                      </div>
-                    </div>
+                    ))}
                   </div>
                   )}
 
@@ -5129,13 +5406,28 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                         <div style={{ marginBottom: 12 }}>
                           <div style={{ fontSize: 11, fontWeight: 900, color: '#ff6b00', marginBottom: 6 }}>📜 PLATILLOS A PREPARAR:</div>
                           {(order.items || []).map((item, idx) => (
-                            <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,255,255,0.06)', padding: '8px 10px', borderRadius: 10, marginBottom: 4 }}>
-                              <div>
-                                <span style={{ fontWeight: 900, fontSize: 13, color: '#00e699', marginRight: 6 }}>{item.qty}x</span>
-                                <span style={{ fontWeight: 800, fontSize: 13, color: 'white' }}>{item.name}</span>
-                                {item.details && <div style={{ fontSize: 10, color: '#94a3b8', marginTop: 1 }}>🔹 {item.details}</div>}
+                            <div key={idx} style={{ background: 'rgba(255,255,255,0.06)', padding: '8px 10px', borderRadius: 10, marginBottom: 4 }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                <div>
+                                  <span style={{ fontWeight: 900, fontSize: 13, color: '#00e699', marginRight: 6 }}>{item.qty}x</span>
+                                  <span style={{ fontWeight: 800, fontSize: 13, color: 'white' }}>{item.name}</span>
+                                </div>
+                                <div style={{ fontWeight: 900, fontSize: 12, color: 'white', flexShrink: 0, marginLeft: 8 }}>RD$ {item.price * item.qty}</div>
                               </div>
-                              <div style={{ fontWeight: 900, fontSize: 12, color: 'white' }}>RD$ {item.price * item.qty}</div>
+                              {/* Personalización del cliente */}
+                              {item.selectedGuarniciones?.length > 0 && (
+                                <div style={{ fontSize: 10.5, color: '#4ade80', fontWeight: 800, marginTop: 3 }}>🍟 Guarnición: {item.selectedGuarniciones.join(', ')}</div>
+                              )}
+                              {item.selectedBebidas?.length > 0 && (
+                                <div style={{ fontSize: 10.5, color: '#38bdf8', fontWeight: 800, marginTop: 2 }}>🥤 Bebida: {item.selectedBebidas.join(', ')}</div>
+                              )}
+                              {item.selectedExtras?.length > 0 && (
+                                <div style={{ fontSize: 10.5, color: '#fdba74', fontWeight: 800, marginTop: 2 }}>✨ Extras: {item.selectedExtras.join(', ')}</div>
+                              )}
+                              {item.clientNote && (
+                                <div style={{ fontSize: 10.5, color: '#fbbf24', fontWeight: 800, marginTop: 2, background: 'rgba(251,191,36,0.1)', borderRadius: 6, padding: '2px 6px', display: 'inline-block' }}>📝 Nota: "{item.clientNote}"</div>
+                              )}
+                              {item.details && <div style={{ fontSize: 10, color: '#94a3b8', marginTop: 1 }}>🔹 {item.details}</div>}
                             </div>
                           ))}
                         </div>
@@ -6228,9 +6520,103 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                 {customizeProduct.minOrderQty > 1 && <div style={{ fontSize: 11, color: '#9a3412', marginTop: 6, fontWeight: 700 }}>🔢 Pedido mínimo: {customizeProduct.minOrderQty} piezas</div>}
               </div>
             )}
+            {/* ── PERSONALIZACIÓN DEL CLIENTE: guarniciones, bebidas, extras ── */}
+            {(() => {
+              const p = customizeProduct;
+              // Parsear items guardados por el comerciante: "Nombre (+precio)" o solo "Nombre"
+              const parseItems = (arr) => (arr || []).map(str => {
+                const m = str.match(/^(.+?)\s*\(\+(\d+)\)$/);
+                return m ? { name: m[1].trim(), price: Number(m[2]) } : { name: str, price: 0 };
+              });
+              const guarnList = parseItems(p.guarniciones);
+              const bebList   = parseItems(p.bebidas);
+              const extraList = parseItems(p.extras);
+              const hasOptions = guarnList.length > 0 || bebList.length > 0 || extraList.length > 0;
+              if (!hasOptions) return null;
+              return (
+                <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 14, padding: 12, marginBottom: 14 }}>
+                  <div style={{ fontWeight: 900, fontSize: 12, color: '#ff6b00', marginBottom: 10, textTransform: 'uppercase' }}>🎛️ Personaliza tu pedido</div>
+                  {[{ label: '🍟 Guarniciones', list: guarnList, key: 'guarn' },
+                    { label: '🥤 Bebida incluida', list: bebList,   key: 'beb' },
+                    { label: '✨ Extras',          list: extraList, key: 'ext' }
+                  ].filter(s => s.list.length > 0).map(section => (
+                    <div key={section.key} style={{ marginBottom: 10 }}>
+                      <div style={{ fontSize: 11, fontWeight: 800, color: '#334155', marginBottom: 5 }}>{section.label}</div>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                        {section.list.map(item => {
+                          const sel = clientSelections;
+                          const arr = sel[section.key] || [];
+                          const isOn = arr.some(x => x.name === item.name);
+                          return (
+                            <button
+                              key={item.name}
+                              type="button"
+                              onClick={() => setClientSelections(prev => {
+                                const cur = prev[section.key] || [];
+                                const next = isOn ? cur.filter(x => x.name !== item.name) : [...cur, item];
+                                return { ...prev, [section.key]: next };
+                              })}
+                              style={{
+                                padding: '5px 11px', borderRadius: 20, fontSize: 11.5, fontWeight: 800,
+                                cursor: 'pointer', border: isOn ? '1.5px solid #ff6b00' : '1px solid #cbd5e1',
+                                background: isOn ? '#fff3e6' : 'white',
+                                color: isOn ? '#c2410c' : '#64748b',
+                                boxShadow: isOn ? '0 2px 8px rgba(255,107,0,0.15)' : 'none',
+                                transition: 'all .15s'
+                              }}
+                            >
+                              {isOn ? '✓ ' : ''}{item.name}
+                              {item.price > 0 && <span style={{ fontSize: 10, opacity: 0.8 }}> +RD${item.price}</span>}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                  {/* Nota especial */}
+                  <div style={{ marginTop: 6 }}>
+                    <div style={{ fontSize: 11, fontWeight: 800, color: '#334155', marginBottom: 4 }}>📝 Nota especial (opcional)</div>
+                    <textarea
+                      rows={2}
+                      placeholder="Ej: sin cebolla, extra picante, bien cocido..."
+                      value={clientNote}
+                      onChange={e => setClientNote(e.target.value)}
+                      style={{ width: '100%', boxSizing: 'border-box', border: '1px solid #cbd5e1', borderRadius: 10, padding: '7px 10px', fontSize: 12, resize: 'none', outline: 'none', fontFamily: 'inherit' }}
+                    />
+                  </div>
+                </div>
+              );
+            })()}
+
             <div style={{ position: 'sticky', bottom: 0, background: 'white', padding: '10px 0 16px', marginTop: 4, boxShadow: '0 -8px 12px -8px rgba(0,0,0,0.12)' }}>
-              <button className="btn-mamey" style={{ width: '100%', padding: 14 }} onClick={() => handleAddToCartCustom(customizeProduct, 'Tostones Crujientes', 'Coca-Cola 2L')}>
-                🛒 Agregar al Carrito • RD$ {customizeProduct.price}
+              {/* Total en vivo */}
+              {(() => {
+                const extrasTotal = [...(clientSelections.guarn||[]), ...(clientSelections.beb||[]), ...(clientSelections.ext||[])].reduce((s, x) => s + (x.price||0), 0);
+                const total = (customizeProduct.price || 0) + extrasTotal;
+                return (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                    <span style={{ fontSize: 12, color: '#64748b', fontWeight: 700 }}>
+                      {extrasTotal > 0 && <span style={{ color: '#ff6b00' }}>+RD${extrasTotal} extras • </span>}Total:
+                    </span>
+                    <span style={{ fontWeight: 900, fontSize: 18, color: '#ff6b00' }}>RD$ {total.toLocaleString()}</span>
+                  </div>
+                );
+              })()}
+              <button className="btn-mamey" style={{ width: '100%', padding: 14 }} onClick={() => {
+                const extrasTotal = [...(clientSelections.guarn||[]), ...(clientSelections.beb||[]), ...(clientSelections.ext||[])].reduce((s, x) => s + (x.price||0), 0);
+                handleAddToCartCustom(
+                  { ...customizeProduct, price: (customizeProduct.price || 0) + extrasTotal,
+                    selectedGuarniciones: (clientSelections.guarn||[]).map(x=>x.name),
+                    selectedBebidas: (clientSelections.beb||[]).map(x=>x.name),
+                    selectedExtras: (clientSelections.ext||[]).map(x=>x.name),
+                    clientNote },
+                  (clientSelections.guarn||[])[0]?.name || '',
+                  (clientSelections.beb||[])[0]?.name || ''
+                );
+                setClientSelections({ guarn:[], beb:[], ext:[] });
+                setClientNote('');
+              }}>
+                🛒 Agregar al Carrito • RD$ {(customizeProduct.price + [...(clientSelections.guarn||[]),...(clientSelections.beb||[]),...(clientSelections.ext||[])].reduce((s,x)=>s+(x.price||0),0)).toLocaleString()}
               </button>
             </div>
           </div>
@@ -6690,6 +7076,19 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                         <div style={{ fontSize: 12, color: '#ff6b00', fontWeight: 900, marginTop: 2 }}>
                           RD$ {item.price} <span style={{ fontSize: 11, color: '#64748b', fontWeight: 700 }}>(Subtotal: RD$ {item.price * item.qty})</span>
                         </div>
+                        {/* Detalle de personalización elegida por el cliente */}
+                        {item.selectedGuarniciones?.length > 0 && (
+                          <div style={{ fontSize: 10.5, color: '#16a34a', fontWeight: 700, marginTop: 2 }}>🍟 {item.selectedGuarniciones.join(', ')}</div>
+                        )}
+                        {item.selectedBebidas?.length > 0 && (
+                          <div style={{ fontSize: 10.5, color: '#0284c7', fontWeight: 700, marginTop: 1 }}>🥤 {item.selectedBebidas.join(', ')}</div>
+                        )}
+                        {item.selectedExtras?.length > 0 && (
+                          <div style={{ fontSize: 10.5, color: '#ff6b00', fontWeight: 700, marginTop: 1 }}>✨ {item.selectedExtras.join(', ')}</div>
+                        )}
+                        {item.clientNote && (
+                          <div style={{ fontSize: 10.5, color: '#94a3b8', fontWeight: 700, marginTop: 1, fontStyle: 'italic' }}>📝 "{item.clientNote}"</div>
+                        )}
                       </div>
 
                       {/* Item Quantity Controls & Delete Button */}
@@ -7455,4 +7854,5 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
     </div>
   );
 }
+
 
