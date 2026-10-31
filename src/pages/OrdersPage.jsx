@@ -998,6 +998,40 @@ export default function OrdersPage({ lang = 'es', navigate, userData, userRole }
     } catch(e) { console.error(e) }
   }
 
+  // ── Helper: etiqueta e ícono del botón "Ver Local" según tipo de orden ──
+  const getStoreBtn = (o) => {
+    if (userRole === 'pro') return null
+    const localId = o.storeId || o.proId || null
+    if (!localId) return null
+    // Determinar tipo de local
+    const isRestaurant = o.type === 'delivery' || o.storeCategory === 'restaurant' || o.storeCategory === 'restaurante'
+    const isPickup     = o.fulfillmentType === 'pickup'
+    const isMercado    = o.storeCategory === 'mercado' || o.storeCategory === 'market' || o.storeCategory === 'supermercado'
+    const isFarmacia   = o.storeCategory === 'farmacia' || o.storeCategory === 'pharmacy'
+    let icon, label
+    if (isPickup)       { icon = '🏪'; label = lang==='es' ? 'Ver Tienda' : 'View Store' }
+    else if (isMercado) { icon = '🛒'; label = lang==='es' ? 'Ver Mercado' : 'View Market' }
+    else if (isFarmacia){ icon = '💊'; label = lang==='es' ? 'Ver Farmacia' : 'View Pharmacy' }
+    else if (isRestaurant){ icon = '🍽️'; label = lang==='es' ? 'Ver Restaurante' : 'View Restaurant' }
+    else                { icon = '🏬'; label = lang==='es' ? 'Ver Local' : 'View Store' }
+    return (
+      <button
+        className="oc-btn track"
+        style={{ background:'#F0FDF4', color:'#15803D', border:'1.5px solid #86EFAC', fontWeight:800, display:'flex', alignItems:'center', justifyContent:'center', gap:6, width:'100%', marginTop:4 }}
+        onClick={() => navigate('localDetalle', {
+          id:       localId,
+          name:     o.storeName || o.proName || o.pro,
+          category: o.storeCategory || (o.type === 'delivery' ? 'restaurant' : 'local'),
+          address:  o.storeAddress || o.clientAddress || '',
+          photoURL: o.storePhotoURL || o.proPhotoURL || null,
+          ...( o.storeId ? { storeId: o.storeId } : {})
+        })}
+      >
+        {icon} {label}
+      </button>
+    )
+  }
+
   const renderActions = (o) => (
     <div className="oc-actions">
       {['pending', 'confirmado', 'accepted', 'onway', 'arrived', 'trato'].includes(o.status) && (
@@ -1065,6 +1099,7 @@ export default function OrdersPage({ lang = 'es', navigate, userData, userRole }
       )}
       {o.status==='done' && !o.rated && userRole!=='pro' && RATEABLE_PAYS.includes(o.paymentStatus) && <button className="oc-btn review" onClick={()=>setReviewOrder(o)}>{T.review}</button>}
       {o.status==='done' && o.rated && <span className="oc-rated">⭐ {T.rated}</span>}
+      {getStoreBtn(o)}
     </div>
   )
 
@@ -1233,6 +1268,7 @@ export default function OrdersPage({ lang = 'es', navigate, userData, userRole }
                   {o.proId && o.type !== 'delivery' ? T.rebookSame : T.rebook}
                 </button>
               )}
+              {getStoreBtn(o)}
             </div>
             
             {/* ── VISUALIZAR RESEÑA ── */}

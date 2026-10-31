@@ -774,8 +774,9 @@ export default function App() {
 
   // ─── NAVIGATE ─────────────────────────────────────────────────────────────
   const navigate = (page, data) => {
+    if (page === 'localDetalle' && data) setSelectedLocal(data)
     if (data?.professional) setSelectedPro(data.professional)
-    if (data && !data.user && !data.professional && page !== 'profile') setSelectedPro(data)
+    if (data && !data.user && !data.professional && page !== 'profile' && page !== 'localDetalle') setSelectedPro(data)
     if (page === 'profile' && data?.screen) setProfileInitScreen(data.screen)
     else if (page === 'profile') setProfileInitScreen(null)
     setCurrentPage(page)
