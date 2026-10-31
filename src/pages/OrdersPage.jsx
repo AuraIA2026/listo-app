@@ -8,6 +8,7 @@ import CallModal from '../components/CallModal'
 import FloatingChat from '../components/FloatingChat'
 import ReciboDigitalModal from '../components/ReciboDigitalModal'
 import MantenimientoPreventivoModal from '../components/MantenimientoPreventivoModal'
+import { BUSINESS_TYPES } from '../data/businessTypes'
 
 const txt = {
   es: {
@@ -998,22 +999,32 @@ export default function OrdersPage({ lang = 'es', navigate, userData, userRole }
     } catch(e) { console.error(e) }
   }
 
-  // ── Helper: etiqueta e ícono del botón "Ver Local" según tipo de orden ──
+  // ── Helper: botón "Ver Local/Restaurante/Tienda" según tipo de orden ──
   const getStoreBtn = (o) => {
     if (userRole === 'pro') return null
     const localId = o.storeId || o.proId || null
     if (!localId) return null
-    // Determinar tipo de local
-    const isRestaurant = o.type === 'delivery' || o.storeCategory === 'restaurant' || o.storeCategory === 'restaurante'
-    const isPickup     = o.fulfillmentType === 'pickup'
-    const isMercado    = o.storeCategory === 'mercado' || o.storeCategory === 'market' || o.storeCategory === 'supermercado'
-    const isFarmacia   = o.storeCategory === 'farmacia' || o.storeCategory === 'pharmacy'
+
+    // Detectar el tipo de comercio por campo storeCategory o por tipo de orden
+    const cat = o.storeCategory || o.storeType || null
+    const bizType = cat && BUSINESS_TYPES[cat] ? BUSINESS_TYPES[cat] : null
+
     let icon, label
-    if (isPickup)       { icon = '🏪'; label = lang==='es' ? 'Ver Tienda' : 'View Store' }
-    else if (isMercado) { icon = '🛒'; label = lang==='es' ? 'Ver Mercado' : 'View Market' }
-    else if (isFarmacia){ icon = '💊'; label = lang==='es' ? 'Ver Farmacia' : 'View Pharmacy' }
-    else if (isRestaurant){ icon = '🍽️'; label = lang==='es' ? 'Ver Restaurante' : 'View Restaurant' }
-    else                { icon = '🏬'; label = lang==='es' ? 'Ver Local' : 'View Store' }
+    if (bizType) {
+      // Usar el visitLabel definido en businessTypes.js
+      label = lang === 'es' ? bizType.visitLabel : bizType.visitLabel
+      // Icono basado en el emoji del label del tipo
+      const labelEmoji = bizType.label.match(/^(\S+)/)?.[1] || '🏬'
+      icon = labelEmoji
+    } else {
+      // Fallback por tipo de orden
+      const isPickup     = o.fulfillmentType === 'pickup'
+      const isRestaurant = o.type === 'delivery'
+      if (isPickup)        { icon = '🏪'; label = lang==='es' ? 'Ver Tienda'      : 'View Store' }
+      else if (isRestaurant){ icon = '🍽️'; label = lang==='es' ? 'Ver Restaurante' : 'View Restaurant' }
+      else                  { icon = '🏬'; label = lang==='es' ? 'Ver Local'       : 'View Store' }
+    }
+
     return (
       <button
         className="oc-btn track"
@@ -1021,10 +1032,10 @@ export default function OrdersPage({ lang = 'es', navigate, userData, userRole }
         onClick={() => navigate('localDetalle', {
           id:       localId,
           name:     o.storeName || o.proName || o.pro,
-          category: o.storeCategory || (o.type === 'delivery' ? 'restaurant' : 'local'),
+          category: cat || (o.type === 'delivery' ? 'restaurante' : 'local'),
           address:  o.storeAddress || o.clientAddress || '',
           photoURL: o.storePhotoURL || o.proPhotoURL || null,
-          ...( o.storeId ? { storeId: o.storeId } : {})
+          ...(o.storeId ? { storeId: o.storeId } : {})
         })}
       >
         {icon} {label}
