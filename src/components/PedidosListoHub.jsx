@@ -1,6 +1,7 @@
 // src/components/PedidosListoHub.jsx
 import React, { useState, useEffect } from 'react';
 import { collection, addDoc, serverTimestamp, query, onSnapshot } from 'firebase/firestore';
+import { onAuthStateChanged } from 'firebase/auth';
 import { db, auth } from '../firebase';
 import './PedidosListoHub.css';
 import ConfigurarRestauranteModal from './ConfigurarRestauranteModal';
@@ -8,181 +9,100 @@ import ConfigurarRestauranteModal from './ConfigurarRestauranteModal';
 const HERO_BANNERS = [
   {
     id: 1,
-    tag: '⚡ Listo Market 15m',
-    title: 'Supermercado a tu puerta en 15 min',
-    desc: 'Hasta 40% OFF en frutas, bebidas y abarrotes.',
-    btnText: 'Pedir al Súper 🛒',
-    bgGradient: 'linear-gradient(135deg, #FF6000 0%, #FF8533 100%)',
-    emoji: '🛒',
-    catId: 'market'
-  },
-  {
-    id: 2,
-    tag: '🍔 Combos Mamey',
-    title: 'Los mejores restaurantes de la ciudad',
-    desc: 'Envío gratis en tus hamburguesas y pizzas favoritas.',
-    btnText: 'Ver Restaurantes 🍕',
+    tag: '🍔 Restaurantes',
+    title: 'Los restaurantes de tu ciudad',
+    desc: 'Pide a domicilio o pasa a recoger en el local.',
+    btnText: 'Ver Restaurantes',
     bgGradient: 'linear-gradient(135deg, #E04E00 0%, #FF6000 100%)',
     emoji: '🍔',
     catId: 'restaurantes'
   },
   {
-    id: 3,
-    tag: '🛵 Mándame Express',
-    title: 'Envíos instantáneos de paquetes',
-    desc: 'Envía llaves, documentos o encargos en minutos.',
-    btnText: 'Solicitar Rider 📦',
+    id: 2,
+    tag: '🛵 Mándame',
+    title: 'Envíos de paquetes',
+    desc: 'Envía llaves, documentos o encargos por la ciudad.',
+    btnText: 'Solicitar envío',
     bgGradient: 'linear-gradient(135deg, #D44200 0%, #FF731A 100%)',
     emoji: '🛵',
     catId: 'mandame'
   }
 ];
 
-const DUAL_SLIDES = [
-  {
-    id: 1,
-    left: {
-      bg: '#3B0764',
-      badge: 'plus',
-      title: '6 meses Gratis',
-      desc: '+3 meses al 50% OFF con tus Tarjetas Mastercard Standard o Gold APAP',
-      btnText: 'Suscribirme',
-      btnClass: 'pl-btn-green',
-      action: 'sub'
-    },
-    right: {
-      bg: '#D50000',
-      badge: 'COMBO PROMO',
-      title: 'RD$ 299 Pechuga',
-      desc: 'Pechurinas crujientes con tostones y refresco frío incluido.',
-      btnText: 'Pedir Combo',
-      btnClass: 'pl-btn-white',
-      action: 'combo'
-    }
-  },
-  {
-    id: 2,
-    left: {
-      bg: '#FF6000',
-      badge: 'SUPERMARKET',
-      title: 'Envío Gratis Súper',
-      desc: 'En tu compra de Listo Market mayor a RD$ 500 en 15 minutos.',
-      btnText: 'Ir al Súper',
-      btnClass: 'pl-btn-white',
-      action: 'market'
-    },
-    right: {
-      bg: '#1E1B4B',
-      badge: 'MÁNDAME',
-      title: '50% OFF Courier',
-      desc: 'Envía documentos y paquetes por la ciudad a mitad de precio.',
-      btnText: 'Pedir Rider',
-      btnClass: 'pl-btn-green',
-      action: 'mandame'
-    }
-  }
-];
-
 const CATEGORIES = [
-  { id: 'restaurantes', name: 'Restaurantes', icon: '🍔', badge: 'Popular', bg: '#FFF0E6' },
-  { id: 'market', name: 'Listo Market', icon: '🛒', badge: '15 min', bg: '#E6F9F0' },
-  { id: 'mandame', name: 'Mándame', icon: '🛵', badge: 'Express', bg: '#EFF6FF' },
-  { id: 'farmacias', name: 'Farmacias', icon: '💊', badge: '24/7', bg: '#FFF5F5' },
-  { id: 'bebidas', name: 'Licores & Frías', icon: '🍺', badge: 'Frías', bg: '#FFFBEB' },
-  { id: 'ofertas', name: 'Promos Mamey', icon: '⚡', badge: '-50%', bg: '#FFF0F5' },
-  { id: 'mascotas', name: 'Mascotas', icon: '🐾', badge: null, bg: '#F5F3FF' },
-  { id: 'tiendas', name: 'Variedades', icon: '🛍️', badge: null, bg: '#F0FDF4' }
+  { id: 'restaurantes', name: 'Restaurantes', icon: '🍔', bg: '#FFF0E6' },
+  { id: 'market', name: 'Listo Market', icon: '🛒', bg: '#E6F9F0' },
+  { id: 'mandame', name: 'Mándame', icon: '🛵', bg: '#EFF6FF' },
+  { id: 'farmacias', name: 'Farmacias', icon: '💊', bg: '#FFF5F5' },
+  { id: 'bebidas', name: 'Licores & Frías', icon: '🍺', bg: '#FFFBEB' },
+  { id: 'mascotas', name: 'Mascotas', icon: '🐾', bg: '#F5F3FF' },
+  { id: 'tiendas', name: 'Variedades', icon: '🛍️', bg: '#F0FDF4' }
 ];
 
-const STORES = [
-  {
-    id: 'st-fiera',
-    name: 'La Fiera Hot Dog',
-    cat: 'restaurantes',
-    sub: 'Hot Dogs Dominicanos & Fast Food Criollo',
-    time: '10-20 min',
-    rating: '5.0',
-    reviews: '980',
-    delivery: 'Envío GRATIS',
-    img: 'https://images.unsplash.com/photo-1619740455993-9e612b1af08a?auto=format&fit=crop&w=400&q=80',
-    cover: 'https://images.unsplash.com/photo-1541214113241-21578d2d9b62?auto=format&fit=crop&w=1000&q=80',
-    logo: 'https://images.unsplash.com/photo-1619740455993-9e612b1af08a?auto=format&fit=crop&w=200&q=80',
-    address: 'Av. 27 de Febrero esq. Estrella Sadhalá, Santiago, República Dominicana',
-    phone: '809-583-1020',
-    whatsapp: '18095831020',
-    socials: {
-      instagram: '@lafierahotdog.rd',
-      facebook: 'facebook.com/lafierahotdog',
-      tiktok: '@lafierahotdog'
-    },
-    bannerTag: '🌭 #1 en Santiago',
-    menu: [
-      { id: 'm-f1', name: '🌭 Hot Dog La Fiera Especial', price: 220, desc: 'Salchicha parrillera artesanal, repollo criollo dulce, tocineta crocante y salsa de la casa.', img: 'https://images.unsplash.com/photo-1619740455993-9e612b1af08a?auto=format&fit=crop&w=200&q=80' },
-      { id: 'm-f2', name: '🧀 Hot Dog Triple Queso Fundido', price: 260, desc: 'Pan brioche tostado, salchicha gigante, triple queso cheddar, mozzarella y maíz.', img: 'https://images.unsplash.com/photo-1627054234553-91147a46979a?auto=format&fit=crop&w=200&q=80' },
-      { id: 'm-f3', name: '🍟 Papas Fritas Fiera Monster', price: 250, desc: 'Papas fritas con salchicha parrillera troceada, tocineta y salsa cheddar caliente.', img: 'https://images.unsplash.com/photo-1576107232684-1279f3908594?auto=format&fit=crop&w=200&q=80' },
-      { id: 'm-f4', name: '🥤 Refresco Cola 20oz Bien Frío', price: 65, desc: 'Refresco dominicano helado de 20oz.', img: 'https://images.unsplash.com/photo-1622483767028-3f66f32aef97?auto=format&fit=crop&w=400&q=80' }
-    ]
-  }
-];
+const CART_KEY = 'pl_cart_v1';
+const DELIVERY_FEE = 75;
+const FREE_DELIVERY_FROM = 500;
+const MANDAME_FEE = 120;
 
-const MARKET_PRODUCTS = [
-  { id: 'p1', name: 'Leche Entera 1L', price: 110, unit: '1 Litro', img: 'https://images.unsplash.com/photo-1563636619-e9143da7973b?auto=format&fit=crop&w=200&q=80' },
-  { id: 'p2', name: 'Cerveza Presidente 6-Pack', price: 650, unit: 'Lata 12oz', img: 'https://images.unsplash.com/photo-1608270586620-248524c67de9?auto=format&fit=crop&w=200&q=80' },
-  { id: 'p3', name: 'Pan de Agua Fresco', price: 75, unit: 'Funda 10 u', img: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=200&q=80' },
-  { id: 'p4', name: 'Aguacate Hass Premium', price: 85, unit: 'Por unidad', img: 'https://images.unsplash.com/photo-1523049673857-eb18f1d7b578?auto=format&fit=crop&w=200&q=80' },
-  { id: 'p5', name: 'Burger Mamey Especial', price: 390, unit: 'Doble carne', img: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=200&q=80' }
-];
+const parsePrice = (p) => {
+  const n = parseFloat(String(p ?? '').replace(/[^0-9.]/g, ''));
+  return Number.isFinite(n) && n > 0 ? n : null;
+};
 
-export default function PedidosListoHub({ lang = 'es', navigate }) {
+const mapCategory = (c = '') => {
+  const s = c.toLowerCase();
+  if (s.includes('market') || s.includes('super') || s.includes('colmado')) return 'market';
+  if (s.includes('farmac')) return 'farmacias';
+  if (s.includes('licor') || s.includes('bebida') || s.includes('drink')) return 'bebidas';
+  if (s.includes('mascota') || s.includes('pet')) return 'mascotas';
+  if (s.includes('tienda') || s.includes('variedad')) return 'tiendas';
+  return 'restaurantes';
+};
+
+export default function PedidosListoHub({ navigate }) {
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [dualSlideIndex, setDualSlideIndex] = useState(0);
   const [selectedCat, setSelectedCat] = useState('todos');
   const [searchQuery, setSearchQuery] = useState('');
-  const [cartItems, setCartItems] = useState([]);
+  const [cart, setCart] = useState(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(CART_KEY));
+      if (saved && Array.isArray(saved.items)) return saved;
+    } catch (e) { /* ignore */ }
+    return { store: null, items: [] };
+  });
+  const cartItems = cart.items;
+  const cartStore = cart.store;
   const [showCartDrawer, setShowCartDrawer] = useState(false);
   const [selectedStore, setSelectedStore] = useState(null);
   const [showConfigModal, setShowConfigModal] = useState(false);
   const [showMandameModal, setShowMandameModal] = useState(false);
-  const [activeTrackingOrder, setActiveTrackingOrder] = useState(null);
-  const [deliveryAddress, setDeliveryAddress] = useState('Villa Olga, Calle 5 #12, Santiago');
+  const [confirmedOrder, setConfirmedOrder] = useState(null);
+  const [deliveryAddress, setDeliveryAddress] = useState('');
   const [hubFulfillmentType, setHubFulfillmentType] = useState('delivery'); // 'delivery' | 'pickup'
   const [paymentMethod, setPaymentMethod] = useState('efectivo');
-  const [tipAmount, setTipAmount] = useState(50);
-
-  // REAL LIVE COUNTDOWN TIMER (39 MIN 47 SEC = 2387 SECONDS)
-  const [secondsLeft, setSecondsLeft] = useState(2387);
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setSecondsLeft(prev => (prev > 0 ? prev - 1 : 2387));
-    }, 1000);
-    return () => clearInterval(timer);
-  }, []);
-
-  const formatCountdown = (totalSeconds) => {
-    const mins = Math.floor(totalSeconds / 60);
-    const secs = totalSeconds % 60;
-    return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-  };
+  const [tipAmount, setTipAmount] = useState(0);
+  const [submitting, setSubmitting] = useState(false);
+  const [orderError, setOrderError] = useState('');
+  const [user, setUser] = useState(auth.currentUser);
+  const [loadingStores, setLoadingStores] = useState(true);
 
   // Mándame State
-  const [mandamePickUp, setMandamePickUp] = useState('Mi ubicación actual');
+  const [mandamePickUp, setMandamePickUp] = useState('');
   const [mandameDropOff, setMandameDropOff] = useState('');
   const [mandameType, setMandameType] = useState('Documentos');
 
-  // Auto-slide hero banner & dual carousel
+  useEffect(() => onAuthStateChanged(auth, setUser), []);
+
+  useEffect(() => {
+    try { localStorage.setItem(CART_KEY, JSON.stringify(cart)); } catch (e) { /* ignore */ }
+  }, [cart]);
+
+  // Auto-slide hero banner
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentSlide(prev => (prev + 1) % HERO_BANNERS.length);
     }, 4500);
     return () => clearInterval(timer);
-  }, []);
-
-  useEffect(() => {
-    const dualTimer = setInterval(() => {
-      setDualSlideIndex(prev => (prev + 1) % DUAL_SLIDES.length);
-    }, 4000);
-    return () => clearInterval(dualTimer);
   }, []);
 
   const [dbStores, setDbStores] = useState([]);
@@ -194,292 +114,238 @@ export default function PedidosListoHub({ lang = 'es', navigate }) {
       unsub = onSnapshot(q, (snap) => {
         const loaded = snap.docs.map(doc => {
           const d = doc.data();
+          const menu = (d.servicios || [])
+            .map((s, idx) => ({
+              id: `db_${doc.id}_${idx}`,
+              name: s.nombre,
+              price: parsePrice(s.precio),
+              desc: s.descripcion || '',
+              img: s.fotoURL || ''
+            }))
+            .filter(item => item.name && item.price !== null);
           return {
             id: doc.id,
-            name: d.nombre || 'Restaurante Partner',
-            cat: (d.categoria || '').toLowerCase().includes('market') ? 'market' : 'restaurantes',
-            sub: d.categoria || 'Gastronomía & Platos',
-            time: d.horario || '20-30 min',
-            rating: Number(d.rating || 5.0).toFixed(1),
-            reviews: d.totalResenas || 48,
-            delivery: 'RD$ 75',
-            img: d.portadaURL || d.logoURL || 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=400&q=80',
-            cover: d.portadaURL || 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=800&q=80',
-            logo: d.logoURL || d.portadaURL || 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=200&q=80',
-            address: d.direccion || 'Santiago Centro, República Dominicana',
-            phone: d.telefono || d.phone || d.whatsapp || '809-555-0100',
+            activo: d.activo,
+            proId: d.proId || '',
+            name: d.nombre || '',
+            cat: mapCategory(d.categoria),
+            sub: d.categoria || '',
+            time: d.horario || '',
+            rating: d.rating ? Number(d.rating).toFixed(1) : '',
+            reviews: d.totalResenas || 0,
+            img: d.portadaURL || d.logoURL || '',
+            cover: d.portadaURL || '',
+            logo: d.logoURL || d.portadaURL || '',
+            address: d.direccion || '',
+            phone: d.telefono || d.phone || '',
             whatsapp: d.whatsapp || '',
             socials: {
               instagram: d.instagram || '',
               facebook: d.facebook || '',
               tiktok: d.tiktok || ''
             },
-            bannerTag: '👑 Local VIP Partner',
-            menu: (d.servicios && d.servicios.length > 0)
-              ? d.servicios.map((s, idx) => ({
-                  id: `db_${doc.id}_${idx}`,
-                  name: s.nombre,
-                  price: parseFloat(String(s.precio).replace(/[^0-9.]/g, '')) || 250,
-                  desc: s.descripcion || 'Especialidad de la casa preparada al momento.',
-                  img: s.fotoURL || 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=200&q=80'
-                }))
-              : [
-                  { id: `db_combo_${doc.id}`, name: 'Combo Especial de la Casa', price: 350, desc: 'Plato principal con guarnición y bebida fría.', img: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=200&q=80' }
-                ]
+            menu
           };
-        }).filter(st => st.activo !== false);
+        }).filter(st => st.activo !== false && st.name);
         setDbStores(loaded);
-      }, () => {});
-    } catch(e) {}
+        setLoadingStores(false);
+      }, (err) => {
+        console.error('Error cargando locales:', err);
+        setLoadingStores(false);
+      });
+    } catch (e) {
+      console.error(e);
+      setLoadingStores(false);
+    }
     return () => unsub();
   }, []);
 
-  const isFieraStore = (st) => {
-    const n = (st?.name || '').toLowerCase();
-    return n.includes('fiera') || n.includes('hot dog') || n.includes('hotdog');
-  };
-
-  const filteredDbStores = dbStores.filter(isFieraStore);
-  const allAvailableStores = filteredDbStores.length > 0 ? filteredDbStores : STORES;
+  const isOwner = (st) => !!user && !!st?.proId && st.proId === user.uid;
 
   // Filter stores by category
-  const filteredStores = allAvailableStores.filter(st => {
+  const q = searchQuery.toLowerCase();
+  const filteredStores = dbStores.filter(st => {
     const matchesCat = selectedCat === 'todos' || st.cat === selectedCat;
-    const matchesSearch = st.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          st.sub.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = st.name.toLowerCase().includes(q) || st.sub.toLowerCase().includes(q);
     return matchesCat && matchesSearch;
   });
 
-  // Cart functions
-  const addToCart = (item) => {
-    setCartItems(prev => {
-      const existing = prev.find(i => i.id === item.id);
-      if (existing) {
-        return prev.map(i => i.id === item.id ? { ...i, qty: i.qty + 1 } : i);
-      }
-      return [...prev, { ...item, qty: 1 }];
+  // Cart functions (un pedido = una sola tienda)
+  const addToCart = (item, store) => {
+    if (cartStore && cartStore.id !== store.id && cartItems.length > 0) {
+      const ok = window.confirm(`Tu carrito tiene productos de ${cartStore.name}. ¿Vaciarlo y empezar un pedido en ${store.name}?`);
+      if (!ok) return;
+      setCart({ store: { id: store.id, name: store.name, address: store.address, proId: store.proId }, items: [{ ...item, qty: 1 }] });
+      return;
+    }
+    setCart(prev => {
+      const existing = prev.items.find(i => i.id === item.id);
+      const items = existing
+        ? prev.items.map(i => i.id === item.id ? { ...i, qty: i.qty + 1 } : i)
+        : [...prev.items, { ...item, qty: 1 }];
+      return { store: { id: store.id, name: store.name, address: store.address, proId: store.proId }, items };
     });
   };
 
   const updateQty = (id, delta) => {
-    setCartItems(prev => {
-      return prev.map(item => {
-        if (item.id === id) {
-          const newQty = item.qty + delta;
-          return newQty > 0 ? { ...item, qty: newQty } : null;
-        }
-        return item;
-      }).filter(Boolean);
+    setCart(prev => {
+      const items = prev.items
+        .map(i => i.id === id ? { ...i, qty: i.qty + delta } : i)
+        .filter(i => i.qty > 0);
+      return { store: items.length ? prev.store : null, items };
     });
   };
 
   const isPickupHub = hubFulfillmentType === 'pickup';
   const subtotal = cartItems.reduce((acc, item) => acc + (item.price * item.qty), 0);
-  const deliveryFee = isPickupHub ? 0 : (subtotal > 500 ? 0 : 75);
+  const freeDelivery = subtotal > FREE_DELIVERY_FROM;
+  const deliveryFee = isPickupHub ? 0 : (freeDelivery ? 0 : DELIVERY_FEE);
   const serviceFee = isPickupHub ? 0 : Math.round(subtotal * 0.05);
-  const total = subtotal + deliveryFee + serviceFee + (isPickupHub ? 0 : tipAmount);
+  const tip = isPickupHub ? 0 : tipAmount;
+  const total = subtotal + deliveryFee + serviceFee + tip;
 
   const handleConfirmOrder = async () => {
-    if (cartItems.length === 0) return;
+    if (cartItems.length === 0 || submitting || !cartStore) return;
+    setOrderError('');
+    if (!user) {
+      setOrderError('Debes iniciar sesión para hacer un pedido.');
+      return;
+    }
+    if (!isPickupHub && !deliveryAddress.trim()) {
+      setOrderError('Escribe tu dirección de entrega.');
+      return;
+    }
+
+    setSubmitting(true);
     const pin = Math.floor(1000 + Math.random() * 9000).toString();
-    const finalAddress = isPickupHub 
-      ? '🛍️ Retiro en el Local: La Fiera Hot Dog' 
-      : deliveryAddress;
+    const finalAddress = isPickupHub
+      ? `Retiro en el local: ${cartStore.name}${cartStore.address ? ' - ' + cartStore.address : ''}`
+      : deliveryAddress.trim();
 
     const orderData = {
       orderId: 'PL-' + Math.floor(100000 + Math.random() * 900000),
       type: 'delivery',
       fulfillmentType: isPickupHub ? 'pickup' : 'delivery',
       driverType: isPickupHub ? 'pickup' : 'mandame',
-      clientId: auth.currentUser?.uid || 'guest_client',
-      clientName: auth.currentUser?.displayName || 'Cliente Listo',
-      clientEmail: auth.currentUser?.email || '',
-      clientPhone: auth.currentUser?.phoneNumber || '809-555-0192',
+      storeId: cartStore.id,
+      storeName: cartStore.name,
+      storeOwnerId: cartStore.proId || '',
+      clientId: user.uid,
+      clientName: user.displayName || '',
+      clientEmail: user.email || '',
+      clientPhone: user.phoneNumber || '',
       items: cartItems.map(i => ({ id: i.id, name: i.name, price: i.price, qty: i.qty })),
-      subtotal: subtotal,
-      deliveryFee: deliveryFee,
-      serviceFee: serviceFee,
-      tipAmount: isPickupHub ? 0 : tipAmount,
-      total: total,
+      subtotal,
+      deliveryFee,
+      serviceFee,
+      tipAmount: tip,
+      total,
       price: `RD$ ${total.toLocaleString()}`,
       deliveryAddress: finalAddress,
       address: finalAddress,
-      paymentMethod: paymentMethod,
+      paymentMethod,
       pinOTP: pin,
-      storeName: 'La Fiera Hot Dog',
       status: 'pending',
-      createdAt: serverTimestamp(),
-      dateToken: 'Hoy',
-      timeToken: isPickupHub ? 'Listo en 10-15 min' : '15-25 min',
-      proName: isPickupHub ? 'Retiro en Local (La Fiera Hot Dog)' : 'Juan Carlos M. (Mándame Rider)',
-      proSpecialty: isPickupHub ? '🛍️ Retiro en el Local (Mostrador)' : 'Delivery & Reparto Express',
-      proAvatar: isPickupHub ? '🛍️' : '🛵',
-      proPhone: '809-555-0192',
-      estimatedTime: isPickupHub ? 10 : 18,
-      coords: { lat: 18.4861, lng: -69.9312 }
+      createdAt: serverTimestamp()
     };
 
     try {
       const docRef = await addDoc(collection(db, 'orders'), orderData);
       await addDoc(collection(db, 'notificaciones'), {
-        userId: auth.currentUser?.uid || 'guest_client',
+        userId: user.uid,
         orderId: docRef.id,
         type: 'new_order',
-        title: isPickupHub ? '🛍️ ¡Pedido Listo para Retirar!' : '🛵 ¡Pedido Confirmado!',
-        text: isPickupHub 
-          ? `Tu pedido #${orderData.orderId} por RD$ ${total} está registrado para retirar en tienda. PIN: ${pin}`
-          : `Tu pedido #${orderData.orderId} por RD$ ${total} está en camino. Tu PIN de seguridad es: ${pin}`,
+        title: isPickupHub ? '🛍️ Pedido registrado para retirar' : '🛵 Pedido recibido',
+        text: `Tu pedido #${orderData.orderId} en ${cartStore.name} por RD$ ${total.toLocaleString()} fue enviado al local. PIN: ${pin}`,
         read: false,
         icon: isPickupHub ? '🛍️' : '🛵',
         createdAt: serverTimestamp()
       });
 
-      // Notificación directa a la Comandera Cocina del Restaurante
-      try {
-        await addDoc(collection(db, 'notificaciones'), {
-          userId: 'merchant',
-          orderId: docRef.id,
-          type: 'kitchen_order',
-          title: '🚨 ¡Nuevo Pedido en Comandera Cocina!',
-          text: `Pedido #${orderData.orderId} por RD$ ${total.toLocaleString()} recibido para preparar.`,
-          read: false,
-          icon: '🔔',
-          pinOTP: pin,
-          createdAt: serverTimestamp()
-        });
-      } catch (eM) {}
+      if (cartStore.proId) {
+        try {
+          await addDoc(collection(db, 'notificaciones'), {
+            userId: cartStore.proId,
+            orderId: docRef.id,
+            type: 'kitchen_order',
+            title: '🚨 Nuevo pedido',
+            text: `Pedido #${orderData.orderId} por RD$ ${total.toLocaleString()} recibido para preparar.`,
+            read: false,
+            icon: '🔔',
+            createdAt: serverTimestamp()
+          });
+        } catch (eM) { console.warn('No se pudo notificar al local:', eM); }
+      }
 
       const confirmed = { ...orderData, id: docRef.id };
-      setActiveTrackingOrder(confirmed);
-      setCartItems([]);
+      setCart({ store: null, items: [] });
       setShowCartDrawer(false);
-
-      if (navigate) {
-        setTimeout(() => {
-          navigate('tracking', confirmed);
-        }, 500);
-      }
+      if (navigate) navigate('tracking', confirmed);
+      else setConfirmedOrder(confirmed);
     } catch (err) {
-      console.warn('Fallback local order:', err);
-      const fallback = {
-        id: 'PL-' + Math.floor(100000 + Math.random() * 900000),
-        orderId: 'PL-' + Math.floor(100000 + Math.random() * 900000),
-        type: 'delivery',
-        items: cartItems,
-        total: total,
-        address: deliveryAddress,
-        deliveryAddress: deliveryAddress,
-        status: 'pending',
-        pinOTP: pin,
-        time: '15-25 min',
-        dateToken: 'Hoy',
-        timeToken: '15-25 min',
-        proName: 'Juan Carlos M. (Mándame Rider)',
-        proSpecialty: 'Delivery & Reparto Express',
-        proAvatar: '🛵',
-        proPhone: '809-555-0192',
-        riderName: 'Juan Carlos M. (Mándame Rider)',
-        riderPhone: '809-555-0192',
-        coords: { lat: 18.4861, lng: -69.9312 }
-      };
-      setActiveTrackingOrder(fallback);
-      setCartItems([]);
-      setShowCartDrawer(false);
-
-      if (navigate) {
-        setTimeout(() => {
-          navigate('tracking', fallback);
-        }, 500);
-      }
+      console.error('Error guardando pedido:', err);
+      setOrderError('No se pudo enviar tu pedido. Revisa tu conexión e inténtalo de nuevo. No se te ha cobrado nada.');
+    } finally {
+      setSubmitting(false);
     }
   };
 
   const handleRequestMandame = async (e) => {
     e.preventDefault();
-    if (!mandameDropOff.trim()) {
-      alert('Por favor ingresa la dirección de entrega para el envío Mándame.');
+    if (submitting) return;
+    if (!user) {
+      alert('Debes iniciar sesión para solicitar un envío.');
       return;
     }
+    if (!mandamePickUp.trim() || !mandameDropOff.trim()) {
+      alert('Ingresa la dirección de recogida y la de entrega.');
+      return;
+    }
+    setSubmitting(true);
     const pin = Math.floor(1000 + Math.random() * 9000).toString();
     const orderData = {
       orderId: 'MD-' + Math.floor(100000 + Math.random() * 900000),
       type: 'delivery',
-      clientId: auth.currentUser?.uid || 'guest_client',
-      clientName: auth.currentUser?.displayName || 'Cliente Listo',
-      clientEmail: auth.currentUser?.email || '',
-      clientPhone: auth.currentUser?.phoneNumber || '809-555-9988',
-      items: [{ name: `Envío Mándame: ${mandameType}`, price: 120, qty: 1 }],
-      total: 120 + 20,
-      deliveryAddress: mandameDropOff,
-      address: mandameDropOff,
+      driverType: 'mandame',
+      clientId: user.uid,
+      clientName: user.displayName || '',
+      clientEmail: user.email || '',
+      clientPhone: user.phoneNumber || '',
+      items: [{ name: `Envío Mándame: ${mandameType}`, price: MANDAME_FEE, qty: 1 }],
+      total: MANDAME_FEE,
+      pickupAddress: mandamePickUp.trim(),
+      deliveryAddress: mandameDropOff.trim(),
+      address: mandameDropOff.trim(),
+      packageType: mandameType,
       status: 'pending',
       pinOTP: pin,
-      createdAt: serverTimestamp(),
-      dateToken: 'Hoy',
-      timeToken: '10-20 min',
-      proName: 'Pedro Rodríguez (Mándame Express)',
-      proSpecialty: 'Courier & Encomiendas',
-      proAvatar: '🛵',
-      proPhone: '809-555-9988',
-      estimatedTime: 15,
-      coords: { lat: 18.4861, lng: -69.9312 }
+      createdAt: serverTimestamp()
     };
 
     try {
       const docRef = await addDoc(collection(db, 'orders'), orderData);
       await addDoc(collection(db, 'notificaciones'), {
-        userId: auth.currentUser?.uid || 'guest_client',
+        userId: user.uid,
         orderId: docRef.id,
         type: 'new_order',
-        title: '📦 ¡Envío Mándame Asignado!',
-        text: `Tu mensajero va en camino a ${mandameDropOff}. PIN de entrega: ${pin}`,
+        title: '📦 Solicitud de envío recibida',
+        text: `Buscando mensajero para tu envío a ${orderData.deliveryAddress}. PIN de entrega: ${pin}`,
         read: false,
         icon: '📦',
         createdAt: serverTimestamp()
       });
       const confirmed = { ...orderData, id: docRef.id };
-      setActiveTrackingOrder(confirmed);
       setShowMandameModal(false);
       setMandameDropOff('');
-      if (navigate) {
-        setTimeout(() => {
-          navigate('tracking', confirmed);
-        }, 800);
-      }
+      if (navigate) navigate('tracking', confirmed);
+      else setConfirmedOrder(confirmed);
     } catch (err) {
       console.error('Error guardando envío:', err);
-      const fallback = {
-        id: 'MD-' + Math.floor(100000 + Math.random() * 900000),
-        items: [{ name: `Envío Mándame: ${mandameType}`, price: 120, qty: 1 }],
-        total: 120 + 20,
-        address: mandameDropOff,
-        status: 'confirmado',
-        pinOTP: pin,
-        time: '10-20 min',
-        riderName: 'Pedro Rodríguez (Mándame Express)',
-        riderPhone: '809-555-9988'
-      };
-      setActiveTrackingOrder(fallback);
-      setShowMandameModal(false);
-      setMandameDropOff('');
+      alert('No se pudo enviar tu solicitud. Revisa tu conexión e inténtalo de nuevo.');
+    } finally {
+      setSubmitting(false);
     }
   };
-
-  const handleDualAction = (action) => {
-    if (action === 'sub') {
-      alert('🎉 ¡Te has suscrito a Listo Plus! Disfruta 6 meses Gratis de envíos a 0 costo.');
-    } else if (action === 'combo') {
-      const comboItem = { id: 'combo_pechuga', name: 'RD$ 299 Combo Pechuguitas + Tostones + Refresco', price: 299 };
-      addToCart(comboItem);
-      setShowCartDrawer(true);
-    } else if (action === 'market') {
-      setSelectedCat('market');
-    } else if (action === 'mandame') {
-      setShowMandameModal(true);
-    }
-  };
-
-  const currentDual = DUAL_SLIDES[dualSlideIndex];
 
   return (
     <div className="pedidos-listo-container">
@@ -493,12 +359,9 @@ export default function PedidosListoHub({ lang = 'es', navigate }) {
             <div className="pl-loc-icon">📍</div>
             <div className="pl-loc-text">
               <span className="pl-loc-label">Entregar en</span>
-              <span className="pl-loc-address">{deliveryAddress} ▾</span>
+              <span className="pl-loc-address">{deliveryAddress || 'Toca para escribir tu dirección'} ▾</span>
             </div>
           </div>
-          <span style={{ fontSize: 12, fontWeight: 900, color: 'var(--mamey-primary)', background: 'var(--mamey-light)', padding: '4px 10px', borderRadius: 12 }}>
-            ⚡ 15-25 min
-          </span>
         </div>
 
         <div className="pl-search-bar">
@@ -510,65 +373,6 @@ export default function PedidosListoHub({ lang = 'es', navigate }) {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
-          <button className="pl-search-icon-right" onClick={() => alert('Búsqueda por voz activada')}>🎤</button>
-        </div>
-      </div>
-
-      {/* 2. BANNER OFERTA RELÁMPAGO AMARILLO (CON RELOJ EN VIVO 39:47) */}
-      <div className="pl-yellow-flash-card">
-        <div>
-          <div className="pl-flash-timer-pill">
-            <span>⏱️</span>
-            <span>{formatCountdown(secondsLeft)}</span>
-          </div>
-          <h2 className="pl-yellow-title">Ahorra hasta RD$ 300</h2>
-          <p className="pl-yellow-desc">Prueba nuevos sabores y disfruta Descuentos fugaces.</p>
-          <button className="pl-yellow-btn" onClick={() => setSelectedCat('restaurantes')}>
-            Descubrir locales
-          </button>
-        </div>
-        <div className="pl-clock-graphic-wrap">
-          ⏰
-        </div>
-      </div>
-
-      {/* 3. CARRUSEL DE BANNERS DOBLES INTERACTIVOS (PURPLE & MAMEY COMBOS) */}
-      <div className="pl-dual-carousel-wrapper">
-        <div className="pl-dual-grid">
-          {/* BANNER IZQUIERDO (PURPLE) */}
-          <div className="pl-card-purple" style={{ background: currentDual.left.bg }}>
-            <div>
-              <span className="pl-mini-badge">{currentDual.left.badge}</span>
-              <h3 className="pl-dual-title">{currentDual.left.title}</h3>
-              <p className="pl-dual-desc">{currentDual.left.desc}</p>
-            </div>
-            <button className={currentDual.left.btnClass} onClick={() => handleDualAction(currentDual.left.action)}>
-              {currentDual.left.btnText}
-            </button>
-          </div>
-
-          {/* BANNER DERECHO (RED/MAMEY COMBO) */}
-          <div className="pl-card-mamey-combo" style={{ background: currentDual.right.bg }}>
-            <div>
-              <span className="pl-mini-badge">{currentDual.right.badge}</span>
-              <h3 className="pl-dual-title">{currentDual.right.title}</h3>
-              <p className="pl-dual-desc">{currentDual.right.desc}</p>
-            </div>
-            <button className={currentDual.right.btnClass} onClick={() => handleDualAction(currentDual.right.action)}>
-              {currentDual.right.btnText}
-            </button>
-          </div>
-        </div>
-
-        {/* PUNTOS INDICADORES DE CARRUSEL DOBLE */}
-        <div className="pl-dual-dots">
-          {DUAL_SLIDES.map((_, idx) => (
-            <button
-              key={idx}
-              className={`pl-dual-dot ${idx === dualSlideIndex ? 'active' : ''}`}
-              onClick={() => setDualSlideIndex(idx)}
-            />
-          ))}
         </div>
       </div>
 
@@ -636,61 +440,38 @@ export default function PedidosListoHub({ lang = 'es', navigate }) {
         ))}
       </div>
 
-      {/* 6. CARRUSEL DE PRODUCTOS DE LISTO MARKET */}
-      <div className="pl-horizontal-section">
-        <div className="pl-grid-title-row">
-          <h3 className="pl-section-title">🛒 Listo Market - Entrega en 15 min</h3>
-          <span style={{ fontSize: 12, fontWeight: 800, color: 'var(--mamey-primary)', cursor: 'pointer' }} onClick={() => setSelectedCat('market')}>
-            Explorar súper
-          </span>
-        </div>
-
-        <div className="pl-horiz-scroll">
-          {MARKET_PRODUCTS.map(prod => (
-            <div key={prod.id} className="pl-product-card" onClick={() => addToCart(prod)}>
-              <img src={prod.img} alt={prod.name} className="pl-product-img" />
-              <div>
-                <p className="pl-product-name">{prod.name}</p>
-                <div className="pl-product-price-row">
-                  <span className="pl-product-price">RD$ {prod.price}</span>
-                  <button
-                    className="pl-product-add-btn"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      addToCart(prod);
-                    }}
-                  >+</button>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
       {/* 7. LOCALE & RESTAURANTES DESTACADOS */}
       <div className="pl-horizontal-section">
         <div className="pl-grid-title-row">
-          <h3 className="pl-section-title">🔥 Restaurantes & Locales Populares</h3>
+          <h3 className="pl-section-title">🏪 Locales</h3>
         </div>
 
+        {loadingStores ? (
+          <p style={{ textAlign: 'center', color: '#64748B', fontWeight: 700, padding: '24px 0' }}>Cargando locales...</p>
+        ) : filteredStores.length === 0 ? (
+          <p style={{ textAlign: 'center', color: '#64748B', fontWeight: 700, padding: '24px 0' }}>
+            {searchQuery ? 'No encontramos locales con esa búsqueda.' : 'Todavía no hay locales disponibles en esta categoría.'}
+          </p>
+        ) : (
         <div className="pl-horiz-scroll">
           {filteredStores.map(store => (
             <div key={store.id} className="pl-store-card" onClick={() => setSelectedStore(store)}>
-              <div className="pl-store-banner" style={{ backgroundImage: `url(${store.img})` }}>
-                <span className="pl-store-tag">{store.bannerTag}</span>
-                <span className="pl-store-time">⏱️ {store.time}</span>
+              <div className="pl-store-banner" style={{ backgroundImage: store.img ? `url(${store.img})` : undefined, background: store.img ? undefined : '#FFF0E6' }}>
+                {store.time && <span className="pl-store-time">⏱️ {store.time}</span>}
               </div>
               <div className="pl-store-body">
                 <h4 className="pl-store-name">{store.name}</h4>
                 <p className="pl-store-sub">{store.sub}</p>
-                <div className="pl-store-meta">
-                  <span className="pl-store-rating">★ {store.rating} ({store.reviews})</span>
-                  <span className="pl-store-delivery">🛵 {store.delivery}</span>
-                </div>
+                {store.rating && (
+                  <div className="pl-store-meta">
+                    <span className="pl-store-rating">★ {store.rating} ({store.reviews})</span>
+                  </div>
+                )}
               </div>
             </div>
           ))}
         </div>
+        )}
       </div>
 
       {/* 8. BOTÓN FLOTANTE DEL CARRITO */}
@@ -755,7 +536,7 @@ export default function PedidosListoHub({ lang = 'es', navigate }) {
               borderTopRightRadius: 24
             }}>
               <img
-                src={selectedStore.cover || selectedStore.img || 'https://images.unsplash.com/photo-1541214113241-21578d2d9b62?auto=format&fit=crop&w=1000&q=80'}
+                src={selectedStore.cover || selectedStore.img || undefined}
                 alt={selectedStore.name}
                 style={{
                   width: '100%',
@@ -779,10 +560,7 @@ export default function PedidosListoHub({ lang = 'es', navigate }) {
                 zIndex: 2
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                  <span style={{ background: '#FF6000', color: '#FFF', padding: '4px 10px', borderRadius: 12, fontSize: 10.5, fontWeight: 900, boxShadow: '0 4px 10px rgba(0,0,0,0.3)', whiteSpace: 'nowrap' }}>
-                    {selectedStore.bannerTag || '🌭 #1 en Santiago 🇩🇴'}
-                  </span>
-                  <button
+                  {isOwner(selectedStore) && <button
                     onClick={() => setShowConfigModal(true)}
                     style={{
                       background: 'rgba(0,0,0,0.65)',
@@ -801,7 +579,7 @@ export default function PedidosListoHub({ lang = 'es', navigate }) {
                     }}
                   >
                     ⚙️ Configurar
-                  </button>
+                  </button>}
                 </div>
                 <button
                   onClick={() => setSelectedStore(null)}
@@ -842,7 +620,7 @@ export default function PedidosListoHub({ lang = 'es', navigate }) {
                   </div>
                 </div>
 
-                <button
+                {isOwner(selectedStore) && <button
                   onClick={() => setShowConfigModal(true)}
                   style={{
                     padding: '7px 12px',
@@ -861,24 +639,25 @@ export default function PedidosListoHub({ lang = 'es', navigate }) {
                   }}
                 >
                   ⚙️ Configurar Local
-                </button>
+                </button>}
               </div>
               
               {/* BADGES METADATA */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', marginBottom: 12 }}>
-                <span style={{ fontSize: 11.5, fontWeight: 900, background: '#FFF7ED', color: '#EA580C', padding: '4px 8px', borderRadius: 10, border: '1px solid #FFEDD5' }}>
-                  ⭐ {selectedStore.rating || '5.0'} ({selectedStore.reviews || 'Opiniones'})
-                </span>
-                <span style={{ fontSize: 11.5, fontWeight: 800, background: '#F1F5F9', color: '#475569', padding: '4px 8px', borderRadius: 10 }}>
-                  ⏱️ {selectedStore.time || '10-20 min'}
-                </span>
-                <span style={{ fontSize: 11.5, fontWeight: 800, background: '#ECFDF5', color: '#059669', padding: '4px 8px', borderRadius: 10 }}>
-                  🛵 {selectedStore.delivery || 'Envío GRATIS'}
-                </span>
+                {selectedStore.rating && (
+                  <span style={{ fontSize: 11.5, fontWeight: 900, background: '#FFF7ED', color: '#EA580C', padding: '4px 8px', borderRadius: 10, border: '1px solid #FFEDD5' }}>
+                    ⭐ {selectedStore.rating} ({selectedStore.reviews})
+                  </span>
+                )}
+                {selectedStore.time && (
+                  <span style={{ fontSize: 11.5, fontWeight: 800, background: '#F1F5F9', color: '#475569', padding: '4px 8px', borderRadius: 10 }}>
+                    ⏱️ {selectedStore.time}
+                  </span>
+                )}
               </div>
 
               {/* 3. ESPACIO PARA LA DIRECCIÓN DEL RESTAURANTE */}
-              <div style={{
+              {selectedStore.address && <div style={{
                 background: '#F8FAFC',
                 border: '1.5px solid #E2E8F0',
                 borderRadius: 14,
@@ -900,20 +679,20 @@ export default function PedidosListoHub({ lang = 'es', navigate }) {
                       DIRECCIÓN DEL RESTAURANTE
                     </span>
                     <span style={{ fontSize: 12.5, fontWeight: 800, color: '#1E293B', lineHeight: 1.3, wordBreak: 'break-word', display: 'block' }}>
-                      {selectedStore.address || 'Av. 27 de Febrero esq. Estrella Sadhalá, Santiago, RD'}
+                      {selectedStore.address}
                     </span>
                   </div>
                 </div>
                 <button
-                  onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(selectedStore.address || selectedStore.name)}`, '_blank')}
+                  onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(selectedStore.address)}`, '_blank')}
                   style={{ padding: '6px 12px', borderRadius: 10, background: '#EFF6FF', color: '#2563EB', border: '1px solid #BFDBFE', fontSize: 11, fontWeight: 900, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}
                 >
                   🗺️ Mapa
                 </button>
-              </div>
+              </div>}
 
               {/* 4. ESPACIO PARA EL NÚMERO DE TELÉFONO */}
-              <div style={{
+              {(selectedStore.phone || selectedStore.whatsapp) && <div style={{
                 background: '#F8FAFC',
                 border: '1.5px solid #E2E8F0',
                 borderRadius: 14,
@@ -935,7 +714,7 @@ export default function PedidosListoHub({ lang = 'es', navigate }) {
                       NÚMERO DE TELÉFONO
                     </span>
                     <span style={{ fontSize: 13, fontWeight: 900, color: '#1E293B', fontFamily: 'monospace', wordBreak: 'break-all' }}>
-                      {selectedStore.phone || '809-583-1020'}
+                      {selectedStore.phone || selectedStore.whatsapp}
                     </span>
                   </div>
                 </div>
@@ -959,10 +738,10 @@ export default function PedidosListoHub({ lang = 'es', navigate }) {
                     </a>
                   )}
                 </div>
-              </div>
+              </div>}
 
               {/* 5. ESPACIO PARA REDES SOCIALES */}
-              <div style={{
+              {(selectedStore.socials?.instagram || selectedStore.socials?.facebook || selectedStore.socials?.tiktok) && <div style={{
                 background: '#FFF7ED',
                 border: '1.5px solid #FFEDD5',
                 borderRadius: 14,
@@ -974,8 +753,8 @@ export default function PedidosListoHub({ lang = 'es', navigate }) {
                   🌐 REDES SOCIALES DEL RESTAURANTE
                 </span>
                 <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                  <a
-                    href={`https://instagram.com/${(selectedStore.socials?.instagram || 'lafierahotdog.rd').replace('@', '')}`}
+                  {selectedStore.socials?.instagram && <a
+                    href={`https://instagram.com/${selectedStore.socials.instagram.replace('@', '')}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     style={{
@@ -993,8 +772,8 @@ export default function PedidosListoHub({ lang = 'es', navigate }) {
                       whiteSpace: 'nowrap'
                     }}
                   >
-                    📸 {selectedStore.socials?.instagram || '@lafierahotdog.rd'}
-                  </a>
+                    📸 {selectedStore.socials.instagram}
+                  </a>}
                   {selectedStore.socials?.facebook && (
                     <a
                       href={selectedStore.socials.facebook.startsWith('http') ? selectedStore.socials.facebook : `https://${selectedStore.socials.facebook}`}
@@ -1040,7 +819,7 @@ export default function PedidosListoHub({ lang = 'es', navigate }) {
                     </a>
                   )}
                 </div>
-              </div>
+              </div>}
 
 
               {/* SEPARADOR DE MENÚ */}
@@ -1051,10 +830,13 @@ export default function PedidosListoHub({ lang = 'es', navigate }) {
 
               {/* LISTADO DE PLATILLOS */}
               <div style={{ maxHeight: 300, overflowY: 'auto' }}>
+                {(!selectedStore.menu || selectedStore.menu.length === 0) && (
+                  <p style={{ textAlign: 'center', color: '#64748B', fontWeight: 700, padding: '16px 0' }}>Este local todavía no ha publicado su menú.</p>
+                )}
                 {selectedStore.menu?.map(item => (
                   <div key={item.id} className="pl-cart-item-row" style={{ padding: '12px 0', borderBottom: '1px solid #F1F5F9' }}>
                     <div className="pl-cart-item-info">
-                      <img src={item.img} alt={item.name} style={{ width: 62, height: 62, borderRadius: 14, objectFit: 'cover' }} />
+                      {item.img && <img src={item.img} alt={item.name} style={{ width: 62, height: 62, borderRadius: 14, objectFit: 'cover' }} />}
                       <div style={{ flex: 1, minWidth: 0, paddingRight: 8 }}>
                         <p className="pl-cart-item-name" style={{ fontSize: 14, fontWeight: 900, margin: '0 0 3px' }}>{item.name}</p>
                         <p className="pl-cart-item-sub" style={{ fontSize: 11, color: '#64748B', margin: '0 0 6px', lineHeight: 1.3 }}>{item.desc}</p>
@@ -1065,7 +847,7 @@ export default function PedidosListoHub({ lang = 'es', navigate }) {
                       className="pl-product-add-btn"
                       style={{ width: 36, height: 36, borderRadius: 12, fontSize: 18 }}
                       onClick={() => {
-                        addToCart(item);
+                        addToCart(item, selectedStore);
                       }}
                     >+</button>
                   </div>
@@ -1107,8 +889,10 @@ export default function PedidosListoHub({ lang = 'es', navigate }) {
                   type="text"
                   className="pl-search-input"
                   style={{ marginTop: 4 }}
+                  placeholder="Ej: Villa Olga, Calle 5 #12"
                   value={mandamePickUp}
                   onChange={(e) => setMandamePickUp(e.target.value)}
+                  required
                 />
               </div>
 
@@ -1141,11 +925,11 @@ export default function PedidosListoHub({ lang = 'es', navigate }) {
 
               <div style={{ background: '#FFF4EE', border: '1.5px solid #FFE4D6', borderRadius: 14, padding: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span style={{ fontSize: 13, fontWeight: 800, color: '#1A1A2E' }}>Costo estimado del envío:</span>
-                <span style={{ fontSize: 16, fontWeight: 900, color: 'var(--mamey-primary)' }}>RD$ 120</span>
+                <span style={{ fontSize: 16, fontWeight: 900, color: 'var(--mamey-primary)' }}>RD$ {MANDAME_FEE}</span>
               </div>
 
-              <button type="submit" className="pl-order-confirm-btn">
-                🛵 Solicitar Mándame Rider Ahora
+              <button type="submit" className="pl-order-confirm-btn" disabled={submitting}>
+                {submitting ? 'Enviando...' : '🛵 Solicitar envío'}
               </button>
             </form>
           </div>
@@ -1183,7 +967,7 @@ export default function PedidosListoHub({ lang = 'es', navigate }) {
               >
                 <span style={{ fontSize: 16 }}>🛵</span>
                 <span>Envío a Domicilio</span>
-                <span style={{ fontSize: 10, color: '#F26000', fontWeight: 700 }}>RD$ 75</span>
+                <span style={{ fontSize: 10, color: '#F26000', fontWeight: 700 }}>{freeDelivery ? '¡GRATIS!' : `RD$ ${DELIVERY_FEE}`}</span>
               </button>
 
               <button
@@ -1214,9 +998,19 @@ export default function PedidosListoHub({ lang = 'es', navigate }) {
               <p style={{ fontSize: 12, fontWeight: 800, color: '#666', margin: '0 0 6px' }}>
                 {isPickupHub ? '🏪 LOCAL DE RETIRO' : '📍 DIRECCIÓN DE ENTREGA'}
               </p>
-              <div style={{ background: isPickupHub ? '#ECFDF5' : '#F8F9FA', padding: '10px 14px', borderRadius: 14, fontSize: 13, fontWeight: 700, color: isPickupHub ? '#047857' : '#1A1A2E', border: isPickupHub ? '1px solid #A7F3D0' : 'none' }}>
-                {isPickupHub ? '🛍️ La Fiera Hot Dog - Mostrador (Santiago Centro, RD)' : deliveryAddress}
-              </div>
+              {isPickupHub ? (
+                <div style={{ background: '#ECFDF5', padding: '10px 14px', borderRadius: 14, fontSize: 13, fontWeight: 700, color: '#047857', border: '1px solid #A7F3D0' }}>
+                  🛍️ {cartStore?.name}{cartStore?.address ? ` - ${cartStore.address}` : ''}
+                </div>
+              ) : (
+                <input
+                  type="text"
+                  className="pl-search-input"
+                  placeholder="Calle, número, sector, referencia"
+                  value={deliveryAddress}
+                  onChange={(e) => setDeliveryAddress(e.target.value)}
+                />
+              )}
             </div>
 
             <div style={{ maxHeight: 200, overflowY: 'auto', marginBottom: 14 }}>
@@ -1250,73 +1044,73 @@ export default function PedidosListoHub({ lang = 'es', navigate }) {
                 <span>Tarifa de servicio</span>
                 <span>RD$ {serviceFee}</span>
               </div>
+              {!isPickupHub && (
+                <div className="pl-sum-row" style={{ alignItems: 'center' }}>
+                  <span>Propina (opcional)</span>
+                  <span style={{ display: 'flex', gap: 4 }}>
+                    {[0, 25, 50, 100].map(t => (
+                      <button key={t} type="button" onClick={() => setTipAmount(t)}
+                        style={{ padding: '3px 8px', borderRadius: 8, fontSize: 11, fontWeight: 800, cursor: 'pointer', border: tipAmount === t ? '2px solid #F26000' : '1px solid #E2E8F0', background: tipAmount === t ? '#FFF4EE' : '#FFF' }}>
+                        {t === 0 ? 'No' : `RD$ ${t}`}
+                      </button>
+                    ))}
+                  </span>
+                </div>
+              )}
+              <div className="pl-sum-row" style={{ alignItems: 'center' }}>
+                <span>Método de pago</span>
+                <select value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)}
+                  style={{ padding: '4px 8px', borderRadius: 8, border: '1px solid #E2E8F0', fontWeight: 700 }}>
+                  <option value="efectivo">💵 Efectivo</option>
+                  <option value="transferencia">🏦 Transferencia</option>
+                </select>
+              </div>
               <div className="pl-sum-row total">
                 <span>Total a Pagar</span>
                 <span style={{ color: isPickupHub ? '#059669' : 'var(--mamey-primary)' }}>RD$ {total.toLocaleString()}</span>
               </div>
             </div>
 
+            {orderError && (
+              <div style={{ background: '#FEF2F2', border: '1px solid #FECACA', color: '#B91C1C', borderRadius: 12, padding: '10px 12px', fontSize: 12.5, fontWeight: 700, marginBottom: 10 }}>
+                {orderError}
+              </div>
+            )}
+
             <button 
               className="pl-order-confirm-btn" 
               onClick={handleConfirmOrder}
+              disabled={submitting}
               style={{
-                background: isPickupHub ? 'linear-gradient(135deg, #059669, #10B981)' : undefined
+                background: isPickupHub ? 'linear-gradient(135deg, #059669, #10B981)' : undefined,
+                opacity: submitting ? 0.6 : 1
               }}
             >
-              {isPickupHub ? `🛍️ Confirmar Retiro en Local (RD$ ${total.toLocaleString()})` : '🚀 Confirmar & Realizar Pedido'}
+              {submitting
+                ? 'Enviando pedido...'
+                : isPickupHub ? `🛍️ Confirmar Retiro en Local (RD$ ${total.toLocaleString()})` : `🚀 Confirmar Pedido (RD$ ${total.toLocaleString()})`}
             </button>
           </div>
         </div>
       )}
 
-      {/* 12. MODAL DE SEGUIMIENTO EN TIEMPO REAL (RASTREO EN VIVO) */}
-      {activeTrackingOrder && (
-        <div className="pl-modal-overlay">
-          <div className="pl-cart-drawer" style={{ background: '#FFFFFF', borderRadius: '28px' }}>
+      {/* 12. CONFIRMACIÓN DE PEDIDO (solo datos reales del pedido guardado) */}
+      {confirmedOrder && (
+        <div className="pl-modal-overlay" onClick={() => setConfirmedOrder(null)}>
+          <div className="pl-cart-drawer" onClick={(e) => e.stopPropagation()} style={{ background: '#FFFFFF', borderRadius: '28px' }}>
             <div className="pl-drawer-header">
-              <h3 className="pl-drawer-title">🛵 Seguimiento de Pedido Listo</h3>
-              <button className="pl-close-btn" onClick={() => setActiveTrackingOrder(null)}>✕</button>
+              <h3 className="pl-drawer-title">✅ Pedido enviado</h3>
+              <button className="pl-close-btn" onClick={() => setConfirmedOrder(null)}>✕</button>
             </div>
-
             <div style={{ textAlign: 'center', padding: '10px 0 20px' }}>
-              <div style={{ fontSize: 48, marginBottom: 8 }}>🛵💨</div>
-              <h4 style={{ margin: '0 0 4px', fontSize: 18, fontWeight: 900, color: '#1A1A2E' }}>
-                ¡El repartidor va en camino!
-              </h4>
-              <p style={{ margin: 0, fontSize: 13, color: '#777', fontWeight: 600 }}>
-                Tiempo estimado de llegada: <strong>15 - 20 minutos</strong>
-              </p>
+              <p style={{ margin: '0 0 6px', fontSize: 15, fontWeight: 900, color: '#1A1A2E' }}>Pedido #{confirmedOrder.orderId}</p>
+              {confirmedOrder.storeName && <p style={{ margin: '0 0 6px', fontSize: 13, color: '#475569', fontWeight: 700 }}>{confirmedOrder.storeName}</p>}
+              <p style={{ margin: '0 0 6px', fontSize: 13, color: '#475569', fontWeight: 700 }}>Total: RD$ {Number(confirmedOrder.total).toLocaleString()}</p>
+              <p style={{ margin: '12px 0 0', fontSize: 13, color: '#777', fontWeight: 600 }}>Tu PIN de entrega: <strong style={{ fontSize: 18, color: '#1A1A2E' }}>{confirmedOrder.pinOTP}</strong></p>
+              <p style={{ margin: '12px 0 0', fontSize: 12, color: '#94A3B8', fontWeight: 600 }}>Te avisaremos cuando el local acepte tu pedido.</p>
             </div>
-
-            <div style={{ background: '#FFF4EE', border: '1.5px solid #FFE4D6', borderRadius: 18, padding: 16, marginBottom: 16 }}>
-              <p style={{ margin: '0 0 8px', fontSize: 12, fontWeight: 900, color: 'var(--mamey-primary)' }}>
-                REPARTIDOR ASIGNADO
-              </p>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'var(--mamey-primary)', color: '#FFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900 }}>
-                    🛵
-                  </div>
-                  <div>
-                    <p style={{ margin: 0, fontSize: 14, fontWeight: 800, color: '#1A1A2E' }}>{activeTrackingOrder.riderName}</p>
-                    <p style={{ margin: 0, fontSize: 11, color: '#777' }}>Mándame Rider • ⭐ 4.9</p>
-                  </div>
-                </div>
-                <button
-                  style={{ padding: '8px 14px', borderRadius: 12, background: '#10B981', color: '#FFF', border: 'none', fontWeight: 800, fontSize: 12, cursor: 'pointer' }}
-                  onClick={() => alert(`Llamando al repartidor ${activeTrackingOrder.riderPhone}...`)}
-                >
-                  📞 Llamar
-                </button>
-              </div>
-            </div>
-
-            <button
-              className="pl-order-confirm-btn"
-              style={{ background: '#1A1A2E' }}
-              onClick={() => setActiveTrackingOrder(null)}
-            >
-              Cerrar Mapa de Rastreo
+            <button className="pl-order-confirm-btn" style={{ background: '#1A1A2E' }} onClick={() => setConfirmedOrder(null)}>
+              Cerrar
             </button>
           </div>
         </div>
