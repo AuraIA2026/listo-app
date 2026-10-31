@@ -2761,14 +2761,14 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                 </div>
 
                 {/* 4. Partner Merchant Logos Strip — comercios reales de Firestore */}
-                {stores.length > 0 && (
+                {partnerStores.length > 0 && (
                   <div style={{ display: 'flex', gap: 12, overflowX: 'auto', padding: '0 16px', marginBottom: 16, scrollbarWidth: 'none' }}>
-                    {stores.slice(0, 8).map((st) => {
+                    {partnerStores.slice(0, 8).map((st) => {
                       const cat = (st.categoria || st.category || '').toLowerCase();
                       const icon = cat.includes('pizza') ? '🍕' : cat.includes('pollo') ? '🍗' : cat.includes('bebida') ? '🍺' : cat.includes('market') ? '🛒' : cat.includes('salud') ? '💊' : '🏪';
                       const colors = ['#ff6b00','#dc2626','#ca8a04','#16a34a','#7c3aed','#0ea5e9'];
                       const bgs   = ['#fff3e6','#fef2f2','#fefce8','#f0fdf4','#f5f3ff','#e0f2fe'];
-                      const ci = stores.indexOf(st) % colors.length;
+                      const ci = partnerStores.indexOf(st) % colors.length;
                       return (
                         <div key={st.id} onClick={() => setActiveStoreModal(st)} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', cursor: 'pointer', flexShrink: 0 }}>
                           <div style={{ width: 52, height: 52, borderRadius: 18, background: st.logoURL ? 'transparent' : bgs[ci], border: `2px solid ${colors[ci]}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, boxShadow: '0 4px 10px rgba(0,0,0,0.06)', overflow: 'hidden' }}>
@@ -2796,9 +2796,9 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                       </span>
                     </div>
 
-                    {stores.length > 0 ? (
+                    {partnerStores.length > 0 ? (
                       <div style={{ display: 'flex', gap: 12, overflowX: 'auto', scrollbarWidth: 'none', paddingBottom: 4 }}>
-                        {stores.slice(0, 6).map(st => (
+                        {partnerStores.slice(0, 6).map(st => (
                           <div key={st.id} onClick={() => setActiveStoreModal(st)} style={{ minWidth: 200, maxWidth: 200, background: 'white', borderRadius: 18, overflow: 'hidden', color: '#1e293b', flexShrink: 0, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', cursor: 'pointer' }}>
                             <div style={{ padding: '8px 12px', display: 'flex', alignItems: 'center', gap: 8, borderBottom: '1px solid #f1f5f9' }}>
                               <span style={{ fontSize: 14 }}>🏪</span>
@@ -2831,13 +2831,13 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                 </div>
 
                 {/* 8. Sección Mismo precio — comercios reales */}
-                {stores.length > 0 && (
+                {partnerStores.length > 0 && (
                   <div style={{ padding: '0 16px', marginBottom: 20 }}>
                     <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 900, fontSize: 17, color: '#1e293b', marginBottom: 12 }}>
                       Mismo precio que en local
                     </h3>
                     <div style={{ display: 'flex', gap: 12, overflowX: 'auto', scrollbarWidth: 'none', paddingBottom: 4 }}>
-                      {stores.slice(0, 4).map(st => (
+                      {partnerStores.slice(0, 4).map(st => (
                         <div key={st.id} onClick={() => setActiveStoreModal(st)} style={{ minWidth: 220, maxWidth: 220, background: 'white', borderRadius: 20, overflow: 'hidden', border: '1px solid #e2e8f0', boxShadow: '0 4px 14px rgba(0,0,0,0.06)', flexShrink: 0, cursor: 'pointer' }}>
                           <div style={{ position: 'relative' }}>
                             <img src={st.portadaURL || st.logoURL || 'assets/burger_3d.png'} style={{ width: '100%', height: 120, objectFit: 'cover' }} alt={st.nombre} />
@@ -2997,7 +2997,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                   </div>
                 </div>
 
-                {/* 14. Stores Directory List */}
+                {/* 14. partnerStores Directory List */}
                 <div style={{ padding: '0 16px 24px 16px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
                     <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 900, fontSize: 17, color: '#1e293b', margin: 0 }}>
