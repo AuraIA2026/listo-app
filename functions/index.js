@@ -594,18 +594,22 @@ exports.enviarNotificacionPushBackground = functions.firestore
         return null; 
       }
 
+      const appLogoUrl = "https://listopatron.vercel.app/logo-mamey.png";
+
       const payload = {
         token: fcmToken,
         notification: {
-          title: notifData.title || "🔔 Nueva Notificación",
+          title: notifData.title || "🔔 Pedidos Listo",
           body: notifData.text || "Tienes un mensaje nuevo en Pedidos Listo.",
+          imageUrl: notifData.imageUrl || appLogoUrl,
         },
         data: {
           type: notifData.type || "",
           orderId: notifData.orderId || "",
           chatId: notifData.chatId || "",
-          title: notifData.title || "",
-          body: notifData.text || ""
+          title: notifData.title || "🔔 Pedidos Listo",
+          body: notifData.text || "",
+          icon: appLogoUrl,
         },
         android: {
           priority: "high",
@@ -613,15 +617,36 @@ exports.enviarNotificacionPushBackground = functions.firestore
             sound: "default",
             channelId: "listo_notifications",
             icon: "ic_notification",
-            color: "#F26000"
+            color: "#F26000",
+            imageUrl: notifData.imageUrl || appLogoUrl,
+            priority: "max",
+            visibility: "public",
+            defaultVibrateTimings: true,
+          }
+        },
+        webpush: {
+          headers: {
+            Urgency: "high"
+          },
+          notification: {
+            title: notifData.title || "🔔 Pedidos Listo",
+            body: notifData.text || "Tienes un mensaje nuevo en Pedidos Listo.",
+            icon: appLogoUrl,
+            badge: appLogoUrl,
+            vibrate: [200, 100, 200],
+            requireInteraction: notifData.type === "new_order"
           }
         },
         apns: {
           payload: {
             aps: {
               sound: "default",
-              contentAvailable: true
+              contentAvailable: true,
+              mutableContent: 1
             }
+          },
+          fcm_options: {
+            image: appLogoUrl
           }
         }
       };
@@ -632,6 +657,113 @@ exports.enviarNotificacionPushBackground = functions.firestore
 
     } catch (error) {
       console.error("❌ Error enviando Push Notification:", error);
+      return null;
+    }
+  });
+
+/* ═══════════════════════════════════════════════════════════
+   FUNCIÓN 6B: enviarNotificacionChatPush
+   Envía notificación Push estilo WhatsApp con el logo de la app
+   cuando un usuario o profesional recibe un mensaje de chat.
+═══════════════════════════════════════════════════════════ */
+exports.enviarNotificacionChatPush = functions.firestore
+  .document("chats/{chatId}/messages/{messageId}")
+  .onCreate(async (snap, context) => {
+    try {
+      const msgData = snap.data();
+      const senderId = msgData.senderId;
+      const chatId = context.params.chatId;
+      if (!senderId || !chatId) return null;
+
+      const chatDoc = await db.collection("chats").doc(chatId).get();
+      let recipientId = null;
+
+      if (chatDoc.exists && Array.isArray(chatDoc.data().members)) {
+        recipientId = chatDoc.data().members.find((uid) => uid !== senderId);
+      } else if (chatId.includes("_")) {
+        const parts = chatId.split("_");
+        recipientId = parts.find((uid) => uid !== senderId);
+      }
+
+      if (!recipientId) return null;
+
+      const [senderDoc, recipientDoc] = await Promise.all([
+        db.collection("users").doc(senderId).get(),
+        db.collection("users").doc(recipientId).get(),
+      ]);
+
+      if (!recipientDoc.exists) return null;
+      const fcmToken = recipientDoc.data().fcmToken;
+      if (!fcmToken) return null;
+
+      const senderName = senderDoc.exists ? (senderDoc.data().name || "Pedidos Listo") : "Pedidos Listo";
+      const senderPhoto = senderDoc.exists ? (senderDoc.data().photoURL || "") : "";
+      const appLogoUrl = "https://listopatron.vercel.app/logo-mamey.png";
+      const msgText = msgData.text || "📎 Te ha enviado un mensaje";
+
+      const payload = {
+        token: fcmToken,
+        notification: {
+          title: `💬 ${senderName}`,
+          body: msgText,
+          imageUrl: appLogoUrl,
+        },
+        data: {
+          type: "chat_message",
+          chatId: chatId,
+          senderId: senderId,
+          senderPhoto: senderPhoto,
+          title: `💬 ${senderName}`,
+          body: msgText,
+          icon: senderPhoto || appLogoUrl,
+        },
+        android: {
+          priority: "high",
+          notification: {
+            sound: "default",
+            channelId: "listo_notifications",
+            icon: "ic_notification",
+            color: "#F26000",
+            imageUrl: appLogoUrl,
+            tag: `chat_${chatId}`,
+            priority: "max",
+            visibility: "public",
+            defaultVibrateTimings: true,
+          }
+        },
+        webpush: {
+          headers: {
+            Urgency: "high"
+          },
+          notification: {
+            title: `💬 ${senderName}`,
+            body: msgText,
+            icon: senderPhoto || appLogoUrl,
+            badge: appLogoUrl,
+            tag: `chat_${chatId}`,
+            renotify: true,
+            vibrate: [200, 100, 200]
+          }
+        },
+        apns: {
+          payload: {
+            aps: {
+              sound: "default",
+              contentAvailable: true,
+              mutableContent: 1
+            }
+          },
+          fcm_options: {
+            image: appLogoUrl
+          }
+        }
+      };
+
+      const response = await admin.messaging().send(payload);
+      console.log(`💬 Push de chat enviado a ${recipientId}: ${response}`);
+      return { success: true, response };
+    } catch (error) {
+      console.error("❌ Error enviando Push de chat:", error);
       return null;
     }
   });

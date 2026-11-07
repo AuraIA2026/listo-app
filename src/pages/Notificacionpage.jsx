@@ -408,8 +408,9 @@ export default function NotificacionPage({ lang = 'es', navigate, userData }) {
                 >
                   <div className="notification-content">
                     <div className="notification-header">
-                      <span className="notification-icon">
+                      <span className="notification-icon" style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 44, height: 44, borderRadius: '50%', background: '#FFF3EC', flexShrink: 0 }}>
                          {getNotifIcon(notif)}
+                         <img src="/logo-mamey.png" alt="Logo" style={{ position: 'absolute', bottom: -2, right: -2, width: 18, height: 18, borderRadius: '50%', border: '1.5px solid #fff', objectFit: 'cover', boxShadow: '0 1px 4px rgba(0,0,0,0.3)' }} />
                       </span>
                       <div className="notification-text-wrapper">
                         {notif.title && <p className="notification-title" style={{ margin: '0 0 4px 0', fontWeight: '800', fontSize: '15px', color: '#1a1a2e' }}>{notif.title}</p>}

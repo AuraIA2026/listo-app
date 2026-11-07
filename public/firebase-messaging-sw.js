@@ -23,30 +23,28 @@ messaging.onBackgroundMessage((payload) => {
   const { title, body } = payload.notification || {};
   const data = payload.data || {};
 
-  const notifTitle = title || '🔔 Pedidos Listo';
+  const notifTitle = title || data.title || '🔔 Pedidos Listo';
+  const appLogoUrl = '/logo-mamey.png';
   const notifOptions = {
-    body:    body || 'Tienes una nueva notificación.',
-    icon:    '/icons/icon-192.png',
-    badge:   '/icons/icon-192.png',
-    vibrate: [200, 100, 200],
-    tag:     data.type || 'listo-notif',      // agrupa por tipo para no apilar
+    body:    body || data.body || 'Tienes una nueva notificación en Pedidos Listo.',
+    icon:    data.icon || data.senderPhoto || appLogoUrl,
+    badge:   appLogoUrl,
+    image:   data.image || undefined,
+    vibrate: [200, 100, 200, 100, 300],
+    tag:     data.type ? `${data.type}-${data.orderId || data.chatId || ''}` : 'listo-notif',
     renotify: true,
+    requireInteraction: data.type === 'new_order',
     data: {
-      url:     '/',
+      url:     data.url     || '/',
       type:    data.type    || '',
       orderId: data.orderId || '',
       chatId:  data.chatId  || '',
     },
     actions: [
-      { action: 'open',    title: '📲 Abrir' },
-      { action: 'dismiss', title: 'Cerrar'   },
+      { action: 'open',    title: '📲 Ver ahora' },
+      { action: 'dismiss', title: 'Cerrar'       },
     ],
   };
-
-  // Icono especial por tipo
-  if (data.type === 'new_order')       notifOptions.icon = '/icons/icon-192.png';
-  if (data.type === 'new_review')      notifOptions.badge = '/icons/icon-192.png';
-  if (data.type === 'job_done')        notifOptions.icon  = '/icons/icon-192.png';
 
   self.registration.showNotification(notifTitle, notifOptions);
 });

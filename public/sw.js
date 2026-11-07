@@ -71,9 +71,11 @@ self.addEventListener('push', (event) => {
 
   const options = {
     body: data.body,
-    icon: '/icons/icon-192.png',
-    badge: '/icons/icon-192.png',
-    vibrate: [100, 50, 100],
+    icon: data.icon || '/logo-mamey.png',
+    badge: '/logo-mamey.png',
+    vibrate: [200, 100, 200],
+    renotify: true,
+    tag: data.tag || 'listo-push',
     data: { url: data.url || '/' }
   };
 

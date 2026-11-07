@@ -531,7 +531,10 @@ function NotificacionesModal({ onClose, notifs, lang, onMarkAllRead, navigate, o
               <div key={i} onClick={handleClick} style={{ display:'flex', alignItems:'flex-start', gap:12, padding:12, borderRadius:12, marginBottom:8, background:n.read?'#fff':'#FFF3EC', border:n.read?'1px solid #f0f0f0':'1px solid #FFD580', cursor:'pointer', transition:'transform 0.15s' }}
                 onMouseEnter={e => { e.currentTarget.style.transform='scale(1.01)' }}
                 onMouseLeave={e => { e.currentTarget.style.transform='scale(1)' }}>
-                <span style={{ fontSize:22, flexShrink:0 }}>{n.icon||'🔔'}</span>
+                <div style={{ position: 'relative', width: 42, height: 42, borderRadius: '50%', background: '#FFF3EC', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, flexShrink: 0, border: '1px solid #FFD580' }}>
+                  <span>{n.icon||'🔔'}</span>
+                  <img src="/logo-mamey.png" alt="Pedidos Listo" style={{ position: 'absolute', bottom: -2, right: -2, width: 17, height: 17, borderRadius: '50%', border: '1.5px solid #fff', objectFit: 'cover', boxShadow: '0 1px 4px rgba(0,0,0,0.25)' }} />
+                </div>
                 <div style={{ flex:1 }}>
                   {n.title && <p style={{ margin:'0 0 4px', fontSize:14, fontWeight:800, color:'#991B1B' }}>{n.title}</p>}
                   <p style={{ margin:'0 0 2px', fontSize:13, fontWeight:n.read?600:800, color:'#1A1A2E', whiteSpace:'pre-line', lineHeight:1.5 }}>{displayText}</p>
@@ -730,18 +733,57 @@ export function OrderDetailsModal({ order, lang, onClose, onAccept, onDecline })
 
 export function ExoticOrderNotification({ order, lang, onClick, onClose }) {
   return (
-    <div className="exotic-notif-container" onClick={onClick}>
+    <div className="exotic-notif-container" onClick={onClick} style={{ zIndex: 999999, top: 'max(calc(env(safe-area-inset-top, 0px) + 14px), 14px)' }}>
       <div className="exotic-notif-glow"></div>
-      <div className="exotic-notif-content">
-        <button className="exotic-notif-close" onClick={e => { e.stopPropagation(); onClose() }}>✕</button>
-        <div className="exotic-notif-icon-wrap"><div className="exotic-notif-pulse"></div><span className="exotic-notif-icon">🤝</span></div>
-        <div className="exotic-notif-text">
-          <h4 className="exotic-title">{txt[lang]?.newOrderAlert||'🤝 ¡Tienes un contrato nuevo!'}</h4>
-          <p className="exotic-desc">{txt[lang]?.newOrderDesc||'Un cliente quiere contratar tus servicios'}</p>
-          <div className="exotic-user">
-            <span className="exotic-avatar" style={{ background:avatarColors[0] }}>{order.avatar}</span>
-            <span className="exotic-name">{order.pro}</span>
-            <span className="exotic-action">{txt[lang]?.viewDetails||'Ver detalles'} →</span>
+      <div className="exotic-notif-content" style={{ flexDirection: 'column', alignItems: 'stretch', gap: 10, padding: '14px 16px', background: 'rgba(20, 20, 35, 0.96)', color: '#fff', border: '1.5px solid rgba(242, 96, 0, 0.65)', borderRadius: 20 }}>
+        {/* Cabecera estilo WhatsApp con el logo oficial de la app */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+            <img src="/logo-mamey.png" alt="Pedidos Listo" style={{ width: 20, height: 20, borderRadius: '50%', objectFit: 'cover', border: '1px solid rgba(255,255,255,0.4)' }} />
+            <span style={{ fontSize: 11, fontWeight: 900, letterSpacing: '0.6px', color: '#FF8533', textTransform: 'uppercase' }}>PEDIDOS LISTO</span>
+            <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)', fontWeight: 600 }}>• {lang === 'es' ? 'ahora' : 'now'}</span>
+          </div>
+          <button
+            onClick={e => { e.stopPropagation(); onClose() }}
+            style={{ background: 'rgba(255,255,255,0.12)', border: 'none', color: '#fff', width: 26, height: 26, borderRadius: '50%', fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          >
+            ✕
+          </button>
+        </div>
+
+        {/* Cuerpo principal con Avatar + Insignia del Logo de la App estilo WhatsApp */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 13 }}>
+          <div style={{ position: 'relative', width: 52, height: 52, flexShrink: 0 }}>
+            <div className="exotic-notif-pulse" style={{ background: '#F26000' }}></div>
+            {order.photoURL ? (
+              <img src={order.photoURL} alt={order.pro} style={{ width: 52, height: 52, borderRadius: '50%', objectFit: 'cover', border: '2px solid #F26000', position: 'relative', zIndex: 2 }} />
+            ) : (
+              <div style={{ width: 52, height: 52, borderRadius: '50%', background: 'linear-gradient(135deg, #F26000, #FF8533)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 19, fontWeight: 900, border: '2px solid #fff', position: 'relative', zIndex: 2 }}>
+                {order.avatar || '🤝'}
+              </div>
+            )}
+            <img
+              src="/logo-mamey.png"
+              alt="App Logo"
+              style={{ position: 'absolute', bottom: -2, right: -2, width: 22, height: 22, borderRadius: '50%', border: '2px solid #141423', objectFit: 'cover', zIndex: 3, boxShadow: '0 2px 6px rgba(0,0,0,0.5)' }}
+            />
+          </div>
+
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <h4 style={{ margin: '0 0 2px', fontSize: 15, fontWeight: 900, color: '#FFFFFF', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              {txt[lang]?.newOrderAlert || '🤝 ¡Tienes un contrato nuevo!'}
+            </h4>
+            <p style={{ margin: '0 0 6px', fontSize: 13, color: '#E2E8F0', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              <strong style={{ color: '#FFB380' }}>{order.pro}</strong> • {order.specialty || (txt[lang]?.newOrderDesc || 'Solicita tus servicios')}
+            </p>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(242, 96, 0, 0.18)', border: '1px solid rgba(242, 96, 0, 0.4)', padding: '6px 12px', borderRadius: 10 }}>
+              <span style={{ fontSize: 12, fontWeight: 800, color: '#FFD4B0' }}>
+                📍 {order.clientAddress || order.address || (lang === 'es' ? 'Toque para responder' : 'Tap to respond')}
+              </span>
+              <span style={{ fontSize: 12, fontWeight: 900, color: '#FF8533', marginLeft: 8, flexShrink: 0 }}>
+                {txt[lang]?.viewDetails || 'Ver detalles'} →
+              </span>
+            </div>
           </div>
         </div>
       </div>

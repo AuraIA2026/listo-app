@@ -100,51 +100,98 @@ function BonusMessageModal({ bonus, userId, onClose }) {
   );
 }
 
-/* ── Banner mensaje nuevo ────────────────────────────────────────────────── */
-function ChatMessageBanner({ sender, text, onClose, onClick }) {
+/* ── Banner mensaje / notificación estilo WhatsApp con Logo Oficial ───────── */
+function ChatMessageBanner({ sender, senderPhoto, title, text, actionLabel, accentColor = '#F26000', onClose, onClick }) {
   useEffect(() => {
-    const t = setTimeout(onClose, 5000)
+    try { if (navigator.vibrate) navigator.vibrate([200, 100, 200]) } catch (e) {}
+    const t = setTimeout(onClose, 6500)
     return () => clearTimeout(t)
   }, []) // eslint-disable-line
+
+  const initial = sender ? sender.substring(0, 2).toUpperCase() : 'PL'
 
   return (
     <>
       <style>{`
         @keyframes bannerSlideDown {
-          from { transform: translateX(-50%) translateY(-110%); opacity: 0; }
-          to   { transform: translateX(-50%) translateY(0);     opacity: 1; }
+          from { transform: translateX(-50%) translateY(-120%) scale(0.95); opacity: 0; }
+          to   { transform: translateX(-50%) translateY(0)     scale(1);    opacity: 1; }
         }
       `}</style>
       <div onClick={onClick} style={{
-        position: 'fixed', top: 16, left: '50%',
+        position: 'fixed', top: 'max(calc(env(safe-area-inset-top, 0px) + 14px), 14px)', left: '50%',
         transform: 'translateX(-50%)',
-        width: 'calc(100% - 32px)', maxWidth: 440,
-        background: '#1A1A2E', color: '#fff',
-        borderRadius: 16, padding: '12px 16px',
-        display: 'flex', alignItems: 'center', gap: 12,
-        boxShadow: '0 8px 32px rgba(0,0,0,0.25)',
-        zIndex: 9999, cursor: 'pointer',
-        animation: 'bannerSlideDown .4s cubic-bezier(.32,1.2,.5,1)',
+        width: 'calc(100% - 28px)', maxWidth: 440,
+        background: 'rgba(20, 20, 35, 0.96)',
+        backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+        color: '#fff',
+        borderRadius: 20, padding: '12px 15px',
+        display: 'flex', flexDirection: 'column', gap: 9,
+        border: `1.5px solid ${accentColor}88`,
+        boxShadow: '0 14px 38px rgba(0,0,0,0.42), 0 0 20px rgba(242,96,0,0.2)',
+        zIndex: 999999, cursor: 'pointer',
+        animation: 'bannerSlideDown .42s cubic-bezier(.32,1.25,.5,1)',
       }}>
-        <div style={{
-          width: 42, height: 42, borderRadius: '50%', background: '#F26000',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: 20, flexShrink: 0,
-        }}>💬</div>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: '#FFD4B0' }}>{sender}</p>
-          <p style={{ margin: 0, fontSize: 13, color: '#ddd', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-            {text}
-          </p>
-          <p style={{ margin: '3px 0 0', fontSize: 11, color: '#F26000', fontWeight: 700 }}>
-            Toca para responder en Pedidos →
-          </p>
+        {/* Cabecera estilo WhatsApp con el logo de la app */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+            <img src="/logo-mamey.png" alt="Pedidos Listo" style={{ width: 19, height: 19, borderRadius: '50%', objectFit: 'cover', border: '1px solid rgba(255,255,255,0.45)' }} />
+            <span style={{ fontSize: 11, fontWeight: 900, letterSpacing: '0.6px', color: '#FF8533', textTransform: 'uppercase' }}>
+              PEDIDOS LISTO
+            </span>
+            <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)', fontWeight: 600 }}>• ahora</span>
+          </div>
+          <button onClick={e => { e.stopPropagation(); onClose() }} style={{
+            background: 'rgba(255,255,255,0.12)', border: 'none', color: '#fff',
+            borderRadius: '50%', width: 25, height: 25, cursor: 'pointer', fontSize: 12,
+            display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+          }}>✕</button>
         </div>
-        <button onClick={e => { e.stopPropagation(); onClose() }} style={{
-          background: 'rgba(255,255,255,0.1)', border: 'none', color: '#fff',
-          borderRadius: '50%', width: 28, height: 28, cursor: 'pointer', fontSize: 14,
-          display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-        }}>✕</button>
+
+        {/* Cuerpo: Avatar + Insignia del Logo de la App + Mensaje */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div style={{ position: 'relative', width: 48, height: 48, flexShrink: 0 }}>
+            {senderPhoto ? (
+              <img src={senderPhoto} alt={sender} style={{ width: 48, height: 48, borderRadius: '50%', objectFit: 'cover', border: `2px solid ${accentColor}` }} />
+            ) : (
+              <div style={{
+                width: 48, height: 48, borderRadius: '50%',
+                background: `linear-gradient(135deg, ${accentColor}, #FF8533)`,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 16, fontWeight: 900, color: '#fff', border: '2px solid rgba(255,255,255,0.8)',
+              }}>{initial}</div>
+            )}
+            {/* Mini logo de la app en la esquina inferior derecha estilo WhatsApp */}
+            <img
+              src="/logo-mamey.png"
+              alt="App Logo"
+              style={{
+                position: 'absolute', bottom: -2, right: -2,
+                width: 20, height: 20, borderRadius: '50%',
+                border: '2px solid #141423', objectFit: 'cover',
+                boxShadow: '0 2px 5px rgba(0,0,0,0.45)'
+              }}
+            />
+          </div>
+
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <p style={{ margin: '0 0 2px', fontSize: 14.5, fontWeight: 900, color: '#FFFFFF', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              {title || `💬 ${sender}`}
+            </p>
+            <p style={{ margin: 0, fontSize: 13, color: '#E2E8F0', lineHeight: 1.35, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+              {text}
+            </p>
+          </div>
+
+          <div style={{
+            background: accentColor, color: '#fff',
+            padding: '7px 12px', borderRadius: 12,
+            fontSize: 11.5, fontWeight: 900, flexShrink: 0,
+            boxShadow: `0 4px 12px ${accentColor}55`
+          }}>
+            {actionLabel || 'Responder →'}
+          </div>
+        </div>
       </div>
     </>
   )
@@ -286,17 +333,17 @@ function SystemAlertModal({ alert, onClose, lang, onNavigateProfile }) {
             </h2>
           </div>
 
-          {/* Campana */}
+          {/* Logo Oficial de la App */}
           <div style={{
-            width: '52px', height: '52px', minHeight: '52px',
-            background: 'rgba(255, 225, 195, 0.4)', backdropFilter: 'blur(4px)',
-            border: '2px solid rgba(255, 255, 255, 0.6)', borderRadius: '50%',
+            width: '58px', height: '58px', minHeight: '58px',
+            background: '#FFFFFF',
+            border: '2.5px solid #FFFFFF', borderRadius: '50%',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: '26px', boxShadow: '0 4px 14px rgba(0,0,0,0.18)',
-            zIndex: 2, margin: '2px 0',
+            boxShadow: '0 6px 18px rgba(0,0,0,0.28)',
+            zIndex: 2, margin: '2px 0', overflow: 'hidden',
             animation: 'bellRingBounce 2.5s infinite ease-in-out'
           }}>
-            🔔
+            <img src="/logo-mamey.png" alt="Pedidos Listo" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />
           </div>
 
           {/* Mensaje Corto */}
@@ -363,16 +410,16 @@ function SystemAlertModal({ alert, onClose, lang, onNavigateProfile }) {
             maxHeight: '78vh',
             overflowY: 'auto'
           }}>
-            {/* Icono de Campana Centro Top */}
+            {/* Logo Oficial de la App Centro Top */}
             <div style={{
-              width: '56px', height: '56px', minHeight: '56px',
-              background: 'rgba(255, 185, 120, 0.45)', backdropFilter: 'blur(4px)',
-              border: '2px solid rgba(255, 255, 255, 0.65)', borderRadius: '50%',
+              width: '62px', height: '62px', minHeight: '62px',
+              background: '#FFFFFF',
+              border: '3px solid #FFFFFF', borderRadius: '50%',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: '28px', boxShadow: '0 6px 16px rgba(0,0,0,0.2)',
-              marginBottom: '18px'
+              boxShadow: '0 6px 18px rgba(0,0,0,0.28)',
+              marginBottom: '18px', overflow: 'hidden'
             }}>
-              🔔
+              <img src="/logo-mamey.png" alt="Pedidos Listo" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />
             </div>
 
             {/* Título Oficial */}
@@ -577,6 +624,17 @@ export default function App() {
         PushNotifications.addListener('registration', token => {
           updateDoc(doc(db, 'users', userData.uid), { fcmToken: token.value }).catch(()=>{})
         })
+        PushNotifications.addListener('pushNotificationReceived', notification => {
+          console.log("Notificación push recibida en primer plano:", notification)
+          playMsgSound()
+          setChatBanner({
+            sender: 'Pedidos Listo',
+            senderPhoto: '/logo-mamey.png',
+            title: notification.title || '🔔 Pedidos Listo',
+            text: notification.body || 'Tienes una nueva actualización.',
+            actionLabel: 'Ver →',
+          })
+        })
         PushNotifications.addListener('pushNotificationActionPerformed', notification => {
           console.log("Notificación push pulsada:", notification)
           setCurrentPage('orders')
@@ -612,16 +670,23 @@ export default function App() {
           const page = currentPageRef.current
           if (page === 'orders' || page === 'chat') { playMsgSound(); return }
           if (banneredChatIds.current.has(chatId)) { playMsgSound(); return }
-          let senderName = 'Profesional'
+          let senderName = userRole === 'pro' ? 'Cliente' : 'Profesional'
+          let senderPhoto = null
           try {
             const uSnap = await getDocs(query(collection(db, 'users'), where('__name__', '==', lastMsg.senderId)))
-            if (!uSnap.empty) senderName = uSnap.docs[0].data().name || senderName
+            if (!uSnap.empty) {
+              const uData = uSnap.docs[0].data()
+              senderName = uData.name || senderName
+              senderPhoto = uData.photoURL || null
+            }
           } catch(e) {}
           banneredChatIds.current.add(chatId)
           playMsgSound()
-          setChatBanner({ sender: senderName, text: lastMsg.text || '📎 Mensaje', chatId })
-          sendBrowserNotification(`💬 Mensaje de ${senderName}`, {
+          setChatBanner({ sender: senderName, senderPhoto, text: lastMsg.text || '📎 Mensaje adjunto', chatId })
+          sendBrowserNotification(`💬 ${senderName}`, {
             body: lastMsg.text || 'Tienes un nuevo mensaje en Pedidos Listo',
+            icon: senderPhoto || '/logo-mamey.png',
+            badge: '/logo-mamey.png',
             url: '/orders'
           })
         })
@@ -942,7 +1007,12 @@ export default function App() {
 
       {chatBanner && (
         <ChatMessageBanner
-          sender={chatBanner.sender} text={chatBanner.text}
+          sender={chatBanner.sender}
+          senderPhoto={chatBanner.senderPhoto}
+          title={chatBanner.title}
+          text={chatBanner.text}
+          actionLabel={chatBanner.actionLabel}
+          accentColor={chatBanner.accentColor}
           onClose={() => setChatBanner(null)}
           onClick={() => { setChatBanner(null); navigate('orders') }}
         />
@@ -957,46 +1027,29 @@ export default function App() {
       )}
 
       {alertOrder && alertOrder.isUserAlert && (
-        <div className="exotic-notif-container" onClick={() => { navigate('tracking', alertOrder); setAlertOrder(null) }}>
-          <div className="exotic-notif-glow" style={{ background: 'linear-gradient(135deg, #10B981, #34D399, #059669)' }} />
-          <div className="exotic-notif-content" style={{ border: '1px solid #34D399' }}>
-            <button className="exotic-notif-close" onClick={e => { e.stopPropagation(); setAlertOrder(null) }}>✕</button>
-            <div className="exotic-notif-icon-wrap" style={{ background: '#ECFDF5' }}>
-              <div className="exotic-notif-pulse" style={{ background: '#10B981' }} />
-              <span className="exotic-notif-icon">✅</span>
-            </div>
-            <div className="exotic-notif-text">
-              <h4 className="exotic-title" style={{ color: '#065F46' }}>Pedido Aceptado</h4>
-              <p className="exotic-desc">¡{alertOrder.pro} va en camino!</p>
-              <div className="exotic-user">
-                <span className="exotic-avatar" style={{ background: '#10B981' }}>{alertOrder.avatar}</span>
-                <span className="exotic-name">{alertOrder.pro}</span>
-                <span className="exotic-action" style={{ color: '#10B981' }}>Empezar Rastreo →</span>
-              </div>
-            </div>
-          </div>
-        </div>
+        <ChatMessageBanner
+          sender={alertOrder.pro || 'Profesional'}
+          senderPhoto={alertOrder.photoURL || null}
+          title={`✅ ¡Pedido Aceptado! • ${alertOrder.pro}`}
+          text={`¡Va en camino para tu servicio de ${alertOrder.specialty || 'Pedidos Listo'}! Toca para rastrear en tiempo real.`}
+          actionLabel="Rastrear →"
+          accentColor="#10B981"
+          onClose={() => setAlertOrder(null)}
+          onClick={() => { navigate('tracking', alertOrder); setAlertOrder(null) }}
+        />
       )}
 
       {jobDoneAlert && (
-        <div className="exotic-notif-container" onClick={() => { setJobDoneAlert(null); navigate('orders') }}>
-          <div className="exotic-notif-glow" style={{ background: 'linear-gradient(135deg, #6366F1, #8B5CF6, #A78BFA)' }} />
-          <div className="exotic-notif-content" style={{ border: '1px solid #8B5CF6' }}>
-            <button className="exotic-notif-close" onClick={e => { e.stopPropagation(); setJobDoneAlert(null) }}>✕</button>
-            <div className="exotic-notif-icon-wrap" style={{ background: '#EDE9FE' }}>
-              <div className="exotic-notif-pulse" style={{ background: '#8B5CF6' }} />
-              <span className="exotic-notif-icon">🎉</span>
-            </div>
-            <div className="exotic-notif-text">
-              <h4 className="exotic-title" style={{ color: '#4C1D95' }}>{lang === 'es' ? '¡Trabajo Terminado!' : 'Work Done!'}</h4>
-              <p className="exotic-desc">{lang === 'es' ? 'El profesional completó el servicio. ¡Procede al pago!' : 'Service completed. Proceed to payment!'}</p>
-              <div className="exotic-user">
-                <span className="exotic-avatar" style={{ background: '#8B5CF6' }}>💳</span>
-                <span className="exotic-action" style={{ color: '#8B5CF6' }}>{lang === 'es' ? 'Ver mis pedidos →' : 'View orders →'}</span>
-              </div>
-            </div>
-          </div>
-        </div>
+        <ChatMessageBanner
+          sender="Pedidos Listo"
+          senderPhoto="/logo-mamey.png"
+          title={lang === 'es' ? '🎉 ¡Trabajo Terminado!' : '🎉 Work Done!'}
+          text={jobDoneAlert.text || (lang === 'es' ? 'El profesional completó el servicio. ¡Procede al pago!' : 'Service completed. Proceed to payment!')}
+          actionLabel={lang === 'es' ? 'Ir al pago →' : 'Pay now →'}
+          accentColor="#8B5CF6"
+          onClose={() => setJobDoneAlert(null)}
+          onClick={() => { setJobDoneAlert(null); navigate('orders') }}
+        />
       )}
 
       {detailsModalOrder && (
