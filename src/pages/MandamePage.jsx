@@ -2495,7 +2495,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
           <header className="py-app-header" style={{
             background: 'linear-gradient(135deg, #FF6B00 0%, #EA580C 60%, #C2410C 100%)',
             borderBottom: '2px solid rgba(255,255,255,0.2)',
-            padding: '12px 16px',
+            padding: 'max(calc(env(safe-area-inset-top, 0px) + 20px), 56px) 16px 16px',
             boxShadow: '0 4px 18px rgba(255,107,0,0.4)'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -2609,7 +2609,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
             {activeTab === 'inicio' && (
               <>
                 {/* 2. Main Hero Banner - Mamey Gradient Style (IMG_4455.png) */}
-                <div style={{ padding: '0 16px', marginBottom: 16 }}>
+                <div style={{ padding: '14px 16px 0', marginBottom: 16 }}>
                   <div style={{
                     background: 'linear-gradient(135deg, #ff6b00 0%, #ea580c 50%, #c2410c 100%)',
                     borderRadius: 24,
@@ -3032,7 +3032,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
             )}
 
             {activeTab === 'buscar' && (
-              <div style={{ padding: 16 }}>
+              <div style={{ padding: '18px 16px 16px' }}>
                 <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 900, fontSize: 18, marginBottom: 12, color: '#1e293b' }}>
                   🔍 Buscador de Platillos, Productos & Comercios
                 </h3>
@@ -3283,7 +3283,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
             )}
 
             {activeTab === 'mercado' && (
-              <div style={{ padding: 16 }}>
+              <div style={{ padding: '18px 16px 16px' }}>
                 <div style={{ background: 'linear-gradient(135deg, #ff6b00, #ff8533)', color: 'white', padding: 16, borderRadius: 20, marginBottom: 16, boxShadow: '0 8px 24px rgba(255,107,0,0.3)' }}>
                   <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 900, fontSize: 19, margin: '0 0 4px 0' }}>🛒 Pedidos Listo Market & Víveres</h3>
                   <p style={{ margin: 0, fontSize: 12, opacity: 0.95 }}>Supermercados, víveres frescos criollos, farmacias y licorerías de Santiago directo a tu puerta.</p>
@@ -3509,7 +3509,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
             )}
 
             {activeTab === 'pedidos' && (
-              <div style={{ padding: 16 }}>
+              <div style={{ padding: '18px 16px 16px' }}>
                 <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 900, fontSize: 18, marginBottom: 12 }}>📋 Mis Pedidos Activos</h3>
                 <div style={{ textAlign: 'center', padding: '36px 16px', background: '#F8FAFC', borderRadius: 18, border: '1.5px dashed #CBD5E1' }}>
                   <div style={{ fontSize: 36, marginBottom: 8 }}>🛵</div>
@@ -3531,7 +3531,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
          MERCHANT PARTNER PORTAL VIEW MODE
          ========================================================================= */}
       {viewMode === 'merchant' && (
-        <div className="merchant-scroll" style={{ flexGrow: 1, overflowY: 'auto', padding: 16, paddingBottom: 80 }}>
+        <div className="merchant-scroll" style={{ flexGrow: 1, overflowY: 'auto', padding: 'max(calc(env(safe-area-inset-top, 0px) + 20px), 56px) 16px 80px' }}>
           {/* BANNER NOTIFICACIÓN FLOTANTE DE NUEVO PEDIDO ENTRANTE EN COMANDERA */}
           {newOrderBanner && (
             <div style={{
