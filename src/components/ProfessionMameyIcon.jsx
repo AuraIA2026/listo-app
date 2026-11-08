@@ -412,3 +412,4 @@ export default function ProfessionMameyIcon({ id, parentId, active = false, size
     </span>
   )
 }
+

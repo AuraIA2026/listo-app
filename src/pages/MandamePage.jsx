@@ -14,6 +14,7 @@ import ConfigurarRestauranteModal from '../components/ConfigurarRestauranteModal
 import { BUSINESS_TYPES, RENTAL_PERIODS, WHOLESALE_TIERS, findBusinessTypesForQuery, getCategoryLabel } from '../data/businessTypes';
 import DeliveryCercaScreen from '../components/DeliveryCercaScreen';
 import WelcomeIntro from '../components/WelcomeIntro';
+import CreditCardCheckoutForm, { validateCardDetails, saveCardTokenIfRequested } from '../components/CreditCardCheckoutForm';
 
 // Initial Mock State
 const ANIMATED_BANNERS_CATALOG = [
@@ -638,7 +639,8 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
   const [deliveryNotes, setDeliveryNotes] = useState('');
   const [checkoutPhone, setCheckoutPhone] = useState(userData?.phone || userData?.telefono || '');
   const [checkoutName, setCheckoutName] = useState(userData?.name || userData?.displayName || 'Cliente');
-  const [checkoutPaymentMethod, setCheckoutPaymentMethod] = useState('efectivo'); // 'efectivo' | 'transferencia'
+  const [checkoutPaymentMethod, setCheckoutPaymentMethod] = useState('efectivo'); // 'efectivo' | 'transferencia' | 'tarjeta'
+  const [checkoutCardData, setCheckoutCardData] = useState({ mode: 'inapp', number: '', holder: '', expiry: '', cvv: '', saveForLater: true });
   const [cashChangeAmount, setCashChangeAmount] = useState('exacto'); // 'exacto' | '500' | '1000' | '2000'
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
   const [deliveryFulfillmentType, setDeliveryFulfillmentType] = useState('delivery'); // 'delivery' | 'pickup'
@@ -2262,6 +2264,14 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
       phoneToUse = '809-583-2020';
     }
 
+    if (checkoutPaymentMethod === 'tarjeta' && checkoutCardData.mode !== 'azul') {
+      const cardVal = validateCardDetails(checkoutCardData);
+      if (!cardVal.valid) {
+        alert('⚠️ ' + cardVal.error);
+        return;
+      }
+      saveCardTokenIfRequested(checkoutCardData, cardVal);
+    }
     setIsPlacingOrder(true);
     const orderNum = Math.floor(100000 + Math.random() * 900000);
     const generatedOrderId = `PL-${orderNum}`;
@@ -2279,8 +2289,8 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
       orderType: isPickup ? 'pickup' : 'delivery',
       fulfillmentType: isPickup ? 'pickup' : 'delivery',
       driverType: isPickup ? 'pickup' : 'mandame',
-      status: checkoutPaymentMethod === 'tarjeta' ? 'awaiting_payment' : 'pending',
-      paymentStatus: checkoutPaymentMethod === 'tarjeta' ? 'pendiente' : (checkoutPaymentMethod === 'efectivo' ? 'contra_entrega' : 'por_verificar'),
+      status: (checkoutPaymentMethod === 'tarjeta' && checkoutCardData.mode === 'azul') ? 'awaiting_payment' : 'pending',
+      paymentStatus: checkoutPaymentMethod === 'tarjeta' ? (checkoutCardData.mode === 'azul' ? 'pendiente' : 'pagado') : (checkoutPaymentMethod === 'efectivo' ? 'contra_entrega' : 'por_verificar'),
       orderNumber: generatedOrderId,
       clientId: currentUid,
       clientName: clientNameClean,
@@ -2289,7 +2299,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
       clientAddress: finalAddress,
       deliveryAddress: finalAddress,
       deliveryNotes: (deliveryNotes || '').trim(),
-      paymentMethod: checkoutPaymentMethod,
+      paymentMethod: (checkoutPaymentMethod === 'tarjeta' && checkoutCardData.mode !== 'azul') ? `💳 Tarjeta ${validateCardDetails(checkoutCardData).brand || 'Crédito'} •••• ${validateCardDetails(checkoutCardData).last4 || '0000'} (Pagado)` : checkoutPaymentMethod,
       cashChangeFor: checkoutPaymentMethod === 'efectivo' ? cashChangeAmount : null,
       items: cart.map(i => ({
         name: i.name, price: i.price, qty: i.qty, subtotal: i.price * i.qty,
@@ -2321,7 +2331,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
       const docRef = await addDoc(collection(db, 'orders'), orderPayload);
 
       // 💳 PAGO CON TARJETA: redirigir a la pasarela segura AZUL
-      if (checkoutPaymentMethod === 'tarjeta') {
+      if (checkoutPaymentMethod === 'tarjeta' && checkoutCardData.mode === 'azul') {
         const amountCents = String(Math.round(cartTotal * 100));
         const base = window.location.origin;
         const signData = {
@@ -7102,9 +7112,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                     </div>
 
                     {checkoutPaymentMethod === 'tarjeta' && (
-                      <div style={{ marginTop: 8, padding: '8px 10px', background: '#EFF6FF', borderRadius: 10, border: '1px solid #BFDBFE', fontSize: 11, color: '#1E3A8A', fontWeight: 700, lineHeight: 1.4 }}>
-                        🔒 Serás llevado a la pasarela segura de <strong>AZUL (Banco Popular)</strong> para pagar RD$ {cartTotal.toLocaleString()}. Tus datos de tarjeta nunca se guardan en Pedidos Listo.
-                      </div>
+                      <CreditCardCheckoutForm totalAmount={cartTotal} cardData={checkoutCardData} onChangeCardData={setCheckoutCardData} allowAzulGateway={true} />
                     )}
 
                     {checkoutPaymentMethod === 'efectivo' && (

@@ -5,6 +5,7 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { db, auth } from '../firebase';
 import './PedidosListoHub.css';
 import ConfigurarRestauranteModal from './ConfigurarRestauranteModal';
+import CreditCardCheckoutForm, { validateCardDetails, saveCardTokenIfRequested } from './CreditCardCheckoutForm';
 
 const HERO_BANNERS = [
   {
@@ -80,6 +81,7 @@ export default function PedidosListoHub({ navigate }) {
   const [deliveryAddress, setDeliveryAddress] = useState('');
   const [hubFulfillmentType, setHubFulfillmentType] = useState('delivery'); // 'delivery' | 'pickup'
   const [paymentMethod, setPaymentMethod] = useState('efectivo');
+  const [cardData, setCardData] = useState({ mode: 'inapp', number: '', holder: '', expiry: '', cvv: '', saveForLater: true });
   const [tipAmount, setTipAmount] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [orderError, setOrderError] = useState('');
@@ -215,6 +217,18 @@ export default function PedidosListoHub({ navigate }) {
       setOrderError('Escribe tu dirección de entrega.');
       return;
     }
+    let finalPaymentLabel = paymentMethod;
+    let paymentStatusVal = paymentMethod === 'efectivo' ? 'contra_entrega' : 'por_verificar';
+    if (paymentMethod === 'tarjeta') {
+      const cardValidation = validateCardDetails(cardData);
+      if (!cardValidation.valid) {
+        setOrderError(cardValidation.error);
+        return;
+      }
+      saveCardTokenIfRequested(cardData, cardValidation);
+      finalPaymentLabel = `💳 Tarjeta ${cardValidation.brand} •••• ${cardValidation.last4} (Pagado)`;
+      paymentStatusVal = 'pagado';
+    }
 
     setSubmitting(true);
     const pin = Math.floor(1000 + Math.random() * 9000).toString();
@@ -243,7 +257,8 @@ export default function PedidosListoHub({ navigate }) {
       price: `RD$ ${total.toLocaleString()}`,
       deliveryAddress: finalAddress,
       address: finalAddress,
-      paymentMethod,
+      paymentMethod: finalPaymentLabel,
+      paymentStatus: paymentStatusVal,
       pinOTP: pin,
       status: 'pending',
       createdAt: serverTimestamp()
@@ -1062,9 +1077,13 @@ export default function PedidosListoHub({ navigate }) {
                 <select value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)}
                   style={{ padding: '4px 8px', borderRadius: 8, border: '1px solid #E2E8F0', fontWeight: 700 }}>
                   <option value="efectivo">💵 Efectivo</option>
+                  <option value="tarjeta">💳 Tarjeta de Crédito / Débito</option>
                   <option value="transferencia">🏦 Transferencia</option>
                 </select>
               </div>
+              {paymentMethod === 'tarjeta' && (
+                <CreditCardCheckoutForm totalAmount={total} cardData={cardData} onChangeCardData={setCardData} />
+              )}
               <div className="pl-sum-row total">
                 <span>Total a Pagar</span>
                 <span style={{ color: isPickupHub ? '#059669' : 'var(--mamey-primary)' }}>RD$ {total.toLocaleString()}</span>
