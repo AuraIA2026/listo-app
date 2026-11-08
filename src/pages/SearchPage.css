@@ -175,29 +175,30 @@
   flex-shrink: 0;
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 20px;
-  border-radius: 8px;
-  background: #F8FAFC;
-  border: 1px solid rgba(0,0,0,0.04);
-  font-size: 14px;
-  font-weight: 700;
-  color: #64748B;
+  gap: 10px;
+  padding: 8px 16px 8px 10px;
+  border-radius: 14px;
+  background: #FFFFFF;
+  border: 1.5px solid rgba(242, 96, 0, 0.2);
+  font-size: 13.5px;
+  font-weight: 800;
+  color: #1E293B;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+  box-shadow: 0 2px 8px rgba(242, 96, 0, 0.08);
 }
 .cat-pill:hover { 
-  background: white; 
+  background: #FFF9F5; 
   color: var(--mamey);
-  box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+  border-color: #F26000;
+  box-shadow: 0 6px 14px rgba(242, 96, 0, 0.16);
   transform: translateY(-1px);
 }
 .cat-pill.active {
-  background: linear-gradient(135deg, var(--mamey), #FF8533);
+  background: linear-gradient(135deg, #FF7A1A 0%, var(--mamey, #F26000) 100%);
   color: white;
-  border: 1px solid transparent;
-  box-shadow: 0 6px 16px rgba(242,96,0,0.3);
+  border: 1.5px solid #F26000;
+  box-shadow: 0 6px 18px rgba(242, 96, 0, 0.35);
   transform: translateY(-2px);
 }
 

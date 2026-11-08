@@ -25,6 +25,118 @@ import compartirIcon from '../assets/icons/compartir.png'
 import logoListo from '../assets/logo-mamey.png'
 import './SearchPage.css'
 
+const SearchCategoryMameyIcon = ({ id, active }) => {
+  const strokeColor = active ? '#FFFFFF' : '#F26000'
+  const fillAccent  = active ? 'rgba(255,255,255,0.28)' : 'rgba(242,96,0,0.16)'
+  const badgeBg     = active ? 'rgba(255,255,255,0.22)' : 'linear-gradient(135deg, #FFF3EC 0%, #FFE4D1 100%)'
+  const badgeBorder = active ? '1.5px solid rgba(255,255,255,0.45)' : '1.5px solid rgba(242,96,0,0.28)'
+
+  const renderGlyph = () => {
+    switch (id) {
+      case 'all':
+        return (
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+            <path d="M12 2L14.8 9.2L22 12L14.8 14.8L12 22L9.2 14.8L2 12L9.2 9.2L12 2Z" fill={strokeColor} stroke={strokeColor} strokeWidth="1.5" strokeLinejoin="round" />
+            <circle cx="19" cy="5" r="1.5" fill={strokeColor} />
+            <circle cx="5" cy="19" r="1.2" fill={strokeColor} />
+          </svg>
+        )
+      case 'mantenimiento':
+        return (
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={strokeColor} strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" fill={fillAccent} />
+          </svg>
+        )
+      case 'limpieza':
+        return (
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={strokeColor} strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 3l1.9 4.6L18.5 9.5l-4.6 1.9L12 16l-1.9-4.6L5.5 9.5l4.6-1.9L12 3z" fill={fillAccent} />
+            <path d="M19 15l.9 2.1L22 18l-2.1.9L19 21l-.9-2.1L16 18l2.1-.9L19 15z" fill={strokeColor} />
+            <path d="M5 17l.6 1.4L7 19l-1.4.6L5 21l-.6-1.4L3 19l1.4-.6L5 17z" />
+          </svg>
+        )
+      case 'cuidado':
+        return (
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={strokeColor} strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" fill={fillAccent} />
+          </svg>
+        )
+      case 'belleza':
+        return (
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={strokeColor} strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="6" cy="6" r="3" fill={fillAccent} />
+            <circle cx="6" cy="18" r="3" fill={fillAccent} />
+            <line x1="20" y1="4" x2="8.12" y2="15.88" />
+            <line x1="14.47" y1="14.48" x2="20" y2="20" />
+            <line x1="8.12" y1="8.12" x2="12" y2="12" />
+          </svg>
+        )
+      case 'mascotas':
+        return (
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={strokeColor} strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="11" cy="4" r="2" fill={fillAccent} />
+            <circle cx="18" cy="8" r="2" fill={fillAccent} />
+            <circle cx="20" cy="16" r="2" fill={fillAccent} />
+            <path d="M9 10a5 5 0 0 1 5 5v3.5a3.5 3.5 0 0 1-6.84 1.045Q6.52 17.48 4.46 16.84A3.5 3.5 0 0 1 5.5 10Z" fill={fillAccent} />
+          </svg>
+        )
+      case 'transporte':
+        return (
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={strokeColor} strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2" fill={fillAccent} />
+            <path d="M15 18H9" />
+            <path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14" />
+            <circle cx="17" cy="18" r="2" fill={strokeColor} />
+            <circle cx="7" cy="18" r="2" fill={strokeColor} />
+          </svg>
+        )
+      case 'eventos':
+        return (
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={strokeColor} strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" fill={fillAccent} />
+          </svg>
+        )
+      case 'personalizado':
+        return (
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={strokeColor} strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="9" fill={fillAccent} />
+            <circle cx="12" cy="12" r="5" />
+            <circle cx="12" cy="12" r="1.5" fill={strokeColor} />
+          </svg>
+        )
+      default:
+        return (
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={strokeColor} strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="9" fill={fillAccent} />
+          </svg>
+        )
+    }
+  }
+
+  return (
+    <span
+      className="cat-mamey-icon-badge"
+      style={{
+        width: '30px',
+        height: '30px',
+        borderRadius: '10px',
+        background: badgeBg,
+        border: badgeBorder,
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexShrink: 0,
+        boxShadow: active
+          ? 'inset 0 1px 2px rgba(255,255,255,0.35), 0 2px 6px rgba(0,0,0,0.12)'
+          : '0 2px 6px rgba(242, 96, 0, 0.14)',
+        transition: 'all 0.25s cubic-bezier(0.16, 1, 0.3, 1)'
+      }}
+    >
+      {renderGlyph()}
+    </span>
+  )
+}
+
 const customProIcon = new L.Icon({
   iconUrl: 'https://cdn-icons-png.flaticon.com/512/3203/3203071.png',
   iconSize: [36, 36],
@@ -1176,27 +1288,51 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
       <div className="categories-wrapper">
         <div className="categories-scroll">
           <button className={`cat-pill ${activeCategory === 'all' ? 'active' : ''}`} onClick={() => handleCategoryClick('all')}>
-            <span className="cat-icon">✦</span> {T.allCats}
+            <SearchCategoryMameyIcon id="all" active={activeCategory === 'all'} />
+            <span>{T.allCats}</span>
           </button>
-          {CATEGORIES.map(cat => (
-            <button key={cat.id} className={`cat-pill ${activeCategory === cat.id ? 'active' : ''}`} onClick={() => handleCategoryClick(cat.id)}>
-              <span className="cat-icon">
-                {cat.image ? <img src={cat.image} alt={cat.labelEs} style={{ width: '16px', height: '16px', objectFit: 'contain', verticalAlign: 'middle' }} /> : cat.icon}
-              </span>
-              {lang === 'es' ? cat.labelEs : cat.labelEn}
-            </button>
-          ))}
+          {CATEGORIES.map(cat => {
+            const isCatActive = activeCategory === cat.id
+            return (
+              <button key={cat.id} className={`cat-pill ${isCatActive ? 'active' : ''}`} onClick={() => handleCategoryClick(cat.id)}>
+                <SearchCategoryMameyIcon id={cat.id} active={isCatActive} />
+                <span>{lang === 'es' ? cat.labelEs : cat.labelEn}</span>
+              </button>
+            )
+          })}
         </div>
         {currentCat && currentCat.subcategories && currentCat.subcategories.length > 0 && (
           <div className="subcategories-scroll">
             <button className={`sub-pill ${activeSubcategory === 'all' ? 'active' : ''}`} onClick={() => handleSubcategoryClick('all')}>
-              ✓ Todas en {lang === 'es' ? currentCat.labelEs : currentCat.labelEn}
+              <span style={{ color: '#F26000', fontWeight: '900' }}>✦</span> Todas en {lang === 'es' ? currentCat.labelEs : currentCat.labelEn}
             </button>
-            {currentCat.subcategories.map(sub => (
-              <button key={sub.id} className={`sub-pill ${activeSubcategory === sub.id ? 'active' : ''}`} onClick={() => handleSubcategoryClick(sub.id)}>
-                <span>{sub.image ? <img src={sub.image} alt={sub.labelEs} style={{ width: '16px', height: '16px', objectFit: 'contain', verticalAlign: 'middle', marginRight: '4px' }} /> : sub.icon}</span> {lang === 'es' ? sub.labelEs : sub.labelEn}
-              </button>
-            ))}
+            {currentCat.subcategories.map(sub => {
+              const isSubActive = activeSubcategory === sub.id
+              return (
+                <button key={sub.id} className={`sub-pill ${isSubActive ? 'active' : ''}`} onClick={() => handleSubcategoryClick(sub.id)}>
+                  <span
+                    style={{
+                      width: '24px',
+                      height: '24px',
+                      borderRadius: '8px',
+                      background: isSubActive ? '#F26000' : 'linear-gradient(135deg, #FFF3EC, #FFE4D1)',
+                      border: '1px solid rgba(242, 96, 0, 0.3)',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0
+                    }}
+                  >
+                    {sub.image ? (
+                      <img src={sub.image} alt={sub.labelEs} style={{ width: '16px', height: '16px', objectFit: 'contain' }} />
+                    ) : (
+                      <span style={{ fontSize: '13px', filter: isSubActive ? 'brightness(1.2)' : 'none' }}>{sub.icon}</span>
+                    )}
+                  </span>
+                  <span>{lang === 'es' ? sub.labelEs : sub.labelEn}</span>
+                </button>
+              )
+            })}
           </div>
         )}
       </div>
