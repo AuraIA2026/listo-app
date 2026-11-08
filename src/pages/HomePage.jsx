@@ -1572,11 +1572,14 @@ export default function HomePage({ lang, navigate, userRole }) {
         onClick={() => navigate('mandame')}
         title={lang === 'es' ? 'Ir a Pedidos Listo - Ver restaurantes' : 'Go to Pedidos Listo - View restaurants'}
       >
-        <img
-          src={bannerTienesHambreImg}
-          alt="¿Tienes Hambre? ¡Entra y conoce nuestros restaurantes! - Pedidos Listo"
-          className="hungry-top-banner-img"
-        />
+        <div className="hungry-top-banner-inner">
+          <img
+            src={bannerTienesHambreImg}
+            alt="¿Tienes Hambre? ¡Entra y conoce nuestros restaurantes! - Pedidos Listo"
+            className="hungry-top-banner-img"
+          />
+          <span className="hungry-top-banner-shine" />
+        </div>
       </div>
 
       {/* ── SECCIÓN PROFESIONALES DESTACADOS (NUESTRO VIP) ── */}
