@@ -101,14 +101,14 @@ function BonusMessageModal({ bonus, userId, onClose }) {
 }
 
 /* ── Banner mensaje / notificación estilo WhatsApp con Logo Oficial ───────── */
-function ChatMessageBanner({ sender, senderPhoto, title, text, actionLabel, accentColor = '#F26000', onClose, onClick }) {
+function ChatMessageBanner({ sender, senderPhoto, title, text, actionLabel, accentColor = '#F26000', isDelivery = false, onClose, onClick }) {
   useEffect(() => {
     try { if (navigator.vibrate) navigator.vibrate([200, 100, 200]) } catch (e) {}
     const t = setTimeout(onClose, 6500)
     return () => clearTimeout(t)
   }, []) // eslint-disable-line
 
-  const initial = sender ? sender.substring(0, 2).toUpperCase() : 'PL'
+  const initial = sender ? sender.substring(0, 2).toUpperCase() : 'LP'
 
   return (
     <>
@@ -135,9 +135,9 @@ function ChatMessageBanner({ sender, senderPhoto, title, text, actionLabel, acce
         {/* Cabecera estilo WhatsApp con el logo de la app */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-            <img src="/logo-mamey.png" alt="Pedidos Listo" style={{ width: 19, height: 19, borderRadius: '50%', objectFit: 'cover', border: '1px solid rgba(255,255,255,0.45)' }} />
+            <img src="/logo-mamey.png" alt={isDelivery ? 'Pedidos Listo' : 'Listo Patrón'} style={{ width: 19, height: 19, borderRadius: '50%', objectFit: 'cover', border: '1px solid rgba(255,255,255,0.45)' }} />
             <span style={{ fontSize: 11, fontWeight: 900, letterSpacing: '0.6px', color: '#FF8533', textTransform: 'uppercase' }}>
-              PEDIDOS LISTO
+              {isDelivery ? 'PEDIDOS LISTO' : 'LISTO PATRÓN'}
             </span>
             <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)', fontWeight: 600 }}>• ahora</span>
           </div>
@@ -627,12 +627,14 @@ export default function App() {
         PushNotifications.addListener('pushNotificationReceived', notification => {
           console.log("Notificación push recibida en primer plano:", notification)
           playMsgSound()
+          const isDelivPush = /pedido|restaurante|comida|delivery|mándame|mandame/i.test(`${notification.title || ''} ${notification.body || ''}`)
           setChatBanner({
-            sender: 'Pedidos Listo',
+            sender: isDelivPush ? 'Pedidos Listo' : 'Listo Patrón',
             senderPhoto: '/logo-mamey.png',
-            title: notification.title || '🔔 Pedidos Listo',
+            title: notification.title || (isDelivPush ? '🔔 Pedidos Listo' : '🔔 Listo Patrón'),
             text: notification.body || 'Tienes una nueva actualización.',
             actionLabel: 'Ver →',
+            isDelivery: isDelivPush,
           })
         })
         PushNotifications.addListener('pushNotificationActionPerformed', notification => {
@@ -684,7 +686,7 @@ export default function App() {
           playMsgSound()
           setChatBanner({ sender: senderName, senderPhoto, text: lastMsg.text || '📎 Mensaje adjunto', chatId })
           sendBrowserNotification(`💬 ${senderName}`, {
-            body: lastMsg.text || 'Tienes un nuevo mensaje en Pedidos Listo',
+            body: lastMsg.text || 'Tienes un nuevo mensaje en Listo Patrón',
             icon: senderPhoto || '/logo-mamey.png',
             badge: '/logo-mamey.png',
             url: '/orders'
@@ -754,7 +756,7 @@ export default function App() {
         } catch(e){}
 
         setSystemAlert({ id: toShow.id, title: toShow.title, text: toShow.text });
-        sendBrowserNotification(toShow.title || '🔔 Notificación de Pedidos Listo', {
+        sendBrowserNotification(toShow.title || '🔔 Notificación de Listo Patrón', {
           body: toShow.text || 'Tienes una nueva notificación.',
           url: '/notificaciones'
         })
@@ -925,6 +927,7 @@ export default function App() {
           text={chatBanner.text}
           actionLabel={chatBanner.actionLabel}
           accentColor={chatBanner.accentColor}
+          isDelivery={Boolean(chatBanner.isDelivery)}
           onClose={() => setChatBanner(null)}
           onClick={() => { setChatBanner(null); navigate('orders') }}
         />
@@ -943,9 +946,10 @@ export default function App() {
           sender={alertOrder.pro || 'Profesional'}
           senderPhoto={alertOrder.photoURL || null}
           title={`✅ ¡Pedido Aceptado! • ${alertOrder.pro}`}
-          text={`¡Va en camino para tu servicio de ${alertOrder.specialty || 'Pedidos Listo'}! Toca para rastrear en tiempo real.`}
+          text={`¡Va en camino para tu servicio de ${alertOrder.specialty || (alertOrder.type === 'delivery' ? 'Pedidos Listo' : 'Listo Patrón')}! Toca para rastrear en tiempo real.`}
           actionLabel="Rastrear →"
           accentColor="#10B981"
+          isDelivery={alertOrder.type === 'delivery'}
           onClose={() => setAlertOrder(null)}
           onClick={() => { navigate('tracking', alertOrder); setAlertOrder(null) }}
         />
@@ -953,7 +957,7 @@ export default function App() {
 
       {jobDoneAlert && (
         <ChatMessageBanner
-          sender="Pedidos Listo"
+          sender="Listo Patrón"
           senderPhoto="/logo-mamey.png"
           title={lang === 'es' ? '🎉 ¡Trabajo Terminado!' : '🎉 Work Done!'}
           text={jobDoneAlert.text || (lang === 'es' ? 'El profesional completó el servicio. ¡Procede al pago!' : 'Service completed. Proceed to payment!')}
