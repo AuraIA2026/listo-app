@@ -1869,14 +1869,7 @@ export default function HomePage({ lang, navigate, userRole }) {
           {/* ── CINTA OFICIAL DE PEDIDOS LISTO (AL FINAL DE TODOS LOS PROFESIONALES) ── */}
           <div 
             className="pedidos-ribbon-banner"
-            onClick={() => {
-              const isAdmin = Boolean(userData?.email === 'listopatron.app@gmail.com' || userData?.role === 'admin' || userData?.isAdmin === true);
-              if (isAdmin) {
-                navigate('mandame');
-              } else {
-                alert('🚀 Pedidos Listo estará disponible muy pronto.');
-              }
-            }}
+            onClick={() => navigate('mandame')}
             title={lang === 'es' ? 'Ir a Pedidos Listo - Delivery y Mandados' : 'Go to Pedidos Listo - Delivery & Errands'}
           >
             <div className="pedidos-ribbon-shimmer" />
@@ -1907,7 +1900,7 @@ export default function HomePage({ lang, navigate, userRole }) {
                     borderRadius: '6px',
                     letterSpacing: '0.5px'
                   }}>
-                    🚀 PRÓXIMAMENTE
+                    ⚡ DISPONIBLE 24/7
                   </span>
                 </div>
                 <p className="pedidos-ribbon-sub">
@@ -1921,17 +1914,10 @@ export default function HomePage({ lang, navigate, userRole }) {
               className="pedidos-ribbon-btn"
               onClick={(e) => {
                 e.stopPropagation();
-                const isAdmin = Boolean(userData?.email === 'listopatron.app@gmail.com' || userData?.role === 'admin' || userData?.isAdmin === true);
-                if (isAdmin) {
-                  navigate('mandame');
-                } else {
-                  alert('🚀 Pedidos Listo estará disponible muy pronto.');
-                }
+                navigate('mandame');
               }}
             >
-              {(userData?.email === 'listopatron.app@gmail.com' || userData?.role === 'admin')
-                ? (lang === 'es' ? '👑 Modo Admin ›' : '👑 Admin Mode ›')
-                : (lang === 'es' ? '🔒 Próximamente ›' : '🔒 Coming Soon ›')}
+              {lang === 'es' ? '🛵 Pedir Ahora ›' : '🛵 Order Now ›'}
             </button>
           </div>
 

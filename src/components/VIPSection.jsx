@@ -108,9 +108,9 @@ const demoVipPros = [
 ]
 
 const innerPhotos = [
-  { video: '/assets/delivery_rider_video.mp4', titleEs: 'Pedidos Listo — Entrega de Paquetes & Envíos', titleEn: 'Pedidos Listo — Package & Express Delivery', badge: '🚀 PRÓXIMAMENTE 24/7' },
-  { video: '/assets/delivery_worker_scooter.mp4', titleEs: 'Pedidos Listo — Delivery en Moto a Toda Velocidad', titleEn: 'Pedidos Listo — High Speed Scooter Delivery', badge: '🛵 PRÓXIMAMENTE' },
-  { img: pedidos2Img, titleEs: 'Pedidos Listo — Mandados, Compras & Servicios', titleEn: 'Pedidos Listo — Errands, Shopping & Services', badge: '⏳ MUY PRONTO' }
+  { video: '/assets/delivery_rider_video.mp4', titleEs: 'Pedidos Listo — Entrega de Paquetes & Envíos', titleEn: 'Pedidos Listo — Package & Express Delivery', badge: '⚡ DELIVERY 24/7' },
+  { video: '/assets/delivery_worker_scooter.mp4', titleEs: 'Pedidos Listo — Delivery en Moto a Toda Velocidad', titleEn: 'Pedidos Listo — High Speed Scooter Delivery', badge: '🛵 ENVÍO EXPRESS' },
+  { img: pedidos2Img, titleEs: 'Pedidos Listo — Mandados, Compras & Servicios', titleEn: 'Pedidos Listo — Errands, Shopping & Services', badge: '📦 DISPONIBLE YA' }
 ]
 
 export const getProTier = (pro) => {
@@ -529,13 +529,7 @@ export default function VIPSection({
         {/* TARJETA 1: TARJETA PROMO EXCLUSIVA DE PEDIDOS LISTO (COLOR MAMEY CON VIDEOS Y BOTÓN DIRECTO) */}
         <div 
           className="vip-card-hero amz-blue-hero-card"
-          onClick={() => {
-            if (isAdmin) {
-              navigate('mandame');
-            } else {
-              setShowProximamenteModal(true);
-            }
-          }}
+          onClick={() => navigate('mandame')}
           style={{
             background: 'linear-gradient(160deg, #FF7A1A 0%, #F26000 60%, #C24D00 100%)',
             color: 'white',
@@ -613,7 +607,7 @@ export default function VIPSection({
               letterSpacing: '0.5px',
               boxShadow: '0 1px 4px rgba(0,0,0,0.2)' 
             }}>
-              {isAdmin ? '👑 MODO ADMIN' : '🚀 PRÓXIMAMENTE'}
+              ⚡ DISPONIBLE 24/7
             </span>
           </div>
 
@@ -640,7 +634,7 @@ export default function VIPSection({
               gap: '4px',
               pointerEvents: 'none'
             }}>
-              <span>🚀</span> PRÓXIMAMENTE
+              <span>🛵</span> ACTIVO
             </div>
 
             {hideVideo ? (
@@ -653,7 +647,7 @@ export default function VIPSection({
                 />
                 <div className="amz-inner-slide-overlay">
                   <span className="amz-inner-slide-badge" style={{ background: '#FFD700', color: '#1A1A2E', fontWeight: '900' }}>
-                    🚀 PRÓXIMAMENTE 24/7
+                    ⚡ DISPONIBLE 24/7
                   </span>
                   <span className="amz-inner-slide-title">
                     {lang === 'es' ? 'Pedidos Listo — Entrega de Paquetes & Envíos' : 'Pedidos Listo — Package & Express Delivery'}
@@ -730,15 +724,11 @@ export default function VIPSection({
                 boxShadow: '0 2px 6px rgba(0,0,0,0.25)',
                 textTransform: 'uppercase'
               }}>
-                🚀 PRÓXIMAMENTE
+                🛵 EXPRESS
               </span>
             </div>
             <p style={{ fontSize: '11px', color: '#FFF8F2', fontWeight: '700', margin: '4px 0 0', lineHeight: '1.3' }}>
-              {isAdmin ? (
-                <>👑 <strong>Modo Administrador Activo</strong> • Acceso total para desarrollo</>
-              ) : (
-                <>⭐ 5.0 • <strong>Próximamente disponible</strong> en tu ciudad</>
-              )}
+              ⭐ 5.0 • <strong>Envíos, mandados y comida</strong> en minutos a tu puerta
             </p>
           </div>
 
@@ -747,15 +737,11 @@ export default function VIPSection({
             <button 
               onClick={(e) => {
                 e.stopPropagation();
-                if (isAdmin) {
-                  navigate('mandame');
-                } else {
-                  setShowProximamenteModal(true);
-                }
+                navigate('mandame');
               }}
               style={{
-                background: isAdmin ? '#FFFFFF' : 'rgba(255, 255, 255, 0.95)',
-                color: isAdmin ? '#F26000' : '#8A3B00',
+                background: '#FFFFFF',
+                color: '#F26000',
                 border: 'none',
                 borderRadius: '22px',
                 padding: '10px 18px',
@@ -773,11 +759,7 @@ export default function VIPSection({
               onMouseDown={(e) => e.currentTarget.style.transform = 'scale(0.96)'}
               onMouseUp={(e) => e.currentTarget.style.transform = 'scale(1)'}
             >
-              {isAdmin ? (
-                <>⚡ {lang === 'es' ? 'Ir a Pedidos Listo › (Admin 👑)' : 'Go to Pedidos Listo › (Admin 👑)'}</>
-              ) : (
-                <>🔒 {lang === 'es' ? 'Próximamente disponible ›' : 'Coming soon ›'}</>
-              )}
+              ⚡ {lang === 'es' ? 'Ir a Pedidos Listo ›' : 'Go to Pedidos Listo ›'}
             </button>
           </div>
         </div>
