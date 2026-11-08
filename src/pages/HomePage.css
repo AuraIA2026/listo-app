@@ -937,14 +937,14 @@
 .all-professions-section { margin: 0; padding: 0; background: #fff; }
 .all-professions-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 0 16px; }
 .profession-item {
-  display: flex; align-items: center; gap: 10px;
-  background: #FAFBFC; border: 1.5px solid #EAECF0;
-  border-radius: 0px; padding: 10px; cursor: pointer;
+  display: flex; align-items: center; gap: 12px;
+  background: #FFFFFF; border: 1.5px solid rgba(242, 96, 0, 0.16);
+  border-radius: 14px; padding: 10px 12px; cursor: pointer; box-shadow: 0 2px 8px rgba(242, 96, 0, 0.04);
   transition: all .2s;
 }
 .profession-item:hover { background: #FFF8F3; border-color: #F26000; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(242,96,0,0.08); }
 .profession-icon { font-size: 20px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
-.profession-name { font-size: 13px; font-weight: 700; color: #1A1A2E; line-height: 1.25; }
+.profession-name { font-size: 13.5px; font-weight: 800; color: #1A1A2E; line-height: 1.25; }
 
 /* ── RESPONSIVE ───────────────────────────────── */
 @media (min-width: 480px) {

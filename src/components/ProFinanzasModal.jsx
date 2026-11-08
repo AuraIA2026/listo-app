@@ -51,7 +51,7 @@ export default function ProFinanzasModal({ lang = 'es', onClose, proUserData }) 
             count++
             const baseAmount = parseFloat(data.montoFinal || data.checkoutMontoFinal || data.montoAcordado || data.monto || 0) || 0
             const tipAmount = parseFloat(data.tipAmount || data.propina || 0) || 0
-            
+
             earnedSum += baseAmount
             tipsSum += tipAmount
 
@@ -229,8 +229,8 @@ export default function ProFinanzasModal({ lang = 'es', onClose, proUserData }) 
                     <div key={idx} className="chart-bar-group">
                       <span className="bar-tooltip">RD$ {item.amount.toLocaleString()}</span>
                       <div className="bar-track">
-                        <div 
-                          className="bar-fill" 
+                        <div
+                          className="bar-fill"
                           style={{ height: `${pct}%` }}
                         />
                       </div>

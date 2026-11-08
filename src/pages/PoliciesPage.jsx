@@ -13,8 +13,8 @@ export default function PoliciesPage({ lang, navigate }) {
 
   return (
     <div className="policies-page" style={{ padding: '20px', background: '#F8FAFC', minHeight: '100vh', fontFamily: 'var(--font-body)', color: '#334155', paddingBottom: '90px' }}>
-      <button 
-        onClick={() => navigate('login')} 
+      <button
+        onClick={() => navigate('login')}
         style={{ background: 'transparent', border: 'none', fontSize: '24px', cursor: 'pointer', marginBottom: '16px', color: '#1A1A2E' }}
       >
         ←
@@ -47,12 +47,12 @@ export default function PoliciesPage({ lang, navigate }) {
       </div>
 
       <div style={{ background: 'white', borderRadius: '16px', padding: '24px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
-        
+
         {/* --- SEGURIDAD --- */}
         {activeTab === 'security' && (
           <div>
             <h2 style={{ fontSize: '22px', color: '#0F172A', marginBottom: '16px' }}>Política de Seguridad para la Transmisión de Datos</h2>
-            
+
             <h3 style={{ fontSize: '16px', color: '#1A1A2E', marginTop: '20px', marginBottom: '8px' }}>WEBSITE</h3>
             <p style={{ lineHeight: '1.6', marginBottom: '12px' }}>
               Tomamos todas las medidas y precauciones razonables para proteger tu información personal y seguimos las mejores prácticas de la industria para asegurar que tu información no sea utilizada de manera inapropiada, alterada o destruida.

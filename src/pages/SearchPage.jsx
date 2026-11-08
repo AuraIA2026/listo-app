@@ -23,6 +23,7 @@ import recomendarIcon from '../assets/icons/recomendar.png'
 import opinionesIcon from '../assets/icons/opiniones.png'
 import compartirIcon from '../assets/icons/compartir.png'
 import logoListo from '../assets/logo-mamey.png'
+import ProfessionMameyIcon from '../components/ProfessionMameyIcon'
 import './SearchPage.css'
 
 const SearchCategoryMameyIcon = ({ id, active }) => {
@@ -1310,25 +1311,7 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
               const isSubActive = activeSubcategory === sub.id
               return (
                 <button key={sub.id} className={`sub-pill ${isSubActive ? 'active' : ''}`} onClick={() => handleSubcategoryClick(sub.id)}>
-                  <span
-                    style={{
-                      width: '24px',
-                      height: '24px',
-                      borderRadius: '8px',
-                      background: isSubActive ? '#F26000' : 'linear-gradient(135deg, #FFF3EC, #FFE4D1)',
-                      border: '1px solid rgba(242, 96, 0, 0.3)',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      flexShrink: 0
-                    }}
-                  >
-                    {sub.image ? (
-                      <img src={sub.image} alt={sub.labelEs} style={{ width: '16px', height: '16px', objectFit: 'contain' }} />
-                    ) : (
-                      <span style={{ fontSize: '13px', filter: isSubActive ? 'brightness(1.2)' : 'none' }}>{sub.icon}</span>
-                    )}
-                  </span>
+                  <ProfessionMameyIcon id={sub.id} parentId={currentCat.id} active={isSubActive} size={28} />
                   <span>{lang === 'es' ? sub.labelEs : sub.labelEn}</span>
                 </button>
               )
