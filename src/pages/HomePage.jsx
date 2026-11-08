@@ -47,6 +47,7 @@ import bannerPros from '../assets/banner_pros.jpg'
 import logoListo  from '../assets/logo-mamey.png'
 import pedidosListo2Img from '../assets/pedidos-listo-2.png'
 import stickerTienesHambreImg from '../assets/sticker-tienes-hambre.png'
+import bannerTienesHambreImg from '../assets/banner-tienes-hambre.png'
 
 const testimonials = [
   { proName: 'MARIANO FCO. (papa piso)', nameEs:'María Isabel Pimentel', proPhoto: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=800&q=80', photo: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=800&q=80', rating:5, dateEs:'MAR 28', dateEn:'MAR 28', specEs:'PISOS', specEn:'FLOORING', textEs:'Gracias por su servicio quedó todo muy bien puntual resolver lo recomiendo', textEn:'Thanks for your service everything was great punctual solved I recommend him.' },
@@ -1564,6 +1565,19 @@ export default function HomePage({ lang, navigate, userRole }) {
           </div>
         </div>
       )}
+
+      {/* ── BARRA / BANNER "¿TIENES HAMBRE? PEDIDOS LISTO" ARRIBA DE PROFESIONALES DESTACADOS ── */}
+      <div
+        className="hungry-top-banner-wrap"
+        onClick={() => navigate('mandame')}
+        title={lang === 'es' ? 'Ir a Pedidos Listo - Ver restaurantes' : 'Go to Pedidos Listo - View restaurants'}
+      >
+        <img
+          src={bannerTienesHambreImg}
+          alt="¿Tienes Hambre? ¡Entra y conoce nuestros restaurantes! - Pedidos Listo"
+          className="hungry-top-banner-img"
+        />
+      </div>
 
       {/* ── SECCIÓN PROFESIONALES DESTACADOS (NUESTRO VIP) ── */}
       <VIPSection 
