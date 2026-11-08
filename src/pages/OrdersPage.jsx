@@ -700,6 +700,18 @@ export function OrderDetailsModal({ order, lang, onClose, onAccept, onDecline })
             </div>
           )}
           {(order.serviceDesc || order.notes) && <div style={{ marginTop:12 }}><span style={{ fontSize:13, color:'#666', fontWeight:600, display:'block', marginBottom:4 }}>{isEs?'Descripción':'Description'}</span><p style={{ fontSize:13, color:'#1A1A2E', margin:0, lineHeight:1.5, background:'#FFF3EC', padding:10, borderRadius:8, borderLeft:'3px solid #F26000' }}>{order.serviceDesc || order.notes}</p></div>}
+          {Array.isArray(order.problemPhotos) && order.problemPhotos.length > 0 && (
+            <div style={{ marginTop: 12 }}>
+              <span style={{ fontSize: 13, color: '#666', fontWeight: 700, display: 'block', marginBottom: 6 }}>📷 {isEs ? 'Fotos del problema adjuntas' : 'Attached problem photos'}</span>
+              <div style={{ display: 'flex', gap: 8 }}>
+                {order.problemPhotos.map((src, idx) => (
+                  <a key={idx} href={src} target="_blank" rel="noreferrer" style={{ display: 'block', width: 88, height: 88, borderRadius: 10, overflow: 'hidden', border: '2px solid #F26000' }}>
+                    <img src={src} alt={`Problema ${idx + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
         {isSameDayOrUrgent && (
           <div style={{ marginBottom: 20, padding: '0 10px' }}>
@@ -740,7 +752,7 @@ export function ExoticOrderNotification({ order, lang, onClick, onClose }) {
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
             <img src="/logo-mamey.png" alt="Pedidos Listo" style={{ width: 20, height: 20, borderRadius: '50%', objectFit: 'cover', border: '1px solid rgba(255,255,255,0.4)' }} />
-            <span style={{ fontSize: 11, fontWeight: 900, letterSpacing: '0.6px', color: '#FF8533', textTransform: 'uppercase' }}>PEDIDOS LISTO</span>
+            <span style={{ fontSize: 11, fontWeight: 900, letterSpacing: '0.6px', color: '#FF8533', textTransform: 'uppercase' }}>{order.type === 'delivery' ? 'PEDIDOS LISTO' : 'LISTO PATRÓN'}</span>
             <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)', fontWeight: 600 }}>• {lang === 'es' ? 'ahora' : 'now'}</span>
           </div>
           <button

@@ -15,6 +15,7 @@ import { BUSINESS_TYPES, RENTAL_PERIODS, WHOLESALE_TIERS, findBusinessTypesForQu
 import DeliveryCercaScreen from '../components/DeliveryCercaScreen';
 import WelcomeIntro from '../components/WelcomeIntro';
 import CreditCardCheckoutForm, { validateCardDetails, saveCardTokenIfRequested } from '../components/CreditCardCheckoutForm';
+import BankTransferCheckoutBox from '../components/BankTransferCheckoutBox';
 
 // Initial Mock State
 const ANIMATED_BANNERS_CATALOG = [
@@ -401,7 +402,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
         snap.docs.forEach(async (docSnap) => {
           const d = docSnap.data();
           const name = d.nombre || d.businessName || d.name || '';
-          if (!isFieraMatch(name)) {
+          if (false && !isFieraMatch(name)) {
             try {
               await deleteDoc(doc(db, 'locales', docSnap.id));
             } catch (err) {
@@ -452,7 +453,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
               activo: data.activo !== false
             };
           })
-          .filter(st => isFieraMatch(st.name) && st.activo !== false);
+          .filter(st => st.activo !== false);
 
         setDbStores(list);
         if (list.length > 0) {
@@ -488,7 +489,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
               email: (data.email || '').toLowerCase().trim()
             };
           })
-          .filter(st => isFieraMatch(st.name));
+          .filter(st => Boolean(st.name));
         setPartnerStores(list);
       }, (err) => console.warn("Partner requests listener error:", err));
     } catch (e) {}
@@ -641,6 +642,8 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
   const [checkoutName, setCheckoutName] = useState(userData?.name || userData?.displayName || 'Cliente');
   const [checkoutPaymentMethod, setCheckoutPaymentMethod] = useState('efectivo'); // 'efectivo' | 'transferencia' | 'tarjeta'
   const [checkoutCardData, setCheckoutCardData] = useState({ mode: 'inapp', number: '', holder: '', expiry: '', cvv: '', saveForLater: true });
+  const [transferReceiptImage, setTransferReceiptImage] = useState(null);
+  const [transferReference, setTransferReference] = useState('');
   const [cashChangeAmount, setCashChangeAmount] = useState('exacto'); // 'exacto' | '500' | '1000' | '2000'
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
   const [deliveryFulfillmentType, setDeliveryFulfillmentType] = useState('delivery'); // 'delivery' | 'pickup'
@@ -654,12 +657,12 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
   };
 
   const allDbStores = [
-    ...dbStores.filter(isFieraStore),
-    ...partnerStores.filter(isFieraStore)
+    ...dbStores,
+    ...partnerStores
   ];
 
   const combinedStores = allDbStores.length > 0 
-    ? allDbStores 
+    ? [...allDbStores, ...INITIAL_STORES.filter(init => !allDbStores.some(s => isFieraStore(s)))] 
     : INITIAL_STORES;
 
   // Todos los platillos/productos disponibles en la plataforma (en la nube + base inicial)
@@ -1208,6 +1211,8 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
             createdAt: createdAtStr,
             rawTime,
             paymentMethod: d.paymentMethod === 'efectivo' ? '💵 Efectivo Contra Entrega' : (d.paymentMethod === 'transferencia' ? '🏦 Transferencia Bancaria' : (d.paymentMethod || '💵 Efectivo')),
+            transferReceiptImage: d.transferReceiptImage || null,
+            transferReference: d.transferReference || '',
             storeName: d.storeName || 'La Fiera Hot Dog',
             clientId: d.clientId || null
           };
@@ -2301,6 +2306,8 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
       deliveryNotes: (deliveryNotes || '').trim(),
       paymentMethod: (checkoutPaymentMethod === 'tarjeta' && checkoutCardData.mode !== 'azul') ? `💳 Tarjeta ${validateCardDetails(checkoutCardData).brand || 'Crédito'} •••• ${validateCardDetails(checkoutCardData).last4 || '0000'} (Pagado)` : checkoutPaymentMethod,
       cashChangeFor: checkoutPaymentMethod === 'efectivo' ? cashChangeAmount : null,
+      transferReceiptImage: checkoutPaymentMethod === 'transferencia' ? (transferReceiptImage || null) : null,
+      transferReference: checkoutPaymentMethod === 'transferencia' ? (transferReference || '').trim() : '',
       items: cart.map(i => ({
         name: i.name, price: i.price, qty: i.qty, subtotal: i.price * i.qty,
         selectedGuarniciones: i.selectedGuarniciones || [],
@@ -5146,7 +5153,15 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                               <span>📍 <strong>Entrega:</strong> {order.address}</span>
                             )}
                           </div>
-                          <div style={{ marginTop: 2 }}>💳 <strong>Pago:</strong> {order.paymentMethod || 'Efectivo'}</div>
+                          <div style={{ marginTop: 2 }}>💳 <strong>Pago:</strong> {order.paymentMethod || 'Efectivo'}{order.transferReference ? ` (Ref: #${order.transferReference})` : ''}</div>
+                          {order.transferReceiptImage && (
+                            <div style={{ marginTop: 6, background: 'rgba(16,185,129,0.12)', border: '1px solid rgba(16,185,129,0.35)', borderRadius: 8, padding: 6 }}>
+                              <div style={{ fontSize: 10.5, fontWeight: 900, color: '#34d399', marginBottom: 4 }}>🧾 Comprobante de Transferencia Adjunto:</div>
+                              <a href={order.transferReceiptImage} target="_blank" rel="noreferrer" style={{ display: 'block' }}>
+                                <img src={order.transferReceiptImage} alt="Comprobante" style={{ width: '100%', maxHeight: 150, objectFit: 'contain', borderRadius: 6, background: '#0f172a' }} />
+                              </a>
+                            </div>
+                          )}
                           {order.deliveryNotes && (
                             <div style={{ marginTop: 2, color: '#FDBA74' }}>📝 <strong>Nota:</strong> {order.deliveryNotes}</div>
                           )}
@@ -7113,6 +7128,9 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
 
                     {checkoutPaymentMethod === 'tarjeta' && (
                       <CreditCardCheckoutForm totalAmount={cartTotal} cardData={checkoutCardData} onChangeCardData={setCheckoutCardData} allowAzulGateway={true} />
+                    )}
+                    {checkoutPaymentMethod === 'transferencia' && (
+                      <BankTransferCheckoutBox totalAmount={cartTotal} receiptImage={transferReceiptImage} onChangeReceiptImage={setTransferReceiptImage} referenceNumber={transferReference} onChangeReferenceNumber={setTransferReference} storeName={activeStoreModal?.name || 'La Fiera Hot Dog'} />
                     )}
 
                     {checkoutPaymentMethod === 'efectivo' && (

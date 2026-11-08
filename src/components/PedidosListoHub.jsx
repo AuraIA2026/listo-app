@@ -6,6 +6,7 @@ import { db, auth } from '../firebase';
 import './PedidosListoHub.css';
 import ConfigurarRestauranteModal from './ConfigurarRestauranteModal';
 import CreditCardCheckoutForm, { validateCardDetails, saveCardTokenIfRequested } from './CreditCardCheckoutForm';
+import BankTransferCheckoutBox from './BankTransferCheckoutBox';
 
 const HERO_BANNERS = [
   {
@@ -82,6 +83,8 @@ export default function PedidosListoHub({ navigate }) {
   const [hubFulfillmentType, setHubFulfillmentType] = useState('delivery'); // 'delivery' | 'pickup'
   const [paymentMethod, setPaymentMethod] = useState('efectivo');
   const [cardData, setCardData] = useState({ mode: 'inapp', number: '', holder: '', expiry: '', cvv: '', saveForLater: true });
+  const [transferReceiptImage, setTransferReceiptImage] = useState(null);
+  const [transferReference, setTransferReference] = useState('');
   const [tipAmount, setTipAmount] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [orderError, setOrderError] = useState('');
@@ -259,6 +262,8 @@ export default function PedidosListoHub({ navigate }) {
       address: finalAddress,
       paymentMethod: finalPaymentLabel,
       paymentStatus: paymentStatusVal,
+      transferReceiptImage: paymentMethod === 'transferencia' ? (transferReceiptImage || null) : null,
+      transferReference: paymentMethod === 'transferencia' ? (transferReference || '').trim() : '',
       pinOTP: pin,
       status: 'pending',
       createdAt: serverTimestamp()
@@ -1083,6 +1088,9 @@ export default function PedidosListoHub({ navigate }) {
               </div>
               {paymentMethod === 'tarjeta' && (
                 <CreditCardCheckoutForm totalAmount={total} cardData={cardData} onChangeCardData={setCardData} />
+              )}
+              {paymentMethod === 'transferencia' && (
+                <BankTransferCheckoutBox totalAmount={total} receiptImage={transferReceiptImage} onChangeReceiptImage={setTransferReceiptImage} referenceNumber={transferReference} onChangeReferenceNumber={setTransferReference} storeName={cartStore?.name || 'Restaurante'} />
               )}
               <div className="pl-sum-row total">
                 <span>Total a Pagar</span>

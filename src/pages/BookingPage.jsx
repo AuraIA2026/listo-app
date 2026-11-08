@@ -132,6 +132,32 @@ export default function BookingPage({ lang = 'es', navigate, professional, userD
   }, [selectedDay, pro.id]) // eslint-disable-line
 
   const [notes,     setNotes]     = useState('')
+  const [problemPhotos, setProblemPhotos] = useState([])
+  const handleAddProblemPhoto = (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = (ev) => {
+      const img = new Image()
+      img.onload = () => {
+        const canvas = document.createElement('canvas')
+        const maxDim = 720
+        let w = img.width, h = img.height
+        if (w > maxDim || h > maxDim) {
+          if (w > h) { h = Math.round((h * maxDim) / w); w = maxDim }
+          else { w = Math.round((w * maxDim) / h); h = maxDim }
+        }
+        canvas.width = w; canvas.height = h
+        const ctx = canvas.getContext('2d')
+        ctx.drawImage(img, 0, 0, w, h)
+        const compressed = canvas.toDataURL('image/jpeg', 0.65)
+        setProblemPhotos(prev => prev.length < 2 ? [...prev, compressed] : prev)
+      }
+      img.src = ev.target?.result
+    }
+    reader.readAsDataURL(file)
+    e.target.value = ''
+  }
   const [urgency,   setUrgency]   = useState(0)
   const [loading,   setLoading]   = useState(false)
   const [errorMsg,  setErrorMsg]  = useState('')
@@ -171,6 +197,7 @@ export default function BookingPage({ lang = 'es', navigate, professional, userD
         coords:         addressCoords ? { lat: addressCoords.lat, lng: addressCoords.lng } : null,
         serviceDesc:    notes,
         notes:          notes,
+        problemPhotos:  problemPhotos.length > 0 ? problemPhotos : [],
         urgencyToken:   urgency,
         price:          pro.price || '',
         status:         'pending',
@@ -541,6 +568,31 @@ export default function BookingPage({ lang = 'es', navigate, professional, userD
             <div className="detail-field">
               <label>📝 {T.notes}</label>
               <textarea placeholder={T.notesPlaceholder} value={notes} onChange={e => setNotes(e.target.value)} rows={3} />
+              <div style={{ marginTop: 10, background: '#FFF7ED', border: '1.5px dashed #FDBA74', borderRadius: 12, padding: '10px 12px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                  <span style={{ fontSize: 12, fontWeight: 900, color: '#9A3412' }}>📷 Foto del problema (opcional)</span>
+                  <span style={{ fontSize: 10.5, fontWeight: 700, color: '#C2410C' }}>{problemPhotos.length}/2 fotos</span>
+                </div>
+                <p style={{ margin: '0 0 8px', fontSize: 11, color: '#7C2D12', lineHeight: 1.3 }}>
+                  Sube una foto de la avería o trabajo (ej: tubería, breker, aire) para que el profesional lleve las herramientas exactas.
+                </p>
+                {problemPhotos.length > 0 && (
+                  <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+                    {problemPhotos.map((src, idx) => (
+                      <div key={idx} style={{ position: 'relative', width: 72, height: 72, borderRadius: 10, overflow: 'hidden', border: '2px solid #F26000' }}>
+                        <img src={src} alt={`Foto ${idx + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        <button type="button" onClick={() => setProblemPhotos(prev => prev.filter((_, i) => i !== idx))} style={{ position: 'absolute', top: 3, right: 3, width: 20, height: 20, borderRadius: '50%', background: 'rgba(220,38,38,0.9)', color: '#fff', border: 'none', fontSize: 10, fontWeight: 900, cursor: 'pointer' }}>✕</button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {problemPhotos.length < 2 && (
+                  <label style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: '#FFFFFF', color: '#EA580C', border: '1.5px solid #FB923C', borderRadius: 10, padding: '7px 12px', fontSize: 12, fontWeight: 900, cursor: 'pointer' }}>
+                    📸 Adjuntar foto del problema
+                    <input type="file" accept="image/*" onChange={handleAddProblemPhoto} style={{ display: 'none' }} />
+                  </label>
+                )}
+              </div>
             </div>
             <div className="step-nav">
               <button className="btn-back" onClick={() => setStep(1)}>{T.back}</button>
@@ -560,6 +612,7 @@ export default function BookingPage({ lang = 'es', navigate, professional, userD
               <div className="summary-row"><span className="summary-label">{T.time}</span><span className="summary-value" style={isEmergency?{color:'#EF4444', fontWeight:800}:{}}>{isEmergency ? (lang==='es'?'🔥 Lo antes posible':'🔥 ASAP') : selectedTime}</span></div>
               <div className="summary-row"><span className="summary-label">📍</span><span className="summary-value">{address}</span></div>
               {notes && <div className="summary-row"><span className="summary-label">📝</span><span className="summary-value notes-val">{notes}</span></div>}
+              {problemPhotos.length > 0 && <div className="summary-row"><span className="summary-label">📷 Fotos</span><span className="summary-value" style={{ color: '#EA580C', fontWeight: 800 }}>{problemPhotos.length} adjunta(s)</span></div>}
               <div className="summary-divider" />
               <div className="summary-price-row">
                 <span className="summary-price-label">Precio del Servicio</span>

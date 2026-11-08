@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, lazy, Suspense } from 'react'
 import { signOut } from 'firebase/auth'
 import { doc, onSnapshot, getDocs, collection, query, where, updateDoc } from 'firebase/firestore'
 import { auth, db } from './firebase'
@@ -13,29 +13,29 @@ import OrdersPage             from './pages/OrdersPage'
 import ProfilePage            from './pages/ProfilePage'
 import LoginPage              from './pages/LoginPage'
 import RegisterPage           from './pages/RegisterPage'
-import BookingPage            from './pages/BookingPage'
-import ChatPage               from './pages/ChatPage'
-import TrackingPage           from './pages/TrackingPage'
-import PaymentPage            from './pages/PaymentPage'
-import ProfessionalProfilePage from './pages/ProfessionalProfilePage'
-import ClientProfilePage      from './pages/ClientProfilePage'
-import AdminPage              from './pages/AdminPage'
-import WorkDonePage           from './pages/WorkDonePage'
+const BookingPage             = lazy(() => import('./pages/BookingPage'))
+const ChatPage                = lazy(() => import('./pages/ChatPage'))
+const TrackingPage            = lazy(() => import('./pages/TrackingPage'))
+const PaymentPage             = lazy(() => import('./pages/PaymentPage'))
+const ProfessionalProfilePage = lazy(() => import('./pages/ProfessionalProfilePage'))
+const ClientProfilePage       = lazy(() => import('./pages/ClientProfilePage'))
+const AdminPage               = lazy(() => import('./pages/AdminPage'))
+const WorkDonePage            = lazy(() => import('./pages/WorkDonePage'))
 import Navbar                 from './components/Navbar'
 import BottomNav              from './components/BottomNav'
 import SplashScreen           from './components/SplashScreen'
 // import TutorialTour           from './components/TutorialTour'
 // import ProTutorialSystem        from './components/ProTutorialSystem'
 import { ExoticOrderNotification, OrderDetailsModal } from './pages/OrdersPage'
-import LocalesPage            from './locales/LocalesPage'
-import LocalDetalle           from './locales/LocalDetalle'
-import CrearLocal             from './locales/CrearLocal'   // ✅ AGREGADO
-import EditarLocal            from './locales/EditarLocal'
-import MandamePage            from './pages/MandamePage'
-import NotificacionPage       from './pages/Notificacionpage'
-import PoliciesPage           from './pages/PoliciesPage'
-import LandingPage            from './pages/LandingPage'
-import ShopPage               from './pages/ShopPage'
+const LocalesPage             = lazy(() => import('./locales/LocalesPage'))
+const LocalDetalle            = lazy(() => import('./locales/LocalDetalle'))
+const CrearLocal              = lazy(() => import('./locales/CrearLocal'))   // ✅ AGREGADO
+const EditarLocal             = lazy(() => import('./locales/EditarLocal'))
+const MandamePage             = lazy(() => import('./pages/MandamePage'))
+const NotificacionPage        = lazy(() => import('./pages/Notificacionpage'))
+const PoliciesPage            = lazy(() => import('./pages/PoliciesPage'))
+const LandingPage             = lazy(() => import('./pages/LandingPage'))
+const ShopPage                = lazy(() => import('./pages/ShopPage'))
 import PwaInstallBanner       from './components/PwaInstallBanner'
 import { sendBrowserNotification } from './utils/notifications'
 import logoBlanco             from './assets/logo-blanco.png'
@@ -882,6 +882,7 @@ export default function App() {
 
       {showTop && <Navbar navigate={navigate} currentPage={currentPage} lang={lang} setLang={setLang} />}
 
+      <Suspense fallback={<div style={{ padding: '48px 20px', textAlign: 'center', color: '#F26000', fontWeight: 900, fontSize: 15 }}>⚡ Cargando...</div>}>
       {currentPage === 'landing'      && <LandingPage  {...commonProps} />}
       {currentPage === 'home'         && <HomePage     {...userProps} />}
       {currentPage === 'shop'         && <ShopPage     onNavigate={navigate} navigate={navigate} />}
@@ -910,6 +911,7 @@ export default function App() {
       {currentPage === 'profile' && (
         <ProfilePage lang={lang} setLang={setLang} navigate={navigate} onLogout={handleLogout} initialScreen={profileInitScreen} />
       )}
+      </Suspense>
 
       {showBottom && <BottomNav currentPage={currentPage} navigate={navigate} lang={lang} userData={userData} />}
 
