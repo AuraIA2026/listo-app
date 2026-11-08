@@ -1824,3 +1824,109 @@
   z-index: 2;
   letter-spacing: -0.2px;
 }
+
+/* ── STICKER FLOTANTE "¿TIENES HAMBRE?" EN INICIO ── */
+@keyframes hungryStickerPopIn {
+  0% {
+    opacity: 0;
+    transform: translateY(40px) scale(0.5) rotate(-8deg);
+  }
+  70% {
+    opacity: 1;
+    transform: translateY(-6px) scale(1.05) rotate(2deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1) rotate(0deg);
+  }
+}
+
+@keyframes hungryStickerFloat {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-5px) rotate(-1.5deg);
+  }
+}
+
+.hungry-sticker-floating-wrap {
+  position: fixed;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 86px);
+  right: 14px;
+  z-index: 9990;
+  width: 162px;
+  height: 176px;
+  animation: hungryStickerPopIn 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.hungry-sticker-circle {
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  overflow: visible;
+  filter: drop-shadow(0 10px 22px rgba(0, 0, 0, 0.34)) drop-shadow(0 4px 10px rgba(242, 96, 0, 0.35));
+  animation: hungryStickerFloat 3.2s ease-in-out 0.45s infinite;
+  transition: transform 0.18s ease, filter 0.18s ease;
+}
+
+.hungry-sticker-circle:hover {
+  transform: scale(1.05);
+  filter: drop-shadow(0 14px 28px rgba(0, 0, 0, 0.42)) drop-shadow(0 6px 14px rgba(242, 96, 0, 0.5));
+}
+
+.hungry-sticker-circle:active {
+  transform: scale(0.95);
+}
+
+.hungry-sticker-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.hungry-sticker-close-btn {
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #1A1A2E;
+  color: #FFFFFF;
+  border: 2px solid #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 900;
+  line-height: 1;
+  cursor: pointer;
+  z-index: 5;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.35);
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.hungry-sticker-close-btn:hover {
+  background: #EF4444;
+  transform: scale(1.1);
+}
+
+.hungry-sticker-close-btn:active {
+  transform: scale(0.92);
+}
+
+@media (max-width: 380px) {
+  .hungry-sticker-floating-wrap {
+    width: 144px;
+    height: 156px;
+    right: 12px;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 82px);
+  }
+}
+

@@ -46,6 +46,7 @@ import ninera1    from '../assets/pros/Niñera1.jpg'
 import bannerPros from '../assets/banner_pros.jpg'
 import logoListo  from '../assets/logo-mamey.png'
 import pedidosListo2Img from '../assets/pedidos-listo-2.png'
+import stickerTienesHambreImg from '../assets/sticker-tienes-hambre.png'
 
 const testimonials = [
   { proName: 'MARIANO FCO. (papa piso)', nameEs:'María Isabel Pimentel', proPhoto: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=800&q=80', photo: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=800&q=80', rating:5, dateEs:'MAR 28', dateEn:'MAR 28', specEs:'PISOS', specEn:'FLOORING', textEs:'Gracias por su servicio quedó todo muy bien puntual resolver lo recomiendo', textEn:'Thanks for your service everything was great punctual solved I recommend him.' },
@@ -462,6 +463,56 @@ export default function HomePage({ lang, navigate, userRole }) {
   const [selectedRebookPro, setSelectedRebookPro] = useState(null)
   const [showFlashOfferModal, setShowFlashOfferModal] = useState(false)
   const [isProblemsExpanded, setIsProblemsExpanded] = useState(false)
+
+  // ── STICKER "¿TIENES HAMBRE?" (APARECE AL DESPLAZARSE HACIA ABAJO, MÁXIMO 1 VEZ POR DÍA AL CERRAR O ENTRAR) ──
+  const [showHungrySticker, setShowHungrySticker] = useState(false)
+
+  const getTodayStickerKey = () => {
+    const now = new Date()
+    const y = now.getFullYear()
+    const m = String(now.getMonth() + 1).padStart(2, '0')
+    const d = String(now.getDate()).padStart(2, '0')
+    return `${y}-${m}-${d}`
+  }
+
+  useEffect(() => {
+    const todayKey = getTodayStickerKey()
+    if (localStorage.getItem('listo_hungry_sticker_dismissed_date') === todayKey) {
+      return
+    }
+
+    const handleScroll = (e) => {
+      if (localStorage.getItem('listo_hungry_sticker_dismissed_date') === getTodayStickerKey()) {
+        return
+      }
+      const winScroll = window.scrollY || document.documentElement.scrollTop || document.body.scrollTop || 0
+      const targetScroll = (e && e.target && typeof e.target.scrollTop === 'number') ? e.target.scrollTop : 0
+      const currentScroll = Math.max(winScroll, targetScroll)
+
+      if (currentScroll > 160) {
+        setShowHungrySticker(true)
+      }
+    }
+
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    document.addEventListener('scroll', handleScroll, { passive: true, capture: true })
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+      document.removeEventListener('scroll', handleScroll, { capture: true })
+    }
+  }, [])
+
+  const handleDismissHungrySticker = (e) => {
+    if (e) e.stopPropagation()
+    localStorage.setItem('listo_hungry_sticker_dismissed_date', getTodayStickerKey())
+    setShowHungrySticker(false)
+  }
+
+  const handleOpenPedidosFromSticker = () => {
+    localStorage.setItem('listo_hungry_sticker_dismissed_date', getTodayStickerKey())
+    setShowHungrySticker(false)
+    navigate('mandame')
+  }
 
   useEffect(() => {
     if (!userData?.uid) return
@@ -1983,6 +2034,34 @@ export default function HomePage({ lang, navigate, userRole }) {
         />
       )}
       {/* ── ELEMENTOS FLOTANTES ESTILO TEMU / AMAZON ── */}
+
+      {/* Sticker flotante "¿Tienes Hambre?" — Aparece al hacer scroll hacia abajo (máx. 1 vez por día) */}
+      {showHungrySticker && (
+        <div
+          className="hungry-sticker-floating-wrap"
+          title={lang === 'es' ? 'Ir a Pedidos Listo - Restaurantes' : 'Go to Pedidos Listo - Restaurants'}
+        >
+          <button
+            type="button"
+            className="hungry-sticker-close-btn"
+            onClick={handleDismissHungrySticker}
+            aria-label={lang === 'es' ? 'Cerrar sticker' : 'Close sticker'}
+            title={lang === 'es' ? 'Cerrar por hoy' : 'Close for today'}
+          >
+            ✕
+          </button>
+          <div
+            className="hungry-sticker-circle"
+            onClick={handleOpenPedidosFromSticker}
+          >
+            <img
+              src={stickerTienesHambreImg}
+              alt="¿Tienes hambre? ¡Entra y conoce nuestros restaurantes! - Listo"
+              className="hungry-sticker-img"
+            />
+          </div>
+        </div>
+      )}
 
 
       {/* Floating Lucky Wheel FAB — Se muestra ÚNICAMENTE para profesionales cuando tienen giros ganados por 4 o 5 estrellas */}
