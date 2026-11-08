@@ -27,7 +27,7 @@ const txt = {
     },
     track:             'Seguir en mapa',
     tratoHecho:        '✅ Trato hecho',
-    listo:             '✅ ¡Pedidos Listo!',
+    listo:             '✅ ¡Listo Patrón!',
     review:            '⭐ Calificar',
     rebook:            '↩ Repetir',
     decline:           '✖ Rechazar',
@@ -1382,7 +1382,7 @@ export default function OrdersPage({ lang = 'es', navigate, userData, userRole }
               onClick={async ()=>{ await handleWorkDone(workDoneOrder); setCelebrate(true) }}
               style={{ width:'100%', padding:16, borderRadius:14, background:'#F26000', color:'#fff', border:'none', fontWeight:900, fontSize:17, cursor:'pointer', boxShadow:'0 4px 16px rgba(242,96,0,0.35)', marginBottom:12 }}
             >
-              ✅ {lang==='es' ? '¡Pedidos Listo!' : 'Done Boss!'}
+              ✅ {lang==='es' ? '¡Listo Patrón!' : 'Done Boss!'}
             </button>
             <button onClick={()=>setWorkDoneOrder(null)} style={{ width:'100%', padding:14, borderRadius:14, background:'#f5f5f5', border:'none', color:'#666', fontWeight:700, fontSize:14, cursor:'pointer' }}>
               {lang==='es' ? 'Seguir trabajando' : 'Keep working'}

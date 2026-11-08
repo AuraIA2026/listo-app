@@ -607,7 +607,7 @@ export default function HomePage({ lang, navigate, userRole }) {
           userId: userData.uid,
           type: 'reward',
           title: '📸 ¡1 HISTORIA GRATIS OTORGADA!',
-          text: '¡Felicidades! Se ha acreditado +1 Historia Gratis de 24h a tu saldo en Pedidos Listo.',
+          text: '¡Felicidades! Se ha acreditado +1 Historia Gratis de 24h a tu saldo en Listo Patrón.',
           read: false,
           icon: '📸',
           createdAt: serverTimestamp()
@@ -624,15 +624,15 @@ export default function HomePage({ lang, navigate, userRole }) {
           userId: userData.uid,
           type: 'reward',
           title: '👑 ¡1 CONTRATO GRATIS OTORGADO!',
-          text: '¡Felicidades! Se ha acreditado 1 contrato gratis a tu saldo por completar tu progreso en la Ruleta Pedidos Listo.',
+          text: '¡Felicidades! Se ha acreditado 1 contrato gratis a tu saldo por completar tu progreso en la Ruleta Listo Patrón.',
           read: false,
           icon: '🎰',
           createdAt: serverTimestamp()
         });
 
         alert(lang === 'es' 
-          ? "🎉 ¡FELICIDADES! Se ha otorgado y acreditado +1 CONTRATO GRATIS automáticamente a tu cuenta de Pedidos Listo." 
-          : "🎉 CONGRATULATIONS! +1 FREE CONTRACT has been automatically granted to your Pedidos Listo account.");
+          ? "🎉 ¡FELICIDADES! Se ha otorgado y acreditado +1 CONTRATO GRATIS automáticamente a tu cuenta de Listo Patrón." 
+          : "🎉 CONGRATULATIONS! +1 FREE CONTRACT has been automatically granted to your Listo Patrón account.");
       }
       await updateDoc(userRef, updatePayload);
     } catch (err) {
@@ -2075,7 +2075,7 @@ export default function HomePage({ lang, navigate, userRole }) {
         </button>
       )}
 
-      {/* Modal de la Ruleta de la Suerte Pedidos Listo */}
+      {/* Modal de la Ruleta de la Suerte Listo Patrón */}
       <LuckyWheelModal 
         isOpen={showLuckyWheel} 
         onClose={() => setShowLuckyWheel(false)} 
@@ -2089,7 +2089,7 @@ export default function HomePage({ lang, navigate, userRole }) {
         isOpen={showPlanModal} 
         onClose={() => setShowPlanModal(false)} 
         onSelectPlan={(plan) => {
-          alert(`Has seleccionado el ${plan.name} (${plan.price}). Por favor comunícate con la administración de Pedidos Listo o realiza tu transferencia para activar tus contratos.`);
+          alert(`Has seleccionado el ${plan.name} (${plan.price}). Por favor comunícate con la administración de Listo Patrón o realiza tu transferencia para activar tus contratos.`);
           setShowPlanModal(false);
         }} 
       />

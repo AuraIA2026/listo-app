@@ -877,7 +877,7 @@ export default function TrackingPage({ lang = 'es', navigate, professional, user
                   onClick={() => {
                     const url = getGoogleCalendarUrl({
                       title: `Servicio con ${pro.name} (${pro.category})`,
-                      description: `Cita de servicio reservada en Pedidos Listo con ${pro.name}.`,
+                      description: `Cita de servicio reservada en Listo Patrón con ${pro.name}.`,
                       location: 'República Dominicana'
                     })
                     window.open(url, '_blank')
@@ -976,7 +976,7 @@ export default function TrackingPage({ lang = 'es', navigate, professional, user
               <div className="tracking-info-box" style={{ background:'#F0FDF4', padding:16, borderRadius:12, textAlign:'center', border:'1px dashed #34D399' }}>
                 <p style={{ margin:0, fontSize:14, color:'#065F46', fontWeight:700 }}>
                   {userRole==='pro'
-                    ? (lang==='es'?'🔧 Cuando termines ve a Pedidos → Ver orden activa → ¡Pedidos Listo!':'🔧 When done go to Orders → View active order → Done Boss!')
+                    ? (lang==='es'?'🔧 Cuando termines ve a Pedidos → Ver orden activa → ¡Listo Patrón!':'🔧 When done go to Orders → View active order → Done Boss!')
                     : (lang==='es'?'🔧 El profesional está trabajando. Te notificaremos cuando termine.':'🔧 Professional is working. We will notify you when done.')
                   }
                 </p>

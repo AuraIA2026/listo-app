@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { db } from '../firebase'
-import { collection, query, onSnapshot } from 'firebase/firestore'
+import { collection, query, onSnapshot, doc, deleteDoc, updateDoc, deleteField } from 'firebase/firestore'
 
 const norm = (str) => String(str || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim()
 
@@ -15,13 +15,24 @@ export function useStories() {
   })
 
   useEffect(() => {
+    const deleteExpiredStoryFromDb = (storyId) => {
+      if (!storyId) return
+      const storyRef = doc(db, 'historias', storyId)
+      updateDoc(storyRef, {
+        imageUrl: deleteField(),
+        videoUrl: deleteField(),
+        status: 'expired'
+      }).catch(() => {})
+      deleteDoc(storyRef).catch(() => {})
+    }
+
     const qStories = query(collection(db, 'historias'))
     const unsubscribe = onSnapshot(qStories, (snapshot) => {
       const fetched = []
       const now = Date.now()
 
-      snapshot.forEach(doc => {
-        const data = doc.data()
+      snapshot.forEach(docSnap => {
+        const data = docSnap.data()
         const isRejected = data.status === 'rejected' || data.moderated === 'rejected' || data.approved === false || data.rejected === true
         const isApproved = (data.status === 'approved' || data.approved === true || (data.moderated === true && data.status !== 'rejected')) && !isRejected
         
@@ -34,8 +45,14 @@ export function useStories() {
           expiresTime = Date.now() + (24 * 60 * 60 * 1000)
         }
 
+        // Si ya pasaron las 24 horas, eliminar la imagen y el documento de la base de datos
+        if (expiresTime > 0 && expiresTime <= now) {
+          deleteExpiredStoryFromDb(docSnap.id)
+          return
+        }
+
         if (isApproved && !isRejected && expiresTime > now) {
-          fetched.push({ id: doc.id, ...data })
+          fetched.push({ id: docSnap.id, ...data })
         }
       })
 
@@ -45,7 +62,23 @@ export function useStories() {
       console.log('Error reading historias snapshot:', error)
     })
 
-    return () => unsubscribe()
+    // Revisión periódica cada 60s para borrar historias cuya imagen cumpla 24h
+    const cleanupInterval = setInterval(() => {
+      const now = Date.now()
+      setStories(prev => prev.filter(s => {
+        const exp = s.expiresAt ? new Date(s.expiresAt).getTime() : (s.createdAt ? new Date(s.createdAt).getTime() + 24 * 60 * 60 * 1000 : now + 1000)
+        if (exp <= now) {
+          deleteExpiredStoryFromDb(s.id)
+          return false
+        }
+        return true
+      }))
+    }, 60000)
+
+    return () => {
+      unsubscribe()
+      clearInterval(cleanupInterval)
+    }
   }, [])
 
   const getProStoryData = (pro) => {

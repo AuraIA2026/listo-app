@@ -31,7 +31,7 @@ export const sendBrowserNotification = async (title, options = {}) => {
   }
 
   const notifOptions = {
-    body: options.body || 'Nueva actualización en Pedidos Listo',
+    body: options.body || 'Nueva actualización en Listo Patrón',
     icon: options.icon || APP_LOGO_ICON,
     badge: options.badge || APP_LOGO_ICON,
     image: options.image || undefined,

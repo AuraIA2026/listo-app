@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { db } from '../firebase'
-import { collection, query, where, getDocs, onSnapshot } from 'firebase/firestore'
+import { collection, query, where, getDocs, onSnapshot, doc, deleteDoc, updateDoc, deleteField } from 'firebase/firestore'
 import HistoriasViewerModal from './HistoriasViewerModal'
 import SubirHistoriaModal from './SubirHistoriaModal'
 import { getProPlanTheme } from '../planTheme'
@@ -101,8 +101,8 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate
   const isGoldOrAbove = userPlanRaw.includes('gold') || userPlanRaw.includes('platinum') || userPlanRaw.includes('vip') || userPlanRaw.includes('élite')
   const isGracePeriodEligible = isProUser && isGoldOrAbove && isWithin30Days
 
-  // ÚNICAMENTE usuarios con Perfil Completo pueden publicar historias
-  const canPublishStory = isProfileComplete && (!isProUser || has5StarContract || isGracePeriodEligible)
+  // Historias desbloqueadas temporalmente para todos los usuarios
+  const canPublishStory = true
 
   // Real-time verification if the professional has at least one 4-5 star completed contract
   useEffect(() => {
@@ -147,15 +147,26 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate
     return () => unsubscribeOrders()
   }, [userData, isProUser])
 
-  // Real-time listener for stories from Firestore
+  // Real-time listener for stories from Firestore + auto-borrado de imagen/documento al cumplir 24h
   useEffect(() => {
+    const deleteExpiredStoryFromDb = (storyId) => {
+      if (!storyId) return
+      const storyRef = doc(db, 'historias', storyId)
+      updateDoc(storyRef, {
+        imageUrl: deleteField(),
+        videoUrl: deleteField(),
+        status: 'expired'
+      }).catch(() => {})
+      deleteDoc(storyRef).catch(() => {})
+    }
+
     const qStories = query(collection(db, 'historias'))
     const unsubscribe = onSnapshot(qStories, (snapshot) => {
       const fetched = []
       const now = Date.now()
 
-      snapshot.forEach(doc => {
-        const data = doc.data()
+      snapshot.forEach(docSnap => {
+        const data = docSnap.data()
         const isRejected = data.status === 'rejected' || data.moderated === 'rejected' || data.approved === false || data.rejected === true
         const isApproved = (data.status === 'approved' || data.approved === true || (data.moderated === true && data.status !== 'rejected')) && !isRejected
         
@@ -167,9 +178,15 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate
           expiresTime = new Date(data.createdAt).getTime() + (24 * 60 * 60 * 1000)
         }
 
+        // Si ya pasaron las 24 horas, borrar la imagen y el documento de la base de datos automáticamente
+        if (expiresTime > 0 && expiresTime <= now) {
+          deleteExpiredStoryFromDb(docSnap.id)
+          return
+        }
+
         // Historia válida ÚNICAMENTE dentro de sus 24 horas y aprobada sin rechazo
         if (isApproved && !isRejected && expiresTime > now) {
-          fetched.push({ id: doc.id, ...data })
+          fetched.push({ id: docSnap.id, ...data })
         }
       })
 
@@ -179,7 +196,23 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate
       console.log('Error reading historias snapshot:', error)
     })
 
-    return () => unsubscribe()
+    // Revisión periódica cada 60s para borrar historias cuya imagen cumpla 24h mientras la app está abierta
+    const cleanupInterval = setInterval(() => {
+      const now = Date.now()
+      setStories(prev => prev.filter(s => {
+        const exp = s.expiresAt ? new Date(s.expiresAt).getTime() : (s.createdAt ? new Date(s.createdAt).getTime() + 24 * 60 * 60 * 1000 : now + 1000)
+        if (exp <= now) {
+          deleteExpiredStoryFromDb(s.id)
+          return false
+        }
+        return true
+      }))
+    }, 60000)
+
+    return () => {
+      unsubscribe()
+      clearInterval(cleanupInterval)
+    }
   }, [])
 
   const [seenStories, setSeenStories] = useState(() => {
@@ -223,15 +256,7 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate
   }
 
   const handleAddStoryClick = () => {
-    if (!isProfileComplete) {
-      setShowIncompleteProfileNotice(true)
-      return
-    }
-    if (canPublishStory) {
-      setUploadModalOpen(true)
-    } else {
-      setShowLockNotice(true)
-    }
+    setUploadModalOpen(true)
   }
 
   const handleRibbonClick = () => {
@@ -322,7 +347,7 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate
               </div>
             </div>
             <span className="historia-label pro-label">
-              {!isProfileComplete ? '🔒 Completar' : (canPublishStory ? 'Tu Historia' : '⭐ 5 Estrellas')}
+              Tu Historia
             </span>
           </div>
 
@@ -491,7 +516,7 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate
             </h3>
 
             <p style={{ fontSize: '13.5px', color: '#CBD5E1', lineHeight: 1.6, marginBottom: '22px' }}>
-              Para garantizar la máxima calidad en Pedidos Listo, la función de publicar Historias de Trabajo de 24h está reservada exclusivamente para profesionales que hayan obtenido una calificación de <strong style={{ color: '#FBBF24' }}>4 a 5 Estrellas ⭐⭐⭐⭐⭐ por contrato / trabajo finalizado</strong>.
+              Para garantizar la máxima calidad en <strong>Listo Patrón</strong>, la función de publicar Historias de Trabajo de 24h está reservada exclusivamente para profesionales que hayan obtenido una calificación de <strong style={{ color: '#FBBF24' }}>4 a 5 Estrellas ⭐⭐⭐⭐⭐ por contrato / trabajo finalizado</strong>.
               <br /><br />
               ¡Completa tu próximo contrato con responsabilidad, puntualidad y excelencia para recibir de 4 a 5 estrellas de tu cliente y desbloquear tus Historias!
             </p>
@@ -551,7 +576,7 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate
             </h3>
 
             <p style={{ fontSize: '13.5px', color: '#CBD5E1', lineHeight: 1.6, marginBottom: '22px' }}>
-              Para garantizar la seguridad, autenticidad y confianza en la comunidad de Pedidos Listo, <strong style={{ color: '#F87171' }}>solo los usuarios con su Perfil Completo (Nombre y Teléfono)</strong> pueden publicar Historias de Trabajo de 24h.
+              Para garantizar la seguridad, autenticidad y confianza en la comunidad de <strong>Listo Patrón</strong>, <strong style={{ color: '#F87171' }}>solo los usuarios con su Perfil Completo (Nombre y Teléfono)</strong> pueden publicar Historias de Trabajo de 24h.
             </p>
 
             <button

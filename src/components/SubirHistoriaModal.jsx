@@ -13,7 +13,7 @@ const COLOR_PALETTE = [
 ]
 
 const STICKER_PRESETS = [
-  { id: 'logo_listo', label: '⚡ Pedidos Listo' },
+  { id: 'logo_listo', label: '⚡ Listo Patrón' },
   { id: 'oficial_5s', label: '⭐ Trabajo 5 Estrellas' },
   { id: 'oferta_flash', label: '🔥 Oferta 24h' },
   { id: 'garantia', label: '🛡️ Garantizado' },
@@ -122,7 +122,7 @@ export default function SubirHistoriaModal({ isOpen, onClose, userData, onStoryU
         ctx.drawImage(img, (targetW - bgW) / 2, (targetH - bgH) / 2, bgW, bgH)
         ctx.restore()
       } else if (bgStyle === 'gradient') {
-        // Degradado estilo Pedidos Listo
+        // Degradado estilo Listo Patrón
         const grad = ctx.createLinearGradient(0, 0, 0, targetH)
         grad.addColorStop(0, '#0F172A')
         grad.addColorStop(0.5, '#1E293B')
@@ -556,22 +556,10 @@ export default function SubirHistoriaModal({ isOpen, onClose, userData, onStoryU
     } catch (err) {}
 
     const activeUser = auth.currentUser;
-    const isProfileComplete = Boolean(
-      userData?.profileComplete ||
-      (
-        (userData?.name || userData?.displayName || userData?.fullName || storedUser?.name || activeUser?.displayName) &&
-        (userData?.phone || userData?.telefono || userData?.phoneNumber || storedUser?.phone)
-      )
-    )
-
-    if (!isProfileComplete) {
-      setErrorMsg('🔒 Solo los usuarios con su Perfil Completo (Nombre y Teléfono) pueden publicar historias. Por favor completa tu perfil en la sección de usuario.')
-      return
-    }
     const activeUid = activeUser?.uid || userData?.uid || userData?.id || storedUser?.uid || storedUser?.id || localStorage.getItem('listo_user_uid') || `pro_${Date.now()}`;
     const isClient = !(userData?.role === 'pro' || userData?.type === 'pro' || storedUser?.role === 'pro' || storedUser?.type === 'pro')
 
-    const name = userData?.name || userData?.displayName || activeUser?.displayName || storedUser?.name || (isClient ? 'Cliente Listo' : 'Profesional de Listo');
+    const name = userData?.name || userData?.displayName || activeUser?.displayName || storedUser?.name || (isClient ? 'Cliente Listo Patrón' : 'Profesional de Listo Patrón');
     const avatar = userData?.avatarUrl || userData?.photoURL || userData?.profilePhoto || activeUser?.photoURL || storedUser?.avatarUrl || storedUser?.photoURL || 'https://randomuser.me/api/portraits/men/32.jpg';
     const category = isClient ? 'Cliente Satisfecho 🤝' : (userData?.especialidad || userData?.category || userData?.specEs || storedUser?.especialidad || storedUser?.category || 'Profesional Registrado');
 
@@ -595,13 +583,14 @@ export default function SubirHistoriaModal({ isOpen, onClose, userData, onStoryU
         trimStart: mediaType === 'video' ? trimStart : 0,
         trimEnd: mediaType === 'video' ? trimEnd : 15,
         videoDuration: mediaType === 'video' ? (selectedSegmentDuration || 15) : 15,
-        caption: caption.trim() || (isClient ? 'Excelente servicio solicitado en Pedidos Listo ⚡' : 'Trabajo realizado con calidad Pedidos Listo ⚡'),
+        caption: caption.trim() || (isClient ? 'Excelente servicio solicitado en Listo Patrón ⚡' : 'Trabajo realizado con calidad Listo Patrón ⚡'),
         offerSticker: offerSticker !== 'none' ? offerSticker : null,
         likesCount: 0,
         is5StarVerified: !isClient,
-        ratingBadge: isClient ? '⭐ Cliente Listo' : '⭐⭐⭐⭐⭐ Entrega 5 Estrellas',
-        status: 'pending',
-        moderated: false,
+        ratingBadge: isClient ? '⭐ Cliente Listo Patrón' : '⭐⭐⭐⭐⭐ Entrega 5 Estrellas',
+        status: 'approved',
+        approved: true,
+        moderated: true,
         createdAt: new Date().toISOString(),
         expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
       }
@@ -611,14 +600,14 @@ export default function SubirHistoriaModal({ isOpen, onClose, userData, onStoryU
       await addDoc(collection(db, 'notificaciones'), {
         userId: 'admin',
         type: 'new_story_review',
-        title: '📸 NUEVA HISTORIA EN ESPERA DE VALIDACIÓN',
-        text: `El profesional ${name} (${category}) ha enviado una historia de trabajo para su revisión.`,
+        title: '📸 NUEVA HISTORIA PUBLICADA (24H)',
+        text: `El usuario ${name} (${category}) ha publicado una historia de 24h en Listo Patrón.`,
         storyDocId: docRef.id,
         read: false,
         createdAt: new Date().toISOString()
       }).catch(() => {})
 
-      alert('🎉 ¡Historia enviada a revisión!\n\nTu historia ha sido enviada al equipo de administración para su validación. Una vez aprobada, aparecerá visible en la plataforma.')
+      alert('🎉 ¡Historia publicada con éxito!\n\nTu historia ya está visible en Listo Patrón por 24 horas (después de las 24h la imagen se eliminará automáticamente de la base de datos).')
 
       setIsUploading(false)
       if (onStoryUploaded) onStoryUploaded()
@@ -1085,7 +1074,7 @@ export default function SubirHistoriaModal({ isOpen, onClose, userData, onStoryU
             {/* 6. PANEL DE STICKERS Y MARCAS DE LISTO */}
             {activeTool === 'sticker' && (
               <div className="wa-panel-content">
-                <span className="wa-panel-title">😀 Stickers y Marcas de Pedidos Listo</span>
+                <span className="wa-panel-title">😀 Stickers y Marcas de Listo Patrón</span>
                 <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                   {STICKER_PRESETS.map(stk => {
                     const isSel = selectedStickers.some(s => s.id === stk.id)

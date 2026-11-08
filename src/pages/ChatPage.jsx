@@ -141,7 +141,7 @@ export default function ChatPage({ lang = 'es', navigate, professional, userData
         // PROTECCIÓN DE MODO OFICIAL SOPORTE
         if (other && typeof other.email === 'string' && other.email.toLowerCase().trim() === SUPPORT_EMAIL) {
            other.isOfficial = true;
-           other.name = 'Pedidos Listo Oficial ✅';
+           other.name = 'Listo Patrón Oficial ✅';
            other.specialty = 'Centro de Ayuda';
         }
 
@@ -237,7 +237,7 @@ export default function ChatPage({ lang = 'es', navigate, professional, userData
     let mappedOther = { uid: otherId, ...otherData }
     if (mappedOther.email && String(mappedOther.email).toLowerCase().trim() === SUPPORT_EMAIL) {
        mappedOther.isOfficial = true;
-       mappedOther.name = 'Pedidos Listo Oficial ✅';
+       mappedOther.name = 'Listo Patrón Oficial ✅';
        mappedOther.specialty = 'Centro de Ayuda';
     }
     
