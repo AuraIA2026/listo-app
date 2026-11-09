@@ -1544,6 +1544,21 @@ export default function AdminPage({ navigate }) {
          setPartnerRequests(prev => prev.map(r => r.id === obj.id ? { ...r, status: 'rejected' } : r));
          showToast(`🔴 Solicitud de "${obj.businessName}" archivada`);
       }
+
+      if (type === 'delete_partner_request') {
+         if (obj.id && !obj.id.startsWith('demo-')) {
+           try {
+             await deleteDoc(doc(db, 'partner_requests', obj.id));
+             try {
+               await deleteDoc(doc(db, 'locales', obj.id));
+             } catch (eLoc) {}
+           } catch (eDel) {
+             console.error("Error eliminando comercio:", eDel);
+           }
+         }
+         setPartnerRequests(prev => prev.filter(r => r.id !== obj.id));
+         showToast(`🗑️ Comercio "${obj.businessName}" eliminado definitivamente`);
+      }
     } catch(err) {
       console.error(err);
       showToast('❌ Ocurrió un error en la base de datos');
