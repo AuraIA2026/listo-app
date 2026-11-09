@@ -3,9 +3,9 @@ import { collection, addDoc, serverTimestamp, getDoc, doc, increment, updateDoc,
 import { auth, db } from '../firebase'
 import './BookingPage.css'
 
-import { bookingTxt }                         from './bookingTexts'
-import { avatarColors, timeSlots }            from './bookingData'
-import { getDays }                            from './bookingUtils'
+import { bookingTxt } from './bookingTexts'
+import { avatarColors, timeSlots } from './bookingData'
+import { getDays } from './bookingUtils'
 
 import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
@@ -29,41 +29,41 @@ function MapCenterUpdater({ center }) {
 }
 
 export default function BookingPage({ lang = 'es', navigate, professional, userData }) {
-  const T    = bookingTxt[lang]
+  const T = bookingTxt[lang]
   const days = getDays(lang)
 
   const pro = professional || {
-    id:       'unknown',
-    name:     'Carlos Méndez',
+    id: 'unknown',
+    name: 'Carlos Méndez',
     category: 'mechanic',
-    avatar:   'CM',
-    rating:   4.9,
+    avatar: 'CM',
+    rating: 4.9,
     location: 'Santo Domingo',
   }
 
-  const [step,          setStep]          = useState(1)
-  const [selectedDay,   setSelectedDay]   = useState(null)
-  const [selectedTime,  setSelectedTime]  = useState(null)
-  const [address,       setAddress]       = useState('')
+  const [step, setStep] = useState(1)
+  const [selectedDay, setSelectedDay] = useState(null)
+  const [selectedTime, setSelectedTime] = useState(null)
+  const [address, setAddress] = useState('')
   const [addressCoords, setAddressCoords] = useState(null)
-  const [isEmergency,   setIsEmergency]   = useState(false)
-  const [showMap,       setShowMap]       = useState(false)
-  const [mapCenter,     setMapCenter]     = useState(null)
-  const [mapLoading,    setMapLoading]    = useState(false)
+  const [isEmergency, setIsEmergency] = useState(false)
+  const [showMap, setShowMap] = useState(false)
+  const [mapCenter, setMapCenter] = useState(null)
+  const [mapLoading, setMapLoading] = useState(false)
 
   // ── DIRECCIONES GUARDADAS (CASA, OFICINA, CASA DE MAMÁ) ──
   const [savedAddresses, setSavedAddresses] = useState(() => {
     try {
       const stored = localStorage.getItem('listo_saved_addresses')
       if (stored) return JSON.parse(stored)
-    } catch(e) {}
+    } catch (e) { }
     return [
       { label: 'Casa', icon: '🏠', address: 'Santiago, D.N. (República Dominicana)' },
       { label: 'Oficina', icon: '🏢', address: 'Av. 27 de Febrero, Santo Domingo' },
       { label: 'Casa de Mamá', icon: '👵', address: 'La Vega Centro, República Dominicana' }
     ]
   })
-  
+
   // Real-time slots
   const [realBusySlots, setRealBusySlots] = useState([])
 
@@ -111,7 +111,7 @@ export default function BookingPage({ lang = 'es', navigate, professional, userD
     }
     const currentDayToken = `${days[selectedDay]?.dayName} ${days[selectedDay]?.dayNum}`
     const q = query(collection(db, 'orders'), where('proId', '==', pro.id))
-    
+
     // Obtenemos los turnos en vivo.
     const unsubscribe = onSnapshot(q, (snap) => {
       const busyTimes = []
@@ -131,7 +131,7 @@ export default function BookingPage({ lang = 'es', navigate, professional, userD
     return () => unsubscribe()
   }, [selectedDay, pro.id]) // eslint-disable-line
 
-  const [notes,     setNotes]     = useState('')
+  const [notes, setNotes] = useState('')
   const [problemPhotos, setProblemPhotos] = useState([])
   const handleAddProblemPhoto = (e) => {
     const file = e.target.files?.[0]
@@ -158,9 +158,9 @@ export default function BookingPage({ lang = 'es', navigate, professional, userD
     reader.readAsDataURL(file)
     e.target.value = ''
   }
-  const [urgency,   setUrgency]   = useState(0)
-  const [loading,   setLoading]   = useState(false)
-  const [errorMsg,  setErrorMsg]  = useState('')
+  const [urgency, setUrgency] = useState(0)
+  const [loading, setLoading] = useState(false)
+  const [errorMsg, setErrorMsg] = useState('')
 
   const canNext1 = (selectedDay !== null && selectedTime !== null) || isEmergency
   const canNext2 = address.trim().length > 0 || addressCoords !== null
@@ -179,44 +179,44 @@ export default function BookingPage({ lang = 'es', navigate, professional, userD
       const clientDisplayName = userData?.name || (auth.currentUser ? (auth.currentUser.displayName || auth.currentUser.email.split('@')[0]) : 'Cliente Listo');
 
       const orderData = {
-        clientId:       clientUid,
-        clientEmail:    clientEmail,
-        clientName:     clientDisplayName,
+        clientId: clientUid,
+        clientEmail: clientEmail,
+        clientName: clientDisplayName,
         clientPhotoURL: userData?.photoURL || auth.currentUser?.photoURL || null,
-        clientPhone:    userData?.phone || '',
-        proId:          pro.id || 'desconocido',
-        proName:        pro.name || pro.nameEs || '',
-        proSpecialty:   pro.category || pro.specEs || '',
-        proAvatar:      pro.avatar || '',
-        proPhotoURL:    pro.photoURL || pro.img || null,
-        proPhone:       pro.phone || '',
-        dateToken:      isEmergency ? (lang==='es'?'Hoy mismo':'Today') : `${days[selectedDay]?.dayName} ${days[selectedDay]?.dayNum}`,
-        timeToken:      isEmergency ? (lang==='es'?'Lo antes posible (ASAP)':'ASAP') : selectedTime,
-        clientAddress:  address,
-        address:        address,
-        coords:         addressCoords ? { lat: addressCoords.lat, lng: addressCoords.lng } : null,
-        serviceDesc:    notes,
-        notes:          notes,
-        problemPhotos:  problemPhotos.length > 0 ? problemPhotos : [],
-        urgencyToken:   urgency,
-        price:          pro.price || '',
-        status:         'pending',
-        rated:          false,
-        createdAt:      serverTimestamp(),
+        clientPhone: userData?.phone || '',
+        proId: pro.id || 'desconocido',
+        proName: pro.name || pro.nameEs || '',
+        proSpecialty: pro.category || pro.specEs || '',
+        proAvatar: pro.avatar || '',
+        proPhotoURL: pro.photoURL || pro.img || null,
+        proPhone: pro.phone || '',
+        dateToken: isEmergency ? (lang === 'es' ? 'Hoy mismo' : 'Today') : `${days[selectedDay]?.dayName} ${days[selectedDay]?.dayNum}`,
+        timeToken: isEmergency ? (lang === 'es' ? 'Lo antes posible (ASAP)' : 'ASAP') : selectedTime,
+        clientAddress: address,
+        address: address,
+        coords: addressCoords ? { lat: addressCoords.lat, lng: addressCoords.lng } : null,
+        serviceDesc: notes,
+        notes: notes,
+        problemPhotos: problemPhotos.length > 0 ? problemPhotos : [],
+        urgencyToken: urgency,
+        price: pro.price || '',
+        status: 'pending',
+        rated: false,
+        createdAt: serverTimestamp(),
       }
 
       const newOrderInfo = await addDoc(collection(db, 'orders'), orderData)
 
       await addDoc(collection(db, 'notificaciones'), {
-        userId:  pro.id || 'desconocido',
+        userId: pro.id || 'desconocido',
         orderId: newOrderInfo.id,
-        type:    'new_order',
-        title:   lang === 'es' ? '¡Nuevo Pedido!' : 'New Request!',
-        text:    lang === 'es'
+        type: 'new_order',
+        title: lang === 'es' ? '¡Nuevo Pedido!' : 'New Request!',
+        text: lang === 'es'
           ? `${orderData.clientName} ha solicitado tus servicios para el ${orderData.dateToken} a las ${orderData.timeToken}.`
           : `${orderData.clientName} requested your service for ${orderData.dateToken} at ${orderData.timeToken}.`,
-        read:      false,
-        icon:      '🚨',
+        read: false,
+        icon: '🚨',
         createdAt: serverTimestamp(),
       })
 
@@ -224,7 +224,7 @@ export default function BookingPage({ lang = 'es', navigate, professional, userD
         const proData = proSnap.data()
         const plan = (proData.currentPlan || proData.planId || proData.plan || '').toLowerCase()
         const isUnlimited = plan.includes('vip') || plan.includes('platinum') || plan.includes('platino') || plan.includes('elite') || plan.includes('ilimitado')
-        
+
         const proRef = doc(db, 'users', pro.id)
         if (isUnlimited) {
           await updateDoc(proRef, {
@@ -251,7 +251,7 @@ export default function BookingPage({ lang = 'es', navigate, professional, userD
                 userId: pro.id,
                 type: 'account_status',
                 title: '📋 Administra tu suscripción',
-                text: newContracts === 1 
+                text: newContracts === 1
                   ? '🔴 Solo te queda un contrato disponible. Recuerda que puedes administrar tu suscripción desde la versión web.'
                   : '🔴 No tienes contratos disponibles. Administra tu plan desde la versión web para continuar recibiendo clientes.',
                 read: false,
@@ -320,7 +320,7 @@ export default function BookingPage({ lang = 'es', navigate, professional, userD
         <div className="radar-container fade-up">
           <h2 className="radar-title">{lang === 'es' ? 'Localizando profesional...' : 'Locating professional...'}</h2>
           <p className="radar-sub">{lang === 'es' ? 'Esperando confirmación en tiempo real' : 'Waiting real-time confirmation'}</p>
-          
+
           <div className="radar-animation-box">
             <div className="radar-ring r1"></div>
             <div className="radar-ring r2"></div>
@@ -328,14 +328,14 @@ export default function BookingPage({ lang = 'es', navigate, professional, userD
             <div className="radar-center-avatar" style={{ background: avatarColors[0] }}>
               {pro.avatar}
             </div>
-            
+
             <div className="floating-info-card">
               <span className="live-pill">● LIVE</span>
               <h4>{pro.name}</h4>
-              <p>{isEmergency ? (lang==='es'?'🚨 Prioridad alta':'🚨 High priority') : `${confirmedOrder.timeToken}`}</p>
+              <p>{isEmergency ? (lang === 'es' ? '🚨 Prioridad alta' : '🚨 High priority') : `${confirmedOrder.timeToken}`}</p>
             </div>
           </div>
-          
+
           <div className="eta-box glass-eta">
             <span className="eta-label">⏳ {lang === 'es' ? 'NOTIFICANDO A LOS PROFESIONALES...' : 'NOTIFYING PROFESSIONALS...'}</span>
             <p className="eta-subtext">{lang === 'es' ? 'Tu solicitud está en marcha en tiempo real.' : 'Your request is active in real time.'}</p>
@@ -368,7 +368,7 @@ export default function BookingPage({ lang = 'es', navigate, professional, userD
           </button>
 
           <button className="btn-cancel-radar" onClick={() => {
-            updateDoc(doc(db, 'orders', confirmedOrder.id), { status: 'cancelled' }).catch(()=>{})
+            updateDoc(doc(db, 'orders', confirmedOrder.id), { status: 'cancelled' }).catch(() => { })
             setConfirmedOrder(null)
             setStep(1)
           }}>
@@ -394,10 +394,10 @@ export default function BookingPage({ lang = 'es', navigate, professional, userD
 
         <div className="steps-bar">
           {T.steps.map((s, i) => (
-            <div key={i} className={`step-item ${step > i+1 ? 'done' : ''} ${step === i+1 ? 'active' : ''}`}>
-              <div className="step-circle">{step > i+1 ? '✓' : i+1}</div>
+            <div key={i} className={`step-item ${step > i + 1 ? 'done' : ''} ${step === i + 1 ? 'active' : ''}`}>
+              <div className="step-circle">{step > i + 1 ? '✓' : i + 1}</div>
               <span className="step-label">{s}</span>
-              {i < T.steps.length-1 && <div className="step-line" />}
+              {i < T.steps.length - 1 && <div className="step-line" />}
             </div>
           ))}
         </div>
@@ -416,19 +416,19 @@ export default function BookingPage({ lang = 'es', navigate, professional, userD
                 setStep(2) // Salto directo sin forzar día
               }}>
                 <span className="emergency-hint">
-                  {lang==='es'?'¿Lo necesitas ahora mismo? 👇':'Do you need it right now? 👇'}
+                  {lang === 'es' ? '¿Lo necesitas ahora mismo? 👇' : 'Do you need it right now? 👇'}
                 </span>
                 <span className="emergency-text">
-                  {lang==='es'?'SOLICITAR AHORA':'REQUEST NOW'}
+                  {lang === 'es' ? 'SOLICITAR AHORA' : 'REQUEST NOW'}
                 </span>
               </button>
             </div>
-            
-            <div className="or-divider">{lang==='es'?'O agenda un horario':'Or schedule a time'}</div>
+
+            <div className="or-divider">{lang === 'es' ? 'O agenda un horario' : 'Or schedule a time'}</div>
 
             <div className="date-scroll">
               {days.map((d, i) => (
-                <button key={i} className={`day-card ${selectedDay===i && !isEmergency ? 'selected':''} ${d.isToday?'today':''}`} onClick={() => { setSelectedDay(i); setIsEmergency(false) }}>
+                <button key={i} className={`day-card ${selectedDay === i && !isEmergency ? 'selected' : ''} ${d.isToday ? 'today' : ''}`} onClick={() => { setSelectedDay(i); setIsEmergency(false) }}>
                   <span className="day-name">{d.dayName}</span>
                   <span className="day-num">{d.dayNum}</span>
                   <span className="day-month">{d.month}</span>
@@ -443,9 +443,9 @@ export default function BookingPage({ lang = 'es', navigate, professional, userD
                   {timeSlots.map(t => {
                     const isBusy = realBusySlots.includes(t)
                     return (
-                      <button key={t} className={`time-slot ${selectedTime===t && !isEmergency ? 'selected':''} ${isBusy?'busy':''}`} onClick={() => { if(!isBusy) { setSelectedTime(t); setIsEmergency(false) } }}>
+                      <button key={t} className={`time-slot ${selectedTime === t && !isEmergency ? 'selected' : ''} ${isBusy ? 'busy' : ''}`} onClick={() => { if (!isBusy) { setSelectedTime(t); setIsEmergency(false) } }}>
                         {t}
-                        {isBusy && <span className="busy-tag">{lang==='es'?'Ocupado':'Busy'}</span>}
+                        {isBusy && <span className="busy-tag">{lang === 'es' ? 'Ocupado' : 'Busy'}</span>}
                       </button>
                     )
                   })}
@@ -502,8 +502,8 @@ export default function BookingPage({ lang = 'es', navigate, professional, userD
                 ))}
               </div>
 
-              <div style={{ display:'flex', gap:'8px', marginBottom:'8px' }}>
-                <input type="text" placeholder={T.addressPlaceholder} value={address} onChange={e => setAddress(e.target.value)} style={{ flex:1 }} />
+              <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
+                <input type="text" placeholder={T.addressPlaceholder} value={address} onChange={e => setAddress(e.target.value)} style={{ flex: 1 }} />
                 <button className="btn-map-toggle" onClick={() => setShowMap(!showMap)} title="Marcar ubicación en el mapa">🗺️ Mapa</button>
               </div>
 
@@ -516,7 +516,7 @@ export default function BookingPage({ lang = 'es', navigate, professional, userD
                       const newLoc = { label: newLabel.trim(), icon: '📍', address: address, coords: addressCoords }
                       const updated = [...savedAddresses, newLoc]
                       setSavedAddresses(updated)
-                      try { localStorage.setItem('listo_saved_addresses', JSON.stringify(updated)) } catch(e) {}
+                      try { localStorage.setItem('listo_saved_addresses', JSON.stringify(updated)) } catch (e) { }
                     }
                   }}
                   style={{
@@ -539,11 +539,11 @@ export default function BookingPage({ lang = 'es', navigate, professional, userD
               {showMap && (
                 <div className="map-picker-container fade-up">
                   {mapLoading ? (
-                    <div style={{ padding:'40px 0', textAlign:'center', color:'#F26000', fontWeight:'bold' }}>📍 Buscando ubicación por GPS...</div>
+                    <div style={{ padding: '40px 0', textAlign: 'center', color: '#F26000', fontWeight: 'bold' }}>📍 Buscando ubicación por GPS...</div>
                   ) : mapCenter ? (
                     <>
                       <p className="map-picker-hint">📌 Tu ubicación exacta.</p>
-                      <MapContainer center={mapCenter} zoom={16} style={{ height:'220px', width:'100%', borderRadius:'16px', zIndex:0, boxShadow: '0 8px 24px rgba(0,0,0,0.1)' }}>
+                      <MapContainer center={mapCenter} zoom={16} style={{ height: '220px', width: '100%', borderRadius: '16px', zIndex: 0, boxShadow: '0 8px 24px rgba(0,0,0,0.1)' }}>
                         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
                         <MapCenterUpdater center={mapCenter} />
                         <MapSelector onLocationSelect={handleMapSelect} />
@@ -559,8 +559,8 @@ export default function BookingPage({ lang = 'es', navigate, professional, userD
               <label>⚡ {T.urgency}</label>
               <div className="urgency-group">
                 {T.urgencyOpts.map((opt, i) => (
-                  <button key={i} className={`urgency-btn ${urgency===i?'selected':''}`} onClick={() => setUrgency(i)}>
-                    {[['🕐','⚡','🚨'][i]]} {opt}
+                  <button key={i} className={`urgency-btn ${urgency === i ? 'selected' : ''}`} onClick={() => setUrgency(i)}>
+                    {[['🕐', '⚡', '🚨'][i]]} {opt}
                   </button>
                 ))}
               </div>
@@ -608,17 +608,17 @@ export default function BookingPage({ lang = 'es', navigate, professional, userD
             <div className="summary-card glass-summary">
               <h3 className="summary-title">{T.summary}</h3>
               <div className="summary-row"><span className="summary-label">{T.professional}</span><span className="summary-value">{pro.name}</span></div>
-              <div className="summary-row"><span className="summary-label">{T.date}</span><span className="summary-value" style={isEmergency?{color:'#EF4444', fontWeight:800}:{}}>{isEmergency ? (lang==='es'?'🚨 Hoy mismo':'🚨 Today') : `${days[selectedDay]?.dayName} ${days[selectedDay]?.dayNum}`}</span></div>
-              <div className="summary-row"><span className="summary-label">{T.time}</span><span className="summary-value" style={isEmergency?{color:'#EF4444', fontWeight:800}:{}}>{isEmergency ? (lang==='es'?'🔥 Lo antes posible':'🔥 ASAP') : selectedTime}</span></div>
+              <div className="summary-row"><span className="summary-label">{T.date}</span><span className="summary-value" style={isEmergency ? { color: '#EF4444', fontWeight: 800 } : {}}>{isEmergency ? (lang === 'es' ? '🚨 Hoy mismo' : '🚨 Today') : `${days[selectedDay]?.dayName} ${days[selectedDay]?.dayNum}`}</span></div>
+              <div className="summary-row"><span className="summary-label">{T.time}</span><span className="summary-value" style={isEmergency ? { color: '#EF4444', fontWeight: 800 } : {}}>{isEmergency ? (lang === 'es' ? '🔥 Lo antes posible' : '🔥 ASAP') : selectedTime}</span></div>
               <div className="summary-row"><span className="summary-label">📍</span><span className="summary-value">{address}</span></div>
               {notes && <div className="summary-row"><span className="summary-label">📝</span><span className="summary-value notes-val">{notes}</span></div>}
               {problemPhotos.length > 0 && <div className="summary-row"><span className="summary-label">📷 Fotos</span><span className="summary-value" style={{ color: '#EA580C', fontWeight: 800 }}>{problemPhotos.length} adjunta(s)</span></div>}
               <div className="summary-divider" />
               <div className="summary-price-row">
                 <span className="summary-price-label">Precio del Servicio</span>
-                <span className="summary-price" style={{ fontSize:'15px', color:'#10B981' }}>A acordar</span>
+                <span className="summary-price" style={{ fontSize: '15px', color: '#10B981' }}>A acordar</span>
               </div>
-              <p className="price-note" style={{ fontSize:'12px', color:'#64748B', marginTop:'8px' }}>
+              <p className="price-note" style={{ fontSize: '12px', color: '#64748B', marginTop: '8px' }}>
                 💡 En Listo Patrón no cobramos tarifas fijas. Discute el precio directo con el profesional.
               </p>
             </div>
@@ -645,7 +645,7 @@ export default function BookingPage({ lang = 'es', navigate, professional, userD
               {errorMsg && <div style={{ width: '100%', padding: '12px', background: '#FEF2F2', border: '1px solid #FECACA', color: '#EF4444', borderRadius: '12px', marginBottom: '16px', textAlign: 'center', fontWeight: 'bold' }}>{errorMsg}</div>}
               <button className="btn-back" disabled={loading} onClick={() => setStep(2)}>{T.back}</button>
               <button className="btn-confirm radar-btn" disabled={loading} onClick={handleConfirmOrder}>
-                {loading ? 'Conectando...' : `✓ ${lang==='es'?'Confirmar e Iniciar Radar':'Confirm & Start Radar'}`}
+                {loading ? 'Conectando...' : `✓ ${lang === 'es' ? 'Confirmar e Iniciar Radar' : 'Confirm & Start Radar'}`}
               </button>
             </div>
           </div>

@@ -639,7 +639,8 @@ export default function App() {
         })
         PushNotifications.addListener('pushNotificationActionPerformed', notification => {
           console.log("Notificación push pulsada:", notification)
-          setCurrentPage('orders')
+          const isDeliv = /pedido|restaurante|comida|delivery|mándame|mandame/i.test(`${notification.notification?.title || ''} ${notification.notification?.body || ''}`)
+          setCurrentPage(isDeliv ? 'mandame' : 'orders')
         })
       })
     }
@@ -765,16 +766,71 @@ export default function App() {
     return () => unsub()
   }, [authReady, userData])
 
+  // ─── LISTENER NOTIFICACIONES DE COCINA Y COMIDA ──────────────────────────
+  useEffect(() => {
+    if (!authReady || !userData) return
+    const q = query(
+      collection(db, 'notificaciones'),
+      where('userId', '==', userData.uid),
+      where('type', 'in', ['order_cooking', 'order_ready', 'order_delay']),
+      where('read', '==', false)
+    )
+    const notifiedIds = new Set()
+    const unsub = onSnapshot(q, (snapshot) => {
+      snapshot.forEach(docSnap => {
+        if (notifiedIds.has(docSnap.id)) return
+        notifiedIds.add(docSnap.id)
+        const d = docSnap.data()
+        updateDoc(doc(db, 'notificaciones', docSnap.id), { read: true }).catch(() => {})
+        playMsgSound()
+        try { if (navigator.vibrate) navigator.vibrate([250, 100, 250]) } catch (e) {}
+
+        const isCooking = d.type === 'order_cooking'
+        const isReady = d.type === 'order_ready'
+
+        setAlertOrder({
+          id: d.orderId || docSnap.id,
+          isUserAlert: true,
+          type: 'delivery',
+          status: isCooking ? 'cooking' : (isReady ? 'ready' : 'cooking'),
+          storeName: d.storeName || 'Pedidos Listo',
+          customTitle: d.title,
+          customText: d.text,
+          prepMinutes: d.prepMinutes || null,
+          pinOTP: d.pinOTP || null,
+          fulfillmentType: d.fulfillmentType || 'delivery'
+        })
+
+        sendBrowserNotification(d.title || (isCooking ? '👨‍🍳 ¡Tu pedido se está preparando!' : '🟢 ¡Tu pedido está listo!'), {
+          body: d.text || 'Tienes una nueva actualización de tu pedido en cocina.',
+          url: '/mandame'
+        })
+      })
+    })
+    return () => unsub()
+  }, [authReady, userData])
+
   // ─── LISTENER ÓRDENES ────────────────────────────────────────────────────
   useEffect(() => {
     if (!authReady || !userData) return
     let unsubscribeOrders = () => {}
+    let unsubscribeClientOrders = () => {}
+
     const setupListener = async () => {
+      // 1. SI ES PROFESIONAL: Escuchar solicitudes de servicios técnicos (excluyendo comida/delivery)
       if (userRole === 'pro') {
-        const q = query(collection(db, 'orders'), where('proId', '==', userData.uid), where('status', '==', 'pending'))
+        const q = query(
+          collection(db, 'orders'),
+          where('proId', '==', userData.uid),
+          where('status', '==', 'pending')
+        )
         const existingSnap = await getDocs(q)
         const existingIds = new Set()
-        existingSnap.forEach(d => existingIds.add(d.id))
+        existingSnap.forEach(d => {
+          const dat = d.data()
+          if (dat.type === 'delivery' || dat.fulfillmentType === 'pickup' || dat.source === 'pedidos_listo') return
+          existingIds.add(d.id)
+        })
         setNotifiedOrderIds(existingIds)
         listenerReadyRef.current = true
         unsubscribeOrders = onSnapshot(q, (snapshot) => {
@@ -783,6 +839,7 @@ export default function App() {
           snapshot.forEach(docSnap => {
             if (existingIds.has(docSnap.id)) return
             const d = docSnap.data()
+            if (d.type === 'delivery' || d.fulfillmentType === 'pickup' || d.source === 'pedidos_listo') return
             newPendings.push({ id: docSnap.id, pro: d.clientName || d.clientEmail || 'Cliente', specialty: d.proSpecialty || 'Servicio', avatar: d.clientName ? d.clientName.substring(0,2).toUpperCase() : '👤', photoURL: d.clientPhotoURL || null, date: `${d.dateToken} - ${d.timeToken}`, price: d.price || 'RD$0', status: d.status || 'pending', icon: '🔧', clientAddress: d.clientAddress || d.address || '', ...d })
           })
           if (newPendings.length > 0) {
@@ -801,42 +858,90 @@ export default function App() {
             })
           }
         })
-      } else if (userRole === 'user') {
-        const q = query(collection(db, 'orders'), where('clientId', '==', userData.uid), where('status', 'in', ['accepted', 'onway']))
-        const existingSnap = await getDocs(q)
-        const existingIds = new Set()
-        existingSnap.forEach(d => existingIds.add(d.id + '_accepted'))
-        setNotifiedOrderIds(existingIds)
-        listenerReadyRef.current = true
-        unsubscribeOrders = onSnapshot(q, (snapshot) => {
-          if (!listenerReadyRef.current) return
-          const activeOrders = []
-          snapshot.forEach(docSnap => {
-            if (existingIds.has(docSnap.id + '_accepted')) return
-            const d = docSnap.data()
-            activeOrders.push({ id: docSnap.id, pro: d.proName || 'Profesional', specialty: d.proSpecialty || 'Servicio', avatar: d.proAvatar || 'P', photoURL: d.proPhotoURL || null, date: `${d.dateToken} - ${d.timeToken}`, price: d.price || 'RD$0', status: d.status, ...d })
-          })
-          if (activeOrders.length > 0) {
-            activeOrders.sort((a,b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0))
-            const newest = activeOrders[0]
-            setNotifiedOrderIds(prev => {
-              if (!prev.has(newest.id + '_accepted')) {
-                setAlertOrder({ ...newest, isUserAlert: true })
-                sendBrowserNotification('✅ ¡Pedido Aceptado!', {
-                  body: `${newest.pro} ha aceptado tu solicitud de ${newest.specialty}.`,
-                  url: '/tracking'
-                })
-                const nextSet = new Set(prev); nextSet.add(newest.id + '_accepted'); return nextSet
-              }
-              return prev
-            })
-          }
-        })
       }
+
+      // 2. COMO CLIENTE (Cualquier usuario logueado con pedidos de comida o servicios):
+      // Escucha cambios de estado en vivo: aceptado, en preparación (cooking), listo (ready), o en camino (onway)
+      const qClient = query(
+        collection(db, 'orders'),
+        where('clientId', '==', userData.uid),
+        where('status', 'in', ['accepted', 'cooking', 'ready', 'onway'])
+      )
+      const existingClientSnap = await getDocs(qClient)
+      const existingClientKeys = new Set()
+      existingClientSnap.forEach(d => {
+        const dat = d.data()
+        existingClientKeys.add(d.id + '_' + (dat.status || 'accepted'))
+      })
+
+      unsubscribeClientOrders = onSnapshot(qClient, (snapshot) => {
+        const changedOrders = []
+        snapshot.forEach(docSnap => {
+          const d = docSnap.data()
+          const key = docSnap.id + '_' + (d.status || 'accepted')
+          if (existingClientKeys.has(key)) return
+          existingClientKeys.add(key)
+          changedOrders.push({
+            id: docSnap.id,
+            pro: d.proName || d.storeName || 'Restaurante / Profesional',
+            specialty: d.proSpecialty || (d.type === 'delivery' ? 'Pedidos Listo' : 'Servicio'),
+            avatar: d.proAvatar || (d.type === 'delivery' ? '🍔' : 'P'),
+            photoURL: d.proPhotoURL || null,
+            date: `${d.dateToken || 'Hoy'} - ${d.timeToken || 'En curso'}`,
+            price: d.price || (d.total ? `RD$ ${d.total}` : 'RD$0'),
+            status: d.status,
+            ...d
+          })
+        })
+
+        if (changedOrders.length > 0) {
+          changedOrders.sort((a,b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0))
+          const newest = changedOrders[0]
+          const isDelivery = newest.type === 'delivery' || newest.fulfillmentType === 'pickup' || newest.source === 'pedidos_listo'
+          const store = newest.storeName || 'Pedidos Listo'
+
+          playMsgSound()
+          try { if (navigator.vibrate) navigator.vibrate([250, 100, 250]) } catch(e){}
+
+          setAlertOrder({ ...newest, isUserAlert: true })
+
+          let notifTitle = '✅ ¡Pedido Aceptado!'
+          let notifBody = `${newest.pro} ha aceptado tu solicitud de ${newest.specialty}.`
+
+          if (isDelivery) {
+            if (newest.status === 'cooking') {
+              notifTitle = `👨‍🍳 ¡Tu pedido se está preparando! • ${store}`
+              notifBody = newest.prepMinutes 
+                ? `El local comenzó a preparar tu comida en cocina. (Listo en ~${newest.prepMinutes} min).`
+                : `Tu comida ya está en cocina siendo preparada.`
+            } else if (newest.status === 'ready') {
+              notifTitle = newest.fulfillmentType === 'pickup'
+                ? `🛍️ ¡Listo para retirar en mostrador! • ${store}`
+                : `🟢 ¡Tu pedido está listo! • ${store}`
+              notifBody = newest.fulfillmentType === 'pickup'
+                ? `Pasa a retirar por el local. Tu PIN es ${newest.pinOTP || '••••'}.`
+                : `Tu pedido está listo y el repartidor sale hacia tu dirección.`
+            } else if (newest.status === 'onway') {
+              notifTitle = `🛵 ¡Repartidor en camino! • ${store}`
+              notifBody = `Tu pedido de comida va en camino a tu ubicación.`
+            }
+          }
+
+          sendBrowserNotification(notifTitle, {
+            body: notifBody,
+            url: isDelivery ? '/mandame' : '/orders'
+          })
+        }
+      })
     }
+
     listenerReadyRef.current = false
     setupListener()
-    return () => { listenerReadyRef.current = false; unsubscribeOrders() }
+    return () => {
+      listenerReadyRef.current = false
+      unsubscribeOrders()
+      unsubscribeClientOrders()
+    }
   }, [authReady, userData, userRole])
 
   // ─── NAVIGATE ─────────────────────────────────────────────────────────────
@@ -931,7 +1036,7 @@ export default function App() {
           accentColor={chatBanner.accentColor}
           isDelivery={Boolean(chatBanner.isDelivery)}
           onClose={() => setChatBanner(null)}
-          onClick={() => { setChatBanner(null); navigate('orders') }}
+          onClick={() => { setChatBanner(null); navigate(chatBanner.isDelivery ? 'mandame' : 'orders') }}
         />
       )}
 
@@ -943,19 +1048,70 @@ export default function App() {
         />
       )}
 
-      {alertOrder && alertOrder.isUserAlert && (
-        <ChatMessageBanner
-          sender={alertOrder.pro || 'Profesional'}
-          senderPhoto={alertOrder.photoURL || null}
-          title={`✅ ¡Pedido Aceptado! • ${alertOrder.pro}`}
-          text={`¡Va en camino para tu servicio de ${alertOrder.specialty || (alertOrder.type === 'delivery' ? 'Pedidos Listo' : 'Listo Patrón')}! Toca para rastrear en tiempo real.`}
-          actionLabel="Rastrear →"
-          accentColor="#10B981"
-          isDelivery={alertOrder.type === 'delivery'}
-          onClose={() => setAlertOrder(null)}
-          onClick={() => { navigate('tracking', alertOrder); setAlertOrder(null) }}
-        />
-      )}
+      {alertOrder && alertOrder.isUserAlert && (() => {
+        const isDelivery = alertOrder.type === 'delivery' || alertOrder.fulfillmentType === 'pickup' || alertOrder.source === 'pedidos_listo'
+        const isCooking = alertOrder.status === 'cooking'
+        const isReady = alertOrder.status === 'ready'
+        const isPickup = alertOrder.fulfillmentType === 'pickup'
+        const store = alertOrder.storeName || 'Pedidos Listo'
+
+        let title = alertOrder.customTitle || `✅ ¡Pedido Aceptado! • ${alertOrder.pro || 'Profesional'}`
+        let text = alertOrder.customText || `¡Va en camino para tu servicio de ${alertOrder.specialty || 'Listo Patrón'}! Toca para rastrear en tiempo real.`
+        let actionLabel = 'Rastrear →'
+        let accentColor = '#10B981'
+
+        if (isDelivery) {
+          if (isCooking) {
+            title = alertOrder.customTitle || `👨‍🍳 ¡Tu pedido se está preparando! • ${store}`
+            text = alertOrder.customText || (alertOrder.prepMinutes 
+              ? `El restaurante comenzó a preparar tu comida en cocina. (Listo en ~${alertOrder.prepMinutes} min). ¡Toca para ver!`
+              : `Tu pedido está en cocina preparándose con todo el sabor. ¡Toca para ver!`)
+            actionLabel = 'Ver pedido 👨‍🍳'
+            accentColor = '#F26000'
+          } else if (isReady) {
+            title = alertOrder.customTitle || (isPickup ? `🛍️ ¡Listo para retirar! • ${store}` : `🟢 ¡Tu pedido está listo! • ${store}`)
+            text = alertOrder.customText || (isPickup 
+              ? `Tu comida está empacada en mostrador. PIN de retiro: ${alertOrder.pinOTP || '••••'}. ¡Toca para ver!`
+              : `Tu comida está lista y el repartidor va hacia tu dirección. ¡Toca para rastrear!`)
+            actionLabel = isPickup ? 'Ver PIN 🛍️' : 'Rastrear 🛵'
+            accentColor = '#10B981'
+          } else if (alertOrder.status === 'onway') {
+            title = `🛵 ¡Pedido en camino! • ${store}`
+            text = `Tu pedido va en camino a tu ubicación. ¡Toca para rastrear en tiempo real!`
+            actionLabel = 'Rastrear 🛵'
+            accentColor = '#F26000'
+          } else {
+            title = `👨‍🍳 ¡Pedido Aceptado! • ${store}`
+            text = `El restaurante aceptó tu pedido y lo preparará en breve. ¡Toca para ver!`
+            actionLabel = 'Ver pedido 🍔'
+            accentColor = '#F26000'
+          }
+        }
+
+        return (
+          <ChatMessageBanner
+            sender={isDelivery ? store : (alertOrder.pro || 'Profesional')}
+            senderPhoto={isDelivery ? '/logo-mamey.png' : (alertOrder.photoURL || null)}
+            title={title}
+            text={text}
+            actionLabel={actionLabel}
+            accentColor={accentColor}
+            isDelivery={isDelivery}
+            onClose={() => setAlertOrder(null)}
+            onClick={() => {
+              if (isDelivery) {
+                navigate('mandame')
+                setTimeout(() => {
+                  window.dispatchEvent(new CustomEvent('mandame-switch-tab', { detail: 'pedidos' }))
+                }, 120)
+              } else {
+                navigate('tracking', alertOrder)
+              }
+              setAlertOrder(null)
+            }}
+          />
+        )
+      })()}
 
       {jobDoneAlert && (
         <ChatMessageBanner

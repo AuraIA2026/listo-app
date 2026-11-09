@@ -140,121 +140,10 @@ const ANIMATED_BANNERS_CATALOG = [
   { id: 'b-party-10', category: '🎉 Fiestas & Celebraciones', title: '🍻 Cubetazo Cervezas', text: '🍻 CUBETAZO CERVEZAS FRÍAS 🧊', bg: 'linear-gradient(135deg, #0284c7, #075985)', border: '#38bdf8', anim: 'studio-neon-border' }
 ];
 
-// LA FIERA HOT DOG: Restaurante oficial y exclusivo de Pedidos Listo
-const INITIAL_STORES = [
-  {
-    id: 'store-la-fiera-hotdog',
-    name: 'La Fiera Hot Dog',
-    rating: 5.0,
-    ratingText: '5.0 ⭐ (Oficial Pedidos Listo)',
-    timeMinutes: 15,
-    time: '10-20 min',
-    deliveryFee: 0,
-    badge: '🌭 #1 Hot Dogs de Santiago 🇩🇴',
-    category: 'criollo',
-    image: 'https://images.unsplash.com/photo-1619740455993-9e612b1af08a?auto=format&fit=crop&w=400&q=80',
-    cover: 'https://images.unsplash.com/photo-1541214113241-21578d2d9b62?auto=format&fit=crop&w=1000&q=80',
-    logo: 'https://images.unsplash.com/photo-1619740455993-9e612b1af08a?auto=format&fit=crop&w=300&q=80',
-    address: 'Av. 27 de Febrero esq. Estrella Sadhalá, Santiago de los Caballeros, RD',
-    phone: '809-583-1020',
-    whatsapp: '18095831020',
-    socials: {
-      instagram: '@lafierahotdog.rd',
-      facebook: 'facebook.com/lafierahotdog',
-      tiktok: '@lafierahotdog'
-    },
-    menu: [
-      {
-        id: 'fiera-1',
-        name: '🌭 Hot Dog La Fiera Especial',
-        price: 220,
-        description: 'Salchicha parrillera artesanal, repollo criollo agridulce, tocineta crocante, papitas y salsa tártara de la casa.',
-        image: 'https://images.unsplash.com/photo-1619740455993-9e612b1af08a?auto=format&fit=crop&w=400&q=80'
-      },
-      {
-        id: 'fiera-2',
-        name: '🧀 Hot Dog Triple Queso Fundido',
-        price: 260,
-        description: 'Pan brioche tostado, salchicha gigante, abundante queso cheddar derretido, queso mozzarella y maíz dulce.',
-        image: 'https://images.unsplash.com/photo-1627054234553-91147a46979a?auto=format&fit=crop&w=400&q=80'
-      },
-      {
-        id: 'fiera-3',
-        name: '🔥 Hot Dog Fiera Picante Dominicano',
-        price: 240,
-        description: 'Salchicha con toque ahumado y jalapeños, papitas ralladas crujientes, mayokétchup criollo y queso gratinado.',
-        image: 'https://images.unsplash.com/photo-1541214113241-21578d2d9b62?auto=format&fit=crop&w=400&q=80'
-      },
-      {
-        id: 'fiera-4',
-        name: '🍟 Papas Fritas Fiera Monster',
-        price: 250,
-        description: 'Porción grande de papas fritas con trozos de salchicha parrillera, tocineta, maíz dulce y salsa cheddar líquida.',
-        image: 'https://images.unsplash.com/photo-1576107232684-1279f3908594?auto=format&fit=crop&w=400&q=80'
-      },
-      {
-        id: 'fiera-5',
-        name: '🥤 Refresco Cola 20oz Bien Frío',
-        price: 65,
-        description: 'Refresco dominicano 20oz servido como la ceniza para acompañar tu Fiera Hot Dog.',
-        image: 'https://images.unsplash.com/photo-1622483767028-3f66f32aef97?auto=format&fit=crop&w=400&q=80'
-      }
-    ]
-  }
-];
+// Comercios y productos iniciales (se sincronizan desde Firestore)
+const INITIAL_STORES = [];
 
-const INITIAL_PRODUCTS = [
-  {
-    id: 'prod-fiera-1',
-    storeId: 'store-la-fiera-hotdog',
-    storeName: 'La Fiera Hot Dog',
-    name: '🌭 Hot Dog La Fiera Especial',
-    price: 220,
-    description: 'Salchicha parrillera artesanal, repollo criollo agridulce, tocineta crocante, papitas y salsa tártara de la casa.',
-    image: 'https://images.unsplash.com/photo-1619740455993-9e612b1af08a?auto=format&fit=crop&w=400&q=80',
-    inStock: true
-  },
-  {
-    id: 'prod-fiera-2',
-    storeId: 'store-la-fiera-hotdog',
-    storeName: 'La Fiera Hot Dog',
-    name: '🧀 Hot Dog Triple Queso Fundido',
-    price: 260,
-    description: 'Pan brioche tostado, salchicha gigante, abundante queso cheddar derretido, queso mozzarella y maíz dulce.',
-    image: 'https://images.unsplash.com/photo-1627054234553-91147a46979a?auto=format&fit=crop&w=400&q=80',
-    inStock: true
-  },
-  {
-    id: 'prod-fiera-3',
-    storeId: 'store-la-fiera-hotdog',
-    storeName: 'La Fiera Hot Dog',
-    name: '🔥 Hot Dog Fiera Picante Dominicano',
-    price: 240,
-    description: 'Salchicha con toque ahumado y jalapeños, papitas ralladas crujientes, mayokétchup criollo y queso gratinado.',
-    image: 'https://images.unsplash.com/photo-1541214113241-21578d2d9b62?auto=format&fit=crop&w=400&q=80',
-    inStock: true
-  },
-  {
-    id: 'prod-fiera-4',
-    storeId: 'store-la-fiera-hotdog',
-    storeName: 'La Fiera Hot Dog',
-    name: '🍟 Papas Fritas Fiera Monster',
-    price: 250,
-    description: 'Porción grande de papas fritas con trozos de salchicha parrillera, tocineta, maíz dulce y salsa cheddar líquida.',
-    image: 'https://images.unsplash.com/photo-1576107232684-1279f3908594?auto=format&fit=crop&w=400&q=80',
-    inStock: true
-  },
-  {
-    id: 'prod-fiera-5',
-    storeId: 'store-la-fiera-hotdog',
-    storeName: 'La Fiera Hot Dog',
-    name: '🥤 Refresco Cola 20oz Bien Frío',
-    price: 65,
-    description: 'Refresco dominicano 20oz servido como la ceniza para acompañar tu Fiera Hot Dog.',
-    image: 'https://images.unsplash.com/photo-1622483767028-3f66f32aef97?auto=format&fit=crop&w=400&q=80',
-    inStock: true
-  }
-];
+const INITIAL_PRODUCTS = [];
 
 const compressImage = (file, maxRes = 800) => new Promise((resolve, reject) => {
   const reader = new FileReader();
@@ -389,77 +278,58 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
     let unsubLocales = () => {};
     let unsubPartnerReqs = () => {};
 
-    // Helper: Solo permitir 'La Fiera Hot Dog'
-    const isFieraMatch = (nameStr) => {
-      const n = (nameStr || '').toLowerCase();
-      return n.includes('fiera') || n.includes('hot dog') || n.includes('hotdog');
-    };
-
     try {
       const qLoc = query(collection(db, 'locales'));
       unsubLocales = onSnapshot(qLoc, (snap) => {
-        // Borrar de Firestore cualquier local de prueba que no sea La Fiera Hot Dog
-        snap.docs.forEach(async (docSnap) => {
-          const d = docSnap.data();
-          const name = d.nombre || d.businessName || d.name || '';
-          if (false && !isFieraMatch(name)) {
-            try {
-              await deleteDoc(doc(db, 'locales', docSnap.id));
-            } catch (err) {
-              // Silently ignore if permission restricted
-            }
-          }
-        });
-
         const list = snap.docs
           .map(d => {
             const data = d.data();
             return {
               id: d.id,
               ...data,
-              name: data.nombre || data.businessName || data.name || 'La Fiera Hot Dog',
+              name: data.nombre || data.businessName || data.name || '',
               rating: data.rating || 5.0,
-              ratingText: '5.0 ⭐ (Oficial Pedidos Listo)',
-              timeMinutes: 15,
-              time: data.time || data.horario || '10-20 min',
-              deliveryFee: 0,
-              badge: '🌭 #1 Hot Dogs de Santiago 🇩🇴',
+              ratingText: data.rating ? `${Number(data.rating).toFixed(1)} ⭐` : '5.0 ⭐',
+              timeMinutes: data.timeMinutes || 15,
+              time: data.time || data.horario || '15-25 min',
+              deliveryFee: data.deliveryFee !== undefined ? data.deliveryFee : 0,
+              badge: data.badge || '',
               category: data.sub || data.categoria || data.category || 'criollo',
-              image: data.image || data.portadaURL || data.logoURL || data.logo || 'https://images.unsplash.com/photo-1619740455993-9e612b1af08a?auto=format&fit=crop&w=400&q=80',
-              cover: data.cover || data.portadaURL || data.coverURL || data.image || 'https://images.unsplash.com/photo-1541214113241-21578d2d9b62?auto=format&fit=crop&w=1000&q=80',
-              logo: data.logo || data.logoURL || data.image || 'https://images.unsplash.com/photo-1619740455993-9e612b1af08a?auto=format&fit=crop&w=300&q=80',
-              address: data.address || data.direccion || 'Av. 27 de Febrero esq. Estrella Sadhalá, Santiago, RD',
-              phone: data.phone || data.telefono || data.whatsapp || '809-583-1020',
-              whatsapp: data.whatsapp || data.telefono || '18095831020',
+              image: data.image || data.portadaURL || data.logoURL || data.logo || 'assets/burger_3d.png',
+              cover: data.cover || data.portadaURL || data.coverURL || data.image || '',
+              logo: data.logo || data.logoURL || data.image || 'assets/burger_3d.png',
+              address: data.address || data.direccion || '',
+              phone: data.phone || data.telefono || data.whatsapp || '',
+              whatsapp: data.whatsapp || data.telefono || '',
               socials: {
-                instagram: data.socials?.instagram || data.instagram || '@lafierahotdog.rd',
-                facebook: data.socials?.facebook || data.facebook || 'facebook.com/lafierahotdog',
-                tiktok: data.socials?.tiktok || data.tiktok || '@lafierahotdog'
+                instagram: data.socials?.instagram || data.instagram || '',
+                facebook: data.socials?.facebook || data.facebook || '',
+                tiktok: data.socials?.tiktok || data.tiktok || ''
               },
-              instagram: data.instagram || data.socials?.instagram || '@lafierahotdog.rd',
-              facebook: data.facebook || data.socials?.facebook || 'facebook.com/lafierahotdog',
-              tiktok: data.tiktok || data.socials?.tiktok || '@lafierahotdog',
+              instagram: data.instagram || data.socials?.instagram || '',
+              facebook: data.facebook || data.socials?.facebook || '',
+              tiktok: data.tiktok || data.socials?.tiktok || '',
               menu: Array.isArray(data.menu) ? data.menu : (Array.isArray(data.servicios) ? data.servicios.map((s, idx) => ({
                 id: s.id || `srv_${idx}`,
                 name: s.nombre || s.name || 'Platillo',
                 price: parseFloat(s.precio || s.price) || 200,
                 desc: s.descripcion || s.desc || '',
-                img: s.fotoURL || s.img || s.image || 'https://images.unsplash.com/photo-1619740455993-9e612b1af08a?auto=format&fit=crop&w=400&q=80'
+                img: s.fotoURL || s.img || s.image || 'assets/burger_3d.png'
               })) : null),
               servicios: Array.isArray(data.servicios) ? data.servicios : null,
               city: data.ciudad || data.city || 'Santiago',
               ownerName: data.propietario || data.ownerName || '',
               email: (data.email || '').toLowerCase().trim(),
-              activo: data.activo !== false
+              activo: data.activo !== false && !data.eliminado && !(data.nombre || data.businessName || data.name || '').toLowerCase().includes('fiera')
             };
           })
-          .filter(st => st.activo !== false);
+          .filter(st => st.activo !== false && st.name && !st.name.toLowerCase().includes('fiera'));
 
         setDbStores(list);
         if (list.length > 0) {
           setActiveStoreModal(prev => {
             if (!prev) return prev;
-            const updatedMatching = list.find(s => s.id === prev.id || isFieraMatch(s.name));
+            const updatedMatching = list.find(s => s.id === prev.id);
             return updatedMatching ? { ...prev, ...updatedMatching } : prev;
           });
         }
@@ -474,22 +344,22 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
             const data = d.data();
             return {
               id: d.id,
-              name: data.businessName || 'La Fiera Hot Dog',
+              name: data.businessName || '',
               rating: 5.0,
-              ratingText: '5.0 ⭐ (Oficial Pedidos Listo)',
+              ratingText: '5.0 ⭐',
               timeMinutes: 15,
-              time: '10-20 min',
+              time: '15-25 min',
               deliveryFee: 0,
-              badge: '🌭 #1 Hot Dogs de Santiago 🇩🇴',
-              category: 'criollo',
-              image: data.image || 'https://images.unsplash.com/photo-1619740455993-9e612b1af08a?auto=format&fit=crop&w=400&q=80',
-              phone: data.phone || '809-583-1020',
+              badge: '',
+              category: data.category || 'criollo',
+              image: data.image || 'assets/burger_3d.png',
+              phone: data.phone || '',
               city: data.city || 'Santiago',
               ownerName: `${data.ownerName || ''} ${data.ownerLastName || ''}`.trim(),
               email: (data.email || '').toLowerCase().trim()
             };
           })
-          .filter(st => Boolean(st.name));
+          .filter(st => Boolean(st.name) && !st.name.toLowerCase().includes('fiera'));
         setPartnerStores(list);
       }, (err) => console.warn("Partner requests listener error:", err));
     } catch (e) {}
@@ -526,14 +396,14 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
               name: data.name || data.nombre || 'Platillo',
               price: data.price !== undefined ? data.price : (data.precio || 0),
               description: data.description || data.descripcion || '',
-              image: data.image || data.images?.[0] || 'https://images.unsplash.com/photo-1619740455993-9e612b1af08a?auto=format&fit=crop&w=400&q=80',
-              images: Array.isArray(data.images) && data.images.length > 0 ? data.images : [data.image || 'https://images.unsplash.com/photo-1619740455993-9e612b1af08a?auto=format&fit=crop&w=400&q=80'],
-              storeName: data.storeName || data.tienda || 'La Fiera Hot Dog',
+              image: data.image || data.images?.[0] || 'assets/burger_3d.png',
+              images: Array.isArray(data.images) && data.images.length > 0 ? data.images : [data.image || 'assets/burger_3d.png'],
+              storeName: data.storeName || data.tienda || '',
               storeId: data.storeId || '',
               inStock: data.inStock !== false
             };
           })
-          .filter(p => !((p.name || '').toLowerCase().includes('kfc') || (p.name || '').toLowerCase().includes('bucket')));
+          .filter(p => !((p.name || '').toLowerCase().includes('kfc') || (p.name || '').toLowerCase().includes('bucket') || (p.name || '').toLowerCase().includes('fiera') || (p.storeName || '').toLowerCase().includes('fiera')));
 
         setDbProducts(list);
       }, (err) => console.warn("Productos listener error:", err));
@@ -650,19 +520,13 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
   const [tempAddressInput, setTempAddressInput] = useState('');
   const [isDetectingGps, setIsDetectingGps] = useState(false);
 
-  // Combinar comercios con La Fiera Hot Dog como protagonista exclusivo
-  const isFieraStore = (st) => {
-    const n = (st?.name || '').toLowerCase();
-    return n.includes('fiera') || n.includes('hot dog') || n.includes('hotdog');
-  };
-
   const allDbStores = [
     ...dbStores,
     ...partnerStores
-  ];
+  ].filter(st => !(st.name || '').toLowerCase().includes('fiera'));
 
   const combinedStores = allDbStores.length > 0 
-    ? [...allDbStores, ...INITIAL_STORES.filter(init => !allDbStores.some(s => isFieraStore(s)))] 
+    ? allDbStores 
     : INITIAL_STORES;
 
   // Todos los platillos/productos disponibles en la plataforma (en la nube + base inicial)
@@ -856,10 +720,10 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
             .filter(o => o.id !== 'ORD-7719' && o.id !== 'ORD-7718' && !String(o.id || '').startsWith('ORD-77'));
 
           return {
-            storeName: (parsed.storeName && !parsed.storeName.includes('KFC')) ? parsed.storeName : 'La Fiera Hot Dog',
+            storeName: (parsed.storeName && !parsed.storeName.includes('KFC') && !parsed.storeName.toLowerCase().includes('fiera')) ? parsed.storeName : 'Mi Comercio',
             status: parsed.status || 'open',
             prepTime: parsed.prepTime || '15-25',
-            address: parsed.address || 'Av. 27 de Febrero esq. Estrella Sadhalá, Santiago, RD',
+            address: parsed.address || 'Santiago, RD',
             todaySales: cleanOrders.filter(o => o.status === 'completed').reduce((sum, o) => sum + (o.total || 0), 0),
             todayOrdersCount: cleanOrders.filter(o => o.status === 'completed').length,
             products: (Array.isArray(parsed.products) && parsed.products.length > 0) ? parsed.products : INITIAL_PRODUCTS,
@@ -869,10 +733,10 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
       }
     } catch (e) {}
     return {
-      storeName: 'La Fiera Hot Dog',
+      storeName: 'Mi Comercio',
       status: 'open',
       prepTime: '15-25',
-      address: 'Av. 27 de Febrero esq. Estrella Sadhalá, Santiago, RD',
+      address: 'Santiago, RD',
       todaySales: 0,
       todayOrdersCount: 0,
       products: INITIAL_PRODUCTS,
@@ -887,13 +751,13 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
         const parsed = JSON.parse(saved);
         const hasMockOrders = parsed?.orders?.some(o => o.id === 'ORD-7719' || o.id === 'ORD-7718' || String(o.id || '').startsWith('ORD-77'));
         const hasFakeSales = parsed?.todaySales === 18450 || (parsed?.orders?.length === 0 && parsed?.todaySales > 0);
-        if (hasMockOrders || hasFakeSales || parsed?.storeName?.includes('KFC')) {
+        if (hasMockOrders || hasFakeSales || parsed?.storeName?.includes('KFC') || parsed?.storeName?.toLowerCase().includes('fiera')) {
           const cleanOrders = (parsed.orders || []).filter(o => o.id !== 'ORD-7719' && o.id !== 'ORD-7718' && !String(o.id || '').startsWith('ORD-77'));
           const realCompletedSales = cleanOrders.filter(o => o.status === 'completed').reduce((sum, o) => sum + (o.total || 0), 0);
           const realCompletedCount = cleanOrders.filter(o => o.status === 'completed').length;
           const updated = {
             ...parsed,
-            storeName: 'La Fiera Hot Dog',
+            storeName: (parsed.storeName && !parsed.storeName.toLowerCase().includes('fiera')) ? parsed.storeName : 'Mi Comercio',
             orders: cleanOrders,
             todaySales: realCompletedSales,
             todayOrdersCount: realCompletedCount
@@ -1189,7 +1053,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                 price: Number(it.price || it.subtotal || 0),
                 details: it.details || it.desc || ''
               }))
-            : [{ name: 'Pedido Criollo ' + (d.storeName || 'La Fiera Hot Dog'), qty: 1, price: d.total || 0, details: '' }];
+            : [{ name: 'Pedido Criollo ' + (d.storeName || 'Comercio'), qty: 1, price: d.total || 0, details: '' }];
 
           return {
             id: docId,
@@ -1213,7 +1077,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
             paymentMethod: d.paymentMethod === 'efectivo' ? '💵 Efectivo Contra Entrega' : (d.paymentMethod === 'transferencia' ? '🏦 Transferencia Bancaria' : (d.paymentMethod || '💵 Efectivo')),
             transferReceiptImage: d.transferReceiptImage || null,
             transferReference: d.transferReference || '',
-            storeName: d.storeName || 'La Fiera Hot Dog',
+            storeName: d.storeName || 'Comercio',
             clientId: d.clientId || null
           };
         });
@@ -1294,7 +1158,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
           orderId: orderId,
           type: 'order_cooking',
           title: '👨‍🍳 ¡Tu pedido se está preparando!',
-          text: `La Fiera Hot Dog ha aceptado tu pedido #${targetOrder.orderId || orderId} y está en la cocina.`,
+          text: `${targetOrder?.storeName || 'El comercio'} ha aceptado tu pedido #${targetOrder.orderId || orderId} y está en la cocina.`,
           read: false,
           icon: '👨‍🍳',
           createdAt: serverTimestamp()
@@ -2283,7 +2147,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
     const generatedOtp = Math.floor(1000 + Math.random() * 9000).toString();
     const currentUid = auth?.currentUser?.uid || userData?.uid || `guest_${Date.now()}`;
     const clientNameClean = (checkoutName || userData?.name || userData?.displayName || 'Cliente Listo').trim();
-    const storeDisplayName = activeStoreModal?.name || 'La Fiera Hot Dog';
+    const storeDisplayName = activeStoreModal?.name || 'Comercio';
     const finalAddress = isPickup
       ? `🛍️ Retiro en el Local: ${storeDisplayName}`
       : (deliveryAddress || 'Santiago Centro, República Dominicana').trim();
@@ -3532,7 +3396,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                   <div style={{ fontSize: 36, marginBottom: 8 }}>🛵</div>
                   <div style={{ fontWeight: 800, fontSize: 15, color: '#1E293B' }}>No tienes pedidos activos</div>
                   <div style={{ fontSize: 12, color: '#64748B', marginTop: 4 }}>
-                    Cuando realices un pedido a La Fiera Hot Dog, podrás seguirlo en vivo aquí con tu PIN de entrega.
+                    Cuando realices un pedido a un comercio, podrás seguirlo en vivo aquí con tu PIN de entrega.
                   </div>
                 </div>
               </div>
@@ -5844,27 +5708,29 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                   </button>
                 </div>
                 <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                  <a
-                    href={`https://instagram.com/${(activeStoreModal.socials?.instagram || activeStoreModal.instagram || 'lafierahotdog.rd').replace('@', '')}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{
-                      padding: '5px 10px',
-                      borderRadius: 10,
-                      background: 'linear-gradient(45deg, #F58529, #DD2A7B, #8134AF)',
-                      color: '#FFF',
-                      textDecoration: 'none',
-                      fontSize: 10.5,
-                      fontWeight: 900,
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 4,
-                      boxShadow: '0 2px 6px rgba(221,42,123,0.3)',
-                      whiteSpace: 'nowrap'
-                    }}
-                  >
-                    📸 {activeStoreModal.socials?.instagram || activeStoreModal.instagram || '@lafierahotdog.rd'}
-                  </a>
+                  {(activeStoreModal.socials?.instagram || activeStoreModal.instagram) && (
+                    <a
+                      href={`https://instagram.com/${(activeStoreModal.socials?.instagram || activeStoreModal.instagram).replace('@', '')}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        padding: '5px 10px',
+                        borderRadius: 10,
+                        background: 'linear-gradient(45deg, #F58529, #DD2A7B, #8134AF)',
+                        color: '#FFF',
+                        textDecoration: 'none',
+                        fontSize: 10.5,
+                        fontWeight: 900,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 4,
+                        boxShadow: '0 2px 6px rgba(221,42,123,0.3)',
+                        whiteSpace: 'nowrap'
+                      }}
+                    >
+                      📸 {activeStoreModal.socials?.instagram || activeStoreModal.instagram}
+                    </a>
+                  )}
                   {(activeStoreModal.socials?.facebook || activeStoreModal.facebook) && (
                     <a
                       href={(activeStoreModal.socials?.facebook || activeStoreModal.facebook).startsWith('http') ? (activeStoreModal.socials?.facebook || activeStoreModal.facebook) : `https://${(activeStoreModal.socials?.facebook || activeStoreModal.facebook)}`}
@@ -7025,7 +6891,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                         </span>
                       </div>
                       <div style={{ fontSize: 13, fontWeight: 900, color: '#064E3B', lineHeight: 1.3 }}>
-                        🏪 {activeStoreModal?.name || merchantState?.storeName || 'La Fiera Hot Dog'}
+                        🏪 {activeStoreModal?.name || merchantState?.storeName || 'Comercio'}
                       </div>
                       <p style={{ margin: '4px 0 0', fontSize: 11, color: '#047857', lineHeight: 1.3 }}>
                         Pasa a retirar por el mostrador en cuanto te notifiquemos que la orden está lista. Solo debes dar tu PIN OTP en caja.
@@ -7130,7 +6996,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                       <CreditCardCheckoutForm totalAmount={cartTotal} cardData={checkoutCardData} onChangeCardData={setCheckoutCardData} allowAzulGateway={true} />
                     )}
                     {checkoutPaymentMethod === 'transferencia' && (
-                      <BankTransferCheckoutBox totalAmount={cartTotal} receiptImage={transferReceiptImage} onChangeReceiptImage={setTransferReceiptImage} referenceNumber={transferReference} onChangeReferenceNumber={setTransferReference} storeName={activeStoreModal?.name || 'La Fiera Hot Dog'} />
+                      <BankTransferCheckoutBox totalAmount={cartTotal} receiptImage={transferReceiptImage} onChangeReceiptImage={setTransferReceiptImage} referenceNumber={transferReference} onChangeReferenceNumber={setTransferReference} storeName={activeStoreModal?.name || 'Comercio'} />
                     )}
 
                     {checkoutPaymentMethod === 'efectivo' && (

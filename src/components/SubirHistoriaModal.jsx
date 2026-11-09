@@ -8,7 +8,7 @@ import PhotoNoticeModal from './PhotoNoticeModal'
 const QUICK_TAGS = ['#Plomería', '#Electricidad', '#Pintura', '#Mecánica', '#Catering', '#Reparación', '#Limpieza', '#TrabajoListo']
 
 const COLOR_PALETTE = [
-  '#FFFFFF', '#000000', '#F26000', '#EF4444', '#F59E0B', 
+  '#FFFFFF', '#000000', '#F26000', '#EF4444', '#F59E0B',
   '#10B981', '#06B6D4', '#3B82F6', '#8B5CF6', '#EC4899'
 ]
 
@@ -38,7 +38,7 @@ export default function SubirHistoriaModal({ isOpen, onClose, userData, onStoryU
   // Editor de fotos estilo WhatsApp Ultra-Mejorado
   const [originalImageSrc, setOriginalImageSrc] = useState(null)
   const [activeTool, setActiveTool] = useState(null) // null | 'crop' | 'bg' | 'filter' | 'draw' | 'text' | 'sticker'
-  
+
   // 1. Encuadre, Recorte y Ajuste anti-cortado
   const [cropMode, setCropMode] = useState('fit') // 'fit' (foto completa) | 'cover' (llenar 9:16) | '1:1' | '4:5' | '16:9'
   const [bgStyle, setBgStyle] = useState('blur') // 'blur' (WhatsApp) | 'gradient' | 'dark' | 'light'
@@ -99,7 +99,7 @@ export default function SubirHistoriaModal({ isOpen, onClose, userData, onStoryU
     img.crossOrigin = 'anonymous'
     img.onload = () => {
       const canvas = document.createElement('canvas')
-      
+
       // Dimensiones estándar de Historia (9:16 -> 720 x 1280)
       const targetW = 720
       const targetH = 1280
@@ -247,14 +247,14 @@ export default function SubirHistoriaModal({ isOpen, onClose, userData, onStoryU
         ctx.font = '900 34px sans-serif'
         ctx.textAlign = 'center'
         ctx.textBaseline = 'middle'
-        
+
         ctx.shadowColor = 'rgba(0,0,0,0.6)'
         ctx.shadowBlur = 10
 
         const metrics = ctx.measureText(stk.label)
         const bgW = metrics.width + 28
         const bgH = 48
-        
+
         ctx.fillStyle = 'rgba(15, 23, 42, 0.88)'
         ctx.beginPath()
         if (ctx.roundRect) {
@@ -389,7 +389,7 @@ export default function SubirHistoriaModal({ isOpen, onClose, userData, onStoryU
       reader.onload = (event) => {
         const rawBase64 = event.target.result
         setOriginalImageSrc(rawBase64)
-        
+
         // Reset editor parameters - Anti-cortado fit por defecto
         setCropMode('fit')
         setBgStyle('blur')
@@ -443,10 +443,10 @@ export default function SubirHistoriaModal({ isOpen, onClose, userData, onStoryU
     const rect = e.target.getBoundingClientRect()
     const clientX = e.touches ? e.touches[0].clientX : e.clientX
     const clientY = e.touches ? e.touches[0].clientY : e.clientY
-    
+
     const relX = (clientX - rect.left) / rect.width
     const relY = (clientY - rect.top) / rect.height
-    
+
     currentStrokeRef.current = [{ x: relX, y: relY }]
   }
 
@@ -553,7 +553,7 @@ export default function SubirHistoriaModal({ isOpen, onClose, userData, onStoryU
     let storedUser = {}
     try {
       storedUser = JSON.parse(localStorage.getItem('listoUserData') || '{}')
-    } catch (err) {}
+    } catch (err) { }
 
     const activeUser = auth.currentUser;
     const activeUid = activeUser?.uid || userData?.uid || userData?.id || storedUser?.uid || storedUser?.id || localStorage.getItem('listo_user_uid') || `pro_${Date.now()}`;
@@ -605,7 +605,7 @@ export default function SubirHistoriaModal({ isOpen, onClose, userData, onStoryU
         storyDocId: docRef.id,
         read: false,
         createdAt: new Date().toISOString()
-      }).catch(() => {})
+      }).catch(() => { })
 
       alert('🎉 ¡Historia publicada con éxito!\n\nTu historia ya está visible en Listo Patrón por 24 horas (después de las 24h la imagen se eliminará automáticamente de la base de datos).')
 
@@ -627,7 +627,7 @@ export default function SubirHistoriaModal({ isOpen, onClose, userData, onStoryU
   return createPortal(
     <div className="subir-historia-modal-overlay" onClick={onClose}>
       <div className="subir-historia-modal-card" onClick={(e) => e.stopPropagation()}>
-        
+
         {/* Encabezado del Modal */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: '#0F172A' }}>
@@ -750,12 +750,12 @@ export default function SubirHistoriaModal({ isOpen, onClose, userData, onStoryU
         {/* PANEL EXPANDIBLE DE CADA HERRAMIENTA SELECCIONADA */}
         {mediaType === 'image' && activeTool && (
           <div className="wa-active-tool-panel">
-            
+
             {/* 1. PANEL DE ENCUADRE Y ANTI-CORTADO */}
             {activeTool === 'crop' && (
               <div className="wa-panel-content">
                 <span className="wa-panel-title">✂️ Modo de Encuadre (Evita que la foto se corte)</span>
-                
+
                 <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                   {[
                     { id: 'fit', label: '🖼️ Foto Completa (WhatsApp Fit)' },
@@ -830,7 +830,7 @@ export default function SubirHistoriaModal({ isOpen, onClose, userData, onStoryU
             {activeTool === 'bg' && (
               <div className="wa-panel-content">
                 <span className="wa-panel-title">🌌 Estilo de Fondo (Para imágenes completas)</span>
-                
+
                 <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                   {[
                     { id: 'blur', label: '🌫️ Blur WhatsApp' },
@@ -855,7 +855,7 @@ export default function SubirHistoriaModal({ isOpen, onClose, userData, onStoryU
             {activeTool === 'filter' && (
               <div className="wa-panel-content">
                 <span className="wa-panel-title">🎨 Filtros de Color HD Estilo WhatsApp</span>
-                
+
                 <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '4px' }}>
                   {[
                     { id: 'normal', name: 'Original' },
@@ -1303,7 +1303,7 @@ export default function SubirHistoriaModal({ isOpen, onClose, userData, onStoryU
             <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, color: '#334155', marginBottom: '6px' }}>
               🏷️ Sticker de Oferta Flash 24h (Opcional):
             </label>
-            
+
             <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '8px' }}>
               {[
                 { id: 'none', label: 'Sin sticker' },

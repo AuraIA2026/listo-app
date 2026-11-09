@@ -347,19 +347,120 @@ function MapResizer() {
   return null
 }
 
-/* ── Efecto de Cámara Inteligente Estilo Uber ─────────────── */
+/* ── Efecto de Cámara Inteligente Estilo Uber & PedidosYa ─────────────── */
 function MapBoundsFitter({ pos1, pos2 }) {
   const map = useMap()
+
   useEffect(() => {
-    if (pos1 && pos2) {
-      if (pos1[0] === pos2[0] && pos1[1] === pos2[1]) return
-      try {
-        const bounds = L.latLngBounds([pos1, pos2])
-        map.fitBounds(bounds, { padding: [60, 60], maxZoom: 16, animate: true, duration: 1 })
-      } catch (e) {}
-    }
-  }, [map, pos1[0], pos1[1], pos2[0], pos2[1]])
+    if (!pos1) return
+    try {
+      const dist = pos2 ? getDistanceInMeters(pos1, pos2) : 0
+
+      // Si están a corta distancia (< 1200m) o en el mismo punto: zoom cercano a nivel de avenidas y calles (16.8)
+      if (!pos2 || dist < 1200) {
+        const center = pos2 ? [(pos1[0] + pos2[0]) / 2, (pos1[1] + pos2[1]) / 2] : pos1
+        map.setView(center, 16.8, { animate: true })
+        return
+      }
+
+      // Si hay ruta entre el repartidor y el cliente:
+      // Ajustar bounds pero NUNCA permitir que se aleje a nivel de ciudades vecinas/provincia
+      const bounds = L.latLngBounds([pos1, pos2])
+      map.fitBounds(bounds, {
+        paddingTopLeft: [45, 45],
+        paddingBottomRight: [45, 60],
+        maxZoom: 17.5,
+        animate: true,
+        duration: 1
+      })
+
+      // Clamp de zoom: mantener siempre visible a nivel de avenidas y calles (mínimo 15.8)
+      const timer = setTimeout(() => {
+        try {
+          if (map.getZoom() < 15.8) {
+            map.setZoom(16.2, { animate: true })
+          }
+        } catch (e) {}
+      }, 350)
+      return () => clearTimeout(timer)
+    } catch (e) {}
+  }, [map, pos1?.[0], pos1?.[1], pos2?.[0], pos2?.[1]])
+
   return null
+}
+
+/* ── Controles Flotantes para Navegar el Mapa (Zoom & Recentrado) ─────── */
+function MapControls({ clientLoc, proPos }) {
+  const map = useMap()
+
+  const handleZoomIn = (e) => {
+    e.stopPropagation()
+    map.zoomIn()
+  }
+
+  const handleZoomOut = (e) => {
+    e.stopPropagation()
+    map.zoomOut()
+  }
+
+  const handleCenterRider = (e) => {
+    e.stopPropagation()
+    if (proPos) {
+      map.flyTo(proPos, 17.2, { duration: 0.8 })
+    }
+  }
+
+  const handleCenterClient = (e) => {
+    e.stopPropagation()
+    if (clientLoc) {
+      map.flyTo(clientLoc, 17.2, { duration: 0.8 })
+    }
+  }
+
+  const handleFitRoute = (e) => {
+    e.stopPropagation()
+    if (clientLoc && proPos) {
+      const bounds = L.latLngBounds([clientLoc, proPos])
+      map.fitBounds(bounds, {
+        paddingTopLeft: [40, 40],
+        paddingBottomRight: [40, 60],
+        maxZoom: 17.5,
+        animate: true,
+        duration: 0.8
+      })
+      setTimeout(() => {
+        if (map.getZoom() < 15.8) map.setZoom(16.2)
+      }, 300)
+    }
+  }
+
+  return (
+    <>
+      <div className="custom-map-controls">
+        <div className="map-ctrl-group">
+          <button type="button" className="map-ctrl-btn" onClick={handleZoomIn} title="Acercar mapa">+</button>
+          <button type="button" className="map-ctrl-btn" onClick={handleZoomOut} title="Alejar mapa">−</button>
+        </div>
+      </div>
+      <div className="map-quick-actions">
+        {proPos && (
+          <button type="button" className="map-quick-pill" onClick={handleCenterRider} title="Ver repartidor">
+            🛵 <span>Repartidor</span>
+          </button>
+        )}
+        {clientLoc && (
+          <button type="button" className="map-quick-pill" onClick={handleCenterClient} title="Ver mi ubicación">
+            🏠 <span>Mi Entrega</span>
+          </button>
+        )}
+        {proPos && clientLoc && (
+          <button type="button" className="map-quick-pill" onClick={handleFitRoute} title="Ver ruta completa">
+            🛣️ <span>Ruta</span>
+          </button>
+        )}
+      </div>
+    </>
+  )
 }
 
 /* ── Página principal ──────────────────────────────────────────────────────── */
@@ -413,6 +514,18 @@ export default function TrackingPage({ lang = 'es', navigate, professional, user
   // Estado real del pedido controlado por el comercio (Comandera): pending → cooking → ready → completed
   const [orderStatus, setOrderStatus] = useState(professional?.status || 'pending')
   const [showImprevistoModal, setShowImprevistoModal] = useState(false)
+  const [expandedMap, setExpandedMap]                 = useState(false)
+
+  // Sincronizar coordenadas en cuanto estén disponibles en props
+  useEffect(() => {
+    if (professional?.coords?.lat && professional?.coords?.lng) {
+      setClientLoc([professional.coords.lat, professional.coords.lng])
+      setMapCenter([professional.coords.lat, professional.coords.lng])
+    }
+    if (professional?.proCoords?.lat && professional?.proCoords?.lng) {
+      setProPos([professional.proCoords.lat, professional.proCoords.lng])
+    }
+  }, [professional?.coords?.lat, professional?.coords?.lng, professional?.proCoords?.lat, professional?.proCoords?.lng])
 
   // Audio llegada y notificación
   const arrivingAudioRef    = useRef(null)
@@ -684,7 +797,7 @@ export default function TrackingPage({ lang = 'es', navigate, professional, user
   }
 
   return (
-    <div className="tracking-page">
+    <div className={`tracking-page ${expandedMap ? 'map-maximized' : ''}`}>
       <div className="tracking-header">
         <button className="tracking-back" onClick={() => navigate('orders')}>←</button>
         <div>
@@ -715,27 +828,65 @@ export default function TrackingPage({ lang = 'es', navigate, professional, user
             </button>
           </div>
         )}
-        <MapContainer center={mapCenter} zoom={14} className="tracking-map" zoomControl={false} attributionControl={false}>
+        <MapContainer center={mapCenter} zoom={16.8} className="tracking-map" zoomControl={false} attributionControl={false}>
           <MapResizer />
           <MapBoundsFitter pos1={clientLoc} pos2={proPos} />
-          <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-          <Marker position={clientLoc} icon={clientIcon}><Popup>{lang==='es'?'Tu ubicación':'Your location'}</Popup></Marker>
-          {vanVisible && riderOnTheWay && <SmoothMarker targetPos={proPos} icon={isDelivery ? motoIcon : (workStatus==='working'?workerIcon:vanIcon)} visible={vanVisible} isVan={!isDelivery && workStatus!=='working'} faceTarget={workStatus==='retreating' ? null : clientLoc}><Popup>{pro.name}</Popup></SmoothMarker>}
+          <MapControls clientLoc={clientLoc} proPos={riderOnTheWay ? proPos : null} />
+          <TileLayer 
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            maxZoom={19}
+            attribution='&copy; OpenStreetMap'
+          />
+          <Marker position={clientLoc} icon={clientIcon}>
+            <Popup>{lang==='es'?'Tu ubicación de entrega':'Your delivery location'}</Popup>
+          </Marker>
+          {vanVisible && riderOnTheWay && (
+            <SmoothMarker 
+              targetPos={proPos} 
+              icon={isDelivery ? motoIcon : (workStatus==='working'?workerIcon:vanIcon)} 
+              visible={vanVisible} 
+              isVan={!isDelivery && workStatus!=='working'} 
+              faceTarget={workStatus==='retreating' ? null : clientLoc}
+            >
+              <Popup>{pro.name}</Popup>
+            </SmoothMarker>
+          )}
           {workStatus === 'tracking' && riderOnTheWay && (
-            <Polyline 
-              positions={[proPos, clientLoc]} 
-              color="#F26000" 
-              weight={4} 
-              opacity={0.85} 
-              dashArray="8, 12" 
-              lineCap="round"
-            />
+            <>
+              {/* Resplandor suave de la ruta para destacar avenidas */}
+              <Polyline 
+                positions={[proPos, clientLoc]} 
+                color="#F26000" 
+                weight={8} 
+                opacity={0.3} 
+                lineCap="round"
+              />
+              {/* Línea vibrante de navegación */}
+              <Polyline 
+                positions={[proPos, clientLoc]} 
+                color="#F26000" 
+                weight={5} 
+                opacity={0.95} 
+                dashArray="8, 10" 
+                lineCap="round"
+              />
+            </>
           )}
         </MapContainer>
         {/* ETA solo se muestra en la tarjeta de estado (no duplicado sobre el mapa) */}
       </div>
 
       <div className="tracking-card">
+        <button 
+          type="button" 
+          className="map-expand-bar"
+          onClick={() => setExpandedMap(!expandedMap)}
+          title={expandedMap ? 'Mostrar detalles' : 'Ampliar mapa'}
+        >
+          <span className="map-expand-pill">
+            {expandedMap ? '📋 Ver detalles del pedido' : '🗺️ Ver más mapa'}
+          </span>
+        </button>
         {workStatus !== 'working' && (
           <div className="tracking-status-bar"
             style={{ background:getStatusColor()+'15', borderColor:getStatusColor()+'30' }}>

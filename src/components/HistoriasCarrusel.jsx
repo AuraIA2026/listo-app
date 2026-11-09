@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { db } from '../firebase'
-import { collection, query, where, getDocs, onSnapshot, doc, deleteDoc, updateDoc, deleteField } from 'firebase/firestore'
+import { collection, query, where, onSnapshot } from 'firebase/firestore'
 import HistoriasViewerModal from './HistoriasViewerModal'
 import SubirHistoriaModal from './SubirHistoriaModal'
 import { getProPlanTheme } from '../planTheme'
+import { getStoryExpirationMs, parseStoryTimeMs, deleteExpiredStoryFromDb } from '../hooks/useStories'
 import './Historias.css'
 
 const HAND_TEXTS_DELIVERY = [
@@ -149,17 +150,6 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate
 
   // Real-time listener for stories from Firestore + auto-borrado de imagen/documento al cumplir 24h
   useEffect(() => {
-    const deleteExpiredStoryFromDb = (storyId) => {
-      if (!storyId) return
-      const storyRef = doc(db, 'historias', storyId)
-      updateDoc(storyRef, {
-        imageUrl: deleteField(),
-        videoUrl: deleteField(),
-        status: 'expired'
-      }).catch(() => {})
-      deleteDoc(storyRef).catch(() => {})
-    }
-
     const qStories = query(collection(db, 'historias'))
     const unsubscribe = onSnapshot(qStories, (snapshot) => {
       const fetched = []
@@ -167,19 +157,15 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate
 
       snapshot.forEach(docSnap => {
         const data = docSnap.data()
+        const isExpiredOrDeleted = data.status === 'expired' || data.status === 'deleted'
         const isRejected = data.status === 'rejected' || data.moderated === 'rejected' || data.approved === false || data.rejected === true
         const isApproved = (data.status === 'approved' || data.approved === true || (data.moderated === true && data.status !== 'rejected')) && !isRejected
         
-        // Calcular tiempo exacto de expiración (24 horas)
-        let expiresTime = 0
-        if (data.expiresAt) {
-          expiresTime = new Date(data.expiresAt).getTime()
-        } else if (data.createdAt) {
-          expiresTime = new Date(data.createdAt).getTime() + (24 * 60 * 60 * 1000)
-        }
+        // Calcular tiempo exacto de expiración (máximo 24 horas)
+        const expiresTime = getStoryExpirationMs(data)
 
-        // Si ya pasaron las 24 horas, borrar la imagen y el documento de la base de datos automáticamente
-        if (expiresTime > 0 && expiresTime <= now) {
+        // Si ya pasaron las 24 horas (o está marcada expirada / sin fecha válida), borrar la imagen y el documento de Firestore automáticamente
+        if (isExpiredOrDeleted || expiresTime <= 0 || expiresTime <= now) {
           deleteExpiredStoryFromDb(docSnap.id)
           return
         }
@@ -190,7 +176,7 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate
         }
       })
 
-      fetched.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      fetched.sort((a, b) => parseStoryTimeMs(b.createdAt) - parseStoryTimeMs(a.createdAt))
       setStories(fetched)
     }, (error) => {
       console.log('Error reading historias snapshot:', error)
@@ -200,8 +186,8 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate
     const cleanupInterval = setInterval(() => {
       const now = Date.now()
       setStories(prev => prev.filter(s => {
-        const exp = s.expiresAt ? new Date(s.expiresAt).getTime() : (s.createdAt ? new Date(s.createdAt).getTime() + 24 * 60 * 60 * 1000 : now + 1000)
-        if (exp <= now) {
+        const exp = getStoryExpirationMs(s)
+        if (exp <= 0 || exp <= now) {
           deleteExpiredStoryFromDb(s.id)
           return false
         }

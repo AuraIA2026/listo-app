@@ -28,16 +28,16 @@ const compressImage = (file, maxRes = 800) => new Promise((resolve, reject) => {
 });
 
 export default function ConfigurarRestauranteModal({ store, onClose, onSave, initialTab = 'perfil' }) {
-  const [name, setName] = useState(store?.name || store?.nombre || 'La Fiera Hot Dog');
-  const [category, setCategory] = useState(store?.sub || store?.categoria || store?.category || 'Hot Dogs Dominicanos & Fast Food Criollo');
-  const [coverUrl, setCoverUrl] = useState(store?.cover || store?.portadaURL || store?.image || store?.img || 'https://images.unsplash.com/photo-1541214113241-21578d2d9b62?auto=format&fit=crop&w=1000&q=80');
-  const [logoUrl, setLogoUrl] = useState(store?.logo || store?.logoURL || store?.image || store?.img || 'https://images.unsplash.com/photo-1619740455993-9e612b1af08a?auto=format&fit=crop&w=300&q=80');
-  const [address, setAddress] = useState(store?.address || store?.direccion || 'Av. 27 de Febrero esq. Estrella Sadhalá, Santiago, RD');
-  const [phone, setPhone] = useState(store?.phone || store?.telefono || '809-583-1020');
-  const [whatsapp, setWhatsapp] = useState(store?.whatsapp || store?.phone || '18095831020');
-  const [instagram, setInstagram] = useState(store?.socials?.instagram || store?.instagram || '@lafierahotdog.rd');
-  const [facebook, setFacebook] = useState(store?.socials?.facebook || store?.facebook || 'facebook.com/lafierahotdog');
-  const [tiktok, setTiktok] = useState(store?.socials?.tiktok || store?.tiktok || '@lafierahotdog');
+  const [name, setName] = useState(store?.name || store?.nombre || '');
+  const [category, setCategory] = useState(store?.sub || store?.categoria || store?.category || 'Comida Rápida & Restaurante');
+  const [coverUrl, setCoverUrl] = useState(store?.cover || store?.portadaURL || store?.image || store?.img || '');
+  const [logoUrl, setLogoUrl] = useState(store?.logo || store?.logoURL || store?.image || store?.img || '');
+  const [address, setAddress] = useState(store?.address || store?.direccion || '');
+  const [phone, setPhone] = useState(store?.phone || store?.telefono || '');
+  const [whatsapp, setWhatsapp] = useState(store?.whatsapp || store?.phone || '');
+  const [instagram, setInstagram] = useState(store?.socials?.instagram || store?.instagram || '');
+  const [facebook, setFacebook] = useState(store?.socials?.facebook || store?.facebook || '');
+  const [tiktok, setTiktok] = useState(store?.socials?.tiktok || store?.tiktok || '');
   const [schedule, setSchedule] = useState(store?.time || store?.horario || 'Lunes a Domingo, 08:00 AM - 11:30 PM');
 
   // Menu items list
@@ -50,14 +50,14 @@ export default function ConfigurarRestauranteModal({ store, onClose, onSave, ini
               name: s.nombre || s.name,
               price: parseFloat(s.precio || s.price) || 250,
               desc: s.descripcion || s.desc || '',
-              img: s.fotoURL || s.img || 'https://images.unsplash.com/photo-1619740455993-9e612b1af08a?auto=format&fit=crop&w=400&q=80'
+              img: s.fotoURL || s.img || ''
             }))
           : [
-              { id: 'm_1', name: '🌭 Hot Dog La Fiera Especial', price: 220, desc: 'Salchicha parrillera artesanal, repollo criollo agridulce, tocineta crocante y salsa tártara.', img: 'https://images.unsplash.com/photo-1619740455993-9e612b1af08a?auto=format&fit=crop&w=400&q=80' },
+              { id: 'm_1', name: '🌭 Hot Dog Clásico', price: 200, desc: 'Salchicha parrillera artesanal, repollo criollo agridulce, papitas y salsa tártara.', img: 'https://images.unsplash.com/photo-1619740455993-9e612b1af08a?auto=format&fit=crop&w=400&q=80' },
               { id: 'm_2', name: '🧀 Hot Dog Triple Queso Fundido', price: 260, desc: 'Pan brioche tostado, salchicha gigante, abundante queso cheddar derretido y mozzarella.', img: 'https://images.unsplash.com/photo-1627054234553-91147a46979a?auto=format&fit=crop&w=400&q=80' },
-              { id: 'm_3', name: '🔥 Hot Dog Fiera Picante', price: 240, desc: 'Salchicha ahumada con jalapeños, papitas ralladas crujientes y mayokétchup criollo.', img: 'https://images.unsplash.com/photo-1541214113241-21578d2d9b62?auto=format&fit=crop&w=400&q=80' },
-              { id: 'm_4', name: '🍟 Papas Fritas Fiera Monster', price: 250, desc: 'Papas fritas con trozos de salchicha parrillera, tocineta y salsa cheddar caliente.', img: 'https://images.unsplash.com/photo-1576107232684-1279f3908594?auto=format&fit=crop&w=400&q=80' },
-              { id: 'm_5', name: '🥤 Refresco Cola 20oz Bien Frío', price: 65, desc: 'Refresco dominicano 20oz bien helado para acompañar tu Fiera Hot Dog.', img: 'https://images.unsplash.com/photo-1622483767028-3f66f32aef97?auto=format&fit=crop&w=400&q=80' }
+              { id: 'm_3', name: '🔥 Hot Dog Picante Criollo', price: 240, desc: 'Salchicha ahumada con jalapeños, papitas ralladas crujientes y mayokétchup criollo.', img: 'https://images.unsplash.com/photo-1541214113241-21578d2d9b62?auto=format&fit=crop&w=400&q=80' },
+              { id: 'm_4', name: '🍟 Papas Fritas Grandes', price: 200, desc: 'Papas fritas crujientes con trozos de tocineta y salsa cheddar caliente.', img: 'https://images.unsplash.com/photo-1576107232684-1279f3908594?auto=format&fit=crop&w=400&q=80' },
+              { id: 'm_5', name: '🥤 Refresco Cola 20oz Bien Frío', price: 65, desc: 'Refresco dominicano 20oz bien helado.', img: 'https://images.unsplash.com/photo-1622483767028-3f66f32aef97?auto=format&fit=crop&w=400&q=80' }
             ]
         )
   );

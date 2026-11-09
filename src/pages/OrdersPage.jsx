@@ -155,7 +155,10 @@ const parseAmount = (o) => {
   return isNaN(n) ? 0 : n
 }
 const orderMs = (o) => (o.createdAt?.seconds ? o.createdAt.seconds * 1000 : 0)
-const isDeliveryOrder = (o) => o.type === 'delivery' || o.fulfillmentType === 'pickup'
+const isDeliveryOrder = (o) =>
+  o.type === 'delivery' ||
+  o.fulfillmentType === 'pickup' ||
+  o.source === 'pedidos_listo'
 
 /* ── Confeti de celebración ── */
 function Confetti({ onDone }) {
@@ -183,7 +186,7 @@ function Confetti({ onDone }) {
 }
 
 /* ── Cuenta regresiva real de llegada ── */
-function EtaCountdown({ order, lang, T }) {
+function EtaCountdown({ order, lang, T, isDelivery }) {
   const [now, setNow] = useState(Date.now())
   useEffect(() => { const id = setInterval(() => setNow(Date.now()), 15000); return () => clearInterval(id) }, [])
   const mins = Number(order.estimatedTime)
@@ -194,7 +197,7 @@ function EtaCountdown({ order, lang, T }) {
     const waiting = order.status === 'pending'
     return (
       <div className="oc-eta neutral">
-        <span className="oc-eta-icon">{waiting ? '⏳' : '🚚'}</span>
+        <span className="oc-eta-icon">{waiting ? '⏳' : (isDelivery ? '🚚' : '🔧')}</span>
         <p>{waiting
           ? (lang === 'es' ? 'Esperando que el profesional acepte...' : 'Waiting for the professional to accept...')
           : (lang === 'es' ? 'Pedido en curso' : 'Order in progress')}</p>
@@ -205,7 +208,7 @@ function EtaCountdown({ order, lang, T }) {
   const pct  = Math.max(0, Math.min(100, 100 - (left / mins) * 100))
   return (
     <div className="oc-eta">
-      <span className="oc-eta-icon">🛵</span>
+      <span className="oc-eta-icon">{isDelivery ? '🛵' : '🔧'}</span>
       <div style={{ flex: 1 }}>
         <p>{left > 0 ? <>{T.arrivesIn} <strong>{left} min</strong></> : T.arrivingNow}</p>
         <div className="oc-eta-bar"><div style={{ width: `${pct}%` }} /></div>
@@ -832,11 +835,14 @@ export default function OrdersPage({ lang = 'es', navigate, userData, userRole }
     if (!auth.currentUser || !userRole) { setLoading(false); return }
     const uid = auth.currentUser.uid
     const fieldType = userRole === 'pro' ? 'proId' : 'clientId'
+    // PRO: solo pedidos de servicios (excluir delivery/comida)
+    // CLIENTE: todos sus pedidos
     const q = query(collection(db, 'orders'), where(fieldType, '==', uid))
     const unsub = onSnapshot(q, (snapshot) => {
       const active = [], past = []
       snapshot.forEach(docSnap => {
         const d = docSnap.data()
+        if (userRole === 'pro' && isDeliveryOrder(d)) return
         const o = {
           id:         docSnap.id,
           pro:        userRole==='pro' ? (d.clientName||d.clientEmail||'Cliente') : (d.storeName || d.proName || 'Profesional'),
@@ -998,7 +1004,7 @@ export default function OrdersPage({ lang = 'es', navigate, userData, userRole }
     const startDay   = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()
     const startWeek  = startDay - ((now.getDay() + 6) % 7) * 86400000
     const startMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime()
-    const done = history.filter(o => o.status === 'done')
+    const done = history.filter(o => o.status === 'done' && (userRole !== 'pro' || !isDeliveryOrder(o)))
     const sum = (arr) => arr.reduce((s, o) => s + parseAmount(o), 0)
     return {
       month: [...orders, ...history].filter(o => orderMs(o) >= startMonth && o.status !== 'cancelled').length,
@@ -1125,7 +1131,7 @@ export default function OrdersPage({ lang = 'es', navigate, userData, userRole }
           )}
         </>
       )}
-      {o.status==='pending' && userRole==='pro' && (
+      {o.status==='pending' && userRole==='pro' && !isDeliveryOrder(o) && (
         <div style={{ display:'flex', gap:8, width:'100%' }}>
           <button className="oc-btn decline" onClick={()=>setCancelTarget(o)} style={{ flex:1, background:'#FFF0F0', color:'#E31837', border:'1px solid currentColor' }}>{T.decline}</button>
           <button className="oc-btn listo"   onClick={() => setDetailsOrder(o)} style={{ flex:1 }}>{lang==='es'?'Aceptar Servicio':'Accept Service'}</button>
