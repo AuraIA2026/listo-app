@@ -10,7 +10,7 @@ export default function Navbar({ navigate, currentPage, lang, setLang }) {
   return (
     <nav className="navbar">
       <div className="navbar-inner">
-        <div className="navbar-logo" onClick={() => navigate('home')}>
+        <div className="navbar-logo" onClick={() => navigate(currentPage === 'login' ? 'login' : 'register')}>
           <img src={logoImg} alt="Pedidos Listo" className="logo-img" />
           <span className="logo-tag">{t[lang].tagline}</span>
         </div>

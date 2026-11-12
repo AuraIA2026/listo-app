@@ -474,8 +474,9 @@ export default function App() {
       const hash = window.location.hash || '';
       if (search.includes('page=shop') || hash.includes('shop')) return 'shop';
       if (search.includes('comprar-plan') || hash.includes('comprar-plan') || hash.includes('planes')) return 'landing';
+      if (search.includes('page=login') || hash.includes('login')) return 'login';
     }
-    return 'home';
+    return 'register';
   });
   const [lang,            setLang]            = useState('es')
   const [selectedPro,     setSelectedPro]     = useState(null)
@@ -596,8 +597,8 @@ export default function App() {
       })
     } else {
       setCurrentPage(prev => {
-        if (['register', 'policies', 'login', 'landing'].includes(prev)) return prev
-        return 'home'
+        if (['register', 'login', 'policies'].includes(prev)) return prev
+        return 'register'
       })
     }
   }, [authUser, authLoading, userData])
@@ -946,6 +947,10 @@ export default function App() {
 
   // ─── NAVIGATE ─────────────────────────────────────────────────────────────
   const navigate = (page, data) => {
+    if (!authUser && !['register', 'login', 'policies'].includes(page)) {
+      setCurrentPage('register')
+      return
+    }
     if (page === 'localDetalle' && data) setSelectedLocal(data)
     if (data?.professional) setSelectedPro(data.professional)
     if (data && !data.user && !data.professional && page !== 'profile' && page !== 'localDetalle') setSelectedPro(data)
@@ -962,13 +967,16 @@ export default function App() {
 
 
   if (showSplash) {
-    return <SplashScreen onFinish={() => { setShowSplash(false); setCurrentPage(userData ? 'home' : 'home') }} lang={lang} />
+    return <SplashScreen onFinish={() => { setShowSplash(false); setCurrentPage(authUser ? 'home' : 'register') }} lang={lang} />
   }
 
   if (!authReady) return null
 
-  const showBottom  = PAGES_WITH_BOTTOM_NAV.includes(currentPage)
-  const showTop     = PAGES_WITH_TOP_NAV.includes(currentPage)
+  const effectivePage = (!authUser && !['register', 'login', 'policies'].includes(currentPage))
+    ? 'register'
+    : currentPage
+  const showBottom  = PAGES_WITH_BOTTOM_NAV.includes(effectivePage) && Boolean(authUser)
+  const showTop     = PAGES_WITH_TOP_NAV.includes(effectivePage)
   const commonProps = { lang, navigate }
   const userProps   = { ...commonProps, userData, userRole }
   const isAdminUser = Boolean(
@@ -985,40 +993,40 @@ export default function App() {
     <div className="app">
       {isOffline && <OfflineBanner lang={lang} />}
 
-      {showTop && <Navbar navigate={navigate} currentPage={currentPage} lang={lang} setLang={setLang} />}
+      {showTop && <Navbar navigate={navigate} currentPage={effectivePage} lang={lang} setLang={setLang} />}
 
       <Suspense fallback={<div style={{ padding: '48px 20px', textAlign: 'center', color: '#F26000', fontWeight: 900, fontSize: 15 }}>⚡ Cargando...</div>}>
-      {currentPage === 'landing'      && <LandingPage  {...commonProps} />}
-      {currentPage === 'home'         && <HomePage     {...userProps} />}
-      {currentPage === 'shop'         && <ShopPage     onNavigate={navigate} navigate={navigate} />}
-      {currentPage === 'services'     && <ServicesPage {...userProps} />}
-      {currentPage === 'search'       && <SearchPage   {...userProps} initialCategory={selectedPro?.catToSelect || 'all'} initialProvince={selectedPro?.provinceToSelect || 'all'} />}
-      {currentPage === 'orders'       && <OrdersPage   {...userProps} />}
-      {currentPage === 'login'        && <LoginPage    {...commonProps} />}
-      {currentPage === 'register'     && <RegisterPage {...commonProps} />}
-      {currentPage === 'workdone'     && <WorkDonePage {...commonProps} userRole={userRole} userData={userData} professional={selectedPro} />}
-      {currentPage === 'admin'        && <AdminPage    {...commonProps} />}
-      {currentPage === 'locales'      && <LocalesPage  {...userProps} />}
-      {currentPage === 'localDetalle' && <LocalDetalle {...userProps} local={selectedLocal} />}
-      {currentPage === 'crearLocal'   && <CrearLocal   {...userProps} />}  {/* ✅ AGREGADO */}
-      {currentPage === 'editarLocal'  && <EditarLocal  {...userProps} local={selectedLocal} />}
-      {currentPage === 'mandame'      && <MandamePage {...userProps} />}
-      {currentPage === 'notificaciones' && <NotificacionPage {...userProps} />}
-      {currentPage === 'policies'     && <PoliciesPage {...commonProps} />}
+      {effectivePage === 'landing'      && <LandingPage  {...commonProps} />}
+      {effectivePage === 'home'         && <HomePage     {...userProps} />}
+      {effectivePage === 'shop'         && <ShopPage     onNavigate={navigate} navigate={navigate} />}
+      {effectivePage === 'services'     && <ServicesPage {...userProps} />}
+      {effectivePage === 'search'       && <SearchPage   {...userProps} initialCategory={selectedPro?.catToSelect || 'all'} initialProvince={selectedPro?.provinceToSelect || 'all'} />}
+      {effectivePage === 'orders'       && <OrdersPage   {...userProps} />}
+      {effectivePage === 'login'        && <LoginPage    {...commonProps} />}
+      {effectivePage === 'register'     && <RegisterPage {...commonProps} />}
+      {effectivePage === 'workdone'     && <WorkDonePage {...commonProps} userRole={userRole} userData={userData} professional={selectedPro} />}
+      {effectivePage === 'admin'        && <AdminPage    {...commonProps} />}
+      {effectivePage === 'locales'      && <LocalesPage  {...userProps} />}
+      {effectivePage === 'localDetalle' && <LocalDetalle {...userProps} local={selectedLocal} />}
+      {effectivePage === 'crearLocal'   && <CrearLocal   {...userProps} />}  {/* ✅ AGREGADO */}
+      {effectivePage === 'editarLocal'  && <EditarLocal  {...userProps} local={selectedLocal} />}
+      {effectivePage === 'mandame'      && <MandamePage {...userProps} />}
+      {effectivePage === 'notificaciones' && <NotificacionPage {...userProps} />}
+      {effectivePage === 'policies'     && <PoliciesPage {...commonProps} />}
 
-      {currentPage === 'booking'       && <BookingPage             {...userProps}   professional={selectedPro} />}
-      {currentPage === 'chat'          && <ChatPage                {...commonProps} professional={selectedPro} userData={userData} />}
-      {currentPage === 'tracking'      && <TrackingPage            {...userProps}   professional={selectedPro} />}
-      {currentPage === 'payment'       && <PaymentPage             {...commonProps} professional={selectedPro} />}
-      {currentPage === 'proProfile'    && <ProfessionalProfilePage {...commonProps} professional={selectedPro} />}
-      {currentPage === 'clientProfile' && <ClientProfilePage       {...commonProps} userData={userData} onEditProfile={() => navigate('profile')} />}
+      {effectivePage === 'booking'       && <BookingPage             {...userProps}   professional={selectedPro} />}
+      {effectivePage === 'chat'          && <ChatPage                {...commonProps} professional={selectedPro} userData={userData} />}
+      {effectivePage === 'tracking'      && <TrackingPage            {...userProps}   professional={selectedPro} />}
+      {effectivePage === 'payment'       && <PaymentPage             {...commonProps} professional={selectedPro} />}
+      {effectivePage === 'proProfile'    && <ProfessionalProfilePage {...commonProps} professional={selectedPro} />}
+      {effectivePage === 'clientProfile' && <ClientProfilePage       {...commonProps} userData={userData} onEditProfile={() => navigate('profile')} />}
 
-      {currentPage === 'profile' && (
+      {effectivePage === 'profile' && (
         <ProfilePage lang={lang} setLang={setLang} navigate={navigate} onLogout={handleLogout} initialScreen={profileInitScreen} />
       )}
       </Suspense>
 
-      {showBottom && <BottomNav currentPage={currentPage} navigate={navigate} lang={lang} userData={userData} />}
+      {showBottom && <BottomNav currentPage={effectivePage} navigate={navigate} lang={lang} userData={userData} />}
 
       <PwaInstallBanner />
 
