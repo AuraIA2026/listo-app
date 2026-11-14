@@ -90,7 +90,7 @@ export default function CreditCardCheckoutForm({
           }
         }
       }
-    } catch (e) {}
+    } catch (e) { }
   }, []);
 
   const brandInfo = detectCardBrand(cardData?.number || '');
@@ -107,7 +107,7 @@ export default function CreditCardCheckoutForm({
   };
 
   const handleRemoveSavedCard = () => {
-    try { localStorage.removeItem(SAVED_CARD_STORAGE_KEY); } catch (e) {}
+    try { localStorage.removeItem(SAVED_CARD_STORAGE_KEY); } catch (e) { }
     setSavedCard(null);
     onChangeCardData({
       ...cardData,
@@ -464,6 +464,6 @@ export function saveCardTokenIfRequested(cardData, validated) {
       holder: validated.holder,
       expiry: cardData.expiry
     }));
-  } catch (e) {}
+  } catch (e) { }
 }
 

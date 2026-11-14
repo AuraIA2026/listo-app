@@ -4,6 +4,13 @@ import './App.css'
 import App from './App.jsx'
 import { UserProvider } from './useUserData'
 
+// Auto-recargar cuando Vercel despliega una nueva versión y cambia el hash de los módulos dinámicos
+if (typeof window !== 'undefined') {
+  window.addEventListener('vite:preloadError', () => {
+    window.location.reload();
+  });
+}
+
 class GlobalErrorBoundary extends Component {
   constructor(props) {
     super(props);
@@ -15,17 +22,36 @@ class GlobalErrorBoundary extends Component {
   componentDidCatch(error, errorInfo) {
     this.setState({ errorInfo });
     console.error("GlobalErrorBoundary caught an error:", error, errorInfo);
+    const msg = String(error?.message || error || '');
+    if (
+      msg.includes('Failed to fetch dynamically imported module') ||
+      msg.includes('Importing a module script failed') ||
+      msg.includes('dynamically imported module') ||
+      msg.includes('Loading chunk')
+    ) {
+      const lastReload = sessionStorage.getItem('listo_chunk_reload');
+      const now = Date.now();
+      if (!lastReload || now - Number(lastReload) > 10000) {
+        sessionStorage.setItem('listo_chunk_reload', String(now));
+        window.location.reload();
+      }
+    }
   }
   render() {
     if (this.state.hasError) {
       return (
-        <div style={{ padding: '20px', background: '#fff', color: '#EF4444', minHeight: '100vh', fontFamily: 'monospace', overflow: 'auto' }}>
-          <h1 style={{fontSize: '24px', fontWeight: 'bold'}}>💥 FATAL CRASH REPORT🔌</h1>
-          <p style={{fontSize: '16px', fontWeight: 'bold', margin: '10px 0'}}>{this.state.error && this.state.error.toString()}</p>
-          <pre style={{whiteSpace: 'pre-wrap', wordBreak: 'break-all', fontSize: '12px', color: '#333', background: '#f5f5f5', padding: '10px', borderRadius: '8px'}}>
-            {this.state.errorInfo && this.state.errorInfo.componentStack}
-          </pre>
-          <p style={{marginTop: '20px', color: '#000', fontWeight: 'bold'}}>Por favor, envíale una foto de esta pantalla al programador.</p>
+        <div style={{ padding: '32px 20px', background: '#0F172A', color: '#FFFFFF', minHeight: '100vh', fontFamily: 'system-ui, sans-serif', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
+          <div style={{ fontSize: '48px', marginBottom: '12px' }}>🔄</div>
+          <h1 style={{ fontSize: '22px', fontWeight: '900', margin: '0 0 8px' }}>Nueva actualización disponible</h1>
+          <p style={{ fontSize: '14px', color: '#94A3B8', maxWidth: '360px', margin: '0 0 20px', lineHeight: 1.5 }}>
+            Acabamos de actualizar Listo Patrón con mejoras. Presiona el botón para cargar la versión más reciente.
+          </p>
+          <button
+            onClick={() => window.location.reload()}
+            style={{ background: '#F26000', color: '#FFF', border: 'none', padding: '14px 28px', borderRadius: '14px', fontSize: '15px', fontWeight: '900', cursor: 'pointer', boxShadow: '0 6px 20px rgba(242,96,0,0.4)' }}
+          >
+            🔄 Cargar Última Versión Ahora
+          </button>
         </div>
       );
     }
