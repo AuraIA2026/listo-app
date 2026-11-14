@@ -82,6 +82,8 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate
     !url.includes('ui-avatars.com')
   )
 
+  const normKey = (str) => String(str || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, ' ').trim()
+
   useEffect(() => {
     const unsubscribeUsers = onSnapshot(collection(db, 'users'), (snap) => {
       const map = {}
@@ -89,24 +91,26 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate
       snap.forEach(uDoc => {
         const u = uDoc.data()
         const resolved = u.currentPlan || u.planId || u.plan || u.membership || u.proPlan || u.subscription || u.userPlan || u.planName || u.tipoPlan || u.tier
-        const nameClean = String(u.name || u.displayName || u.fullName || u.proName || u.nombre || u.proNombre || '').toLowerCase().trim()
+        const rawName = u.name || u.displayName || u.fullName || u.proName || u.nombre || u.proNombre || u.verificacion?.nombre || ''
+        const nameClean = String(rawName).toLowerCase().trim()
+        const nameNorm = normKey(rawName)
 
         if (resolved) {
           map[uDoc.id] = resolved
           if (u.uid) map[u.uid] = resolved
           if (u.id) map[u.id] = resolved
-          if (nameClean) {
-            map[nameClean] = resolved
-          }
+          if (nameClean) map[nameClean] = resolved
+          if (nameNorm) map[nameNorm] = resolved
         }
 
-        const rawPhoto = u.photoURL || u.avatarUrl || u.profilePhoto || ''
+        const rawPhoto = u.photoURL || u.avatarUrl || u.profilePhoto || u.img || u.logo || ''
         const realPhoto = isRealProfilePhoto(rawPhoto) ? rawPhoto.trim() : null
-        photoMap[uDoc.id] = realPhoto
-        if (u.uid) photoMap[u.uid] = realPhoto
-        if (u.id) photoMap[u.id] = realPhoto
-        if (nameClean) {
-          photoMap[nameClean] = realPhoto
+        if (realPhoto) {
+          photoMap[uDoc.id] = realPhoto
+          if (u.uid) photoMap[u.uid] = realPhoto
+          if (u.id) photoMap[u.id] = realPhoto
+          if (nameClean) photoMap[nameClean] = realPhoto
+          if (nameNorm) photoMap[nameNorm] = realPhoto
         }
       })
       setUsersPlanMap(map)
@@ -381,22 +385,33 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate
                 const allStoryIds = stories.filter(s => (s.proId || s.proUid || s.proName || s.fullName || s.id) === key).map(s => s.id)
                 const proUidKey = story.proId || story.proUid
                 const proNameClean = String(story.proName || story.fullName || '').toLowerCase().trim()
+                const proNameNorm = normKey(story.proName || story.fullName || '')
                 const words = proNameClean.split(' ').filter(Boolean)
                 const twoWords = words.length >= 2 ? `${words[0]} ${words[1]}` : ''
                 const firstWord = words.length >= 1 && words[0].length >= 3 ? words[0] : ''
 
                 const livePlan = (proUidKey && usersPlanMap[proUidKey]) ||
-                                 (proNameClean && usersPlanMap[proNameClean])
+                                 (proNameClean && usersPlanMap[proNameClean]) ||
+                                 (proNameNorm && usersPlanMap[proNameNorm])
 
                 const finalPlan = livePlan || story.proPlan || story.plan || story.currentPlan || story.planId || story.membership || story.subscription || story.userPlan || story.planName
 
-                const hasLivePhotoByUid = Boolean(proUidKey && Object.prototype.hasOwnProperty.call(usersPhotoMap, proUidKey))
-                const hasLivePhotoByName = Boolean(!hasLivePhotoByUid && proNameClean && Object.prototype.hasOwnProperty.call(usersPhotoMap, proNameClean))
-                const resolvedProAvatar = hasLivePhotoByUid
-                  ? usersPhotoMap[proUidKey]
-                  : (hasLivePhotoByName
-                      ? usersPhotoMap[proNameClean]
-                      : (isRealProfilePhoto(story.proAvatar) ? story.proAvatar : null))
+                const currentUserNameNorm = normKey(userData?.name || userData?.displayName || '')
+                const isCurrentUserStory = Boolean(
+                  (proUidKey && (proUidKey === userData?.uid || proUidKey === userData?.id)) ||
+                  (proNameNorm && currentUserNameNorm && proNameNorm === currentUserNameNorm)
+                )
+                const currentUserPhoto = isCurrentUserStory
+                  ? [userData?.photoURL, userData?.avatarUrl, userData?.profilePhoto].find(isRealProfilePhoto)
+                  : null
+
+                const resolvedProAvatar =
+                  (proUidKey && usersPhotoMap[proUidKey]) ||
+                  currentUserPhoto ||
+                  (proNameClean && usersPhotoMap[proNameClean]) ||
+                  (proNameNorm && usersPhotoMap[proNameNorm]) ||
+                  (isRealProfilePhoto(story.proAvatar) ? story.proAvatar : null) ||
+                  null
 
                 // Detectar si el usuario o alguna de sus historias tiene una oferta activa
                 const proStories = stories.filter(s => (s.proId || s.proUid || s.proName || s.fullName || s.id) === key)

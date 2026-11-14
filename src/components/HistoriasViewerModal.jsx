@@ -48,7 +48,8 @@ export default function HistoriasViewerModal({
   const [liveProAvatar, setLiveProAvatar] = useState(undefined)
   const currentStory = stories[currentIndex] || stories[0]
   const proUidKey = currentStory?.proId || currentStory?.proUid
-  const proNameClean = String(currentStory?.proName || currentStory?.fullName || '').toLowerCase().trim()
+  const normKey = (str) => String(str || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, ' ').trim()
+  const proNameClean = normKey(currentStory?.proName || currentStory?.fullName || '')
 
   const isRealProfilePhoto = (url) => Boolean(
     url &&
@@ -71,7 +72,7 @@ export default function HistoriasViewerModal({
     } catch (e) {}
 
     const actUid = userData?.uid || userData?.id || stored?.uid || stored?.id
-    const actName = String(userData?.name || stored?.name || '').toLowerCase().trim()
+    const actName = normKey(userData?.name || stored?.name || '')
 
     // 1. Si la historia pertenece al usuario activo o se tienen sus datos directos
     if ((proUidKey && proUidKey === actUid) || (proNameClean && actName && (proNameClean === actName || actName.includes(proNameClean) || proNameClean.includes(actName)))) {
@@ -80,17 +81,18 @@ export default function HistoriasViewerModal({
         setLiveProPlan(uPlan)
       }
       const actRawPhoto = userData?.photoURL || userData?.avatarUrl || userData?.profilePhoto || stored?.photoURL || stored?.avatarUrl || ''
-      setLiveProAvatar(isRealProfilePhoto(actRawPhoto) ? actRawPhoto.trim() : null)
+      if (isRealProfilePhoto(actRawPhoto)) {
+        setLiveProAvatar(actRawPhoto.trim())
+      }
     }
 
     const unsub = onSnapshot(collection(db, 'users'), (snap) => {
       let foundPlan = null
-      let matchedUserDoc = false
       let foundPhoto = null
       snap.forEach(uDoc => {
         const u = uDoc.data()
         const fetched = u.currentPlan || u.planId || u.plan || u.membership || u.proPlan || u.subscription || u.userPlan || u.planName || u.tipoPlan || u.tier
-        const rawPhoto = u.photoURL || u.avatarUrl || u.profilePhoto || ''
+        const rawPhoto = u.photoURL || u.avatarUrl || u.profilePhoto || u.img || u.logo || ''
         const realPhoto = isRealProfilePhoto(rawPhoto) ? rawPhoto.trim() : null
 
         // Coincidencia exacta por UID
@@ -98,18 +100,16 @@ export default function HistoriasViewerModal({
 
         if (uidMatch) {
           if (fetched) foundPlan = fetched
-          matchedUserDoc = true
-          foundPhoto = realPhoto
+          if (realPhoto) foundPhoto = realPhoto
           return
         }
 
-        // Coincidencia por Nombre completo solo si no tenemos UID match aún
-        if (!matchedUserDoc && proNameClean) {
-          const nameClean = String(u.name || u.displayName || u.fullName || u.proName || u.nombre || u.proNombre || '').toLowerCase().trim()
+        // Coincidencia por Nombre completo (sin tildes) solo si no tenemos match aún
+        if (proNameClean) {
+          const nameClean = normKey(u.name || u.displayName || u.fullName || u.proName || u.nombre || u.proNombre || u.verificacion?.nombre || '')
           if (nameClean && nameClean === proNameClean) {
             if (fetched && !foundPlan) foundPlan = fetched
-            matchedUserDoc = true
-            foundPhoto = realPhoto
+            if (realPhoto && !foundPhoto) foundPhoto = realPhoto
           }
         }
       })
@@ -117,7 +117,7 @@ export default function HistoriasViewerModal({
       if (foundPlan) {
         setLiveProPlan(foundPlan)
       }
-      if (matchedUserDoc) {
+      if (foundPhoto) {
         setLiveProAvatar(foundPhoto)
       }
     }, (err) => console.log('Notice reading users for plan:', err))
@@ -128,9 +128,7 @@ export default function HistoriasViewerModal({
   // PRIORIDAD SUPREMA: liveProPlan de la colección 'users' sobre la propiedad estática de la historia
   const resolvedPlan = liveProPlan || currentStory?.proPlan || currentStory?.plan || currentStory?.currentPlan || currentStory?.planId || currentStory?.membership || currentStory?.subscription || currentStory?.userPlan || currentStory?.planName
   const storyPlanTheme = getProPlanTheme(resolvedPlan, currentStory?.proRating || currentStory?.rating || 0)
-  const resolvedProAvatar = liveProAvatar !== undefined
-    ? liveProAvatar
-    : (isRealProfilePhoto(currentStory?.proAvatar) ? currentStory.proAvatar : null)
+  const resolvedProAvatar = liveProAvatar || (isRealProfilePhoto(currentStory?.proAvatar) ? currentStory.proAvatar : null)
 
   // Record story view counter
   useEffect(() => {
