@@ -6,6 +6,14 @@ import { db, auth, functions as fbFunctions } from '../firebase';
 const AZUL_PAYMENT_URL = import.meta.env.VITE_AZUL_URL || 'https://pruebas.azul.com.do/paymentpage/Default.aspx';
 const AZUL_WEBHOOK_URL = 'https://us-central1-listoapp-52b46.cloudfunctions.net/azulWebHook';
 
+const AZUL_PLAN_LINKS = {
+  standard: 'https://pagos.azul.com.do/19b49e0e',
+  basico:   'https://pagos.azul.com.do/19b49e0e',
+  gold:     'https://pagos.azul.com.do/c3c95573',
+  platinum: 'https://pagos.azul.com.do/58c2d25f',
+  vip:      'https://pagos.azul.com.do/9e926de9',
+};
+
 const CUENTAS_LISTO = [
   { banco: 'Banco Popular', tipo: 'Ahorros', cuenta: '746424456', titular: 'Julio de Jesús' },
   { banco: 'Banreservas', tipo: 'Ahorros', cuenta: '9607282472', titular: 'Julio de Jesús' },
@@ -51,7 +59,7 @@ const compressImage = (file) => new Promise((resolve, reject) => {
   reader.readAsDataURL(file);
 });
 
-export default function PlanSelectionModal({ isOpen, onClose, onSelectPlan, proInfo: propProInfo }) {
+export default function PlanSelectionModal({ isOpen, onClose, onSelectPlan, proInfo: propProInfo, initialPlanId }) {
   if (!isOpen) return null;
 
   // 1. Extraer parámetros del profesional desde props o automáticamente desde la URL
@@ -69,7 +77,7 @@ export default function PlanSelectionModal({ isOpen, onClose, onSelectPlan, proI
     color: '#F26000'
   });
   const [step, setStep] = useState('list'); // 'list' | 'checkout' | 'success'
-  const [activeTab, setActiveTab] = useState('transfer'); // 'card' | 'transfer'
+  const [activeTab, setActiveTab] = useState('card'); // 'card' | 'transfer'
 
   // Formulario pre-llenado automáticamente
   const [proName, setProName] = useState('');
@@ -138,11 +146,24 @@ export default function PlanSelectionModal({ isOpen, onClose, onSelectPlan, proI
       }).catch(err => console.log('Fetch pro data error:', err));
     }
 
-    // Si venimos con comprar-plan desde la app, ir directamente al checkout
-    if (search.includes('comprar-plan') || params.has('uid')) {
+    // Si viene plan en la URL o por prop initialPlanId, seleccionarlo automáticamente
+    const reqPlan = (initialPlanId || params.get('plan') || '').toLowerCase();
+    if (reqPlan) {
+      const planCatalog = [
+        { id: 'standard', name: 'Plan Estándar', price: 'RD$500 / mes', numContracts: 3, priceNum: 500, color: '#10B981' },
+        { id: 'gold', name: 'Plan Gold', price: 'RD$1,000 / mes', numContracts: 8, priceNum: 1000, color: '#F59E0B' },
+        { id: 'platinum', name: 'Plan Platinum', price: 'RD$1,500 / mes', numContracts: 12, priceNum: 1500, color: '#64748B' },
+        { id: 'vip', name: 'Plan VIP', price: 'RD$2,500 / mes', numContracts: 999, priceNum: 2500, color: '#F26000' },
+      ];
+      const match = planCatalog.find(p => p.id === reqPlan || (reqPlan === 'basico' && p.id === 'standard'));
+      if (match) setSelectedPlan(match);
+    }
+
+    // Si venimos con comprar-plan desde la app o con initialPlanId, ir directamente al checkout
+    if (search.includes('comprar-plan') || params.has('uid') || initialPlanId) {
       setStep('checkout');
     }
-  }, [propProInfo, isOpen]);
+  }, [propProInfo, isOpen, initialPlanId]);
 
   const plans = [
     {
@@ -241,58 +262,16 @@ export default function PlanSelectionModal({ isOpen, onClose, onSelectPlan, proI
     setStep('checkout');
   };
 
-  const handleAzulPlanPayment = async () => {
-    setSubmitting(true);
+  const handleAzulPlanPayment = () => {
+    const planKey = (selectedPlan?.id || 'gold').toLowerCase();
+    const azulDirectLink = AZUL_PLAN_LINKS[planKey] || AZUL_PLAN_LINKS.gold;
     try {
-      const uid = proData.uid || auth.currentUser?.uid || 'guest';
-      const planCode = selectedPlan.id === 'standard' ? 'basico' : selectedPlan.id;
-      const orderNum = `PLAN_${planCode}_${uid}`;
-      const amountCents = String(Math.round((selectedPlan.priceNum || 1000) * 100));
-      const base = window.location.origin;
-
-      const signData = {
-        MerchantName: 'Listo Patrón',
-        MerchantType: 'E-Commerce',
-        CurrencyCode: '$',
-        OrderNumber: orderNum,
-        Amount: amountCents,
-        ApprovedUrl: AZUL_WEBHOOK_URL,
-        DeclinedUrl: `${base}/profile?planError=declined`,
-        CancelUrl: `${base}/profile?planError=cancelled`,
-      };
-
-      const { data: firma } = await httpsCallable(fbFunctions, 'generarFirmaAzul')(signData);
-      const fields = {
-        MerchantId: firma.MerchantId,
-        ...signData,
-        ITBIS: firma.ITBIS,
-        ResponsePostUrl: firma.ResponsePostUrl,
-        UseCustomField1: '0',
-        CustomField1Label: '',
-        CustomField1Value: '',
-        UseCustomField2: '0',
-        CustomField2Label: '',
-        CustomField2Value: '',
-        AuthHash: firma.AuthHash,
-      };
-
-      const form = document.createElement('form');
-      form.method = 'POST';
-      form.action = AZUL_PAYMENT_URL;
-      Object.entries(fields).forEach(([k, v]) => {
-        const inp = document.createElement('input');
-        inp.type = 'hidden';
-        inp.name = k;
-        inp.value = v ?? '';
-        form.appendChild(inp);
-      });
-      document.body.appendChild(form);
-      form.submit();
-    } catch (err) {
-      console.error('Error iniciando pago AZUL:', err);
-      alert('No se pudo conectar con la pasarela AZUL. Por favor intenta nuevamente.');
-      setSubmitting(false);
-    }
+      if (typeof window !== 'undefined' && window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()) {
+        window.open(azulDirectLink, '_system');
+        return;
+      }
+    } catch (err) {}
+    window.open(azulDirectLink, '_blank');
   };
 
   const handleConfirmPayment = async () => {
@@ -579,10 +558,74 @@ export default function PlanSelectionModal({ isOpen, onClose, onSelectPlan, proI
                   style={{
                     width: '100%', padding: '16px', background: 'linear-gradient(135deg, #1E3A8A, #2563EB)',
                     color: '#FFFFFF', border: 'none', borderRadius: '16px', fontSize: '15.5px', fontWeight: '900',
-                    cursor: 'pointer', boxShadow: '0 8px 20px rgba(37,99,235,0.3)', opacity: submitting ? 0.7 : 1
+                    cursor: 'pointer', boxShadow: '0 8px 20px rgba(37,99,235,0.3)', opacity: submitting ? 0.7 : 1,
+                    marginBottom: '16px'
                   }}
                 >
-                  {submitting ? '⏳ Conectando con AZUL...' : `🔒 PAGAR RD$${(selectedPlan.priceNum || 1000).toLocaleString()} CON AZUL`}
+                  {`🔒 PAGAR RD$${(selectedPlan.priceNum || 1000).toLocaleString()} CON AZUL`}
+                </button>
+
+                {/* Subir Comprobante AZUL Foto o PDF */}
+                <div style={{
+                  border: voucherPreview ? '2px solid #10B981' : '2px dashed #CBD5E1',
+                  borderRadius: '16px', padding: '14px',
+                  textAlign: 'center', marginBottom: '16px',
+                  background: voucherPreview ? '#F0FDF4' : '#F8FAFC',
+                  transition: 'all 0.2s'
+                }}>
+                  {voucherPreview && voucherPreview !== 'pdf' ? (
+                    <div style={{ marginBottom: '8px' }}>
+                      <img 
+                        src={voucherPreview} 
+                        alt="Comprobante AZUL" 
+                        style={{ maxHeight: '140px', maxWidth: '100%', borderRadius: '10px', border: '1px solid #86EFAC', objectFit: 'contain' }} 
+                      />
+                      <div style={{ fontSize: '11px', color: '#15803D', fontWeight: '800', marginTop: '4px' }}>
+                        ✓ Comprobante AZUL cargado ({voucherFile?.name})
+                      </div>
+                    </div>
+                  ) : voucherPreview === 'pdf' ? (
+                    <div style={{ marginBottom: '8px', color: '#2563EB', fontWeight: '800', fontSize: '12px' }}>
+                      📑 Archivo PDF cargado ({voucherFile?.name})
+                    </div>
+                  ) : (
+                    <>
+                      <div style={{ fontSize: '22px', marginBottom: '4px' }}>🧾</div>
+                      <div style={{ fontSize: '12px', fontWeight: '700', color: '#475569' }}>
+                        Una vez pagado en AZUL, sube aquí captura de tu recibo (opcional) y confirma abajo:
+                      </div>
+                    </>
+                  )}
+                  <input
+                    type="file"
+                    accept="image/*,.pdf"
+                    onChange={e => {
+                      const f = e.target.files[0];
+                      if (f) {
+                        setVoucherFile(f);
+                        if (f.type.startsWith('image/')) {
+                          const reader = new FileReader();
+                          reader.onload = ev => setVoucherPreview(ev.target.result);
+                          reader.readAsDataURL(f);
+                        } else {
+                          setVoucherPreview('pdf');
+                        }
+                      }
+                    }}
+                    style={{ marginTop: '6px', fontSize: '11px' }}
+                  />
+                </div>
+
+                <button 
+                  onClick={handleConfirmPayment}
+                  disabled={submitting}
+                  style={{
+                    width: '100%', padding: '15px', background: 'linear-gradient(135deg, #F26000, #C24E00)',
+                    color: '#FFFFFF', border: 'none', borderRadius: '16px', fontSize: '14.5px', fontWeight: '900',
+                    cursor: 'pointer', boxShadow: '0 8px 20px rgba(242,96,0,0.3)', opacity: submitting ? 0.7 : 1
+                  }}
+                >
+                  {submitting ? '⏳ Registrando pago...' : `🚀 YA PAGUÉ EN AZUL — ACTIVAR ${selectedPlan.name.toUpperCase()}`}
                 </button>
               </div>
             ) : (
