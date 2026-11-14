@@ -164,8 +164,21 @@ export default function CreditCardCheckoutForm({
       )}
 
       {cardData?.mode === 'azul' ? (
-        <div style={{ padding: '10px', background: '#EFF6FF', borderRadius: 12, border: '1px solid #BFDBFE', fontSize: 11.5, color: '#1E3A8A', fontWeight: 700, lineHeight: 1.4 }}>
-          🔒 Al confirmar el pedido serás redirigido a la página oficial de <strong>AZUL (Banco Popular)</strong> para completar el pago de <strong>RD$ {Number(totalAmount || 0).toLocaleString()}</strong>.
+        <div style={{ padding: '12px', background: 'linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%)', borderRadius: 14, border: '1.5px solid #93C5FD', color: '#1E3A8A' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+            <span style={{ fontSize: 11, fontWeight: 900, background: '#1D4ED8', color: '#FFF', padding: '3px 8px', borderRadius: 6 }}>
+              🔒 PASARELA OFICIAL AZUL
+            </span>
+            <span style={{ fontSize: 11, fontWeight: 900, color: '#1E3A8A' }}>
+              Afiliado: 39666400001
+            </span>
+          </div>
+          <div style={{ fontSize: 13, fontWeight: 900, color: '#0F172A', marginBottom: 4 }}>
+            🏪 Comercio: LISTO PATRON — Total: RD$ {Number(totalAmount || 0).toLocaleString()}
+          </div>
+          <div style={{ fontSize: 11.5, fontWeight: 700, lineHeight: 1.4, color: '#1E3A8A' }}>
+            Acepta <strong>Visa, Mastercard, Google Pay y Apple Pay</strong>. Al confirmar tu pedido se procesará el cobro exacto de tu carrito (<strong>RD$ {Number(totalAmount || 0).toLocaleString()}</strong>) con AZUL Banco Popular.
+          </div>
         </div>
       ) : (
         <>

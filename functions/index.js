@@ -74,7 +74,7 @@ exports.webhookCardnet = functions.https.onRequest(async (req, res) => {
    Funciona para planes Y para pagos de servicios.
 ═══════════════════════════════════════════════════════════ */
 exports.generarFirmaAzul = functions.https.onCall((data, context) => {
-  const MERCHANT_ID = "39038540035";
+  const MERCHANT_ID = process.env.AZUL_MERCHANT_ID || "39666400001";
   const AUTH_KEY    = "asdhakjshdkjasdasmndajksdkjaskldga8odya9d8yoasyd98asdyaisdhoaisyd0a8sydoashd8oasydoiahdpiashd09ayusidhaos8dy0a8dya08syd0a8ssdsax";
 
   const {

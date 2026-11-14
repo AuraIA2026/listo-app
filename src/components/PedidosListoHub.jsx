@@ -223,14 +223,19 @@ export default function PedidosListoHub({ navigate }) {
     let finalPaymentLabel = paymentMethod;
     let paymentStatusVal = paymentMethod === 'efectivo' ? 'contra_entrega' : 'por_verificar';
     if (paymentMethod === 'tarjeta') {
-      const cardValidation = validateCardDetails(cardData);
-      if (!cardValidation.valid) {
-        setOrderError(cardValidation.error);
-        return;
+      if (cardData?.mode === 'azul') {
+        finalPaymentLabel = '💳 Pasarela Oficial AZUL (Listo Patrón)';
+        paymentStatusVal = 'pendiente_azul';
+      } else {
+        const cardValidation = validateCardDetails(cardData);
+        if (!cardValidation.valid) {
+          setOrderError(cardValidation.error);
+          return;
+        }
+        saveCardTokenIfRequested(cardData, cardValidation);
+        finalPaymentLabel = `💳 Tarjeta ${cardValidation.brand} •••• ${cardValidation.last4} (Pagado)`;
+        paymentStatusVal = 'pagado';
       }
-      saveCardTokenIfRequested(cardData, cardValidation);
-      finalPaymentLabel = `💳 Tarjeta ${cardValidation.brand} •••• ${cardValidation.last4} (Pagado)`;
-      paymentStatusVal = 'pagado';
     }
 
     setSubmitting(true);
@@ -1077,17 +1082,79 @@ export default function PedidosListoHub({ navigate }) {
                   </span>
                 </div>
               )}
-              <div className="pl-sum-row" style={{ alignItems: 'center' }}>
-                <span>Método de pago</span>
-                <select value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)}
-                  style={{ padding: '4px 8px', borderRadius: 8, border: '1px solid #E2E8F0', fontWeight: 700 }}>
-                  <option value="efectivo">💵 Efectivo</option>
-                  <option value="tarjeta">💳 Tarjeta de Crédito / Débito</option>
-                  <option value="transferencia">🏦 Transferencia</option>
-                </select>
+              <div style={{ marginTop: 10, marginBottom: 8 }}>
+                <span style={{ display: 'block', fontSize: 11, fontWeight: 900, color: '#475569', textTransform: 'uppercase', marginBottom: 6 }}>
+                  💳 Método de Pago
+                </span>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                  <button
+                    type="button"
+                    onClick={() => setPaymentMethod('efectivo')}
+                    style={{
+                      padding: '10px 8px',
+                      borderRadius: 12,
+                      border: paymentMethod === 'efectivo' ? '2px solid #F26000' : '1.5px solid #E2E8F0',
+                      background: paymentMethod === 'efectivo' ? '#FFF4EE' : '#FFFFFF',
+                      color: paymentMethod === 'efectivo' ? '#C2410C' : '#334155',
+                      fontWeight: 800,
+                      fontSize: 12,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: 6
+                    }}
+                  >
+                    💵 Efectivo
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPaymentMethod('transferencia')}
+                    style={{
+                      padding: '10px 8px',
+                      borderRadius: 12,
+                      border: paymentMethod === 'transferencia' ? '2px solid #F26000' : '1.5px solid #E2E8F0',
+                      background: paymentMethod === 'transferencia' ? '#FFF4EE' : '#FFFFFF',
+                      color: paymentMethod === 'transferencia' ? '#C2410C' : '#334155',
+                      fontWeight: 800,
+                      fontSize: 12,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: 6
+                    }}
+                  >
+                    🏦 Transferencia
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPaymentMethod('tarjeta')}
+                    style={{
+                      gridColumn: '1 / -1',
+                      padding: '10px 8px',
+                      borderRadius: 12,
+                      border: paymentMethod === 'tarjeta' ? '2px solid #F26000' : '1.5px solid #E2E8F0',
+                      background: paymentMethod === 'tarjeta' ? '#FFF4EE' : '#FFFFFF',
+                      color: paymentMethod === 'tarjeta' ? '#C2410C' : '#334155',
+                      fontWeight: 800,
+                      fontSize: 12,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: 6
+                    }}
+                  >
+                    💳 Tarjeta de Crédito / Débito
+                    <span style={{ fontSize: 9.5, fontWeight: 900, background: '#1e3a8a', color: '#fff', padding: '2px 6px', borderRadius: 5 }}>VISA</span>
+                    <span style={{ fontSize: 9.5, fontWeight: 900, background: '#ea580c', color: '#fff', padding: '2px 6px', borderRadius: 5 }}>MC</span>
+                    <span style={{ fontSize: 9.5, fontWeight: 900, background: '#0284c7', color: '#fff', padding: '2px 6px', borderRadius: 5 }}>AZUL</span>
+                  </button>
+                </div>
               </div>
               {paymentMethod === 'tarjeta' && (
-                <CreditCardCheckoutForm totalAmount={total} cardData={cardData} onChangeCardData={setCardData} />
+                <CreditCardCheckoutForm totalAmount={total} cardData={cardData} onChangeCardData={setCardData} allowAzulGateway={true} />
               )}
               {paymentMethod === 'transferencia' && (
                 <BankTransferCheckoutBox totalAmount={total} receiptImage={transferReceiptImage} onChangeReceiptImage={setTransferReceiptImage} referenceNumber={transferReference} onChangeReferenceNumber={setTransferReference} storeName={cartStore?.name || 'Restaurante'} />
