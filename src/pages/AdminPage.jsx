@@ -999,29 +999,80 @@ export default function AdminPage({ navigate }) {
         approved: true,
         validada: true,
         moderated: true,
+        rejected: false,
         approvedAt: new Date().toISOString(),
         expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
       });
 
+      if (st.proId) {
+        try {
+          await addDoc(collection(db, 'notificaciones'), {
+            userId: st.proId,
+            type: 'system',
+            title: '📸 ¡Tu Historia fue Aprobada!',
+            text: 'El administrador aprobó tu historia y ya está visible por 24 horas en Listo Patrón.',
+            date: new Date().toISOString(),
+            createdAt: new Date().toISOString(),
+            read: false
+          });
+        } catch (_) {}
+      }
+
       // Marcar notificación pendiente de historias como leída
       try {
         const pendingStoryAlerts = alerts.filter(a => 
-          (a.type === 'new_story_request' || (a.title && a.title.includes('HISTORIA'))) && (!a.read || a.read === false)
+          (a.type === 'new_story_request' || a.type === 'new_story_review' || (a.title && a.title.includes('HISTORIA'))) && (!a.read || a.read === false)
         );
         for (const alt of pendingStoryAlerts) {
-          if ((st.proName && alt.text?.includes(st.proName)) || alt.storyId === st.id) {
+          if ((st.proName && alt.text?.includes(st.proName)) || alt.storyId === st.id || alt.storyDocId === st.id) {
             await updateDoc(doc(db, 'notificaciones', alt.id), { read: true });
           }
         }
       } catch (errN) {}
 
-      showToast(`✅ ¡Historia de ${st.proName || 'Socio'} validada y aprobada con éxito!`);
+      showToast(`✅ ¡Historia de ${st.proName || 'Socio'} aprobada y publicada!`);
       if (previewImageModal?.story?.id === st.id) {
         setPreviewImageModal(null);
       }
     } catch (err) {
       console.error('Error aprobando historia:', err);
-      showToast('❌ Error al validar: ' + err.message);
+      showToast('❌ Error al aprobar: ' + err.message);
+    }
+  };
+
+  /* Rechazar / No Aprobar Historia */
+  const handleRejectStory = async (st) => {
+    try {
+      await updateDoc(doc(db, 'historias', st.id), {
+        status: 'rejected',
+        approved: false,
+        validada: false,
+        moderated: 'rejected',
+        rejected: true,
+        rejectedAt: new Date().toISOString()
+      });
+
+      if (st.proId) {
+        try {
+          await addDoc(collection(db, 'notificaciones'), {
+            userId: st.proId,
+            type: 'system',
+            title: '❌ Historia no aprobada',
+            text: 'Tu historia no fue aprobada por moderación en Listo Patrón.',
+            date: new Date().toISOString(),
+            createdAt: new Date().toISOString(),
+            read: false
+          });
+        } catch (_) {}
+      }
+
+      showToast(`🔴 Historia de ${st.proName || 'Socio'} marcada como NO aprobada`);
+      if (previewImageModal?.story?.id === st.id) {
+        setPreviewImageModal(null);
+      }
+    } catch (err) {
+      console.error('Error rechazando historia:', err);
+      showToast('❌ Error al no aprobar: ' + err.message);
     }
   };
 
@@ -2558,55 +2609,75 @@ export default function AdminPage({ navigate }) {
         )}
 
 
-        {/* ── TAB: HISTORIAS (Moderación y Validación HD de Stories 24h) ── */}
-        {tab === 'historias' && (
+        {/* ── TAB: HISTORIAS (Herramienta de Control, Aprobación y Vista en Grande HD) ── */}
+        {tab === 'historias' && (() => {
+          const isStPending = (s) => s.status === 'pending' || (s.approved === false && s.status !== 'rejected');
+          const isStRejected = (s) => s.status === 'rejected' || s.moderated === 'rejected' || s.rejected === true;
+          const isStApproved = (s) => !isStPending(s) && !isStRejected(s) && (s.status === 'approved' || s.approved === true || s.validada === true);
+
+          const pendingCount = stories.filter(isStPending).length;
+          const approvedCount = stories.filter(isStApproved).length;
+          const rejectedCount = stories.filter(isStRejected).length;
+
+          return (
           <div className="admin-section" style={{marginTop:16}}>
             <div className="section-header">
               <div>
-                <span className="section-title">📸 Moderación y Validación HD de Historias (24h)</span>
-                <p style={{fontSize:'12px', color:'var(--muted)', margin:'4px 0 0'}}>
-                  Revisa fotos en alta definición (HD), valida o rechaza historias enviadas por los profesionales.
+                <span className="section-title">📸 Control y Aprobación de Historias (Vista en Grande HD)</span>
+                <p style={{fontSize:'12.5px', color:'var(--muted)', margin:'4px 0 0'}}>
+                  Todas las historias pasan por tu control. Revisa cada foto en grande y decide si <strong>Aprobar</strong> o <strong>No Aprobar</strong>.
                 </p>
               </div>
-              <span className="admin-badge" style={{background:'var(--brand)'}}>
-                {stories.length} total · {stories.filter(s => s.status === 'pending' || !s.approved).length} pendientes
+              <span className="admin-badge" style={{background: pendingCount > 0 ? '#F59E0B' : 'var(--brand)'}}>
+                {stories.length} total · {pendingCount} por aprobar
               </span>
             </div>
 
-            {/* Filtros de estado: Todas, Pendientes, Aprobadas */}
-            <div style={{ display: 'flex', gap: '8px', marginTop: '14px', overflowX: 'auto', paddingBottom: '4px' }}>
-              <button 
-                onClick={() => setStoryFilter('all')}
-                style={{
-                  padding: '7px 16px', borderRadius: '20px', border: '1px solid var(--border)',
-                  background: storyFilter === 'all' ? 'var(--brand)' : 'var(--surface2)',
-                  color: storyFilter === 'all' ? '#FFF' : 'var(--text)',
-                  fontSize: '12px', fontWeight: '800', cursor: 'pointer', transition: 'all 0.2s'
-                }}
-              >
-                Todas ({stories.length})
-              </button>
+            {/* Filtros de estado: Todas, Por Aprobar, Aprobadas, No Aprobadas */}
+            <div style={{ display: 'flex', gap: '8px', marginTop: '14px', overflowX: 'auto', paddingBottom: '4px', flexWrap: 'wrap' }}>
               <button 
                 onClick={() => setStoryFilter('pending')}
                 style={{
-                  padding: '7px 16px', borderRadius: '20px', border: '1px solid var(--border)',
+                  padding: '9px 18px', borderRadius: '20px', border: '1.5px solid var(--border)',
                   background: storyFilter === 'pending' ? '#F59E0B' : 'var(--surface2)',
                   color: storyFilter === 'pending' ? '#FFF' : 'var(--text)',
-                  fontSize: '12px', fontWeight: '800', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', transition: 'all 0.2s'
+                  fontSize: '12.5px', fontWeight: '900', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', transition: 'all 0.2s'
                 }}
               >
-                🟡 En Espera ({stories.filter(s => s.status === 'pending' || !s.approved).length})
+                🟡 Por Aprobar ({pendingCount})
               </button>
               <button 
                 onClick={() => setStoryFilter('approved')}
                 style={{
-                  padding: '7px 16px', borderRadius: '20px', border: '1px solid var(--border)',
+                  padding: '9px 18px', borderRadius: '20px', border: '1.5px solid var(--border)',
                   background: storyFilter === 'approved' ? '#10B981' : 'var(--surface2)',
                   color: storyFilter === 'approved' ? '#FFF' : 'var(--text)',
-                  fontSize: '12px', fontWeight: '800', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', transition: 'all 0.2s'
+                  fontSize: '12.5px', fontWeight: '900', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', transition: 'all 0.2s'
                 }}
               >
-                🟢 Aprobadas ({stories.filter(s => s.status === 'approved' || s.approved).length})
+                🟢 Aprobadas ({approvedCount})
+              </button>
+              <button 
+                onClick={() => setStoryFilter('rejected')}
+                style={{
+                  padding: '9px 18px', borderRadius: '20px', border: '1.5px solid var(--border)',
+                  background: storyFilter === 'rejected' ? '#EF4444' : 'var(--surface2)',
+                  color: storyFilter === 'rejected' ? '#FFF' : 'var(--text)',
+                  fontSize: '12.5px', fontWeight: '900', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', transition: 'all 0.2s'
+                }}
+              >
+                🔴 No Aprobadas ({rejectedCount})
+              </button>
+              <button 
+                onClick={() => setStoryFilter('all')}
+                style={{
+                  padding: '9px 18px', borderRadius: '20px', border: '1.5px solid var(--border)',
+                  background: storyFilter === 'all' ? 'var(--brand)' : 'var(--surface2)',
+                  color: storyFilter === 'all' ? '#FFF' : 'var(--text)',
+                  fontSize: '12.5px', fontWeight: '900', cursor: 'pointer', transition: 'all 0.2s'
+                }}
+              >
+                📋 Todas ({stories.length})
               </button>
             </div>
 
@@ -2614,46 +2685,55 @@ export default function AdminPage({ navigate }) {
               <div className="empty-admin" style={{padding:'40px 20px', textAlign:'center', background:'var(--surface)', borderRadius:'18px', border:'1px solid var(--border)', marginTop: '16px'}}>
                 <div style={{fontSize:'40px', marginBottom:'10px'}}>📸</div>
                 <h4 style={{margin:'0 0 6px', fontSize:'16px', color:'var(--text)'}}>No hay historias registradas</h4>
-                <p style={{margin:0, fontSize:'13px', color:'var(--muted)'}}>Las historias subidas por los socios aparecerán aquí para moderación instantánea.</p>
+                <p style={{margin:0, fontSize:'13px', color:'var(--muted)'}}>Las historias subidas por los usuarios aparecerán aquí para que las apruebes o rechaces.</p>
               </div>
             )}
 
-            {/* Grid de Historias */}
-            <div style={{display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(260px, 1fr))', gap:'16px', marginTop:'16px'}}>
+            {/* Grid de Historias en Grande */}
+            <div style={{display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(360px, 1fr))', gap:'20px', marginTop:'16px'}}>
               {stories.filter(st => {
-                const isApproved = Boolean(st.status === 'approved' || st.approved === true || st.validada === true);
-                if (storyFilter === 'pending') return !isApproved;
-                if (storyFilter === 'approved') return isApproved;
+                if (storyFilter === 'pending') return isStPending(st);
+                if (storyFilter === 'approved') return isStApproved(st);
+                if (storyFilter === 'rejected') return isStRejected(st);
                 return true;
               }).map((st, i) => {
-                const media = st.mediaUrl || st.imageUrl || st.url || st.videoUrl;
-                const isVid = st.type === 'video' || st.isVideo || (media && media.match(/\.(mp4|webm|mov)/i));
-                const isApproved = Boolean(st.status === 'approved' || st.approved === true || st.validada === true);
-                const isPending = !isApproved;
+                const media = st.imageUrl || st.videoUrl || st.mediaUrl || st.url;
+                const isVid = st.mediaType === 'video' || st.type === 'video' || st.isVideo || Boolean(st.videoUrl) || (media && media.match(/\.(mp4|webm|mov)/i));
+                const isPending = isStPending(st);
+                const isRejected = isStRejected(st);
+                const isApproved = isStApproved(st);
+                const rawAvatar = st.proAvatar || st.proPhoto || st.userPhoto || st.avatar || '';
+                const hasValidAvatar = Boolean(rawAvatar && typeof rawAvatar === 'string' && !rawAvatar.includes('randomuser.me') && !rawAvatar.includes('pravatar.cc') && !rawAvatar.includes('ui-avatars.com'));
 
                 return (
                   <div key={st.id || i} style={{
-                    background:'var(--surface)', borderRadius:'18px',
-                    border: isPending ? '2px solid #F59E0B' : '1px solid var(--border)',
+                    background:'var(--surface)', borderRadius:'20px',
+                    border: isPending ? '2.5px solid #F59E0B' : isApproved ? '2px solid #10B981' : '2px solid #EF4444',
                     overflow:'hidden',
-                    boxShadow: isPending ? '0 6px 20px rgba(245, 158, 11, 0.2)' : '0 4px 12px rgba(0,0,0,0.04)',
-                    display:'flex', flexDirection:'column',
-                    transition: 'transform 0.2s, box-shadow 0.2s'
+                    boxShadow: isPending ? '0 8px 24px rgba(245, 158, 11, 0.22)' : '0 6px 18px rgba(0,0,0,0.06)',
+                    display:'flex', flexDirection:'column'
                   }}>
                     {/* Header Autor con Estado */}
-                    <div style={{padding:'10px 12px', display:'flex', alignItems:'center', justifyContent: 'space-between', gap:'10px', background:'var(--surface2)', borderBottom:'1px solid var(--border)'}}>
-                      <div style={{display:'flex', alignItems:'center', gap:'8px', minWidth: 0}}>
-                        <img 
-                          src={st.proPhoto || st.userPhoto || st.avatar || 'https://via.placeholder.com/40'} 
-                          alt={st.proName || st.userName || 'Usuario'} 
-                          style={{width:38, height:38, borderRadius:'50%', objectFit:'cover', border:'2px solid var(--brand)', flexShrink: 0}}
-                          onError={(e) => { e.target.src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(st.proName || 'U'); }}
-                        />
+                    <div style={{padding:'12px 16px', display:'flex', alignItems:'center', justifyContent: 'space-between', gap:'10px', background:'var(--surface2)', borderBottom:'1px solid var(--border)'}}>
+                      <div style={{display:'flex', alignItems:'center', gap:'10px', minWidth: 0}}>
+                        {hasValidAvatar ? (
+                          <img 
+                            src={rawAvatar} 
+                            alt={st.proName || 'Usuario'} 
+                            style={{width:42, height:42, borderRadius:'50%', objectFit:'cover', border:'2px solid var(--brand)', flexShrink: 0}}
+                          />
+                        ) : (
+                          <div style={{width:42, height:42, borderRadius:'50%', background:'linear-gradient(180deg, #E2E8F0 0%, #CBD5E1 100%)', color:'#64748B', display:'flex', alignItems:'center', justifyContent:'center', border:'2px solid var(--brand)', flexShrink:0, overflow:'hidden'}}>
+                            <svg viewBox="0 0 24 24" fill="currentColor" style={{width:'68%', height:'68%', marginTop:'12%'}}>
+                              <path d="M12 12c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm0 2c-3.33 0-10 1.67-10 5v3h20v-3c0-3.33-6.67-5-10-5z" />
+                            </svg>
+                          </div>
+                        )}
                         <div style={{minWidth:0}}>
-                          <div style={{fontSize:'13px', fontWeight:800, color:'var(--text)', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis'}}>
+                          <div style={{fontSize:'14.5px', fontWeight:900, color:'var(--text)', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis'}}>
                             {st.proName || st.userName || st.nombre || 'Socio Listo'}
                           </div>
-                          <div style={{fontSize:'11px', color:'var(--muted)'}}>
+                          <div style={{fontSize:'11.5px', color:'var(--muted)', fontWeight:600}}>
                             {st.proCategory || st.categoria || st.category || 'Historia 24h'}
                           </div>
                         </div>
@@ -2661,79 +2741,78 @@ export default function AdminPage({ navigate }) {
 
                       {/* Badge de estado */}
                       <span style={{
-                        fontSize: '10.5px',
+                        fontSize: '11px',
                         fontWeight: '900',
-                        padding: '4px 8px',
+                        padding: '5px 10px',
                         borderRadius: '12px',
-                        background: isApproved ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.15)',
-                        color: isApproved ? '#10B981' : '#D97706',
-                        border: isApproved ? '1px solid rgba(16, 185, 129, 0.4)' : '1px solid rgba(245, 158, 11, 0.4)',
+                        background: isApproved ? 'rgba(16, 185, 129, 0.15)' : isRejected ? 'rgba(239, 68, 68, 0.15)' : 'rgba(245, 158, 11, 0.18)',
+                        color: isApproved ? '#059669' : isRejected ? '#DC2626' : '#D97706',
+                        border: isApproved ? '1px solid rgba(16, 185, 129, 0.4)' : isRejected ? '1px solid rgba(239, 68, 68, 0.4)' : '1px solid rgba(245, 158, 11, 0.5)',
                         whiteSpace: 'nowrap',
                         flexShrink: 0
                       }}>
-                        {isApproved ? '🟢 Aprobada' : '🟡 En Espera'}
+                        {isApproved ? '🟢 Aprobada' : isRejected ? '🔴 No Aprobada' : '🟡 Por Aprobar'}
                       </span>
                     </div>
 
-                    {/* Visual Media Preview con Botón de Ver HD */}
+                    {/* Visual Media Preview EN GRANDE (Completa sin recortar) */}
                     <div 
-                      style={{position:'relative', width:'100%', height:'230px', background:'#000', cursor:'pointer'}} 
+                      style={{position:'relative', width:'100%', minHeight:'420px', maxHeight:'540px', background:'#020617', cursor:'zoom-in', display:'flex', alignItems:'center', justifyContent:'center', padding:'8px'}} 
                       onClick={() => media && setPreviewImageModal({ url: media, title: st.proName || 'Historia 24h', story: st })}
-                      title="Haz clic para ver la foto grande en HD"
+                      title="Toca para abrir en pantalla completa"
                     >
                       {isVid ? (
-                        <video src={media} style={{width:'100%', height:'100%', objectFit:'cover'}} muted playsInline />
+                        <video src={media} controls playsInline style={{width:'100%', maxHeight:'520px', objectFit:'contain', borderRadius:'10px'}} onClick={e => e.stopPropagation()} />
                       ) : (
-                        <img src={media || 'https://via.placeholder.com/300x400?text=Sin+Imagen'} alt="Historia" style={{width:'100%', height:'100%', objectFit:'cover'}} />
+                        <img src={media || 'https://via.placeholder.com/400x600?text=Sin+Imagen'} alt="Historia" style={{width:'100%', maxHeight:'520px', objectFit:'contain', borderRadius:'10px'}} />
                       )}
 
-                      {/* Botón flotante para ver en HD */}
+                      {/* Botón flotante para ver en Pantalla Completa */}
                       <div style={{
                         position: 'absolute',
-                        top: 8,
-                        right: 8,
-                        background: 'rgba(0, 0, 0, 0.75)',
+                        top: 12,
+                        right: 12,
+                        background: 'rgba(15, 23, 42, 0.85)',
                         backdropFilter: 'blur(6px)',
                         color: '#FFF',
-                        fontSize: '11px',
-                        fontWeight: '800',
-                        padding: '5px 10px',
+                        fontSize: '12px',
+                        fontWeight: '900',
+                        padding: '7px 14px',
                         borderRadius: '20px',
                         display: 'flex',
                         alignItems: 'center',
-                        gap: '5px',
-                        border: '1px solid rgba(255,255,255,0.35)',
-                        boxShadow: '0 2px 10px rgba(0,0,0,0.6)'
+                        gap: '6px',
+                        border: '1.5px solid rgba(255,255,255,0.4)',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.6)'
                       }}>
-                        🔍 Vista HD
+                        🔍 Ampliar Pantalla Completa
                       </div>
 
-                      <div style={{position:'absolute', bottom:8, left:8, right:8, background:'rgba(0,0,0,0.7)', backdropFilter:'blur(4px)', padding:'6px 10px', borderRadius:'8px', color:'#FFF', fontSize:'12px', fontWeight:'600'}}>
-                        {st.caption || st.title || st.texto || 'Sin pie de foto'}
+                      <div style={{position:'absolute', bottom:10, left:10, right:10, background:'rgba(0,0,0,0.78)', backdropFilter:'blur(6px)', padding:'8px 12px', borderRadius:'10px', color:'#FFF', fontSize:'12.5px', fontWeight:'700'}}>
+                        💬 {st.caption || st.title || st.texto || 'Sin pie de foto'}
                       </div>
                     </div>
 
-                    {/* Info y Acciones */}
-                    <div style={{padding:'12px', flex:1, display:'flex', flexDirection:'column', justifyContent:'space-between', gap:'10px'}}>
-                      <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', fontSize:'11.5px', color:'var(--muted)'}}>
+                    {/* Info y Botones Grandes de Control: APROBAR / NO APROBAR / ELIMINAR */}
+                    <div style={{padding:'14px 16px', flex:1, display:'flex', flexDirection:'column', justifyContent:'space-between', gap:'12px'}}>
+                      <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', fontSize:'12px', color:'var(--muted)', fontWeight:700}}>
                         <span>👁️ {st.vistas || st.viewsCount || 0} vistas</span>
                         <span>❤️ {st.likes || st.likesCount || 0} me gusta</span>
                       </div>
 
-                      {/* BOTONES DE ACCIÓN: VER HD, VALIDAR FOTO Y ELIMINAR */}
                       <div style={{display:'flex', gap:'8px', flexDirection:'column'}}>
-                        {/* Botón Ver en HD */}
+                        {/* Botón Ver en Pantalla Completa */}
                         <button
                           onClick={() => media && setPreviewImageModal({ url: media, title: st.proName || 'Historia 24h', story: st })}
                           style={{
                             width: '100%',
-                            padding: '9px',
-                            borderRadius: '10px',
-                            background: 'rgba(59, 130, 246, 0.1)',
+                            padding: '11px',
+                            borderRadius: '12px',
+                            background: 'rgba(59, 130, 246, 0.12)',
                             color: '#2563EB',
-                            border: '1px solid rgba(59, 130, 246, 0.3)',
-                            fontWeight: '800',
-                            fontSize: '12px',
+                            border: '1.5px solid rgba(59, 130, 246, 0.35)',
+                            fontWeight: '900',
+                            fontSize: '13px',
                             cursor: 'pointer',
                             display: 'flex',
                             alignItems: 'center',
@@ -2741,20 +2820,20 @@ export default function AdminPage({ navigate }) {
                             gap: '6px'
                           }}
                         >
-                          🔍 Ver Foto Grande (HD)
+                          🔍 Ver Foto en Pantalla Completa (Zoom HD)
                         </button>
 
-                        {/* Botón Validar Foto (Si está en espera) */}
-                        {isPending && (
+                        <div style={{display:'flex', gap:'8px'}}>
+                          {/* Botón APROBAR HISTORIA */}
                           <button
                             onClick={() => handleApproveStory(st)}
                             style={{
-                              width: '100%',
-                              padding: '11px',
-                              borderRadius: '10px',
-                              background: 'linear-gradient(135deg, #10B981, #059669)',
-                              color: '#FFF',
-                              border: 'none',
+                              flex: 1,
+                              padding: '12px 10px',
+                              borderRadius: '12px',
+                              background: isApproved ? 'rgba(16, 185, 129, 0.18)' : 'linear-gradient(135deg, #10B981, #059669)',
+                              color: isApproved ? '#059669' : '#FFF',
+                              border: isApproved ? '1.5px solid #10B981' : 'none',
                               fontWeight: '900',
                               fontSize: '13px',
                               cursor: 'pointer',
@@ -2762,25 +2841,48 @@ export default function AdminPage({ navigate }) {
                               alignItems: 'center',
                               justifyContent: 'center',
                               gap: '6px',
-                              boxShadow: '0 4px 12px rgba(16, 185, 129, 0.35)'
+                              boxShadow: isApproved ? 'none' : '0 4px 12px rgba(16, 185, 129, 0.35)'
                             }}
                           >
-                            ✅ VALIDAR FOTO
+                            {isApproved ? '✅ Aprobada (Renovar)' : '✅ APROBAR'}
                           </button>
-                        )}
 
-                        {/* Botón Eliminar por moderación */}
+                          {/* Botón NO APROBAR / RECHAZAR */}
+                          <button
+                            onClick={() => handleRejectStory(st)}
+                            style={{
+                              flex: 1,
+                              padding: '12px 10px',
+                              borderRadius: '12px',
+                              background: isRejected ? 'rgba(239, 68, 68, 0.15)' : 'linear-gradient(135deg, #EF4444, #DC2626)',
+                              color: isRejected ? '#DC2626' : '#FFF',
+                              border: isRejected ? '1.5px solid #EF4444' : 'none',
+                              fontWeight: '900',
+                              fontSize: '13px',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              gap: '6px',
+                              boxShadow: isRejected ? 'none' : '0 4px 12px rgba(239, 68, 68, 0.35)'
+                            }}
+                          >
+                            ❌ NO APROBAR
+                          </button>
+                        </div>
+
+                        {/* Botón Eliminar definitivamente */}
                         <button 
                           onClick={() => setConfirm({ type: 'delete_story', obj: st })}
                           style={{
                             width:'100%',
-                            padding: isPending ? '7px' : '9px',
+                            padding: '9px',
                             borderRadius:'10px',
-                            background:'rgba(239,68,68,0.1)',
+                            background:'rgba(239,68,68,0.08)',
                             color:'#EF4444',
-                            border:'1px solid rgba(239,68,68,0.3)',
-                            fontWeight:'700',
-                            fontSize:'11.5px',
+                            border:'1px solid rgba(239,68,68,0.28)',
+                            fontWeight:'800',
+                            fontSize:'12px',
                             cursor:'pointer',
                             display:'flex',
                             alignItems:'center',
@@ -2788,7 +2890,7 @@ export default function AdminPage({ navigate }) {
                             gap:'6px'
                           }}
                         >
-                          🗑️ {isPending ? 'Rechazar / Eliminar' : 'Eliminar por Moderación'}
+                          🗑️ Eliminar Definitivamente
                         </button>
                       </div>
                     </div>
@@ -2797,7 +2899,8 @@ export default function AdminPage({ navigate }) {
               })}
             </div>
           </div>
-        )}
+          );
+        })()}
 
         {/* ── MODAL: REVISIÓN DE DOCUMENTOS ── */}
         {viewDocs && (
@@ -4246,33 +4349,55 @@ export default function AdminPage({ navigate }) {
                 </div>
               )}
 
-              {/* Barra Inferior con Botón Grande para VALIDAR FOTO */}
-              <div style={{ width: '100%', padding: '14px 20px', background: '#1E293B', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', borderTop: '1px solid rgba(255, 255, 255, 0.1)' }}>
+              {/* Barra Inferior con Botones Grandes para APROBAR / NO APROBAR FOTO */}
+              <div style={{ width: '100%', padding: '14px 20px', background: '#1E293B', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', flexWrap: 'wrap', borderTop: '1px solid rgba(255, 255, 255, 0.1)' }}>
                 <span style={{ fontSize: '12px', color: '#94A3B8' }}>
-                  {previewImageModal.story?.proName ? `Profesional: ${previewImageModal.story.proName}` : 'Revisa si la imagen cumple con las normas de Listo Patrón.'}
+                  {previewImageModal.story?.proName ? `Usuario: ${previewImageModal.story.proName}` : 'Revisa si la imagen cumple con las normas de Listo Patrón.'}
                 </span>
 
-                <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                  {previewImageModal.story && (previewImageModal.story.status === 'pending' || !previewImageModal.story.approved) && (
-                    <button
-                      onClick={() => handleApproveStory(previewImageModal.story)}
-                      style={{
-                        padding: '10px 20px',
-                        borderRadius: '12px',
-                        background: 'linear-gradient(135deg, #10B981, #059669)',
-                        color: '#FFF',
-                        border: 'none',
-                        fontWeight: '900',
-                        fontSize: '13.5px',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        boxShadow: '0 4px 16px rgba(16, 185, 129, 0.45)'
-                      }}
-                    >
-                      ✅ VALIDAR Y APROBAR FOTO
-                    </button>
+                <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+                  {previewImageModal.story && (
+                    <>
+                      <button
+                        onClick={() => handleApproveStory(previewImageModal.story)}
+                        style={{
+                          padding: '10px 20px',
+                          borderRadius: '12px',
+                          background: 'linear-gradient(135deg, #10B981, #059669)',
+                          color: '#FFF',
+                          border: 'none',
+                          fontWeight: '900',
+                          fontSize: '13.5px',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          boxShadow: '0 4px 16px rgba(16, 185, 129, 0.45)'
+                        }}
+                      >
+                        ✅ APROBAR HISTORIA
+                      </button>
+
+                      <button
+                        onClick={() => handleRejectStory(previewImageModal.story)}
+                        style={{
+                          padding: '10px 20px',
+                          borderRadius: '12px',
+                          background: 'linear-gradient(135deg, #EF4444, #DC2626)',
+                          color: '#FFF',
+                          border: 'none',
+                          fontWeight: '900',
+                          fontSize: '13.5px',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          boxShadow: '0 4px 16px rgba(239, 68, 68, 0.45)'
+                        }}
+                      >
+                        ❌ NO APROBAR
+                      </button>
+                    </>
                   )}
 
                   {previewImageModal.story && (

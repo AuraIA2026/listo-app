@@ -74,7 +74,7 @@ try {
     window.history.replaceState({}, '', window.location.pathname);
     setTimeout(() => alert(msgs[estadoPago] || msgs.error), 800);
   }
-} catch (e) {}
+} catch (e) { }
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

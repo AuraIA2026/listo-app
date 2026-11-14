@@ -18,11 +18,11 @@ export const parseStoryTimeMs = (val) => {
 export const getStoryExpirationMs = (data) => {
   if (!data) return 0
   const expMs = parseStoryTimeMs(data.expiresAt)
-  const createdMs = parseStoryTimeMs(data.createdAt || data.timestamp || data.date)
-  if (createdMs > 0) {
-    // Nunca permitir que una historia dure más de 24h desde su creación
-    const maxExpFromCreated = createdMs + TWENTY_FOUR_HOURS_MS
-    return expMs > 0 ? Math.min(expMs, maxExpFromCreated) : maxExpFromCreated
+  const baseMs = parseStoryTimeMs(data.approvedAt || data.createdAt || data.timestamp || data.date)
+  if (baseMs > 0) {
+    // Nunca permitir que una historia dure más de 24h desde su aprobación o creación
+    const maxExpFromBase = baseMs + TWENTY_FOUR_HOURS_MS
+    return expMs > 0 ? Math.min(expMs, maxExpFromBase) : maxExpFromBase
   }
   return expMs
 }
@@ -64,13 +64,14 @@ export function useStories() {
       snapshot.forEach(docSnap => {
         const data = docSnap.data()
         const isExpiredOrDeleted = data.status === 'expired' || data.status === 'deleted'
-        const isRejected = data.status === 'rejected' || data.moderated === 'rejected' || data.approved === false || data.rejected === true
-        const isApproved = (data.status === 'approved' || data.approved === true || (data.moderated === true && data.status !== 'rejected')) && !isRejected
+        const isPending = data.status === 'pending' || (data.approved === false && data.status !== 'rejected')
+        const isRejected = data.status === 'rejected' || data.moderated === 'rejected' || data.rejected === true
+        const isApproved = !isPending && !isRejected && (data.status === 'approved' || data.approved === true || data.validada === true)
 
         const expiresTime = getStoryExpirationMs(data)
 
-        // Si ya pasaron las 24 horas (o no tiene fecha válida / está marcada expirada), borrar imagen y documento de Firestore
-        if (isExpiredOrDeleted || expiresTime <= 0 || expiresTime <= now) {
+        // Si está marcada expirada/eliminada, o ya fue aprobada y pasaron sus 24 horas, borrar de Firestore
+        if (isExpiredOrDeleted || (isApproved && (expiresTime <= 0 || expiresTime <= now))) {
           deleteExpiredStoryFromDb(docSnap.id)
           return
         }

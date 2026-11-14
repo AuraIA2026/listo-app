@@ -589,9 +589,11 @@ export default function SubirHistoriaModal({ isOpen, onClose, userData, onStoryU
         likesCount: 0,
         is5StarVerified: !isClient,
         ratingBadge: isClient ? '⭐ Cliente Listo Patrón' : '⭐⭐⭐⭐⭐ Entrega 5 Estrellas',
-        status: 'approved',
-        approved: true,
-        moderated: true,
+        status: 'pending',
+        approved: false,
+        validada: false,
+        moderated: false,
+        rejected: false,
         createdAt: new Date().toISOString(),
         expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
       }
@@ -601,14 +603,16 @@ export default function SubirHistoriaModal({ isOpen, onClose, userData, onStoryU
       await addDoc(collection(db, 'notificaciones'), {
         userId: 'admin',
         type: 'new_story_review',
-        title: '📸 NUEVA HISTORIA PUBLICADA (24H)',
-        text: `El usuario ${name} (${category}) ha publicado una historia de 24h en Listo Patrón.`,
+        title: '📸 HISTORIA PENDIENTE POR APROBAR',
+        text: `El usuario ${name} (${category}) ha subido una historia y espera tu aprobación para publicarse por 24h.`,
         storyDocId: docRef.id,
+        storyId: docRef.id,
+        proName: name,
         read: false,
         createdAt: new Date().toISOString()
       }).catch(() => { })
 
-      alert('🎉 ¡Historia publicada con éxito!\n\nTu historia ya está visible en Listo Patrón por 24 horas (después de las 24h la imagen se eliminará automáticamente de la base de datos).')
+      alert('⏳ ¡Historia enviada a revisión!\n\nTu historia pasó al Panel de Control del Administrador para su aprobación. Una vez aprobada, estará visible en Listo Patrón por 24 horas.')
 
       setIsUploading(false)
       if (onStoryUploaded) onStoryUploaded()
