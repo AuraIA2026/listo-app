@@ -491,6 +491,17 @@
   background-color: #1E293B;
 }
 
+.historia-avatar.no-photo-placeholder,
+.historias-header-avatar.no-photo-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(180deg, #E2E8F0 0%, #CBD5E1 100%);
+  color: #64748B;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
 .historia-add-plus {
   position: absolute;
   bottom: 0px;

@@ -14,6 +14,7 @@ export default function StoryAvatar({
 }) {
   const hasStory = Boolean(storyData && storyData.stories && storyData.stories.length > 0)
   const isAllSeen = storyData?.isAllSeen || false
+  const validSrc = (src && typeof src === 'string' && src.trim() !== '' && !src.includes('randomuser.me') && !src.includes('pravatar.cc') && !src.includes('ui-avatars.com')) ? src.trim() : null
 
   const handleAvatarClick = (e) => {
     if (hasStory && onOpenStory) {
@@ -44,11 +45,13 @@ export default function StoryAvatar({
           ...style
         }}
       >
-        {src ? (
-          <img src={src} alt={alt || 'Foto'} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+        {validSrc ? (
+          <img src={validSrc} alt={alt || 'Foto'} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
         ) : (
-          <div style={{ width: '100%', height: '100%', background: theme.bgGradient || 'linear-gradient(135deg, #FF7A1A, #F26000)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: `${Math.max(12, Math.floor(size * 0.4))}px` }}>
-            {fallbackAvatar}
+          <div style={{ width: '100%', height: '100%', background: 'linear-gradient(180deg, #E2E8F0 0%, #CBD5E1 100%)', color: '#64748B', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+            <svg viewBox="0 0 24 24" fill="currentColor" style={{ width: '68%', height: '68%', marginTop: '12%' }}>
+              <path d="M12 12c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm0 2c-3.33 0-10 1.67-10 5v3h20v-3c0-3.33-6.67-5-10-5z" />
+            </svg>
           </div>
         )}
       </div>
@@ -123,9 +126,9 @@ export default function StoryAvatar({
           boxShadow: '0 2px 8px rgba(0,0,0,0.3)'
         }}
       >
-        {src ? (
+        {validSrc ? (
           <img 
-            src={src} 
+            src={validSrc} 
             alt={alt || 'Foto'} 
             style={{ 
               width: '100%', 
@@ -138,16 +141,17 @@ export default function StoryAvatar({
             style={{ 
               width: '100%', 
               height: '100%', 
-              background: theme.bgGradient || 'linear-gradient(135deg, #FF7A1A, #F26000)', 
-              color: 'white', 
+              background: 'linear-gradient(180deg, #E2E8F0 0%, #CBD5E1 100%)', 
+              color: '#64748B', 
               display: 'flex', 
               alignItems: 'center', 
-              justifyContent: 'center', 
-              fontWeight: 'bold',
-              fontSize: `${Math.max(12, Math.floor(size * 0.4))}px`
+              justifyContent: 'center',
+              overflow: 'hidden'
             }}
           >
-            {fallbackAvatar}
+            <svg viewBox="0 0 24 24" fill="currentColor" style={{ width: '68%', height: '68%', marginTop: '12%' }}>
+              <path d="M12 12c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm0 2c-3.33 0-10 1.67-10 5v3h20v-3c0-3.33-6.67-5-10-5z" />
+            </svg>
           </div>
         )}
       </div>

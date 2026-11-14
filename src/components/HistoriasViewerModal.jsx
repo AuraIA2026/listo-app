@@ -45,13 +45,24 @@ export default function HistoriasViewerModal({
   }, [])
 
   const [liveProPlan, setLiveProPlan] = useState(null)
+  const [liveProAvatar, setLiveProAvatar] = useState(undefined)
   const currentStory = stories[currentIndex] || stories[0]
   const proUidKey = currentStory?.proId || currentStory?.proUid
   const proNameClean = String(currentStory?.proName || currentStory?.fullName || '').toLowerCase().trim()
 
-  // Consulta en tiempo real a la colección users en Firestore para resolver el plan exacto del profesional
+  const isRealProfilePhoto = (url) => Boolean(
+    url &&
+    typeof url === 'string' &&
+    url.trim() !== '' &&
+    !url.includes('randomuser.me') &&
+    !url.includes('pravatar.cc') &&
+    !url.includes('ui-avatars.com')
+  )
+
+  // Consulta en tiempo real a la colección users en Firestore para resolver el plan y la foto real del profesional
   useEffect(() => {
     setLiveProPlan(null)
+    setLiveProAvatar(undefined)
     if (!proUidKey && !proNameClean) return
 
     let stored = {}
@@ -68,34 +79,46 @@ export default function HistoriasViewerModal({
       if (uPlan) {
         setLiveProPlan(uPlan)
       }
+      const actRawPhoto = userData?.photoURL || userData?.avatarUrl || userData?.profilePhoto || stored?.photoURL || stored?.avatarUrl || ''
+      setLiveProAvatar(isRealProfilePhoto(actRawPhoto) ? actRawPhoto.trim() : null)
     }
 
     const unsub = onSnapshot(collection(db, 'users'), (snap) => {
       let foundPlan = null
+      let matchedUserDoc = false
+      let foundPhoto = null
       snap.forEach(uDoc => {
         const u = uDoc.data()
         const fetched = u.currentPlan || u.planId || u.plan || u.membership || u.proPlan || u.subscription || u.userPlan || u.planName || u.tipoPlan || u.tier
-        if (!fetched) return
+        const rawPhoto = u.photoURL || u.avatarUrl || u.profilePhoto || ''
+        const realPhoto = isRealProfilePhoto(rawPhoto) ? rawPhoto.trim() : null
 
         // Coincidencia exacta por UID
         const uidMatch = Boolean(proUidKey && (uDoc.id === proUidKey || u.uid === proUidKey || u.id === proUidKey))
 
         if (uidMatch) {
-          foundPlan = fetched
+          if (fetched) foundPlan = fetched
+          matchedUserDoc = true
+          foundPhoto = realPhoto
           return
         }
 
         // Coincidencia por Nombre completo solo si no tenemos UID match aún
-        if (!foundPlan && proNameClean) {
+        if (!matchedUserDoc && proNameClean) {
           const nameClean = String(u.name || u.displayName || u.fullName || u.proName || u.nombre || u.proNombre || '').toLowerCase().trim()
           if (nameClean && nameClean === proNameClean) {
-            foundPlan = fetched
+            if (fetched && !foundPlan) foundPlan = fetched
+            matchedUserDoc = true
+            foundPhoto = realPhoto
           }
         }
       })
 
       if (foundPlan) {
         setLiveProPlan(foundPlan)
+      }
+      if (matchedUserDoc) {
+        setLiveProAvatar(foundPhoto)
       }
     }, (err) => console.log('Notice reading users for plan:', err))
 
@@ -105,6 +128,9 @@ export default function HistoriasViewerModal({
   // PRIORIDAD SUPREMA: liveProPlan de la colección 'users' sobre la propiedad estática de la historia
   const resolvedPlan = liveProPlan || currentStory?.proPlan || currentStory?.plan || currentStory?.currentPlan || currentStory?.planId || currentStory?.membership || currentStory?.subscription || currentStory?.userPlan || currentStory?.planName
   const storyPlanTheme = getProPlanTheme(resolvedPlan, currentStory?.proRating || currentStory?.rating || 0)
+  const resolvedProAvatar = liveProAvatar !== undefined
+    ? liveProAvatar
+    : (isRealProfilePhoto(currentStory?.proAvatar) ? currentStory.proAvatar : null)
 
   // Record story view counter
   useEffect(() => {
@@ -432,12 +458,24 @@ export default function HistoriasViewerModal({
           }}
         >
           <div className="historias-pro-info" onClick={handleProClick} style={{ cursor: 'pointer' }}>
-            <img
-              src={currentStory.proAvatar || 'https://randomuser.me/api/portraits/men/32.jpg'}
-              alt={currentStory.proName}
-              className="historias-header-avatar"
-              style={{ borderColor: storyPlanTheme.color, boxShadow: `0 0 10px ${storyPlanTheme.color}` }}
-            />
+            {resolvedProAvatar ? (
+              <img
+                src={resolvedProAvatar}
+                alt={currentStory.proName}
+                className="historias-header-avatar"
+                style={{ borderColor: storyPlanTheme.color, boxShadow: `0 0 10px ${storyPlanTheme.color}` }}
+              />
+            ) : (
+              <div
+                className="historias-header-avatar no-photo-placeholder"
+                style={{ borderColor: storyPlanTheme.color, boxShadow: `0 0 10px ${storyPlanTheme.color}` }}
+                aria-label="Perfil sin foto"
+              >
+                <svg viewBox="0 0 24 24" fill="currentColor" style={{ width: '68%', height: '68%', marginTop: '12%' }}>
+                  <path d="M12 12c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm0 2c-3.33 0-10 1.67-10 5v3h20v-3c0-3.33-6.67-5-10-5z" />
+                </svg>
+              </div>
+            )}
             <div className="historias-header-text">
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
                 <span className="historias-header-name">{currentStory.proName}</span>

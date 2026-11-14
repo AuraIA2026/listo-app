@@ -560,7 +560,8 @@ export default function SubirHistoriaModal({ isOpen, onClose, userData, onStoryU
     const isClient = !(userData?.role === 'pro' || userData?.type === 'pro' || storedUser?.role === 'pro' || storedUser?.type === 'pro')
 
     const name = userData?.name || userData?.displayName || activeUser?.displayName || storedUser?.name || (isClient ? 'Cliente Listo Patrón' : 'Profesional de Listo Patrón');
-    const avatar = userData?.avatarUrl || userData?.photoURL || userData?.profilePhoto || activeUser?.photoURL || storedUser?.avatarUrl || storedUser?.photoURL || 'https://randomuser.me/api/portraits/men/32.jpg';
+    const rawAvatar = userData?.photoURL || userData?.avatarUrl || userData?.profilePhoto || storedUser?.photoURL || storedUser?.avatarUrl || '';
+    const avatar = (typeof rawAvatar === 'string' && !rawAvatar.includes('randomuser.me') && !rawAvatar.includes('pravatar.cc') && !rawAvatar.includes('ui-avatars.com')) ? rawAvatar.trim() : '';
     const category = isClient ? 'Cliente Satisfecho 🤝' : (userData?.especialidad || userData?.category || userData?.specEs || storedUser?.especialidad || storedUser?.category || 'Profesional Registrado');
 
     const proPlan = isClient ? 'cliente' : (userData?.currentPlan || userData?.planId || userData?.plan || userData?.membership || userData?.proPlan || userData?.subscription || userData?.userPlan || userData?.planName || userData?.tipoPlan || storedUser?.currentPlan || storedUser?.planId || storedUser?.plan || storedUser?.membership || storedUser?.proPlan || storedUser?.subscription || storedUser?.userPlan || storedUser?.planName || storedUser?.tipoPlan || 'estandar');

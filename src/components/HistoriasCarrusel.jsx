@@ -69,27 +69,48 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate
     )
   )
 
-  // Mapa en tiempo real de planes de usuarios en Firestore para garantizar que cada historia muestre su plan real
+  // Mapa en tiempo real de planes y fotos de usuarios en Firestore para garantizar que cada historia muestre su plan y foto real (o perfil sin foto)
   const [usersPlanMap, setUsersPlanMap] = useState({})
+  const [usersPhotoMap, setUsersPhotoMap] = useState({})
+
+  const isRealProfilePhoto = (url) => Boolean(
+    url &&
+    typeof url === 'string' &&
+    url.trim() !== '' &&
+    !url.includes('randomuser.me') &&
+    !url.includes('pravatar.cc') &&
+    !url.includes('ui-avatars.com')
+  )
 
   useEffect(() => {
     const unsubscribeUsers = onSnapshot(collection(db, 'users'), (snap) => {
       const map = {}
+      const photoMap = {}
       snap.forEach(uDoc => {
         const u = uDoc.data()
         const resolved = u.currentPlan || u.planId || u.plan || u.membership || u.proPlan || u.subscription || u.userPlan || u.planName || u.tipoPlan || u.tier
+        const nameClean = String(u.name || u.displayName || u.fullName || u.proName || u.nombre || u.proNombre || '').toLowerCase().trim()
+
         if (resolved) {
           map[uDoc.id] = resolved
           if (u.uid) map[u.uid] = resolved
           if (u.id) map[u.id] = resolved
-
-          const nameClean = String(u.name || u.displayName || u.fullName || u.proName || u.nombre || u.proNombre || '').toLowerCase().trim()
           if (nameClean) {
             map[nameClean] = resolved
           }
         }
+
+        const rawPhoto = u.photoURL || u.avatarUrl || u.profilePhoto || ''
+        const realPhoto = isRealProfilePhoto(rawPhoto) ? rawPhoto.trim() : null
+        photoMap[uDoc.id] = realPhoto
+        if (u.uid) photoMap[u.uid] = realPhoto
+        if (u.id) photoMap[u.id] = realPhoto
+        if (nameClean) {
+          photoMap[nameClean] = realPhoto
+        }
       })
       setUsersPlanMap(map)
+      setUsersPhotoMap(photoMap)
     }, (err) => console.log('Notice reading users for plan map:', err))
 
     return () => unsubscribeUsers()
@@ -322,11 +343,22 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate
           <div className="historia-item" onClick={handleAddStoryClick}>
             <div className={`historia-ring add-story-ring ${!canPublishStory ? 'locked' : ''}`}>
               <div className="historia-avatar-inner">
-                <img
-                  src={userData?.photoURL || userData?.avatarUrl || userData?.profilePhoto || 'https://randomuser.me/api/portraits/men/32.jpg'}
-                  alt="Tu perfil"
-                  className="historia-avatar"
-                />
+                {(() => {
+                  const myPhoto = [userData?.photoURL, userData?.avatarUrl, userData?.profilePhoto].find(isRealProfilePhoto)
+                  return myPhoto ? (
+                    <img
+                      src={myPhoto}
+                      alt="Tu perfil"
+                      className="historia-avatar"
+                    />
+                  ) : (
+                    <div className="historia-avatar no-photo-placeholder" aria-label="Perfil sin foto">
+                      <svg viewBox="0 0 24 24" fill="currentColor" style={{ width: '68%', height: '68%', marginTop: '12%' }}>
+                        <path d="M12 12c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm0 2c-3.33 0-10 1.67-10 5v3h20v-3c0-3.33-6.67-5-10-5z" />
+                      </svg>
+                    </div>
+                  )
+                })()}
               </div>
               <div className="historia-add-plus">
                 {canPublishStory ? '+' : '🔒'}
@@ -358,6 +390,14 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate
 
                 const finalPlan = livePlan || story.proPlan || story.plan || story.currentPlan || story.planId || story.membership || story.subscription || story.userPlan || story.planName
 
+                const hasLivePhotoByUid = Boolean(proUidKey && Object.prototype.hasOwnProperty.call(usersPhotoMap, proUidKey))
+                const hasLivePhotoByName = Boolean(!hasLivePhotoByUid && proNameClean && Object.prototype.hasOwnProperty.call(usersPhotoMap, proNameClean))
+                const resolvedProAvatar = hasLivePhotoByUid
+                  ? usersPhotoMap[proUidKey]
+                  : (hasLivePhotoByName
+                      ? usersPhotoMap[proNameClean]
+                      : (isRealProfilePhoto(story.proAvatar) ? story.proAvatar : null))
+
                 // Detectar si el usuario o alguna de sus historias tiene una oferta activa
                 const proStories = stories.filter(s => (s.proId || s.proUid || s.proName || s.fullName || s.id) === key)
                 const offerStory = proStories.find(s => s.sticker || s.hasOffer || s.type === 'oferta_flash' || s.offerText)
@@ -370,7 +410,7 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate
                   key,
                   firstIndex: idx,
                   proName: story.proName || story.fullName,
-                  proAvatar: story.proAvatar,
+                  proAvatar: resolvedProAvatar,
                   proPlan: finalPlan,
                   proRating: story.proRating || story.rating || story.calificacion || 5.0,
                   allStoryIds,
@@ -403,11 +443,19 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate
                     }}
                   >
                     <div className="historia-avatar-inner">
-                      <img
-                        src={pro.proAvatar || 'https://randomuser.me/api/portraits/men/32.jpg'}
-                        alt={pro.proName}
-                        className="historia-avatar"
-                      />
+                      {pro.proAvatar ? (
+                        <img
+                          src={pro.proAvatar}
+                          alt={pro.proName}
+                          className="historia-avatar"
+                        />
+                      ) : (
+                        <div className="historia-avatar no-photo-placeholder" aria-label="Perfil sin foto">
+                          <svg viewBox="0 0 24 24" fill="currentColor" style={{ width: '68%', height: '68%', marginTop: '12%' }}>
+                            <path d="M12 12c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm0 2c-3.33 0-10 1.67-10 5v3h20v-3c0-3.33-6.67-5-10-5z" />
+                          </svg>
+                        </div>
+                      )}
                     </div>
                     {/* STICKER CIRCULAR ANIMADO % OFF CUANDO EL USUARIO TIENE OFERTA */}
                     {pro.hasOffer && (
