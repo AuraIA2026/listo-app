@@ -773,6 +773,7 @@ export default function AdminPage({ navigate }) {
   const [alerts, setAlerts]     = useState([]); // Alertas de plan
   const [vipLocales, setVipLocales] = useState([]); // Locales VIP
   const [partnerRequests, setPartnerRequests] = useState([]); // Solicitudes de Comercios Partner
+  const [softwareComercios, setSoftwareComercios] = useState([]); // Comercios creados en Listo Software
   const [stories, setStories] = useState([]); // Historias 24h
   const [storyFilter, setStoryFilter] = useState('all'); // 'all', 'pending', 'approved'
   const [toast, setToast]       = useState('');
@@ -921,13 +922,21 @@ export default function AdminPage({ navigate }) {
       console.warn("Firestore partner_requests listener warning:", err);
     });
 
+    // 8b. Escuchar Comercios registrados desde Listo Software ('comercios')
+    const unsubSoftwareComercios = onSnapshot(collection(db, 'comercios'), (snap) => {
+      const arr = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      setSoftwareComercios(arr);
+    }, (err) => {
+      console.warn("Firestore comercios listener warning:", err);
+    });
+
     // 9. Escuchar Historias 24h
     const unsubStories = onSnapshot(query(collection(db, 'historias'), orderBy('createdAt', 'desc')), (snap) => {
       const arr = snap.docs.map(d => ({ id: d.id, ...d.data() }));
       setStories(arr);
     });
 
-    return () => { unsubPay(); unsubUsers(); unsubVerif(); unsubReps(); unsubEdits(); unsubAlerts(); unsubLocales(); unsubPartnerReqs(); unsubStories(); };
+    return () => { unsubPay(); unsubUsers(); unsubVerif(); unsubReps(); unsubEdits(); unsubAlerts(); unsubLocales(); unsubPartnerReqs(); unsubSoftwareComercios(); unsubStories(); };
   }, []);
 
   const prevUnreadCount = useRef(0);
@@ -1718,8 +1727,60 @@ export default function AdminPage({ navigate }) {
         </div>
         {/* ── TAB: COMERCIOS (Contabilidad Mensual, Fecha de Corte, PDF & Impresión) ── */}
         {tab === 'comercios' && (() => {
-          // Lista base de comercios (solicitudes reales de Firestore)
-          const baseComercios = partnerRequests;
+          // Lista base de comercios (solicitudes reales + locales + comercios de Listo Software)
+          const baseComercios = (() => {
+            const map = new Map();
+            const normKey = (s) => (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '').trim();
+
+            partnerRequests.forEach(req => {
+              const bName = req.businessName || req.nombre || '';
+              const k = normKey(bName) || req.id;
+              if (!k || k.includes('fiera')) return;
+              map.set(k, req);
+            });
+
+            vipLocales.forEach(loc => {
+              const bName = loc.nombre || loc.businessName || loc.name || '';
+              const k = normKey(bName) || loc.id;
+              if (!k || k.includes('fiera') || loc.eliminado || loc.activo === false) return;
+              if (!map.has(k)) {
+                map.set(k, {
+                  id: loc.id,
+                  businessName: bName,
+                  ownerName: loc.propietario || loc.ownerName || 'Comercio Listo',
+                  ownerLastName: '',
+                  email: loc.email || '',
+                  phone: loc.telefono || loc.phone || '',
+                  city: loc.ciudad || loc.city || 'Santiago',
+                  businessType: loc.categoria || loc.category || 'Restaurante & Comercio',
+                  status: 'approved',
+                  createdAt: loc.creadoEn || loc.createdAt || new Date().toISOString(),
+                });
+              }
+            });
+
+            softwareComercios.forEach(com => {
+              const bName = com.nombreLocal || com.nombre || com.businessName || '';
+              const k = normKey(bName) || com.id;
+              if (!k || k.includes('fiera') || com.eliminado || com.activo === false) return;
+              if (!map.has(k)) {
+                map.set(k, {
+                  id: com.id,
+                  businessName: bName,
+                  ownerName: com.propietario || com.ownerName || bName,
+                  ownerLastName: '',
+                  email: com.email || '',
+                  phone: com.telefono || com.phone || '',
+                  city: com.ciudad || com.city || 'Santiago',
+                  businessType: com.categoria || com.tipo || 'Comercio Partner',
+                  status: 'approved',
+                  createdAt: com.creadoEn || com.createdAt || new Date().toISOString(),
+                });
+              }
+            });
+
+            return [...map.values()];
+          })();
 
           // Filtrado de búsquedas por texto y estado
           const filteredRequests = baseComercios.filter(req => {

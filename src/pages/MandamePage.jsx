@@ -271,12 +271,14 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
   };
 
   const [partnerStores, setPartnerStores] = useState([]);
+  const [softwareStores, setSoftwareStores] = useState([]);
   const [dbProducts, setDbProducts] = useState([]);
 
-  // 1. Escuchar comercios reales aprobados en 'locales' y 'partner_requests'
+  // 1. Escuchar comercios reales aprobados en 'locales', 'partner_requests' y 'comercios' (de Listo Software)
   useEffect(() => {
     let unsubLocales = () => {};
     let unsubPartnerReqs = () => {};
+    let unsubComercios = () => {};
 
     try {
       const qLoc = query(collection(db, 'locales'));
@@ -288,18 +290,23 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
               id: d.id,
               ...data,
               name: data.nombre || data.businessName || data.name || '',
+              nombre: data.nombre || data.businessName || data.name || '',
               rating: data.rating || 5.0,
               ratingText: data.rating ? `${Number(data.rating).toFixed(1)} ⭐` : '5.0 ⭐',
               timeMinutes: data.timeMinutes || 15,
-              time: data.time || data.horario || '15-25 min',
-              deliveryFee: data.deliveryFee !== undefined ? data.deliveryFee : 0,
+              time: data.time || data.tiempoEntrega || data.horario || '15-25 min',
+              deliveryFee: data.deliveryFee !== undefined ? data.deliveryFee : (data.costoDelivery !== undefined ? data.costoDelivery : 0),
               badge: data.badge || '',
               category: data.sub || data.categoria || data.category || 'criollo',
-              image: data.image || data.portadaURL || data.logoURL || data.logo || 'assets/burger_3d.png',
-              cover: data.cover || data.portadaURL || data.coverURL || data.image || '',
+              categoria: data.categoria || data.category || data.sub || 'Restaurante',
+              image: data.image || data.portada || data.portadaURL || data.cover || data.logoURL || data.logo || 'assets/burger_3d.png',
+              portadaURL: data.portadaURL || data.portada || data.cover || data.image || '',
+              cover: data.cover || data.portada || data.portadaURL || data.coverURL || data.image || '',
               logo: data.logo || data.logoURL || data.image || 'assets/burger_3d.png',
+              logoURL: data.logoURL || data.logo || '',
               address: data.address || data.direccion || '',
               phone: data.phone || data.telefono || data.whatsapp || '',
+              telefono: data.telefono || data.phone || data.whatsapp || '',
               whatsapp: data.whatsapp || data.telefono || '',
               socials: {
                 instagram: data.socials?.instagram || data.instagram || '',
@@ -345,15 +352,18 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
             return {
               id: d.id,
               name: data.businessName || '',
+              nombre: data.businessName || '',
               rating: 5.0,
               ratingText: '5.0 ⭐',
               timeMinutes: 15,
               time: '15-25 min',
               deliveryFee: 0,
               badge: '',
-              category: data.category || 'criollo',
+              category: data.category || data.businessType || 'criollo',
+              categoria: data.businessType || data.category || 'Restaurante',
               image: data.image || 'assets/burger_3d.png',
               phone: data.phone || '',
+              telefono: data.phone || '',
               city: data.city || 'Santiago',
               ownerName: `${data.ownerName || ''} ${data.ownerLastName || ''}`.trim(),
               email: (data.email || '').toLowerCase().trim()
@@ -364,9 +374,48 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
       }, (err) => console.warn("Partner requests listener error:", err));
     } catch (e) {}
 
+    try {
+      const qCom = query(collection(db, 'comercios'));
+      unsubComercios = onSnapshot(qCom, (snap) => {
+        const list = snap.docs
+          .map(d => {
+            const data = d.data();
+            const sName = data.nombreLocal || data.nombre || data.storeName || data.businessName || '';
+            return {
+              id: d.id,
+              uid: data.uid || d.id,
+              name: sName,
+              nombre: sName,
+              rating: data.rating || 5.0,
+              ratingText: '5.0 ⭐',
+              timeMinutes: 15,
+              time: data.tiempoEntrega || '15-25 min',
+              deliveryFee: data.costoDelivery !== undefined ? data.costoDelivery : 0,
+              badge: '',
+              category: data.categoria || data.category || 'criollo',
+              categoria: data.categoria || data.category || 'Restaurante & Comercio',
+              image: data.portada || data.portadaURL || data.logo || data.logoURL || 'assets/burger_3d.png',
+              portadaURL: data.portada || data.portadaURL || '',
+              logo: data.logo || data.logoURL || 'assets/burger_3d.png',
+              logoURL: data.logo || data.logoURL || '',
+              address: data.direccion || data.address || 'Santiago, RD',
+              phone: data.telefono || data.phone || '',
+              telefono: data.telefono || data.phone || '',
+              city: data.ciudad || data.city || 'Santiago',
+              ownerName: data.propietario || data.ownerName || sName,
+              email: (data.email || '').toLowerCase().trim(),
+              activo: data.activo !== false && !data.eliminado
+            };
+          })
+          .filter(st => st.activo !== false && Boolean(st.name) && !st.name.toLowerCase().includes('fiera'));
+        setSoftwareStores(list);
+      }, (err) => console.warn("Comercios listener error:", err));
+    } catch (e) {}
+
     return () => {
       unsubLocales();
       unsubPartnerReqs();
+      unsubComercios();
     };
   }, []);
 
@@ -520,10 +569,60 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
   const [tempAddressInput, setTempAddressInput] = useState('');
   const [isDetectingGps, setIsDetectingGps] = useState(false);
 
-  const allDbStores = [
-    ...dbStores,
-    ...partnerStores
-  ].filter(st => !(st.name || '').toLowerCase().includes('fiera'));
+  // Unificar comercios de 'locales', 'partner_requests', 'comercios' (Listo Software) y comercios con productos publicados
+  const allDbStores = (() => {
+    const map = new Map();
+    const normKey = (s) => (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '').trim();
+
+    [...dbStores, ...softwareStores, ...partnerStores].forEach((st) => {
+      const k = normKey(st.name || st.nombre);
+      if (!k || k.includes('fiera')) return;
+      if (!map.has(k)) {
+        map.set(k, st);
+      } else {
+        // Combinar datos manteniendo prioridad de 'locales' si tiene fotos/menú
+        const prev = map.get(k);
+        map.set(k, {
+          ...st,
+          ...prev,
+          image: (prev.image && prev.image !== 'assets/burger_3d.png') ? prev.image : (st.image || 'assets/burger_3d.png'),
+          portadaURL: prev.portadaURL || st.portadaURL || '',
+          logoURL: prev.logoURL || st.logoURL || '',
+          phone: prev.phone || st.phone || '',
+          telefono: prev.telefono || st.telefono || '',
+          email: prev.email || st.email || '',
+        });
+      }
+    });
+
+    // También incluir cualquier comercio que haya subido productos desde Listo Software aunque aún no tenga ficha en 'locales'
+    dbProducts.forEach((p) => {
+      const sName = (p.storeName || '').trim();
+      const k = normKey(sName);
+      if (!k || k.includes('fiera') || map.has(k)) return;
+      map.set(k, {
+        id: p.storeId || `store_${k}`,
+        name: sName,
+        nombre: sName,
+        rating: 5.0,
+        ratingText: '5.0 ⭐',
+        timeMinutes: 15,
+        time: '15-25 min',
+        deliveryFee: 0,
+        badge: '',
+        category: p.category || 'criollo',
+        categoria: p.category || 'Restaurante & Comercio',
+        image: p.image || 'assets/burger_3d.png',
+        portadaURL: p.image || '',
+        logo: p.image || 'assets/burger_3d.png',
+        logoURL: p.image || '',
+        city: 'Santiago',
+        activo: true,
+      });
+    });
+
+    return [...map.values()];
+  })();
 
   const combinedStores = allDbStores.length > 0 
     ? allDbStores 
@@ -614,22 +713,27 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
     } catch (e) {}
   }, [combinedStores]);
 
-  // Si el usuario autenticado tiene un comercio aprobado, sincronizar su información en merchantState
+  // Si el usuario autenticado tiene un comercio aprobado (en locales, comercios o partner_requests), sincronizar su información en merchantState
   useEffect(() => {
-    if (userData?.email && dbStores.length > 0) {
-      const myStore = dbStores.find(s => s.email && s.email.toLowerCase() === userData.email.toLowerCase());
+    if (combinedStores.length > 0) {
+      const userEmail = (userData?.email || '').toLowerCase().trim();
+      const userUid = userData?.uid || '';
+      const myStore = combinedStores.find(s =>
+        (userEmail && s.email && s.email.toLowerCase().trim() === userEmail) ||
+        (userUid && (s.proId === userUid || s.uid === userUid || s.id === userUid))
+      ) || combinedStores.find(s => (s.name || '').toLowerCase().includes('listo patron'));
       if (myStore) {
         setMerchantState(prev => ({
           ...prev,
-          storeName: myStore.name,
-          address: `${myStore.city}, RD`,
-          phone: myStore.phone || prev.phone,
+          storeName: myStore.name || myStore.nombre || prev.storeName,
+          address: `${myStore.city || 'Santiago'}, RD`,
+          phone: myStore.phone || myStore.telefono || prev.phone,
           email: myStore.email || prev.email,
           ownerName: myStore.ownerName || prev.ownerName
         }));
       }
     }
-  }, [userData, dbStores]);
+  }, [userData, combinedStores.length]);
 
   // Registro de Comercio Vinculado a la Cuenta del Usuario
   const [isRegisterCommerceModalOpen, setIsRegisterCommerceModalOpen] = useState(false);
@@ -2642,18 +2746,19 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                 </div>
 
                 {/* 4. Partner Merchant Logos Strip — comercios reales de Firestore */}
-                {partnerStores.length > 0 && (
+                {combinedStores.length > 0 && (
                   <div style={{ display: 'flex', gap: 12, overflowX: 'auto', padding: '0 16px', marginBottom: 16, scrollbarWidth: 'none' }}>
-                    {partnerStores.slice(0, 8).map((st) => {
+                    {combinedStores.slice(0, 8).map((st, idx) => {
                       const cat = (st.categoria || st.category || '').toLowerCase();
                       const icon = cat.includes('pizza') ? '🍕' : cat.includes('pollo') ? '🍗' : cat.includes('bebida') ? '🍺' : cat.includes('market') ? '🛒' : cat.includes('salud') ? '💊' : '🏪';
                       const colors = ['#ff6b00','#dc2626','#ca8a04','#16a34a','#7c3aed','#0ea5e9'];
                       const bgs   = ['#fff3e6','#fef2f2','#fefce8','#f0fdf4','#f5f3ff','#e0f2fe'];
-                      const ci = partnerStores.indexOf(st) % colors.length;
+                      const ci = idx % colors.length;
+                      const logoImg = st.logoURL || (st.logo && st.logo !== 'assets/burger_3d.png' ? st.logo : '');
                       return (
                         <div key={st.id} onClick={() => setActiveStoreModal(st)} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', cursor: 'pointer', flexShrink: 0 }}>
-                          <div style={{ width: 52, height: 52, borderRadius: 18, background: st.logoURL ? 'transparent' : bgs[ci], border: `2px solid ${colors[ci]}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, boxShadow: '0 4px 10px rgba(0,0,0,0.06)', overflow: 'hidden' }}>
-                            {st.logoURL ? <img src={st.logoURL} alt={st.nombre} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : icon}
+                          <div style={{ width: 52, height: 52, borderRadius: 18, background: logoImg ? 'transparent' : bgs[ci], border: `2px solid ${colors[ci]}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, boxShadow: '0 4px 10px rgba(0,0,0,0.06)', overflow: 'hidden' }}>
+                            {logoImg ? <img src={logoImg} alt={st.nombre || st.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : icon}
                           </div>
                           <span style={{ fontSize: 10, fontWeight: 800, color: '#1e293b', marginTop: 4, maxWidth: 56, textAlign: 'center', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{st.nombre || st.name}</span>
                         </div>
@@ -2677,23 +2782,23 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                       </span>
                     </div>
 
-                    {partnerStores.length > 0 ? (
+                    {combinedStores.length > 0 ? (
                       <div style={{ display: 'flex', gap: 12, overflowX: 'auto', scrollbarWidth: 'none', paddingBottom: 4 }}>
-                        {partnerStores.slice(0, 6).map(st => (
+                        {combinedStores.slice(0, 8).map(st => (
                           <div key={st.id} onClick={() => setActiveStoreModal(st)} style={{ minWidth: 200, maxWidth: 200, background: 'white', borderRadius: 18, overflow: 'hidden', color: '#1e293b', flexShrink: 0, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', cursor: 'pointer' }}>
                             <div style={{ padding: '8px 12px', display: 'flex', alignItems: 'center', gap: 8, borderBottom: '1px solid #f1f5f9' }}>
                               <span style={{ fontSize: 14 }}>🏪</span>
                               <div>
                                 <div style={{ fontWeight: 900, fontSize: 12 }}>{st.nombre || st.name}</div>
-                                <div style={{ fontSize: 10, color: '#64748b' }}>🛵 RD$ 55 • {st.categoria || 'Comercio'}</div>
+                                <div style={{ fontSize: 10, color: '#64748b' }}>🛵 RD$ {st.deliveryFee || 55} • {st.categoria || st.category || 'Comercio'}</div>
                               </div>
                             </div>
                             <div style={{ position: 'relative' }}>
-                              <img src={st.portadaURL || st.logoURL || 'assets/burger_3d.png'} style={{ width: '100%', height: 110, objectFit: 'cover' }} alt={st.nombre} />
+                              <img src={st.portadaURL || st.cover || st.logoURL || st.image || 'assets/burger_3d.png'} style={{ width: '100%', height: 110, objectFit: 'cover' }} alt={st.nombre || st.name} />
                             </div>
                             <div style={{ padding: 10 }}>
                               <div style={{ fontWeight: 900, fontSize: 12, color: '#1e293b' }}>{st.descripcion ? st.descripcion.slice(0, 40) + '...' : 'Ver menú completo'}</div>
-                              <div style={{ fontWeight: 900, fontSize: 13, color: '#ff6b00', marginTop: 4 }}>📞 {st.telefono || 'Sin tel.'}</div>
+                              <div style={{ fontWeight: 900, fontSize: 13, color: '#ff6b00', marginTop: 4 }}>📞 {st.telefono || st.phone || 'Disponible'}</div>
                             </div>
                           </div>
                         ))}
@@ -2712,16 +2817,16 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                 </div>
 
                 {/* 8. Sección Mismo precio — comercios reales */}
-                {partnerStores.length > 0 && (
+                {combinedStores.length > 0 && (
                   <div style={{ padding: '0 16px', marginBottom: 20 }}>
                     <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 900, fontSize: 17, color: '#1e293b', marginBottom: 12 }}>
                       Mismo precio que en local
                     </h3>
                     <div style={{ display: 'flex', gap: 12, overflowX: 'auto', scrollbarWidth: 'none', paddingBottom: 4 }}>
-                      {partnerStores.slice(0, 4).map(st => (
+                      {combinedStores.slice(0, 6).map(st => (
                         <div key={st.id} onClick={() => setActiveStoreModal(st)} style={{ minWidth: 220, maxWidth: 220, background: 'white', borderRadius: 20, overflow: 'hidden', border: '1px solid #e2e8f0', boxShadow: '0 4px 14px rgba(0,0,0,0.06)', flexShrink: 0, cursor: 'pointer' }}>
                           <div style={{ position: 'relative' }}>
-                            <img src={st.portadaURL || st.logoURL || 'assets/burger_3d.png'} style={{ width: '100%', height: 120, objectFit: 'cover' }} alt={st.nombre} />
+                            <img src={st.portadaURL || st.cover || st.logoURL || st.image || 'assets/burger_3d.png'} style={{ width: '100%', height: 120, objectFit: 'cover' }} alt={st.nombre || st.name} />
                             <span style={{ position: 'absolute', top: 8, left: 8, background: '#00e699', color: '#0a0e1a', fontWeight: 900, fontSize: 10, padding: '3px 8px', borderRadius: 8 }}>
                               Mismo precio que en local
                             </span>
@@ -2729,7 +2834,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                           <div style={{ padding: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                             <div>
                               <div style={{ fontWeight: 900, fontSize: 14, color: '#1e293b' }}>{st.nombre || st.name}</div>
-                              <div style={{ fontSize: 11, color: '#64748b' }}>{st.categoria || 'Restaurante'}</div>
+                              <div style={{ fontSize: 11, color: '#64748b' }}>{st.categoria || st.category || 'Restaurante'}</div>
                             </div>
                             <span style={{ background: '#f8fafc', padding: '4px 8px', borderRadius: 8, fontWeight: 900, fontSize: 11 }}>★ {st.rating || '5.0'}</span>
                           </div>

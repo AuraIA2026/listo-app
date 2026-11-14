@@ -125,10 +125,10 @@ service cloud.firestore {
 
     // 7. PERFILES DE COMERCIOS (app Pedidos Listo Sofware)
     match /comercios/{uid} {
-      // El comercio puede leer y escribir solo su propio perfil
-      allow read, write: if isAuth() && request.auth.uid == uid;
-      // Admin puede leer todos
-      allow read: if isAdmin();
+      // Público y app cliente pueden ver el directorio de comercios activos
+      allow read: if true;
+      // El comercio puede escribir su propio perfil o el admin
+      allow write: if (isAuth() && request.auth.uid == uid) || isAdmin();
     }
 
     // 8. ESTADO POS DE COMERCIOS (pos_state)

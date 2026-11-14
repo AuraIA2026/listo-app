@@ -11,6 +11,23 @@ const COLORS = {
   mameyBg: "#FFF3EC", black: "#1A1A1A", gray: "#6B7280", offWhite: "#FAF8F6",
 };
 
+const MAX_BIRTH_YEAR = Math.max(2008, new Date().getFullYear() - 18);
+const BIRTH_YEARS = Array.from({ length: MAX_BIRTH_YEAR - 1935 + 1 }, (_, i) => String(MAX_BIRTH_YEAR - i));
+const BIRTH_MONTHS = [
+  { val: "01", label: "Enero" },
+  { val: "02", label: "Febrero" },
+  { val: "03", label: "Marzo" },
+  { val: "04", label: "Abril" },
+  { val: "05", label: "Mayo" },
+  { val: "06", label: "Junio" },
+  { val: "07", label: "Julio" },
+  { val: "08", label: "Agosto" },
+  { val: "09", label: "Septiembre" },
+  { val: "10", label: "Octubre" },
+  { val: "11", label: "Noviembre" },
+  { val: "12", label: "Diciembre" },
+];
+
 const sections = [
   { n: 1, icon: "👤", color: "#F26000", bg: "#FFF3EC", title: "Información Personal",    sub: "Datos como aparecen en tu cédula" },
   { n: 2, icon: "🪪", color: "#3B82F6", bg: "#EFF6FF", title: "Documentos Obligatorios", sub: "Cédula · Selfie · Buena conducta" },
@@ -133,6 +150,36 @@ export default function VerificacionPage({ onBack }) {
   const handleForm = (e) => setForm({ ...form, [e.target.name]: e.target.value });
   const toggleSection = (n) => setOpenSections((p) => ({ ...p, [n]: !p[n] }));
   const toggleCheck   = (key) => setChecks((p) => ({ ...p, [key]: !p[key] }));
+
+  // Estado para selección rápida y práctica de Día, Mes y Año de nacimiento
+  const [birthParts, setBirthParts] = useState(() => {
+    const raw = vData.fechaNacimiento || "";
+    const parts = raw.split("-");
+    return {
+      year: parts[0] || "",
+      month: parts[1] || "",
+      day: parts[2] || "",
+    };
+  });
+
+  const maxDaysInMonth = birthParts.month
+    ? new Date(Number(birthParts.year || 2000), Number(birthParts.month), 0).getDate()
+    : 31;
+  const birthDaysList = Array.from({ length: maxDaysInMonth }, (_, i) => String(i + 1).padStart(2, "0"));
+
+  const handleBirthChange = (part, val) => {
+    const next = { ...birthParts, [part]: val };
+    if (next.month && next.day) {
+      const maxD = new Date(Number(next.year || 2000), Number(next.month), 0).getDate();
+      if (Number(next.day) > maxD) next.day = String(maxD).padStart(2, "0");
+    }
+    setBirthParts(next);
+    if (next.year && next.month && next.day) {
+      setForm(prev => ({ ...prev, fechaNacimiento: `${next.year}-${next.month}-${next.day}` }));
+    } else {
+      setForm(prev => ({ ...prev, fechaNacimiento: "" }));
+    }
+  };
 
   const isSection1Done = Boolean(form.nombre && form.nombre.trim().length >= 3 && form.cedula && form.cedula.replace(/[- ]/g, '').length >= 11);
   const isSection2Done = Boolean(
@@ -401,14 +448,43 @@ export default function VerificacionPage({ onBack }) {
                     <Field label="Nombre completo" req>
                       <input style={styles.input} name="nombre" value={form.nombre} onChange={handleForm} placeholder="Como aparece en tu cédula" />
                     </Field>
-                    <div style={styles.fieldRow}>
-                      <Field label="Nº Cédula" req>
-                        <input style={vData.cedula ? {...styles.input, background: '#eee', color: '#666'} : styles.input} name="cedula" value={form.cedula} onChange={handleForm} placeholder="000-0000000-0" readOnly={!!vData.cedula} />
-                      </Field>
-                      <Field label="Fecha nacimiento" req>
-                        <input style={styles.input} type="date" name="fechaNacimiento" value={form.fechaNacimiento} onChange={handleForm} />
-                      </Field>
-                    </div>
+                    <Field label="Nº Cédula" req>
+                      <input style={vData.cedula ? {...styles.input, background: '#eee', color: '#666'} : styles.input} name="cedula" value={form.cedula} onChange={handleForm} placeholder="000-0000000-0" readOnly={!!vData.cedula} />
+                    </Field>
+                    <Field label="Fecha de nacimiento" req>
+                      <div style={{ display: "flex", gap: 8 }}>
+                        <select
+                          style={{ ...styles.input, flex: "0 0 28%", padding: "10px 8px", cursor: "pointer" }}
+                          value={birthParts.day}
+                          onChange={(e) => handleBirthChange("day", e.target.value)}
+                        >
+                          <option value="">Día</option>
+                          {birthDaysList.map((d) => (
+                            <option key={d} value={d}>{Number(d)}</option>
+                          ))}
+                        </select>
+                        <select
+                          style={{ ...styles.input, flex: 1, padding: "10px 8px", cursor: "pointer" }}
+                          value={birthParts.month}
+                          onChange={(e) => handleBirthChange("month", e.target.value)}
+                        >
+                          <option value="">Mes</option>
+                          {BIRTH_MONTHS.map((m) => (
+                            <option key={m.val} value={m.val}>{m.label}</option>
+                          ))}
+                        </select>
+                        <select
+                          style={{ ...styles.input, flex: "0 0 32%", padding: "10px 8px", cursor: "pointer" }}
+                          value={birthParts.year}
+                          onChange={(e) => handleBirthChange("year", e.target.value)}
+                        >
+                          <option value="">Año</option>
+                          {BIRTH_YEARS.map((y) => (
+                            <option key={y} value={y}>{y}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </Field>
                     <div style={styles.fieldRow}>
                       <Field label="Nacionalidad" req>
                         <select style={styles.input} name="nacionalidad" value={form.nacionalidad} onChange={handleForm}>
@@ -644,7 +720,7 @@ export default function VerificacionPage({ onBack }) {
 
 function Field({ label, req, opt, children }) {
   return (
-    <div style={{ marginBottom: 10 }}>
+    <div style={{ marginBottom: 10, flex: 1, minWidth: 0 }}>
       <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:5 }}>
         <span style={{ fontSize:11, fontWeight:700, color:"#6B7280", textTransform:"uppercase", letterSpacing:"0.5px" }}>{label}</span>
         {req && <span style={{ fontSize:10, color:"#F26000", fontWeight:800 }}>*</span>}
@@ -688,7 +764,7 @@ const styles = {
   cardBody:       { padding:"4px 16px 16px" },
   fieldsWrap:     { display:"flex", flexDirection:"column" },
   fieldRow:       { display:"flex", gap:10 },
-  input:          { width:"100%", padding:"10px 13px", border:"1.5px solid #E5E7EB", borderRadius:11, fontSize:13, color:"#1A1A1A", background:"#FAFAFA", outline:"none", fontFamily:"inherit", boxSizing:"border-box", transition:"all 0.2s", appearance:"none" },
+  input:          { width:"100%", padding:"10px 13px", border:"1.5px solid #E5E7EB", borderRadius:11, fontSize:13, color:"#1A1A1A", background:"#FAFAFA", outline:"none", fontFamily:"inherit", boxSizing:"border-box", transition:"all 0.2s" },
   uploadCard:     { display:"flex", alignItems:"center", justifyContent:"space-between", background:"#FAFAFA", border:"1.5px solid #E5E7EB", borderRadius:12, padding:"12px 14px", marginBottom:8, gap:12 },
   uploadLeft:     { display:"flex", alignItems:"center", gap:10 },
   uploadEmoji:    { fontSize:22, flexShrink:0 },

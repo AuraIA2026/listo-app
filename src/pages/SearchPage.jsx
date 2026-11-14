@@ -753,6 +753,21 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
   useEffect(() => {
     let unsubProd = () => {}
     let unsubLoc = () => {}
+    let unsubCom = () => {}
+    let locDocs = []
+    let comDocs = []
+
+    const rebuildStores = () => {
+      const map = new Map()
+      const normKey = (s) => (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '').trim()
+      ;[...locDocs, ...comDocs].forEach(st => {
+        const k = normKey(st.name)
+        if (!k || k.includes('fiera')) return
+        if (!map.has(k)) map.set(k, st)
+      })
+      setFoodStores([...map.values()])
+    }
+
     try {
       unsubProd = onSnapshot(collection(db, 'productos'), (snap) => {
         const list = snap.docs.map(d => ({ id: d.id, ...d.data() }))
@@ -762,23 +777,40 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
 
     try {
       unsubLoc = onSnapshot(collection(db, 'locales'), (snap) => {
-        const list = snap.docs.map(d => {
+        locDocs = snap.docs.map(d => {
           const data = d.data()
           return {
             id: d.id,
             ...data,
             name: data.nombre || data.businessName || data.name || 'Comercio',
-            image: data.image || data.portadaURL || data.logoURL || data.logo || 'assets/burger_3d.png',
+            image: data.image || data.portada || data.portadaURL || data.logoURL || data.logo || 'assets/burger_3d.png',
             city: data.ciudad || data.city || 'Santiago'
           }
-        }).filter(s => s.activo !== false)
-        setFoodStores(list)
+        }).filter(s => s.activo !== false && !s.eliminado)
+        rebuildStores()
       }, (err) => console.warn('SearchPage locales listener:', err))
+    } catch(e){}
+
+    try {
+      unsubCom = onSnapshot(collection(db, 'comercios'), (snap) => {
+        comDocs = snap.docs.map(d => {
+          const data = d.data()
+          return {
+            id: d.id,
+            ...data,
+            name: data.nombreLocal || data.nombre || data.businessName || 'Comercio',
+            image: data.portada || data.portadaURL || data.logo || data.logoURL || 'assets/burger_3d.png',
+            city: data.ciudad || data.city || 'Santiago'
+          }
+        }).filter(s => s.activo !== false && !s.eliminado)
+        rebuildStores()
+      }, (err) => console.warn('SearchPage comercios listener:', err))
     } catch(e){}
 
     return () => {
       unsubProd()
       unsubLoc()
+      unsubCom()
     }
   }, [])
 
