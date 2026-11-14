@@ -173,16 +173,25 @@ exports.azulWebHook = functions.https.onRequest(async (req, res) => {
       if (parts.length >= 3) {
         const planId = parts[1].toLowerCase();
         const userId = parts[2];
-        const validPlans = ["basico", "gold", "platinum", "vip"];
+        const validPlans = ["standard", "basico", "gold", "platinum", "vip"];
         const actualPlan = validPlans.includes(planId) ? planId : null;
+        const planContractsMap = { standard: 3, basico: 3, gold: 8, platinum: 12, vip: 999 };
 
         if (actualPlan) {
           const userDoc = await db.collection("users").doc(userId).get();
           const userData = userDoc.exists ? userDoc.data() : null;
           const userName = userData ? (userData.name || 'Profesional') : 'Profesional';
+          const currentContracts = userData ? (userData.contracts || 0) : 0;
+          const addedContracts = planContractsMap[actualPlan] || 3;
 
           await db.collection("users").doc(userId).update({
             plan: actualPlan,
+            planId: actualPlan,
+            currentPlan: actualPlan,
+            planStatus: "active",
+            available: true,
+            contracts: actualPlan === "vip" ? 999 : currentContracts + addedContracts,
+            planExpirationDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
             planUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
           });
 
@@ -190,7 +199,7 @@ exports.azulWebHook = functions.https.onRequest(async (req, res) => {
           await db.collection("notificaciones").add({
             userId: 'admin',
             type: 'admin_plan_purchased',
-            title: '👑 PLAN ACTIVADO AUTOMÁTICAMENTE',
+            title: '👑 PLAN ACTIVADO AUTOMÁTICAMENTE (AZUL)',
             text: `El profesional ${userName} ha comprado y activado el plan ${actualPlan.toUpperCase()} de forma exitosa usando tarjeta (AZUL).`,
             read: false,
             date: new Date().toISOString(),

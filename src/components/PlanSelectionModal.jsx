@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { collection, addDoc, serverTimestamp, doc, getDoc } from 'firebase/firestore';
-import { db } from '../firebase';
+import { httpsCallable } from 'firebase/functions';
+import { db, auth, functions as fbFunctions } from '../firebase';
+
+const AZUL_PAYMENT_URL = import.meta.env.VITE_AZUL_URL || 'https://pruebas.azul.com.do/paymentpage/Default.aspx';
+const AZUL_WEBHOOK_URL = 'https://us-central1-listoapp-52b46.cloudfunctions.net/azulWebHook';
 
 const CUENTAS_LISTO = [
   { banco: 'Banco Popular', tipo: 'Ahorros', cuenta: '746424456', titular: 'Julio de Jesús' },
@@ -228,9 +232,67 @@ export default function PlanSelectionModal({ isOpen, onClose, onSelectPlan, proI
 
   const handleChoosePlan = (p) => {
     setSelectedPlan(p);
-    openWebCheckout(p);
-    if (onSelectPlan) onSelectPlan(p);
-    if (onClose) onClose();
+    if (typeof window !== 'undefined' && window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()) {
+      openWebCheckout(p);
+      if (onSelectPlan) onSelectPlan(p);
+      if (onClose) onClose();
+      return;
+    }
+    setStep('checkout');
+  };
+
+  const handleAzulPlanPayment = async () => {
+    setSubmitting(true);
+    try {
+      const uid = proData.uid || auth.currentUser?.uid || 'guest';
+      const planCode = selectedPlan.id === 'standard' ? 'basico' : selectedPlan.id;
+      const orderNum = `PLAN_${planCode}_${uid}`;
+      const amountCents = String(Math.round((selectedPlan.priceNum || 1000) * 100));
+      const base = window.location.origin;
+
+      const signData = {
+        MerchantName: 'Listo Patrón',
+        MerchantType: 'E-Commerce',
+        CurrencyCode: '$',
+        OrderNumber: orderNum,
+        Amount: amountCents,
+        ApprovedUrl: AZUL_WEBHOOK_URL,
+        DeclinedUrl: `${base}/profile?planError=declined`,
+        CancelUrl: `${base}/profile?planError=cancelled`,
+      };
+
+      const { data: firma } = await httpsCallable(fbFunctions, 'generarFirmaAzul')(signData);
+      const fields = {
+        MerchantId: firma.MerchantId,
+        ...signData,
+        ITBIS: firma.ITBIS,
+        ResponsePostUrl: firma.ResponsePostUrl,
+        UseCustomField1: '0',
+        CustomField1Label: '',
+        CustomField1Value: '',
+        UseCustomField2: '0',
+        CustomField2Label: '',
+        CustomField2Value: '',
+        AuthHash: firma.AuthHash,
+      };
+
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = AZUL_PAYMENT_URL;
+      Object.entries(fields).forEach(([k, v]) => {
+        const inp = document.createElement('input');
+        inp.type = 'hidden';
+        inp.name = k;
+        inp.value = v ?? '';
+        form.appendChild(inp);
+      });
+      document.body.appendChild(form);
+      form.submit();
+    } catch (err) {
+      console.error('Error iniciando pago AZUL:', err);
+      alert('No se pudo conectar con la pasarela AZUL. Por favor intenta nuevamente.');
+      setSubmitting(false);
+    }
   };
 
   const handleConfirmPayment = async () => {
@@ -481,138 +543,184 @@ export default function PlanSelectionModal({ isOpen, onClose, onSelectPlan, proI
               </div>
             </div>
 
-            {/* Banco de Origen Dropdown */}
-            <div style={{ textAlign: 'left', marginBottom: '16px' }}>
-              <label style={{ fontSize: '12px', fontWeight: '800', color: '#1E293B', display: 'block', marginBottom: '6px' }}>
-                Banco de Origen
-              </label>
-              <select 
-                value={originBank}
-                onChange={e => setOriginBank(e.target.value)}
-                style={{
-                  width: '100%', padding: '12px 14px', borderRadius: '14px',
-                  border: '1.5px solid #E2E8F0', background: '#FFFFFF', fontSize: '13.5px',
-                  fontWeight: '600', color: '#1E293B', outline: 'none', boxSizing: 'border-box'
-                }}
-              >
-                <option value="" disabled>Selecciona tu banco...</option>
-                {BANCOS_ORIGEN.map(b => (
-                  <option key={b} value={b}>{b}</option>
-                ))}
-              </select>
-            </div>
-
-            {/* Caja de Cuentas de Listo Patrón */}
-            <div style={{
-              background: '#FFF8F3', border: '1px solid #FFE4D6', borderRadius: '16px',
-              padding: '14px 16px', marginBottom: '16px', textAlign: 'left'
-            }}>
-              <div style={{ fontSize: '13px', fontWeight: '800', color: '#C24E00', marginBottom: '8px' }}>
-                Cuentas de Listo Patrón:
-              </div>
-              {CUENTAS_LISTO.map((c, idx) => (
-                <div key={c.banco} style={{
-                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                  marginBottom: idx < CUENTAS_LISTO.length - 1 ? '8px' : 0, fontSize: '12px'
+            {activeTab === 'card' ? (
+              <div style={{ textAlign: 'left', marginTop: '8px' }}>
+                <div style={{
+                  background: 'linear-gradient(135deg, #EFF6FF, #DBEAFE)',
+                  border: '1.5px solid #93C5FD',
+                  borderRadius: '18px',
+                  padding: '18px 16px',
+                  marginBottom: '18px'
                 }}>
-                  <div style={{ color: '#1E293B' }}>
-                    <strong style={{ color: idx === 0 ? '#00843D' : '#003087' }}>{c.banco}:</strong> {c.tipo} {c.cuenta} ({c.titular})
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+                    <div style={{
+                      background: '#1E3A8A', color: '#FFFFFF', fontWeight: '900',
+                      fontSize: '12px', padding: '6px 10px', borderRadius: '8px', letterSpacing: '0.5px'
+                    }}>
+                      AZUL
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '14px', fontWeight: '900', color: '#1E3A8A' }}>
+                        Pasarela Oficial AZUL — Listo Patrón
+                      </div>
+                      <div style={{ fontSize: '11.5px', color: '#3B82F6', fontWeight: '600' }}>
+                        Visa • Mastercard • Activación Automática
+                      </div>
+                    </div>
                   </div>
-                  <button 
-                    onClick={() => copyCuenta(c.cuenta, idx)}
+                  <p style={{ fontSize: '12.5px', color: '#1E293B', lineHeight: 1.5, margin: 0 }}>
+                    🔒 Al hacer clic en el botón serás redirigido a la página segura de <strong>AZUL (Banco Popular)</strong> para completar el pago de <strong>RD${(selectedPlan.priceNum || 1000).toLocaleString()}</strong> y activar tu <strong>{selectedPlan.name}</strong> al instante.
+                  </p>
+                </div>
+
+                <button
+                  onClick={handleAzulPlanPayment}
+                  disabled={submitting}
+                  style={{
+                    width: '100%', padding: '16px', background: 'linear-gradient(135deg, #1E3A8A, #2563EB)',
+                    color: '#FFFFFF', border: 'none', borderRadius: '16px', fontSize: '15.5px', fontWeight: '900',
+                    cursor: 'pointer', boxShadow: '0 8px 20px rgba(37,99,235,0.3)', opacity: submitting ? 0.7 : 1
+                  }}
+                >
+                  {submitting ? '⏳ Conectando con AZUL...' : `🔒 PAGAR RD$${(selectedPlan.priceNum || 1000).toLocaleString()} CON AZUL`}
+                </button>
+              </div>
+            ) : (
+              <>
+                {/* Banco de Origen Dropdown */}
+                <div style={{ textAlign: 'left', marginBottom: '16px' }}>
+                  <label style={{ fontSize: '12px', fontWeight: '800', color: '#1E293B', display: 'block', marginBottom: '6px' }}>
+                    Banco de Origen
+                  </label>
+                  <select 
+                    value={originBank}
+                    onChange={e => setOriginBank(e.target.value)}
                     style={{
-                      background: '#E2E8F0', border: 'none', borderRadius: '8px',
-                      padding: '4px 10px', fontSize: '11px', fontWeight: '700',
-                      color: '#475569', cursor: 'pointer', marginLeft: '8px', flexShrink: 0
+                      width: '100%', padding: '12px 14px', borderRadius: '14px',
+                      border: '1.5px solid #E2E8F0', background: '#FFFFFF', fontSize: '13.5px',
+                      fontWeight: '600', color: '#1E293B', outline: 'none', boxSizing: 'border-box'
                     }}
                   >
-                    {copiedIdx === idx ? '✓ Copiado' : 'Copiar'}
-                  </button>
+                    <option value="" disabled>Selecciona tu banco...</option>
+                    {BANCOS_ORIGEN.map(b => (
+                      <option key={b} value={b}>{b}</option>
+                    ))}
+                  </select>
                 </div>
-              ))}
-            </div>
 
-            {/* Nombre del Depositante */}
-            <div style={{ textAlign: 'left', marginBottom: '16px' }}>
-              <label style={{ fontSize: '12px', fontWeight: '800', color: '#1E293B', display: 'block', marginBottom: '6px' }}>
-                Nombre del Depositante
-              </label>
-              <input 
-                type="text" 
-                value={depositorName} 
-                onChange={e => setDepositorName(e.target.value)}
-                placeholder="Ej. Juan Pérez"
-                style={{
-                  width: '100%', padding: '12px 14px', borderRadius: '14px',
-                  border: '1.5px solid #E2E8F0', background: '#F8FAFC', fontSize: '13.5px',
-                  fontWeight: '600', color: '#1E293B', outline: 'none', boxSizing: 'border-box'
-                }}
-              />
-            </div>
+                {/* Caja de Cuentas de Listo Patrón */}
+                <div style={{
+                  background: '#FFF8F3', border: '1px solid #FFE4D6', borderRadius: '16px',
+                  padding: '14px 16px', marginBottom: '16px', textAlign: 'left'
+                }}>
+                  <div style={{ fontSize: '13px', fontWeight: '800', color: '#C24E00', marginBottom: '8px' }}>
+                    Cuentas de Listo Patrón:
+                  </div>
+                  {CUENTAS_LISTO.map((c, idx) => (
+                    <div key={c.banco} style={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                      marginBottom: idx < CUENTAS_LISTO.length - 1 ? '8px' : 0, fontSize: '12px'
+                    }}>
+                      <div style={{ color: '#1E293B' }}>
+                        <strong style={{ color: idx === 0 ? '#00843D' : '#003087' }}>{c.banco}:</strong> {c.tipo} {c.cuenta} ({c.titular})
+                      </div>
+                      <button 
+                        onClick={() => copyCuenta(c.cuenta, idx)}
+                        style={{
+                          background: '#E2E8F0', border: 'none', borderRadius: '8px',
+                          padding: '4px 10px', fontSize: '11px', fontWeight: '700',
+                          color: '#475569', cursor: 'pointer', marginLeft: '8px', flexShrink: 0
+                        }}
+                      >
+                        {copiedIdx === idx ? '✓ Copiado' : 'Copiar'}
+                      </button>
+                    </div>
+                  ))}
+                </div>
 
-            {/* Subir Comprobante Foto o PDF */}
-            <div style={{
-              border: voucherPreview ? '2px solid #10B981' : '2px dashed #CBD5E1',
-              borderRadius: '16px', padding: '14px',
-              textAlign: 'center', marginBottom: '18px',
-              background: voucherPreview ? '#F0FDF4' : '#F8FAFC',
-              transition: 'all 0.2s'
-            }}>
-              {voucherPreview && voucherPreview !== 'pdf' ? (
-                <div style={{ marginBottom: '8px' }}>
-                  <img 
-                    src={voucherPreview} 
-                    alt="Comprobante" 
-                    style={{ maxHeight: '140px', maxWidth: '100%', borderRadius: '10px', border: '1px solid #86EFAC', objectFit: 'contain' }} 
+                {/* Nombre del Depositante */}
+                <div style={{ textAlign: 'left', marginBottom: '16px' }}>
+                  <label style={{ fontSize: '12px', fontWeight: '800', color: '#1E293B', display: 'block', marginBottom: '6px' }}>
+                    Nombre del Depositante
+                  </label>
+                  <input 
+                    type="text" 
+                    value={depositorName} 
+                    onChange={e => setDepositorName(e.target.value)}
+                    placeholder="Ej. Juan Pérez"
+                    style={{
+                      width: '100%', padding: '12px 14px', borderRadius: '14px',
+                      border: '1.5px solid #E2E8F0', background: '#F8FAFC', fontSize: '13.5px',
+                      fontWeight: '600', color: '#1E293B', outline: 'none', boxSizing: 'border-box'
+                    }}
                   />
-                  <div style={{ fontSize: '11px', color: '#15803D', fontWeight: '800', marginTop: '4px' }}>
-                    ✓ Foto de comprobante cargada ({voucherFile?.name})
-                  </div>
                 </div>
-              ) : voucherPreview === 'pdf' ? (
-                <div style={{ marginBottom: '8px', color: '#2563EB', fontWeight: '800', fontSize: '12px' }}>
-                  📑 Archivo PDF cargado ({voucherFile?.name})
-                </div>
-              ) : (
-                <>
-                  <div style={{ fontSize: '24px', marginBottom: '4px' }}>📎</div>
-                  <div style={{ fontSize: '12px', fontWeight: '700', color: '#475569' }}>
-                    Arrastra tu comprobante o haz clic para subir foto
-                  </div>
-                </>
-              )}
-              <input
-                type="file"
-                accept="image/*,.pdf"
-                onChange={e => {
-                  const f = e.target.files[0];
-                  if (f) {
-                    setVoucherFile(f);
-                    if (f.type.startsWith('image/')) {
-                      const reader = new FileReader();
-                      reader.onload = ev => setVoucherPreview(ev.target.result);
-                      reader.readAsDataURL(f);
-                    } else {
-                      setVoucherPreview('pdf');
-                    }
-                  }
-                }}
-                style={{ marginTop: '6px', fontSize: '11px' }}
-              />
-            </div>
 
-            {/* Botón de Adjuntar o Confirmar Pago */}
-            <button 
-              onClick={handleConfirmPayment}
-              disabled={submitting}
-              style={{
-                width: '100%', padding: '16px', background: 'linear-gradient(135deg, #F26000, #C24E00)',
-                color: '#FFFFFF', border: 'none', borderRadius: '16px', fontSize: '15.5px', fontWeight: '900',
-                cursor: 'pointer', boxShadow: '0 8px 20px rgba(242,96,0,0.3)', opacity: submitting ? 0.7 : 1
-              }}
-            >
-              {submitting ? '⏳ Procesando pago...' : `🚀 CONFIRMAR Y ACTIVAR ${selectedPlan.name.toUpperCase()}`}
-            </button>
+                {/* Subir Comprobante Foto o PDF */}
+                <div style={{
+                  border: voucherPreview ? '2px solid #10B981' : '2px dashed #CBD5E1',
+                  borderRadius: '16px', padding: '14px',
+                  textAlign: 'center', marginBottom: '18px',
+                  background: voucherPreview ? '#F0FDF4' : '#F8FAFC',
+                  transition: 'all 0.2s'
+                }}>
+                  {voucherPreview && voucherPreview !== 'pdf' ? (
+                    <div style={{ marginBottom: '8px' }}>
+                      <img 
+                        src={voucherPreview} 
+                        alt="Comprobante" 
+                        style={{ maxHeight: '140px', maxWidth: '100%', borderRadius: '10px', border: '1px solid #86EFAC', objectFit: 'contain' }} 
+                      />
+                      <div style={{ fontSize: '11px', color: '#15803D', fontWeight: '800', marginTop: '4px' }}>
+                        ✓ Foto de comprobante cargada ({voucherFile?.name})
+                      </div>
+                    </div>
+                  ) : voucherPreview === 'pdf' ? (
+                    <div style={{ marginBottom: '8px', color: '#2563EB', fontWeight: '800', fontSize: '12px' }}>
+                      📑 Archivo PDF cargado ({voucherFile?.name})
+                    </div>
+                  ) : (
+                    <>
+                      <div style={{ fontSize: '24px', marginBottom: '4px' }}>📎</div>
+                      <div style={{ fontSize: '12px', fontWeight: '700', color: '#475569' }}>
+                        Arrastra tu comprobante o haz clic para subir foto
+                      </div>
+                    </>
+                  )}
+                  <input
+                    type="file"
+                    accept="image/*,.pdf"
+                    onChange={e => {
+                      const f = e.target.files[0];
+                      if (f) {
+                        setVoucherFile(f);
+                        if (f.type.startsWith('image/')) {
+                          const reader = new FileReader();
+                          reader.onload = ev => setVoucherPreview(ev.target.result);
+                          reader.readAsDataURL(f);
+                        } else {
+                          setVoucherPreview('pdf');
+                        }
+                      }
+                    }}
+                    style={{ marginTop: '6px', fontSize: '11px' }}
+                  />
+                </div>
+
+                {/* Botón de Adjuntar o Confirmar Pago */}
+                <button 
+                  onClick={handleConfirmPayment}
+                  disabled={submitting}
+                  style={{
+                    width: '100%', padding: '16px', background: 'linear-gradient(135deg, #F26000, #C24E00)',
+                    color: '#FFFFFF', border: 'none', borderRadius: '16px', fontSize: '15.5px', fontWeight: '900',
+                    cursor: 'pointer', boxShadow: '0 8px 20px rgba(242,96,0,0.3)', opacity: submitting ? 0.7 : 1
+                  }}
+                >
+                  {submitting ? '⏳ Procesando pago...' : `🚀 CONFIRMAR Y ACTIVAR ${selectedPlan.name.toUpperCase()}`}
+                </button>
+              </>
+            )}
           </div>
         )}
 

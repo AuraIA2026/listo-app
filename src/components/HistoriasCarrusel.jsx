@@ -11,7 +11,7 @@ import './Historias.css'
 const HAND_TEXTS_DELIVERY = [
   '🍔 ¿Tienes hambre?',
   '👇 ¡Presiona aquí!',
-  '🛵 Delivery & Mándame',
+  '🛵 Delivery Listo Patrón',
   '🛍️ Víveres & Súper'
 ];
 
@@ -291,7 +291,7 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate
               )}
               <div className="cinta-text-container">
                 <span className="cinta-text">{isMandameView ? 'LISTO PATRÓN' : 'PEDIDOS LISTO'}</span>
-                <span className="cinta-subtext">{isMandameView ? 'SERVICIOS & TÉCNICOS' : 'DELIVERY & MÁNDAME'}</span>
+                <span className="cinta-subtext">{isMandameView ? 'SERVICIOS & TÉCNICOS' : 'DELIVERY LISTO PATRÓN'}</span>
               </div>
               <span className="cinta-icon">{isMandameView ? '🛠️' : '🛍️'}</span>
               <span className="sparkle-right">✨</span>

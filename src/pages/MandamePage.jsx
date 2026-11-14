@@ -106,7 +106,7 @@ const ANIMATED_BANNERS_CATALOG = [
   // CATEGORY 8: 🚚 Delivery & Envíos (10 Banners)
   { id: 'b-del-1', category: '🚚 Delivery & Envíos', title: '🚚 Delivery Gratis Hoy', text: '🚚 DELIVERY GRATIS HOY EN SANTIAGO 📦', bg: 'linear-gradient(135deg, #ff6b00, #ff8533)', border: '#ff6b00', anim: 'studio-fire-border' },
   { id: 'b-del-2', category: '🚚 Delivery & Envíos', title: '⏱️ Entrega en 15 Minutos', text: '⏱️ ENTREGA EN 15 MINUTOS 🛵', bg: 'linear-gradient(135deg, #0284c7, #0369a1)', border: '#38bdf8', anim: 'studio-neon-border' },
-  { id: 'b-del-3', category: '🚚 Delivery & Envíos', title: '🛵 Envío Exprés Mándame', text: '🛵 ENVÍO EXPRÉS MÁNDAME ⚡', bg: 'linear-gradient(135deg, #2563eb, #1d4ed8)', border: '#60a5fa', anim: 'studio-neon-border' },
+  { id: 'b-del-3', category: '🚚 Delivery & Envíos', title: '🛵 Envío Exprés Listo Patrón', text: '🛵 ENVÍO EXPRÉS LISTO PATRÓN ⚡', bg: 'linear-gradient(135deg, #2563eb, #1d4ed8)', border: '#60a5fa', anim: 'studio-neon-border' },
   { id: 'b-del-4', category: '🚚 Delivery & Envíos', title: '🛡️ Garantía PIN OTP', text: '🛡️ GARANTÍA ENTREGA TOKEN PIN OTP 🔒', bg: 'linear-gradient(135deg, #059669, #047857)', border: '#00e699', anim: 'studio-neon-border' },
   { id: 'b-del-5', category: '🚚 Delivery & Envíos', title: '📦 Empaque Térmico Mantén Caliente', text: '📦 EMPAQUE TÉRMICO MANTIENE CALIENTE 🔥', bg: 'linear-gradient(135deg, #dc2626, #991b1b)', border: '#ef4444', anim: 'studio-fire-border' },
   { id: 'b-del-6', category: '🚚 Delivery & Envíos', title: '🚚 Envío RD$ 0 Santiago', text: '🚚 ENVÍO RD$ 0 EN TODO SANTIAGO 🎉', bg: 'linear-gradient(135deg, #16a34a, #15803d)', border: '#4ade80', anim: 'studio-neon-border' },
@@ -1177,7 +1177,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
       const storeName = targetOrder?.storeName || merchantState?.storeName || 'Restaurante';
       const driverName = isOwn 
         ? `Motorista de la Casa (${storeName})` 
-        : 'Kelvin Santos (Mándame Rider)';
+        : 'Kelvin Santos (Listo Patrón Rider)';
       const specialty = isOwn 
         ? '🏪 Delivery Propio del Restaurante' 
         : 'Delivery Express 🛵';
@@ -1205,7 +1205,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
 
       showToast(isOwn 
         ? '🏪 Pedido asignado a: Delivery Propio (Motorista de la Casa)' 
-        : '🛵 Pedido asignado a: Red Mándame Rider');
+        : '🛵 Pedido asignado a: Red Listo Patrón Rider');
     } catch (err) {
       console.warn('Error actualizando tipo de delivery:', err);
     }
@@ -1217,7 +1217,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
     const isOwn = targetOrder?.driverType === 'own' || (!targetOrder?.driverType && ownDeliveryEnabled);
     const assignedDriver = isPickup 
       ? 'Retiro en Mostrador (Cliente)' 
-      : (isOwn ? `Motorista de la Casa (${targetOrder?.storeName || 'Delivery Propio'})` : 'Kelvin Santos (Mándame 🛵)');
+      : (isOwn ? `Motorista de la Casa (${targetOrder?.storeName || 'Delivery Propio'})` : 'Kelvin Santos (Listo Patrón 🛵)');
 
     setMerchantState(prev => ({
       ...prev,
@@ -1241,7 +1241,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
             ? `Tu pedido #${targetOrder.orderId || orderId} está listo en el mostrador del restaurante. Pasa a retirar con tu PIN ${targetOrder.pinOTP}.`
             : (isOwn 
                 ? `Tu pedido #${targetOrder.orderId || orderId} va en camino con el delivery propio del restaurante.` 
-                : `Tu pedido #${targetOrder.orderId || orderId} está empacado y en camino con el repartidor Mándame.`),
+                : `Tu pedido #${targetOrder.orderId || orderId} está empacado y en camino con el repartidor Listo Patrón.`),
           read: false,
           icon: isPickup ? '🛍️' : '🟢',
           createdAt: serverTimestamp()
@@ -1250,7 +1250,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
     } catch (e) {
       console.warn("Error updating order ready status:", e);
     }
-    showToast(isPickup ? '🛍️ Pedido listo en mostrador para el cliente.' : (isOwn ? '🏪 Pedido listo para Delivery Propio.' : '🟢 Pedido listo en mostrador para Repartidor Mándame.'));
+    showToast(isPickup ? '🛍️ Pedido listo en mostrador para el cliente.' : (isOwn ? '🏪 Pedido listo para Delivery Propio.' : '🟢 Pedido listo en mostrador para Repartidor Listo Patrón.'));
   };
 
   const handleVerifyOTPAndCompleteOrder = async (orderId) => {
@@ -1448,7 +1448,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
       id: newOrderId,
       customerName: posCustomerName || (posOrderType === 'dinein' ? `Mesa (${posTableNumber})` : 'Cliente Mostrador'),
       customerPhone: '809-POS-LIVE',
-      address: posOrderType === 'dinein' ? `Mesa: ${posTableNumber}` : posOrderType === 'takeout' ? 'Mostrador (Para Llevar)' : 'Delivery Mándame',
+      address: posOrderType === 'dinein' ? `Mesa: ${posTableNumber}` : posOrderType === 'takeout' ? 'Mostrador (Para Llevar)' : 'Delivery Listo Patrón',
       items: posCart.map(i => ({ name: i.name, qty: i.qty, price: i.price })),
       subtotal: rawTotal,
       discount: posDiscountAmount,
@@ -2187,7 +2187,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
       pinOTP: generatedOtp,
       storeName: storeDisplayName,
       storeId: activeStoreModal?.id || null,
-      proName: isPickup ? `Retiro en Local (${storeDisplayName})` : 'Kelvin Santos (Mándame Rider)',
+      proName: isPickup ? `Retiro en Local (${storeDisplayName})` : 'Kelvin Santos (Listo Patrón Rider)',
       proSpecialty: isPickup ? '🛍️ Retiro en Mostrador (Sin Delivery)' : 'Delivery Express 🛵',
       proPhone: isPickup ? '809-583-2020' : '809-555-0192',
       dateToken: 'Hoy',
@@ -2206,7 +2206,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
         const amountCents = String(Math.round(cartTotal * 100));
         const base = window.location.origin;
         const signData = {
-          MerchantName: 'Pedidos Listo',
+          MerchantName: 'Listo Patrón',
           MerchantType: 'E-Commerce',
           CurrencyCode: '$',
           OrderNumber: generatedOrderId,
@@ -4148,7 +4148,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
 
                   <div style={{ marginBottom: 14 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginBottom: 4 }}>
-                      <span style={{ color: 'white', fontWeight: 800 }}>🛵 Delivery App Mándame</span>
+                      <span style={{ color: 'white', fontWeight: 800 }}>🛵 Delivery App Listo Patrón</span>
                       <span style={{ color: '#ff6b00', fontWeight: 900 }}>35% (RD$ {Math.round(merchantState.todaySales * 0.35)})</span>
                     </div>
                     <div style={{ height: 10, background: 'rgba(255,255,255,0.1)', borderRadius: 6, overflow: 'hidden' }}>
@@ -4269,7 +4269,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                     <span style={{ fontSize: 10, background: '#a855f7', color: 'white', padding: '3px 8px', borderRadius: 6, fontWeight: 900, animation: 'pulse 1s infinite alternate' }}>
                       🔴 RASTREO GPS LIVE
                     </span>
-                    <span style={{ fontWeight: 900, fontSize: 15, color: 'white' }}>Monitoreo Repartidores Mándame (Santiago RD)</span>
+                    <span style={{ fontWeight: 900, fontSize: 15, color: 'white' }}>Monitoreo Repartidores Listo Patrón (Santiago RD)</span>
                   </div>
                   <span style={{ fontSize: 11, color: '#a855f7', fontWeight: 800 }}>2 Conductores Activos</span>
                 </div>
@@ -4293,14 +4293,14 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                     {/* Marker 1: Restaurant Kitchen */}
                     <div style={{ position: 'absolute', top: '35%', left: '25%', transform: 'translate(-50%, -50%)', textAlign: 'center' }}>
                       <div style={{ background: '#ff6b00', color: 'white', padding: '4px 8px', borderRadius: 8, fontSize: 10, fontWeight: 900, boxShadow: '0 0 15px #ff6b00' }}>
-                        🏪 Restaurante Pedidos Listo
+                        🏪 Restaurante Listo Patrón
                       </div>
                     </div>
 
                     {/* Marker 2: Driver Motorcyclist Moving */}
                     <div style={{ position: 'absolute', top: '55%', left: '55%', transform: 'translate(-50%, -50%)', textAlign: 'center', animation: 'bounce 2s infinite' }}>
                       <div style={{ background: '#a855f7', color: 'white', padding: '4px 8px', borderRadius: 8, fontSize: 10, fontWeight: 900, boxShadow: '0 0 20px #a855f7' }}>
-                        🛵 Kelvin Santos (Mándame #48)
+                        🛵 Kelvin Santos (Listo Patrón #48)
                       </div>
                     </div>
 
@@ -5037,7 +5037,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                             <div style={{ fontSize: 10.5, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', marginBottom: 6, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                               <span>🛵 ¿QUIÉN HARÁ EL DELIVERY?</span>
                               <span style={{ color: order.driverType === 'own' ? '#38BDF8' : '#ff6b00', fontWeight: 900 }}>
-                                {order.driverType === 'own' ? '🏪 Delivery Propio de la Casa' : '🛵 Red Mándame Rider'}
+                                {order.driverType === 'own' ? '🏪 Delivery Propio de la Casa' : '🛵 Red Listo Patrón Rider'}
                               </span>
                             </div>
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
@@ -5059,7 +5059,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                                   gap: 4
                                 }}
                               >
-                                🛵 Mándame Rider
+                                🛵 Listo Patrón Rider
                               </button>
                               <button
                                 type="button"
@@ -5159,7 +5159,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                                 ? '🟢 MARCAR LISTO PARA RECOGER EN MOSTRADOR' 
                                 : (order.driverType === 'own' 
                                     ? '🟢 MARCAR LISTO PARA DELIVERY PROPIO (MOTORISTA CASA)' 
-                                    : '🟢 MARCAR LISTO PARA REPARTIDOR MÁNDAME')}
+                                    : '🟢 MARCAR LISTO PARA REPARTIDOR LISTO PATRÓN')}
                             </button>
                           )}
 
@@ -5942,7 +5942,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                     ⏱️ Horario de Atención: {activeStoreModal.time || activeStoreModal.horario || '08:00 AM - 11:30 PM (Lunes a Domingo)'}
                   </p>
                   <p style={{ fontSize: 12, color: '#64748B', margin: '0 0 8px' }}>🛡️ Garantía de Entrega Pedidos Listo con Token PIN OTP de 4 dígitos</p>
-                  <p style={{ fontSize: 12, color: '#64748B', margin: 0 }}>🛵 Reparto oficial con Mándame Riders rastreados por GPS</p>
+                  <p style={{ fontSize: 12, color: '#64748B', margin: 0 }}>🛵 Reparto oficial con Listo Patrón Riders rastreados por GPS</p>
                 </div>
               )}
 

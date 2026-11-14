@@ -21,7 +21,7 @@ const HERO_BANNERS = [
   },
   {
     id: 2,
-    tag: '🛵 Mándame',
+    tag: '🛵 Listo Patrón',
     title: 'Envíos de paquetes',
     desc: 'Envía llaves, documentos o encargos por la ciudad.',
     btnText: 'Solicitar envío',
@@ -34,7 +34,7 @@ const HERO_BANNERS = [
 const CATEGORIES = [
   { id: 'restaurantes', name: 'Restaurantes', icon: '🍔', bg: '#FFF0E6' },
   { id: 'market', name: 'Listo Market', icon: '🛒', bg: '#E6F9F0' },
-  { id: 'mandame', name: 'Mándame', icon: '🛵', bg: '#EFF6FF' },
+  { id: 'mandame', name: 'Listo Patrón', icon: '🛵', bg: '#EFF6FF' },
   { id: 'farmacias', name: 'Farmacias', icon: '💊', bg: '#FFF5F5' },
   { id: 'bebidas', name: 'Licores & Frías', icon: '🍺', bg: '#FFFBEB' },
   { id: 'mascotas', name: 'Mascotas', icon: '🐾', bg: '#F5F3FF' },
@@ -331,7 +331,7 @@ export default function PedidosListoHub({ navigate }) {
       clientName: user.displayName || '',
       clientEmail: user.email || '',
       clientPhone: user.phoneNumber || '',
-      items: [{ name: `Envío Mándame: ${mandameType}`, price: MANDAME_FEE, qty: 1 }],
+      items: [{ name: `Envío Listo Patrón: ${mandameType}`, price: MANDAME_FEE, qty: 1 }],
       total: MANDAME_FEE,
       pickupAddress: mandamePickUp.trim(),
       deliveryAddress: mandameDropOff.trim(),
@@ -898,7 +898,7 @@ export default function PedidosListoHub({ navigate }) {
         <div className="pl-modal-overlay" onClick={() => setShowMandameModal(false)}>
           <div className="pl-cart-drawer" onClick={(e) => e.stopPropagation()} style={{ borderRadius: '28px 28px 0 0' }}>
             <div className="pl-drawer-header">
-              <h3 className="pl-drawer-title">🛵 Mándame Express - Envío Instantáneo</h3>
+              <h3 className="pl-drawer-title">🛵 Listo Patrón Express - Envío Instantáneo</h3>
               <button className="pl-close-btn" onClick={() => setShowMandameModal(false)}>✕</button>
             </div>
 
