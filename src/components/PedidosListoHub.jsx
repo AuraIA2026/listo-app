@@ -165,7 +165,16 @@ export default function PedidosListoHub({ navigate }) {
     return () => unsub();
   }, []);
 
-  const isOwner = (st) => !!user && !!st?.proId && st.proId === user.uid;
+  const isOwner = (st) => {
+    if (!st || !user) return false;
+    const actEmail = String(user?.email || '').toLowerCase().trim();
+    if (actEmail === 'listopatron.app@gmail.com') return true;
+    const stUids = [st.proId, st.ownerUid, st.userId, st.uid].filter(Boolean);
+    if (stUids.includes(user.uid)) return true;
+    const stEmails = [st.email, st.correo, st.userEmail, st.proEmail].filter(Boolean).map(e => String(e).toLowerCase().trim());
+    if (actEmail && stEmails.includes(actEmail)) return true;
+    return false;
+  };
 
   // Filter stores by category
   const q = searchQuery.toLowerCase();
@@ -1210,7 +1219,7 @@ export default function PedidosListoHub({ navigate }) {
         </div>
       )}
       {/* 13. MODAL DE CONFIGURACIÓN DEL RESTAURANTE */}
-      {showConfigModal && selectedStore && (
+      {showConfigModal && selectedStore && isOwner(selectedStore) && (
         <ConfigurarRestauranteModal
           store={selectedStore}
           onClose={() => setShowConfigModal(false)}

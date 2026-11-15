@@ -82,7 +82,17 @@ export default function LocalDetalle({ lang = 'es', navigate, local: propLocal, 
   }, [propLocal])
 
   const local = currentLocal
-  const isOwner = userData && local && (local.proId === userData.uid)
+  const isOwner = Boolean(
+    userData && local && (
+      (local.proId && local.proId === userData.uid) ||
+      (local.ownerUid && local.ownerUid === userData.uid) ||
+      (local.userId && local.userId === userData.uid) ||
+      (local.email && userData.email && local.email.toLowerCase().trim() === userData.email.toLowerCase().trim()) ||
+      (userData.email && userData.email.toLowerCase().trim() === 'listopatron.app@gmail.com') ||
+      userData.role === 'admin' ||
+      userData.isAdmin === true
+    )
+  )
 
   const initials = (local?.nombre || 'L').substring(0, 2).toUpperCase()
   const avatarBg = getAvatarColor(local?.id || local?.nombre || 'L')

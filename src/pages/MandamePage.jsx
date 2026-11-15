@@ -485,7 +485,40 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
 
+  // 🛡️ Solo el dueño del comercio o el administrador pueden editar o configurar el negocio
+  const isStoreOwner = (st) => {
+    if (!st) return false;
+    const currentUid = auth?.currentUser?.uid || userData?.uid || userData?.id;
+    const currentEmail = String(auth?.currentUser?.email || userData?.email || '').toLowerCase().trim();
+    
+    // El administrador oficial de Listo siempre tiene permisos
+    if (currentEmail === 'listopatron.app@gmail.com' || userRole === 'admin' || userData?.role === 'admin' || userData?.isAdmin === true) {
+      return true;
+    }
+    
+    // Si no está autenticado, no es dueño
+    if (!currentUid && !currentEmail) return false;
+
+    // UIDs que identifican al dueño en la tienda
+    const stUids = [st.proId, st.ownerUid, st.userId, st.uid].filter(Boolean);
+    if (currentUid && stUids.includes(currentUid)) {
+      return true;
+    }
+
+    // Correos que identifican al dueño en la tienda
+    const stEmails = [st.email, st.correo, st.userEmail, st.proEmail].filter(Boolean).map(e => String(e).toLowerCase().trim());
+    if (currentEmail && stEmails.includes(currentEmail)) {
+      return true;
+    }
+
+    return false;
+  };
+
   const handleOpenConfigModal = (tab = 'perfil') => {
+    if (!isStoreOwner(activeStoreModal)) {
+      showToast('🔒 Solo el dueño de este comercio puede configurarlo.');
+      return;
+    }
     setConfigModalInitialTab(tab);
     setShowStoreConfigModal(true);
   };
@@ -493,6 +526,10 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
   const handleQuickUploadCover = async (e) => {
     const file = e.target.files?.[0];
     if (!file || !activeStoreModal) return;
+    if (!isStoreOwner(activeStoreModal)) {
+      showToast('🔒 Solo el dueño del comercio puede cambiar la portada.');
+      return;
+    }
     try {
       showToast('⏳ Subiendo y optimizando foto de portada...');
       const base64 = await compressImage(file, 900);
@@ -522,6 +559,10 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
   const handleQuickUploadLogo = async (e) => {
     const file = e.target.files?.[0];
     if (!file || !activeStoreModal) return;
+    if (!isStoreOwner(activeStoreModal)) {
+      showToast('🔒 Solo el dueño del comercio puede cambiar el logo.');
+      return;
+    }
     try {
       showToast('⏳ Subiendo logo de perfil...');
       const base64 = await compressImage(file, 400);
@@ -5517,47 +5558,51 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                   <span style={{ background: '#ff6b00', color: '#fff', padding: '4px 10px', borderRadius: 12, fontSize: 10.5, fontWeight: 900, boxShadow: '0 4px 10px rgba(0,0,0,0.3)', whiteSpace: 'nowrap' }}>
                     {activeStoreModal.badge || '🌭 #1 Hot Dogs de Santiago 🇩🇴'}
                   </span>
-                  <label
-                    style={{
-                      background: 'rgba(0,0,0,0.7)',
-                      color: '#FFF',
-                      border: '1px solid rgba(255,255,255,0.4)',
-                      padding: '4px 10px',
-                      borderRadius: 12,
-                      fontSize: 10.5,
-                      fontWeight: 900,
-                      cursor: 'pointer',
-                      backdropFilter: 'blur(4px)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 4,
-                      whiteSpace: 'nowrap'
-                    }}
-                    title="Subir nueva foto de portada desde tu dispositivo"
-                  >
-                    📷 Portada
-                    <input type="file" accept="image/*" onChange={handleQuickUploadCover} style={{ display: 'none' }} />
-                  </label>
-                  <button
-                    onClick={() => handleOpenConfigModal('perfil')}
-                    style={{
-                      background: 'rgba(0,0,0,0.7)',
-                      color: '#FFF',
-                      border: '1px solid rgba(255,255,255,0.4)',
-                      padding: '4px 10px',
-                      borderRadius: 12,
-                      fontSize: 10.5,
-                      fontWeight: 900,
-                      cursor: 'pointer',
-                      backdropFilter: 'blur(4px)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 4,
-                      whiteSpace: 'nowrap'
-                    }}
-                  >
-                    ⚙️ Configurar
-                  </button>
+                  {isStoreOwner(activeStoreModal) && (
+                    <>
+                      <label
+                        style={{
+                          background: 'rgba(0,0,0,0.7)',
+                          color: '#FFF',
+                          border: '1px solid rgba(255,255,255,0.4)',
+                          padding: '4px 10px',
+                          borderRadius: 12,
+                          fontSize: 10.5,
+                          fontWeight: 900,
+                          cursor: 'pointer',
+                          backdropFilter: 'blur(4px)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 4,
+                          whiteSpace: 'nowrap'
+                        }}
+                        title="Subir nueva foto de portada desde tu dispositivo"
+                      >
+                        📷 Portada
+                        <input type="file" accept="image/*" onChange={handleQuickUploadCover} style={{ display: 'none' }} />
+                      </label>
+                      <button
+                        onClick={() => handleOpenConfigModal('perfil')}
+                        style={{
+                          background: 'rgba(0,0,0,0.7)',
+                          color: '#FFF',
+                          border: '1px solid rgba(255,255,255,0.4)',
+                          padding: '4px 10px',
+                          borderRadius: 12,
+                          fontSize: 10.5,
+                          fontWeight: 900,
+                          cursor: 'pointer',
+                          backdropFilter: 'blur(4px)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 4,
+                          whiteSpace: 'nowrap'
+                        }}
+                      >
+                        ⚙️ Configurar
+                      </button>
+                    </>
+                  )}
                 </div>
                 <button
                   onClick={() => setActiveStoreModal(null)}
@@ -5593,55 +5638,59 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                         display: 'block'
                       }}
                     />
-                    <label
-                      style={{
-                        position: 'absolute',
-                        bottom: -3,
-                        right: -3,
-                        background: '#ff6b00',
-                        color: '#FFF',
-                        borderRadius: '50%',
-                        width: 26,
-                        height: 26,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        cursor: 'pointer',
-                        border: '2px solid #FFFFFF',
-                        boxShadow: '0 2px 6px rgba(0,0,0,0.3)',
-                        fontSize: 12,
-                        zIndex: 4
-                      }}
-                      title="Cambiar Foto de Perfil / Logo"
-                    >
-                      📷
-                      <input type="file" accept="image/*" onChange={handleQuickUploadLogo} style={{ display: 'none' }} />
-                    </label>
+                    {isStoreOwner(activeStoreModal) && (
+                      <label
+                        style={{
+                          position: 'absolute',
+                          bottom: -3,
+                          right: -3,
+                          background: '#ff6b00',
+                          color: '#FFF',
+                          borderRadius: '50%',
+                          width: 26,
+                          height: 26,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          cursor: 'pointer',
+                          border: '2px solid #FFFFFF',
+                          boxShadow: '0 2px 6px rgba(0,0,0,0.3)',
+                          fontSize: 12,
+                          zIndex: 4
+                        }}
+                        title="Cambiar Foto de Perfil / Logo"
+                      >
+                        📷
+                        <input type="file" accept="image/*" onChange={handleQuickUploadLogo} style={{ display: 'none' }} />
+                      </label>
+                    )}
                   </div>
                   <div style={{ minWidth: 0, flex: 1 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
                       <h3 style={{ margin: 0, fontSize: 19, fontWeight: 900, color: '#0F172A', lineHeight: 1.2, wordBreak: 'break-word' }}>
                         {activeStoreModal.name}
                       </h3>
-                      <button
-                        onClick={() => handleOpenConfigModal('perfil')}
-                        title="Editar nombre y datos del restaurante"
-                        style={{
-                          background: '#FFF7ED',
-                          color: '#EA580C',
-                          border: '1px solid #FED7AA',
-                          padding: '2px 7px',
-                          borderRadius: 8,
-                          fontSize: 10,
-                          fontWeight: 900,
-                          cursor: 'pointer',
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: 3
-                        }}
-                      >
-                        ✏️
-                      </button>
+                      {isStoreOwner(activeStoreModal) && (
+                        <button
+                          onClick={() => handleOpenConfigModal('perfil')}
+                          title="Editar nombre y datos del restaurante"
+                          style={{
+                            background: '#FFF7ED',
+                            color: '#EA580C',
+                            border: '1px solid #FED7AA',
+                            padding: '2px 7px',
+                            borderRadius: 8,
+                            fontSize: 10,
+                            fontWeight: 900,
+                            cursor: 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: 3
+                          }}
+                        >
+                          ✏️
+                        </button>
+                      )}
                     </div>
                     <p style={{ margin: '3px 0 0', fontSize: 11.5, color: '#64748B', fontWeight: 700, wordBreak: 'break-word' }}>
                       {activeStoreModal.category || activeStoreModal.badge || 'Comercio Partner Pedidos Listo'}
@@ -5649,26 +5698,28 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                   </div>
                 </div>
 
-                <button
-                  onClick={() => handleOpenConfigModal('perfil')}
-                  style={{
-                    padding: '7px 12px',
-                    borderRadius: 12,
-                    background: '#FFF7ED',
-                    color: '#EA580C',
-                    border: '1.5px solid #FFEDD5',
-                    fontSize: 11.5,
-                    fontWeight: 900,
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 5,
-                    flexShrink: 0,
-                    boxShadow: '0 2px 8px rgba(234,88,12,0.1)'
-                  }}
-                >
-                  ⚙️ Configurar Local
-                </button>
+                {isStoreOwner(activeStoreModal) && (
+                  <button
+                    onClick={() => handleOpenConfigModal('perfil')}
+                    style={{
+                      padding: '7px 12px',
+                      borderRadius: 12,
+                      background: '#FFF7ED',
+                      color: '#EA580C',
+                      border: '1.5px solid #FFEDD5',
+                      fontSize: 11.5,
+                      fontWeight: 900,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 5,
+                      flexShrink: 0,
+                      boxShadow: '0 2px 8px rgba(234,88,12,0.1)'
+                    }}
+                  >
+                    ⚙️ Configurar Local
+                  </button>
+                )}
               </div>
               
               {/* BADGES METADATA */}
@@ -5712,12 +5763,14 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                   </div>
                 </div>
                 <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
-                  <button
-                    onClick={() => handleOpenConfigModal('perfil')}
-                    style={{ padding: '6px 10px', borderRadius: 10, background: '#FFF7ED', color: '#EA580C', border: '1px solid #FED7AA', fontSize: 11, fontWeight: 900, cursor: 'pointer', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 4 }}
-                  >
-                    ✏️ Editar
-                  </button>
+                  {isStoreOwner(activeStoreModal) && (
+                    <button
+                      onClick={() => handleOpenConfigModal('perfil')}
+                      style={{ padding: '6px 10px', borderRadius: 10, background: '#FFF7ED', color: '#EA580C', border: '1px solid #FED7AA', fontSize: 11, fontWeight: 900, cursor: 'pointer', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 4 }}
+                    >
+                      ✏️ Editar
+                    </button>
+                  )}
                   <button
                     onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(activeStoreModal.address || activeStoreModal.direccion || activeStoreModal.name)}`, '_blank')}
                     style={{ padding: '6px 12px', borderRadius: 10, background: '#EFF6FF', color: '#2563EB', border: '1px solid #BFDBFE', fontSize: 11, fontWeight: 900, cursor: 'pointer', whiteSpace: 'nowrap' }}
@@ -5755,12 +5808,14 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                   </div>
                 </div>
                 <div style={{ display: 'flex', gap: 6, flexShrink: 0, flexWrap: 'wrap' }}>
-                  <button
-                    onClick={() => handleOpenConfigModal('perfil')}
-                    style={{ padding: '6px 10px', borderRadius: 10, background: '#FFF7ED', color: '#EA580C', border: '1px solid #FED7AA', fontSize: 11, fontWeight: 900, cursor: 'pointer', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 4 }}
-                  >
-                    ✏️ Editar
-                  </button>
+                  {isStoreOwner(activeStoreModal) && (
+                    <button
+                      onClick={() => handleOpenConfigModal('perfil')}
+                      style={{ padding: '6px 10px', borderRadius: 10, background: '#FFF7ED', color: '#EA580C', border: '1px solid #FED7AA', fontSize: 11, fontWeight: 900, cursor: 'pointer', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 4 }}
+                    >
+                      ✏️ Editar
+                    </button>
+                  )}
                   {(activeStoreModal.phone || activeStoreModal.telefono) && (
                     <a
                       href={`tel:${(activeStoreModal.phone || activeStoreModal.telefono).replace(/[^0-9]/g, '')}`}
@@ -5793,24 +5848,26 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                   <span style={{ fontSize: 9.5, fontWeight: 900, color: '#EA580C', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                     🌐 REDES SOCIALES DEL RESTAURANTE
                   </span>
-                  <button
-                    onClick={() => handleOpenConfigModal('perfil')}
-                    style={{
-                      background: '#FFF',
-                      color: '#EA580C',
-                      border: '1px solid #FED7AA',
-                      borderRadius: 8,
-                      padding: '2px 8px',
-                      fontSize: 10,
-                      fontWeight: 900,
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 3
-                    }}
-                  >
-                    ✏️ Editar Redes
-                  </button>
+                  {isStoreOwner(activeStoreModal) && (
+                    <button
+                      onClick={() => handleOpenConfigModal('perfil')}
+                      style={{
+                        background: '#FFF',
+                        color: '#EA580C',
+                        border: '1px solid #FED7AA',
+                        borderRadius: 8,
+                        padding: '2px 8px',
+                        fontSize: 10,
+                        fontWeight: 900,
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 3
+                      }}
+                    >
+                      ✏️ Editar Redes
+                    </button>
+                  )}
                 </div>
                 <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                   {(activeStoreModal.socials?.instagram || activeStoreModal.instagram) && (
@@ -5922,25 +5979,27 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                 <div>
                   <div style={{ fontSize: 13, fontWeight: 900, color: '#1E293B', marginBottom: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 6 }}>
                     <span>Platillos Disponibles</span>
-                    <button
-                      onClick={() => handleOpenConfigModal('menu')}
-                      style={{
-                        background: '#ff6b00',
-                        color: '#FFF',
-                        border: 'none',
-                        padding: '6px 12px',
-                        borderRadius: 10,
-                        fontSize: 11.5,
-                        fontWeight: 900,
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 4,
-                        boxShadow: '0 2px 8px rgba(255,107,0,0.25)'
-                      }}
-                    >
-                      + 🍔 Añadir / Editar Platillos
-                    </button>
+                    {isStoreOwner(activeStoreModal) && (
+                      <button
+                        onClick={() => handleOpenConfigModal('menu')}
+                        style={{
+                          background: '#ff6b00',
+                          color: '#FFF',
+                          border: 'none',
+                          padding: '6px 12px',
+                          borderRadius: 10,
+                          fontSize: 11.5,
+                          fontWeight: 900,
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 4,
+                          boxShadow: '0 2px 8px rgba(255,107,0,0.25)'
+                        }}
+                      >
+                        + 🍔 Añadir / Editar Platillos
+                      </button>
+                    )}
                   </div>
                   {(() => {
                     let dishesToShow = [];
@@ -6024,24 +6083,26 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                 <div style={{ background: '#F8FAFC', padding: 16, borderRadius: 16, border: '1.5px solid #E2E8F0' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
                     <h4 style={{ fontWeight: 900, fontSize: 15, margin: 0, color: '#1E293B' }}>ℹ️ Horarios y Garantías</h4>
-                    <button
-                      onClick={() => handleOpenConfigModal('perfil')}
-                      style={{
-                        background: '#FFF7ED',
-                        color: '#EA580C',
-                        border: '1px solid #FED7AA',
-                        borderRadius: 8,
-                        padding: '4px 10px',
-                        fontSize: 11,
-                        fontWeight: 900,
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 4
-                      }}
-                    >
-                      ✏️ Editar Horario
-                    </button>
+                    {isStoreOwner(activeStoreModal) && (
+                      <button
+                        onClick={() => handleOpenConfigModal('perfil')}
+                        style={{
+                          background: '#FFF7ED',
+                          color: '#EA580C',
+                          border: '1px solid #FED7AA',
+                          borderRadius: 8,
+                          padding: '4px 10px',
+                          fontSize: 11,
+                          fontWeight: 900,
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 4
+                        }}
+                      >
+                        ✏️ Editar Horario
+                      </button>
+                    )}
                   </div>
                   <p style={{ fontSize: 12, color: '#64748B', margin: '0 0 8px' }}>
                     ⏱️ Horario de Atención: {activeStoreModal.time || activeStoreModal.horario || '08:00 AM - 11:30 PM (Lunes a Domingo)'}
@@ -6087,7 +6148,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
       )}
 
       {/* MODAL DE CONFIGURACIÓN DEL RESTAURANTE PARA EL DUEÑO */}
-      {showStoreConfigModal && activeStoreModal && (
+      {showStoreConfigModal && activeStoreModal && isStoreOwner(activeStoreModal) && (
         <ConfigurarRestauranteModal
           store={activeStoreModal}
           initialTab={configModalInitialTab}
