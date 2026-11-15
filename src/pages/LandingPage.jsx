@@ -14,9 +14,12 @@ import pro22 from '../assets/landing/extracted_22.jpeg';
 import pro23 from '../assets/landing/extracted_23.jpeg';
 import pro24 from '../assets/landing/extracted_24.jpeg';
 import pro25 from '../assets/landing/extracted_25.jpeg';
+import logoMarcador from '../assets/logo_marcador.png';
+import ShopCarouselRow from '../components/ShopCarouselRow';
 
 function DeliveryPartnerModal({ onClose, navigate }) {
-  const [activeTab, setActiveTab] = useState('registro'); // 'registro' | 'pasos' | 'documentos' | 'soluciones' | 'testimonios'
+  const [activeTab, setActiveTab] = useState('registro'); // 'registro' | 'programa' | 'pasos' | 'documentos' | 'soluciones' | 'testimonios' | 'dudas'
+  const [openFaq, setOpenFaq] = useState(0);
   const [formData, setFormData] = useState({
     businessName: '',
     ownerName: '',
@@ -90,53 +93,59 @@ function DeliveryPartnerModal({ onClose, navigate }) {
     }
   };
 
+  const [headerCollapsed, setHeaderCollapsed] = React.useState(false);
+
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 10000, background: 'rgba(13, 14, 21, 0.88)', backdropFilter: 'blur(12px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px', overflowY: 'auto' }} onClick={onClose}>
       <div style={{ background: '#FFFFFF', borderRadius: '24px', maxWidth: '1020px', width: '100%', overflow: 'hidden', boxShadow: '0 25px 60px rgba(0,0,0,0.6)', position: 'relative', margin: 'auto', border: '1px solid rgba(255,255,255,0.1)' }} onClick={e => e.stopPropagation()}>
         
         {/* Header Banner estilo PedidosListo Partner */}
-        <div style={{ background: 'linear-gradient(135deg, #0d0e15 0%, #1a1c29 100%)', padding: '24px 28px 16px', color: '#FFFFFF', position: 'relative', borderBottom: '3px solid #ff6b00' }}>
+        <div style={{ background: 'linear-gradient(135deg, #FF7A1F 0%, #FF6000 100%)', padding: '24px 28px 16px', color: '#FFFFFF', position: 'relative', borderBottom: '3px solid #ffffff' }}>
           <button onClick={onClose} style={{ position: 'absolute', top: '18px', right: '18px', background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.3)', color: '#FFFFFF', width: '36px', height: '36px', borderRadius: '50%', fontSize: '18px', cursor: 'pointer', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }}>✕</button>
           
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255, 107, 0, 0.2)', border: '1px solid #ff6b00', padding: '4px 14px', borderRadius: '20px', fontSize: '12px', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '10px', color: '#ff6b00' }}>
-            🤝 PEDIDOSLISTO PARTNER PORTAL · REPÚBLICA DOMINICANA
+          <div style={{ maxHeight: headerCollapsed ? 0 : '420px', opacity: headerCollapsed ? 0 : 1, overflow: 'hidden', transition: 'max-height .35s ease, opacity .25s ease' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.2)', border: '1px solid rgba(255,255,255,0.5)', padding: '4px 14px', borderRadius: '20px', fontSize: '12px', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '10px', color: '#ffffff' }}>
+            🤝 PEDIDOSLISTO PARTNER · HECHO EN REPÚBLICA DOMINICANA
           </div>
           
           <h2 style={{ fontFamily: "'Outfit', 'Fredoka One', cursive, sans-serif", fontSize: '26px', margin: '0 0 6px', lineHeight: 1.2, fontWeight: '900' }}>
-            ¡Un nuevo canal para vender más y despegar tu negocio! 🚀
+            Tu local, vendiendo en todas partes y controlado desde una sola pantalla 🚀
           </h2>
-          <p style={{ fontSize: '14px', margin: '0 0 16px', color: '#94A3B8', fontWeight: '500' }}>
-            Únete a la red líder de comercios, restaurantes y repartidores en República Dominicana.
+          <p style={{ fontSize: '14px', margin: '0 0 16px', color: 'rgba(255,255,255,0.92)', fontWeight: '600' }}>
+            Órdenes a domicilio, caja con comprobante fiscal y mensajeros cercanos. <strong>3 meses gratis</strong> para todos los comercios.
           </p>
 
           {/* Bar de Métricas en la cabecera */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '8px', marginBottom: '16px' }}>
-            <div style={{ background: 'rgba(255,255,255,0.06)', borderRadius: '10px', padding: '8px 12px', textAlign: 'center' }}>
-              <div style={{ fontSize: '16px', fontWeight: '900', color: '#FF6B00' }}>+500</div>
-              <div style={{ fontSize: '11px', color: '#94A3B8' }}>Comercios Aliados</div>
+            <div style={{ background: 'rgba(255,255,255,0.16)', borderRadius: '10px', padding: '8px 12px', textAlign: 'center' }}>
+              <div style={{ fontSize: '16px', fontWeight: '900', color: '#FFFFFF' }}>3 meses</div>
+              <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.85)' }}>Totalmente gratis</div>
             </div>
-            <div style={{ background: 'rgba(255,255,255,0.06)', borderRadius: '10px', padding: '8px 12px', textAlign: 'center' }}>
-              <div style={{ fontSize: '16px', fontWeight: '900', color: '#10B981' }}>~15 min</div>
-              <div style={{ fontSize: '11px', color: '#94A3B8' }}>Tiempo Promedio</div>
+            <div style={{ background: 'rgba(255,255,255,0.16)', borderRadius: '10px', padding: '8px 12px', textAlign: 'center' }}>
+              <div style={{ fontSize: '16px', fontWeight: '900', color: '#FFFFFF' }}>~15 min</div>
+              <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.85)' }}>Motorista en tu puerta</div>
             </div>
-            <div style={{ background: 'rgba(255,255,255,0.06)', borderRadius: '10px', padding: '8px 12px', textAlign: 'center' }}>
-              <div style={{ fontSize: '16px', fontWeight: '900', color: '#F59E0B' }}>10%</div>
-              <div style={{ fontSize: '11px', color: '#94A3B8' }}>Comisión Congelada</div>
+            <div style={{ background: 'rgba(255,255,255,0.16)', borderRadius: '10px', padding: '8px 12px', textAlign: 'center' }}>
+              <div style={{ fontSize: '16px', fontWeight: '900', color: '#FFFFFF' }}>Caja + NCF</div>
+              <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.85)' }}>Incluidos sin costo</div>
             </div>
-            <div style={{ background: 'rgba(255,255,255,0.06)', borderRadius: '10px', padding: '8px 12px', textAlign: 'center' }}>
-              <div style={{ fontSize: '16px', fontWeight: '900', color: '#3B82F6' }}>4.9 / 5 ⭐</div>
-              <div style={{ fontSize: '11px', color: '#94A3B8' }}>Satisfacción Clientes</div>
+            <div style={{ background: 'rgba(255,255,255,0.16)', borderRadius: '10px', padding: '8px 12px', textAlign: 'center' }}>
+              <div style={{ fontSize: '16px', fontWeight: '900', color: '#FFFFFF' }}>0 equipos</div>
+              <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.85)' }}>Usa tu celular o PC</div>
             </div>
+          </div>
           </div>
 
           {/* Menú Nav Tabs del Modal */}
-          <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '4px', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '12px' }}>
+          <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '4px', borderTop: '1px solid rgba(255,255,255,0.3)', paddingTop: '12px' }}>
             {[
-              { id: 'registro', label: '📝 Registrar Local', icon: '📝' },
-              { id: 'pasos', label: '⚡ Paso a Paso', icon: '⚡' },
-              { id: 'documentos', label: '📄 Requisitos & Docs', icon: '📄' },
-              { id: 'soluciones', label: '💡 Soluciones & Créditos', icon: '💡' },
-              { id: 'testimonios', label: '🛵 Flota & Testimonios', icon: '🛵' }
+              { id: 'registro', label: '📝 Inscribir mi local', icon: '📝' },
+              { id: 'programa', label: '🖥️ Tu programa', icon: '🖥️' },
+              { id: 'pasos', label: '⚡ Cómo empezar', icon: '⚡' },
+              { id: 'documentos', label: '📄 Papeles', icon: '📄' },
+              { id: 'soluciones', label: '💡 Extras para crecer', icon: '💡' },
+              { id: 'testimonios', label: '🛵 Motoristas', icon: '🛵' },
+              { id: 'dudas', label: '❓ Dudas', icon: '❓' }
             ].map(tab => (
               <button
                 key={tab.id}
@@ -144,9 +153,9 @@ function DeliveryPartnerModal({ onClose, navigate }) {
                 style={{
                   padding: '8px 16px',
                   borderRadius: '12px',
-                  border: activeTab === tab.id ? '1.5px solid #ff6b00' : '1.5px solid rgba(255,255,255,0.15)',
-                  background: activeTab === tab.id ? '#ff6b00' : 'rgba(255,255,255,0.05)',
-                  color: '#FFFFFF',
+                  border: activeTab === tab.id ? '1.5px solid #ffffff' : '1.5px solid rgba(255,255,255,0.35)',
+                  background: activeTab === tab.id ? '#ffffff' : 'rgba(255,255,255,0.12)',
+                  color: activeTab === tab.id ? '#FF6000' : '#FFFFFF',
                   fontWeight: '800',
                   fontSize: '12.5px',
                   cursor: 'pointer',
@@ -161,7 +170,7 @@ function DeliveryPartnerModal({ onClose, navigate }) {
         </div>
 
         {/* Modal Content */}
-        <div style={{ padding: '24px 28px', maxHeight: '72vh', overflowY: 'auto', background: '#F8FAFC' }}>
+        <div onScroll={e => setHeaderCollapsed(e.currentTarget.scrollTop > 30)} style={{ padding: '24px 28px', maxHeight: headerCollapsed ? '84vh' : '72vh', transition: 'max-height .35s ease', overflowY: 'auto', background: '#F8FAFC' }}>
           
           {submitted ? (
             <div style={{ textAlign: 'center', padding: '40px 20px', background: '#FFFFFF', borderRadius: '20px', border: '1.5px solid #E2E8F0' }}>
@@ -227,16 +236,16 @@ function DeliveryPartnerModal({ onClose, navigate }) {
                       <span style={{ fontSize: '22px' }}>🎁</span>
                       <div>
                         <div style={{ fontSize: '13px', fontWeight: '800', color: '#9A3412' }}>
-                          10% de comisión estática + PedidosListo Plus gratis primeros 30 días
+                          3 meses gratis para todos los comercios + caja con comprobante fiscal incluida
                         </div>
                         <div style={{ fontSize: '11.5px', color: '#C2410C' }}>
-                          Sin mensualidades fijas obligatorias ni penalizaciones por cancelación.
+                          Sin mensualidades fijas, sin contratos amarrados y sin comprar equipos.
                         </div>
                       </div>
                     </div>
 
                     <h3 style={{ fontSize: '18px', fontWeight: '900', color: '#0d0e15', marginBottom: '16px' }}>
-                      ¡Registra tu local ahora mismo!
+                      Inscribe tu negocio en menos de 2 minutos
                     </h3>
 
                     <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -347,7 +356,7 @@ function DeliveryPartnerModal({ onClose, navigate }) {
                         </span>
                       </div>
                       <p style={{ fontSize: '12px', lineHeight: '1.5', margin: 0, fontStyle: 'italic', opacity: 0.98 }}>
-                        "¡El aliado perfecto para tu negocio! Pedidos Listo Delivery ha sido mucho más que un canal de ventas. Su plataforma nos permitió llegar a nuevo público y mantenernos competitivos. Esta relación fue clave para convertir nuestras metas en resultados."
+                        "Recibe la orden, acéptala con un toque, imprime la comanda y llama al motorista más cercano desde la misma pantalla. Menos llamadas perdidas, más ventas despachadas."
                       </p>
                     </div>
 
@@ -359,6 +368,41 @@ function DeliveryPartnerModal({ onClose, navigate }) {
                 </div>
               )}
 
+              {/* TAB NUEVA: TU PROGRAMA */}
+              {activeTab === 'programa' && (
+                <div>
+                  <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+                    <div style={{ display: 'inline-block', background: 'rgba(255, 96, 0, 0.1)', border: '1px solid #FF6000', color: '#FF6000', padding: '4px 14px', borderRadius: '20px', fontSize: '12px', fontWeight: '900', textTransform: 'uppercase', marginBottom: '8px' }}>
+                      🖥️ INCLUIDO SIN COSTO
+                    </div>
+                    <h3 style={{ fontSize: '22px', fontWeight: '900', color: '#0d0e15', margin: 0 }}>
+                      Mucho más que recibir órdenes: el sistema completo de tu local
+                    </h3>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '14px', marginBottom: '20px' }}>
+                    {[
+                      { ic: '💰', t: 'Caja registradora', d: 'Efectivo, tarjeta y transferencia, devuelta automática y cuadre de turno.' },
+                      { ic: '🧾', t: 'Comprobantes fiscales', d: 'B01, B02, B14 y B15 con ITBIS y 10% de ley, listos para la DGII.' },
+                      { ic: '🔔', t: 'Órdenes con alarma', d: 'Suena hasta que respondes. Eliges el tiempo y el cliente lo ve.' },
+                      { ic: '🍽️', t: 'Mesas y cocina', d: 'Abre mesas, divide cuentas y manda la comanda a la impresora.' },
+                      { ic: '🗺️', t: 'Motoristas en el mapa', d: 'Ve quién está cerca y pídelo con un toque, o usa tus mensajeros.' },
+                      { ic: '🍔', t: 'Menú al instante', d: 'Cambia precios, fotos y agotados en segundos desde el celular.' },
+                      { ic: '📊', t: 'Reportes del día', d: 'Ventas, productos top y descarga a Excel para tu contador.' },
+                      { ic: '⏸️', t: 'Pausa y horarios', d: 'Cierra o pausa tu local cuando te llenes, con un solo botón.' }
+                    ].map(f => (
+                      <div key={f.t} style={{ background: '#FFFFFF', borderRadius: '16px', padding: '18px', border: '1.5px solid #FFE4D3', boxShadow: '0 4px 12px rgba(255,96,0,0.06)' }}>
+                        <div style={{ fontSize: '28px', marginBottom: '8px' }}>{f.ic}</div>
+                        <h4 style={{ fontSize: '15px', fontWeight: '900', color: '#0d0e15', margin: '0 0 4px' }}>{f.t}</h4>
+                        <p style={{ fontSize: '12.5px', color: '#64748B', margin: 0, lineHeight: '1.5' }}>{f.d}</p>
+                      </div>
+                    ))}
+                  </div>
+                  <a href="https://pedidoslisto.vercel.app" target="_blank" rel="noopener noreferrer" style={{ display: 'block', textAlign: 'center', padding: '14px', borderRadius: '12px', background: 'linear-gradient(135deg, #FF7A1F, #FF6000)', color: '#fff', fontWeight: '900', textDecoration: 'none', boxShadow: '0 6px 18px rgba(255,96,0,0.35)' }}>
+                    👀 Ver el programa por dentro
+                  </a>
+                </div>
+              )}
+
               {/* TAB 2: PASO A PASO */}
               {activeTab === 'pasos' && (
                 <div>
@@ -367,18 +411,18 @@ function DeliveryPartnerModal({ onClose, navigate }) {
                       ⚡ PROCESO RÁPIDO DE VENTA
                     </div>
                     <h3 style={{ fontSize: '22px', fontWeight: '900', color: '#0d0e15', margin: 0 }}>
-                      Comenzar a vender en PedidosListo es así de simple
+                      De cero a vendiendo: así de rápido arrancas con PedidosListo
                     </h3>
                   </div>
 
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px', marginBottom: '24px' }}>
                     {[
-                      { step: '1', title: 'Regístrate en 2 minutos', desc: 'Completa el formulario web con los datos básicos de tu establecimiento.', icon: '📝', color: '#3B82F6' },
-                      { step: '2', title: 'Contacto & Tarifa 10%', desc: 'Un ejecutivo comercial valida tu cuenta y aplica el 10% de comisión congelada.', icon: '📞', color: '#10B981' },
-                      { step: '3', title: 'Configura tu Menú / Catálogo', desc: 'Carga tus platos, productos, precios, fotos y horarios de atención.', icon: '📱', color: '#8B5CF6' },
-                      { step: '4', title: 'Recibe Pedidos en Vivo', desc: 'Tus clientes ordenan desde la app y recibes la confirmación en tiempo real.', icon: '🔔', color: '#F59E0B' },
-                      { step: '5', title: 'Despacho con Flota Oficial', desc: 'Nuestros motoristas uniformados recogen y entregan en promedio 15 min.', icon: '🛵', color: '#FF6B00' },
-                      { step: '6', title: 'Cobra semanal o quincenal', desc: 'Recibe tus depósitos directamente a tu cuenta bancaria con reporte detallado.', icon: '💰', color: '#059669' }
+                      { step: '1', title: 'Cuéntanos de tu negocio', desc: 'Llena el formulario con lo básico de tu local. Toma menos de 2 minutos.', icon: '📝', color: '#FF6000' },
+                      { step: '2', title: 'Te llamamos y activamos', desc: 'Un asesor confirma tus datos y te activa los 3 meses sin costo.', icon: '📞', color: '#FF6000' },
+                      { step: '3', title: 'Monta tu catálogo', desc: 'Sube platos, precios, fotos y horario. Te ayudamos si lo necesitas.', icon: '📱', color: '#FF6000' },
+                      { step: '4', title: 'Enciende tu pantalla', desc: 'Las órdenes llegan con alarma a tu celular, tablet o computadora.', icon: '🔔', color: '#FF6000' },
+                      { step: '5', title: 'Despacha a tu manera', desc: 'Pide un motorista cercano de la red Listo o usa tus propios mensajeros.', icon: '🛵', color: '#FF6000' },
+                      { step: '6', title: 'Cobra y cuadra', desc: 'Lo cobrado en efectivo queda en tu caja; lo pagado en línea llega a tu banco.', icon: '💰', color: '#FF6000' }
                     ].map(item => (
                       <div key={item.step} style={{ background: '#FFFFFF', borderRadius: '18px', padding: '20px', border: '1.5px solid #E2E8F0', boxShadow: '0 4px 12px rgba(0,0,0,0.03)', position: 'relative' }}>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
@@ -415,7 +459,7 @@ function DeliveryPartnerModal({ onClose, navigate }) {
                       📄 REQUISITOS OFICIALES
                     </div>
                     <h3 style={{ fontSize: '22px', fontWeight: '900', color: '#0d0e15', margin: 0 }}>
-                      ¿Qué documentos necesitas para vender con nosotros?
+                      ¿Qué papeles debes tener a mano?
                     </h3>
                   </div>
 
@@ -472,7 +516,7 @@ function DeliveryPartnerModal({ onClose, navigate }) {
                       💡 HERRAMIENTAS DE CRECIMIENTO
                     </div>
                     <h3 style={{ fontSize: '22px', fontWeight: '900', color: '#0d0e15', margin: 0 }}>
-                      Impulsa tu negocio con nuestras soluciones exclusivas
+                      Extras para que tu local crezca más rápido
                     </h3>
                   </div>
 
@@ -480,27 +524,27 @@ function DeliveryPartnerModal({ onClose, navigate }) {
                     {/* Destacados */}
                     <div style={{ background: '#FFFFFF', borderRadius: '20px', padding: '22px', border: '1.5px solid #E2E8F0', boxShadow: '0 4px 14px rgba(0,0,0,0.04)' }}>
                       <div style={{ fontSize: '32px', marginBottom: '12px' }}>🔥</div>
-                      <h4 style={{ fontSize: '16px', fontWeight: '900', color: '#0d0e15', margin: '0 0 6px' }}>PedidosListo Destacados</h4>
+                      <h4 style={{ fontSize: '16px', fontWeight: '900', color: '#0d0e15', margin: '0 0 6px' }}>Listo Vitrina</h4>
                       <p style={{ fontSize: '12.5px', color: '#64748B', lineHeight: '1.5', margin: 0 }}>
-                        Multiplica tus ventas hasta 5 veces más posicionando tu negocio en las primeras posiciones de búsqueda de la app durante horas pico.
+                        Coloca tu local en lo más alto de la lista en las horas de más movimiento y deja que te encuentren primero.
                       </p>
                     </div>
 
                     {/* Créditos */}
-                    <div style={{ background: 'linear-gradient(135deg, #0d0e15 0%, #1e293b 100%)', color: '#FFFFFF', borderRadius: '20px', padding: '22px', border: '1.5px solid #ff6b00', boxShadow: '0 4px 14px rgba(255,107,0,0.2)' }}>
+                    <div style={{ background: 'linear-gradient(135deg, #FF7A1F 0%, #FF6000 100%)', color: '#FFFFFF', borderRadius: '20px', padding: '22px', border: '1.5px solid #FF6000', boxShadow: '0 4px 14px rgba(255,96,0,0.25)' }}>
                       <div style={{ fontSize: '32px', marginBottom: '12px' }}>💳</div>
-                      <h4 style={{ fontSize: '16px', fontWeight: '900', color: '#FF6B00', margin: '0 0 6px' }}>PedidosListo Créditos</h4>
-                      <p style={{ fontSize: '12.5px', color: '#CBD5E1', lineHeight: '1.5', margin: 0 }}>
-                        Financiamiento express para compra de materia prima, empaques, maquinaria o remodelación de tu local. Descuento automático de ventas.
+                      <h4 style={{ fontSize: '16px', fontWeight: '900', color: '#FFFFFF', margin: '0 0 6px' }}>Listo Capital</h4>
+                      <p style={{ fontSize: '12.5px', color: 'rgba(255,255,255,0.92)', lineHeight: '1.5', margin: 0 }}>
+                        Apoyo para comprar insumos, empaques o equipos, pagando poco a poco con lo que vendes en la app.
                       </p>
                     </div>
 
                     {/* Plus */}
                     <div style={{ background: '#FFFFFF', borderRadius: '20px', padding: '22px', border: '1.5px solid #E2E8F0', boxShadow: '0 4px 14px rgba(0,0,0,0.04)' }}>
                       <div style={{ fontSize: '32px', marginBottom: '12px' }}>⭐</div>
-                      <h4 style={{ fontSize: '16px', fontWeight: '900', color: '#0d0e15', margin: '0 0 6px' }}>PedidosListo Plus</h4>
+                      <h4 style={{ fontSize: '16px', fontWeight: '900', color: '#0d0e15', margin: '0 0 6px' }}>Sello Listo Verificado</h4>
                       <p style={{ fontSize: '12.5px', color: '#64748B', lineHeight: '1.5', margin: 0 }}>
-                        Insignia de verificación oficial. Envíos gratis garantizados a clientes suscritos y prioridad de asignación a repartidores cercanos.
+                        Una insignia que da confianza a tus clientes y te da prioridad al pedir motoristas cercanos.
                       </p>
                     </div>
                   </div>
@@ -508,16 +552,16 @@ function DeliveryPartnerModal({ onClose, navigate }) {
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                     <div style={{ background: 'linear-gradient(135deg, #FF6B00 0%, #E65100 100%)', borderRadius: '18px', padding: '20px', color: '#FFF' }}>
                       <div style={{ fontSize: '24px', marginBottom: '8px' }}>🚀</div>
-                      <h5 style={{ fontSize: '15px', fontWeight: '900', margin: '0 0 4px' }}>Aumenta tus pedidos un 40%</h5>
+                      <h5 style={{ fontSize: '15px', fontWeight: '900', margin: '0 0 4px' }}>Más visibles, más órdenes</h5>
                       <p style={{ fontSize: '12px', margin: 0, opacity: 0.95, lineHeight: '1.4' }}>
-                        Los comercios que activan PedidosListo Destacados reciben en promedio un 40% más de órdenes semanales.
+                        Los locales con buenas fotos, horario claro y respuesta rápida suben solos en la lista.
                       </p>
                     </div>
-                    <div style={{ background: '#0D0E15', borderRadius: '18px', padding: '20px', color: '#FFF', border: '1.5px solid #334155' }}>
-                      <div style={{ fontSize: '24px', marginBottom: '8px' }}>💰</div>
-                      <h5 style={{ fontSize: '15px', fontWeight: '900', color: '#FF6B00', margin: '0 0 4px' }}>Microcréditos al 0% fricción</h5>
-                      <p style={{ fontSize: '12px', color: '#CBD5E1', margin: 0, lineHeight: '1.4' }}>
-                        Sin papeleo bancario. Si tienes ventas constantes en la app, apruebas tu crédito inmediatamente.
+                    <div style={{ background: '#FFF7ED', borderRadius: '18px', padding: '20px', color: '#0d0e15', border: '1.5px solid #FED7AA' }}>
+                      <div style={{ fontSize: '24px', marginBottom: '8px' }}>🎁</div>
+                      <h5 style={{ fontSize: '15px', fontWeight: '900', color: '#FF6000', margin: '0 0 4px' }}>Promociones para tus clientes</h5>
+                      <p style={{ fontSize: '12px', color: '#9A3412', margin: 0, lineHeight: '1.4' }}>
+                        Crea combos y descuentos desde tu menú para atraer clientes nuevos y que vuelvan.
                       </p>
                     </div>
                   </div>
@@ -529,41 +573,39 @@ function DeliveryPartnerModal({ onClose, navigate }) {
                 <div>
                   <div style={{ textAlign: 'center', marginBottom: '24px' }}>
                     <div style={{ display: 'inline-block', background: 'rgba(255, 107, 0, 0.1)', border: '1px solid #ff6b00', color: '#ff6b00', padding: '4px 14px', borderRadius: '20px', fontSize: '12px', fontWeight: '900', textTransform: 'uppercase', marginBottom: '8px' }}>
-                      🛵 LA FLOTA MÁS GRANDE DE RD
+                      🛵 RED DE MOTORISTAS LISTO
                     </div>
                     <h3 style={{ fontSize: '22px', fontWeight: '900', color: '#0d0e15', margin: 0 }}>
-                      Lo que dicen los restauranteros y comercios aliados
+                      Tú cocinas, nosotros te conectamos con quien lo lleva
                     </h3>
                   </div>
 
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '24px' }}>
-                    {/* Testimonio Restaurante Proteína */}
                     <div style={{ background: 'linear-gradient(135deg, #FF6B00 0%, #D84300 100%)', borderRadius: '20px', padding: '22px', color: '#FFFFFF', boxShadow: '0 8px 24px rgba(255,107,0,0.3)' }}>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
                         <span style={{ fontSize: '14px', fontWeight: '900' }}>
-                          🛵 Restaurante Proteína
+                          🗺️ Motoristas en el mapa
                         </span>
                         <span style={{ background: 'rgba(255,255,255,0.25)', padding: '3px 10px', borderRadius: '20px', fontSize: '10.5px', fontWeight: '800' }}>
-                          COMERCIO CERTIFICADO
+                          TIEMPO REAL
                         </span>
                       </div>
-                      <p style={{ fontSize: '12.5px', lineHeight: '1.6', margin: 0, fontStyle: 'italic' }}>
-                        "¡El aliado perfecto para tu negocio! Pedidos Listo Delivery ha sido mucho más que un canal de ventas. Su plataforma nos permitió llegar a nuevo público y mantenernos competitivos. Esta relación fue clave para convertir nuestras metas en resultados. Estamos entusiasmados por seguir creciendo juntos."
+                      <p style={{ fontSize: '12.5px', lineHeight: '1.6', margin: 0 }}>
+                        Desde tu pantalla ves a los mensajeros que están a menos de 3 km, cuántos minutos tardan en llegar a tu puerta y los que ya están frente a tu local. Eliges uno y le llega la solicitud al momento.
                       </p>
                     </div>
 
-                    {/* Testimonio Fresh Bowl DR */}
-                    <div style={{ background: 'linear-gradient(135deg, #0D0E15 0%, #1E293B 100%)', border: '1.5px solid #334155', borderRadius: '20px', padding: '22px', color: '#FFFFFF', boxShadow: '0 8px 24px rgba(0,0,0,0.25)' }}>
+                    <div style={{ background: '#FFF7ED', border: '1.5px solid #FED7AA', borderRadius: '20px', padding: '22px', color: '#0d0e15', boxShadow: '0 8px 24px rgba(255,96,0,0.08)' }}>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
-                        <span style={{ fontSize: '14px', fontWeight: '900', color: '#FF6B00' }}>
-                          🍔 Fresh Bowl DR
+                        <span style={{ fontSize: '14px', fontWeight: '900', color: '#FF6000' }}>
+                          🏪 Tu delivery propio
                         </span>
-                        <span style={{ color: '#FFB800', fontSize: '13px' }}>
-                          ★★★★★ 5.0
+                        <span style={{ color: '#FF6000', fontSize: '12px', fontWeight: '900' }}>
+                          SIN COSTO EXTRA
                         </span>
                       </div>
-                      <p style={{ fontSize: '12px', lineHeight: '1.6', margin: 0, fontStyle: 'italic', color: '#CBD5E1' }}>
-                        "¡Tus antojos favoritos, listos en minutos! En Restaurante Proteína y comercios afiliados preparamos cada plato con los ingredientes más frescos y la rapidez que te encanta. Explora nuestro menú en la app, elige lo que más se te antoje y recíbelo directo en tu puerta. No esperes más para disfrutar de una experiencia única, rápida y deliciosa. ¡Haz tu pedido ahora mismo por la app de Listo y déjate sorprender!"
+                      <p style={{ fontSize: '12.5px', lineHeight: '1.6', margin: 0, color: '#9A3412' }}>
+                        ¿Ya tienes mensajeros? Regístralos en el programa, asígnales las órdenes y escríbeles por WhatsApp con un toque. Puedes combinar tu gente con la red Listo cuando haya mucha demanda.
                       </p>
                     </div>
                   </div>
@@ -583,7 +625,34 @@ function DeliveryPartnerModal({ onClose, navigate }) {
                 </div>
               )}
 
-              {/* Banner Informativo Inferior Completo de Cierre */}
+              {/* TAB NUEVA: DUDAS */}
+              {activeTab === 'dudas' && (
+                <div style={{ maxWidth: '760px', margin: '0 auto' }}>
+                  <h3 style={{ fontSize: '22px', fontWeight: '900', color: '#0d0e15', margin: '0 0 18px', textAlign: 'center' }}>Lo que más nos preguntan los dueños de negocio</h3>
+                  {[
+                    ['¿De verdad son 3 meses gratis?', 'Sí. Durante tus primeros 3 meses no pagas porcentaje por tus órdenes ni por usar la caja y los comprobantes.'],
+                    ['¿Qué equipo necesito?', 'Un celular, tablet o computadora con internet. La impresora térmica de 80 mm es opcional.'],
+                    ['¿Cuándo me llega mi dinero?', 'Lo cobrado en efectivo queda en tu caja al momento; lo pagado en línea se transfiere a tu cuenta bancaria.'],
+                    ['¿Puedo usar mis propios mensajeros?', 'Claro. Usa tu gente, pide un motorista de la red Listo o combina ambos según la demanda.'],
+                    ['¿Dónde cambio precios, fotos y horario?', 'En las secciones Menú y Local del programa. Los cambios se ven al instante.'],
+                    ['¿Cuánto tarda la activación?', 'Normalmente de 1 a 3 días hábiles después de tener tus papeles completos.'],
+                    ['¿Sirve si cocino desde casa?', 'Sí. Cocinas caseras y negocios solo de delivery pueden unirse si cumplen los requisitos.'],
+                    ['¿Me puedo salir cuando quiera?', 'Sí. No hay contratos amarrados ni penalidades por cancelar.']
+                  ].map(([q, a], i) => (
+                    <div key={q} style={{ background: '#FFFFFF', border: openFaq === i ? '1.5px solid #FF6000' : '1.5px solid #E2E8F0', borderRadius: '14px', marginBottom: '8px', overflow: 'hidden' }}>
+                      <button onClick={() => setOpenFaq(openFaq === i ? -1 : i)} style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'none', border: 'none', padding: '14px 16px', fontWeight: '900', fontSize: '14.5px', cursor: 'pointer', textAlign: 'left', color: '#0d0e15' }}>
+                        {q}<span style={{ color: '#FF6000', fontSize: '20px' }}>{openFaq === i ? '−' : '+'}</span>
+                      </button>
+                      {openFaq === i && <p style={{ margin: 0, padding: '0 16px 14px', fontSize: '13px', color: '#64748B', lineHeight: '1.6' }}>{a}</p>}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Enlace a la página completa */}
+              <a href="/unete" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginTop: '20px', padding: '14px', borderRadius: '14px', background: '#FFFFFF', border: '2px solid #FF6000', color: '#FF6000', fontWeight: '900', fontSize: '14.5px', textDecoration: 'none' }}>
+                📖 Ver toda la información de PedidosListo Partner →
+              </a>
               <div style={{ marginTop: '24px', background: 'linear-gradient(135deg, #FFF7ED 0%, #FFEDD5 100%)', border: '1.5px solid #FED7AA', borderRadius: '18px', padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '16px' }}>
                 <div style={{ background: '#FF6B00', color: '#FFF', width: '46px', height: '46px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px', flexShrink: 0, boxShadow: '0 4px 12px rgba(255,107,0,0.35)' }}>
                   🛵
@@ -607,6 +676,49 @@ function DeliveryPartnerModal({ onClose, navigate }) {
   );
 }
 
+const DOMINICAN_CITIES = [
+  // Gran Santo Domingo
+  { id: 'dn', name: 'Distrito Nacional', sub: 'Santo Domingo Centro', region: 'capital', x: 444, y: 328, count: '500+ Profesionales', type: 'active' },
+  { id: 'sdo', name: 'Santo Domingo Este / Norte', sub: 'Prov. Santo Domingo', region: 'capital', x: 468, y: 308, count: '350+ Profesionales', type: 'active' },
+
+  // Cibao / Norte
+  { id: 'sti', name: 'Santiago de los Caballeros', sub: 'Corazón del Cibao', region: 'cibao', x: 242, y: 118, count: '250+ Profesionales', type: 'active' },
+  { id: 'pop', name: 'Puerto Plata', sub: 'Costa Norte', region: 'cibao', x: 265, y: 44, count: '120+ Profesionales', type: 'active' },
+  { id: 'veg', name: 'La Vega', sub: 'Cibao Central', region: 'cibao', x: 302, y: 175, count: '95+ Profesionales', type: 'active' },
+  { id: 'sfm', name: 'San Francisco de Macorís', sub: 'Prov. Duarte', region: 'cibao', x: 420, y: 152, count: '80+ Profesionales', type: 'active' },
+  { id: 'moca', name: 'Moca', sub: 'Prov. Espaillat', region: 'cibao', x: 348, y: 88, count: '65+ Profesionales', type: 'active' },
+  { id: 'bonao', name: 'Bonao', sub: 'Prov. Monseñor Nouel', region: 'cibao', x: 342, y: 236, count: '70+ Profesionales', type: 'active' },
+  { id: 'sam', name: 'Samaná / Las Terrenas', sub: 'Península Turística', region: 'cibao', x: 540, y: 158, count: '55+ Profesionales', type: 'active' },
+  { id: 'nagua', name: 'Nagua', sub: 'María Trinidad Sánchez', region: 'cibao', x: 438, y: 108, count: '45+ Profesionales', type: 'active' },
+  { id: 'cotui', name: 'Cotuí', sub: 'Sánchez Ramírez', region: 'cibao', x: 396, y: 202, count: '40+ Profesionales', type: 'active' },
+  { id: 'salcedo', name: 'Salcedo', sub: 'Hermanas Mirabal', region: 'cibao', x: 356, y: 120, count: '35+ Profesionales', type: 'active' },
+  { id: 'mao', name: 'Mao', sub: 'Prov. Valverde', region: 'cibao', x: 211, y: 80, count: '40+ Profesionales', type: 'active' },
+  { id: 'mcristi', name: 'Monte Cristi', sub: 'Noroeste Costero', region: 'cibao', x: 115, y: 48, count: '30+ Profesionales', type: 'growth' },
+  { id: 'dajabon', name: 'Dajabón', sub: 'Frontera Norte', region: 'cibao', x: 82, y: 116, count: '25+ Profesionales', type: 'growth' },
+  { id: 'sabaneta', name: 'Sabaneta', sub: 'Santiago Rodríguez', region: 'cibao', x: 156, y: 125, count: '20+ Profesionales', type: 'growth' },
+
+  // Este
+  { id: 'puj', name: 'Punta Cana / Bávaro', sub: 'Polo Turístico', region: 'este', x: 755, y: 315, count: '200+ Profesionales', type: 'active' },
+  { id: 'higuey', name: 'Higüey', sub: 'La Altagracia', region: 'este', x: 710, y: 330, count: '85+ Profesionales', type: 'active' },
+  { id: 'romana', name: 'La Romana', sub: 'Costa Este', region: 'este', x: 648, y: 335, count: '110+ Profesionales', type: 'active' },
+  { id: 'spm', name: 'San Pedro de Macorís', sub: 'Región Este', region: 'este', x: 572, y: 312, count: '90+ Profesionales', type: 'active' },
+  { id: 'hmayor', name: 'Hato Mayor del Rey', sub: 'Zona Oriental', region: 'este', x: 562, y: 245, count: '35+ Profesionales', type: 'growth' },
+  { id: 'seibo', name: 'El Seibo', sub: 'Prov. El Seibo', region: 'este', x: 628, y: 248, count: '30+ Profesionales', type: 'growth' },
+  { id: 'mplata', name: 'Monte Plata', sub: 'Zona Esmeralda', region: 'este', x: 468, y: 252, count: '40+ Profesionales', type: 'growth' },
+
+  // Sur
+  { id: 'scris', name: 'San Cristóbal', sub: 'Entrada al Sur', region: 'sur', x: 390, y: 325, count: '130+ Profesionales', type: 'active' },
+  { id: 'bani', name: 'Baní', sub: 'Prov. Peravia', region: 'sur', x: 352, y: 360, count: '75+ Profesionales', type: 'active' },
+  { id: 'ocoa', name: 'San José de Ocoa', sub: 'Valle de Ocoa', region: 'sur', x: 320, y: 300, count: '35+ Profesionales', type: 'growth' },
+  { id: 'azua', name: 'Azua de Compostela', sub: 'Sur Central', region: 'sur', x: 252, y: 310, count: '60+ Profesionales', type: 'active' },
+  { id: 'barahona', name: 'Barahona', sub: 'La Perla del Sur', region: 'sur', x: 180, y: 388, count: '85+ Profesionales', type: 'active' },
+  { id: 'sjuan', name: 'San Juan de la Maguana', sub: 'El Gran Granero', region: 'sur', x: 160, y: 238, count: '65+ Profesionales', type: 'active' },
+  { id: 'neyba', name: 'Neyba', sub: 'Prov. Baoruco', region: 'sur', x: 155, y: 325, count: '25+ Profesionales', type: 'growth' },
+  { id: 'jimani', name: 'Jimaní', sub: 'Independencia', region: 'sur', x: 88, y: 338, count: '20+ Profesionales', type: 'growth' },
+  { id: 'comen', name: 'Comendador', sub: 'Elías Piña', region: 'sur', x: 78, y: 210, count: '20+ Profesionales', type: 'growth' },
+  { id: 'peder', name: 'Pedernales / Cabo Rojo', sub: 'Nuevo Polo Sur', region: 'sur', x: 98, y: 460, count: '30+ Profesionales', type: 'growth' },
+];
+
 export default function LandingPage({ navigate, lang }) {
   useLandingLogic();
   const [showPlanModal, setShowPlanModal] = useState(false);
@@ -614,20 +726,196 @@ export default function LandingPage({ navigate, lang }) {
   const [showDeliveryModal, setShowDeliveryModal] = useState(false);
   const [isHeroMuted, setIsHeroMuted] = useState(true);
   const heroVideoRef = useRef(null);
+  const navidadVideoRef = useRef(null);
+  const [activeVideoIdx, setActiveVideoIdx] = useState(0); // 0 = navidad (primero), 1 = profesionales
+  const heroVideos = [
+    { ref: navidadVideoRef, src: './assets/navidad_monumento.mp4', loop: true },
+    { ref: heroVideoRef,  src: './assets/todos_los_profesionales.mp4', poster: './assets/todos_los_profesionales_poster.jpg', loop: true },
+  ];
+  const [showDownloadDropdown, setShowDownloadDropdown] = useState(false);
+  const [selectedMapRegion, setSelectedMapRegion] = useState('all');
+  const [activeCityId, setActiveCityId] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchCity, setSearchCity] = useState('all');
+
+  const handleSearchSubmit = (e) => {
+    if (e) e.preventDefault();
+    const targetEl = document.getElementById('servicios');
+    if (targetEl) {
+      targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
+  const handleQuickTagClick = (tag) => {
+    const cleanTag = tag.replace(/^[^\wáéíóúÁÉÍÓÚñÑ]+/, '').trim();
+    setSearchQuery(cleanTag);
+    const targetEl = document.getElementById('servicios');
+    if (targetEl) {
+      targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
+  // Escuchar parámetros de la URL para abrir el modal de planes automáticamente cuando viene de la app
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      const search = window.location.search || '';
+      const hash = window.location.hash || '';
+      const params = new URLSearchParams(search);
+      let hashParams = new URLSearchParams('');
+      if (hash.includes('?')) {
+        hashParams = new URLSearchParams(hash.split('?')[1]);
+      }
+
+      const hasComprarPlan = params.has('comprar-plan') || hashParams.has('comprar-plan') || search.includes('comprar-plan') || hash.includes('planes') || search.includes('planes');
+      const planFromUrl = params.get('plan') || hashParams.get('plan') || params.get('planId') || hashParams.get('planId');
+      const hasUid = params.has('uid') || hashParams.has('uid');
+
+      if (hasComprarPlan || planFromUrl || hasUid) {
+        if (planFromUrl) {
+          setSelectedPlanInitial(planFromUrl);
+        }
+        setShowPlanModal(true);
+      }
+    } catch (err) {
+      console.warn('Error detectando plan en LandingPage:', err);
+    }
+  }, []);
 
   const toggleHeroSound = (e) => {
     e.stopPropagation();
-    if (heroVideoRef.current) {
-      const nextMuted = !heroVideoRef.current.muted;
-      heroVideoRef.current.muted = nextMuted;
+    const activeRef = heroVideos[activeVideoIdx].ref;
+    if (activeRef.current) {
+      const nextMuted = !activeRef.current.muted;
+      activeRef.current.muted = nextMuted;
       setIsHeroMuted(nextMuted);
     }
+  };
+
+  const switchToVideo = (idx) => {
+    // Pausar video actual
+    const curRef = heroVideos[activeVideoIdx].ref;
+    if (curRef.current) { curRef.current.pause(); curRef.current.currentTime = 0; }
+    setActiveVideoIdx(idx);
+    // Reproducir el nuevo
+    setTimeout(() => {
+      const newRef = heroVideos[idx].ref;
+      if (newRef.current) {
+        newRef.current.muted = isHeroMuted;
+        newRef.current.play().catch(() => {});
+      }
+    }, 50);
   };
 
   const openPlanModalWithPlan = (planId) => {
     setSelectedPlanInitial(planId);
     setShowPlanModal(true);
   };
+
+  const heroPlans = [
+    {
+      id: 'standard',
+      badge: '🔹 BÁSICO',
+      title: 'Plan Estándar',
+      price: 'RD$500',
+      period: '/mes',
+      theme: 'green',
+      bgGradient: 'linear-gradient(135deg, #0b4d34 0%, #156947 100%)',
+      accentColor: '#10b981',
+      benefits: [
+        '3 contratos al mes incluidos en la aplicación.',
+        'Ideal para profesionales que realizan servicios ocasionales.',
+        'Visibilidad básica en los listados de búsqueda.',
+        'Calificaciones y comentarios de clientes habilitados.'
+      ],
+      ctaText: 'Obtener Plan Estándar →'
+    },
+    {
+      id: 'gold',
+      badge: '⭐ POPULAR',
+      title: 'Plan Gold',
+      price: 'RD$1,000',
+      period: '/mes',
+      theme: 'gold',
+      bgGradient: 'linear-gradient(135deg, #8a6500 0%, #a67c00 100%)',
+      accentColor: '#f59e0b',
+      benefits: [
+        '8 contratos al mes incluidos (¡Más del doble que el plan estándar!).',
+        'Destacado popular en los listados de búsqueda.',
+        'Posicionamiento mejorado en los resultados de búsqueda.',
+        'Acceso prioritario a nuevas solicitudes en tu área de cobertura.'
+      ],
+      ctaText: 'Obtener Plan Gold →'
+    },
+    {
+      id: 'platinum',
+      badge: '🛡️ ACTIVO',
+      title: 'Plan Platinum',
+      price: 'RD$1,500',
+      period: '/mes',
+      theme: 'platinum',
+      bgGradient: 'linear-gradient(135deg, #2b394a 0%, #3e4f63 100%)',
+      accentColor: '#38bdf8',
+      benefits: [
+        '12 contratos al mes incluidos (¡Ideal para profesionales muy activos!).',
+        'Insignia de "Profesional Recomendado" visible en tu perfil.',
+        'Posicionamiento de búsqueda prioritario sobre Estándar y Gold.',
+        'Notificaciones de solicitudes en tiempo real con 5 minutos de ventaja.'
+      ],
+      ctaText: 'Obtener Plan Platinum →'
+    },
+    {
+      id: 'vip',
+      badge: '💎 ÉLITE',
+      title: 'Plan VIP',
+      price: 'RD$2,500',
+      period: '/mes',
+      theme: 'vip',
+      bgGradient: 'linear-gradient(135deg, #e65100 0%, #bf360c 100%)',
+      accentColor: '#ff6b00',
+      benefits: [
+        'Contratos ILIMITADOS (Aplica a todos los trabajos que quieras sin restricciones).',
+        'Insignia de "Élite VIP" en tu perfil y máxima exposición en la app.',
+        'Primeros resultados de búsqueda garantizados siempre.',
+        'Alertas instantáneas y prioritarias de todas las solicitudes publicadas.'
+      ],
+      ctaText: 'Obtener Plan VIP →'
+    }
+  ];
+
+  const [currentPlanSlide, setCurrentPlanSlide] = useState(0);
+  const [touchStartX, setTouchStartX] = useState(null);
+
+  const nextPlanSlide = () => {
+    setCurrentPlanSlide((prev) => (prev + 1) % heroPlans.length);
+  };
+
+  const prevPlanSlide = () => {
+    setCurrentPlanSlide((prev) => (prev - 1 + heroPlans.length) % heroPlans.length);
+  };
+
+  const handleTouchStart = (e) => {
+    setTouchStartX(e.touches[0].clientX);
+  };
+
+  const handleTouchEnd = (e) => {
+    if (touchStartX === null) return;
+    const touchEndX = e.changedTouches[0].clientX;
+    const diff = touchStartX - touchEndX;
+    if (diff > 50) {
+      nextPlanSlide();
+    } else if (diff < -50) {
+      prevPlanSlide();
+    }
+    setTouchStartX(null);
+  };
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentPlanSlide((prev) => (prev + 1) % heroPlans.length);
+    }, 6000);
+    return () => clearInterval(timer);
+  }, [heroPlans.length]);
 
   useEffect(() => {
     const checkUrlForPlan = () => {
@@ -681,12 +969,22 @@ export default function LandingPage({ navigate, lang }) {
   {/*  SKIP LINK PARA ACCESIBILIDAD  */}
   <a href="#main-content" className="skip-link">Saltar al contenido principal</a>
 
-  {/*  BOTÓN FLOTANTE WHATSAPP  */}
-  <a href="https://wa.me/18099090455" className="whatsapp-float" target="_blank" rel="noopener noreferrer" aria-label="Contactar por WhatsApp">
-    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  {/*  BOTÓN FLOTANTE WHATSAPP OFICIAL CON TEXTO DESTACADO  */}
+  <a 
+    href="https://wa.me/18099090455?text=Hola%20Listo%20Patr%C3%B3n%2C%20necesito%20asistencia%20en%20la%20plataforma" 
+    className="whatsapp-float-chip" 
+    target="_blank" 
+    rel="noopener noreferrer" 
+    aria-label="Contactar por WhatsApp con soporte oficial"
+    title="Chatear con soporte Listo Patrón en WhatsApp"
+  >
+    <svg className="whatsapp-icon-svg" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
       <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
     </svg>
-    <span className="whatsapp-tooltip">¿Necesitas ayuda? Escríbenos</span>
+    <div className="whatsapp-chip-text">
+      <span className="whatsapp-chip-sub">Soporte Directo</span>
+      <span className="whatsapp-chip-title">WhatsApp 24/7</span>
+    </div>
   </a>
 
   {/*  BOTÓN SCROLL TO TOP  */}
@@ -700,48 +998,20 @@ export default function LandingPage({ navigate, lang }) {
 
 {/*  NAV  */}
 <nav id="nav">
-  <div style={{ display: 'flex', alignItems: 'center' }}>
-    <img className="nav-logo" src="./assets/logo_listo.png" alt="Listo Patrón" style={{"height": "40px", "objectFit": "contain"}} />
+  <div className="nav-left-group">
+    <img className="nav-logo" src="./assets/logo_listo.png" alt="Listo Patrón" style={{"height": "38px", "objectFit": "contain"}} />
     
-    <div className="nav-header-buttons" style={{ display: 'flex', alignItems: 'center', gap: '10px', marginLeft: '10px', flexWrap: 'nowrap' }}>
+    <div className="nav-header-buttons">
       {/* BOTÓN TIENDA OFICIAL ESTILO PREMIUM EXÓTICO */}
       <button
         onClick={() => navigate ? navigate('shop') : (window.location.href = '/?page=shop')}
         className="nav-action-btn partner-btn-glow"
-        style={{
-          background: '#0B0C10',
-          color: '#FFFFFF',
-          border: '1.5px solid #FF6B00',
-          borderRadius: '50px',
-          padding: '4px 6px 4px 14px',
-          cursor: 'pointer',
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: '8px',
-          boxShadow: '0 0 16px rgba(255, 107, 0, 0.45)',
-          transition: 'all 0.2s ease-in-out',
-          whiteSpace: 'nowrap',
-          flexShrink: 0
-        }}
         title="Tienda Oficial Listo Patrón"
       >
-        <span style={{ fontWeight: '900', fontStyle: 'italic', fontSize: '15px', color: '#ffffff', letterSpacing: '-0.3px', fontFamily: "'Outfit', 'Fredoka One', sans-serif" }}>
+        <span className="btn-brand-label">
           Listo<span style={{ color: '#FF6B00' }}>Patrón</span>
         </span>
-        <span style={{
-          background: 'linear-gradient(135deg, #FF6B00 0%, #FF8533 100%)',
-          color: '#ffffff',
-          fontFamily: "'Outfit', sans-serif",
-          fontWeight: '900',
-          fontSize: '12px',
-          padding: '5px 14px',
-          borderRadius: '50px',
-          boxShadow: '0 2px 8px rgba(255,107,0,0.5)',
-          letterSpacing: '0.3px',
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: '4px'
-        }}>
+        <span className="btn-tag-pill">
           Tienda 🛒
         </span>
       </button>
@@ -750,41 +1020,13 @@ export default function LandingPage({ navigate, lang }) {
       <button
         onClick={() => setShowPlanModal(true)}
         className="nav-action-btn partner-btn-glow"
-        style={{
-          background: '#0B0C10',
-          color: '#FFFFFF',
-          border: '1.5px solid #FF6B00',
-          borderRadius: '50px',
-          padding: '4px 6px 4px 14px',
-          cursor: 'pointer',
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: '8px',
-          boxShadow: '0 0 16px rgba(255, 107, 0, 0.45)',
-          transition: 'all 0.2s ease-in-out',
-          whiteSpace: 'nowrap',
-          flexShrink: 0
-        }}
         title="Adquirir Plan Profesional Listo Patrón"
       >
-        <span style={{ fontWeight: '900', fontStyle: 'italic', fontSize: '15px', color: '#ffffff', letterSpacing: '-0.3px', fontFamily: "'Outfit', 'Fredoka One', sans-serif" }}>
+        <span className="btn-brand-label">
           Listo<span style={{ color: '#FF6B00' }}>Pro</span>
         </span>
-        <span style={{
-          background: 'linear-gradient(135deg, #FF6B00 0%, #FF8533 100%)',
-          color: '#ffffff',
-          fontFamily: "'Outfit', sans-serif",
-          fontWeight: '900',
-          fontSize: '12px',
-          padding: '5px 14px',
-          borderRadius: '50px',
-          boxShadow: '0 2px 8px rgba(255,107,0,0.5)',
-          letterSpacing: '0.3px',
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: '4px'
-        }}>
-          💳 Comprar Plan
+        <span className="btn-tag-pill">
+          💳 Planes
         </span>
       </button>
 
@@ -792,56 +1034,54 @@ export default function LandingPage({ navigate, lang }) {
       <button
         onClick={() => setShowDeliveryModal(true)}
         className="nav-action-btn partner-btn-glow"
-        style={{
-          background: '#0B0C10',
-          color: '#FFFFFF',
-          border: '1.5px solid #FF6B00',
-          borderRadius: '50px',
-          padding: '4px 6px 4px 14px',
-          cursor: 'pointer',
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: '8px',
-          boxShadow: '0 0 16px rgba(255, 107, 0, 0.45)',
-          transition: 'all 0.2s ease-in-out',
-          whiteSpace: 'nowrap',
-          flexShrink: 0
-        }}
         title="Portal PedidosListo Partner"
       >
-        <span style={{ fontWeight: '900', fontStyle: 'italic', fontSize: '15px', color: '#ffffff', letterSpacing: '-0.3px', fontFamily: "'Outfit', 'Fredoka One', sans-serif" }}>
+        <span className="btn-brand-label">
           Pedidos<span style={{ color: '#FF6B00' }}>Listo</span>
         </span>
-        <span style={{
-          background: 'linear-gradient(135deg, #FF6B00 0%, #FF8533 100%)',
-          color: '#ffffff',
-          fontFamily: "'Outfit', sans-serif",
-          fontWeight: '900',
-          fontSize: '12px',
-          padding: '5px 14px',
-          borderRadius: '50px',
-          boxShadow: '0 2px 8px rgba(255,107,0,0.5)',
-          letterSpacing: '0.3px',
-          display: 'inline-block'
-        }}>
+        <span className="btn-tag-pill">
           Partner
+        </span>
+      </button>
+
+      {/* BOTÓN DESPLEGABLE DESCARGAR APP */}
+      <button
+        type="button"
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          setShowDownloadDropdown(true);
+        }}
+        className="nav-action-btn partner-btn-glow"
+        title="Descargar la app oficial de Listo Patrón"
+        aria-expanded={showDownloadDropdown}
+        style={{ cursor: 'pointer' }}
+      >
+        <span className="btn-brand-label">
+          Descargar<span style={{ color: '#FF6B00' }}>App</span>
+        </span>
+        <span className="btn-tag-pill">
+          📲 App <span style={{ fontSize: '9px', marginLeft: '2px', display: 'inline-block', transition: 'transform 0.25s ease', transform: showDownloadDropdown ? 'rotate(180deg)' : 'none' }}>▼</span>
         </span>
       </button>
     </div>
   </div>
 
-  <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+  <div className="nav-right-group">
     {/* ENLACES DE TEXTO (Se ocultan en el menú hamburguesa cuando no hay suficiente espacio) */}
     <div className="nav-links" id="navLinks">
+      <a href="#tienda" onClick={(e) => { e.preventDefault(); navigate ? navigate('shop') : (window.location.href = '/?page=shop'); }}>🛍️ Tienda Oficial</a>
+      <a href="#planes" onClick={(e) => { e.preventDefault(); setShowPlanModal(true); }}>💳 Comprar Plan Pro</a>
+      <a href="#partner" onClick={(e) => { e.preventDefault(); setShowDeliveryModal(true); }}>🛵 PedidosListo Partner</a>
+      <a href="#descargar-app" onClick={(e) => { e.preventDefault(); setShowDownloadDropdown(prev => !prev); }}>📲 Descargar App</a>
       <a href="#servicios">Servicios</a>
       <a href="#como-funciona">Cómo funciona</a>
       <a href="#profesionales">Para profesionales</a>
-      <a href="#planes" onClick={(e) => { e.preventDefault(); setShowPlanModal(true); }}>Planes</a>
       <a href="#faq">FAQ</a>
       <a onClick={() => navigate('login')} className="nav-btn nav-btn-inside-menu" style={{ cursor: "pointer", color: "#FFFFFF", fontWeight: "bold" }}>Abrir app →</a>
     </div>
 
-    {/* BOTÓN ABRIR APP SIEMPRE VISIBLE EN LA BARRA */}
+    {/* BOTÓN ABRIR APP SIEMPRE VISIBLE EN PANTALLAS GRANDES */}
     <a 
       onClick={() => navigate('login')} 
       className="nav-btn nav-btn-direct" 
@@ -859,65 +1099,229 @@ export default function LandingPage({ navigate, lang }) {
 
 
 {/*  PORTADA PRINCIPAL / VIDEO OFICIAL PROFESIONALES  */}
-<div id="intro-portada-container" style={{"width": "100%", "background": "#F26000", "paddingTop": "70px", "display": "flex", "justifyContent": "center", "position": "relative"}}>
-    <div style={{"position": "relative", "width": "100%", "maxWidth": "1000px", "boxShadow": "0 0 40px rgba(0,0,0,0.3)", "overflow": "hidden", "background": "#000", "borderRadius": "16px", "margin": "0 15px", "aspectRatio": "16 / 9"}}>
+<div id="intro-portada-container" style={{"width": "100%", "background": "#F26000", "paddingTop": "70px", "display": "flex", "flexDirection": "column", "alignItems": "center", "position": "relative"}}>
+
+    {/* CINTILLO FESTIVO NAVIDEÑO SUPERIOR */}
+    <div className="navidad-hero-banner">
+      <div className="navidad-banner-content">
+        <span className="navidad-tree-icon">🎄</span>
+        <div className="navidad-banner-texts">
+          <span className="navidad-banner-tag">¡Especial Navideño Dominicano!</span>
+          <span className="navidad-banner-headline">
+            Santa sobrevuela el Monumento: En esta Navidad, los mejores profesionales de RD llegan directo a tu hogar o negocio. 🎅✨
+          </span>
+        </div>
+        <a href="#buscar-servicios" className="navidad-banner-action">
+          🔍 Buscar Servicios
+        </a>
+      </div>
+    </div>
+
+    <div style={{"position": "relative", "width": "100%", "maxWidth": "1000px", "boxShadow": "0 0 40px rgba(0,0,0,0.3)", "overflow": "hidden", "background": "#000", "borderRadius": "16px", "margin": "0 15px", "aspectRatio": "250 / 111", "minHeight": "175px"}}>
       
-      {/* Video Oficial Listo Patrón en la Portada */}
+      {/* Copos de nieve decorativos sutiles cayendo sobre el video */}
+      <div className="snow-overlay" aria-hidden="true">
+        <span className="snowflake" style={{ left: '10%', animationDelay: '0s', animationDuration: '6s' }}>❄</span>
+        <span className="snowflake" style={{ left: '26%', animationDelay: '2.5s', animationDuration: '8s' }}>❅</span>
+        <span className="snowflake" style={{ left: '48%', animationDelay: '1s', animationDuration: '7s' }}>❄</span>
+        <span className="snowflake" style={{ left: '68%', animationDelay: '3.2s', animationDuration: '9s' }}>❆</span>
+        <span className="snowflake" style={{ left: '84%', animationDelay: '0.8s', animationDuration: '6.5s' }}>❄</span>
+        <span className="snowflake" style={{ left: '94%', animationDelay: '2s', animationDuration: '8.5s' }}>❅</span>
+      </div>
+
+      {/* Video 1: Navidad Santa sobre el Monumento (sale primero - sin loop, al terminar pasa al siguiente) */}
+      <video
+        ref={navidadVideoRef}
+        src="./assets/navidad_monumento.mp4"
+        autoPlay
+        muted={isHeroMuted}
+        playsInline
+        onEnded={() => switchToVideo(1)}
+        style={{"width": "100%", "height": "100%", "objectFit": "cover", "objectPosition": "center center", "display": activeVideoIdx === 0 ? 'block' : 'none', "position": activeVideoIdx === 0 ? 'relative' : 'absolute', "inset": 0}}
+      />
+
+      {/* Video 2: Todos los Profesionales (loop infinito luego del primero) */}
       <video
         ref={heroVideoRef}
         src="./assets/todos_los_profesionales.mp4"
         poster="./assets/todos_los_profesionales_poster.jpg"
-        autoPlay
         muted={isHeroMuted}
         loop
         playsInline
-        style={{"width": "100%", "height": "100%", "objectFit": "cover", "display": "block"}}
+        autoPlay={activeVideoIdx === 1}
+        style={{"width": "100%", "height": "100%", "objectFit": "cover", "objectPosition": "center 20%", "display": activeVideoIdx === 1 ? 'block' : 'none', "position": activeVideoIdx === 1 ? 'relative' : 'absolute', "inset": 0, "transform": "scale(1.18)", "transformOrigin": "center 15%"}}
       />
+
+      {/* Indicadores de video (puntos) */}
+      <div style={{position:'absolute', bottom:'clamp(10px,2.5vw,16px)', left:'50%', transform:'translateX(-50%)', display:'flex', gap:'8px', zIndex:10}}>
+        {heroVideos.map((_, i) => (
+          <button
+            key={i}
+            onClick={() => switchToVideo(i)}
+            title={i === 0 ? 'Video Navidad' : 'Video profesionales'}
+            style={{width: activeVideoIdx===i ? '28px' : '10px', height:'10px', borderRadius:'50px', background: activeVideoIdx===i ? '#FF6B00' : 'rgba(255,255,255,0.5)', border:'none', cursor:'pointer', transition:'all 0.3s ease', padding:0}}
+          />
+        ))}
+      </div>
 
       {/* Botón flotante para activar / desactivar sonido */}
       <button
         onClick={toggleHeroSound}
         style={{
           position: "absolute",
-          bottom: "16px",
-          left: "16px",
+          bottom: "clamp(10px, 2.5vw, 16px)",
+          left: "clamp(10px, 2.5vw, 16px)",
           zIndex: 10,
           background: "rgba(0, 0, 0, 0.65)",
           color: "#ffffff",
           border: "1px solid rgba(255, 255, 255, 0.3)",
           backdropFilter: "blur(8px)",
           borderRadius: "50px",
-          padding: "8px 16px",
-          fontSize: "13px",
+          padding: "clamp(5px, 1.5vw, 8px) clamp(10px, 2.5vw, 16px)",
+          fontSize: "clamp(11px, 2vw, 13px)",
           fontWeight: "700",
           cursor: "pointer",
           display: "inline-flex",
           alignItems: "center",
-          gap: "8px",
+          gap: "6px",
           boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
           transition: "all 0.2s ease"
         }}
         title={isHeroMuted ? "Activar audio" : "Silenciar audio"}
       >
-        <span>{isHeroMuted ? "🔇 Activar Sonido" : "🔊 Silenciar"}</span>
+        <span>{isHeroMuted ? "🔇 Sonido" : "🔊 Silenciar"}</span>
       </button>
       
       {/* El logo circular en la esquina superior derecha */}
-      <img src="./assets/logo_esquina.png" style={{"position": "absolute", "top": "4%", "right": "4%", "width": "clamp(50px, 8vw, 90px)", "height": "auto", "objectFit": "contain", "zIndex": "2", "filter": "drop-shadow(0 4px 6px rgba(0,0,0,0.2))"}} alt="Logo Listo" />
+      <img src="./assets/logo_esquina.png" style={{"position": "absolute", "top": "4%", "right": "3.5%", "width": "clamp(40px, 7vw, 85px)", "height": "auto", "objectFit": "contain", "zIndex": "2", "filter": "drop-shadow(0 4px 6px rgba(0,0,0,0.2))"}} alt="Logo Listo" />
 
-      {/* Botones de App Store y Google Play */}
-      <div style={{"position": "absolute", "top": "54%", "right": "5%", "display": "flex", "flexDirection": "column", "gap": "2vh", "zIndex": "5", "width": "clamp(120px, 18vw, 160px)"}}>
-         <a href="https://play.google.com/store/apps" target="_blank" rel="noopener noreferrer" style={{"display": "block", "transition": "transform 0.2s"}} onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.05)'} onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}>
-           <img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" alt="Disponible en Google Play" style={{"width": "100%", "height": "auto", "display": "block"}} />
+      {/* Botones de App Store y Google Play en la portada del video */}
+      <div style={{"position": "absolute", "bottom": "clamp(10px, 3vw, 22px)", "right": "3.5%", "display": "flex", "flexDirection": "column", "gap": "clamp(4px, 1.5vw, 7px)", "zIndex": "10", "width": "clamp(88px, 15vw, 150px)"}}>
+         <a 
+           href="https://play.google.com/store/apps/details?id=com.listopatron.app&pcampaignid=web_share" 
+           target="_blank" 
+           rel="noopener noreferrer" 
+           style={{"display": "block", "transition": "transform 0.2s", "borderRadius": "8px", "overflow": "hidden", "boxShadow": "0 4px 12px rgba(0,0,0,0.35)"}} 
+           onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.05)'} 
+           onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
+           title="Disponible en Google Play"
+         >
+           <img 
+             src="./assets/google_play_badge.png" 
+             onError={(e) => { e.target.onerror = null; e.target.src = 'https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg'; }} 
+             alt="Disponible en Google Play" 
+             style={{"width": "100%", "height": "auto", "display": "block"}} 
+           />
          </a>
-         <a href="https://www.apple.com/app-store/" target="_blank" rel="noopener noreferrer" style={{"display": "block", "transition": "transform 0.2s"}} onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.05)'} onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}>
-           <img src="https://upload.wikimedia.org/wikipedia/commons/3/3c/Download_on_the_App_Store_Badge.svg" alt="Consíguelo en el App Store" style={{"width": "100%", "height": "auto", "display": "block"}} />
+         <a 
+           href="https://apps.apple.com/do/app/listo-patron/id6799846724" 
+           target="_blank" 
+           rel="noopener noreferrer" 
+           style={{"display": "block", "transition": "transform 0.2s", "borderRadius": "8px", "overflow": "hidden", "boxShadow": "0 4px 12px rgba(0,0,0,0.35)"}} 
+           onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.05)'} 
+           onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
+           title="Consíguelo en el App Store"
+         >
+           <img 
+             src="./assets/app_store_badge.png" 
+             onError={(e) => { e.target.onerror = null; e.target.src = 'https://upload.wikimedia.org/wikipedia/commons/3/3c/Download_on_the_App_Store_Badge.svg'; }} 
+             alt="Consíguelo en el App Store" 
+             style={{"width": "100%", "height": "auto", "display": "block"}} 
+           />
          </a>
       </div>
     </div>
 </div>
 
-{/*  CINTA OFICIAL TIENDA LISTO PATRÓN (PORTADA)  */}
+
+{/* CARRUSEL TIENDA — bolsas + ropa de trabajo, debajo del video */}
+{/*  BARRA DE BÚSQUEDA RÁPIDA DE SERVICIOS EN PORTADA  */}
+<div id="buscar-servicios" className="hero-search-wrapper">
+  <div className="hero-search-card">
+    <div className="hero-search-header">
+      <div className="hero-search-badge">⚡ Búsqueda Rápida en RD</div>
+      <h3 className="hero-search-title">¿Qué servicio necesitas en tu hogar o negocio?</h3>
+      <p className="hero-search-subtitle">Más de 500 expertos verificados con respuesta promedio en 15 minutos.</p>
+    </div>
+    
+    <form className="hero-search-form" onSubmit={handleSearchSubmit}>
+      <div className="hero-search-input-group">
+        <span className="hero-search-icon">🔍</span>
+        <input 
+          type="text" 
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Ej: Plomero, Electricista, Limpieza, Pintor, Mecánico..."
+          className="hero-search-input"
+          aria-label="Buscar servicio o profesional"
+        />
+        {searchQuery && (
+          <button type="button" onClick={() => setSearchQuery('')} className="hero-search-clear">✕</button>
+        )}
+      </div>
+
+      <div className="hero-search-city-group">
+        <span className="hero-search-icon">📍</span>
+        <select 
+          value={searchCity} 
+          onChange={(e) => setSearchCity(e.target.value)}
+          className="hero-search-select"
+          aria-label="Seleccionar ciudad"
+        >
+          <option value="all">🇩🇴 Toda República Dominicana</option>
+          <option value="santiago">Santiago de los Caballeros</option>
+          <option value="santodomingo">Santo Domingo / DN</option>
+          <option value="laromana">La Romana</option>
+          <option value="puertoplata">Puerto Plata</option>
+          <option value="sancristobal">San Cristóbal</option>
+          <option value="sanpedro">San Pedro de Macorís</option>
+          <option value="la-vega">La Vega</option>
+        </select>
+      </div>
+
+      <button type="submit" className="hero-search-submit-btn">
+        <span>Buscar experto</span>
+        <span className="hero-search-btn-arrow">→</span>
+      </button>
+    </form>
+
+    {/* Tags rápidos de categorías más solicitadas */}
+    <div className="hero-search-quick-tags">
+      <span className="quick-tag-label">Más pedidos:</span>
+      {['🔩 Plomero', '⚡ Electricista', '🧹 Limpieza', '🎨 Pintor', '🔧 Mecánica', '❄️ A/C', '🌿 Jardinería'].map((tag, idx) => (
+        <button 
+          key={idx} 
+          type="button" 
+          className="quick-tag-pill"
+          onClick={() => handleQuickTagClick(tag)}
+        >
+          {tag}
+        </button>
+      ))}
+    </div>
+  </div>
+</div>
+
+<div
+  style={{ width: '100%', background: '#F26000', paddingBottom: '4px', cursor: 'pointer' }}
+  onClick={() => navigate ? navigate('shop') : (window.location.href = '/?page=shop')}
+  title="Ver tienda completa de Listo Patrón"
+>
+  <ShopCarouselRow
+    products={[
+      { id: 101, name: 'Pantalón Alta Visibilidad', price: 4260, rating: 4.3, reviews: 52, description: '', image: '/tienda/ropa/pantalon_amarillo.jpg', category: 'pantalones' },
+      { id: 102, name: 'Pantalón Cargo Reflectante', price: 3950, rating: 4.5, reviews: 214, description: '', image: '/tienda/ropa/pantalon_negro_naranja.jpg', category: 'pantalones' },
+      { id: 103, name: 'Pantalón Multibolsillos', price: 2890, rating: 4.4, reviews: 167, description: '', image: '/tienda/ropa/pantalon_gris.jpg', category: 'pantalones' },
+      { id: 104, name: 'Chaqueta Softshell Hi-Vis', price: 4750, rating: 4.6, reviews: 98, description: '', image: '/tienda/ropa/chaqueta_frente.jpg', category: 'proteccion' },
+      { id: 105, name: 'Chaqueta Reflectante Trasera', price: 4750, rating: 4.6, reviews: 98, description: '', image: '/tienda/ropa/chaqueta_espalda.jpg', category: 'proteccion' },
+      { id: 107, name: 'Overol Naranja Reflectivo', price: 3600, rating: 4.5, reviews: 132, description: '', image: '/tienda/ropa/overol_reflectivo.jpg', category: 'proteccion' },
+      { id: 110, name: 'Chaleco Seguridad Multibolsillos', price: 890, rating: 4.7, reviews: 412, description: '', image: '/tienda/ropa/chaleco.jpg', category: 'seguridad' },
+      { id: 111, name: 'Cinturón Porta Herramientas', price: 3250, rating: 4.6, reviews: 189, description: '', image: '/tienda/ropa/cinturon.jpg', category: 'seguridad' },
+    ]}
+    onPick={() => navigate ? navigate('shop') : (window.location.href = '/?page=shop')}
+  />
+</div>
+
 <div style={{ width: '100%', background: '#F26000', padding: '0 15px 18px', display: 'flex', justifyContent: 'center' }}>
   <div style={{ width: '100%', maxWidth: '1000px' }}>
     <div 
@@ -939,6 +1343,112 @@ export default function LandingPage({ navigate, lang }) {
       <button className="store-ribbon-btn" onClick={(e) => { e.stopPropagation(); navigate ? navigate('shop') : window.location.href = '/?page=shop'; }}>
         🛒 Visitar Tienda ›
       </button>
+    </div>
+  </div>
+</div>
+
+{/*  CARRUSEL OFICIAL DE PLANES PROFESIONALES (BÁSICO, GOLD, PLATINUM, VIP)  */}
+<div id="planes-carrusel-section" style={{ width: '100%', background: '#F26000', padding: '0 15px 32px', display: 'flex', justifyContent: 'center' }}>
+  <div className="plans-hero-container">
+    {/* Flecha Anterior */}
+    <button 
+      onClick={prevPlanSlide} 
+      className="plans-hero-arrow prev" 
+      aria-label="Plan anterior"
+    >
+      ‹
+    </button>
+
+    {/* Flecha Siguiente */}
+    <button 
+      onClick={nextPlanSlide} 
+      className="plans-hero-arrow next" 
+      aria-label="Siguiente plan"
+    >
+      ›
+    </button>
+
+    {/* Track del Slider */}
+    <div 
+      className="plans-hero-track-wrapper"
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+    >
+      {heroPlans.map((plan, index) => {
+        if (index !== currentPlanSlide) return null;
+        return (
+          <div 
+            key={plan.id}
+            className="plans-hero-slide"
+            style={{ background: plan.bgGradient }}
+          >
+            {/* Columna Izquierda: Información del Plan */}
+            <div className="plans-hero-info">
+              <div className="plans-hero-badge">
+                {plan.badge}
+              </div>
+              <h2 className="plans-hero-title">
+                {plan.title}
+              </h2>
+              <div className="plans-hero-price-row">
+                <span className="plans-hero-price">{plan.price}</span>
+                <span className="plans-hero-period">{plan.period}</span>
+              </div>
+            </div>
+
+            {/* Columna Derecha: Tarjeta Frosted Glass con Beneficios */}
+            <div className="plans-hero-card">
+              {/* Logo Listo en la esquina superior derecha */}
+              <img
+                src="./assets/logo_esquina.png"
+                alt="Listo"
+                className="plans-hero-corner-logo"
+              />
+
+              {/* Lista de beneficios con checkmarks verdes */}
+              <div className="plans-hero-benefits">
+                {plan.benefits.map((b, i) => (
+                  <div key={i} className="plans-hero-benefit-item">
+                    <span className="plans-hero-check">✓</span>
+                    <span className="plans-hero-benefit-text">{b}</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Parte inferior con Botón y Badges de descarga */}
+              <div className="plans-hero-card-bottom">
+                <button
+                  onClick={() => openPlanModalWithPlan(plan.id)}
+                  className="plans-hero-cta-btn"
+                >
+                  {plan.ctaText}
+                </button>
+
+                <div className="plans-hero-store-badges">
+                  <a href="https://play.google.com/store/apps/details?id=com.listopatron.app&pcampaignid=web_share" target="_blank" rel="noopener noreferrer" title="Google Play">
+                    <img src="./assets/google_play_badge.png" onError={(e) => { e.target.onerror = null; e.target.src = 'https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg'; }} alt="Google Play" />
+                  </a>
+                  <a href="https://apps.apple.com/do/app/listo-patron/id6799846724" target="_blank" rel="noopener noreferrer" title="App Store">
+                    <img src="./assets/app_store_badge.png" onError={(e) => { e.target.onerror = null; e.target.src = 'https://upload.wikimedia.org/wikipedia/commons/3/3c/Download_on_the_App_Store_Badge.svg'; }} alt="App Store" />
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+
+    {/* Indicador de Puntos (Dots) */}
+    <div className="plans-hero-dots-container">
+      {heroPlans.map((_, idx) => (
+        <button
+          key={idx}
+          onClick={() => setCurrentPlanSlide(idx)}
+          className={`plans-hero-dot ${idx === currentPlanSlide ? 'active' : ''}`}
+          aria-label={`Ir al plan ${idx + 1}`}
+        />
+      ))}
     </div>
   </div>
 </div>
@@ -1126,31 +1636,6 @@ export default function LandingPage({ navigate, lang }) {
   </div>
 </section>
 
-
-{/*  CINTA OFICIAL TIENDA LISTO PATRÓN (DEBAJO DE PROFESIONALES DESTACADOS)  */}
-<div style={{ maxWidth: '1200px', margin: '14px auto 20px', padding: '0 5%' }}>
-  <div 
-    className="store-ribbon-banner"
-    onClick={() => navigate ? navigate('shop') : window.location.href = '/?page=shop'}
-    title="Visitar la Tienda Web de Listo Patrón"
-  >
-    <div className="store-ribbon-content">
-      <span className="store-ribbon-icon">🛍️</span>
-      <div className="store-ribbon-text-group">
-        <p className="store-ribbon-title">
-          Equípate en nuestra tienda <strong>Listo Patrón</strong>
-        </p>
-        <p className="store-ribbon-sub">
-          Herramientas, equipos e insumos de seguridad con envío rápido a todo el país
-        </p>
-      </div>
-    </div>
-    <button className="store-ribbon-btn" onClick={(e) => { e.stopPropagation(); navigate ? navigate('shop') : window.location.href = '/?page=shop'; }}>
-      🛒 Visitar Tienda ›
-    </button>
-  </div>
-</div>
-
 {/*  PUBLICIDAD  */}
 <section style={{"background": "#f5f5f5", "padding": "24px 5%"}}>
   <div className="section-inner">
@@ -1291,6 +1776,65 @@ export default function LandingPage({ navigate, lang }) {
     <span>📍 Tracking en tiempo real</span>
   </div>
 </div>
+
+{/*  SECCIÓN CÓMO FUNCIONA PARA CLIENTES (PASO A PASO 1-2-3)  */}
+<section id="como-funciona" className="how-it-works-section">
+  <div className="section-inner">
+    <div className="chip sr" style={{ margin: "0 auto 14px", display: "table" }}>
+      ✨ Simple y Transparente
+    </div>
+    <h2 className="section-title sr sr-delay-1" style={{ textAlign: "center" }}>
+      ¿Cómo funciona para <span>Clientes?</span>
+    </h2>
+    <p className="section-sub sr sr-delay-2" style={{ margin: "0 auto 40px", textAlign: "center", maxWidth: "580px" }}>
+      Solicitar ayuda profesional en tu hogar o negocio nunca fue tan fácil, rápido y seguro.
+    </p>
+
+    <div className="how-it-works-grid">
+      {/* Paso 1 */}
+      <div className="how-step-card">
+        <div className="how-step-number">01</div>
+        <div className="how-step-icon-box">🔍</div>
+        <h3 className="how-step-title">Busca tu servicio</h3>
+        <p className="how-step-desc">
+          Escribe lo que necesitas o elige una categoría. Filtra por tu ciudad (Santiago, Santo Domingo y todo el país) en solo segundos.
+        </p>
+        <span className="how-step-badge">En 1 minuto</span>
+      </div>
+
+      {/* Paso 2 */}
+      <div className="how-step-card how-step-featured">
+        <div className="how-step-number">02</div>
+        <div className="how-step-icon-box">👷‍♂️</div>
+        <h3 className="how-step-title">Elige al profesional ideal</h3>
+        <p className="how-step-desc">
+          Revisa antecedentes depurados, fotos reales de trabajos anteriores y calificaciones 100% verificadas de otros clientes.
+        </p>
+        <span className="how-step-badge">100% Verificados</span>
+      </div>
+
+      {/* Paso 3 */}
+      <div className="how-step-card">
+        <div className="how-step-number">03</div>
+        <div className="how-step-icon-box">🤝</div>
+        <h3 className="how-step-title">Servicio y satisfacción</h3>
+        <p className="how-step-desc">
+          El experto llega a tu puerta en minutos. Coordina con tranquilidad, paga seguro (efectivo o transferencia) y califica el trabajo.
+        </p>
+        <span className="how-step-badge">Garantía Listo</span>
+      </div>
+    </div>
+    
+    <div style={{ textAlign: 'center', marginTop: '36px' }}>
+      <button 
+        onClick={() => setShowDownloadDropdown(true)} 
+        className="how-cta-button"
+      >
+        📲 Probar Listo Patrón Ahora →
+      </button>
+    </div>
+  </div>
+</section>
 
 {/*  CATEGORIAS  */}
 <section className="cats-section" id="servicios">
@@ -1622,71 +2166,89 @@ export default function LandingPage({ navigate, lang }) {
      title="Valverde"
      id="DO-27"  fill="rgba(255,255,255,0.12)" stroke="rgba(255,255,255,0.35)" strokeWidth="1.5" strokeLinejoin="round"/>
 
-        {/*  City markers  */}
-        
-  {/*  Santo Domingo  */}
-  <g>
-    <circle cx="446.3" cy="326.8" r="24" fill="#F26000" opacity="0.2"><animate attributeName="r" values="22;30;22" dur="2s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.25;0.05;0.25" dur="2s" repeatCount="indefinite"/></circle>
-    <circle cx="446.3" cy="326.8" r="16" fill="#F26000" stroke="white" strokeWidth="2.5" filter="url(#dropshadow)"/>
-    <circle cx="446.3" cy="326.8" r="6" fill="white"/>
-    <rect x="391.3" y="270.8" width="110" height="32" rx="8" ry="8" fill="white" opacity="0.93" filter="url(#dropshadow)"/>
-    <text x="446.3" y="283.8" textAnchor="middle" fontFamily="Nunito,sans-serif" fontSize="10" fontWeight="800" fill="#C24D00">Santo Domingo</text>
-    <text x="446.3" y="295.8" textAnchor="middle" fontFamily="Nunito,sans-serif" fontSize="9" fontWeight="600" fill="#F26000">500+ profesionales</text>
-  </g>
-  {/*  Santiago  */}
-  <g>
-    <circle cx="282.4" cy="108.6" r="24" fill="#F26000" opacity="0.2"><animate attributeName="r" values="22;30;22" dur="2s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.25;0.05;0.25" dur="2s" repeatCount="indefinite"/></circle>
-    <circle cx="282.4" cy="108.6" r="16" fill="#F26000" stroke="white" strokeWidth="2.5" filter="url(#dropshadow)"/>
-    <circle cx="282.4" cy="108.6" r="6" fill="white"/>
-    <rect x="227.39999999999998" y="52.599999999999994" width="110" height="32" rx="8" ry="8" fill="white" opacity="0.93" filter="url(#dropshadow)"/>
-    <text x="282.4" y="65.6" textAnchor="middle" fontFamily="Nunito,sans-serif" fontSize="10" fontWeight="800" fill="#C24D00">Santiago</text>
-    <text x="282.4" y="77.6" textAnchor="middle" fontFamily="Nunito,sans-serif" fontSize="9" fontWeight="600" fill="#F26000">200+ profesionales</text>
-  </g>
-  {/*  La Vega  */}
-  <g>
-    
-    <circle cx="317.4" cy="160.7" r="11" fill="#FF8C42" stroke="white" strokeWidth="2.5" filter="url(#dropshadow)"/>
-    <circle cx="317.4" cy="160.7" r="4" fill="white"/>
-    <rect x="262.4" y="104.69999999999999" width="110" height="32" rx="8" ry="8" fill="white" opacity="0.93" filter="url(#dropshadow)"/>
-    <text x="317.4" y="117.69999999999999" textAnchor="middle" fontFamily="Nunito,sans-serif" fontSize="10" fontWeight="800" fill="#C24D00">La Vega</text>
-    <text x="317.4" y="129.7" textAnchor="middle" fontFamily="Nunito,sans-serif" fontSize="9" fontWeight="600" fill="#F26000">En crecimiento</text>
-  </g>
-  {/*  La Romana  */}
-  <g>
-    
-    <circle cx="652.8" cy="340.1" r="11" fill="#FF8C42" stroke="white" strokeWidth="2.5" filter="url(#dropshadow)"/>
-    <circle cx="652.8" cy="340.1" r="4" fill="white"/>
-    <rect x="597.8" y="284.1" width="110" height="32" rx="8" ry="8" fill="white" opacity="0.93" filter="url(#dropshadow)"/>
-    <text x="652.8" y="297.1" textAnchor="middle" fontFamily="Nunito,sans-serif" fontSize="10" fontWeight="800" fill="#C24D00">La Romana</text>
-    <text x="652.8" y="309.1" textAnchor="middle" fontFamily="Nunito,sans-serif" fontSize="9" fontWeight="600" fill="#F26000">En crecimiento</text>
-  </g>
-  {/*  Puerto Plata  */}
-  <g>
-    
-    <circle cx="282.9" cy="31.4" r="11" fill="#FFB380" stroke="white" strokeWidth="2.5" filter="url(#dropshadow)"/>
-    <circle cx="282.9" cy="31.4" r="4" fill="white"/>
-    <rect x="227.89999999999998" y="61.4" width="110" height="32" rx="8" ry="8" fill="white" opacity="0.93" filter="url(#dropshadow)"/>
-    <text x="282.9" y="74.4" textAnchor="middle" fontFamily="Nunito,sans-serif" fontSize="10" fontWeight="800" fill="#C24D00">Puerto Plata</text>
-    <text x="282.9" y="86.4" textAnchor="middle" fontFamily="Nunito,sans-serif" fontSize="9" fontWeight="600" fill="#F26000">Próximamente</text>
-  </g>
-  {/*  Punta Cana  */}
-  <g>
-    
-    <circle cx="775.0" cy="308.3" r="11" fill="#FFB380" stroke="white" strokeWidth="2.5" filter="url(#dropshadow)"/>
-    <circle cx="775.0" cy="308.3" r="4" fill="white"/>
-    <rect x="677" y="252.3" width="110" height="32" rx="8" ry="8" fill="white" opacity="0.93" filter="url(#dropshadow)"/>
-    <text x="775.0" y="265.3" textAnchor="middle" fontFamily="Nunito,sans-serif" fontSize="10" fontWeight="800" fill="#C24D00">Punta Cana</text>
-    <text x="775.0" y="277.3" textAnchor="middle" fontFamily="Nunito,sans-serif" fontSize="9" fontWeight="600" fill="#F26000">Próximamente</text>
-  </g>
-  {/*  San Pedro  */}
-  <g>
-    
-    <circle cx="581.1" cy="332.7" r="11" fill="#FF8C42" stroke="white" strokeWidth="2.5" filter="url(#dropshadow)"/>
-    <circle cx="581.1" cy="332.7" r="4" fill="white"/>
-    <rect x="526.1" y="276.7" width="110" height="32" rx="8" ry="8" fill="white" opacity="0.93" filter="url(#dropshadow)"/>
-    <text x="581.1" y="289.7" textAnchor="middle" fontFamily="Nunito,sans-serif" fontSize="10" fontWeight="800" fill="#C24D00">San Pedro</text>
-    <text x="581.1" y="301.7" textAnchor="middle" fontFamily="Nunito,sans-serif" fontSize="9" fontWeight="600" fill="#F26000">En crecimiento</text>
-  </g>
+        {/*  Marcadores oficiales con Logo Listo y animación en todas las ciudades del país  */}
+        {DOMINICAN_CITIES.map((city, idx) => {
+          const isSelectedRegion = selectedMapRegion === 'all' || city.region === selectedMapRegion;
+          const isCityActive = activeCityId === city.id;
+          if (!isSelectedRegion) return null;
+
+          return (
+            <g
+              key={city.id}
+              onClick={() => setActiveCityId(activeCityId === city.id ? null : city.id)}
+              onMouseEnter={() => setActiveCityId(city.id)}
+              onMouseLeave={() => setActiveCityId(null)}
+              style={{ cursor: 'pointer' }}
+            >
+              {/* Onda expansiva de radar animada (Radar pulse animation) */}
+              <circle cx={city.x} cy={city.y} r="14" fill="#FFFFFF" opacity="0.45">
+                <animate attributeName="r" values="9;22;9" dur={`${1.8 + (idx % 4) * 0.3}s`} repeatCount="indefinite" />
+                <animate attributeName="opacity" values="0.65;0;0.65" dur={`${1.8 + (idx % 4) * 0.3}s`} repeatCount="indefinite" />
+              </circle>
+
+              {/* Círculo base blanco con borde naranja Listo */}
+              <circle
+                cx={city.x}
+                cy={city.y}
+                r={isCityActive ? "12" : "9.5"}
+                fill="#FFFFFF"
+                stroke={isCityActive ? "#0B0C10" : "#F26000"}
+                strokeWidth={isCityActive ? "2.5" : "2"}
+                filter="url(#dropshadow)"
+              />
+
+              {/* Logo oficial de Listo en el centro de cada marcador */}
+              <image
+                href={logoMarcador}
+                xlinkHref={logoMarcador}
+                x={city.x - (isCityActive ? 8.5 : 7)}
+                y={city.y - (isCityActive ? 8.5 : 7)}
+                width={isCityActive ? "17" : "14"}
+                height={isCityActive ? "17" : "14"}
+                preserveAspectRatio="xMidYMid meet"
+              />
+
+              {/* Tarjeta flotante cuando la ciudad está activa o seleccionada */}
+              {isCityActive && (
+                <g transform={`translate(${city.x}, ${city.y < 120 ? city.y + 16 : city.y - 44})`} style={{ pointerEvents: 'none' }}>
+                  <rect
+                    x="-68"
+                    y="0"
+                    width="136"
+                    height="38"
+                    rx="9"
+                    fill="#0B0C10"
+                    stroke="#FF6B00"
+                    strokeWidth="1.8"
+                    filter="url(#dropshadow)"
+                  />
+                  <text x="0" y="15" textAnchor="middle" fontFamily="'Outfit', sans-serif" fontSize="10.5" fontWeight="900" fill="#FFFFFF">
+                    {city.name}
+                  </text>
+                  <text x="0" y="28" textAnchor="middle" fontFamily="'Outfit', sans-serif" fontSize="9" fontWeight="700" fill="#FF8533">
+                    ● {city.count}
+                  </text>
+                </g>
+              )}
+            </g>
+          );
+        })}
+
+        {/* Micro-etiquetas limpias para las 5 ciudades principales cuando ninguna está activa para evitar solapamientos */}
+        {!activeCityId && [
+          { name: 'Santo Domingo', x: 444, y: 350 },
+          { name: 'Santiago', x: 242, y: 98 },
+          { name: 'Puerto Plata', x: 265, y: 24 },
+          { name: 'Punta Cana', x: 755, y: 338 },
+          { name: 'Barahona', x: 180, y: 410 }
+        ].map(hub => (
+          <g key={hub.name} style={{ pointerEvents: 'none' }}>
+            <rect x={hub.x - 44} y={hub.y - 10} width="88" height="20" rx="6" fill="#FFFFFF" opacity="0.95" filter="url(#dropshadow)" />
+            <text x={hub.x} y={hub.y + 4} textAnchor="middle" fontFamily="'Outfit', sans-serif" fontSize="9" fontWeight="800" fill="#C24D00">
+              {hub.name}
+            </text>
+          </g>
+        ))}
 
         {/*  Ocean labels  */}
         <text x="400" y="18" textAnchor="middle" fontFamily="Nunito,sans-serif" fontSize="13" fill="rgba(255,255,255,0.45)" fontStyle={{}} fontWeight="600">Océano Atlántico</text>
@@ -1701,36 +2263,72 @@ export default function LandingPage({ navigate, lang }) {
       </svg>
     </div>
 
-    {/*  City badges  */}
-    <div style={{"display": "flex", "gap": "10px", "justifyContent": "center", "flexWrap": "wrap", "marginBottom": "20px"}}>
-      <span style={{"display": "inline-flex", "alignItems": "center", "gap": "7px", "background": "#F26000", "color": "#fff", "padding": "9px 18px", "borderRadius": "50px", "fontWeight": "800", "fontSize": "13px", "boxShadow": "0 4px 14px rgba(242,96,0,0.35)"}}>
-        <span style={{"width": "9px", "height": "9px", "background": "#fff", "borderRadius": "50%", "animation": "pulse 1.5s infinite"}}></span>Santo Domingo
-      </span>
-      <span style={{"display": "inline-flex", "alignItems": "center", "gap": "7px", "background": "#F26000", "color": "#fff", "padding": "9px 18px", "borderRadius": "50px", "fontWeight": "800", "fontSize": "13px", "boxShadow": "0 4px 14px rgba(242,96,0,0.35)"}}>
-        <span style={{"width": "9px", "height": "9px", "background": "#fff", "borderRadius": "50%", "animation": "pulse 1.5s infinite"}}></span>Santiago
-      </span>
-      <span style={{"display": "inline-flex", "alignItems": "center", "gap": "7px", "background": "#FF8C42", "color": "#fff", "padding": "9px 18px", "borderRadius": "50px", "fontWeight": "800", "fontSize": "13px"}}>
-        <span style={{"width": "9px", "height": "9px", "background": "#fff", "borderRadius": "50%"}}></span>La Vega
-      </span>
-      <span style={{"display": "inline-flex", "alignItems": "center", "gap": "7px", "background": "#FF8C42", "color": "#fff", "padding": "9px 18px", "borderRadius": "50px", "fontWeight": "800", "fontSize": "13px"}}>
-        <span style={{"width": "9px", "height": "9px", "background": "#fff", "borderRadius": "50%"}}></span>La Romana
-      </span>
-      <span style={{"display": "inline-flex", "alignItems": "center", "gap": "7px", "background": "#FF8C42", "color": "#fff", "padding": "9px 18px", "borderRadius": "50px", "fontWeight": "800", "fontSize": "13px"}}>
-        <span style={{"width": "9px", "height": "9px", "background": "#fff", "borderRadius": "50%"}}></span>San Pedro de Macorís
-      </span>
-      <span style={{"display": "inline-flex", "alignItems": "center", "gap": "7px", "background": "#FFD4B8", "color": "#C24D00", "padding": "9px 18px", "borderRadius": "50px", "fontWeight": "800", "fontSize": "13px", "border": "2px dashed #F26000"}}>
-        🚀 Puerto Plata
-      </span>
-      <span style={{"display": "inline-flex", "alignItems": "center", "gap": "7px", "background": "#FFD4B8", "color": "#C24D00", "padding": "9px 18px", "borderRadius": "50px", "fontWeight": "800", "fontSize": "13px", "border": "2px dashed #F26000"}}>
-        🚀 Punta Cana
-      </span>
+    {/*  Filtros de región interactivos  */}
+    <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '18px' }}>
+      {[
+        { id: 'all', label: '🇩🇴 Todas las ciudades (33)' },
+        { id: 'capital', label: '🏙️ Gran Santo Domingo' },
+        { id: 'cibao', label: '🌾 Cibao / Norte' },
+        { id: 'este', label: '🏖️ Región Este' },
+        { id: 'sur', label: '☀️ Región Sur' }
+      ].map(tab => (
+        <button
+          key={tab.id}
+          type="button"
+          onClick={() => setSelectedMapRegion(tab.id)}
+          style={{
+            background: selectedMapRegion === tab.id ? '#F26000' : 'rgba(255, 255, 255, 0.9)',
+            color: selectedMapRegion === tab.id ? '#FFFFFF' : '#475569',
+            border: selectedMapRegion === tab.id ? '1.5px solid #F26000' : '1px solid rgba(242, 96, 0, 0.25)',
+            padding: '7px 16px',
+            borderRadius: '50px',
+            fontWeight: '800',
+            fontSize: '12.5px',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+            boxShadow: selectedMapRegion === tab.id ? '0 4px 14px rgba(242, 96, 0, 0.35)' : 'none'
+          }}
+        >
+          {tab.label}
+        </button>
+      ))}
     </div>
 
-    {/*  Legend  */}
+    {/*  Chips de ciudades con Logo Listo según región  */}
+    <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap', maxWidth: '850px', margin: '0 auto 20px' }}>
+      {DOMINICAN_CITIES
+        .filter(c => selectedMapRegion === 'all' || c.region === selectedMapRegion)
+        .map(city => (
+          <span
+            key={city.id}
+            onClick={() => setActiveCityId(activeCityId === city.id ? null : city.id)}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              background: activeCityId === city.id ? '#0B0C10' : (city.type === 'active' ? '#F26000' : '#FF8C42'),
+              color: '#FFFFFF',
+              border: activeCityId === city.id ? '1.5px solid #FF6B00' : 'none',
+              padding: '6px 14px',
+              borderRadius: '50px',
+              fontWeight: '800',
+              fontSize: '12px',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+            }}
+          >
+            <img src={logoMarcador} alt="Listo" style={{ width: '13px', height: '13px', borderRadius: '50%', background: '#fff', padding: '1px' }} />
+            {city.name}
+          </span>
+        ))}
+    </div>
+
+    {/*  Leyenda de cobertura  */}
     <div style={{"display": "flex", "gap": "20px", "justifyContent": "center", "flexWrap": "wrap", "marginBottom": "18px", "fontSize": "12px", "fontWeight": "700", "color": "#888"}}>
-      <span style={{"display": "flex", "alignItems": "center", "gap": "6px"}}><span style={{"width": "12px", "height": "12px", "background": "#F26000", "borderRadius": "50%", "border": "2px solid white", "boxShadow": "0 0 0 3px rgba(242,96,0,0.3)", "display": "inline-block"}}></span>Activo</span>
+      <span style={{"display": "flex", "alignItems": "center", "gap": "6px"}}><span style={{"width": "12px", "height": "12px", "background": "#F26000", "borderRadius": "50%", "border": "2px solid white", "boxShadow": "0 0 0 3px rgba(242,96,0,0.3)", "display": "inline-block"}}></span>Alta Demanda</span>
       <span style={{"display": "flex", "alignItems": "center", "gap": "6px"}}><span style={{"width": "12px", "height": "12px", "background": "#FF8C42", "borderRadius": "50%", "border": "2px solid white", "display": "inline-block"}}></span>En crecimiento</span>
-      <span style={{"display": "flex", "alignItems": "center", "gap": "6px"}}><span style={{"width": "12px", "height": "12px", "background": "#FFB380", "borderRadius": "50%", "border": "2px dashed #F26000", "display": "inline-block"}}></span>Próximamente</span>
+      <span style={{"display": "flex", "alignItems": "center", "gap": "6px"}}><span style={{"width": "12px", "height": "12px", "background": "#FFB380", "borderRadius": "50%", "border": "2px dashed #F26000", "display": "inline-block"}}></span>Expansión activa</span>
     </div>
 
     {/*  CTA  */}
@@ -2072,7 +2670,7 @@ export default function LandingPage({ navigate, lang }) {
 
 
 {/*  PREGUNTAS CLIENTES VS PROFESIONALES  */}
-<section style={{"background": "#fff", "padding": "40px 5%"}}>
+<section style={{"background": "#fff", "padding": "50px 5%"}} id="faq">
   <div className="section-inner">
 
     <div style={{"textAlign": "center", "marginBottom": "28px"}}>
@@ -2080,10 +2678,10 @@ export default function LandingPage({ navigate, lang }) {
         ❓ Resolvemos tus dudas
       </div>
       <h2 style={{"fontFamily": "'Fredoka One',cursive", "fontSize": "clamp(24px,4vw,42px)", "color": "#F26000", "lineHeight": "1.1", "marginBottom": "8px"}}>
-        ¿Eres cliente o profesional?
+        ¿Tienes dudas? <span>Selecciona tu perfil</span>
       </h2>
       <p style={{"fontSize": "15px", "color": "#6B7280", "maxWidth": "460px", "margin": "0 auto"}}>
-        Selecciona tu perfil y encuentra respuestas a tus preguntas.
+        Encuentra respuestas claras tanto si buscas contratar o si eres profesional.
       </p>
     </div>
 
@@ -2104,14 +2702,14 @@ export default function LandingPage({ navigate, lang }) {
         <summary style={{"fontWeight": "800", "fontSize": "15px", "color": "#C24D00", "listStyle": "none", "display": "flex", "justifyContent": "space-between", "alignItems": "center"}}>
           ¿Cómo pido un servicio? <span style={{"fontSize": "20px", "color": "#F26000"}}>+</span>
         </summary>
-        <p style={{"marginTop": "12px", "color": "#555", "fontSize": "14px", "lineHeight": "1.7"}}>Descarga la app, regístrate, busca el servicio que necesitas, selecciona un profesional verificado y confirma tu solicitud. En minutos tendrás una respuesta.</p>
+        <p style={{"marginTop": "12px", "color": "#555", "fontSize": "14px", "lineHeight": "1.7"}}>Descarga la app o busca aquí el servicio que necesitas, selecciona un profesional verificado y confirma tu solicitud. En minutos tendrás una respuesta directa.</p>
       </details>
 
       <details style={{"background": "#FFF3EC", "borderRadius": "14px", "padding": "18px 20px", "border": "1px solid #FFD4B8", "cursor": "pointer"}}>
         <summary style={{"fontWeight": "800", "fontSize": "15px", "color": "#C24D00", "listStyle": "none", "display": "flex", "justifyContent": "space-between", "alignItems": "center"}}>
           ¿Los profesionales están verificados? <span style={{"fontSize": "20px", "color": "#F26000"}}>+</span>
         </summary>
-        <p style={{"marginTop": "12px", "color": "#555", "fontSize": "14px", "lineHeight": "1.7"}}>Sí. Todos pasan por verificación de identidad, antecedentes penales, prueba de habilidades y sistema de reputación antes de ser activados.</p>
+        <p style={{"marginTop": "12px", "color": "#555", "fontSize": "14px", "lineHeight": "1.7"}}>Sí. Todos pasan por verificación de identidad, antecedentes penales con la Policía Nacional, prueba técnica de habilidades y sistema de reputación antes de ser activados.</p>
       </details>
 
       <details style={{"background": "#FFF3EC", "borderRadius": "14px", "padding": "18px 20px", "border": "1px solid #FFD4B8", "cursor": "pointer"}}>
@@ -2125,14 +2723,21 @@ export default function LandingPage({ navigate, lang }) {
         <summary style={{"fontWeight": "800", "fontSize": "15px", "color": "#C24D00", "listStyle": "none", "display": "flex", "justifyContent": "space-between", "alignItems": "center"}}>
           ¿Cómo pago el servicio? <span style={{"fontSize": "20px", "color": "#F26000"}}>+</span>
         </summary>
-        <p style={{"marginTop": "12px", "color": "#555", "fontSize": "14px", "lineHeight": "1.7"}}>Puedes pagar en efectivo o por transferencia bancaria directamente al profesional. El pago se confirma después de completar el servicio.</p>
+        <p style={{"marginTop": "12px", "color": "#555", "fontSize": "14px", "lineHeight": "1.7"}}>Puedes pagar en efectivo o por transferencia bancaria directamente al profesional. El pago se efectúa con total transparencia después de completar el servicio.</p>
       </details>
 
       <details style={{"background": "#FFF3EC", "borderRadius": "14px", "padding": "18px 20px", "border": "1px solid #FFD4B8", "cursor": "pointer"}}>
         <summary style={{"fontWeight": "800", "fontSize": "15px", "color": "#C24D00", "listStyle": "none", "display": "flex", "justifyContent": "space-between", "alignItems": "center"}}>
-          ¿Qué pasa si no estoy satisfecho? <span style={{"fontSize": "20px", "color": "#F26000"}}>+</span>
+          ¿En qué ciudades está disponible Listo Patrón? <span style={{"fontSize": "20px", "color": "#F26000"}}>+</span>
         </summary>
-        <p style={{"marginTop": "12px", "color": "#555", "fontSize": "14px", "lineHeight": "1.7"}}>Puedes dejar una reseña y contactar a soporte directamente desde la app. Los profesionales con calificaciones bajas son suspendidos automáticamente.</p>
+        <p style={{"marginTop": "12px", "color": "#555", "fontSize": "14px", "lineHeight": "1.7"}}>Listo Patrón opera en toda República Dominicana, con cobertura destacada en Santiago de los Caballeros, Santo Domingo, La Romana, San Cristóbal, Puerto Plata y San Pedro de Macorís.</p>
+      </details>
+
+      <details style={{"background": "#FFF3EC", "borderRadius": "14px", "padding": "18px 20px", "border": "1px solid #FFD4B8", "cursor": "pointer"}}>
+        <summary style={{"fontWeight": "800", "fontSize": "15px", "color": "#C24D00", "listStyle": "none", "display": "flex", "justifyContent": "space-between", "alignItems": "center"}}>
+          ¿Cómo contacto a soporte si tengo algún inconveniente? <span style={{"fontSize": "20px", "color": "#F26000"}}>+</span>
+        </summary>
+        <p style={{"marginTop": "12px", "color": "#555", "fontSize": "14px", "lineHeight": "1.7"}}>Puedes escribirnos directamente a nuestro WhatsApp oficial (809-909-0455) desde el botón flotante en la web o desde la app. Nuestro equipo responde de inmediato.</p>
       </details>
 
     </div>
@@ -2177,69 +2782,6 @@ export default function LandingPage({ navigate, lang }) {
 
     </div>
 
-  </div>
-</section>
-
-
-
-{/*  FAQ  */}
-<section className="faq-section" id="faq">
-  <div className="section-inner">
-    <div className="chip sr" style={{"margin": "0 auto 16px", "display": "table"}}>❓ Preguntas frecuentes</div>
-    <h2 className="section-title sr sr-delay-1" style={{"textAlign": "center"}}>¿Tienes <span>dudas?</span></h2>
-    <p className="section-sub sr sr-delay-2" style={{"margin": "0 auto 56px", "textAlign": "center"}}>Todo lo que necesitas saber sobre Listo.</p>
-
-    <div className="faq-grid sr sr-delay-2">
-
-      <div className="faq-item" onClick={() => { toggleFaq(this) }}>
-        <div className="faq-q">
-          <span>¿Cómo funciona Listo?</span>
-          <span className="faq-arrow">▼</span>
-        </div>
-        <div className="faq-a">Busca el servicio que necesitas, elige un profesional verificado cerca de ti y coordina directamente. En minutos tienes a alguien en camino.</div>
-      </div>
-
-      <div className="faq-item" onClick={() => { toggleFaq(this) }}>
-        <div className="faq-q">
-          <span>¿Los profesionales están verificados?</span>
-          <span className="faq-arrow">▼</span>
-        </div>
-        <div className="faq-a">Sí. Todos los profesionales pasan por un proceso de verificación antes de aparecer en la plataforma. También puedes ver sus calificaciones y reseñas de otros clientes.</div>
-      </div>
-
-      <div className="faq-item" onClick={() => { toggleFaq(this) }}>
-        <div className="faq-q">
-          <span>¿Cómo se realiza el pago?</span>
-          <span className="faq-arrow">▼</span>
-        </div>
-        <div className="faq-a">El pago se coordina directamente con el profesional. Puedes pagar en efectivo o por transferencia bancaria según el acuerdo con el profesional.</div>
-      </div>
-
-      <div className="faq-item" onClick={() => { toggleFaq(this) }}>
-        <div className="faq-q">
-          <span>¿Qué pasa si tengo un problema con el servicio?</span>
-          <span className="faq-arrow">▼</span>
-        </div>
-        <div className="faq-a">Puedes contactarnos directamente por WhatsApp o email. Nuestro equipo estará disponible para ayudarte a resolver cualquier inconveniente.</div>
-      </div>
-
-      <div className="faq-item" onClick={() => { toggleFaq(this) }}>
-        <div className="faq-q">
-          <span>¿En qué ciudades está disponible?</span>
-          <span className="faq-arrow">▼</span>
-        </div>
-        <div className="faq-a">Listo está disponible en toda República Dominicana, con mayor cobertura en Santo Domingo, Santiago, La Romana y San Pedro de Macorís.</div>
-      </div>
-
-      <div className="faq-item" onClick={() => { toggleFaq(this) }}>
-        <div className="faq-q">
-          <span>¿Cómo me registro como profesional?</span>
-          <span className="faq-arrow">▼</span>
-        </div>
-        <div className="faq-a">Entra a la app, selecciona "Soy profesional", completa tu perfil con tus datos y especialidad, y elige el plan que mejor se adapte a ti. Los primeros 3 meses son gratis (3 contratos por mes).</div>
-      </div>
-
-    </div>
   </div>
 </section>
 
@@ -2400,14 +2942,14 @@ export default function LandingPage({ navigate, lang }) {
       <div className="why-app-cta reveal">
         <h3>¿Listo para empezar?</h3>
         <div className="app-buttons" style={{"display": "flex", "gap": "14px", "flexWrap": "wrap", "justifyContent": "center"}}>
-          <a href="https://play.google.com/store/apps/details?id=com.listopatron" data-platform="android" target="_blank" rel="noopener noreferrer" onClick={() => { trackAppDownload('android') }} style={{"display": "inline-flex", "alignItems": "center", "gap": "10px", "background": "#1a1a1a", "color": "#fff", "padding": "12px 22px", "borderRadius": "12px", "textDecoration": "none", "fontFamily": "'Nunito',sans-serif", "boxShadow": "0 4px 14px rgba(0,0,0,0.25)", "transition": "transform .2s,box-shadow .2s"}} onMouseOver={() => { this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 24px rgba(0,0,0,0.35)' }} onMouseOut={() => { this.style.transform='';this.style.boxShadow='0 4px 14px rgba(0,0,0,0.25)' }}>
+          <a href="https://play.google.com/store/apps/details?id=com.listopatron.app&pcampaignid=web_share" data-platform="android" target="_blank" rel="noopener noreferrer" onClick={() => { trackAppDownload('android') }} style={{"display": "inline-flex", "alignItems": "center", "gap": "10px", "background": "#1a1a1a", "color": "#fff", "padding": "12px 22px", "borderRadius": "12px", "textDecoration": "none", "fontFamily": "'Nunito',sans-serif", "boxShadow": "0 4px 14px rgba(0,0,0,0.25)", "transition": "transform .2s,box-shadow .2s"}} onMouseOver={() => { this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 24px rgba(0,0,0,0.35)' }} onMouseOut={() => { this.style.transform='';this.style.boxShadow='0 4px 14px rgba(0,0,0,0.25)' }}>
             <svg viewBox="0 0 24 24" fill="white" width="24" height="24"><path d="M3,20.5V3.5C3,2.91 3.34,2.39 3.84,2.15L13.69,12L3.84,21.85C3.34,21.6 3,21.09 3,20.5M16.81,15.12L6.05,21.34L14.54,12.85L16.81,15.12M20.16,10.81C20.5,11.08 20.75,11.5 20.75,12C20.75,12.5 20.53,12.9 20.18,13.18L17.89,14.5L15.39,12L17.89,9.5L20.16,10.81M6.05,2.66L16.81,8.88L14.54,11.15L6.05,2.66Z"/></svg>
             <div style={{"lineHeight": "1.2"}}>
               <div style={{"fontSize": "11px", "opacity": ".7"}}>Descargar en</div>
               <div style={{"fontSize": "15px", "fontWeight": "800"}}>Google Play</div>
             </div>
           </a>
-          <a href="https://apps.apple.com/app/listopatron/id000000000" data-platform="ios" target="_blank" rel="noopener noreferrer" onClick={() => { trackAppDownload('ios') }} style={{"display": "inline-flex", "alignItems": "center", "gap": "10px", "background": "#1a1a1a", "color": "#fff", "padding": "12px 22px", "borderRadius": "12px", "textDecoration": "none", "fontFamily": "'Nunito',sans-serif", "boxShadow": "0 4px 14px rgba(0,0,0,0.25)", "transition": "transform .2s,box-shadow .2s"}} onMouseOver={() => { this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 24px rgba(0,0,0,0.35)' }} onMouseOut={() => { this.style.transform='';this.style.boxShadow='0 4px 14px rgba(0,0,0,0.25)' }}>
+          <a href="https://apps.apple.com/do/app/listo-patron/id6799846724" data-platform="ios" target="_blank" rel="noopener noreferrer" onClick={() => { trackAppDownload('ios') }} style={{"display": "inline-flex", "alignItems": "center", "gap": "10px", "background": "#1a1a1a", "color": "#fff", "padding": "12px 22px", "borderRadius": "12px", "textDecoration": "none", "fontFamily": "'Nunito',sans-serif", "boxShadow": "0 4px 14px rgba(0,0,0,0.25)", "transition": "transform .2s,box-shadow .2s"}} onMouseOver={() => { this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 24px rgba(0,0,0,0.35)' }} onMouseOut={() => { this.style.transform='';this.style.boxShadow='0 4px 14px rgba(0,0,0,0.25)' }}>
             <svg viewBox="0 0 24 24" fill="white" width="24" height="24"><path d="M18.71,19.5C17.88,20.74 17,21.95 15.66,21.97C14.32,22 13.89,21.18 12.37,21.18C10.84,21.18 10.37,21.95 9.1,22C7.79,22.05 6.8,20.68 5.96,19.47C4.25,17 2.94,12.45 4.7,9.39C5.57,7.87 7.13,6.91 8.82,6.88C10.1,6.86 11.32,7.75 12.11,7.75C12.89,7.75 14.37,6.68 15.92,6.84C16.57,6.87 18.39,7.1 19.56,8.82C19.47,8.88 17.39,10.1 17.41,12.63C17.44,15.65 20.06,16.66 20.09,16.67C20.06,16.74 19.67,18.11 18.71,19.5M13,3.5C13.73,2.67 14.94,2.04 15.94,2C16.07,3.17 15.6,4.35 14.9,5.19C14.21,6.04 13.07,6.7 11.95,6.61C11.8,5.46 12.36,4.26 13,3.5Z"/></svg>
             <div style={{"lineHeight": "1.2"}}>
               <div style={{"fontSize": "11px", "opacity": ".7"}}>Descargar en</div>
@@ -2516,6 +3058,76 @@ export default function LandingPage({ navigate, lang }) {
       onClose={() => setShowDeliveryModal(false)} 
       navigate={navigate} 
     />
+  )}
+
+  {/* MODAL PORTAL DESCARGA DE APP (APP STORE Y GOOGLE PLAY) */}
+  {showDownloadDropdown && (
+    <div className="download-app-portal-wrapper">
+      {/* FONDO TRANSLÚCIDO PARA CERRAR AL TOCAR AFUERA */}
+      <div 
+        className="download-app-backdrop" 
+        onClick={() => setShowDownloadDropdown(false)} 
+      />
+
+      {/* TARJETA MODAL CON LOS ICONOS DE CADA TIENDA */}
+      <div className="download-app-modal-card" role="dialog" aria-modal="true">
+        <div className="download-app-modal-header">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <span style={{ fontSize: '24px' }}>📲</span>
+            <div>
+              <div style={{ fontSize: '16px', fontWeight: '900', color: '#FFFFFF', letterSpacing: '-0.3px', fontFamily: "'Outfit', sans-serif" }}>
+                Descarga <span style={{ color: '#FF6B00' }}>Listo Patrón</span>
+              </div>
+              <div style={{ fontSize: '11.5px', color: '#94A3B8', fontWeight: '600' }}>
+                Disponible para iOS y Android
+              </div>
+            </div>
+          </div>
+          <button 
+            type="button"
+            onClick={() => setShowDownloadDropdown(false)} 
+            className="download-app-close-btn"
+            aria-label="Cerrar modal de descarga"
+          >
+            ✕
+          </button>
+        </div>
+
+        <div className="download-app-badges-list">
+          {/* BOTÓN APP STORE (APPLE) */}
+          <a
+            href="https://apps.apple.com/do/app/listo-patron/id6799846724"
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => setShowDownloadDropdown(false)}
+            className="download-badge-item"
+            title="Descargar en el App Store"
+          >
+            <img
+              src="./assets/app_store_badge.png"
+              alt="Available on the App Store"
+              onError={(e) => { e.target.onerror = null; e.target.src = 'https://upload.wikimedia.org/wikipedia/commons/3/3c/Download_on_the_App_Store_Badge.svg'; }}
+            />
+          </a>
+
+          {/* BOTÓN GOOGLE PLAY (ANDROID) */}
+          <a
+            href="https://play.google.com/store/apps/details?id=com.listopatron.app&pcampaignid=web_share"
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => setShowDownloadDropdown(false)}
+            className="download-badge-item"
+            title="Disponible en Google Play"
+          >
+            <img
+              src="./assets/google_play_badge.png"
+              alt="Get it on Google Play"
+              onError={(e) => { e.target.onerror = null; e.target.src = 'https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg'; }}
+            />
+          </a>
+        </div>
+      </div>
+    </div>
   )}
 
 </div>
