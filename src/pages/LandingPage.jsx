@@ -1316,6 +1316,154 @@ export default function LandingPage({ navigate, lang }) {
       </div>
     </div>
 
+    {/*  CARRUSEL OFICIAL DE PLANES PROFESIONALES (BÁSICO, GOLD, PLATINUM, VIP)  */}
+    <div id="planes-carrusel-section" style={{ width: '100%', background: '#F26000', padding: '16px 15px 12px', display: 'flex', justifyContent: 'center' }}>
+      <div className="plans-hero-container">
+        {/* Flecha Anterior */}
+        <button 
+          onClick={prevPlanSlide} 
+          className="plans-hero-arrow prev" 
+          aria-label="Plan anterior"
+        >
+          ‹
+        </button>
+
+        {/* Flecha Siguiente */}
+        <button 
+          onClick={nextPlanSlide} 
+          className="plans-hero-arrow next" 
+          aria-label="Siguiente plan"
+        >
+          ›
+        </button>
+
+        {/* Track del Slider */}
+        <div 
+          className="plans-hero-track-wrapper"
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+        >
+          {heroPlans.map((plan, index) => {
+            if (index !== currentPlanSlide) return null;
+            return (
+              <div 
+                key={plan.id}
+                className="plans-hero-slide"
+                style={{ background: plan.bgGradient }}
+              >
+                {/* Columna Izquierda: Información del Plan */}
+                <div className="plans-hero-info">
+                  <div className="plans-hero-badge">
+                    {plan.badge}
+                  </div>
+                  <h2 className="plans-hero-title">
+                    {plan.title}
+                  </h2>
+                  <div className="plans-hero-price-row">
+                    <span className="plans-hero-price">{plan.price}</span>
+                    <span className="plans-hero-period">{plan.period}</span>
+                  </div>
+                </div>
+
+                {/* Columna Derecha: Tarjeta Frosted Glass con Beneficios */}
+                <div className="plans-hero-card">
+                  {/* Logo Listo en la esquina superior derecha */}
+                  <img
+                    src="./assets/logo_esquina.png"
+                    alt="Listo"
+                    className="plans-hero-corner-logo"
+                  />
+
+                  {/* Lista de beneficios con checkmarks verdes */}
+                  <div className="plans-hero-benefits">
+                    {plan.benefits.map((b, i) => (
+                      <div key={i} className="plans-hero-benefit-item">
+                        <span className="plans-hero-check">✓</span>
+                        <span className="plans-hero-benefit-text">{b}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Parte inferior con Botón y Badges de descarga */}
+                  <div className="plans-hero-card-bottom">
+                    <button
+                      onClick={() => openPlanModalWithPlan(plan.id)}
+                      className="plans-hero-cta-btn"
+                    >
+                      {plan.ctaText}
+                    </button>
+
+                    <div className="plans-hero-store-badges">
+                      <a href="https://play.google.com/store/apps/details?id=com.listopatron.app&pcampaignid=web_share" target="_blank" rel="noopener noreferrer" title="Google Play">
+                        <img src="./assets/google_play_badge.png" onError={(e) => { e.target.onerror = null; e.target.src = 'https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg'; }} alt="Google Play" />
+                      </a>
+                      <a href="https://apps.apple.com/do/app/listo-patron/id6799846724" target="_blank" rel="noopener noreferrer" title="App Store">
+                        <img src="./assets/app_store_badge.png" onError={(e) => { e.target.onerror = null; e.target.src = 'https://upload.wikimedia.org/wikipedia/commons/3/3c/Download_on_the_App_Store_Badge.svg'; }} alt="App Store" />
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Indicador de Puntos (Dots) */}
+        <div className="plans-hero-dots-container">
+          {heroPlans.map((_, idx) => (
+            <button
+              key={idx}
+              onClick={() => setCurrentPlanSlide(idx)}
+              className={`plans-hero-dot ${idx === currentPlanSlide ? 'active' : ''}`}
+              aria-label={`Ir al plan ${idx + 1}`}
+            />
+          ))}
+        </div>
+      </div>
+    </div>
+
+    {/* BANNER OFICIAL: ¿TIENES HAMBRE? PEDIDOS LISTO */}
+    <a 
+      href="https://listopatron.vercel.app/?page=mandame"
+      onClick={(e) => {
+        e.preventDefault();
+        window.location.href = 'https://listopatron.vercel.app/?page=mandame';
+      }}
+      style={{
+        display: "block",
+        width: "100%",
+        maxWidth: "1000px",
+        margin: "18px 15px 6px",
+        borderRadius: "20px",
+        overflow: "hidden",
+        boxShadow: "0 10px 30px rgba(0,0,0,0.28)",
+        border: "3px solid rgba(255,255,255,0.35)",
+        cursor: "pointer",
+        textDecoration: "none",
+        transition: "transform 0.25s ease, box-shadow 0.25s ease"
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.transform = "scale(1.015)";
+        e.currentTarget.style.boxShadow = "0 16px 40px rgba(0,0,0,0.4)";
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.transform = "scale(1)";
+        e.currentTarget.style.boxShadow = "0 10px 30px rgba(0,0,0,0.28)";
+      }}
+      title="¡Entra y conoce nuestros restaurantes en Pedidos Listo!"
+    >
+      <img 
+        src="./assets/banner_tienes_hambre.jpg" 
+        alt="¿Tienes Hambre? ¡Entra y conoce nuestros restaurantes! Ver restaurantes - PedidosListo"
+        style={{
+          width: "100%",
+          height: "auto",
+          display: "block",
+          objectFit: "contain"
+        }}
+      />
+    </a>
+
     {/* BANNER OFICIAL: FABRICACIÓN DE BOLSAS Y UNIFORMES PEDIDOSLISTO */}
     <div 
       style={{
@@ -1495,111 +1643,7 @@ export default function LandingPage({ navigate, lang }) {
   </div>
 </div>
 
-{/*  CARRUSEL OFICIAL DE PLANES PROFESIONALES (BÁSICO, GOLD, PLATINUM, VIP)  */}
-<div id="planes-carrusel-section" style={{ width: '100%', background: '#F26000', padding: '0 15px 32px', display: 'flex', justifyContent: 'center' }}>
-  <div className="plans-hero-container">
-    {/* Flecha Anterior */}
-    <button 
-      onClick={prevPlanSlide} 
-      className="plans-hero-arrow prev" 
-      aria-label="Plan anterior"
-    >
-      ‹
-    </button>
 
-    {/* Flecha Siguiente */}
-    <button 
-      onClick={nextPlanSlide} 
-      className="plans-hero-arrow next" 
-      aria-label="Siguiente plan"
-    >
-      ›
-    </button>
-
-    {/* Track del Slider */}
-    <div 
-      className="plans-hero-track-wrapper"
-      onTouchStart={handleTouchStart}
-      onTouchEnd={handleTouchEnd}
-    >
-      {heroPlans.map((plan, index) => {
-        if (index !== currentPlanSlide) return null;
-        return (
-          <div 
-            key={plan.id}
-            className="plans-hero-slide"
-            style={{ background: plan.bgGradient }}
-          >
-            {/* Columna Izquierda: Información del Plan */}
-            <div className="plans-hero-info">
-              <div className="plans-hero-badge">
-                {plan.badge}
-              </div>
-              <h2 className="plans-hero-title">
-                {plan.title}
-              </h2>
-              <div className="plans-hero-price-row">
-                <span className="plans-hero-price">{plan.price}</span>
-                <span className="plans-hero-period">{plan.period}</span>
-              </div>
-            </div>
-
-            {/* Columna Derecha: Tarjeta Frosted Glass con Beneficios */}
-            <div className="plans-hero-card">
-              {/* Logo Listo en la esquina superior derecha */}
-              <img
-                src="./assets/logo_esquina.png"
-                alt="Listo"
-                className="plans-hero-corner-logo"
-              />
-
-              {/* Lista de beneficios con checkmarks verdes */}
-              <div className="plans-hero-benefits">
-                {plan.benefits.map((b, i) => (
-                  <div key={i} className="plans-hero-benefit-item">
-                    <span className="plans-hero-check">✓</span>
-                    <span className="plans-hero-benefit-text">{b}</span>
-                  </div>
-                ))}
-              </div>
-
-              {/* Parte inferior con Botón y Badges de descarga */}
-              <div className="plans-hero-card-bottom">
-                <button
-                  onClick={() => openPlanModalWithPlan(plan.id)}
-                  className="plans-hero-cta-btn"
-                >
-                  {plan.ctaText}
-                </button>
-
-                <div className="plans-hero-store-badges">
-                  <a href="https://play.google.com/store/apps/details?id=com.listopatron.app&pcampaignid=web_share" target="_blank" rel="noopener noreferrer" title="Google Play">
-                    <img src="./assets/google_play_badge.png" onError={(e) => { e.target.onerror = null; e.target.src = 'https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg'; }} alt="Google Play" />
-                  </a>
-                  <a href="https://apps.apple.com/do/app/listo-patron/id6799846724" target="_blank" rel="noopener noreferrer" title="App Store">
-                    <img src="./assets/app_store_badge.png" onError={(e) => { e.target.onerror = null; e.target.src = 'https://upload.wikimedia.org/wikipedia/commons/3/3c/Download_on_the_App_Store_Badge.svg'; }} alt="App Store" />
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
-        );
-      })}
-    </div>
-
-    {/* Indicador de Puntos (Dots) */}
-    <div className="plans-hero-dots-container">
-      {heroPlans.map((_, idx) => (
-        <button
-          key={idx}
-          onClick={() => setCurrentPlanSlide(idx)}
-          className={`plans-hero-dot ${idx === currentPlanSlide ? 'active' : ''}`}
-          aria-label={`Ir al plan ${idx + 1}`}
-        />
-      ))}
-    </div>
-  </div>
-</div>
 
 {/*  CONTADOR DE ESTADÍSTICAS EN UNA SOLA LÍNEA  */}
 <section style={{"background": "#F26000", "padding": "32px 3%", "position": "relative", "overflow": "hidden"}}>
