@@ -755,15 +755,11 @@ export default function App() {
         const toShow = newUnreads[0];
         systemNotifIdsRef.current.add(toShow.id);
         
-        try {
-          const selectedSound = localStorage.getItem('listo_sound_notif') || 'notification_v3';
-          const audio = new Audio(`/audio/${selectedSound}.mp3`);
-          audio.volume = 0.9; audio.play().catch(() => {});
-        } catch(e){}
-
+        playNotificationChime('system')
         setSystemAlert({ id: toShow.id, title: toShow.title, text: toShow.text });
         sendBrowserNotification(toShow.title || '🔔 Notificación de Listo Patrón', {
           body: toShow.text || 'Tienes una nueva notificación.',
+          soundType: 'system',
           url: '/notificaciones'
         })
       }

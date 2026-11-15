@@ -13,6 +13,7 @@ import StoryAvatar from '../components/StoryAvatar'
 import HistoriasViewerModal from '../components/HistoriasViewerModal'
 import { useStories } from '../hooks/useStories'
 import PhotoNoticeModal from '../components/PhotoNoticeModal'
+import { playSynthesizedTone, playNotificationChime } from '../utils/notifications'
 
 
 const txt = {
@@ -106,7 +107,7 @@ const menuItems = [
   { icon: '⭐', labelEs: 'Calificar la app',           labelEn: 'Rate the app',              action: 'rate' },
   { icon: '📄', labelEs: 'Términos y Condiciones',     labelEn: 'Terms & Conditions',        action: 'terms' },
   { icon: '🛡️', labelEs: 'Política de Privacidad',     labelEn: 'Privacy Policy',            action: 'privacyDoc' },
-  { icon: '/icons/sonido_notificaciones.png', labelEs: 'Sonido notificaciones', labelEn: 'Sound notifications', action: 'customize' },
+  { icon: '/icons/sonido_notificaciones.png', labelEs: 'Sonidos de la app (Pedidos, Mensajes...)', labelEn: 'App Sounds (Orders, Chat...)', action: 'customize' },
 ]
 
 const compressImage = (file) => new Promise((resolve, reject) => {
@@ -359,139 +360,325 @@ function CalificarScreen({ lang, onBack }) {
 }
 
 function PersonalizarScreen({ lang, onBack }) {
-  const [soundNotif, setSoundNotif] = useState(
-    localStorage.getItem('listo_sound_notif') || 'notification_v3'
-  )
+  const [activeTab, setActiveTab] = useState('todos')
+  const [savedToast, setSavedToast] = useState('')
+
   const [soundOrder, setSoundOrder] = useState(
-    localStorage.getItem('listo_sound_order') || 'new_contract_v3'
+    () => localStorage.getItem('listo_sound_order') || 'new_contract_v3'
   )
+  const [soundMsg, setSoundMsg] = useState(
+    () => localStorage.getItem('listo_sound_msg') || localStorage.getItem('listo_sound_notif') || 'notification_v3'
+  )
+  const [soundSystem, setSoundSystem] = useState(
+    () => localStorage.getItem('listo_sound_system') || 'Untitled (1)'
+  )
+  const [soundDone, setSoundDone] = useState(
+    () => localStorage.getItem('listo_sound_done') || 'synth_done'
+  )
+  const [soundApp, setSoundApp] = useState(
+    () => localStorage.getItem('listo_sound_app') || 'synth_msg'
+  )
+
   const playingAudioRef = useRef(null)
 
-  const notifOptions = [
-    { value: 'notification_v3', label: lang === 'es' ? 'Burbuja Pop (Por defecto)' : 'Bubble Pop (Default)' },
-    { value: 'notification', label: lang === 'es' ? 'Tono Corto' : 'Short Tone' },
-    { value: 'nuevo_contrato_custom2', label: lang === 'es' ? 'Mensajes y Ofertas Custom (Extraído)' : 'Custom Messages & Offers (Extracted)' },
-    { value: 'Untitled (1)', label: lang === 'es' ? 'Campana de Cristal' : 'Crystal Bell' }
-  ]
-
-  const orderOptions = [
-    { value: 'new_contract_v3', label: lang === 'es' ? 'Burbuja Mágica (Por defecto)' : 'Magic Bubble (Default)' },
-    { value: 'new_contract', label: lang === 'es' ? 'Contrato Clásico' : 'Classic Contract' },
-    { value: 'nuevo_contrato_custom', label: lang === 'es' ? 'Tono Pedidos Custom (Extraído)' : 'Custom Orders Tone (Extracted)' },
-    { value: 'Untitled', label: lang === 'es' ? 'Alerta Campana' : 'Bell Alert' },
-    { value: 'intro_app2', label: lang === 'es' ? 'Melodía Corta' : 'Short Melody' }
-  ]
-
-  const playPreview = (fileName) => {
+  const playPreview = (val, category = 'msg') => {
     if (playingAudioRef.current) {
-      playingAudioRef.current.pause();
-      playingAudioRef.current.currentTime = 0;
+      try {
+        playingAudioRef.current.pause()
+        playingAudioRef.current.currentTime = 0
+      } catch (e) {}
     }
-    const audio = new Audio(`/audio/${fileName}.mp3`)
-    audio.play().catch(err => console.error("Error playing audio preview:", err))
-    playingAudioRef.current = audio
+
+    if (val === 'silencio' || val === 'none') {
+      return
+    }
+
+    if (val.startsWith('synth_')) {
+      playSynthesizedTone(val.replace('synth_', ''))
+      return
+    }
+
+    try {
+      const audio = new Audio(`/audio/${val}.mp3`)
+      audio.volume = category === 'order' ? 0.8 : 0.65
+      audio.play().catch(err => {
+        console.warn('Fallback a sintetizador:', err)
+        playSynthesizedTone(category === 'order' ? 'order' : (category === 'done' ? 'done' : 'msg'))
+      })
+      playingAudioRef.current = audio
+    } catch (e) {
+      playSynthesizedTone(category === 'order' ? 'order' : (category === 'done' ? 'done' : 'msg'))
+    }
   }
 
-  const handleSelectNotif = (val) => {
-    setSoundNotif(val)
-    localStorage.setItem('listo_sound_notif', val)
-    playPreview(val)
-  }
-
-  const handleSelectOrder = (val) => {
-    setSoundOrder(val)
-    localStorage.setItem('listo_sound_order', val)
-    playPreview(val)
+  const handleSelectSound = (categoryKey, stateSetter, val, label, category) => {
+    stateSetter(val)
+    localStorage.setItem(categoryKey, val)
+    playPreview(val, category)
+    setSavedToast(lang === 'es' ? `✅ Tono guardado: ${label}` : `✅ Sound saved: ${label}`)
+    setTimeout(() => setSavedToast(''), 2200)
   }
 
   useEffect(() => {
     return () => {
-      if (playingAudioRef.current) playingAudioRef.current.pause()
+      if (playingAudioRef.current) {
+        try { playingAudioRef.current.pause() } catch(e){}
+      }
     }
   }, [])
 
+  const orderOptions = [
+    { value: 'new_contract_v3', label: lang === 'es' ? 'Burbuja Mágica (Por defecto)' : 'Magic Bubble (Default)', desc: lang === 'es' ? 'Tono alegre y vibrante' : 'Vibrant cheerful tone' },
+    { value: 'synth_order', label: lang === 'es' ? '⚡ Arpegio Mayor Listo (Web Audio)' : '⚡ Major Arpeggio Listo', desc: lang === 'es' ? 'Campana de 3 notas armoniosas' : '3-tone harmonious bell' },
+    { value: 'nuevo_contrato_custom', label: lang === 'es' ? 'Pedidos Listo Express' : 'Pedidos Listo Express', desc: lang === 'es' ? 'Tono especial de pedidos' : 'Special order chime' },
+    { value: 'new_contract', label: lang === 'es' ? 'Contrato Clásico' : 'Classic Contract', desc: lang === 'es' ? 'Sonido formal de servicio' : 'Formal service chime' },
+    { value: 'intro_app2', label: lang === 'es' ? 'Melodía Corta' : 'Short Melody', desc: lang === 'es' ? 'Sinfonía breve de llegada' : 'Brief fanfare' },
+    { value: 'silencio', label: lang === 'es' ? '🔇 Silencio' : '🔇 Mute', desc: lang === 'es' ? 'No reproducir sonido en pedidos' : 'No sound for orders' }
+  ]
+
+  const msgOptions = [
+    { value: 'notification_v3', label: lang === 'es' ? 'Burbuja Pop (Por defecto)' : 'Bubble Pop (Default)', desc: lang === 'es' ? 'Tono corto estilo burbuja' : 'Short bubble chime' },
+    { value: 'synth_msg', label: lang === 'es' ? '⚡ Chime Armónico Listo (Web Audio)' : '⚡ Harmonic Chime Listo', desc: lang === 'es' ? 'Doble campana suave' : 'Soft double bell' },
+    { value: 'notification', label: lang === 'es' ? 'Tono Corto' : 'Short Tone', desc: lang === 'es' ? 'Aviso sutil de chat' : 'Subtle chat notice' },
+    { value: 'nuevo_contrato_custom2', label: lang === 'es' ? 'Mensajes Custom Listo' : 'Custom Messages Listo', desc: lang === 'es' ? 'Tono rítmico alegre' : 'Rhythmic cheerful tone' },
+    { value: 'Untitled (1)', label: lang === 'es' ? 'Campana de Cristal' : 'Crystal Bell', desc: lang === 'es' ? 'Sonido cristalino puro' : 'Crystal bell chime' },
+    { value: 'silencio', label: lang === 'es' ? '🔇 Silencio' : '🔇 Mute', desc: lang === 'es' ? 'No reproducir sonido en mensajes' : 'No sound for messages' }
+  ]
+
+  const systemOptions = [
+    { value: 'Untitled (1)', label: lang === 'es' ? 'Campana de Cristal (Por defecto)' : 'Crystal Bell (Default)', desc: lang === 'es' ? 'Sonido claro y elegante' : 'Clear elegant chime' },
+    { value: 'synth_alert', label: lang === 'es' ? '⚡ Doble Alerta Listo (Web Audio)' : '⚡ Double Alert Listo', desc: lang === 'es' ? 'Doble tono de atención' : 'Double attention chime' },
+    { value: 'notification_v3', label: lang === 'es' ? 'Burbuja Pop' : 'Bubble Pop', desc: lang === 'es' ? 'Tono corto suave' : 'Soft pop tone' },
+    { value: 'notification', label: lang === 'es' ? 'Tono Clásico Corto' : 'Classic Short Tone', desc: lang === 'es' ? 'Aviso simple del sistema' : 'Simple system notice' },
+    { value: 'silencio', label: lang === 'es' ? '🔇 Silencio' : '🔇 Mute', desc: lang === 'es' ? 'No reproducir sonido de sistema' : 'No sound for system notices' }
+  ]
+
+  const doneOptions = [
+    { value: 'synth_done', label: lang === 'es' ? '⚡ Fanfarria de Victoria (Por defecto)' : '⚡ Victory Fanfare (Default)', desc: lang === 'es' ? '4 notas de celebración de servicio' : '4-tone victory celebration' },
+    { value: 'new_contract_v3', label: lang === 'es' ? 'Burbuja Mágica' : 'Magic Bubble', desc: lang === 'es' ? 'Celebración suave' : 'Gentle celebration' },
+    { value: 'intro_app2', label: lang === 'es' ? 'Melodía Alegre' : 'Cheerful Melody', desc: lang === 'es' ? 'Música triunfal de éxito' : 'Triumphant success melody' },
+    { value: 'Untitled (1)', label: lang === 'es' ? 'Campana de Cristal' : 'Crystal Bell', desc: lang === 'es' ? 'Finalización cristalina' : 'Pure crystal finish' },
+    { value: 'silencio', label: lang === 'es' ? '🔇 Silencio' : '🔇 Mute', desc: lang === 'es' ? 'Sin sonido al completar' : 'No sound when done' }
+  ]
+
+  const appOptions = [
+    { value: 'synth_msg', label: lang === 'es' ? '🟢 Activado (Chime suave al interactuar)' : '🟢 Enabled (Soft interaction chime)', desc: lang === 'es' ? 'Confirma toques y acciones con un sonido suave' : 'Soft sound on button actions' },
+    { value: 'silencio', label: lang === 'es' ? '🔇 Desactivado / Silencioso' : '🔇 Disabled / Silent', desc: lang === 'es' ? 'Navegar en silencio sin sonidos de clic' : 'Browse silently without tap sounds' }
+  ]
+
+  const tabs = [
+    { id: 'todos', label: lang === 'es' ? 'Todos' : 'All', icon: '🎛️' },
+    { id: 'orders', label: lang === 'es' ? 'Pedidos' : 'Orders', icon: '📦' },
+    { id: 'msg', label: lang === 'es' ? 'Mensajes' : 'Chat', icon: '💬' },
+    { id: 'system', label: lang === 'es' ? 'Sistema' : 'System', icon: '🔔' },
+    { id: 'done', label: lang === 'es' ? 'Finalizados' : 'Done', icon: '🎉' },
+    { id: 'app', label: lang === 'es' ? 'App' : 'App', icon: '📱' },
+  ]
+
+  const renderSection = (title, icon, desc, options, currentValue, storageKey, setter, category) => (
+    <div style={{ marginBottom: '28px', background: '#FFFFFF', borderRadius: '20px', padding: '16px 16px 14px', border: '1.5px solid rgba(242,96,0,0.14)', boxShadow: '0 4px 14px rgba(0,0,0,0.03)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
+        <span style={{ fontSize: '22px' }}>{icon}</span>
+        <div>
+          <h3 style={{ fontSize: '15px', fontWeight: '900', color: '#1A1A2E', margin: 0 }}>{title}</h3>
+          <p style={{ margin: '2px 0 0', fontSize: '11.5px', color: '#64748B' }}>{desc}</p>
+        </div>
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '12px' }}>
+        {options.map(opt => {
+          const isSelected = currentValue === opt.value
+          return (
+            <div
+              key={opt.value}
+              onClick={() => handleSelectSound(storageKey, setter, opt.value, opt.label, category)}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '11px 13px',
+                borderRadius: '14px',
+                background: isSelected ? 'linear-gradient(135deg, #FFF7ED 0%, #FFFFFF 100%)' : '#FAFAFA',
+                border: isSelected ? '2px solid #F26000' : '1.5px solid #F1F5F9',
+                cursor: 'pointer',
+                transition: 'all 0.15s ease'
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1, minWidth: 0 }}>
+                <span style={{ fontSize: '17px', color: isSelected ? '#F26000' : '#CBD5E1' }}>
+                  {isSelected ? '🔘' : '⚪'}
+                </span>
+                <div style={{ minWidth: 0 }}>
+                  <p style={{ margin: 0, fontSize: '13px', fontWeight: isSelected ? '800' : '600', color: isSelected ? '#C2410C' : '#334155' }}>
+                    {opt.label}
+                  </p>
+                  {opt.desc && (
+                    <p style={{ margin: '1px 0 0', fontSize: '11px', color: '#94A3B8' }}>{opt.desc}</p>
+                  )}
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  playPreview(opt.value, category)
+                }}
+                style={{
+                  background: isSelected ? '#F26000' : 'rgba(242, 96, 0, 0.1)',
+                  color: isSelected ? '#FFFFFF' : '#F26000',
+                  border: 'none',
+                  borderRadius: '10px',
+                  padding: '5px 9px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  fontSize: '11.5px',
+                  fontWeight: '800',
+                  flexShrink: 0
+                }}
+                title="Probar sonido"
+              >
+                <span>▶️</span>
+                <span>Probar</span>
+              </button>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+
   return (
-    <div className="sub-screen" style={{ display: 'flex', flexDirection: 'column', height: '100%', background: '#FFF3EC' }}>
-      <ScreenHeader title={lang === 'es' ? 'Sonido Notificaciones' : 'Sound Notifications'} onBack={onBack} />
-      
-      <div style={{ flex: 1, overflowY: 'auto', padding: '20px' }}>
-        <div style={{ background: '#FFF', border: '1.5px solid rgba(242,96,0,0.1)', borderRadius: '16px', padding: '16px', marginBottom: '24px' }}>
-          <p style={{ margin: 0, fontSize: '13px', color: '#F26000', lineHeight: 1.5, fontWeight: '600' }}>
-            🎨 Elige tus tonos preferidos para mensajes y nuevos pedidos. Se guardarán automáticamente.
+    <div className="sub-screen" style={{ display: 'flex', flexDirection: 'column', height: '100%', background: '#F8FAFC' }}>
+      <ScreenHeader title={lang === 'es' ? 'Configuración de Sonidos' : 'Sound Settings'} onBack={onBack} />
+
+      {/* Tabs horizontales para filtrar categorías */}
+      <div style={{
+        display: 'flex',
+        gap: '8px',
+        overflowX: 'auto',
+        padding: '12px 16px',
+        background: '#FFFFFF',
+        borderBottom: '1px solid #E2E8F0',
+        whiteSpace: 'nowrap'
+      }}>
+        {tabs.map(t => (
+          <button
+            key={t.id}
+            onClick={() => setActiveTab(t.id)}
+            style={{
+              padding: '7px 13px',
+              borderRadius: '20px',
+              border: activeTab === t.id ? '2px solid #F26000' : '1px solid #E2E8F0',
+              background: activeTab === t.id ? '#FFF4EE' : '#FFFFFF',
+              color: activeTab === t.id ? '#C2410C' : '#475569',
+              fontWeight: 800,
+              fontSize: '12px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              flexShrink: 0
+            }}
+          >
+            <span>{t.icon}</span>
+            <span>{t.label}</span>
+          </button>
+        ))}
+      </div>
+
+      <div style={{ flex: 1, overflowY: 'auto', padding: '16px 16px 40px' }}>
+        {/* Banner explicativo */}
+        <div style={{ background: 'linear-gradient(135deg, #FFF7ED 0%, #FFEDD5 100%)', border: '1.5px solid #FED7AA', borderRadius: '16px', padding: '12px 14px', marginBottom: '18px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <span style={{ fontSize: '24px' }}>🎵</span>
+          <p style={{ margin: 0, fontSize: '12px', color: '#9A3412', lineHeight: 1.4, fontWeight: '700' }}>
+            {lang === 'es' 
+              ? 'Personaliza cada sonido de forma independiente. Toca "Probar" para escuchar cómo suena y se guardará al instante.' 
+              : 'Customize each sound independently. Tap "Play" to test and save instantly.'}
           </p>
         </div>
 
-        {/* Sonidos de Notificaciones */}
-        <h3 style={{ fontSize: '15px', fontWeight: '800', color: '#111', margin: '0 0 12px' }}>
-          💬 Tono de Mensajes y Notificaciones
-        </h3>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '28px' }}>
-          {notifOptions.map(opt => (
-            <div 
-              key={opt.value} 
-              onClick={() => handleSelectNotif(opt.value)}
-              style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                padding: '14px 16px', borderRadius: '14px', background: '#fff',
-                border: soundNotif === opt.value ? '2px solid #F26000' : '1.5px solid rgba(0,0,0,0.06)',
-                cursor: 'pointer', transition: 'all 0.2s', boxShadow: '0 2px 6px rgba(0,0,0,0.02)'
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <span style={{ fontSize: '18px', color: '#F26000' }}>{soundNotif === opt.value ? '🔘' : '⚪'}</span>
-                <span style={{ fontSize: '13.5px', fontWeight: soundNotif === opt.value ? '750' : '500', color: '#111' }}>
-                  {opt.label}
-                </span>
-              </div>
-              <button 
-                onClick={(e) => { e.stopPropagation(); playPreview(opt.value); }}
-                style={{
-                  background: '#F2600018', color: '#F26000', border: 'none',
-                  borderRadius: '50%', width: '32px', height: '32px', cursor: 'pointer',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px'
-                }}
-              >
-                ▶️
-              </button>
-            </div>
-          ))}
-        </div>
+        {/* Toast Flotante de Confirmación */}
+        {savedToast && (
+          <div style={{
+            position: 'fixed',
+            bottom: '24px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 99999,
+            background: '#1E293B',
+            color: '#FFFFFF',
+            padding: '10px 18px',
+            borderRadius: '24px',
+            fontSize: '12.5px',
+            fontWeight: '800',
+            boxShadow: '0 8px 24px rgba(0,0,0,0.3)',
+            animation: 'fadeIn 0.2s ease'
+          }}>
+            {savedToast}
+          </div>
+        )}
 
-        {/* Sonidos de Pedidos */}
-        <h3 style={{ fontSize: '15px', fontWeight: '800', color: '#111', margin: '0 0 12px' }}>
-          📦 Tono de Alertas de Pedidos (Contratos)
-        </h3>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '28px' }}>
-          {orderOptions.map(opt => (
-            <div 
-              key={opt.value} 
-              onClick={() => handleSelectOrder(opt.value)}
-              style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                padding: '14px 16px', borderRadius: '14px', background: '#fff',
-                border: soundOrder === opt.value ? '2px solid #F26000' : '1.5px solid rgba(0,0,0,0.06)',
-                cursor: 'pointer', transition: 'all 0.2s', boxShadow: '0 2px 6px rgba(0,0,0,0.02)'
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <span style={{ fontSize: '18px', color: '#F26000' }}>{soundOrder === opt.value ? '🔘' : '⚪'}</span>
-                <span style={{ fontSize: '13.5px', fontWeight: soundOrder === opt.value ? '750' : '500', color: '#111' }}>
-                  {opt.label}
-                </span>
-              </div>
-              <button 
-                onClick={(e) => { e.stopPropagation(); playPreview(opt.value); }}
-                style={{
-                  background: '#F2600018', color: '#F26000', border: 'none',
-                  borderRadius: '50%', width: '32px', height: '32px', cursor: 'pointer',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px'
-                }}
-              >
-                ▶️
-              </button>
-            </div>
-          ))}
-        </div>
+        {/* 1. PEDIDOS */}
+        {(activeTab === 'todos' || activeTab === 'orders') && renderSection(
+          lang === 'es' ? 'Sonidos de Pedidos y Solicitudes' : 'Orders & Requests Sounds',
+          '📦',
+          lang === 'es' ? 'Cuando entra un nuevo pedido de comida, delivery o solicitud de servicio técnico' : 'New food, delivery or service request alerts',
+          orderOptions,
+          soundOrder,
+          'listo_sound_order',
+          setSoundOrder,
+          'order'
+        )}
+
+        {/* 2. MENSAJES */}
+        {(activeTab === 'todos' || activeTab === 'msg') && renderSection(
+          lang === 'es' ? 'Sonido de Mensajes y Chat' : 'Messages & Chat Sound',
+          '💬',
+          lang === 'es' ? 'Cuando un cliente o técnico te escribe un mensaje en el chat' : 'When receiving chat messages',
+          msgOptions,
+          soundMsg,
+          'listo_sound_msg',
+          setSoundMsg,
+          'msg'
+        )}
+
+        {/* 3. NOTIFICACIONES DEL SISTEMA */}
+        {(activeTab === 'todos' || activeTab === 'system') && renderSection(
+          lang === 'es' ? 'Sonidos de Notificaciones del Sistema' : 'System Notifications Sound',
+          '🔔',
+          lang === 'es' ? 'Avisos de verificación de cédula, seguridad y alertas oficiales' : 'Verification updates and official system notices',
+          systemOptions,
+          soundSystem,
+          'listo_sound_system',
+          setSoundSystem,
+          'system'
+        )}
+
+        {/* 4. TRABAJO COMPLETADO / ENTREGAS */}
+        {(activeTab === 'todos' || activeTab === 'done') && renderSection(
+          lang === 'es' ? 'Sonidos de Trabajo Terminado y Entrega' : 'Job Done & Delivery Sound',
+          '🎉',
+          lang === 'es' ? 'Celebración cuando un trabajo se finaliza o el motorista entrega tu pedido' : 'When a job is completed or order is delivered',
+          doneOptions,
+          soundDone,
+          'listo_sound_done',
+          setSoundDone,
+          'done'
+        )}
+
+        {/* 5. SONIDOS DE LA APP */}
+        {(activeTab === 'todos' || activeTab === 'app') && renderSection(
+          lang === 'es' ? 'Sonidos de Notificaciones de la App' : 'App Interaction Sounds',
+          '📱',
+          lang === 'es' ? 'Sonidos suaves al tocar botones, confirmar envíos y navegar en la app' : 'Soft click and interaction chimes inside the app',
+          appOptions,
+          soundApp,
+          'listo_sound_app',
+          setSoundApp,
+          'app'
+        )}
       </div>
     </div>
   )

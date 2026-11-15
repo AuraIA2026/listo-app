@@ -112,13 +112,30 @@ export const playSynthesizedTone = (type = 'msg') => {
 };
 
 /**
- * Reproduce el sonido de alerta (intenta mp3 y complementa con sintetizador) + vibración háptica
+ * Reproduce el sonido de alerta según la categoría configurada por el usuario
+ * Categorías: 'order' | 'msg' | 'system' | 'done' | 'app'
  */
-export const playNotificationChime = (type = 'msg') => {
+export const playNotificationChime = (category = 'msg') => {
+  const keyMap = {
+    order: 'listo_sound_order',
+    msg: 'listo_sound_msg',
+    system: 'listo_sound_system',
+    done: 'listo_sound_done',
+    app: 'listo_sound_app',
+  };
+
+  const storageKey = keyMap[category] || 'listo_sound_notif';
+  const pref = typeof window !== 'undefined' ? (localStorage.getItem(storageKey) || localStorage.getItem('listo_sound_notif')) : null;
+
+  // Si el usuario silenció esta categoría específica
+  if (pref === 'silencio' || pref === 'none' || pref === 'off') {
+    return;
+  }
+
   // 1. Vibración háptica en teléfonos móviles
   try {
     if (typeof navigator !== 'undefined' && navigator.vibrate) {
-      if (type === 'order') {
+      if (category === 'order') {
         navigator.vibrate([200, 100, 200, 100, 300]);
       } else {
         navigator.vibrate([150, 70, 150]);
@@ -126,17 +143,33 @@ export const playNotificationChime = (type = 'msg') => {
     }
   } catch (e) {}
 
-  // 2. Intento con sintetizador nativo
-  playSynthesizedTone(type);
+  // 2. Si el usuario seleccionó un tono sintetizado nativo
+  if (pref && pref.startsWith('synth_')) {
+    playSynthesizedTone(pref.replace('synth_', ''));
+    return;
+  }
 
-  // 3. Respaldo opcional con el audio mp3 si está disponible en disco
+  // 3. Si el usuario eligió un archivo de audio específico en disco
+  if (pref && !pref.startsWith('synth_')) {
+    try {
+      const audio = new Audio(`/audio/${pref}.mp3`);
+      audio.volume = category === 'order' ? 0.75 : 0.6;
+      audio.play().catch(() => {
+        playSynthesizedTone(category === 'order' ? 'order' : (category === 'done' ? 'done' : 'msg'));
+      });
+      return;
+    } catch (e) {}
+  }
+
+  // 4. Default inteligente: sintetizador nativo + audio por defecto
+  const defaultSynth = category === 'order' ? 'order' : (category === 'done' ? 'done' : 'msg');
+  playSynthesizedTone(defaultSynth);
+
   try {
-    const soundFile = type === 'order' ? 'new_contract_v3' : 'notification_v3';
-    const audio = new Audio(`/audio/${soundFile}.mp3`);
-    audio.volume = type === 'order' ? 0.75 : 0.6;
-    audio.play().catch(() => {
-      // Si el navegador bloqueó el mp3, el sintetizador ya sonó
-    });
+    const defaultFile = category === 'order' ? 'new_contract_v3' : 'notification_v3';
+    const audio = new Audio(`/audio/${defaultFile}.mp3`);
+    audio.volume = category === 'order' ? 0.75 : 0.6;
+    audio.play().catch(() => {});
   } catch (e) {}
 };
 
