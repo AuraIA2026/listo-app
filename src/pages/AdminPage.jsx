@@ -1758,7 +1758,7 @@ export default function AdminPage({ navigate }) {
           {[
             { id:'comercios',     label:'Comercio', count: partnerRequests.filter(r => r.status === 'pending').length },
             { id:'postulaciones', label:'Nuevos', count:verifications.length },
-            { id:'historias',    label:'Historias', count: stories.length },
+            { id:'historias',    label:'Historias', count: stories.filter(s => s.status === 'pending' || (s.approved === false && s.status !== 'rejected')).length || stories.length },
             { id:'alertas',      label:'Alertas', count: alerts.filter(a => !a.read).length + verifications.length },
             { id:'pagos',        label:'Historial',  count:completedPayments.length },
             { id:'comisiones',   label:'Validar', count:pendienteCount },

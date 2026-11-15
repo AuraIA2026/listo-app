@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
-import { db } from '../firebase'
+import { db, auth } from '../firebase'
 import { collection, query, where, onSnapshot, doc, updateDoc, deleteDoc, addDoc } from 'firebase/firestore'
 import HistoriasViewerModal from './HistoriasViewerModal'
 import SubirHistoriaModal from './SubirHistoriaModal'
@@ -35,9 +35,19 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate
   const [showLockNotice, setShowLockNotice] = useState(false)
   const [showIncompleteProfileNotice, setShowIncompleteProfileNotice] = useState(false)
 
+  let storedUser = {}
+  try {
+    storedUser = JSON.parse(localStorage.getItem('listoUserData') || '{}')
+  } catch (e) {}
+
+  const currentEmail = String(userData?.email || auth?.currentUser?.email || storedUser?.email || '').toLowerCase().trim()
+  const currentRole = String(userData?.role || storedUser?.role || '').toLowerCase().trim()
+
   const isAdminUser = Boolean(
-    userData?.email === 'listopatron.app@gmail.com' ||
-    userData?.role === 'admin'
+    currentEmail === 'listopatron.app@gmail.com' ||
+    currentRole === 'admin' ||
+    userData?.isAdmin === true ||
+    storedUser?.isAdmin === true
   )
 
   // Estado para la animación del texto alternante de la mano indicadora
@@ -471,8 +481,10 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate
                   (proUidKey && (proUidKey === userData?.uid || proUidKey === userData?.id)) ||
                   (proNameNorm && currentUserNameNorm && proNameNorm === currentUserNameNorm)
                 )
+                const isListoBrand = proNameClean.includes('listo patron') || proNameNorm.includes('listo patron') || proNameClean.includes('listo patrón')
+
                 const currentUserPhoto = isCurrentUserStory
-                  ? [userData?.photoURL, userData?.avatarUrl, userData?.profilePhoto].find(isRealProfilePhoto)
+                  ? [userData?.photoURL, userData?.avatarUrl, userData?.profilePhoto, localStorage.getItem('user_photo_url'), isListoBrand ? '/logo192.png' : null].find(isRealProfilePhoto)
                   : null
 
                 const resolvedProAvatar =
@@ -481,6 +493,7 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate
                   (proNameClean && usersPhotoMap[proNameClean]) ||
                   (proNameNorm && usersPhotoMap[proNameNorm]) ||
                   (isRealProfilePhoto(story.proAvatar) ? story.proAvatar : null) ||
+                  (isListoBrand ? '/logo192.png' : null) ||
                   null
 
                 // Detectar si el usuario o alguna de sus historias tiene una oferta activa

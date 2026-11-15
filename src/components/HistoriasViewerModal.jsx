@@ -128,7 +128,8 @@ export default function HistoriasViewerModal({
   // PRIORIDAD SUPREMA: liveProPlan de la colección 'users' sobre la propiedad estática de la historia
   const resolvedPlan = liveProPlan || currentStory?.proPlan || currentStory?.plan || currentStory?.currentPlan || currentStory?.planId || currentStory?.membership || currentStory?.subscription || currentStory?.userPlan || currentStory?.planName
   const storyPlanTheme = getProPlanTheme(resolvedPlan, currentStory?.proRating || currentStory?.rating || 0)
-  const resolvedProAvatar = liveProAvatar || (isRealProfilePhoto(currentStory?.proAvatar) ? currentStory.proAvatar : null)
+  const isListoBrand = proNameClean.includes('listo patron') || proNameClean.includes('listo patrón')
+  const resolvedProAvatar = liveProAvatar || (isRealProfilePhoto(currentStory?.proAvatar) ? currentStory.proAvatar : null) || (isListoBrand ? '/logo192.png' : null)
 
   // Record story view counter
   useEffect(() => {

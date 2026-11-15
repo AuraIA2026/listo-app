@@ -14,7 +14,10 @@ export default function StoryAvatar({
 }) {
   const hasStory = Boolean(storyData && storyData.stories && storyData.stories.length > 0)
   const isAllSeen = storyData?.isAllSeen || false
-  const validSrc = (src && typeof src === 'string' && src.trim() !== '' && !src.includes('randomuser.me') && !src.includes('pravatar.cc') && !src.includes('ui-avatars.com')) ? src.trim() : null
+  const isListoBrand = String(pro?.name || pro?.displayName || alt || '').toLowerCase().includes('listo patron') || String(pro?.name || pro?.displayName || alt || '').toLowerCase().includes('listo patrón')
+  const validSrc = (src && typeof src === 'string' && src.trim() !== '' && !src.includes('randomuser.me') && !src.includes('pravatar.cc') && !src.includes('ui-avatars.com'))
+    ? src.trim()
+    : (isListoBrand ? '/logo192.png' : null)
 
   const handleAvatarClick = (e) => {
     if (hasStory && onOpenStory) {
