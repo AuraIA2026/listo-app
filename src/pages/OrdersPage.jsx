@@ -9,6 +9,7 @@ import FloatingChat from '../components/FloatingChat'
 import ReciboDigitalModal from '../components/ReciboDigitalModal'
 import MantenimientoPreventivoModal from '../components/MantenimientoPreventivoModal'
 import { BUSINESS_TYPES } from '../data/businessTypes'
+import { playNotificationChime } from '../utils/notifications'
 
 const txt = {
   es: {
@@ -291,6 +292,7 @@ const getChatId = (uid1, uid2) => uid1 < uid2 ? `${uid1}_${uid2}` : `${uid2}_${u
 // ─── Sonido de mensaje — igual al que le gusta al usuario ─────────────────
 const playChatMsgSound = () => {
   try {
+    playNotificationChime('msg')
     const selectedSound = localStorage.getItem('listo_sound_notif') || 'notification_v3';
     const audio = new Audio(`/audio/${selectedSound}.mp3`)
     audio.volume = 0.5

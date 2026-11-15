@@ -37,7 +37,8 @@ const PoliciesPage            = lazy(() => import('./pages/PoliciesPage'))
 const LandingPage             = lazy(() => import('./pages/LandingPage'))
 const ShopPage                = lazy(() => import('./pages/ShopPage'))
 import PwaInstallBanner       from './components/PwaInstallBanner'
-import { sendBrowserNotification } from './utils/notifications'
+import NotificationPermissionBanner from './components/NotificationPermissionBanner'
+import { sendBrowserNotification, playNotificationChime } from './utils/notifications'
 import logoBlanco             from './assets/logo-blanco.png'
 import './App.css'
 
@@ -550,6 +551,7 @@ export default function App() {
   const startAlertSound = () => {
     if (isPlayingRef.current) return
     try {
+      playNotificationChime('order')
       const selectedSound = localStorage.getItem('listo_sound_order') || 'new_contract_v3'
       const audio = new Audio(`/audio/${selectedSound}.mp3`)
       audio.volume = 0.7; audio.loop = true
@@ -567,6 +569,7 @@ export default function App() {
   }
   const playJobDoneSound = () => {
     try {
+      playNotificationChime('done')
       const selectedSound = localStorage.getItem('listo_sound_notif') || 'notification_v3'
       const audio = new Audio(`/audio/${selectedSound}.mp3`)
       audio.volume = 0.8; audio.loop = false; audio.play().catch(() => {})
@@ -575,6 +578,7 @@ export default function App() {
   }
   const playMsgSound = () => {
     try {
+      playNotificationChime('msg')
       const selectedSound = localStorage.getItem('listo_sound_notif') || 'notification_v3'
       const audio = new Audio(`/audio/${selectedSound}.mp3`)
       audio.volume = 0.6; audio.loop = false
@@ -773,7 +777,7 @@ export default function App() {
     const q = query(
       collection(db, 'notificaciones'),
       where('userId', '==', userData.uid),
-      where('type', 'in', ['order_cooking', 'order_ready', 'order_delay']),
+      where('type', 'in', ['order_cooking', 'order_ready', 'order_delay', 'kitchen_order', 'new_order']),
       where('read', '==', false)
     )
     const notifiedIds = new Set()
@@ -783,17 +787,25 @@ export default function App() {
         notifiedIds.add(docSnap.id)
         const d = docSnap.data()
         updateDoc(doc(db, 'notificaciones', docSnap.id), { read: true }).catch(() => {})
-        playMsgSound()
-        try { if (navigator.vibrate) navigator.vibrate([250, 100, 250]) } catch (e) {}
 
         const isCooking = d.type === 'order_cooking'
-        const isReady = d.type === 'order_ready'
+        const isReady   = d.type === 'order_ready'
+        const isKitchen = d.type === 'kitchen_order'
+        const isNewOrder = d.type === 'new_order'
+
+        if (isKitchen || isNewOrder) {
+          playNotificationChime('order')
+        } else {
+          playMsgSound()
+        }
+
+        try { if (navigator.vibrate) navigator.vibrate([250, 100, 250]) } catch (e) {}
 
         setAlertOrder({
           id: d.orderId || docSnap.id,
           isUserAlert: true,
           type: 'delivery',
-          status: isCooking ? 'cooking' : (isReady ? 'ready' : 'cooking'),
+          status: isCooking ? 'cooking' : (isReady ? 'ready' : (isKitchen ? 'pending' : 'cooking')),
           storeName: d.storeName || 'Pedidos Listo',
           customTitle: d.title,
           customText: d.text,
@@ -802,9 +814,10 @@ export default function App() {
           fulfillmentType: d.fulfillmentType || 'delivery'
         })
 
-        sendBrowserNotification(d.title || (isCooking ? '👨‍🍳 ¡Tu pedido se está preparando!' : '🟢 ¡Tu pedido está listo!'), {
-          body: d.text || 'Tienes una nueva actualización de tu pedido en cocina.',
-          url: '/mandame'
+        sendBrowserNotification(d.title || (isCooking ? '👨‍🍳 ¡Tu pedido se está preparando!' : (isKitchen ? '🚨 ¡Nuevo pedido en tu local!' : '🟢 ¡Tu pedido está listo!')), {
+          body: d.text || 'Tienes una nueva actualización de tu pedido.',
+          soundType: (isKitchen || isNewOrder) ? 'order' : 'msg',
+          url: isKitchen ? '/locales' : '/orders'
         })
       })
     })
@@ -992,6 +1005,7 @@ export default function App() {
   return (
     <div className="app">
       {isOffline && <OfflineBanner lang={lang} />}
+      <NotificationPermissionBanner lang={lang} />
 
       {showTop && <Navbar navigate={navigate} currentPage={effectivePage} lang={lang} setLang={setLang} />}
 

@@ -3,9 +3,11 @@ import { collection, query, where, onSnapshot, doc, updateDoc, deleteDoc, addDoc
 import { auth, db } from '../firebase'
 import { ReportModal } from '../pages/ChatPage'
 import CallModal from './CallModal'
+import { playNotificationChime } from '../utils/notifications'
 
 const playChatMsgSound = () => {
   try {
+    playNotificationChime('msg')
     const selectedSound = localStorage.getItem('listo_sound_notif') || 'notification_v3';
     const audio = new Audio(`/audio/${selectedSound}.mp3`)
     audio.volume = 0.5
