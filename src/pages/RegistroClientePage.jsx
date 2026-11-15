@@ -1,6 +1,26 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { doc, updateDoc } from "firebase/firestore";
+import { updateProfile } from "firebase/auth";
 import { db, auth } from "../firebase";
+
+const compressImage = (file) => new Promise((resolve, reject) => {
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const img = new Image();
+    img.onload = () => {
+      const MAX = 400;
+      let { width, height } = img;
+      if (width > height) { if (width > MAX) { height = Math.round(height * MAX / width); width = MAX; } }
+      else { if (height > MAX) { width = Math.round(width * MAX / height); height = MAX; } }
+      const canvas = document.createElement('canvas');
+      canvas.width = width; canvas.height = height;
+      canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+      resolve(canvas.toDataURL('image/jpeg', 0.75));
+    };
+    img.onerror = reject; img.src = e.target.result;
+  };
+  reader.onerror = reject; reader.readAsDataURL(file);
+});
 
 /* ─── PALETA ─────────────────────────────────────────────────── */
 const C = {
@@ -20,7 +40,7 @@ const C = {
 const SECTIONS = [
   { n: 1, icon: "👤", color: "#F26000", bg: "#FFF3EC", title: "Información Básica", sub: "Nombre, teléfono y correo" },
   { n: 2, icon: "📍", color: "#10B981", bg: "#ECFDF5", title: "Dirección Principal", sub: "Para que el profesional te encuentre" },
-  { n: 3, icon: "📸", color: "#3B82F6", bg: "#EFF6FF", title: "Foto de Perfil", sub: "Opcional · Genera confianza" },
+  { n: 3, icon: "📸", color: "#3B82F6", bg: "#EFF6FF", title: "Foto de Perfil", sub: "Obligatoria · Genera confianza y seguridad" },
   { n: 4, icon: "🔐", color: "#8B5CF6", bg: "#F5F3FF", title: "Verificación Básica", sub: "SMS y correo electrónico" },
   { n: 5, icon: "📋", color: "#EC4899", bg: "#FDF2F8", title: "Términos y Condiciones", sub: "Confirma y acepta las condiciones" },
 ];
@@ -47,7 +67,9 @@ export default function RegistroClientePage({ userRole, onBack, onSuccess }) {
   const [smsSent, setSmsSent] = useState(false);
   const [smsVerif, setSmsVerif] = useState(false);
   const [emailVerif, setEmailVerif] = useState(false);
-  const [avatar, setAvatar] = useState(null);
+  const [avatar, setAvatar] = useState(auth.currentUser?.photoURL || null);
+  const fileInputRef = useRef(null);
+  const cameraInputRef = useRef(null);
 
   const [form, setForm] = useState({
     nombre: "", telefono: "", correo: "", ciudad: "",
@@ -57,6 +79,19 @@ export default function RegistroClientePage({ userRole, onBack, onSuccess }) {
   const hf = e => setForm(p => ({ ...p, [e.target.name]: e.target.value }));
   const tog = n => setOpen(p => ({ ...p, [n]: !p[n] }));
   const togCheck = k => setChecks(p => ({ ...p, [k]: !p[k] }));
+
+  const handlePhotoSelect = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const b64 = await compressImage(file);
+      setAvatar(b64);
+    } catch (err) {
+      console.error("Error al procesar foto:", err);
+      alert("Error al procesar la imagen. Intenta con otra foto.");
+    }
+    e.target.value = "";
+  };
 
   const completedCount = Object.values(open).filter(Boolean).length;
   const pct = Math.round((completedCount / 5) * 100);
@@ -70,14 +105,29 @@ export default function RegistroClientePage({ userRole, onBack, onSuccess }) {
       return;
     }
 
+    if (!avatar && !auth.currentUser?.photoURL) {
+      alert("Por favor agrega tu foto de perfil para completar tu cuenta.");
+      setOpen(p => ({ ...p, 3: true }));
+      return;
+    }
+
     if (auth.currentUser) {
       try {
+        const photoToSave = avatar || auth.currentUser?.photoURL || null;
         const isProUser = userRole === 'pro' || auth.currentUser?.type === 'pro' || auth.currentUser?.role === 'professional';
         await updateDoc(doc(db, 'users', auth.currentUser.uid), {
           ...form,
+          photoURL: photoToSave,
+          avatar: photoToSave,
+          profilePic: photoToSave,
           ...(isProUser ? {} : { profileComplete: true }),
           phoneVerified: isVerified
         });
+        if (auth.currentUser && photoToSave) {
+          try {
+            await updateProfile(auth.currentUser, { photoURL: photoToSave });
+          } catch(e) {}
+        }
       } catch (err) {
         console.error("Error al guardar el perfil:", err);
       }
@@ -260,7 +310,7 @@ export default function RegistroClientePage({ userRole, onBack, onSuccess }) {
                   <div style={s.fields}>
                     <div style={s.infoTip}>
                       <span>💡</span>
-                      <span>Una foto genera más confianza con el profesional. No es obligatoria.</span>
+                      <span>Una foto nítida de tu rostro es obligatoria para verificar y proteger tu cuenta.</span>
                     </div>
                     <div style={s.avatarArea}>
                       <div style={{ ...s.avatarCircle, background: avatar ? "transparent" : "#FFF3EC" }}>
@@ -270,9 +320,11 @@ export default function RegistroClientePage({ userRole, onBack, onSuccess }) {
                         }
                       </div>
                       <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
-                        <button style={s.btnFile} className="btn-h">📁 Subir foto</button>
-                        <button style={s.btnCam} className="btn-h">📷 Tomar foto</button>
+                        <button type="button" style={s.btnFile} className="btn-h" onClick={() => fileInputRef.current?.click()}>📁 Subir foto</button>
+                        <button type="button" style={s.btnCam} className="btn-h" onClick={() => cameraInputRef.current?.click()}>📷 Tomar foto</button>
                       </div>
+                      <input ref={fileInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handlePhotoSelect} />
+                      <input ref={cameraInputRef} type="file" accept="image/*" capture="user" style={{ display: 'none' }} onChange={handlePhotoSelect} />
                       <p style={{ fontSize: 11, color: C.grayLight, marginTop: 8 }}>JPG o PNG · máx 5MB</p>
                     </div>
 

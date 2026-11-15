@@ -1270,7 +1270,7 @@ export default function HomePage({ lang, navigate, userRole }) {
               <CompletarPerfilBtn 
                 profileComplete={profileComplete}
                 onClick={() => {
-                  navigate('profile', { screen: 'verification' })
+                  navigate('profile', { screen: isPro ? 'verification' : 'completar-perfil' })
                 }}
               />
 

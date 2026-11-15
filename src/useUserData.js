@@ -116,13 +116,15 @@ export function UserProvider({ children }) {
     const hasSelfie      = Boolean(vfDocs.selfie || userData?.selfie);
     const hasConducta    = Boolean(vfDocs.buenaConducta || userData?.buenaConducta);
     const hasProfession  = Boolean(userData?.category || vf.especialidad || userData?.especialidad);
+    const hasPhoto       = Boolean(userData?.photoURL || userData?.avatar || userData?.fotoPerfil || vfDocs.selfie);
 
-    const hasAllRequirements = hasCedulaFront && hasCedulaBack && hasSelfie && hasConducta && hasProfession;
+    const hasAllRequirements = hasCedulaFront && hasCedulaBack && hasSelfie && hasConducta && hasProfession && hasPhoto;
     const isApproved = vf.estado === 'aprobada' || vf.estado === 'verificado' || userData?.approved === true;
 
     profileComplete = Boolean(hasAllRequirements && isApproved);
   } else {
-    profileComplete = Boolean(userData?.profileComplete || (userData?.name && userData?.phone));
+    const hasPhoto = Boolean(userData?.photoURL || userData?.avatar || userData?.fotoPerfil);
+    profileComplete = Boolean(hasPhoto && (userData?.profileComplete || (userData?.name && userData?.phone)));
   }
 
   const value = {

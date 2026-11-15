@@ -7,10 +7,31 @@ import './AuthPage.css'
 import './FaceModal.css'
 import { ALL_SUBCATEGORIES } from '../categories'
 
+const compressImage = (file) => new Promise((resolve, reject) => {
+  const reader = new FileReader()
+  reader.onload = (e) => {
+    const img = new Image()
+    img.onload = () => {
+      const MAX = 400
+      let { width, height } = img
+      if (width > height) { if (width > MAX) { height = Math.round(height * MAX / width); width = MAX } }
+      else { if (height > MAX) { width = Math.round(width * MAX / height); height = MAX } }
+      const canvas = document.createElement('canvas')
+      canvas.width = width; canvas.height = height
+      canvas.getContext('2d').drawImage(img, 0, 0, width, height)
+      resolve(canvas.toDataURL('image/jpeg', 0.75))
+    }
+    img.onerror = reject; img.src = e.target.result
+  }
+  reader.onerror = reject; reader.readAsDataURL(file)
+})
+
 const txt = {
   es: {
     title: 'Crear cuenta',
     sub: 'Únete a la comunidad de Listo',
+    photo: 'Foto de perfil (Obligatoria)',
+    photoSub: 'Sube una foto nítida de tu rostro',
     name: 'Nombre completo',
     email: 'Correo electrónico',
     phone: 'Teléfono',
@@ -27,6 +48,7 @@ const txt = {
     login: 'Inicia sesión',
     asClient: 'Cliente',
     asPro: 'Profesional',
+    errPhoto: 'Por favor sube o toma tu foto de perfil',
     errName: 'Ingresa tu nombre completo',
     errEmail: 'Ingresa un correo válido',
     errPhone: 'Ingresa un teléfono válido',
@@ -38,6 +60,8 @@ const txt = {
   en: {
     title: 'Create account',
     sub: 'Join the Listo community',
+    photo: 'Profile photo (Required)',
+    photoSub: 'Upload a clear photo of your face',
     name: 'Full name',
     email: 'Email address',
     phone: 'Phone number',
@@ -54,6 +78,7 @@ const txt = {
     login: 'Sign in',
     asClient: 'Client',
     asPro: 'Professional',
+    errPhoto: 'Please upload or take a profile photo',
     errName: 'Enter your full name',
     errEmail: 'Enter a valid email',
     errPhone: 'Enter a valid phone number',
@@ -67,7 +92,7 @@ const txt = {
 export default function RegisterPage({ lang, navigate }) {
   const T = txt[lang]
   const [userType, setUserType] = useState('client')
-  const [form, setForm] = useState({ name: '', email: '', phone: '', password: '', confirm: '', category: '' })
+  const [form, setForm] = useState({ name: '', email: '', phone: '', password: '', confirm: '', category: '', photo: '' })
   const [errors, setErrors] = useState({})
   const [loading, setLoading] = useState(false)
   const [step, setStep] = useState('form') // 'form' | 'face'
@@ -75,16 +100,33 @@ export default function RegisterPage({ lang, navigate }) {
   const [resetSent, setResetSent] = useState(false)
   const [resetLoading, setResetLoading] = useState(false)
   const isRegisteringRef = useRef(false)
+  const fileInputRef = useRef(null)
+  const cameraInputRef = useRef(null)
 
   const { videoRef, status, message, registerFace, stopCamera } = useFaceAuth()
 
   const set = (field, value) => setForm(prev => ({ ...prev, [field]: value }))
+
+  const handlePhotoSelected = async (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    try {
+      const base64 = await compressImage(file)
+      set('photo', base64)
+      setErrors(prev => ({ ...prev, photo: null }))
+    } catch (err) {
+      console.error("Error al procesar la foto:", err)
+      setErrors(prev => ({ ...prev, photo: lang === 'es' ? 'Error al procesar la imagen' : 'Error processing image' }))
+    }
+    e.target.value = ''
+  }
 
   const validate = () => {
     const e = {}
     const cleanEmail = (form.email || '').trim().toLowerCase()
     const cleanPhone = (form.phone || '').replace(/\D/g, '')
 
+    if (!form.photo) e.photo = T.errPhoto
     if ((form.name || '').trim().length < 3) e.name = T.errName
     if (!cleanEmail.includes('@') || !cleanEmail.includes('.')) e.email = T.errEmail
     if (cleanPhone.length < 8) e.phone = T.errPhone
@@ -135,9 +177,12 @@ export default function RegisterPage({ lang, navigate }) {
       const userId = resultUser.uid
 
       try {
-        await updateProfile(resultUser, { displayName: cleanName })
+        await updateProfile(resultUser, {
+          displayName: cleanName,
+          ...(form.photo ? { photoURL: form.photo } : {})
+        })
       } catch (e) {
-        console.warn("Could not update profile displayName:", e)
+        console.warn("Could not update profile displayName/photoURL:", e)
       }
 
       // Guardar credenciales locales para reconocimiento facial futuro
@@ -157,6 +202,10 @@ export default function RegisterPage({ lang, navigate }) {
         phone: cleanPhone,
         type: userType, // 'client' o 'pro'
         role: userType === 'pro' ? 'professional' : 'client',
+        photoURL: form.photo || null,
+        avatar: form.photo || null,
+        profilePic: form.photo || null,
+        profileComplete: userType === 'pro' ? false : Boolean(cleanName && cleanPhone && form.photo),
         createdAt: serverTimestamp(),
       }
 
@@ -319,6 +368,122 @@ export default function RegisterPage({ lang, navigate }) {
           </div>
 
           <div className="auth-form">
+            {/* Foto de perfil obligatoria */}
+            <div className="field photo-upload-field" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '18px' }}>
+              <label style={{ fontSize: '13px', fontWeight: 800, color: '#1E293B', marginBottom: '8px', textAlign: 'center' }}>
+                {T.photo} <span style={{ color: '#EF4444' }}>*</span>
+              </label>
+
+              <div style={{ position: 'relative', width: '92px', height: '92px', marginBottom: '10px' }}>
+                <div
+                  onClick={() => fileInputRef.current?.click()}
+                  style={{
+                    width: '92px',
+                    height: '92px',
+                    borderRadius: '50%',
+                    overflow: 'hidden',
+                    border: errors.photo ? '3px solid #EF4444' : '3px solid #F26000',
+                    boxShadow: '0 4px 14px rgba(242, 96, 0, 0.25)',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    background: form.photo ? '#FFFFFF' : '#FFF3EC',
+                    transition: 'transform 0.15s ease'
+                  }}
+                  title={lang === 'es' ? 'Toca para elegir foto' : 'Tap to choose photo'}
+                >
+                  {form.photo ? (
+                    <img src={form.photo} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                      <span style={{ fontSize: '36px', lineHeight: 1 }}>👤</span>
+                      <span style={{ fontSize: '8.5px', fontWeight: 900, color: '#F26000', marginTop: '2px', letterSpacing: '0.5px' }}>SUBIR FOTO</span>
+                    </div>
+                  )}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => cameraInputRef.current?.click()}
+                  style={{
+                    position: 'absolute',
+                    bottom: '-2px',
+                    right: '-2px',
+                    width: '32px',
+                    height: '32px',
+                    borderRadius: '50%',
+                    background: '#1A1A2E',
+                    color: '#FFFFFF',
+                    border: '2.5px solid #FFFFFF',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                    fontSize: '14px'
+                  }}
+                  title={lang === 'es' ? 'Tomar selfie' : 'Take selfie'}
+                >
+                  📷
+                </button>
+              </div>
+
+              <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  style={{
+                    background: '#F1F5F9',
+                    color: '#334155',
+                    border: '1px solid #CBD5E1',
+                    borderRadius: '8px',
+                    padding: '6px 12px',
+                    fontSize: '11.5px',
+                    fontWeight: 700,
+                    cursor: 'pointer'
+                  }}
+                >
+                  📁 {lang === 'es' ? 'Subir foto' : 'Upload photo'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => cameraInputRef.current?.click()}
+                  style={{
+                    background: '#FFF3EC',
+                    color: '#F26000',
+                    border: '1px solid #FDBA74',
+                    borderRadius: '8px',
+                    padding: '6px 12px',
+                    fontSize: '11.5px',
+                    fontWeight: 700,
+                    cursor: 'pointer'
+                  }}
+                >
+                  📷 {lang === 'es' ? 'Tomar selfie' : 'Take selfie'}
+                </button>
+              </div>
+
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                style={{ display: 'none' }}
+                onChange={handlePhotoSelected}
+              />
+              <input
+                ref={cameraInputRef}
+                type="file"
+                accept="image/*"
+                capture="user"
+                style={{ display: 'none' }}
+                onChange={handlePhotoSelected}
+              />
+
+              {errors.photo && (
+                <span className="error-msg" style={{ textAlign: 'center', marginTop: '6px' }}>{errors.photo}</span>
+              )}
+            </div>
             <div className="field">
               <label>{T.name}</label>
               <input type="text" value={form.name} onChange={e => set('name', e.target.value)}
