@@ -145,6 +145,21 @@ const PROGRESS_LABELS = {
 // 'confirmado' es un alias legado de 'accepted'
 const stepIndex = (status) => PROGRESS_STEPS.indexOf(status === 'confirmado' ? 'accepted' : status)
 
+// ── FLUJO DE DELIVERY DE 4 ETAPAS (PEDIDOS YA / UBER EATS STYLE) ──
+const DELIVERY_PROGRESS_STEPS = ['pending', 'accepted', 'onway', 'done']
+const DELIVERY_PROGRESS_LABELS = {
+  es: ['Recibido ⏳', 'En cocina 👨‍🍳', 'En camino 🛵', 'Entregado 🎉'],
+  en: ['Received ⏳', 'Cooking 👨‍🍳', 'On way 🛵', 'Delivered 🎉'],
+}
+
+const deliveryStepIndex = (status) => {
+  const s = String(status || '').toLowerCase()
+  if (s === 'done' || s === 'delivered' || s === 'entregado' || s === 'completado') return 3
+  if (s === 'onway' || s === 'en_camino' || s === 'dispatched' || s === 'arrived') return 2
+  if (s === 'accepted' || s === 'confirmado' || s === 'preparing' || s === 'cooking' || s === 'cocina') return 1
+  return 0 // pending
+}
+
 // Pagos que ya cuentan como hechos / que permiten calificar
 const PAID_STATUSES   = ['approved', 'pending_cash', 'paid', 'verifying']
 const RATEABLE_PAYS   = ['approved', 'pending_cash', 'paid']
@@ -1261,25 +1276,90 @@ export default function OrdersPage({ lang = 'es', navigate, userData, userRole }
                 </div>
               )}
 
-              <div className="order-progress">
-                {PROGRESS_STEPS.map((s, idx, arr) => {
-                  const isDone = stepIndex(o.status) > idx;
-                  const isActive = stepIndex(o.status) === idx;
-                  const dotClass = isDone ? 'done' : (isActive ? 'active-step' : '');
-                  return (
-                    <div key={s} className="op-step">
-                      <div className={`op-dot ${dotClass}`} />
-                      {idx<arr.length-1 && <div className={`op-line ${isDone ? 'done' : ''}`} />}
-                    </div>
-                  );
-                })}
-              </div>
-              <div className="order-progress-labels">
-                {PROGRESS_LABELS[lang].map((l, idx) => {
-                  const isActive = stepIndex(o.status) === idx;
-                  return <span key={idx} className={`op-label ${isActive ? 'on' : ''}`}>{l}</span>;
-                })}
-              </div>
+              {isDeliveryOrder(o) ? (
+                <div style={{ margin: '14px 0 10px', background: 'linear-gradient(135deg, #FFF7ED 0%, #FFFFFF 100%)', padding: '14px 12px 12px', borderRadius: '16px', border: '1.5px solid #FFEDD5', boxShadow: '0 4px 12px rgba(242, 96, 0, 0.05)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                    <span style={{ fontSize: 13, fontWeight: 900, color: '#C2410C', display: 'flex', alignItems: 'center', gap: 6 }}>
+                      🛵 {lang === 'es' ? 'Progreso de tu Pedido Listo' : 'Listo Order Progress'}
+                    </span>
+                    {o.pinOTP && (
+                      <span style={{ fontSize: 11, fontWeight: 900, background: '#F26000', color: '#fff', padding: '3px 9px', borderRadius: 8, boxShadow: '0 2px 6px rgba(242, 96, 0, 0.3)' }}>
+                        PIN: {o.pinOTP}
+                      </span>
+                    )}
+                  </div>
+                  <div className="order-progress">
+                    {DELIVERY_PROGRESS_STEPS.map((s, idx, arr) => {
+                      const curIdx = deliveryStepIndex(o.status);
+                      const isDone = curIdx > idx;
+                      const isActive = curIdx === idx;
+                      const dotClass = isDone ? 'done' : (isActive ? 'active-step' : '');
+                      return (
+                        <div key={s} className="op-step">
+                          <div className={`op-dot ${dotClass}`} style={isActive ? { background: '#F26000', borderColor: '#EA580C', transform: 'scale(1.25)' } : (isDone ? { background: '#10B981', borderColor: '#059669' } : {})} />
+                          {idx < arr.length - 1 && <div className={`op-line ${isDone ? 'done' : ''}`} style={isDone ? { background: '#10B981' } : {}} />}
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <div className="order-progress-labels" style={{ marginTop: 6 }}>
+                    {DELIVERY_PROGRESS_LABELS[lang].map((l, idx) => {
+                      const curIdx = deliveryStepIndex(o.status);
+                      const isActive = curIdx === idx;
+                      return <span key={idx} className={`op-label ${isActive ? 'on' : ''}`} style={isActive ? { color: '#C2410C', fontWeight: 900 } : {}}>{l}</span>;
+                    })}
+                  </div>
+                  {/* Botón directo a tracking en vivo */}
+                  <div style={{ marginTop: 12 }}>
+                    <button
+                      onClick={() => navigate('tracking', o)}
+                      style={{
+                        width: '100%',
+                        padding: '10px 14px',
+                        background: 'linear-gradient(135deg, #F26000 0%, #EA580C 100%)',
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: '12px',
+                        fontWeight: 900,
+                        fontSize: 13,
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: 8,
+                        boxShadow: '0 4px 12px rgba(242, 96, 0, 0.25)',
+                        transition: 'transform 0.15s ease'
+                      }}
+                      onMouseDown={e => e.currentTarget.style.transform = 'scale(0.98)'}
+                      onMouseUp={e => e.currentTarget.style.transform = 'scale(1)'}
+                    >
+                      <span>🛵 {lang === 'es' ? 'Rastrear Pedido en Vivo con GPS' : 'Track Live on GPS Map'}</span>
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div className="order-progress">
+                    {PROGRESS_STEPS.map((s, idx, arr) => {
+                      const isDone = stepIndex(o.status) > idx;
+                      const isActive = stepIndex(o.status) === idx;
+                      const dotClass = isDone ? 'done' : (isActive ? 'active-step' : '');
+                      return (
+                        <div key={s} className="op-step">
+                          <div className={`op-dot ${dotClass}`} />
+                          {idx<arr.length-1 && <div className={`op-line ${isDone ? 'done' : ''}`} />}
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <div className="order-progress-labels">
+                    {PROGRESS_LABELS[lang].map((l, idx) => {
+                      const isActive = stepIndex(o.status) === idx;
+                      return <span key={idx} className={`op-label ${isActive ? 'on' : ''}`}>{l}</span>;
+                    })}
+                  </div>
+                </>
+              )}
 
               {o.status !== 'working' && <EtaCountdown order={o} lang={lang} T={T} />}
               {renderActions(o)}

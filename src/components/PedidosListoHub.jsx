@@ -46,6 +46,20 @@ const DELIVERY_FEE = 75;
 const FREE_DELIVERY_FROM = 500;
 const MANDAME_FEE = 120;
 
+// Utilidad de cálculo de distancia en km (Fórmula de Haversine)
+const calculateDistanceKm = (lat1, lon1, lat2, lon2) => {
+  if (!lat1 || !lon1 || !lat2 || !lon2) return null;
+  const R = 6371; // Radio de la Tierra en km
+  const dLat = (lat2 - lat1) * (Math.PI / 180);
+  const dLon = (lon2 - lon1) * (Math.PI / 180);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return Math.round(R * c * 10) / 10; // 1 decimal (ej: 2.4 km)
+};
+
 const parsePrice = (p) => {
   const n = parseFloat(String(p ?? '').replace(/[^0-9.]/g, ''));
   return Number.isFinite(n) && n > 0 ? n : null;
@@ -90,6 +104,33 @@ export default function PedidosListoHub({ navigate }) {
   const [orderError, setOrderError] = useState('');
   const [user, setUser] = useState(auth.currentUser);
   const [loadingStores, setLoadingStores] = useState(true);
+
+  // GPS y Cálculo Dinámico por Distancia
+  const [userCoords, setUserCoords] = useState(null);
+  const [isDetectingGps, setIsDetectingGps] = useState(false);
+
+  const handleDetectGPS = () => {
+    if (!navigator.geolocation) {
+      alert('Tu dispositivo no soporta geolocalización GPS.');
+      return;
+    }
+    setIsDetectingGps(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+        setUserCoords({ lat, lng });
+        setDeliveryAddress(`📍 Ubicación GPS (${lat.toFixed(4)}, ${lng.toFixed(4)})`);
+        setIsDetectingGps(false);
+      },
+      (err) => {
+        console.warn('Error GPS:', err);
+        setIsDetectingGps(false);
+        alert('No se pudo detectar el GPS. Puedes ingresar tu dirección manualmente.');
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+    );
+  };
 
   // Mándame State
   const [mandamePickUp, setMandamePickUp] = useState('');
@@ -142,6 +183,8 @@ export default function PedidosListoHub({ navigate }) {
             cover: d.portadaURL || '',
             logo: d.logoURL || d.portadaURL || '',
             address: d.direccion || '',
+            lat: Number(d.lat || d.latitude) || 18.4861,
+            lng: Number(d.lng || d.longitude) || -69.9312,
             phone: d.telefono || d.phone || '',
             whatsapp: d.whatsapp || '',
             socials: {
@@ -189,7 +232,7 @@ export default function PedidosListoHub({ navigate }) {
     if (cartStore && cartStore.id !== store.id && cartItems.length > 0) {
       const ok = window.confirm(`Tu carrito tiene productos de ${cartStore.name}. ¿Vaciarlo y empezar un pedido en ${store.name}?`);
       if (!ok) return;
-      setCart({ store: { id: store.id, name: store.name, address: store.address, proId: store.proId }, items: [{ ...item, qty: 1 }] });
+      setCart({ store: { id: store.id, name: store.name, address: store.address, proId: store.proId, lat: store.lat, lng: store.lng }, items: [{ ...item, qty: 1 }] });
       return;
     }
     setCart(prev => {
@@ -197,7 +240,7 @@ export default function PedidosListoHub({ navigate }) {
       const items = existing
         ? prev.items.map(i => i.id === item.id ? { ...i, qty: i.qty + 1 } : i)
         : [...prev.items, { ...item, qty: 1 }];
-      return { store: { id: store.id, name: store.name, address: store.address, proId: store.proId }, items };
+      return { store: { id: store.id, name: store.name, address: store.address, proId: store.proId, lat: store.lat, lng: store.lng }, items };
     });
   };
 
@@ -213,7 +256,23 @@ export default function PedidosListoHub({ navigate }) {
   const isPickupHub = hubFulfillmentType === 'pickup';
   const subtotal = cartItems.reduce((acc, item) => acc + (item.price * item.qty), 0);
   const freeDelivery = subtotal > FREE_DELIVERY_FROM;
-  const deliveryFee = isPickupHub ? 0 : (freeDelivery ? 0 : DELIVERY_FEE);
+
+  // Cálculo dinámico por distancia si hay coordenadas de usuario y local
+  const storeLat = cartStore?.lat || 18.4861;
+  const storeLng = cartStore?.lng || -69.9312;
+  const distanceKm = userCoords ? calculateDistanceKm(userCoords.lat, userCoords.lng, storeLat, storeLng) : null;
+
+  let calculatedDeliveryFee = DELIVERY_FEE;
+  if (distanceKm !== null) {
+    if (distanceKm <= 3) {
+      calculatedDeliveryFee = 75;
+    } else {
+      const extraKm = Math.ceil(distanceKm - 3);
+      calculatedDeliveryFee = 75 + (extraKm * 15);
+    }
+  }
+
+  const deliveryFee = isPickupHub ? 0 : (freeDelivery ? 0 : calculatedDeliveryFee);
   const serviceFee = isPickupHub ? 0 : Math.round(subtotal * 0.05);
   const tip = isPickupHub ? 0 : tipAmount;
   const total = subtotal + deliveryFee + serviceFee + tip;
@@ -268,6 +327,8 @@ export default function PedidosListoHub({ navigate }) {
       items: cartItems.map(i => ({ id: i.id, name: i.name, price: i.price, qty: i.qty })),
       subtotal,
       deliveryFee,
+      distanceKm: distanceKm || null,
+      userCoords: userCoords || null,
       serviceFee,
       tipAmount: tip,
       total,
@@ -385,17 +446,42 @@ export default function PedidosListoHub({ navigate }) {
     <div className="pedidos-listo-container">
       {/* 1. BARRA SUPERIOR DE UBICACIÓN & BÚSQUEDA */}
       <div className="pl-header">
-        <div className="pl-location-bar" onClick={() => {
-          const newAddr = prompt('Escribe tu dirección de entrega:', deliveryAddress);
-          if (newAddr) setDeliveryAddress(newAddr);
-        }}>
-          <div className="pl-loc-left">
+        <div className="pl-location-bar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div className="pl-loc-left" onClick={() => {
+            const newAddr = prompt('Escribe tu dirección de entrega:', deliveryAddress);
+            if (newAddr) setDeliveryAddress(newAddr);
+          }} style={{ cursor: 'pointer', flex: 1, minWidth: 0 }}>
             <div className="pl-loc-icon">📍</div>
             <div className="pl-loc-text">
               <span className="pl-loc-label">Entregar en</span>
               <span className="pl-loc-address">{deliveryAddress || 'Toca para escribir tu dirección'} ▾</span>
             </div>
           </div>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleDetectGPS();
+            }}
+            disabled={isDetectingGps}
+            style={{
+              background: '#FFF7ED',
+              border: '1.5px solid #FED7AA',
+              color: '#C2410C',
+              borderRadius: 10,
+              padding: '5px 10px',
+              fontSize: 11,
+              fontWeight: 800,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 4,
+              flexShrink: 0
+            }}
+            title="Detectar ubicación GPS"
+          >
+            <span>{isDetectingGps ? '⏳...' : '📍 GPS'}</span>
+          </button>
         </div>
 
         <div className="pl-search-bar">
@@ -1037,13 +1123,38 @@ export default function PedidosListoHub({ navigate }) {
                   🛍️ {cartStore?.name}{cartStore?.address ? ` - ${cartStore.address}` : ''}
                 </div>
               ) : (
-                <input
-                  type="text"
-                  className="pl-search-input"
-                  placeholder="Calle, número, sector, referencia"
-                  value={deliveryAddress}
-                  onChange={(e) => setDeliveryAddress(e.target.value)}
-                />
+                <div style={{ display: 'flex', gap: 6 }}>
+                  <input
+                    type="text"
+                    className="pl-search-input"
+                    style={{ flex: 1 }}
+                    placeholder="Calle, número, sector, referencia"
+                    value={deliveryAddress}
+                    onChange={(e) => setDeliveryAddress(e.target.value)}
+                  />
+                  <button
+                    type="button"
+                    onClick={handleDetectGPS}
+                    disabled={isDetectingGps}
+                    style={{
+                      background: '#FFF7ED',
+                      border: '1.5px solid #FDBA74',
+                      color: '#C2410C',
+                      borderRadius: 12,
+                      padding: '0 12px',
+                      fontSize: 12,
+                      fontWeight: 800,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 4,
+                      whiteSpace: 'nowrap'
+                    }}
+                    title="Usar mi ubicación GPS actual"
+                  >
+                    <span>{isDetectingGps ? '⏳...' : '📍 GPS'}</span>
+                  </button>
+                </div>
               )}
             </div>
 
@@ -1072,7 +1183,11 @@ export default function PedidosListoHub({ navigate }) {
               </div>
               <div className="pl-sum-row">
                 <span>Costo de Envío {isPickupHub ? '🛍️' : '🛵'}</span>
-                <span>{deliveryFee === 0 ? 'GRATIS' : `RD$ ${deliveryFee}`}</span>
+                <span>
+                  {deliveryFee === 0 
+                    ? (isPickupHub ? 'GRATIS (Retiro)' : '¡GRATIS! (> RD$ 500)') 
+                    : `RD$ ${deliveryFee}${distanceKm ? ` (${distanceKm} km)` : ''}`}
+                </span>
               </div>
               <div className="pl-sum-row">
                 <span>Tarifa de servicio</span>

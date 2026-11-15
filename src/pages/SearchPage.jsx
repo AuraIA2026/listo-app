@@ -16,6 +16,7 @@ import EstimadorPreciosModal from '../components/EstimadorPreciosModal'
 import SolicitudExpressModal from '../components/SolicitudExpressModal'
 import PedidosListoHub from '../components/PedidosListoHub'
 import CalculadoraMaterialesModal from '../components/CalculadoraMaterialesModal'
+import QuickPhotoModal from '../components/QuickPhotoModal'
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 import L from 'leaflet'
@@ -703,6 +704,8 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
   const [showEstimadorModal, setShowEstimadorModal] = useState(false)
   const [showSolicitudExpress, setShowSolicitudExpress] = useState(false)
   const [showCalcModal,     setShowCalcModal]     = useState(false)
+  const [showPhotoBanner,   setShowPhotoBanner]   = useState(true)
+  const [showQuickPhotoModal, setShowQuickPhotoModal] = useState(false)
   const [viewMode,           setViewMode]          = useState('list') // 'list' | 'map'
 
   const openWebPlanPage = (planId = null) => {
@@ -976,6 +979,7 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
             photoURL:   data.photoURL   || null,
             phone:      data.phone      || null,
             currentPlan: data.currentPlan || data.planId || data.plan || 'basico',
+            isVerified: Boolean(data.verificacion?.estado === 'aprobada' || data.verificacion?.estado === 'verificado'),
           })
         })
         setProfessionals(prosList)
@@ -1194,6 +1198,67 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
 
 
       
+
+      {/* ── BANNER PARA SUBIR FOTO DE PERFIL SI EL USUARIO NO TIENE ── */}
+      {userData && (!userData.photoURL && !userData.profilePhoto && !userData.avatarUrl) && showPhotoBanner && (
+        <div style={{
+          margin: '0 16px 14px',
+          padding: '12px 16px',
+          background: 'linear-gradient(135deg, #FFF7ED 0%, #FFEDD5 100%)',
+          borderRadius: '16px',
+          border: '1.5px solid #FED7AA',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 12,
+          boxShadow: '0 4px 12px rgba(242, 96, 0, 0.08)'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <span style={{ fontSize: 24 }}>📸</span>
+            <div>
+              <p style={{ margin: 0, fontWeight: 800, fontSize: 13, color: '#9A3412' }}>
+                {lang === 'es' ? `¡Sube tu foto de perfil, ${userData?.name ? userData.name.split(' ')[0] : 'patrón'}!` : `Upload your profile photo, ${userData?.name ? userData.name.split(' ')[0] : 'patrón'}!`}
+              </p>
+              <p style={{ margin: '2px 0 0', fontSize: 11, color: '#C2410C' }}>
+                {lang === 'es' ? 'Los perfiles con foto reciben respuestas 3x más rápido y mayor confianza.' : 'Profiles with photo get 3x faster responses and higher trust.'}
+              </p>
+            </div>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+            <button
+              onClick={() => setShowQuickPhotoModal(true)}
+              style={{
+                background: 'linear-gradient(135deg, #F26000 0%, #EA580C 100%)',
+                color: '#fff',
+                border: 'none',
+                padding: '7px 12px',
+                borderRadius: '10px',
+                fontWeight: 800,
+                fontSize: 12,
+                cursor: 'pointer',
+                boxShadow: '0 2px 6px rgba(242, 96, 0, 0.3)'
+              }}
+            >
+              {lang === 'es' ? 'Subir Foto' : 'Upload'}
+            </button>
+            <button
+              onClick={() => setShowPhotoBanner(false)}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                color: '#9A3412',
+                fontSize: 16,
+                fontWeight: 'bold',
+                cursor: 'pointer',
+                padding: '4px'
+              }}
+              aria-label="Cerrar"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* ── CARRUSEL DE HISTORIAS DE TRABAJOS REALIZADOS (STORIES 24H) ── */}
       <HistoriasCarrusel
@@ -1501,7 +1566,14 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
                 
                 <div className="premium-title-row">
                   <div>
-                    <h3 className="premium-name">{pro.name}</h3>
+                    <h3 className="premium-name">
+                      {pro.name}
+                      {pro.isVerified && (
+                        <span style={{ marginLeft: '6px', fontSize: '11px', background: '#EFF6FF', color: '#1D4ED8', border: '1px solid #BFDBFE', padding: '2px 8px', borderRadius: '999px', fontWeight: '800', display: 'inline-flex', alignItems: 'center', gap: '3px', verticalAlign: 'middle' }}>
+                          🛡️ {lang === 'es' ? 'Verificado' : 'Verified'}
+                        </span>
+                      )}
+                    </h3>
                     <p className="premium-cat">
                       {(subCat?.image || mainCat?.image) ? <img src={subCat?.image || mainCat?.image} style={{ width: '16px', height: '16px', objectFit: 'contain', verticalAlign: 'middle', marginRight: '4px' }} alt="" /> : (subCat?.icon || mainCat?.icon || '🔧')} 
                       {lang === 'es' ? (subCat?.labelEs || mainCat?.labelEs || pro.category) : (subCat?.labelEn || mainCat?.labelEn || pro.category)}
@@ -1656,7 +1728,14 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
                 </button>
               </div>
               <div className="card-body">
-                <h3 className="pro-name">{pro.name}</h3>
+                <h3 className="pro-name">
+                  {pro.name}
+                  {pro.isVerified && (
+                    <span style={{ marginLeft: '6px', fontSize: '11px', background: '#EFF6FF', color: '#1D4ED8', border: '1px solid #BFDBFE', padding: '2px 8px', borderRadius: '999px', fontWeight: '800', display: 'inline-flex', alignItems: 'center', gap: '3px', verticalAlign: 'middle' }}>
+                      🛡️ {lang === 'es' ? 'Verificado' : 'Verified'}
+                    </span>
+                  )}
+                </h3>
                 <p className="pro-cat">
                   {(subCat?.image || mainCat?.image) ? <img src={subCat?.image || mainCat?.image} style={{ width: '16px', height: '16px', objectFit: 'contain', verticalAlign: 'middle', marginRight: '4px' }} alt="" /> : (subCat?.icon || mainCat?.icon || '🔧')}{' '}
                   {lang === 'es' ? (subCat?.labelEs || mainCat?.labelEs || pro.category) : (subCat?.labelEn || mainCat?.labelEn || pro.category)}
@@ -1742,6 +1821,14 @@ export default function SearchPage({ lang = 'es', navigate, initialCategory = 'a
           navigate('proProfile', proObj);
         }}
         navigate={navigate}
+      />
+
+      {/* Modal Rápido para subir foto de perfil */}
+      <QuickPhotoModal
+        isOpen={showQuickPhotoModal}
+        onClose={() => setShowQuickPhotoModal(false)}
+        user={userData}
+        lang={lang}
       />
     </div>
   )

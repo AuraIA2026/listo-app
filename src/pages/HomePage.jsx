@@ -9,6 +9,7 @@ import LuckyWheelModal from '../components/LuckyWheelModal'
 import HistoriasCarrusel from '../components/HistoriasCarrusel'
 import HistoriasViewerModal from '../components/HistoriasViewerModal'
 import StoryAvatar from '../components/StoryAvatar'
+import QuickPhotoModal from '../components/QuickPhotoModal'
 import { useStories } from '../hooks/useStories'
 import { getProPlanTheme } from '../planTheme'
 import PlanSelectionModal from '../components/PlanSelectionModal'
@@ -454,6 +455,8 @@ export default function HomePage({ lang, navigate, userRole }) {
   const [homeSearch, setHomeSearch] = useState('')
   const [showDropdown, setShowDropdown] = useState(false)
   const [showSolicitudExpress, setShowSolicitudExpress] = useState(false)
+  const [showPhotoBanner, setShowPhotoBanner] = useState(true)
+  const [showQuickPhotoModal, setShowQuickPhotoModal] = useState(false)
 
   // ── ESTADOS TEMU / AMAZON FEATURES ──
   const [allProsReal, setAllProsReal] = useState([])
@@ -1011,7 +1014,7 @@ export default function HomePage({ lang, navigate, userRole }) {
           });
           const finalLoc = cleanLoc.length > 0 ? cleanLoc.slice(0, 2).join(', ') : 'Santo Domingo, D.N.';
 
-          const isVerified = Boolean(data.verificacion?.estado === 'aprobada' || data.verificacion?.estado === 'verificado' || data.isVerified);
+          const isVerified = Boolean(data.verificacion?.estado === 'aprobada' || data.verificacion?.estado === 'verificado');
 
           prosList.push({
             id: docSnap.id,
@@ -1303,6 +1306,67 @@ export default function HomePage({ lang, navigate, userRole }) {
           </div>
         )}
       </div>
+
+      {/* ── BANNER PARA SUBIR FOTO DE PERFIL SI EL USUARIO NO TIENE ── */}
+      {userData && (!userData.photoURL && !userData.profilePhoto && !userData.avatarUrl) && showPhotoBanner && (
+        <div style={{
+          margin: '10px 16px 14px',
+          padding: '12px 16px',
+          background: 'linear-gradient(135deg, #FFF7ED 0%, #FFEDD5 100%)',
+          borderRadius: '16px',
+          border: '1.5px solid #FED7AA',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 12,
+          boxShadow: '0 4px 12px rgba(242, 96, 0, 0.08)'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <span style={{ fontSize: 24 }}>📸</span>
+            <div>
+              <p style={{ margin: 0, fontWeight: 800, fontSize: 13, color: '#9A3412' }}>
+                {lang === 'es' ? `¡Sube tu foto de perfil, ${userData?.name ? userData.name.split(' ')[0] : 'patrón'}!` : `Upload your profile photo, ${userData?.name ? userData.name.split(' ')[0] : 'patrón'}!`}
+              </p>
+              <p style={{ margin: '2px 0 0', fontSize: 11, color: '#C2410C' }}>
+                {lang === 'es' ? 'Los perfiles con foto reciben respuestas 3x más rápido y mayor confianza.' : 'Profiles with photo get 3x faster responses and higher trust.'}
+              </p>
+            </div>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+            <button
+              onClick={() => setShowQuickPhotoModal(true)}
+              style={{
+                background: 'linear-gradient(135deg, #F26000 0%, #EA580C 100%)',
+                color: '#fff',
+                border: 'none',
+                padding: '7px 12px',
+                borderRadius: '10px',
+                fontWeight: 800,
+                fontSize: 12,
+                cursor: 'pointer',
+                boxShadow: '0 2px 6px rgba(242, 96, 0, 0.3)'
+              }}
+            >
+              {lang === 'es' ? 'Subir Foto' : 'Upload'}
+            </button>
+            <button
+              onClick={() => setShowPhotoBanner(false)}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                color: '#9A3412',
+                fontSize: 16,
+                fontWeight: 'bold',
+                cursor: 'pointer',
+                padding: '4px'
+              }}
+              aria-label="Cerrar"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* ── BOTÓN / PANEL SOCIO "¡HOLA, SOCIO!" (UBICADO DEBAJO DEL PANEL DE HISTORIAS DE ARRIBA) ── */}
       {isPro && (
@@ -2166,6 +2230,14 @@ export default function HomePage({ lang, navigate, userRole }) {
         onClose={() => setShowFlashOfferModal(false)} 
         navigate={navigate} 
         lang={lang} 
+      />
+
+      {/* Modal Rápido para subir foto de perfil */}
+      <QuickPhotoModal
+        isOpen={showQuickPhotoModal}
+        onClose={() => setShowQuickPhotoModal(false)}
+        user={userData}
+        lang={lang}
       />
 
     </div>
