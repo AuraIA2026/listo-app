@@ -776,6 +776,12 @@ export default function AdminPage({ navigate }) {
   const [softwareComercios, setSoftwareComercios] = useState([]); // Comercios creados en Listo Software
   const [stories, setStories] = useState([]); // Historias 24h
   const [storyFilter, setStoryFilter] = useState('all'); // 'all', 'pending', 'approved'
+
+  // Reglas estrictas de moderación de historias para Admin
+  const isStoryRejected = (s) => s?.status === 'rejected' || s?.moderated === 'rejected' || s?.rejected === true;
+  const isStoryPending = (s) => !isStoryRejected(s) && (s?.status === 'pending' || s?.approved !== true || s?.status !== 'approved' || s?.validada === false || s?.moderated === false);
+  const isStoryApproved = (s) => !isStoryPending(s) && !isStoryRejected(s) && s?.status === 'approved' && s?.approved === true;
+  const pendingStoriesCount = stories.filter(isStoryPending).length;
   const [toast, setToast] = useState('');
   const [confirm, setConfirm] = useState(null); // { type, obj }
   const [viewDocs, setViewDocs] = useState(null); // Usuario a inspeccionar documentos
@@ -1065,6 +1071,18 @@ export default function AdminPage({ navigate }) {
           });
         } catch (_) { }
       }
+
+      // Marcar notificación pendiente de historias como leída
+      try {
+        const pendingStoryAlerts = alerts.filter(a =>
+          (a.type === 'new_story_request' || a.type === 'new_story_review' || (a.title && a.title.includes('HISTORIA'))) && (!a.read || a.read === false)
+        );
+        for (const alt of pendingStoryAlerts) {
+          if ((st.proName && alt.text?.includes(st.proName)) || alt.storyId === st.id || alt.storyDocId === st.id) {
+            await updateDoc(doc(db, 'notificaciones', alt.id), { read: true });
+          }
+        }
+      } catch (errN) { }
 
       showToast(`🔴 Historia de ${st.proName || 'Socio'} marcada como NO aprobada`);
       if (previewImageModal?.story?.id === st.id) {
@@ -1756,8 +1774,6 @@ export default function AdminPage({ navigate }) {
         {/* TABS CON ICONOS EXÓTICOS Y ESTILO MAMEY */}
         <div className="admin-tabs" style={{ overflowX: 'auto', paddingBottom: 6 }}>
           {(() => {
-            const pendingStoriesCount = stories.filter(s => s.status === 'pending' || s.approved === false || s.validada === false || s.moderated === false || (!s.approved && s.status !== 'approved')).length;
-
             return [
               { id: 'comercios', label: 'Comercio', count: partnerRequests.filter(r => r.status === 'pending').length },
               { id: 'postulaciones', label: 'Nuevos', count: verifications.length },
@@ -2634,13 +2650,20 @@ export default function AdminPage({ navigate }) {
 
         {/* ── TAB: HISTORIAS (Herramienta de Control, Aprobación y Vista en Grande HD) ── */}
         {tab === 'historias' && (() => {
-          const isStRejected = (s) => s.status === 'rejected' || s.moderated === 'rejected' || s.rejected === true;
-          const isStPending = (s) => !isStRejected(s) && (s.status === 'pending' || s.approved === false || s.validada === false || s.moderated === false || (!s.approved && s.status !== 'approved'));
-          const isStApproved = (s) => !isStPending(s) && !isStRejected(s) && s.status === 'approved' && s.approved === true;
+          const isStRejected = isStoryRejected;
+          const isStPending = isStoryPending;
+          const isStApproved = isStoryApproved;
 
-          const pendingCount = stories.filter(isStPending).length;
+          const pendingCount = pendingStoriesCount;
           const approvedCount = stories.filter(isStApproved).length;
           const rejectedCount = stories.filter(isStRejected).length;
+
+          const filteredStories = stories.filter(st => {
+            if (storyFilter === 'pending') return isStPending(st);
+            if (storyFilter === 'approved') return isStApproved(st);
+            if (storyFilter === 'rejected') return isStRejected(st);
+            return true;
+          });
 
           return (
             <div className="admin-section" style={{ marginTop: 16 }}>
@@ -2648,7 +2671,7 @@ export default function AdminPage({ navigate }) {
                 <div>
                   <span className="section-title">📸 Control y Aprobación de Historias (Vista en Grande HD)</span>
                   <p style={{ fontSize: '12.5px', color: 'var(--muted)', margin: '4px 0 0' }}>
-                    Todas las historias pasan por tu control. Revisa cada foto en grande y decide si <strong>Aprobar</strong> o <strong>No Aprobar</strong>.
+                    Todas las historias pasan por tu control. Hasta que no las autorices, nadie puede verlas. Revisa cada foto en grande y decide si <strong>Aprobar</strong> o <strong>No Aprobar</strong>.
                   </p>
                 </div>
                 <span className="admin-badge" style={{ background: pendingCount > 0 ? '#F59E0B' : 'var(--brand)' }}>
@@ -2704,22 +2727,25 @@ export default function AdminPage({ navigate }) {
                 </button>
               </div>
 
-              {stories.length === 0 && (
+              {filteredStories.length === 0 ? (
                 <div className="empty-admin" style={{ padding: '40px 20px', textAlign: 'center', background: 'var(--surface)', borderRadius: '18px', border: '1px solid var(--border)', marginTop: '16px' }}>
-                  <div style={{ fontSize: '40px', marginBottom: '10px' }}>📸</div>
-                  <h4 style={{ margin: '0 0 6px', fontSize: '16px', color: 'var(--text)' }}>No hay historias registradas</h4>
-                  <p style={{ margin: 0, fontSize: '13px', color: 'var(--muted)' }}>Las historias subidas por los usuarios aparecerán aquí para que las apruebes o rechaces.</p>
+                  <div style={{ fontSize: '40px', marginBottom: '10px' }}>
+                    {storyFilter === 'pending' ? '🎉' : storyFilter === 'approved' ? '🟢' : storyFilter === 'rejected' ? '🔴' : '📸'}
+                  </div>
+                  <h4 style={{ margin: '0 0 6px', fontSize: '16px', color: 'var(--text)' }}>
+                    {storyFilter === 'pending' ? '¡Todo al día! No hay historias pendientes de autorización' :
+                     storyFilter === 'approved' ? 'No hay historias aprobadas activas' :
+                     storyFilter === 'rejected' ? 'No hay historias no aprobadas' : 'No hay historias registradas'}
+                  </h4>
+                  <p style={{ margin: 0, fontSize: '13px', color: 'var(--muted)' }}>
+                    {storyFilter === 'pending' ? 'Las historias subidas por clientes y profesionales aparecerán aquí para que las autorices antes de publicarse.' :
+                     'Aquí aparecerán las historias correspondientes al filtro seleccionado.'}
+                  </p>
                 </div>
-              )}
-
-              {/* Grid de Historias en Grande */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))', gap: '20px', marginTop: '16px' }}>
-                {stories.filter(st => {
-                  if (storyFilter === 'pending') return isStPending(st);
-                  if (storyFilter === 'approved') return isStApproved(st);
-                  if (storyFilter === 'rejected') return isStRejected(st);
-                  return true;
-                }).map((st, i) => {
+              ) : (
+                /* Grid de Historias en Grande */
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))', gap: '20px', marginTop: '16px' }}>
+                  {filteredStories.map((st, i) => {
                   const media = st.imageUrl || st.videoUrl || st.mediaUrl || st.url;
                   const isVid = st.mediaType === 'video' || st.type === 'video' || st.isVideo || Boolean(st.videoUrl) || (media && media.match(/\.(mp4|webm|mov)/i));
                   const isPending = isStPending(st);
@@ -2869,7 +2895,7 @@ export default function AdminPage({ navigate }) {
                                 boxShadow: isApproved ? 'none' : '0 4px 12px rgba(16, 185, 129, 0.35)'
                               }}
                             >
-                              {isApproved ? '✅ Aprobada (Renovar)' : '✅ APROBAR'}
+                              {isApproved ? '✅ Aprobada (Renovar 24h)' : '✅ APROBAR Y PUBLICAR (24H)'}
                             </button>
 
                             {/* Botón NO APROBAR / RECHAZAR */}
@@ -2892,7 +2918,7 @@ export default function AdminPage({ navigate }) {
                                 boxShadow: isRejected ? 'none' : '0 4px 12px rgba(239, 68, 68, 0.35)'
                               }}
                             >
-                              ❌ NO APROBAR
+                              {isRejected ? '❌ Ya Rechazada' : '❌ NO APROBAR'}
                             </button>
                           </div>
 
@@ -2923,6 +2949,7 @@ export default function AdminPage({ navigate }) {
                   );
                 })}
               </div>
+            )}
             </div>
           );
         })()}
@@ -3348,7 +3375,7 @@ export default function AdminPage({ navigate }) {
         {tab === 'alertas' && (
           <div className="admin-section" style={{ marginTop: 16 }}>
             <div className="section-header">
-              <span className="section-title">Alertas ({alerts.filter(a => !a.read).length} sin leer{verifications.length > 0 ? ` · ${verifications.length} postulacion(es)` : ''})</span>
+              <span className="section-title">Alertas ({alerts.filter(a => !a.read).length} sin leer{verifications.length > 0 ? ` · ${verifications.length} postulacion(es)` : ''}{pendingStoriesCount > 0 ? ` · ${pendingStoriesCount} historia(s)` : ''})</span>
               {alerts.filter(a => !a.read).length > 0 && (
                 <button className="section-action" onClick={() => setConfirm({ type: 'mark_all_read', obj: null })}>
                   Marcar todas leídas ✓
@@ -3366,7 +3393,35 @@ export default function AdminPage({ navigate }) {
                 <span style={{ fontSize: 22, color: '#3B82F6' }}>›</span>
               </div>
             )}
-            {alerts.length === 0 && verifications.length === 0 && (
+            {/* Banner si hay historias pendientes de aprobación */}
+            {pendingStoriesCount > 0 && (
+              <div
+                style={{
+                  background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.12), rgba(245, 158, 11, 0.05))',
+                  border: '2px solid #F59E0B',
+                  borderRadius: 16,
+                  padding: '14px 16px',
+                  marginBottom: 14,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 12,
+                  cursor: 'pointer'
+                }}
+                onClick={() => { setTab('historias'); setStoryFilter('pending'); }}
+              >
+                <span style={{ fontSize: 28 }}>📸</span>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontWeight: 800, fontSize: 15, color: '#D97706' }}>
+                    ¡{pendingStoriesCount} historia(s) pendiente(s) de tu autorización!
+                  </div>
+                  <div style={{ fontSize: 12, color: '#B45309', marginTop: 2 }}>
+                    Ninguna historia es visible hasta que la autorices. Toca aquí para verlas en grande HD y autorizarlas por 24 horas.
+                  </div>
+                </div>
+                <span style={{ fontSize: 22, color: '#D97706' }}>›</span>
+              </div>
+            )}
+            {alerts.length === 0 && verifications.length === 0 && pendingStoriesCount === 0 && (
               <div className="empty-admin">
                 <span>🔔</span>
                 <p>Sin alertas</p>
@@ -3377,7 +3432,7 @@ export default function AdminPage({ navigate }) {
               const isUnread = !a.read;
               const isEditAlert = ['new_edit_request', 'new_edit_request_photo', 'new_edit_request_cover', 'new_edit_request_work'].includes(a.type);
               const isVerifAlert = a.type === 'new_verification_request';
-              const isStoryAlert = a.type === 'new_story_request' || (a.title && a.title.includes('HISTORIA'));
+              const isStoryAlert = a.type === 'new_story_request' || a.type === 'new_story_review' || (a.title && a.title.includes('HISTORIA'));
               const isPaymentAlert = a.type === 'admin_plan_purchased';
 
               let emoji = '🔄';
@@ -4327,18 +4382,22 @@ export default function AdminPage({ navigate }) {
                 </div>
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  {previewImageModal.story && (
-                    <span style={{
-                      fontSize: '11px',
-                      fontWeight: '800',
-                      padding: '3px 10px',
-                      borderRadius: '12px',
-                      background: (previewImageModal.story.status === 'approved' || previewImageModal.story.approved) ? '#10B981' : '#F59E0B',
-                      color: '#FFF'
-                    }}>
-                      {(previewImageModal.story.status === 'approved' || previewImageModal.story.approved) ? '🟢 APROBADA' : '🟡 EN ESPERA DE VALIDACIÓN'}
-                    </span>
-                  )}
+                  {previewImageModal.story && (() => {
+                    const isApp = isStoryApproved(previewImageModal.story);
+                    const isRej = isStoryRejected(previewImageModal.story);
+                    return (
+                      <span style={{
+                        fontSize: '11px',
+                        fontWeight: '800',
+                        padding: '4px 12px',
+                        borderRadius: '12px',
+                        background: isApp ? '#10B981' : isRej ? '#EF4444' : '#F59E0B',
+                        color: '#FFF'
+                      }}>
+                        {isApp ? '🟢 APROBADA (ACTIVA 24H)' : isRej ? '🔴 NO APROBADA' : '🟡 PENDIENTE DE AUTORIZACIÓN'}
+                      </span>
+                    );
+                  })()}
                   <button
                     onClick={() => setPreviewImageModal(null)}
                     style={{ background: 'rgba(255, 255, 255, 0.1)', border: 'none', color: '#FFF', width: '34px', height: '34px', borderRadius: '50%', cursor: 'pointer', fontWeight: 'bold', fontSize: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
@@ -4400,7 +4459,7 @@ export default function AdminPage({ navigate }) {
                           boxShadow: '0 4px 16px rgba(16, 185, 129, 0.45)'
                         }}
                       >
-                        ✅ APROBAR HISTORIA
+                        {isStoryApproved(previewImageModal.story) ? '✅ Aprobada (Renovar 24h)' : '✅ APROBAR Y PUBLICAR (24H)'}
                       </button>
 
                       <button
@@ -4420,7 +4479,7 @@ export default function AdminPage({ navigate }) {
                           boxShadow: '0 4px 16px rgba(239, 68, 68, 0.45)'
                         }}
                       >
-                        ❌ NO APROBAR
+                        {isStoryRejected(previewImageModal.story) ? '❌ Ya Rechazada' : '❌ NO APROBAR'}
                       </button>
                     </>
                   )}

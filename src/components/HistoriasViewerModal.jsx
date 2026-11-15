@@ -46,7 +46,16 @@ export default function HistoriasViewerModal({
 
   const [liveProPlan, setLiveProPlan] = useState(null)
   const [liveProAvatar, setLiveProAvatar] = useState(undefined)
-  const currentStory = stories[currentIndex] || stories[0]
+
+  // Filtro estricto de seguridad: Solo permitir visualizar historias APROBADAS por el Administrador
+  const validStories = (stories || []).filter(s => {
+    if (!s) return false
+    const isRejected = s.status === 'rejected' || s.moderated === 'rejected' || s.rejected === true
+    const isPending = !isRejected && (s.status === 'pending' || s.approved !== true || s.status !== 'approved' || s.validada === false || s.moderated === false)
+    return !isRejected && !isPending && s.status === 'approved' && s.approved === true
+  })
+
+  const currentStory = validStories[currentIndex] || validStories[0]
   const proUidKey = currentStory?.proId || currentStory?.proUid
   const normKey = (str) => String(str || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, ' ').trim()
   const proNameClean = normKey(currentStory?.proName || currentStory?.fullName || '')
@@ -179,7 +188,7 @@ export default function HistoriasViewerModal({
 
       alert('🗑️ Tu historia ha sido eliminada correctamente de la plataforma.')
 
-      if (stories.length <= 1) {
+      if (validStories.length <= 1) {
         onClose()
       } else {
         handleNextStory()
@@ -189,7 +198,7 @@ export default function HistoriasViewerModal({
       try {
         await deleteDoc(doc(db, 'historias', currentStory.id))
         alert('🗑️ Historia eliminada correctamente.')
-        if (stories.length <= 1) onClose()
+        if (validStories.length <= 1) onClose()
         else handleNextStory()
       } catch (e2) {
         alert('No se pudo eliminar la historia. Inténtalo de nuevo.')
@@ -202,7 +211,7 @@ export default function HistoriasViewerModal({
 
   // Auto-progress timer for stories (paused if user holds screen)
   useEffect(() => {
-    if (!isOpen || stories.length === 0 || isPaused) return
+    if (!isOpen || validStories.length === 0 || isPaused) return
 
     if (timerRef.current) clearTimeout(timerRef.current)
 
@@ -213,12 +222,12 @@ export default function HistoriasViewerModal({
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current)
     }
-  }, [currentIndex, isOpen, stories, storyDuration, isPaused])
+  }, [currentIndex, isOpen, validStories, storyDuration, isPaused])
 
-  if (!isOpen || !stories || stories.length === 0) return null
+  if (!isOpen || !validStories || validStories.length === 0) return null
 
   const handleNextStory = () => {
-    if (currentIndex < stories.length - 1) {
+    if (currentIndex < validStories.length - 1) {
       setCurrentIndex(prev => prev + 1)
       setIsPaused(false)
     } else {
@@ -429,7 +438,7 @@ export default function HistoriasViewerModal({
 
         {/* Top 5s / 15s progress bars */}
         <div className="historias-timer-container">
-          {stories.map((story, idx) => {
+          {validStories.map((story, idx) => {
             let statusClass = ''
             if (idx < currentIndex) statusClass = 'completed'
             else if (idx === currentIndex) statusClass = `active ${isPaused ? 'paused' : ''}`

@@ -24,6 +24,7 @@ const HAND_TEXTS_SERVICES = [
 
 export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate, isMandameView = false, hideRibbon = false }) {
   const [stories, setStories] = useState([])
+  const [userPendingStory, setUserPendingStory] = useState(null)
   const [viewerOpen, setViewerOpen] = useState(false)
   const [selectedStoryIndex, setSelectedStoryIndex] = useState(0)
   const [uploadModalOpen, setUploadModalOpen] = useState(false)
@@ -194,14 +195,26 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate
     const unsubscribe = onSnapshot(qStories, (snapshot) => {
       const fetched = []
       const now = Date.now()
+      let pendingForMe = null
+      const myUid = userData?.uid || userData?.id || auth?.currentUser?.uid || storedUser?.uid || storedUser?.id
+      const myNameNorm = normKey(userData?.name || userData?.displayName || storedUser?.name || '')
 
       snapshot.forEach(docSnap => {
         const data = docSnap.data()
         const isExpiredOrDeleted = data.status === 'expired' || data.status === 'deleted'
         const isRejected = data.status === 'rejected' || data.moderated === 'rejected' || data.rejected === true
         // REGLA ESTRICTA: Toda historia es PENDIENTE hasta que el administrador la apruebe explícitamente en el Panel Admin
-        const isPending = data.status === 'pending' || data.approved === false || data.validada === false || data.moderated === false || (!data.approved && data.status !== 'approved')
+        const isPending = !isRejected && (data.status === 'pending' || data.approved !== true || data.status !== 'approved' || data.validada === false || data.moderated === false)
         const isApproved = !isPending && !isRejected && data.status === 'approved' && data.approved === true
+
+        // Detectar si el usuario actual tiene una historia en revisión esperando aprobación del admin
+        if (isPending && !isRejected) {
+          const authorUid = data.proId || data.proUid || data.uid || data.userId
+          const authorNameNorm = normKey(data.proName || data.fullName || data.name || '')
+          if ((myUid && authorUid && authorUid === myUid) || (myNameNorm && authorNameNorm && myNameNorm === authorNameNorm)) {
+            pendingForMe = { id: docSnap.id, ...data }
+          }
+        }
         
         // Calcular tiempo exacto de expiración (máximo 24 horas)
         const expiresTime = getStoryExpirationMs(data)
@@ -214,12 +227,13 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate
 
         const storyObj = { id: docSnap.id, ...data }
 
-        // Historia válida ÚNICAMENTE dentro de sus 24 horas y aprobada sin rechazo
+        // Historia válida ÚNICAMENTE dentro de sus 24 horas y aprobada sin rechazo por el administrador
         if (isApproved && !isRejected && expiresTime > now) {
           fetched.push(storyObj)
         }
       })
 
+      setUserPendingStory(pendingForMe)
       fetched.sort((a, b) => parseStoryTimeMs(b.createdAt) - parseStoryTimeMs(a.createdAt))
       setStories(fetched)
     }, (error) => {
@@ -286,6 +300,12 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate
   }
 
   const handleAddStoryClick = () => {
+    if (userPendingStory) {
+      const confirmAnother = window.confirm(
+        '⏳ Tu historia está actualmente EN REVISIÓN por el Administrador.\n\nTan pronto el Administrador la autorice en el Panel de Control, estará activa y visible por 24 horas para todos los usuarios.\n\n¿Deseas subir otra historia adicional mientras tanto?'
+      )
+      if (!confirmAnother) return
+    }
     setUploadModalOpen(true)
   }
 
@@ -363,8 +383,14 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate
           onScroll={checkScroll}
         >
           {/* Add Story Button for both Clients and Professionals */}
-          <div className="historia-item" onClick={handleAddStoryClick}>
-            <div className={`historia-ring add-story-ring ${!canPublishStory ? 'locked' : ''}`}>
+          <div className="historia-item" onClick={handleAddStoryClick} title={userPendingStory ? "Tu historia está en revisión por el Administrador" : "Subir historia"}>
+            <div
+              className={`historia-ring add-story-ring ${!canPublishStory ? 'locked' : ''}`}
+              style={userPendingStory ? {
+                background: 'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)',
+                boxShadow: '0 0 12px rgba(245, 158, 11, 0.65)'
+              } : {}}
+            >
               <div className="historia-avatar-inner">
                 {(() => {
                   const myPhoto = [userData?.photoURL, userData?.avatarUrl, userData?.profilePhoto].find(isRealProfilePhoto)
@@ -383,12 +409,15 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate
                   )
                 })()}
               </div>
-              <div className="historia-add-plus">
-                {canPublishStory ? '+' : '🔒'}
+              <div
+                className="historia-add-plus"
+                style={userPendingStory ? { background: '#F59E0B', color: '#FFF', fontSize: '11px' } : {}}
+              >
+                {userPendingStory ? '⏳' : canPublishStory ? '+' : '🔒'}
               </div>
             </div>
-            <span className="historia-label pro-label">
-              Tu Historia
+            <span className="historia-label pro-label" style={userPendingStory ? { color: '#D97706', fontWeight: 800 } : {}}>
+              {userPendingStory ? 'En revisión' : 'Tu Historia'}
             </span>
           </div>
 

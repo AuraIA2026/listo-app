@@ -387,7 +387,7 @@ export default function ProfessionalProfilePage({ lang = 'es', navigate, profess
       snapshot.forEach(docSnap => {
         const data = docSnap.data()
         const isRejected = data.status === 'rejected' || data.moderated === 'rejected' || data.rejected === true
-        const isPending = data.status === 'pending' || data.approved === false || data.validada === false || data.moderated === false || (!data.approved && data.status !== 'approved')
+        const isPending = !isRejected && (data.status === 'pending' || data.approved !== true || data.status !== 'approved' || data.validada === false || data.moderated === false)
         const isApproved = !isPending && !isRejected && data.status === 'approved' && data.approved === true
         
         let expiresTime = 0
