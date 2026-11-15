@@ -519,11 +519,11 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
         evidenceText: formData.experiencia
       })
 
-      // Publicar automáticamente las 3 historias de 4 segundos del trabajo finalizado en Firestore
+      // Enviar las historias de trabajo finalizado a revisión del Administrador (pendientes de aprobación)
       for (let i = 0; i < Math.min(downloadedURLs.length, 3); i++) {
         const photoUrl = downloadedURLs[i];
         try {
-          await addDoc(collection(db, 'historias'), {
+          const storyDocRef = await addDoc(collection(db, 'historias'), {
             proId: latestOrder.proId || finalUserData?.uid || '',
             proName: finalUserData?.name || latestOrder.proName || 'Profesional',
             proAvatar: finalUserData?.profilePhoto || finalUserData?.photoURL || '',
@@ -532,16 +532,32 @@ export default function WorkDonePage({ lang = 'es', navigate, professional, user
             proPlan: finalUserData?.currentPlan || finalUserData?.plan || 'Gratuito',
             imageUrl: photoUrl,
             caption: `📸 Trabajo finalizado de ${latestOrder.category || 'servicio'}: ${formData.experiencia || '¡Trabajo completado con excelencia!'}`,
-            status: 'approved',
-            moderated: true,
+            status: 'pending',
+            approved: false,
+            validada: false,
+            moderated: false,
+            rejected: false,
             createdAt: new Date().toISOString(),
             expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-            viewsCount: 1,
+            viewsCount: 0,
             likesCount: 0,
             mediaType: 'image'
           });
+
+          // Notificar al administrador para su revisión
+          await addDoc(collection(db, 'notificaciones'), {
+            userId: 'admin',
+            type: 'new_story_review',
+            title: '📸 HISTORIA DE TRABAJO PENDIENTE POR APROBAR',
+            text: `El profesional ${finalUserData?.name || latestOrder.proName || 'Profesional'} (${latestOrder.category || 'Servicio'}) envió una historia de trabajo completado para tu aprobación.`,
+            storyDocId: storyDocRef.id,
+            storyId: storyDocRef.id,
+            proName: finalUserData?.name || latestOrder.proName || 'Profesional',
+            read: false,
+            createdAt: new Date().toISOString()
+          }).catch(() => {});
         } catch (errStory) {
-          console.error("Error al publicar historia de trabajo finalizado:", errStory);
+          console.error("Error al enviar historia de trabajo finalizado:", errStory);
         }
       }
 

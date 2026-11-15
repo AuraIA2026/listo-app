@@ -113,7 +113,8 @@ export default function NotificacionPage({ lang = 'es', navigate, userData }) {
       snap.forEach(docSnap => {
         const d = docSnap.data();
         const isRejected = d.status === 'rejected' || d.moderated === 'rejected' || d.approved === false || d.rejected === true;
-        const isApproved = (d.status === 'approved' || d.approved === true || (d.moderated === true && d.status !== 'rejected')) && !isRejected;
+        const isPending = d.status === 'pending' || d.approved === false || d.validada === false || d.moderated === false || (!d.approved && d.status !== 'approved');
+        const isApproved = !isPending && !isRejected && d.status === 'approved' && d.approved === true;
         let expiresTime = 0;
         if (d.expiresAt) {
           expiresTime = new Date(d.expiresAt).getTime();

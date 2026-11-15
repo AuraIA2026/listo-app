@@ -198,9 +198,10 @@ export default function HistoriasCarrusel({ userData, isPro, onHirePro, navigate
       snapshot.forEach(docSnap => {
         const data = docSnap.data()
         const isExpiredOrDeleted = data.status === 'expired' || data.status === 'deleted'
-        const isPending = data.status === 'pending' || (data.approved === false && data.status !== 'rejected')
         const isRejected = data.status === 'rejected' || data.moderated === 'rejected' || data.rejected === true
-        const isApproved = !isPending && !isRejected && (data.status === 'approved' || data.approved === true || data.validada === true)
+        // REGLA ESTRICTA: Toda historia es PENDIENTE hasta que el administrador la apruebe explícitamente en el Panel Admin
+        const isPending = data.status === 'pending' || data.approved === false || data.validada === false || data.moderated === false || (!data.approved && data.status !== 'approved')
+        const isApproved = !isPending && !isRejected && data.status === 'approved' && data.approved === true
         
         // Calcular tiempo exacto de expiración (máximo 24 horas)
         const expiresTime = getStoryExpirationMs(data)

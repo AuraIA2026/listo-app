@@ -1756,7 +1756,7 @@ export default function AdminPage({ navigate }) {
         {/* TABS CON ICONOS EXÓTICOS Y ESTILO MAMEY */}
         <div className="admin-tabs" style={{ overflowX: 'auto', paddingBottom: 6 }}>
           {(() => {
-            const pendingStoriesCount = stories.filter(s => s.status === 'pending' || (s.approved === false && s.status !== 'rejected')).length;
+            const pendingStoriesCount = stories.filter(s => s.status === 'pending' || s.approved === false || s.validada === false || s.moderated === false || (!s.approved && s.status !== 'approved')).length;
 
             return [
               { id: 'comercios', label: 'Comercio', count: partnerRequests.filter(r => r.status === 'pending').length },
@@ -2634,9 +2634,9 @@ export default function AdminPage({ navigate }) {
 
         {/* ── TAB: HISTORIAS (Herramienta de Control, Aprobación y Vista en Grande HD) ── */}
         {tab === 'historias' && (() => {
-          const isStPending = (s) => s.status === 'pending' || (s.approved === false && s.status !== 'rejected');
           const isStRejected = (s) => s.status === 'rejected' || s.moderated === 'rejected' || s.rejected === true;
-          const isStApproved = (s) => !isStPending(s) && !isStRejected(s) && (s.status === 'approved' || s.approved === true || s.validada === true);
+          const isStPending = (s) => !isStRejected(s) && (s.status === 'pending' || s.approved === false || s.validada === false || s.moderated === false || (!s.approved && s.status !== 'approved'));
+          const isStApproved = (s) => !isStPending(s) && !isStRejected(s) && s.status === 'approved' && s.approved === true;
 
           const pendingCount = stories.filter(isStPending).length;
           const approvedCount = stories.filter(isStApproved).length;
