@@ -466,8 +466,9 @@ export default function HomePage({ lang, navigate, userRole }) {
   const [showFlashOfferModal, setShowFlashOfferModal] = useState(false)
   const [isProblemsExpanded, setIsProblemsExpanded] = useState(false)
 
-  // ── STICKER "¿TIENES HAMBRE?" (APARECE AL DESPLAZARSE HACIA ABAJO, MÁXIMO 1 VEZ POR DÍA AL CERRAR O ENTRAR) ──
+  // ── STICKER "¿TIENES HAMBRE?" (APARECE AL DESPLAZARSE HACIA ABAJO, MÁXIMO 1 VEZ POR DÍA, DESAPARECE EN 3 SEGUNDOS) ──
   const [showHungrySticker, setShowHungrySticker] = useState(false)
+  const [isHungryStickerHiding, setIsHungryStickerHiding] = useState(false)
 
   const getTodayStickerKey = () => {
     const now = new Date()
@@ -477,6 +478,7 @@ export default function HomePage({ lang, navigate, userRole }) {
     return `${y}-${m}-${d}`
   }
 
+  // Detectar scroll para mostrar el sticker (1 vez por día)
   useEffect(() => {
     const todayKey = getTodayStickerKey()
     if (localStorage.getItem('listo_hungry_sticker_dismissed_date') === todayKey) {
@@ -492,6 +494,7 @@ export default function HomePage({ lang, navigate, userRole }) {
       const currentScroll = Math.max(winScroll, targetScroll)
 
       if (currentScroll > 160) {
+        localStorage.setItem('listo_hungry_sticker_dismissed_date', getTodayStickerKey())
         setShowHungrySticker(true)
       }
     }
@@ -504,14 +507,32 @@ export default function HomePage({ lang, navigate, userRole }) {
     }
   }, [])
 
+  // Desaparecer automáticamente a los 3 segundos
+  useEffect(() => {
+    if (!showHungrySticker) return
+
+    const hideTimer = setTimeout(() => {
+      setIsHungryStickerHiding(true)
+      const removeTimer = setTimeout(() => {
+        setShowHungrySticker(false)
+        setIsHungryStickerHiding(false)
+      }, 350)
+      return () => clearTimeout(removeTimer)
+    }, 3000)
+
+    return () => clearTimeout(hideTimer)
+  }, [showHungrySticker])
+
   const handleDismissHungrySticker = (e) => {
     if (e) e.stopPropagation()
     localStorage.setItem('listo_hungry_sticker_dismissed_date', getTodayStickerKey())
+    setIsHungryStickerHiding(false)
     setShowHungrySticker(false)
   }
 
   const handleOpenPedidosFromSticker = () => {
     localStorage.setItem('listo_hungry_sticker_dismissed_date', getTodayStickerKey())
+    setIsHungryStickerHiding(false)
     setShowHungrySticker(false)
     navigate('mandame')
   }
@@ -2057,10 +2078,10 @@ export default function HomePage({ lang, navigate, userRole }) {
       )}
       {/* ── ELEMENTOS FLOTANTES ESTILO TEMU / AMAZON ── */}
 
-      {/* Sticker flotante "¿Tienes Hambre?" — Aparece al hacer scroll hacia abajo (máx. 1 vez por día) */}
+      {/* Sticker flotante "¿Tienes Hambre?" — Aparece al hacer scroll hacia abajo (máx. 1 vez por día, desaparece en 3 segundos) */}
       {showHungrySticker && (
         <div
-          className="hungry-sticker-floating-wrap"
+          className={`hungry-sticker-floating-wrap ${isHungryStickerHiding ? 'hiding' : ''}`}
           title={lang === 'es' ? 'Ir a Pedidos Listo - Restaurantes' : 'Go to Pedidos Listo - Restaurants'}
         >
           <button
