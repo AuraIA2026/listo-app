@@ -1108,7 +1108,7 @@ export default function LandingPage({ navigate, lang }) {
         <div className="navidad-banner-texts">
           <span className="navidad-banner-tag">¡Especial Navideño Dominicano!</span>
           <span className="navidad-banner-headline">
-            Santa sobrevuela el Monumento: En esta Navidad, los mejores profesionales de RD llegan directo a tu hogar o negocio. 🎅✨
+            ¡Llegó Santa a República Dominicana! En esta Navidad, los mejores profesionales de RD llegan directo a tu hogar o negocio. 🎅✨
           </span>
         </div>
         <a href="#buscar-servicios" className="navidad-banner-action">
