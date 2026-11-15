@@ -476,6 +476,7 @@ export default function App() {
       if (search.includes('page=shop') || hash.includes('shop')) return 'shop';
       if (search.includes('comprar-plan') || hash.includes('comprar-plan') || hash.includes('planes')) return 'landing';
       if (search.includes('page=login') || hash.includes('login')) return 'login';
+      if (search.includes('page=mandame') || search.includes('pedidos') || hash.includes('mandame')) return 'mandame';
     }
     return 'register';
   });
@@ -601,7 +602,7 @@ export default function App() {
       })
     } else {
       setCurrentPage(prev => {
-        if (['register', 'login', 'policies'].includes(prev)) return prev
+        if (['register', 'login', 'policies', 'mandame', 'shop'].includes(prev)) return prev
         return 'register'
       })
     }
