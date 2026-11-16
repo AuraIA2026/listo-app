@@ -6,45 +6,45 @@ import { useUserData } from './useUserData'
 import { Capacitor } from '@capacitor/core'
 import { PushNotifications } from '@capacitor/push-notifications'
 
-import HomePage               from './pages/HomePage'
-import ServicesPage           from './pages/ServicesPage'
-import SearchPage             from './pages/SearchPage'
-import OrdersPage             from './pages/OrdersPage'
-import ProfilePage            from './pages/ProfilePage'
-import LoginPage              from './pages/LoginPage'
-import RegisterPage           from './pages/RegisterPage'
-const BookingPage             = lazy(() => import('./pages/BookingPage'))
-const ChatPage                = lazy(() => import('./pages/ChatPage'))
-const TrackingPage            = lazy(() => import('./pages/TrackingPage'))
-const PaymentPage             = lazy(() => import('./pages/PaymentPage'))
+import HomePage from './pages/HomePage'
+import ServicesPage from './pages/ServicesPage'
+import SearchPage from './pages/SearchPage'
+import OrdersPage from './pages/OrdersPage'
+import ProfilePage from './pages/ProfilePage'
+import LoginPage from './pages/LoginPage'
+import RegisterPage from './pages/RegisterPage'
+const BookingPage = lazy(() => import('./pages/BookingPage'))
+const ChatPage = lazy(() => import('./pages/ChatPage'))
+const TrackingPage = lazy(() => import('./pages/TrackingPage'))
+const PaymentPage = lazy(() => import('./pages/PaymentPage'))
 const ProfessionalProfilePage = lazy(() => import('./pages/ProfessionalProfilePage'))
-const ClientProfilePage       = lazy(() => import('./pages/ClientProfilePage'))
-const AdminPage               = lazy(() => import('./pages/AdminPage'))
-const WorkDonePage            = lazy(() => import('./pages/WorkDonePage'))
-import Navbar                 from './components/Navbar'
-import BottomNav              from './components/BottomNav'
-import SplashScreen           from './components/SplashScreen'
+const ClientProfilePage = lazy(() => import('./pages/ClientProfilePage'))
+const AdminPage = lazy(() => import('./pages/AdminPage'))
+const WorkDonePage = lazy(() => import('./pages/WorkDonePage'))
+import Navbar from './components/Navbar'
+import BottomNav from './components/BottomNav'
+import SplashScreen from './components/SplashScreen'
 // import TutorialTour           from './components/TutorialTour'
 // import ProTutorialSystem        from './components/ProTutorialSystem'
 import { ExoticOrderNotification, OrderDetailsModal } from './pages/OrdersPage'
-const LocalesPage             = lazy(() => import('./locales/LocalesPage'))
-const LocalDetalle            = lazy(() => import('./locales/LocalDetalle'))
-const CrearLocal              = lazy(() => import('./locales/CrearLocal'))   // ✅ AGREGADO
-const EditarLocal             = lazy(() => import('./locales/EditarLocal'))
-const MandamePage             = lazy(() => import('./pages/MandamePage'))
-const NotificacionPage        = lazy(() => import('./pages/Notificacionpage'))
-const PoliciesPage            = lazy(() => import('./pages/PoliciesPage'))
-const LandingPage             = lazy(() => import('./pages/LandingPage'))
-const ShopPage                = lazy(() => import('./pages/ShopPage'))
-import PwaInstallBanner       from './components/PwaInstallBanner'
+const LocalesPage = lazy(() => import('./locales/LocalesPage'))
+const LocalDetalle = lazy(() => import('./locales/LocalDetalle'))
+const CrearLocal = lazy(() => import('./locales/CrearLocal'))   // ✅ AGREGADO
+const EditarLocal = lazy(() => import('./locales/EditarLocal'))
+const MandamePage = lazy(() => import('./pages/MandamePage'))
+const NotificacionPage = lazy(() => import('./pages/Notificacionpage'))
+const PoliciesPage = lazy(() => import('./pages/PoliciesPage'))
+const LandingPage = lazy(() => import('./pages/LandingPage'))
+const ShopPage = lazy(() => import('./pages/ShopPage'))
+import PwaInstallBanner from './components/PwaInstallBanner'
 import NotificationPermissionBanner from './components/NotificationPermissionBanner'
 import { sendBrowserNotification, playNotificationChime } from './utils/notifications'
-import logoBlanco             from './assets/logo-blanco.png'
+import logoBlanco from './assets/logo-blanco.png'
 import './App.css'
 
 const TOUR_KEY = 'listo_tour_done'
-const PAGES_WITH_BOTTOM_NAV = ['home','services','search','orders','profile','workdone','locales','chat','mandame']
-const PAGES_WITH_TOP_NAV    = ['login','register']
+const PAGES_WITH_BOTTOM_NAV = ['home', 'services', 'search', 'orders', 'profile', 'workdone', 'locales', 'chat', 'mandame']
+const PAGES_WITH_TOP_NAV = ['login', 'register']
 
 /* ── Modal Mensaje Bono/Regalo ───────────────────────────────────────────── */
 function BonusMessageModal({ bonus, userId, onClose }) {
@@ -104,7 +104,7 @@ function BonusMessageModal({ bonus, userId, onClose }) {
 /* ── Banner mensaje / notificación estilo WhatsApp con Logo Oficial ───────── */
 function ChatMessageBanner({ sender, senderPhoto, title, text, actionLabel, accentColor = '#F26000', isDelivery = false, onClose, onClick }) {
   useEffect(() => {
-    try { if (navigator.vibrate) navigator.vibrate([200, 100, 200]) } catch (e) {}
+    try { if (navigator.vibrate) navigator.vibrate([200, 100, 200]) } catch (e) { }
     const t = setTimeout(onClose, 6500)
     return () => clearTimeout(t)
   }, []) // eslint-disable-line
@@ -221,8 +221,8 @@ function UpdateBlocker({ lang }) {
       <div style={{ fontSize: 60, marginBottom: 20 }}>🔄</div>
       <h2 style={{ color: '#1A1A2E', marginBottom: 10, fontSize: 24, fontWeight: 900 }}>{lang === 'es' ? 'Actualización Requerida' : 'Update Required'}</h2>
       <p style={{ color: '#666', marginBottom: 30, fontSize: 15, lineHeight: 1.5 }}>
-        {lang === 'es' 
-          ? 'Hemos lanzado una nueva versión obligatoria de la aplicación para mejorar tu experiencia y seguridad. Por favor, actualiza.' 
+        {lang === 'es'
+          ? 'Hemos lanzado una nueva versión obligatoria de la aplicación para mejorar tu experiencia y seguridad. Por favor, actualiza.'
           : 'We have released a new mandatory update. Please update from the store.'}
       </p>
       <button onClick={() => window.open('https://play.google.com/store/apps/details?id=com.listopatron.app', '_blank')} style={{
@@ -240,8 +240,8 @@ function SystemAlertModal({ alert, onClose, lang, onNavigateProfile }) {
   if (!alert) return null;
   const [isExpanded, setIsExpanded] = useState(false);
 
-  const isPhotoRejection = (alert.title && (alert.title.includes('Tu foto no fue aprobada') || alert.title.includes('Historia'))) || 
-                           (alert.text && (alert.text.includes('foto') || alert.text.includes('Historias') || alert.text.includes('aprobada')));
+  const isPhotoRejection = (alert.title && (alert.title.includes('Tu foto no fue aprobada') || alert.title.includes('Historia'))) ||
+    (alert.text && (alert.text.includes('foto') || alert.text.includes('Historias') || alert.text.includes('aprobada')));
 
   const handleButtonClick = () => {
     if (!isExpanded) {
@@ -281,7 +281,7 @@ function SystemAlertModal({ alert, onClose, lang, onNavigateProfile }) {
           60% { transform: scale(1) rotate(0deg); }
         }
       `}</style>
-      
+
       {!isExpanded ? (
         /* ── VISTA 1: CÍRCULO STICKER INICIAL ── */
         <div style={{
@@ -468,8 +468,8 @@ export default function App() {
   const { userData, loading: authLoading, authUser, userRole, profileComplete } = useUserData()
   const authReady = !authLoading
 
-  const [showSplash,      setShowSplash]      = useState(isNative)
-  const [currentPage,     setCurrentPage]     = useState(() => {
+  const [showSplash, setShowSplash] = useState(isNative)
+  const [currentPage, setCurrentPage] = useState(() => {
     if (typeof window !== 'undefined') {
       const search = window.location.search || '';
       const hash = window.location.hash || '';
@@ -480,31 +480,31 @@ export default function App() {
     }
     return 'register';
   });
-  const [lang,            setLang]            = useState('es')
-  const [selectedPro,     setSelectedPro]     = useState(null)
-  const [selectedLocal,   setSelectedLocal]   = useState(null)
-  const [showTour,        setShowTour]        = useState(false)
+  const [lang, setLang] = useState('es')
+  const [selectedPro, setSelectedPro] = useState(null)
+  const [selectedLocal, setSelectedLocal] = useState(null)
+  const [showTour, setShowTour] = useState(false)
   const [profileInitScreen, setProfileInitScreen] = useState(null)
-  const [alertOrder,        setAlertOrder]        = useState(null)
+  const [alertOrder, setAlertOrder] = useState(null)
   const [detailsModalOrder, setDetailsModalOrder] = useState(null)
-  const [notifiedOrderIds,  setNotifiedOrderIds]  = useState(new Set())
-  const [jobDoneAlert,      setJobDoneAlert]      = useState(null)
-  const [chatBanner,        setChatBanner]        = useState(null)
-  const [systemAlert,       setSystemAlert]       = useState(null)
-  const [isOffline,         setIsOffline]         = useState(!navigator.onLine)
-  const [updateRequired,    setUpdateRequired]    = useState(false)
+  const [notifiedOrderIds, setNotifiedOrderIds] = useState(new Set())
+  const [jobDoneAlert, setJobDoneAlert] = useState(null)
+  const [chatBanner, setChatBanner] = useState(null)
+  const [systemAlert, setSystemAlert] = useState(null)
+  const [isOffline, setIsOffline] = useState(!navigator.onLine)
+  const [updateRequired, setUpdateRequired] = useState(false)
 
   const systemNotifIdsRef = useRef(new Set())
 
-  const alertAudioRef      = useRef(null)
-  const isPlayingRef       = useRef(false)
-  const alertActiveRef     = useRef(false)
-  const listenerReadyRef   = useRef(false)
+  const alertAudioRef = useRef(null)
+  const isPlayingRef = useRef(false)
+  const alertActiveRef = useRef(false)
+  const listenerReadyRef = useRef(false)
   const jobDoneNotifIdsRef = useRef(new Set())
-  const notifiedMsgIds     = useRef(new Set())
-  const banneredChatIds    = useRef(new Set())
-  const chatListenerReady  = useRef(false)
-  const currentPageRef     = useRef('home')
+  const notifiedMsgIds = useRef(new Set())
+  const banneredChatIds = useRef(new Set())
+  const chatListenerReady = useRef(false)
+  const currentPageRef = useRef('home')
 
   useEffect(() => { currentPageRef.current = currentPage }, [currentPage])
 
@@ -520,7 +520,7 @@ export default function App() {
   useEffect(() => {
     const checkVersion = async () => {
       let currentVersion = '1.0.25'; // Fallback por defecto si es web
-      
+
       if (Capacitor.isNativePlatform()) {
         try {
           const { App } = await import('@capacitor/app');
@@ -541,7 +541,7 @@ export default function App() {
               setUpdateRequired(true);
             }
           }
-        }).catch(() => {});
+        }).catch(() => { });
       });
     };
 
@@ -556,16 +556,16 @@ export default function App() {
       const selectedSound = localStorage.getItem('listo_sound_order') || 'new_contract_v3'
       const audio = new Audio(`/audio/${selectedSound}.mp3`)
       audio.volume = 0.7; audio.loop = true
-      audio.play().catch(() => {})
+      audio.play().catch(() => { })
       alertAudioRef.current = audio; isPlayingRef.current = true
-    } catch (e) {}
+    } catch (e) { }
   }
   const stopAlertSound = () => {
     try {
       if (alertAudioRef.current) {
         alertAudioRef.current.pause(); alertAudioRef.current.currentTime = 0; alertAudioRef.current = null
       }
-    } catch (e) {}
+    } catch (e) { }
     isPlayingRef.current = false; alertActiveRef.current = false
   }
   const playJobDoneSound = () => {
@@ -573,9 +573,9 @@ export default function App() {
       playNotificationChime('done')
       const selectedSound = localStorage.getItem('listo_sound_notif') || 'notification_v3'
       const audio = new Audio(`/audio/${selectedSound}.mp3`)
-      audio.volume = 0.8; audio.loop = false; audio.play().catch(() => {})
-      setTimeout(() => { try { audio.pause(); audio.currentTime = 0 } catch(e){} }, 5000)
-    } catch (e) {}
+      audio.volume = 0.8; audio.loop = false; audio.play().catch(() => { })
+      setTimeout(() => { try { audio.pause(); audio.currentTime = 0 } catch (e) { } }, 5000)
+    } catch (e) { }
   }
   const playMsgSound = () => {
     try {
@@ -583,9 +583,9 @@ export default function App() {
       const selectedSound = localStorage.getItem('listo_sound_notif') || 'notification_v3'
       const audio = new Audio(`/audio/${selectedSound}.mp3`)
       audio.volume = 0.6; audio.loop = false
-      audio.play().catch(() => {})
-      setTimeout(() => { try { audio.pause(); audio.currentTime = 0 } catch(e){} }, 2000)
-    } catch (e) {}
+      audio.play().catch(() => { })
+      setTimeout(() => { try { audio.pause(); audio.currentTime = 0 } catch (e) { } }, 2000)
+    } catch (e) { }
   }
 
   // ─── AUTH REDIRECTION & CAPACITOR NATIVE EFFECTS ──────────────────────────
@@ -628,7 +628,7 @@ export default function App() {
       })
       PushNotifications.removeAllListeners().then(() => {
         PushNotifications.addListener('registration', token => {
-          updateDoc(doc(db, 'users', userData.uid), { fcmToken: token.value }).catch(()=>{})
+          updateDoc(doc(db, 'users', userData.uid), { fcmToken: token.value }).catch(() => { })
         })
         PushNotifications.addListener('pushNotificationReceived', notification => {
           console.log("Notificación push recibida en primer plano:", notification)
@@ -685,10 +685,20 @@ export default function App() {
             const uSnap = await getDocs(query(collection(db, 'users'), where('__name__', '==', lastMsg.senderId)))
             if (!uSnap.empty) {
               const uData = uSnap.docs[0].data()
-              senderName = uData.name || senderName
-              senderPhoto = uData.photoURL || null
+              const isOfficialAdmin = Boolean(
+                uData.email === 'listopatron.app@gmail.com' ||
+                uData.email === 'artemediosrd@gmail.com' ||
+                uData.role === 'admin' ||
+                uData.isAdmin ||
+                lastMsg.isAdminMessage
+              )
+              senderName = isOfficialAdmin ? 'Listo Patrón Oficial ✅' : (uData.name || senderName)
+              senderPhoto = isOfficialAdmin ? '/logo-mamey.png' : (uData.photoURL || null)
+            } else if (lastMsg.isAdminMessage) {
+              senderName = 'Listo Patrón Oficial ✅'
+              senderPhoto = '/logo-mamey.png'
             }
-          } catch(e) {}
+          } catch (e) { }
           banneredChatIds.current.add(chatId)
           playMsgSound()
           setChatBanner({ sender: senderName, senderPhoto, text: lastMsg.text || '📎 Mensaje adjunto', chatId })
@@ -725,7 +735,7 @@ export default function App() {
         if (jobDoneNotifIdsRef.current.has(docSnap.id)) return
         jobDoneNotifIdsRef.current.add(docSnap.id)
         const d = docSnap.data()
-        updateDoc(doc(db, 'notificaciones', docSnap.id), { read: true }).catch(() => {})
+        updateDoc(doc(db, 'notificaciones', docSnap.id), { read: true }).catch(() => { })
         playJobDoneSound()
         setJobDoneAlert({ notifId: docSnap.id, orderId: d.orderId || null, title: d.title, text: d.text })
         sendBrowserNotification(d.title || '🎉 ¡Trabajo Terminado!', {
@@ -742,20 +752,20 @@ export default function App() {
     if (!authReady || !userData) return
     const targetIds = userData.email === 'listopatron.app@gmail.com' ? [userData.uid, 'admin'] : [userData.uid]
     const q = query(collection(db, 'notificaciones'), where('userId', 'in', targetIds), where('type', '==', 'system'), where('read', '==', false))
-    
+
     const unsub = onSnapshot(q, (snapshot) => {
       const unreads = []
       snapshot.forEach(docSnap => {
-         unreads.push({ id: docSnap.id, ...docSnap.data() })
+        unreads.push({ id: docSnap.id, ...docSnap.data() })
       })
-      
+
       const newUnreads = unreads.filter(u => !systemNotifIdsRef.current.has(u.id));
-      
+
       if (newUnreads.length > 0) {
-        newUnreads.sort((a,b) => new Date(a.date) - new Date(b.date));
+        newUnreads.sort((a, b) => new Date(a.date) - new Date(b.date));
         const toShow = newUnreads[0];
         systemNotifIdsRef.current.add(toShow.id);
-        
+
         playNotificationChime('system')
         setSystemAlert({ id: toShow.id, title: toShow.title, text: toShow.text });
         sendBrowserNotification(toShow.title || '🔔 Notificación de Listo Patrón', {
@@ -783,10 +793,10 @@ export default function App() {
         if (notifiedIds.has(docSnap.id)) return
         notifiedIds.add(docSnap.id)
         const d = docSnap.data()
-        updateDoc(doc(db, 'notificaciones', docSnap.id), { read: true }).catch(() => {})
+        updateDoc(doc(db, 'notificaciones', docSnap.id), { read: true }).catch(() => { })
 
         const isCooking = d.type === 'order_cooking'
-        const isReady   = d.type === 'order_ready'
+        const isReady = d.type === 'order_ready'
         const isKitchen = d.type === 'kitchen_order'
         const isNewOrder = d.type === 'new_order'
 
@@ -796,7 +806,7 @@ export default function App() {
           playMsgSound()
         }
 
-        try { if (navigator.vibrate) navigator.vibrate([250, 100, 250]) } catch (e) {}
+        try { if (navigator.vibrate) navigator.vibrate([250, 100, 250]) } catch (e) { }
 
         setAlertOrder({
           id: d.orderId || docSnap.id,
@@ -824,8 +834,8 @@ export default function App() {
   // ─── LISTENER ÓRDENES ────────────────────────────────────────────────────
   useEffect(() => {
     if (!authReady || !userData) return
-    let unsubscribeOrders = () => {}
-    let unsubscribeClientOrders = () => {}
+    let unsubscribeOrders = () => { }
+    let unsubscribeClientOrders = () => { }
 
     const setupListener = async () => {
       // 1. SI ES PROFESIONAL: Escuchar solicitudes de servicios técnicos (excluyendo comida/delivery)
@@ -851,10 +861,10 @@ export default function App() {
             if (existingIds.has(docSnap.id)) return
             const d = docSnap.data()
             if (d.type === 'delivery' || d.fulfillmentType === 'pickup' || d.source === 'pedidos_listo') return
-            newPendings.push({ id: docSnap.id, pro: d.clientName || d.clientEmail || 'Cliente', specialty: d.proSpecialty || 'Servicio', avatar: d.clientName ? d.clientName.substring(0,2).toUpperCase() : '👤', photoURL: d.clientPhotoURL || null, date: `${d.dateToken} - ${d.timeToken}`, price: d.price || 'RD$0', status: d.status || 'pending', icon: '🔧', clientAddress: d.clientAddress || d.address || '', ...d })
+            newPendings.push({ id: docSnap.id, pro: d.clientName || d.clientEmail || 'Cliente', specialty: d.proSpecialty || 'Servicio', avatar: d.clientName ? d.clientName.substring(0, 2).toUpperCase() : '👤', photoURL: d.clientPhotoURL || null, date: `${d.dateToken} - ${d.timeToken}`, price: d.price || 'RD$0', status: d.status || 'pending', icon: '🔧', clientAddress: d.clientAddress || d.address || '', ...d })
           })
           if (newPendings.length > 0) {
-            newPendings.sort((a,b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0))
+            newPendings.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0))
             const newest = newPendings[0]
             setNotifiedOrderIds(prev => {
               if (!prev.has(newest.id)) {
@@ -906,13 +916,13 @@ export default function App() {
         })
 
         if (changedOrders.length > 0) {
-          changedOrders.sort((a,b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0))
+          changedOrders.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0))
           const newest = changedOrders[0]
           const isDelivery = newest.type === 'delivery' || newest.fulfillmentType === 'pickup' || newest.source === 'pedidos_listo'
           const store = newest.storeName || 'Pedidos Listo'
 
           playMsgSound()
-          try { if (navigator.vibrate) navigator.vibrate([250, 100, 250]) } catch(e){}
+          try { if (navigator.vibrate) navigator.vibrate([250, 100, 250]) } catch (e) { }
 
           setAlertOrder({ ...newest, isUserAlert: true })
 
@@ -922,7 +932,7 @@ export default function App() {
           if (isDelivery) {
             if (newest.status === 'cooking') {
               notifTitle = `👨‍🍳 ¡Tu pedido se está preparando! • ${store}`
-              notifBody = newest.prepMinutes 
+              notifBody = newest.prepMinutes
                 ? `El local comenzó a preparar tu comida en cocina. (Listo en ~${newest.prepMinutes} min).`
                 : `Tu comida ya está en cocina siendo preparada.`
             } else if (newest.status === 'ready') {
@@ -985,10 +995,10 @@ export default function App() {
   const effectivePage = (!authUser && !['register', 'login', 'policies'].includes(currentPage))
     ? 'register'
     : currentPage
-  const showBottom  = PAGES_WITH_BOTTOM_NAV.includes(effectivePage) && Boolean(authUser)
-  const showTop     = PAGES_WITH_TOP_NAV.includes(effectivePage)
+  const showBottom = PAGES_WITH_BOTTOM_NAV.includes(effectivePage) && Boolean(authUser)
+  const showTop = PAGES_WITH_TOP_NAV.includes(effectivePage)
   const commonProps = { lang, navigate }
-  const userProps   = { ...commonProps, userData, userRole }
+  const userProps = { ...commonProps, userData, userRole }
   const isAdminUser = Boolean(
     userData?.email === 'listopatron.app@gmail.com' ||
     authUser?.email === 'listopatron.app@gmail.com' ||
@@ -1007,34 +1017,34 @@ export default function App() {
       {showTop && <Navbar navigate={navigate} currentPage={effectivePage} lang={lang} setLang={setLang} />}
 
       <Suspense fallback={<div style={{ padding: '48px 20px', textAlign: 'center', color: '#F26000', fontWeight: 900, fontSize: 15 }}>⚡ Cargando...</div>}>
-      {effectivePage === 'landing'      && <LandingPage  {...commonProps} />}
-      {effectivePage === 'home'         && <HomePage     {...userProps} />}
-      {effectivePage === 'shop'         && <ShopPage     onNavigate={navigate} navigate={navigate} />}
-      {effectivePage === 'services'     && <ServicesPage {...userProps} />}
-      {effectivePage === 'search'       && <SearchPage   {...userProps} initialCategory={selectedPro?.catToSelect || 'all'} initialProvince={selectedPro?.provinceToSelect || 'all'} />}
-      {effectivePage === 'orders'       && <OrdersPage   {...userProps} />}
-      {effectivePage === 'login'        && <LoginPage    {...commonProps} />}
-      {effectivePage === 'register'     && <RegisterPage {...commonProps} />}
-      {effectivePage === 'workdone'     && <WorkDonePage {...commonProps} userRole={userRole} userData={userData} professional={selectedPro} />}
-      {effectivePage === 'admin'        && <AdminPage    {...commonProps} />}
-      {effectivePage === 'locales'      && <LocalesPage  {...userProps} />}
-      {effectivePage === 'localDetalle' && <LocalDetalle {...userProps} local={selectedLocal} />}
-      {effectivePage === 'crearLocal'   && <CrearLocal   {...userProps} />}  {/* ✅ AGREGADO */}
-      {effectivePage === 'editarLocal'  && <EditarLocal  {...userProps} local={selectedLocal} />}
-      {effectivePage === 'mandame'      && <MandamePage {...userProps} />}
-      {effectivePage === 'notificaciones' && <NotificacionPage {...userProps} />}
-      {effectivePage === 'policies'     && <PoliciesPage {...commonProps} />}
+        {effectivePage === 'landing' && <LandingPage  {...commonProps} />}
+        {effectivePage === 'home' && <HomePage     {...userProps} />}
+        {effectivePage === 'shop' && <ShopPage onNavigate={navigate} navigate={navigate} />}
+        {effectivePage === 'services' && <ServicesPage {...userProps} />}
+        {effectivePage === 'search' && <SearchPage   {...userProps} initialCategory={selectedPro?.catToSelect || 'all'} initialProvince={selectedPro?.provinceToSelect || 'all'} />}
+        {effectivePage === 'orders' && <OrdersPage   {...userProps} />}
+        {effectivePage === 'login' && <LoginPage    {...commonProps} />}
+        {effectivePage === 'register' && <RegisterPage {...commonProps} />}
+        {effectivePage === 'workdone' && <WorkDonePage {...commonProps} userRole={userRole} userData={userData} professional={selectedPro} />}
+        {effectivePage === 'admin' && <AdminPage    {...userProps} />}
+        {effectivePage === 'locales' && <LocalesPage  {...userProps} />}
+        {effectivePage === 'localDetalle' && <LocalDetalle {...userProps} local={selectedLocal} />}
+        {effectivePage === 'crearLocal' && <CrearLocal   {...userProps} />}  {/* ✅ AGREGADO */}
+        {effectivePage === 'editarLocal' && <EditarLocal  {...userProps} local={selectedLocal} />}
+        {effectivePage === 'mandame' && <MandamePage {...userProps} />}
+        {effectivePage === 'notificaciones' && <NotificacionPage {...userProps} />}
+        {effectivePage === 'policies' && <PoliciesPage {...commonProps} />}
 
-      {effectivePage === 'booking'       && <BookingPage             {...userProps}   professional={selectedPro} />}
-      {effectivePage === 'chat'          && <ChatPage                {...commonProps} professional={selectedPro} userData={userData} />}
-      {effectivePage === 'tracking'      && <TrackingPage            {...userProps}   professional={selectedPro} />}
-      {effectivePage === 'payment'       && <PaymentPage             {...commonProps} professional={selectedPro} />}
-      {effectivePage === 'proProfile'    && <ProfessionalProfilePage {...commonProps} professional={selectedPro} />}
-      {effectivePage === 'clientProfile' && <ClientProfilePage       {...commonProps} userData={userData} onEditProfile={() => navigate('profile')} />}
+        {effectivePage === 'booking' && <BookingPage             {...userProps} professional={selectedPro} />}
+        {effectivePage === 'chat' && <ChatPage                {...commonProps} professional={selectedPro} userData={userData} userRole={userRole} />}
+        {effectivePage === 'tracking' && <TrackingPage            {...userProps} professional={selectedPro} />}
+        {effectivePage === 'payment' && <PaymentPage             {...commonProps} professional={selectedPro} />}
+        {effectivePage === 'proProfile' && <ProfessionalProfilePage {...commonProps} professional={selectedPro} />}
+        {effectivePage === 'clientProfile' && <ClientProfilePage       {...commonProps} userData={userData} onEditProfile={() => navigate('profile')} />}
 
-      {effectivePage === 'profile' && (
-        <ProfilePage lang={lang} setLang={setLang} navigate={navigate} onLogout={handleLogout} initialScreen={profileInitScreen} />
-      )}
+        {effectivePage === 'profile' && (
+          <ProfilePage lang={lang} setLang={setLang} navigate={navigate} onLogout={handleLogout} initialScreen={profileInitScreen} />
+        )}
       </Suspense>
 
       {showBottom && <BottomNav currentPage={effectivePage} navigate={navigate} lang={lang} userData={userData} />}
@@ -1042,7 +1052,7 @@ export default function App() {
       <PwaInstallBanner />
 
       {userData?.bonusMessage && (
-        <BonusMessageModal bonus={userData.bonusMessage} userId={userData.uid} onClose={() => {}} />
+        <BonusMessageModal bonus={userData.bonusMessage} userId={userData.uid} onClose={() => { }} />
       )}
 
       {chatBanner && (
@@ -1082,14 +1092,14 @@ export default function App() {
         if (isDelivery) {
           if (isCooking) {
             title = alertOrder.customTitle || `👨‍🍳 ¡Tu pedido se está preparando! • ${store}`
-            text = alertOrder.customText || (alertOrder.prepMinutes 
+            text = alertOrder.customText || (alertOrder.prepMinutes
               ? `El restaurante comenzó a preparar tu comida en cocina. (Listo en ~${alertOrder.prepMinutes} min). ¡Toca para ver!`
               : `Tu pedido está en cocina preparándose con todo el sabor. ¡Toca para ver!`)
             actionLabel = 'Ver pedido 👨‍🍳'
             accentColor = '#F26000'
           } else if (isReady) {
             title = alertOrder.customTitle || (isPickup ? `🛍️ ¡Listo para retirar! • ${store}` : `🟢 ¡Tu pedido está listo! • ${store}`)
-            text = alertOrder.customText || (isPickup 
+            text = alertOrder.customText || (isPickup
               ? `Tu comida está empacada en mostrador. PIN de retiro: ${alertOrder.pinOTP || '••••'}. ¡Toca para ver!`
               : `Tu comida está lista y el repartidor va hacia tu dirección. ¡Toca para rastrear!`)
             actionLabel = isPickup ? 'Ver PIN 🛍️' : 'Rastrear 🛵'
@@ -1168,15 +1178,15 @@ export default function App() {
       )}
 
       {systemAlert && (
-        <SystemAlertModal 
-          alert={systemAlert} 
-          lang={lang} 
+        <SystemAlertModal
+          alert={systemAlert}
+          lang={lang}
           onNavigateProfile={() => navigate('profile')}
           onClose={() => {
             const currentId = systemAlert.id;
             setSystemAlert(null);
-            updateDoc(doc(db, 'notificaciones', currentId), { read: true }).catch(() => {});
-          }} 
+            updateDoc(doc(db, 'notificaciones', currentId), { read: true }).catch(() => { });
+          }}
         />
       )}
 

@@ -22,6 +22,7 @@ const getChatId = (uid1, uid2) =>
   uid1 < uid2 ? `${uid1}_${uid2}` : `${uid2}_${uid1}`
 
 const SUPPORT_EMAIL = 'listopatron.app@gmail.com'
+const ADMIN_EMAILS = [SUPPORT_EMAIL, 'artemediosrd@gmail.com']
 
 // ── Avatar con iniciales ──────────────────────────────────────────────────────
 function Avatar({ name = '?', photoURL = null, color = '#F26000', size = 44, online = false, isOfficial = false }) {
@@ -91,8 +92,24 @@ function ChatSkeleton() {
   )
 }
 
-export default function ChatPage({ lang = 'es', navigate, professional, userData }) {
+export default function ChatPage({ lang = 'es', navigate, professional, userData, userRole }) {
   const me = auth.currentUser
+  const isMeAdmin = Boolean(
+    userData?.role === 'admin' ||
+    userData?.isAdmin === true ||
+    userRole === 'admin' ||
+    professional?.fromAdmin === true ||
+    (me?.email && ADMIN_EMAILS.includes(String(me.email).toLowerCase().trim())) ||
+    (userData?.email && ADMIN_EMAILS.includes(String(userData.email).toLowerCase().trim()))
+  )
+
+  const isOtherAdminOrSupport = (other, id) => Boolean(
+    id === 'support' ||
+    (other?.email && ADMIN_EMAILS.includes(String(other.email).toLowerCase().trim())) ||
+    other?.role === 'admin' ||
+    other?.isAdmin === true ||
+    other?.isOfficial === true
+  )
   const [chats, setChats] = useState([])
   const [activeChatId, setActiveChatId] = useState(null)
   const [otherUser, setOtherUser] = useState(null)
@@ -138,11 +155,17 @@ export default function ChatPage({ lang = 'es', navigate, professional, userData
           } catch (e) { }
         }
         
-        // PROTECCIÓN DE MODO OFICIAL SOPORTE
-        if (other && typeof other.email === 'string' && other.email.toLowerCase().trim() === SUPPORT_EMAIL) {
+        // PROTECCIÓN DE MODO OFICIAL SOPORTE / ADMINISTRACIÓN
+        if (other && (
+          (typeof other.email === 'string' && ADMIN_EMAILS.includes(other.email.toLowerCase().trim())) ||
+          other.role === 'admin' ||
+          other.isAdmin === true ||
+          other.isOfficial === true ||
+          (d.isAdminChat === true && isOtherAdminOrSupport(other, otherId))
+        )) {
            other.isOfficial = true;
            other.name = 'Listo Patrón Oficial ✅';
-           other.specialty = 'Centro de Ayuda';
+           other.specialty = 'Centro de Ayuda y Administración';
         }
 
         list.push({
@@ -203,10 +226,10 @@ export default function ChatPage({ lang = 'es', navigate, professional, userData
   const openOrCreateChat = async (otherId, otherData) => {
     if (!me) return
 
-    const isSupport = (otherData?.email && String(otherData.email).toLowerCase().trim() === SUPPORT_EMAIL) || otherId === 'support'
-    const isAdmin = userData?.role === 'admin'
+    const targetIsOfficial = isOtherAdminOrSupport(otherData, otherId)
 
-    if (!isSupport && !isAdmin) {
+    // Si soy el administrador o si el otro usuario es soporte/administrador, NO se requiere contratación previa
+    if (!isMeAdmin && !targetIsOfficial) {
       try {
         const q1 = query(collection(db, 'orders'), where('clientId', '==', me.uid), where('proId', '==', otherId))
         const q2 = query(collection(db, 'orders'), where('proId', '==', me.uid), where('clientId', '==', otherId))
@@ -224,6 +247,35 @@ export default function ChatPage({ lang = 'es', navigate, professional, userData
     const chatId = getChatId(me.uid, otherId)
     const chatRef = doc(db, 'chats', chatId)
     const snap = await getDoc(chatRef)
+
+    const myName = isMeAdmin ? 'Listo Patrón Oficial ✅' : (userData?.name || me.displayName || 'Usuario')
+    const mySpecialty = isMeAdmin ? 'Administración Oficial' : (userData?.specialty || userData?.service || (userRole === 'pro' ? 'Profesional' : 'Cliente'))
+    const myPhoto = userData?.photoURL || userData?.profilePic || null
+
+    const otherName = targetIsOfficial ? 'Listo Patrón Oficial ✅' : (otherData?.name || 'Usuario')
+    const otherSpecialty = targetIsOfficial ? 'Centro de Ayuda y Administración' : (otherData?.category || otherData?.service || otherData?.specialty || (otherData?.role === 'professional' ? 'Profesional' : 'Cliente'))
+    const otherPhoto = otherData?.profilePic || otherData?.photoURL || null
+
+    const initialCache = {
+      [me.uid]: {
+        uid: me.uid,
+        name: myName,
+        email: me.email || '',
+        specialty: mySpecialty,
+        photoURL: myPhoto,
+        isOfficial: isMeAdmin,
+      },
+      [otherId]: {
+        uid: otherId,
+        name: otherName,
+        email: otherData?.email || '',
+        phone: otherData?.phone || '',
+        specialty: otherSpecialty,
+        photoURL: otherPhoto,
+        isOfficial: targetIsOfficial,
+      }
+    }
+
     if (!snap.exists()) {
       await setDoc(chatRef, {
         members: [me.uid, otherId],
@@ -231,14 +283,23 @@ export default function ChatPage({ lang = 'es', navigate, professional, userData
         updatedAt: serverTimestamp(),
         unreadCount: { [me.uid]: 0, [otherId]: 0 },
         typing: { [me.uid]: false, [otherId]: false },
+        otherUserCache: initialCache,
+        isAdminChat: isMeAdmin,
+        createdAt: serverTimestamp(),
       })
+    } else {
+      await updateDoc(chatRef, {
+        [`otherUserCache.${me.uid}`]: initialCache[me.uid],
+        [`otherUserCache.${otherId}`]: initialCache[otherId],
+        ...(isMeAdmin ? { isAdminChat: true } : {})
+      }).catch(() => {})
     }
     
     let mappedOther = { uid: otherId, ...otherData }
-    if (mappedOther.email && String(mappedOther.email).toLowerCase().trim() === SUPPORT_EMAIL) {
+    if (targetIsOfficial) {
        mappedOther.isOfficial = true;
        mappedOther.name = 'Listo Patrón Oficial ✅';
-       mappedOther.specialty = 'Centro de Ayuda';
+       mappedOther.specialty = 'Centro de Ayuda y Administración';
     }
     
     setOtherUser(mappedOther)
@@ -268,6 +329,8 @@ export default function ChatPage({ lang = 'es', navigate, professional, userData
     await addDoc(collection(db, 'chats', activeChatId, 'messages'), {
       text: trimmed,
       senderId: me.uid,
+      senderName: isMeAdmin ? 'Listo Patrón Oficial ✅' : (userData?.name || 'Usuario'),
+      isAdminMessage: isMeAdmin,
       createdAt: serverTimestamp(),
       status: 'sent',
     }).catch(() => { })
@@ -277,6 +340,7 @@ export default function ChatPage({ lang = 'es', navigate, professional, userData
       lastMsg: trimmed,
       updatedAt: serverTimestamp(),
       ...(otherId ? { [`unreadCount.${otherId}`]: (chats.find(c => c.chatId === activeChatId)?.unread || 0) + 1 } : {}),
+      ...(isMeAdmin ? { lastMsgByAdmin: true } : {}),
     }).catch(() => { })
   }
 
@@ -366,9 +430,12 @@ export default function ChatPage({ lang = 'es', navigate, professional, userData
         `}</style>
 
         <div className="chat-list-header">
-          <button className="chat-back-btn" onClick={() => navigate('home')}>←</button>
+          <button className="chat-back-btn" onClick={() => {
+            if (isMeAdmin) navigate('admin')
+            else navigate('home')
+          }}>←</button>
           <div>
-            <h1 className="chat-list-title">{lang === 'es' ? 'Mensajes' : 'Messages'}</h1>
+            <h1 className="chat-list-title">{lang === 'es' ? (isMeAdmin ? 'Mensajes (Admin)' : 'Mensajes') : 'Messages'}</h1>
             {totalUnread > 0 && <span className="chat-unread-total">{totalUnread}</span>}
           </div>
           <div style={{ width: 40 }} />
@@ -468,7 +535,14 @@ export default function ChatPage({ lang = 'es', navigate, professional, userData
 
       {/* ── Header ── */}
       <div className="chat-header">
-        <button className="chat-back-btn" onClick={() => { setActiveChatId(null); setMessages([]) }}>←</button>
+        <button className="chat-back-btn" onClick={() => {
+          if (professional?.fromAdmin || isMeAdmin) {
+            navigate('admin')
+          } else {
+            setActiveChatId(null)
+            setMessages([])
+          }
+        }}>←</button>
         <div className="chat-header-info">
           <Avatar
             name={otherUser?.name || '?'}
@@ -493,7 +567,9 @@ export default function ChatPage({ lang = 'es', navigate, professional, userData
           </div>
         </div>
         <div className="chat-header-actions">
-          <button className="chat-action-btn report-btn" title="Reportar / Bloquear" onClick={() => setShowReport(true)}>⚠️ {lang === 'es' ? 'Reportar' : 'Report'}</button>
+          {!isMeAdmin && (
+            <button className="chat-action-btn report-btn" title="Reportar / Bloquear" onClick={() => setShowReport(true)}>⚠️ {lang === 'es' ? 'Reportar' : 'Report'}</button>
+          )}
           {phone ? (
             <a href={`tel:${phone}`} className="chat-action-btn call-btn" title={`Llamar a ${otherUser?.name}`}
               style={{ textDecoration: 'none' }}>📞</a>
@@ -501,11 +577,37 @@ export default function ChatPage({ lang = 'es', navigate, professional, userData
             <button className="chat-action-btn call-btn" title="Sin número"
               onClick={() => alert('Este perfil no tiene número.')} style={{ opacity: 0.5 }}>📞</button>
           )}
-          <button className="chat-action-btn" title="Reservar" onClick={() => navigate('booking', otherUser)}>📅</button>
+          {isMeAdmin ? (
+            <button className="chat-action-btn" title="Volver a Central de Mando" onClick={() => navigate('admin')} style={{ background: '#1A1A2E', color: '#FFD700', border: '1px solid rgba(255,215,0,0.6)', fontWeight: 700, fontSize: 11, padding: '6px 10px' }}>
+              🛡️ Mando
+            </button>
+          ) : (
+            <button className="chat-action-btn" title="Reservar" onClick={() => navigate('booking', otherUser)}>📅</button>
+          )}
         </div>
       </div>
 
-      {otherUser?.specialty && (
+      {/* Franja de identificación oficial cuando chatea el Administrador */}
+      {isMeAdmin && (
+        <div style={{
+          background: 'linear-gradient(135deg, #1A1A2E, #2A2A4A)',
+          color: '#FFD700',
+          padding: '8px 16px',
+          fontSize: '12px',
+          fontWeight: 700,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          borderBottom: '1px solid rgba(255,215,0,0.3)'
+        }}>
+          <span>🛡️ Modo Administrador · Chat Directo Oficial</span>
+          <span style={{ fontSize: 11, background: 'rgba(255,215,0,0.2)', padding: '2px 8px', borderRadius: 8, color: '#FFD700' }}>
+            {otherUser?.role === 'professional' || otherUser?.category ? 'Profesional' : 'Cliente'}
+          </span>
+        </div>
+      )}
+
+      {otherUser?.specialty && !isMeAdmin && (
         <div className="chat-pro-card">
           <span className="chat-pro-category">{otherUser.specialty || otherUser.proSpecialty}</span>
           <button className="chat-book-quick" onClick={() => navigate('booking', otherUser)}>

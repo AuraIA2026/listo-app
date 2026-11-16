@@ -1,5 +1,5 @@
 import React, { useState, useEffect, Component, useRef } from "react";
-import { collection, query, where, onSnapshot, doc, updateDoc, orderBy, addDoc, deleteDoc, writeBatch, getDocs } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, doc, updateDoc, orderBy, addDoc, deleteDoc, writeBatch, getDocs, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import { db, auth } from '../firebase';
 
 class ErrorBoundary extends Component {
@@ -762,9 +762,14 @@ function ExoticTabIcon({ id, active }) {
   }
 }
 
+const getChatId = (uid1, uid2) =>
+  uid1 < uid2 ? `${uid1}_${uid2}` : `${uid2}_${uid1}`;
+
 /* ─── COMPONENTE PRINCIPAL ───────────────────────────────── */
-export default function AdminPage({ navigate }) {
+export default function AdminPage({ navigate, userData, userRole, lang = 'es' }) {
   const [tab, setTab] = useState('pagos');
+  const [adminQuickMsg, setAdminQuickMsg] = useState('');
+  const [sendingAdminMsg, setSendingAdminMsg] = useState(false);
   const [payments, setPayments] = useState([]);
   const [users, setUsers] = useState([]);
   const [verifications, setVerifications] = useState([]); // Nuevos postulantes
@@ -836,6 +841,104 @@ export default function AdminPage({ navigate }) {
       // Si no existe documento en Firestore (demo) se gestiona de forma transparente en estado local
     }
     showToast(`⚙️ Comisión para el comercio configurada a ${validPct}%`);
+  };
+
+  // ── Chat Oficial y Mensajes Directos del Administrador ──
+  const handleEnterSecureChat = (user) => {
+    if (!user) return;
+    const targetUid = user.uid || user.id;
+    if (!targetUid) {
+      showToast('⚠️ No se encontró el identificador del usuario.');
+      return;
+    }
+    setViewProStats(null);
+    if (navigate) {
+      navigate('chat', {
+        ...user,
+        uid: targetUid,
+        id: targetUid,
+        fromAdmin: true
+      });
+    }
+  };
+
+  const handleSendQuickAdminMessage = async () => {
+    if (!adminQuickMsg.trim() || !viewProStats) return;
+    const me = auth.currentUser;
+    if (!me) {
+      showToast('⚠️ Debes tener una sesión activa como administrador.');
+      return;
+    }
+    const targetUid = viewProStats.uid || viewProStats.id;
+    if (!targetUid) {
+      showToast('⚠️ No se encontró el identificador del usuario.');
+      return;
+    }
+
+    setSendingAdminMsg(true);
+    try {
+      const chatId = getChatId(me.uid, targetUid);
+      const chatRef = doc(db, 'chats', chatId);
+      const snap = await getDoc(chatRef);
+
+      const myCache = {
+        uid: me.uid,
+        name: 'Listo Patrón Oficial ✅',
+        email: me.email || '',
+        specialty: 'Administración Oficial',
+        isOfficial: true,
+      };
+
+      const otherCache = {
+        uid: targetUid,
+        name: viewProStats.name || 'Usuario',
+        email: viewProStats.email || '',
+        phone: viewProStats.phone || '',
+        specialty: viewProStats.category || viewProStats.service || viewProStats.specialty || (viewProStats.role === 'professional' ? 'Profesional' : 'Cliente'),
+        photoURL: viewProStats.profilePic || viewProStats.photoURL || null,
+        isOfficial: false,
+      };
+
+      if (!snap.exists()) {
+        await setDoc(chatRef, {
+          members: [me.uid, targetUid],
+          lastMsg: adminQuickMsg.trim(),
+          updatedAt: serverTimestamp(),
+          unreadCount: { [me.uid]: 0, [targetUid]: 1 },
+          typing: { [me.uid]: false, [targetUid]: false },
+          otherUserCache: { [me.uid]: myCache, [targetUid]: otherCache },
+          isAdminChat: true,
+          createdAt: serverTimestamp(),
+        });
+      } else {
+        await updateDoc(chatRef, {
+          lastMsg: adminQuickMsg.trim(),
+          updatedAt: serverTimestamp(),
+          [`unreadCount.${targetUid}`]: ((snap.data()?.unreadCount?.[targetUid]) || 0) + 1,
+          [`otherUserCache.${me.uid}`]: myCache,
+          [`otherUserCache.${targetUid}`]: otherCache,
+          isAdminChat: true,
+          lastMsgByAdmin: true,
+        });
+      }
+
+      await addDoc(collection(db, 'chats', chatId, 'messages'), {
+        text: adminQuickMsg.trim(),
+        senderId: me.uid,
+        senderName: 'Listo Patrón Oficial ✅',
+        isAdminMessage: true,
+        createdAt: serverTimestamp(),
+        status: 'sent',
+      });
+
+      showToast(`✅ Mensaje oficial enviado a ${viewProStats.name || 'usuario'}`);
+      setAdminQuickMsg('');
+    } catch (err) {
+      console.error('Error enviando mensaje admin:', err);
+      showToast('❌ Error al enviar mensaje: ' + (err.message || 'Error desconocido'));
+    } finally {
+      setSendingAdminMsg(false);
+    }
   };
 
   // Subir o adjuntar comprobante manualmente por el Administrador
@@ -3770,17 +3873,52 @@ export default function AdminPage({ navigate }) {
                   <div style={{ textAlign: 'center', fontSize: 12, color: 'var(--muted)', marginTop: 8 }}>El usuario no ha subido documentos de verificación.</div>
                 )}
 
-                {/* ── BOTÓN DEL CHAT OFICIAL ── */}
+                {/* ── BOTÓN DEL CHAT OFICIAL Y MENSAJE DIRECTO ADMIN ── */}
                 <div style={{ marginTop: 16 }}>
                   <button className="cc-btn" style={{
                     width: '100%', background: 'linear-gradient(135deg, #1A1A2E, #2A2A4A)', color: '#FFD700',
                     border: '1px solid rgba(255,215,0,0.5)', padding: 14, fontSize: 13, fontWeight: 800,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'
-                  }} onClick={() => {
-                    if (navigate) navigate('chat', viewProStats);
-                  }}>
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                    borderRadius: 12, cursor: 'pointer', boxShadow: '0 4px 15px rgba(26,26,46,0.3)'
+                  }} onClick={() => handleEnterSecureChat(viewProStats)}>
                     💬 Entrar al Chat Seguro
                   </button>
+
+                  {/* Campo exclusivo para enviar mensaje directo sin salir de la Central de Mando */}
+                  <div style={{
+                    marginTop: 10, background: 'rgba(255,215,0,0.06)', border: '1px dashed rgba(255,215,0,0.35)',
+                    borderRadius: 12, padding: 10
+                  }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: '#FFD700', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 4 }}>
+                      <span>⚡ Enviar mensaje directo a {viewProStats.name?.split(' ')[0] || 'usuario'}:</span>
+                    </div>
+                    <div style={{ display: 'flex', gap: 6 }}>
+                      <input
+                        type="text"
+                        placeholder="Escribe un mensaje oficial..."
+                        value={adminQuickMsg}
+                        onChange={(e) => setAdminQuickMsg(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') handleSendQuickAdminMessage();
+                        }}
+                        style={{
+                          flex: 1, padding: '9px 12px', fontSize: 12, borderRadius: 8,
+                          background: '#0F172A', color: '#fff', border: '1px solid rgba(255,215,0,0.3)', outline: 'none'
+                        }}
+                      />
+                      <button
+                        onClick={handleSendQuickAdminMessage}
+                        disabled={sendingAdminMsg || !adminQuickMsg.trim()}
+                        style={{
+                          padding: '9px 14px', borderRadius: 8, background: '#F26000', color: '#fff',
+                          border: 'none', fontWeight: 700, fontSize: 12, cursor: 'pointer',
+                          opacity: sendingAdminMsg || !adminQuickMsg.trim() ? 0.6 : 1
+                        }}
+                      >
+                        {sendingAdminMsg ? '...' : 'Enviar'}
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
