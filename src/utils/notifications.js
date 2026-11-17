@@ -14,7 +14,7 @@ const getAudioContext = () => {
     sharedAudioCtx = new AudioContextClass();
   }
   if (sharedAudioCtx.state === 'suspended') {
-    sharedAudioCtx.resume().catch(() => {});
+    sharedAudioCtx.resume().catch(() => { });
   }
   return sharedAudioCtx;
 };
@@ -26,9 +26,9 @@ export const unlockAudioContext = () => {
   try {
     const ctx = getAudioContext();
     if (ctx && ctx.state === 'suspended') {
-      ctx.resume().catch(() => {});
+      ctx.resume().catch(() => { });
     }
-  } catch (e) {}
+  } catch (e) { }
 };
 
 if (typeof window !== 'undefined') {
@@ -141,7 +141,7 @@ export const playNotificationChime = (category = 'msg') => {
         navigator.vibrate([150, 70, 150]);
       }
     }
-  } catch (e) {}
+  } catch (e) { }
 
   // 2. Si el usuario seleccionó un tono sintetizado nativo
   if (pref && pref.startsWith('synth_')) {
@@ -152,13 +152,14 @@ export const playNotificationChime = (category = 'msg') => {
   // 3. Si el usuario eligió un archivo de audio específico en disco
   if (pref && !pref.startsWith('synth_')) {
     try {
-      const audio = new Audio(`/audio/${pref}.mp3`);
+      const audioUrl = pref === 'intro_app2' ? 'https://listopatron.vercel.app/audio/intro_app2.mp3' : `/audio/${pref}.mp3`;
+      const audio = new Audio(audioUrl);
       audio.volume = category === 'order' ? 0.75 : 0.6;
       audio.play().catch(() => {
         playSynthesizedTone(category === 'order' ? 'order' : (category === 'done' ? 'done' : 'msg'));
       });
       return;
-    } catch (e) {}
+    } catch (e) { }
   }
 
   // 4. Default inteligente: sintetizador nativo + audio por defecto
@@ -169,8 +170,8 @@ export const playNotificationChime = (category = 'msg') => {
     const defaultFile = category === 'order' ? 'new_contract_v3' : 'notification_v3';
     const audio = new Audio(`/audio/${defaultFile}.mp3`);
     audio.volume = category === 'order' ? 0.75 : 0.6;
-    audio.play().catch(() => {});
-  } catch (e) {}
+    audio.play().catch(() => { });
+  } catch (e) { }
 };
 
 /**

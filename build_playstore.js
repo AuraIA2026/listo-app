@@ -19,7 +19,7 @@ try {
   execSync('node compress_imgs_android.cjs', opts);
   
   console.log('\n[3/3] Generando formato .AAB (Android App Bundle)...');
-  const gradleCmd = os.platform() === 'win32' ? '.\\gradlew.bat clean bundleRelease' : './gradlew clean bundleRelease';
+  const gradleCmd = os.platform() === 'win32' ? '.\\gradlew.bat --no-daemon clean bundleRelease' : './gradlew --no-daemon clean bundleRelease';
   const gradleEnv = { ...process.env, JAVA_HOME: 'C:\\Program Files\\Android\\Android Studio\\jbr' };
   execSync(gradleCmd, { cwd: `${rootDir}\\android`, stdio: 'inherit', env: gradleEnv });
   

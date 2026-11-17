@@ -729,8 +729,8 @@ export default function LandingPage({ navigate, lang }) {
   const navidadVideoRef = useRef(null);
   const [activeVideoIdx, setActiveVideoIdx] = useState(0); // 0 = navidad (primero), 1 = profesionales
   const heroVideos = [
-    { ref: navidadVideoRef, src: './assets/navidad_monumento.mp4', loop: true },
-    { ref: heroVideoRef,  src: './assets/todos_los_profesionales.mp4', poster: './assets/todos_los_profesionales_poster.jpg', loop: true },
+    { ref: navidadVideoRef, src: 'https://listopatron.vercel.app/assets/navidad_monumento.mp4', loop: true },
+    { ref: heroVideoRef,  src: 'https://listopatron.vercel.app/assets/todos_los_profesionales.mp4', poster: './assets/todos_los_profesionales_poster.jpg', loop: true },
   ];
   const [showDownloadDropdown, setShowDownloadDropdown] = useState(false);
   const [selectedMapRegion, setSelectedMapRegion] = useState('all');
@@ -1216,7 +1216,7 @@ export default function LandingPage({ navigate, lang }) {
       {/* Video 1: Navidad Santa sobre el Monumento (sale primero - sin loop, al terminar pasa al siguiente) */}
       <video
         ref={navidadVideoRef}
-        src="./assets/navidad_monumento.mp4"
+        src="https://listopatron.vercel.app/assets/navidad_monumento.mp4"
         autoPlay
         muted={isHeroMuted}
         playsInline
@@ -1227,7 +1227,7 @@ export default function LandingPage({ navigate, lang }) {
       {/* Video 2: Todos los Profesionales (loop infinito luego del primero) */}
       <video
         ref={heroVideoRef}
-        src="./assets/todos_los_profesionales.mp4"
+        src="https://listopatron.vercel.app/assets/todos_los_profesionales.mp4"
         poster="./assets/todos_los_profesionales_poster.jpg"
         muted={isHeroMuted}
         loop

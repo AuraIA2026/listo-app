@@ -7,6 +7,7 @@ import './PedidosListoHub.css';
 import ConfigurarRestauranteModal from './ConfigurarRestauranteModal';
 import CreditCardCheckoutForm, { validateCardDetails, saveCardTokenIfRequested } from './CreditCardCheckoutForm';
 import BankTransferCheckoutBox from './BankTransferCheckoutBox';
+import { payWithAzul } from '../utils/azulPayment';
 
 const HERO_BANNERS = [
   {
@@ -375,6 +376,18 @@ export default function PedidosListoHub({ navigate }) {
       const confirmed = { ...orderData, id: docRef.id };
       setCart({ store: null, items: [] });
       setShowCartDrawer(false);
+
+      if (paymentMethod === 'tarjeta' && cardData?.mode === 'azul') {
+        try {
+          await payWithAzul({
+            orderNumber: orderData.orderId,
+            amount: total
+          });
+        } catch (eAzul) {
+          console.error('Error al redirigir a pasarela AZUL:', eAzul);
+        }
+      }
+
       if (navigate) navigate('tracking', confirmed);
       else setConfirmedOrder(confirmed);
     } catch (err) {
@@ -1300,13 +1313,20 @@ export default function PedidosListoHub({ navigate }) {
               onClick={handleConfirmOrder}
               disabled={submitting}
               style={{
-                background: isPickupHub ? 'linear-gradient(135deg, #059669, #10B981)' : undefined,
+                background: (paymentMethod === 'tarjeta' && (cardData?.mode === 'azul' || !cardData?.mode))
+                  ? 'linear-gradient(135deg, #0A2540 0%, #0052D4 50%, #1E3A8A 100%)'
+                  : isPickupHub ? 'linear-gradient(135deg, #059669, #10B981)' : undefined,
+                boxShadow: (paymentMethod === 'tarjeta' && (cardData?.mode === 'azul' || !cardData?.mode))
+                  ? '0 8px 24px rgba(0, 82, 212, 0.4)'
+                  : undefined,
                 opacity: submitting ? 0.6 : 1
               }}
             >
               {submitting
-                ? 'Enviando pedido...'
-                : isPickupHub ? `🛍️ Confirmar Retiro en Local (RD$ ${total.toLocaleString()})` : `🚀 Confirmar Pedido (RD$ ${total.toLocaleString()})`}
+                ? '🔒 Conectando con AZUL...'
+                : (paymentMethod === 'tarjeta' && (cardData?.mode === 'azul' || !cardData?.mode))
+                  ? `🔒 Pagar con AZUL y Pedir (RD$ ${total.toLocaleString()})`
+                  : isPickupHub ? `🛍️ Confirmar Retiro en Local (RD$ ${total.toLocaleString()})` : `🚀 Confirmar Pedido (RD$ ${total.toLocaleString()})`}
             </button>
           </div>
         </div>

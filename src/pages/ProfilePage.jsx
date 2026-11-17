@@ -399,7 +399,8 @@ function PersonalizarScreen({ lang, onBack }) {
     }
 
     try {
-      const audio = new Audio(`/audio/${val}.mp3`)
+      const audioUrl = val === 'intro_app2' ? 'https://listopatron.vercel.app/audio/intro_app2.mp3' : `/audio/${val}.mp3`
+      const audio = new Audio(audioUrl)
       audio.volume = category === 'order' ? 0.8 : 0.65
       audio.play().catch(err => {
         console.warn('Fallback a sintetizador:', err)

@@ -75,7 +75,7 @@ exports.webhookCardnet = functions.https.onRequest(async (req, res) => {
 ═══════════════════════════════════════════════════════════ */
 exports.generarFirmaAzul = functions.https.onCall((data, context) => {
   const MERCHANT_ID = process.env.AZUL_MERCHANT_ID || "39666400001";
-  const AUTH_KEY    = "asdhakjshdkjasdasmndajksdkjaskldga8odya9d8yoasyd98asdyaisdhoaisyd0a8sydoashd8oasydoiahdpiashd09ayusidhaos8dy0a8dya08syd0a8ssdsax";
+  const AUTH_KEY    = process.env.AZUL_AUTH_KEY || "VR8JyGGrFCwxd5stU6rcxifZd5pXj8tdttPFzrpGC474eCBQ6hrwLDViiOBFpUWRMYXgy0c6T0gSbDF0he1aHLuAUbGwHmUzNoBTPUKMAkz8EBYi1mtFhAjiy5gU2O6T";
 
   const {
     MerchantName,

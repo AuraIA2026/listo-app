@@ -3,7 +3,7 @@ import { collection, addDoc, serverTimestamp, doc, getDoc } from 'firebase/fires
 import { httpsCallable } from 'firebase/functions';
 import { db, auth, functions as fbFunctions } from '../firebase';
 
-const AZUL_PAYMENT_URL = import.meta.env.VITE_AZUL_URL || 'https://pruebas.azul.com.do/paymentpage/Default.aspx';
+const AZUL_PAYMENT_URL = import.meta.env.VITE_AZUL_URL || 'https://pagos.azul.com.do/PaymentPage/Default.aspx';
 const AZUL_WEBHOOK_URL = 'https://us-central1-listoapp-52b46.cloudfunctions.net/azulWebHook';
 
 const AZUL_PLAN_LINKS = {

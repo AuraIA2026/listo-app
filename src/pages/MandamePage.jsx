@@ -3,8 +3,8 @@ import { doc, getDoc, setDoc, updateDoc, serverTimestamp, collection, query, whe
 import { auth, db, functions as fbFunctions } from '../firebase';
 import { httpsCallable } from 'firebase/functions';
 
-// Pasarela AZUL (Payment Page). Cambia VITE_AZUL_URL a https://pagos.azul.com.do/paymentpage/Default.aspx en producción.
-const AZUL_PAYMENT_URL = import.meta.env.VITE_AZUL_URL || 'https://pruebas.azul.com.do/paymentpage/Default.aspx';
+// Pasarela AZUL (Payment Page) - Producción Oficial
+const AZUL_PAYMENT_URL = import.meta.env.VITE_AZUL_URL || 'https://pagos.azul.com.do/PaymentPage/Default.aspx';
 const AZUL_WEBHOOK_URL = 'https://us-central1-listoapp-52b46.cloudfunctions.net/azulWebHook';
 import './MandamePage.css';
 import './HomePage.css';
@@ -16,6 +16,7 @@ import DeliveryCercaScreen from '../components/DeliveryCercaScreen';
 import WelcomeIntro from '../components/WelcomeIntro';
 import CreditCardCheckoutForm, { validateCardDetails, saveCardTokenIfRequested } from '../components/CreditCardCheckoutForm';
 import BankTransferCheckoutBox from '../components/BankTransferCheckoutBox';
+import { payWithAzul } from '../utils/azulPayment';
 
 // Initial Mock State
 const ANIMATED_BANNERS_CATALOG = [
@@ -2347,39 +2348,17 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
       const docRef = await addDoc(collection(db, 'orders'), orderPayload);
 
       // 💳 PAGO CON TARJETA: redirigir a la pasarela segura AZUL
-      if (checkoutPaymentMethod === 'tarjeta' && checkoutCardData.mode === 'azul') {
-        const amountCents = String(Math.round(cartTotal * 100));
-        const base = window.location.origin;
-        const signData = {
-          MerchantName: 'Listo Patrón',
-          MerchantType: 'E-Commerce',
-          CurrencyCode: '$',
-          OrderNumber: generatedOrderId,
-          Amount: amountCents,
-          ApprovedUrl: AZUL_WEBHOOK_URL,
-          DeclinedUrl: `${base}/?pedidoPago=declinado&orden=${generatedOrderId}`,
-          CancelUrl: `${base}/?pedidoPago=cancelado&orden=${generatedOrderId}`,
-        };
-        const { data: firma } = await httpsCallable(fbFunctions, 'generarFirmaAzul')(signData);
-        const fields = {
-          MerchantId: firma.MerchantId, ...signData, ITBIS: firma.ITBIS,
-          ResponsePostUrl: firma.ResponsePostUrl,
-          UseCustomField1: '0', CustomField1Label: '', CustomField1Value: '',
-          UseCustomField2: '0', CustomField2Label: '', CustomField2Value: '',
-          AuthHash: firma.AuthHash,
-        };
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = AZUL_PAYMENT_URL;
-        Object.entries(fields).forEach(([k, v]) => {
-          const inp = document.createElement('input');
-          inp.type = 'hidden'; inp.name = k; inp.value = v ?? '';
-          form.appendChild(inp);
-        });
-        document.body.appendChild(form);
-        showToast('🔒 Redirigiendo a la pasarela segura AZUL...');
+      if (checkoutPaymentMethod === 'tarjeta') {
+        showToast('🔒 Conectando con la pasarela segura AZUL...');
         setCart([]);
-        form.submit();
+        try {
+          await payWithAzul({
+            orderNumber: generatedOrderId,
+            amount: cartTotal
+          });
+        } catch (eAz) {
+          console.error('Error al conectar con AZUL:', eAz);
+        }
         return;
       }
 
@@ -7155,6 +7134,7 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                         💳 Tarjeta de Crédito / Débito
                         <span style={{ fontSize: 9.5, fontWeight: 900, background: '#1e3a8a', color: '#fff', padding: '2px 6px', borderRadius: 5 }}>VISA</span>
                         <span style={{ fontSize: 9.5, fontWeight: 900, background: '#ea580c', color: '#fff', padding: '2px 6px', borderRadius: 5 }}>MC</span>
+                        <span style={{ fontSize: 9.5, fontWeight: 900, background: '#0052D4', color: '#fff', padding: '2px 6px', borderRadius: 5 }}>AZUL</span>
                       </button>
                     </div>
 

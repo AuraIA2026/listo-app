@@ -5,12 +5,12 @@ import { getProPlanTheme } from '../planTheme'
 import { CATEGORIES, ALL_SUBCATEGORIES } from '../categories'
 import { auth } from '../firebase'
 
-import mecanico1  from '../assets/pros/Mecanico1.jpg'
+import mecanico1 from '../assets/pros/Mecanico1.jpg'
 import electrica1 from '../assets/pros/Electricista1.jpg'
-import plomero    from '../assets/pros/Plomero.jpg'
+import plomero from '../assets/pros/Plomero.jpg'
 import cerrajero1 from '../assets/pros/Cerrajero1.jpg'
-import jardinero  from '../assets/pros/Jardinero.jpg'
-import logoListo  from '../assets/logo-mamey.png'
+import jardinero from '../assets/pros/Jardinero.jpg'
+import logoListo from '../assets/logo-mamey.png'
 import pedidosHeroImg from '../assets/pedidos_listo_hero.png'
 import pedidosBannerImg from '../assets/pedidos-listo-banner-oficial.png'
 import pedidos2Img from '../assets/pedidos-listo-2.png'
@@ -108,22 +108,22 @@ const demoVipPros = [
 ]
 
 const innerPhotos = [
-  { video: '/assets/delivery_rider_video.mp4', titleEs: 'Pedidos Listo — Entrega de Paquetes & Envíos', titleEn: 'Pedidos Listo — Package & Express Delivery', badge: '⚡ DELIVERY 24/7' },
-  { video: '/assets/delivery_worker_scooter.mp4', titleEs: 'Pedidos Listo — Delivery en Moto a Toda Velocidad', titleEn: 'Pedidos Listo — High Speed Scooter Delivery', badge: '🛵 ENVÍO EXPRESS' },
+  { video: 'https://listopatron.vercel.app/assets/delivery_rider_video.mp4', titleEs: 'Pedidos Listo — Entrega de Paquetes & Envíos', titleEn: 'Pedidos Listo — Package & Express Delivery', badge: '⚡ DELIVERY 24/7' },
+  { video: 'https://listopatron.vercel.app/assets/delivery_worker_scooter.mp4', titleEs: 'Pedidos Listo — Delivery en Moto a Toda Velocidad', titleEn: 'Pedidos Listo — High Speed Scooter Delivery', badge: '🛵 ENVÍO EXPRESS' },
   { img: pedidos2Img, titleEs: 'Pedidos Listo — Mandados, Compras & Servicios', titleEn: 'Pedidos Listo — Errands, Shopping & Services', badge: '📦 DISPONIBLE YA' }
 ]
 
 export const getProTier = (pro) => {
   if (!pro) return 'standard';
   const rawPlan = String(
-    pro.currentPlan || 
-    pro.planName || 
-    pro.plan || 
-    pro.planId || 
+    pro.currentPlan ||
+    pro.planName ||
+    pro.plan ||
+    pro.planId ||
     pro.planType ||
     pro.tipoPlan ||
     pro.subscription?.planName ||
-    pro.subscription?.plan || 
+    pro.subscription?.plan ||
     pro.membership ||
     pro.verificacion?.plan ||
     ''
@@ -154,14 +154,14 @@ export const isProVip = (pro) => {
 
 export const getProPlanBadge = (pro, lang = 'es') => {
   const rawPlan = String(
-    pro.planName || 
-    pro.currentPlan || 
-    pro.plan || 
-    pro.planId || 
+    pro.planName ||
+    pro.currentPlan ||
+    pro.plan ||
+    pro.planId ||
     pro.planType ||
     pro.tipoPlan ||
     pro.subscription?.planName ||
-    pro.subscription?.plan || 
+    pro.subscription?.plan ||
     pro.membership ||
     pro.verificacion?.plan ||
     ''
@@ -251,7 +251,7 @@ function VIPProCard({ pro, lang, navigate, getProStoryData, onOpenStory }) {
   const isFiveStar = effectiveRating >= 4.8 || !hasReviews
 
   return (
-    <div 
+    <div
       ref={cardRef}
       className={`vip-card-hero ${isInView ? 'is-in-view' : ''}`}
       onClick={() => navigate('booking', { professional: pro })}
@@ -263,9 +263,9 @@ function VIPProCard({ pro, lang, navigate, getProStoryData, onOpenStory }) {
           <img src={logoListo} alt="Listo" className="listo-brand-watermark-img vip-corner-logo-img" />
         </div>
 
-        <img 
-          src={pro.img || pro.photoURL} 
-          alt={pro.nameEs || pro.name} 
+        <img
+          src={pro.img || pro.photoURL}
+          alt={pro.nameEs || pro.name}
           className="vip-photo-large"
         />
         <div className="vip-photo-gradient" />
@@ -287,7 +287,7 @@ function VIPProCard({ pro, lang, navigate, getProStoryData, onOpenStory }) {
           const planTheme = getProPlanTheme(pro.currentPlan || pro.planName || pro.plan || pro.planId, pro.rating);
           return (
             <>
-              <div 
+              <div
                 style={{
                   position: 'absolute',
                   inset: 0,
@@ -296,7 +296,7 @@ function VIPProCard({ pro, lang, navigate, getProStoryData, onOpenStory }) {
                   pointerEvents: 'none'
                 }}
               />
-              <div 
+              <div
                 style={{
                   position: 'absolute',
                   top: '50%',
@@ -310,7 +310,7 @@ function VIPProCard({ pro, lang, navigate, getProStoryData, onOpenStory }) {
                   onOpenStory && onOpenStory(storyData.firstIndex)
                 }}
               >
-                <StoryAvatar 
+                <StoryAvatar
                   pro={pro}
                   src={pro.img || pro.photoURL}
                   alt={pro.nameEs || pro.name}
@@ -330,7 +330,7 @@ function VIPProCard({ pro, lang, navigate, getProStoryData, onOpenStory }) {
             <span className="vip-online-pulse" />
             {lang === 'es' ? 'DISPONIBLE' : 'AVAILABLE'}
           </span>
-          <button 
+          <button
             className="vip-photo-view-profile-btn"
             style={{ position: 'static' }}
             onClick={(e) => {
@@ -361,9 +361,9 @@ function VIPProCard({ pro, lang, navigate, getProStoryData, onOpenStory }) {
             <div className={`vip-stars-badge ${isFiveStar ? 'epic-5star-badge' : ''}`}>
               <div key={animKey} className="vip-animated-stars">
                 {[1, 2, 3, 4, 5].map((starIdx) => (
-                  <span 
-                    key={starIdx} 
-                    className="vip-star-pop" 
+                  <span
+                    key={starIdx}
+                    className="vip-star-pop"
                     style={{ animationDelay: `${starIdx * 0.10}s` }}
                   >
                     ★
@@ -407,7 +407,7 @@ function VIPProCard({ pro, lang, navigate, getProStoryData, onOpenStory }) {
         </div>
 
         <div className="vip-actions-row">
-          <button 
+          <button
             className="vip-btn-profile-secondary"
             onClick={(e) => {
               e.stopPropagation()
@@ -416,7 +416,7 @@ function VIPProCard({ pro, lang, navigate, getProStoryData, onOpenStory }) {
           >
             👤 {lang === 'es' ? 'Ver Perfil' : 'Profile'}
           </button>
-          <button 
+          <button
             className="vip-btn-book"
             onClick={(e) => {
               e.stopPropagation()
@@ -431,9 +431,9 @@ function VIPProCard({ pro, lang, navigate, getProStoryData, onOpenStory }) {
   )
 }
 
-export default function VIPSection({ 
-  realVipPros = [], 
-  lang = 'es', 
+export default function VIPSection({
+  realVipPros = [],
+  lang = 'es',
   navigate,
   sectionTitle,
   sectionSub,
@@ -450,7 +450,7 @@ export default function VIPSection({
   const [activeInnerSlide, setActiveInnerSlide] = React.useState(0)
   const [isHeroPlaying, setIsHeroPlaying] = React.useState(true)
   const [showProximamenteModal, setShowProximamenteModal] = React.useState(false)
-  
+
   const isAdmin = Boolean(
     userData?.email === 'listopatron.app@gmail.com' ||
     auth?.currentUser?.email === 'listopatron.app@gmail.com' ||
@@ -460,7 +460,7 @@ export default function VIPSection({
       try {
         const stored = JSON.parse(localStorage.getItem('listoUserData') || '{}');
         return stored?.email === 'listopatron.app@gmail.com' || stored?.role === 'admin' || stored?.isAdmin === true;
-      } catch(e) { return false; }
+      } catch (e) { return false; }
     })())
   );
 
@@ -502,8 +502,8 @@ export default function VIPSection({
             </h2>
           </div>
           {showSeeAll && (
-            <button 
-              className="hp-see-all" 
+            <button
+              className="hp-see-all"
               onClick={() => navigate('search')}
               style={{ cursor: 'pointer' }}
             >
@@ -518,7 +518,7 @@ export default function VIPSection({
         )}
       </div>
 
-      <div 
+      <div
         ref={containerRef}
         className="vip-cards-container"
         onTouchStart={() => { isInteracting.current = true }}
@@ -527,7 +527,7 @@ export default function VIPSection({
         onMouseLeave={() => { isInteracting.current = false }}
       >
         {/* TARJETA 1: TARJETA PROMO EXCLUSIVA DE PEDIDOS LISTO (COLOR MAMEY CON VIDEOS Y BOTÓN DIRECTO) */}
-        <div 
+        <div
           className="vip-card-hero amz-blue-hero-card"
           onClick={() => navigate('mandame')}
           style={{
@@ -550,13 +550,13 @@ export default function VIPSection({
 
           {/* Top Tag & Logo Listo */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', zIndex: 2 }}>
-            <span style={{ 
-              background: '#1A1A2E', 
-              color: '#FFD700', 
-              padding: '4px 10px', 
-              borderRadius: '20px', 
-              fontSize: '10px', 
-              fontWeight: '900', 
+            <span style={{
+              background: '#1A1A2E',
+              color: '#FFD700',
+              padding: '4px 10px',
+              borderRadius: '20px',
+              fontSize: '10px',
+              fontWeight: '900',
               letterSpacing: '0.5px',
               border: '1px solid #FFD700',
               boxShadow: '0 2px 8px rgba(0, 0, 0, 0.4)',
@@ -566,18 +566,18 @@ export default function VIPSection({
             }}>
               📦 PEDIDOS LISTO
             </span>
-            <img 
-              src={logoListo} 
-              alt="Pedidos Listo Logo" 
-              style={{ 
-                height: '32px', 
-                width: '32px', 
+            <img
+              src={logoListo}
+              alt="Pedidos Listo Logo"
+              style={{
+                height: '32px',
+                width: '32px',
                 borderRadius: '50%',
                 border: '2px solid #FFFFFF',
                 boxShadow: '0 2px 8px rgba(0, 0, 0, 0.35)',
                 objectFit: 'contain',
-                background: '#FFFFFF' 
-              }} 
+                background: '#FFFFFF'
+              }}
             />
           </div>
 
@@ -597,15 +597,15 @@ export default function VIPSection({
             <span style={{ fontSize: '10px', fontWeight: '800', color: '#FFFFFF' }}>
               ⚡ ENVIOS & DELIVERIES
             </span>
-            <span style={{ 
-              fontSize: '10px', 
-              fontWeight: '900', 
-              color: '#1A1A2E', 
-              background: '#FFD700', 
-              padding: '2px 8px', 
+            <span style={{
+              fontSize: '10px',
+              fontWeight: '900',
+              color: '#1A1A2E',
+              background: '#FFD700',
+              padding: '2px 8px',
               borderRadius: '6px',
               letterSpacing: '0.5px',
-              boxShadow: '0 1px 4px rgba(0,0,0,0.2)' 
+              boxShadow: '0 1px 4px rgba(0,0,0,0.2)'
             }}>
               ⚡ DISPONIBLE 24/7
             </span>
@@ -639,11 +639,11 @@ export default function VIPSection({
 
             {hideVideo ? (
               <div className="amz-inner-slide" style={{ width: '100%', borderRadius: '12px', overflow: 'hidden' }}>
-                <img 
-                  src={pedidosHeroImg} 
-                  alt="Pedidos Listo" 
-                  className="amz-inner-slide-img" 
-                  style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                <img
+                  src={pedidosHeroImg}
+                  alt="Pedidos Listo"
+                  className="amz-inner-slide-img"
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                 />
                 <div className="amz-inner-slide-overlay">
                   <span className="amz-inner-slide-badge" style={{ background: '#FFD700', color: '#1A1A2E', fontWeight: '900' }}>
@@ -656,28 +656,28 @@ export default function VIPSection({
               </div>
             ) : (
               <>
-                <div 
+                <div
                   className="amz-inner-carousel-track"
                   style={{ transform: `translateX(-${activeInnerSlide * 100}%)` }}
                 >
                   {innerPhotos.map((item, idx) => (
                     <div key={idx} className="amz-inner-slide">
                       {item.video ? (
-                        <video 
-                          src={item.video} 
-                          autoPlay 
-                          loop 
-                          muted 
-                          playsInline 
-                          className="amz-inner-slide-img" 
-                          style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                        <video
+                          src={item.video}
+                          autoPlay
+                          loop
+                          muted
+                          playsInline
+                          className="amz-inner-slide-img"
+                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                         />
                       ) : (
-                        <img 
-                          src={item.img || pedidosHeroImg} 
-                          alt={item.titleEs} 
-                          className="amz-inner-slide-img" 
-                          style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                        <img
+                          src={item.img || pedidosHeroImg}
+                          alt={item.titleEs}
+                          className="amz-inner-slide-img"
+                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                         />
                       )}
                       <div className="amz-inner-slide-overlay">
@@ -693,8 +693,8 @@ export default function VIPSection({
                 {/* Dots de navegación del carrusel interno */}
                 <div className="amz-inner-dots">
                   {innerPhotos.map((_, idx) => (
-                    <span 
-                      key={idx} 
+                    <span
+                      key={idx}
                       className={`amz-inner-dot ${idx === activeInnerSlide ? 'active' : ''}`}
                       onClick={(e) => {
                         e.stopPropagation()
@@ -734,7 +734,7 @@ export default function VIPSection({
 
           {/* Bottom Action Button de Pedidos Listo */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', zIndex: 2, marginTop: 'auto' }}>
-            <button 
+            <button
               onClick={(e) => {
                 e.stopPropagation();
                 navigate('mandame');
@@ -765,7 +765,7 @@ export default function VIPSection({
         </div>
 
         {displayPros.map((pro, idx) => (
-          <VIPProCard 
+          <VIPProCard
             key={pro.id || idx}
             pro={pro}
             lang={lang}
@@ -777,7 +777,7 @@ export default function VIPSection({
       </div>
       {/* Modal Proximamente para usuarios normales */}
       {showProximamenteModal && (
-        <div 
+        <div
           onClick={(e) => { e.stopPropagation(); setShowProximamenteModal(false); }}
           style={{
             position: 'fixed',
@@ -792,7 +792,7 @@ export default function VIPSection({
             zIndex: 99999
           }}
         >
-          <div 
+          <div
             onClick={(e) => e.stopPropagation()}
             style={{
               background: 'linear-gradient(180deg, #FFFFFF 0%, #FFF8F2 100%)',
@@ -818,9 +818,9 @@ export default function VIPSection({
               boxShadow: '0 8px 24px rgba(242, 96, 0, 0.35)',
               border: '3px solid #FFF'
             }}>
-              <img 
-                src={logoListo} 
-                alt="Logo Listo" 
+              <img
+                src={logoListo}
+                alt="Logo Listo"
                 style={{ width: '42px', height: '42px', objectFit: 'contain' }}
               />
             </div>
@@ -857,7 +857,7 @@ export default function VIPSection({
               margin: '0 0 20px',
               fontWeight: '500'
             }}>
-              Estamos preparando la mejor experiencia de <strong>envíos, mandados y delivery en tiempo real</strong>. 
+              Estamos preparando la mejor experiencia de <strong>envíos, mandados y delivery en tiempo real</strong>.
               ¡Muy pronto disponible para todos nuestros clientes! 🛵💨
             </p>
 
