@@ -222,16 +222,9 @@ export default function PedidosListoHub({ navigate }) {
     return () => unsub();
   }, []);
 
-  const isOwner = (st) => {
-    if (!st || !user) return false;
-    const actEmail = String(user?.email || '').toLowerCase().trim();
-    if (actEmail === 'listopatron.app@gmail.com') return true;
-    const stUids = [st.proId, st.ownerUid, st.userId, st.uid].filter(Boolean);
-    if (stUids.includes(user.uid)) return true;
-    const stEmails = [st.email, st.correo, st.userEmail, st.proEmail].filter(Boolean).map(e => String(e).toLowerCase().trim());
-    if (actEmail && stEmails.includes(actEmail)) return true;
-    return false;
-  };
+  // 🛡️ Las ediciones de los comercios solo pueden hacerse por "Listo Software".
+  // En la app Listo Patrón no se permite editar comercios.
+  const isOwner = (_st) => false;
 
   // Filter stores by category
   const q = searchQuery.toLowerCase();
@@ -706,26 +699,6 @@ export default function PedidosListoHub({ navigate }) {
                 zIndex: 2
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                  {isOwner(selectedStore) && <button
-                    onClick={() => setShowConfigModal(true)}
-                    style={{
-                      background: 'rgba(0,0,0,0.65)',
-                      color: '#FFF',
-                      border: '1px solid rgba(255,255,255,0.4)',
-                      padding: '4px 10px',
-                      borderRadius: 12,
-                      fontSize: 10.5,
-                      fontWeight: 900,
-                      cursor: 'pointer',
-                      backdropFilter: 'blur(4px)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 4,
-                      whiteSpace: 'nowrap'
-                    }}
-                  >
-                    ⚙️ Configurar
-                  </button>}
                 </div>
                 <button
                   onClick={() => setSelectedStore(null)}
@@ -739,7 +712,7 @@ export default function PedidosListoHub({ navigate }) {
             {/* CONTENIDO INTERNO */}
             <div style={{ padding: '0 16px 24px', boxSizing: 'border-box', width: '100%' }}>
               
-              {/* 2. FILA DE PERFIL: LOGO FLOTANTE + NOMBRE + BOTÓN CONFIGURAR */}
+              {/* 2. FILA DE PERFIL: LOGO FLOTANTE + NOMBRE */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: -38, marginBottom: 14, position: 'relative', zIndex: 3, flexWrap: 'wrap', gap: 10 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0, flex: '1 1 200px' }}>
                   <img
@@ -765,27 +738,6 @@ export default function PedidosListoHub({ navigate }) {
                     </p>
                   </div>
                 </div>
-
-                {isOwner(selectedStore) && <button
-                  onClick={() => setShowConfigModal(true)}
-                  style={{
-                    padding: '7px 12px',
-                    borderRadius: 12,
-                    background: '#FFF7ED',
-                    color: '#EA580C',
-                    border: '1.5px solid #FFEDD5',
-                    fontSize: 11.5,
-                    fontWeight: 900,
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 5,
-                    flexShrink: 0,
-                    boxShadow: '0 2px 8px rgba(234,88,12,0.1)'
-                  }}
-                >
-                  ⚙️ Configurar Local
-                </button>}
               </div>
               
               {/* BADGES METADATA */}
@@ -1366,17 +1318,7 @@ export default function PedidosListoHub({ navigate }) {
           </div>
         </div>
       )}
-      {/* 13. MODAL DE CONFIGURACIÓN DEL RESTAURANTE */}
-      {showConfigModal && selectedStore && isOwner(selectedStore) && (
-        <ConfigurarRestauranteModal
-          store={selectedStore}
-          onClose={() => setShowConfigModal(false)}
-          onSave={(updated) => {
-            setSelectedStore(updated);
-            setDbStores(prev => prev.map(s => s.id === updated.id ? updated : s));
-          }}
-        />
-      )}
+      {/* Las ediciones del restaurante solo se realizan a través de Listo Software */}
     </div>
   );
 }

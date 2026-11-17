@@ -195,9 +195,6 @@ export default function LocalDetalle({ lang = 'es', navigate, local: propLocal, 
           <div style={{ flex: 1 }} />
           {isOwner && (
             <div style={{ display: 'flex', gap: '6px', marginRight: '8px' }}>
-              <button className="ld-btn-owner-edit" onClick={() => navigate('editarLocal', local)} style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', color: '#fff', padding: '6px 12px', borderRadius: '100px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', transition: 'all 0.2s' }}>
-                ✏️ Editar
-              </button>
               <button className="ld-btn-owner-delete" onClick={handleEliminarLocal} style={{ background: 'rgba(255,77,77,0.12)', border: '1px solid rgba(255,77,77,0.3)', color: '#ff4d4d', padding: '6px 12px', borderRadius: '100px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', transition: 'all 0.2s' }}>
                 🗑️ Eliminar
               </button>
