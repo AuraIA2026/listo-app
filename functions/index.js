@@ -111,6 +111,7 @@ exports.generarFirmaAzul = functions.https.onCall((data, context) => {
     ApprovedUrl +
     DeclinedUrl +
     CancelUrl +
+    ResponsePostUrl +
     UseCustomField1 +
     CustomField1Label +
     CustomField1Value +

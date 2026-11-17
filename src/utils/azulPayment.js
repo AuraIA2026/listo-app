@@ -31,6 +31,7 @@ export async function computeAzulAuthHash(fields, authKey = AZUL_CONFIG.authKey)
     (fields.ApprovedUrl || '') +
     (fields.DeclinedUrl || '') +
     (fields.CancelUrl || '') +
+    (fields.ResponsePostUrl || '') +
     (fields.UseCustomField1 || '0') +
     (fields.CustomField1Label || '') +
     (fields.CustomField1Value || '') +
