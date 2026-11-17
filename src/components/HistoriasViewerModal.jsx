@@ -24,15 +24,37 @@ export default function HistoriasViewerModal({
   const [isMuted, setIsMuted] = useState(false)
   const [isPaused, setIsPaused] = useState(false)
   const [floatingReaction, setFloatingReaction] = useState(null)
-  
+  const [floatingParticles, setFloatingParticles] = useState([])
+  const [liveLikesCount, setLiveLikesCount] = useState(0)
+
   const timerRef = useRef(null)
   const pressTimerRef = useRef(null)
   const recordedViewsRef = useRef(new Set())
+  const lastTapRef = useRef(0)
 
   useEffect(() => {
     setCurrentIndex(initialIndex)
     setIsPaused(false)
   }, [initialIndex, isOpen])
+
+  // Escuchar en tiempo real los likes y reacciones de la historia actual en Firestore
+  useEffect(() => {
+    if (!currentStory?.id) {
+      setLiveLikesCount(0)
+      return
+    }
+    setLiveLikesCount(currentStory.likesCount || 0)
+    const storyDocRef = doc(db, 'historias', currentStory.id)
+    const unsub = onSnapshot(storyDocRef, (snap) => {
+      if (snap.exists()) {
+        const d = snap.data()
+        if (typeof d.likesCount === 'number') {
+          setLiveLikesCount(d.likesCount)
+        }
+      }
+    }, () => {})
+    return () => unsub()
+  }, [currentStory?.id])
 
   // Load liked state from localStorage
   useEffect(() => {
@@ -264,6 +286,7 @@ export default function HistoriasViewerModal({
     const nextLikes = { ...likedStories, [storyId]: isNowLiked }
     setLikedStories(nextLikes)
     localStorage.setItem('listo_story_likes', JSON.stringify(nextLikes))
+    setLiveLikesCount(prev => Math.max(0, isNowLiked ? prev + 1 : prev - 1))
 
     if (isNowLiked) {
       triggerFloatingReaction('❤️')
@@ -291,14 +314,49 @@ export default function HistoriasViewerModal({
       } catch (err) {
         console.error('Error recording story like:', err)
       }
+    } else {
+      if (currentStory.id) {
+        const storyRef = doc(db, 'historias', currentStory.id)
+        updateDoc(storyRef, { likesCount: increment(-1) }).catch(() => {})
+      }
     }
   }
 
   const triggerFloatingReaction = (emoji) => {
+    // 1. Pop central grande en pantalla
     setFloatingReaction(emoji)
     setTimeout(() => {
       setFloatingReaction(null)
     }, 1200)
+
+    // 2. Stream de 9 partículas flotantes que suben y se desvanecen estilo WhatsApp / Instagram
+    const count = 9
+    const newParticles = Array.from({ length: count }).map((_, idx) => {
+      const randomLeft = 18 + Math.random() * 64 // De 18% a 82% en horizontal
+      const randomSway = (Math.random() - 0.5) * 80
+      const randomDuration = 1.4 + Math.random() * 0.7
+      const randomDelay = idx * 0.08
+      const randomSize = 36 + Math.random() * 24
+      const randomRotStart = (Math.random() - 0.5) * 30
+      const randomRotEnd = (Math.random() - 0.5) * 60
+
+      return {
+        id: `${Date.now()}_${idx}_${Math.random()}`,
+        emoji,
+        left: `${randomLeft}%`,
+        sway: `${randomSway}px`,
+        duration: `${randomDuration}s`,
+        delay: `${randomDelay}s`,
+        size: `${randomSize}px`,
+        rotStart: `${randomRotStart}deg`,
+        rotEnd: `${randomRotEnd}deg`
+      }
+    })
+
+    setFloatingParticles(prev => [...prev, ...newParticles])
+    setTimeout(() => {
+      setFloatingParticles(prev => prev.filter(p => !newParticles.some(np => np.id === p.id)))
+    }, 2800)
   }
 
   const handleEmojiReaction = async (e, reactionObj) => {
@@ -307,6 +365,13 @@ export default function HistoriasViewerModal({
     const displayLabel = typeof reactionObj === 'object' ? (reactionObj.name || 'Reacción') : reactionObj
 
     triggerFloatingReaction(reactionValue)
+
+    // Sumar interacción en tiempo real y en Firestore
+    setLiveLikesCount(prev => prev + 1)
+    if (currentStory?.id) {
+      const storyRef = doc(db, 'historias', currentStory.id)
+      updateDoc(storyRef, { likesCount: increment(1) }).catch(() => {})
+    }
 
     try {
       const clientName = userData?.name || userData?.displayName || 'Un cliente'
@@ -409,27 +474,77 @@ export default function HistoriasViewerModal({
           </div>
         )}
 
-        {/* Floating Emoji Reaction Animation */}
+        {/* Stream de Emojis/Corazones Flotantes estilo WhatsApp (suben y se desvanecen hacia arriba) */}
+        <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden', zIndex: 65 }}>
+          <style>{`
+            @keyframes whatsappFloatUpFade {
+              0% {
+                opacity: 0;
+                transform: translateY(0) scale(0.3) rotate(var(--rot-start, 0deg));
+              }
+              15% {
+                opacity: 1;
+                transform: translateY(-50px) scale(1.15) rotate(var(--rot-start, -10deg));
+              }
+              50% {
+                opacity: 0.95;
+                transform: translateY(-220px) translateX(var(--sway, 0px)) scale(1.05);
+              }
+              80% {
+                opacity: 0.75;
+                transform: translateY(-400px) translateX(calc(var(--sway, 0px) * 1.4)) scale(0.9);
+              }
+              100% {
+                opacity: 0;
+                transform: translateY(-600px) translateX(calc(var(--sway, 0px) * 1.8)) scale(0.65) rotate(var(--rot-end, 15deg));
+              }
+            }
+          `}</style>
+          {floatingParticles.map((p) => (
+            <div
+              key={p.id}
+              style={{
+                position: 'absolute',
+                bottom: '120px',
+                left: p.left,
+                fontSize: p.size,
+                '--sway': p.sway,
+                '--rot-start': p.rotStart,
+                '--rot-end': p.rotEnd,
+                animation: `whatsappFloatUpFade ${p.duration} cubic-bezier(0.25, 1, 0.5, 1) ${p.delay} forwards`,
+                filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.5))'
+              }}
+            >
+              {typeof p.emoji === 'string' && (p.emoji.startsWith('/emoji/') || p.emoji.endsWith('.png')) ? (
+                <img src={p.emoji} alt="Reacción" style={{ width: p.size, height: p.size, objectFit: 'contain' }} />
+              ) : (
+                <span>{p.emoji}</span>
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* Floating Emoji Reaction Pop Central */}
         {floatingReaction && (
           <div style={{
             position: 'absolute',
             top: '40%',
             left: '50%',
             transform: 'translate(-50%, -50%) scale(1)',
-            fontSize: '80px',
-            zIndex: 50,
+            fontSize: '85px',
+            zIndex: 66,
             pointerEvents: 'none',
             animation: 'reactionPop 1.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards'
           }}>
             <style>{`
               @keyframes reactionPop {
                 0% { opacity: 0; transform: translate(-50%, -50%) scale(0.3); }
-                40% { opacity: 1; transform: translate(-50%, -65%) scale(1.4); }
-                100% { opacity: 0; transform: translate(-50%, -100%) scale(1.8); }
+                40% { opacity: 1; transform: translate(-50%, -65%) scale(1.35); }
+                100% { opacity: 0; transform: translate(-50%, -110%) scale(1.7); }
               }
             `}</style>
             {typeof floatingReaction === 'string' && (floatingReaction.startsWith('/emoji/') || floatingReaction.endsWith('.png')) ? (
-              <img src={floatingReaction} alt="Reacción" style={{ width: '95px', height: '95px', objectFit: 'contain', filter: 'drop-shadow(0 6px 20px rgba(242,96,0,0.6))' }} />
+              <img src={floatingReaction} alt="Reacción" style={{ width: '100px', height: '100px', objectFit: 'contain', filter: 'drop-shadow(0 8px 24px rgba(242,96,0,0.7))' }} />
             ) : (
               <span>{floatingReaction}</span>
             )}
@@ -490,6 +605,11 @@ export default function HistoriasViewerModal({
                 <span style={{ fontSize: '10px', background: storyPlanTheme.badgeBg, color: storyPlanTheme.badgeColor, padding: '2px 8px', borderRadius: '10px', fontWeight: 900, boxShadow: '0 2px 6px rgba(0,0,0,0.3)' }}>
                   {storyPlanTheme.badge}
                 </span>
+                {liveLikesCount > 0 && (
+                  <span style={{ fontSize: '10px', background: 'rgba(239, 68, 68, 0.35)', border: '1px solid rgba(239, 68, 68, 0.7)', color: '#FFFFFF', padding: '2px 8px', borderRadius: '10px', fontWeight: 900, display: 'inline-flex', alignItems: 'center', gap: '3px', boxShadow: '0 2px 6px rgba(239, 68, 68, 0.4)' }}>
+                    ❤️ {liveLikesCount} {liveLikesCount === 1 ? 'me gusta' : 'me gusta'}
+                  </span>
+                )}
                 {(() => {
                   let expiresMs = 0
                   if (currentStory?.expiresAt) {
@@ -553,7 +673,7 @@ export default function HistoriasViewerModal({
         </div>
 
         {/* Story Media (Image or Video) */}
-        <div className="historias-viewer-image-container">
+        <div className="historias-viewer-image-container" onDoubleClick={handleLikeStory}>
           {/* Sello '⭐ Top Profesional' exclusivamente para usuarios con Plan VIP */}
           {storyPlanTheme.id === 'vip' && !isPaused && (
             <div style={{
@@ -716,31 +836,41 @@ export default function HistoriasViewerModal({
             </div>
           )}
 
-          {/* Contador de Vistas (SOLO VISIBLE PARA EL DUEÑO DE LA HISTORIA) */}
+          {/* Contador de Vistas y Likes (SOLO VISIBLE PARA EL DUEÑO DE LA HISTORIA) */}
           {isOwner && (
             <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            padding: '6px 12px',
-            background: 'rgba(15, 23, 42, 0.85)',
-            backdropFilter: 'blur(8px)',
-            borderRadius: '16px',
-            border: '1px solid rgba(255, 255, 255, 0.15)',
-            margin: '0 2px 2px 2px'
-          }}>
-            <span style={{ fontSize: '12px', fontWeight: 800, color: '#F8FAFC', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              👁️ {currentStory.viewsCount || 1} { (currentStory.viewsCount === 1) ? 'persona ha visto tu historia' : 'personas han visto tu historia' }
-            </span>
-            <span style={{ fontSize: '10px', color: '#94A3B8', fontWeight: 700 }}>
-              🔒 Registro Privado
-            </span>
-          </div>
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '8px 14px',
+              background: 'rgba(15, 23, 42, 0.88)',
+              backdropFilter: 'blur(8px)',
+              borderRadius: '16px',
+              border: '1px solid rgba(255, 255, 255, 0.15)',
+              margin: '0 2px 4px 2px'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <span style={{ fontSize: '12px', fontWeight: 800, color: '#F8FAFC', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  👁️ {currentStory.viewsCount || 1} { (currentStory.viewsCount === 1) ? 'vista' : 'vistas' }
+                </span>
+                <span style={{ fontSize: '12px', fontWeight: 800, color: '#F87171', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  ❤️ {liveLikesCount} { liveLikesCount === 1 ? 'me gusta' : 'me gusta' }
+                </span>
+              </div>
+              <span style={{ fontSize: '10px', color: '#94A3B8', fontWeight: 700 }}>
+                🔒 Estadísticas
+              </span>
+            </div>
           )}
           
-          {/* Fast Reaction Emojis Bar (WhatsApp Style - All 19 Custom PNG Emojis) */}
+          {/* Fast Reaction Emojis Bar (WhatsApp Style - Emojis y PNGs) */}
           <div className="historias-reactions-bar">
             {[
+              { id: 'heart', name: 'Corazón', icon: '❤️' },
+              { id: 'fire', name: 'Fuego', icon: '🔥' },
+              { id: 'applause', name: 'Aplausos', icon: '👏' },
+              { id: 'star', name: 'Estrellas', icon: '⭐' },
+              { id: 'party', name: 'Fiesta', icon: '🎉' },
               { id: 'like', name: 'Me gusta', icon: '/emoji/like.png' },
               { id: 'trato', name: 'Trato Hecho', icon: '/emoji/trato hecho.png' },
               { id: 'estrellas', name: '5 Estrellas', icon: '/emoji/5 estrella.png' },
@@ -767,7 +897,11 @@ export default function HistoriasViewerModal({
                 onClick={(e) => handleEmojiReaction(e, item)}
                 title={item.name}
               >
-                <img src={item.icon} alt={item.name} className="emoji-png-icon" />
+                {typeof item.icon === 'string' && (item.icon.startsWith('/emoji/') || item.icon.endsWith('.png')) ? (
+                  <img src={item.icon} alt={item.name} className="emoji-png-icon" />
+                ) : (
+                  <span style={{ fontSize: '20px', lineHeight: 1 }}>{item.icon}</span>
+                )}
               </button>
             ))}
           </div>
@@ -793,9 +927,16 @@ export default function HistoriasViewerModal({
             <button
               className={`btn-historia-action like ${likedStories[currentStory.id] ? 'liked' : ''}`}
               onClick={handleLikeStory}
+              style={likedStories[currentStory.id] ? {
+                background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.4), rgba(220, 38, 38, 0.5))',
+                borderColor: '#EF4444',
+                color: '#FFFFFF'
+              } : {}}
             >
-              <img src={opinionesIcon} alt="Me gusta" style={{ width: '18px', height: '18px', objectFit: 'contain' }} />
-              Me gusta
+              <span style={{ fontSize: '18px', transform: likedStories[currentStory.id] ? 'scale(1.2)' : 'scale(1)', transition: 'transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)' }}>
+                {likedStories[currentStory.id] ? '❤️' : '🤍'}
+              </span>
+              <span>{liveLikesCount > 0 ? `${liveLikesCount} ` : ''}Me gusta</span>
             </button>
 
             <button
