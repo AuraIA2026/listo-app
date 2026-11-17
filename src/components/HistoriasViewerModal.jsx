@@ -26,48 +26,13 @@ export default function HistoriasViewerModal({
   const [floatingReaction, setFloatingReaction] = useState(null)
   const [floatingParticles, setFloatingParticles] = useState([])
   const [liveLikesCount, setLiveLikesCount] = useState(0)
+  const [liveProPlan, setLiveProPlan] = useState(null)
+  const [liveProAvatar, setLiveProAvatar] = useState(undefined)
 
   const timerRef = useRef(null)
   const pressTimerRef = useRef(null)
   const recordedViewsRef = useRef(new Set())
   const lastTapRef = useRef(0)
-
-  useEffect(() => {
-    setCurrentIndex(initialIndex)
-    setIsPaused(false)
-  }, [initialIndex, isOpen])
-
-  // Escuchar en tiempo real los likes y reacciones de la historia actual en Firestore
-  useEffect(() => {
-    if (!currentStory?.id) {
-      setLiveLikesCount(0)
-      return
-    }
-    setLiveLikesCount(currentStory.likesCount || 0)
-    const storyDocRef = doc(db, 'historias', currentStory.id)
-    const unsub = onSnapshot(storyDocRef, (snap) => {
-      if (snap.exists()) {
-        const d = snap.data()
-        if (typeof d.likesCount === 'number') {
-          setLiveLikesCount(d.likesCount)
-        }
-      }
-    }, () => {})
-    return () => unsub()
-  }, [currentStory?.id])
-
-  // Load liked state from localStorage
-  useEffect(() => {
-    try {
-      const savedLikes = JSON.parse(localStorage.getItem('listo_story_likes') || '{}')
-      setLikedStories(savedLikes)
-    } catch (e) {
-      console.log('Error reading story likes:', e)
-    }
-  }, [])
-
-  const [liveProPlan, setLiveProPlan] = useState(null)
-  const [liveProAvatar, setLiveProAvatar] = useState(undefined)
 
   // Filtro estricto de seguridad: Solo permitir visualizar historias APROBADAS por el Administrador
   const validStories = (stories || []).filter(s => {
@@ -77,7 +42,8 @@ export default function HistoriasViewerModal({
     return !isRejected && !isPending && s.status === 'approved' && s.approved === true
   })
 
-  const currentStory = validStories[currentIndex] || validStories[0]
+  const currentStory = validStories[currentIndex] || validStories[0] || null
+  const currentStoryId = currentStory?.id || null
   const proUidKey = currentStory?.proId || currentStory?.proUid
   const normKey = (str) => String(str || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, ' ').trim()
   const proNameClean = normKey(currentStory?.proName || currentStory?.fullName || '')
@@ -90,6 +56,40 @@ export default function HistoriasViewerModal({
     !url.includes('pravatar.cc') &&
     !url.includes('ui-avatars.com')
   )
+
+  useEffect(() => {
+    setCurrentIndex(initialIndex)
+    setIsPaused(false)
+  }, [initialIndex, isOpen])
+
+  // Escuchar en tiempo real los likes y reacciones de la historia actual en Firestore
+  useEffect(() => {
+    if (!currentStoryId) {
+      setLiveLikesCount(0)
+      return
+    }
+    setLiveLikesCount(currentStory?.likesCount || 0)
+    const storyDocRef = doc(db, 'historias', currentStoryId)
+    const unsub = onSnapshot(storyDocRef, (snap) => {
+      if (snap.exists()) {
+        const d = snap.data()
+        if (typeof d?.likesCount === 'number') {
+          setLiveLikesCount(d.likesCount)
+        }
+      }
+    }, () => {})
+    return () => unsub()
+  }, [currentStoryId])
+
+  // Load liked state from localStorage
+  useEffect(() => {
+    try {
+      const savedLikes = JSON.parse(localStorage.getItem('listo_story_likes') || '{}')
+      setLikedStories(savedLikes)
+    } catch (e) {
+      console.log('Error reading story likes:', e)
+    }
+  }, [])
 
   // Consulta en tiempo real a la colección users en Firestore para resolver el plan y la foto real del profesional
   useEffect(() => {
@@ -280,6 +280,7 @@ export default function HistoriasViewerModal({
 
   const handleLikeStory = async (e) => {
     if (e) e.stopPropagation()
+    if (!currentStory?.id) return
     const storyId = currentStory.id
     const isNowLiked = !likedStories[storyId]
 
@@ -925,16 +926,16 @@ export default function HistoriasViewerModal({
             </button>
 
             <button
-              className={`btn-historia-action like ${likedStories[currentStory.id] ? 'liked' : ''}`}
+              className={`btn-historia-action like ${Boolean(currentStory?.id && likedStories[currentStory.id]) ? 'liked' : ''}`}
               onClick={handleLikeStory}
-              style={likedStories[currentStory.id] ? {
+              style={Boolean(currentStory?.id && likedStories[currentStory.id]) ? {
                 background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.4), rgba(220, 38, 38, 0.5))',
                 borderColor: '#EF4444',
                 color: '#FFFFFF'
               } : {}}
             >
-              <span style={{ fontSize: '18px', transform: likedStories[currentStory.id] ? 'scale(1.2)' : 'scale(1)', transition: 'transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)' }}>
-                {likedStories[currentStory.id] ? '❤️' : '🤍'}
+              <span style={{ fontSize: '18px', transform: Boolean(currentStory?.id && likedStories[currentStory.id]) ? 'scale(1.2)' : 'scale(1)', transition: 'transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)' }}>
+                {Boolean(currentStory?.id && likedStories[currentStory.id]) ? '❤️' : '🤍'}
               </span>
               <span>{liveLikesCount > 0 ? `${liveLikesCount} ` : ''}Me gusta</span>
             </button>
