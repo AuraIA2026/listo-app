@@ -34,11 +34,11 @@ const IconSvg = ({ type, active }) => {
             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" fill={color} />
           ) : (
             <>
-               <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-               <polyline points="14 2 14 8 20 8" />
-               <line x1="16" y1="13" x2="8" y2="13" />
-               <line x1="16" y1="17" x2="8" y2="17" />
-               <polyline points="10 9 9 9 8 9" />
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+              <polyline points="14 2 14 8 20 8" />
+              <line x1="16" y1="13" x2="8" y2="13" />
+              <line x1="16" y1="17" x2="8" y2="17" />
+              <polyline points="10 9 9 9 8 9" />
             </>
           )}
         </svg>
@@ -53,8 +53,8 @@ const IconSvg = ({ type, active }) => {
             </>
           ) : (
             <>
-               <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-               <circle cx="12" cy="7" r="4" />
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+              <circle cx="12" cy="7" r="4" />
             </>
           )}
         </svg>
@@ -63,12 +63,12 @@ const IconSvg = ({ type, active }) => {
       return (
         <svg width="24" height="24" viewBox="0 0 24 24" fill={active ? color : 'none'} stroke={color} strokeWidth={active ? '0' : '2.2'} strokeLinecap="round" strokeLinejoin="round">
           {active ? (
-             <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14L22 4" fill={color} />
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14L22 4" fill={color} />
           ) : (
-             <>
-               <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-               <polyline points="22 4 12 14.01 9 11.01" />
-             </>
+            <>
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+              <polyline points="22 4 12 14.01 9 11.01" />
+            </>
           )}
         </svg>
       )
@@ -98,11 +98,11 @@ const IconSvg = ({ type, active }) => {
     case 'chat':
       return (
         <svg width="24" height="24" viewBox="0 0 24 24" fill={active ? color : 'none'} stroke={color} strokeWidth={active ? '0' : '2.2'} strokeLinecap="round" strokeLinejoin="round">
-           {active ? (
-             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" fill={color} />
-           ) : (
-             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-           )}
+          {active ? (
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" fill={color} />
+          ) : (
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+          )}
         </svg>
       )
     case 'cart':
@@ -128,19 +128,19 @@ const IconSvg = ({ type, active }) => {
 }
 
 const allTabs = [
-  { id: 'home',     labelEs: 'Inicio',    labelEn: 'Home',    iconType: 'home' },
-  { id: 'search',   labelEs: 'Buscar',    labelEn: 'Search',  iconType: 'search' },
-  { id: 'workdone', labelEs: 'Trabajo',   labelEn: 'Done',    iconType: 'workdone' },
-  { id: 'orders',   labelEs: 'Pedidos',   labelEn: 'Orders',  iconType: 'orders' },
-  { id: 'chat',     labelEs: 'Mensajes',  labelEn: 'Chat',    iconType: 'chat' },
-  { id: 'profile',  labelEs: 'Perfil',    labelEn: 'Profile', iconType: 'profile' }
+  { id: 'home', labelEs: 'Inicio', labelEn: 'Home', iconType: 'home' },
+  { id: 'search', labelEs: 'Buscar', labelEn: 'Search', iconType: 'search' },
+  { id: 'workdone', labelEs: 'Trabajo', labelEn: 'Done', iconType: 'workdone' },
+  { id: 'orders', labelEs: 'Pedidos', labelEn: 'Orders', iconType: 'orders' },
+  { id: 'chat', labelEs: 'Mensajes', labelEn: 'Chat', iconType: 'chat' },
+  { id: 'profile', labelEs: 'Perfil', labelEn: 'Profile', iconType: 'profile' }
 ]
 
 export default function BottomNav({ currentPage, navigate, lang = 'es', userRole }) {
   const { userData, profileComplete, userRole: fetchedRole } = useUserData()
   const resolvedRole = userRole || fetchedRole
 
-  const [unreadChats, setUnreadChats]     = useState(0)
+  const [unreadChats, setUnreadChats] = useState(0)
   const [pendingOrders, setPendingOrders] = useState(0)
   const [unreadOrderNotifs, setUnreadOrderNotifs] = useState(0)
   const [unreadMsgNotifs, setUnreadMsgNotifs] = useState(0)
@@ -154,7 +154,7 @@ export default function BottomNav({ currentPage, navigate, lang = 'es', userRole
         const mandameSaved = JSON.parse(localStorage.getItem('mandame_cart') || '[]')
         const mandameCount = Array.isArray(mandameSaved) ? mandameSaved.reduce((s, i) => s + (i.qty || 1), 0) : 0
         setCartCount(Math.max(plCount, mandameCount))
-      } catch(e) {}
+      } catch (e) { }
     }
     updateCountFromStorage()
 
@@ -181,14 +181,14 @@ export default function BottomNav({ currentPage, navigate, lang = 'es', userRole
       let count = 0
       snap.forEach(d => { count += (d.data().unreadCount?.[uid] || 0) })
       setUnreadChats(count)
-    }, () => {})
+    }, () => { })
 
     // Pending Orders Logic
     const fieldType = resolvedRole === 'pro' || userData?.type === 'pro' ? 'proId' : 'clientId'
     const qOrders = query(collection(db, 'orders'), where(fieldType, '==', uid), where('status', '==', 'pending'))
     const unsubOrders = onSnapshot(qOrders, snap => {
       setPendingOrders(snap.size)
-    }, () => {})
+    }, () => { })
 
     // Unread Notifs Logic
     const targetIds = userData?.email === 'listopatron.app@gmail.com' ? [uid, 'admin'] : [uid]
@@ -203,7 +203,7 @@ export default function BottomNav({ currentPage, navigate, lang = 'es', userRole
       })
       setUnreadOrderNotifs(tempOrders)
       setUnreadMsgNotifs(tempMsgs)
-    }, () => {})
+    }, () => { })
 
     return () => { unsubChats(); unsubOrders(); unsubNotifs() }
   }, [resolvedRole, userData?.type])
@@ -223,16 +223,16 @@ export default function BottomNav({ currentPage, navigate, lang = 'es', userRole
   const activeTab =
     isMandame ? (
       mandameSubTab === 'mercado' ? 'workdone' :
-      mandameSubTab === 'buscar'  ? 'search'   :
-      mandameSubTab === 'pedidos' ? 'orders'   :
-      mandameSubTab === 'carrito' ? 'profile'  : 'home'
+        mandameSubTab === 'buscar' ? 'search' :
+          mandameSubTab === 'pedidos' ? 'orders' :
+            mandameSubTab === 'carrito' ? 'profile' : 'home'
     ) : (
-      currentPage === 'home'     ? 'home'     :
-      currentPage === 'search'   ? 'search'   :
-      currentPage === 'workdone' ? 'workdone' :
-      currentPage === 'orders'   ? 'orders'   :
-      currentPage === 'chat'     ? 'chat'     :
-      currentPage === 'profile'  ? 'profile'  : 'home'
+      currentPage === 'home' ? 'home' :
+        currentPage === 'search' ? 'search' :
+          currentPage === 'workdone' ? 'workdone' :
+            currentPage === 'orders' ? 'orders' :
+              currentPage === 'chat' ? 'chat' :
+                currentPage === 'profile' ? 'profile' : 'home'
     )
 
   return (
@@ -297,12 +297,12 @@ export default function BottomNav({ currentPage, navigate, lang = 'es', userRole
               >
                 {/* Alerta de Perfil Incompleto (solo en app general Listo Patrón) */}
                 {!isMandame && tab.id === 'profile' && userData && !profileComplete && (
-                   <div style={{
-                     position: 'absolute', bottom: '90%', right: '15%', background: '#FF3B30', color: '#FFF',
-                     width: '12px', height: '12px', borderRadius: '50%', border: '2px solid #FFF',
-                     boxShadow: '0 2px 8px rgba(255,59,48,0.5)',
-                     animation: 'tipBounce 1.5s ease-in-out infinite', zIndex: 100
-                   }} />
+                  <div style={{
+                    position: 'absolute', bottom: '90%', right: '15%', background: '#FF3B30', color: '#FFF',
+                    width: '12px', height: '12px', borderRadius: '50%', border: '2px solid #FFF',
+                    boxShadow: '0 2px 8px rgba(255,59,48,0.5)',
+                    animation: 'tipBounce 1.5s ease-in-out infinite', zIndex: 100
+                  }} />
                 )}
 
                 {/* Badge de Carrito en Pedidos Listo */}
@@ -317,11 +317,11 @@ export default function BottomNav({ currentPage, navigate, lang = 'es', userRole
                 {tab.id === 'orders' && (pendingOrders + unreadOrderNotifs) > 0 && (
                   <span className="nav-badge">{(pendingOrders + unreadOrderNotifs) > 99 ? '99+' : (pendingOrders + unreadOrderNotifs)}</span>
                 )}
-                
+
                 <span className="nav-icon" style={{ animation: isActive ? 'popIcon 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)' : 'none' }}>
                   <IconSvg type={iconType} active={isActive} />
                 </span>
-                
+
                 <span className="nav-label">
                   {label}
                 </span>

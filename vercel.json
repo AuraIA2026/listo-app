@@ -2,6 +2,10 @@
   "cleanUrls": true,
   "rewrites": [
     {
+      "source": "/api/azulWebHook",
+      "destination": "https://us-central1-listoapp-52b46.cloudfunctions.net/azulWebHook"
+    },
+    {
       "source": "/merchant",
       "destination": "/merchant.html"
     },

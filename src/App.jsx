@@ -473,6 +473,7 @@ export default function App() {
     if (typeof window !== 'undefined') {
       const search = window.location.search || '';
       const hash = window.location.hash || '';
+      if (search.includes('pago=') || search.includes('orden=')) return 'orders';
       if (search.includes('page=shop') || hash.includes('shop')) return 'shop';
       if (search.includes('comprar-plan') || hash.includes('comprar-plan') || hash.includes('planes')) return 'landing';
       if (search.includes('page=login') || hash.includes('login')) return 'login';

@@ -11,11 +11,13 @@ export const AZUL_CONFIG = {
   merchantType: 'E-Commerce',
   currencyCode: '$',
   authKey: 'VR8JyGGrFCwxd5stU6rcxifZd5pXj8tdttPFzrpGC474eCBQ6hrwLDViiOBFpUWRMYXgy0c6T0gSbDF0he1aHLuAUbGwHmUzNoBTPUKMAkz8EBYi1mtFhAjiy5gU2O6T',
-  webhookUrl: 'https://us-central1-listoapp-52b46.cloudfunctions.net/azulWebHook'
+  baseDomain: 'https://www.listopatron.com.do',
+  webhookUrl: 'https://www.listopatron.com.do/api/azulWebHook'
 };
 
 /**
  * Calcula el AuthHash requerido por AZUL usando Web Crypto (HMAC-SHA512)
+ * Especificación oficial AZUL: MerchantId + MerchantName + MerchantType + CurrencyCode + OrderNumber + Amount + ITBIS + ApprovedUrl + DeclinedUrl + CancelUrl + UseCustomField1 + CustomField1Label + CustomField1Value + UseCustomField2 + CustomField2Label + CustomField2Value + AuthKey
  */
 export async function computeAzulAuthHash(fields, authKey = AZUL_CONFIG.authKey) {
   const hashString = 
@@ -29,7 +31,6 @@ export async function computeAzulAuthHash(fields, authKey = AZUL_CONFIG.authKey)
     (fields.ApprovedUrl || '') +
     (fields.DeclinedUrl || '') +
     (fields.CancelUrl || '') +
-    (fields.ResponsePostUrl || '') +
     (fields.UseCustomField1 || '0') +
     (fields.CustomField1Label || '') +
     (fields.CustomField1Value || '') +
@@ -79,11 +80,12 @@ export async function payWithAzul({
 
   // Convertir a centavos requeridos por AZUL (RD$ 150.00 -> "15000")
   const amountCents = String(Math.round(Number(amount) * 100));
-  const base = typeof window !== 'undefined' ? window.location.origin : 'https://listopatron.vercel.app';
+  const base = AZUL_CONFIG.baseDomain;
 
-  const finalApprovedUrl = approvedUrl || AZUL_CONFIG.webhookUrl;
+  const finalApprovedUrl = approvedUrl || `${base}/?pago=aprobado&orden=${encodeURIComponent(orderNumber)}`;
   const finalDeclinedUrl = declinedUrl || `${base}/?pago=declinado&orden=${encodeURIComponent(orderNumber)}`;
   const finalCancelUrl = cancelUrl || `${base}/?pago=cancelado&orden=${encodeURIComponent(orderNumber)}`;
+  const finalResponsePostUrl = AZUL_CONFIG.webhookUrl;
 
   const formFields = {
     MerchantId: AZUL_CONFIG.merchantId,
@@ -96,7 +98,7 @@ export async function payWithAzul({
     ApprovedUrl: finalApprovedUrl,
     DeclinedUrl: finalDeclinedUrl,
     CancelUrl: finalCancelUrl,
-    ResponsePostUrl: AZUL_CONFIG.webhookUrl,
+    ResponsePostUrl: finalResponsePostUrl,
     UseCustomField1: '0',
     CustomField1Label: '',
     CustomField1Value: '',
