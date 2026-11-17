@@ -328,10 +328,10 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
               city: data.ciudad || data.city || 'Santiago',
               ownerName: data.propietario || data.ownerName || '',
               email: (data.email || '').toLowerCase().trim(),
-              activo: data.activo !== false && !data.eliminado && !(data.nombre || data.businessName || data.name || '').toLowerCase().includes('fiera')
+              activo: data.activo === true && (data.verificado === true || data.status === 'approved') && !data.eliminado && !(data.nombre || data.businessName || data.name || '').toLowerCase().includes('fiera')
             };
           })
-          .filter(st => st.activo !== false && st.name && !st.name.toLowerCase().includes('fiera'));
+          .filter(st => st.activo === true && (st.verificado === true || st.status === 'approved') && !st.eliminado && st.name && !st.name.toLowerCase().includes('fiera'));
 
         setDbStores(list);
         if (list.length > 0) {
@@ -405,10 +405,10 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
               city: data.ciudad || data.city || 'Santiago',
               ownerName: data.propietario || data.ownerName || sName,
               email: (data.email || '').toLowerCase().trim(),
-              activo: data.activo !== false && !data.eliminado
+              activo: data.activo === true && (data.verificado === true || data.status === 'approved') && !data.eliminado
             };
           })
-          .filter(st => st.activo !== false && Boolean(st.name) && !st.name.toLowerCase().includes('fiera'));
+          .filter(st => st.activo === true && (st.verificado === true || st.status === 'approved') && Boolean(st.name) && !st.name.toLowerCase().includes('fiera'));
         setSoftwareStores(list);
       }, (err) => console.warn("Comercios listener error:", err));
     } catch (e) {}
@@ -829,57 +829,57 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
       const cleanStoreName = regStoreName.trim();
       const cleanEmail = (userData?.email || '').toLowerCase().trim();
 
-      // Guardar en 'locales' para que aparezca de una vez en los comercios de la App
-      await addDoc(collection(db, 'locales'), {
+      // 1. Guardar solicitud en 'partner_requests' con status pendiente
+      const reqRef = await addDoc(collection(db, 'partner_requests'), {
+        businessName: cleanStoreName,
+        ownerName: userData?.name || userData?.displayName || 'Dueño Comercio',
+        ownerLastName: '',
+        email: cleanEmail,
+        phone: regStorePhone.trim(),
+        city: regStoreAddress.trim() || 'Santiago',
+        businessType: regStoreCategory || 'Restaurante / Comida',
+        branches: 1,
+        isStreetStore: 'Si',
+        userId: userData?.uid || null,
+        userEmail: cleanEmail,
+        status: 'pending',
+        createdAt: new Date().toISOString()
+      });
+
+      // 2. Crear borrador inactivo en 'locales' vinculado al request (activo: false, verificado: false)
+      await setDoc(doc(db, 'locales', reqRef.id), {
         nombre: cleanStoreName,
         propietario: userData?.name || userData?.displayName || 'Dueño Comercio',
         email: cleanEmail,
         telefono: regStorePhone.trim(),
         ciudad: regStoreAddress.trim() || 'Santiago',
         categoria: regStoreCategory || 'Restaurante / Comida',
-        activo: true,
-        verificado: true,
+        activo: false,
+        verificado: false,
+        status: 'pending',
         plan: 'PedidosListo Partner',
         proId: userData?.uid || null,
         createdAt: new Date().toISOString()
       });
 
-      if (userData?.uid) {
-        await updateDoc(doc(db, 'users', userData.uid), {
-          isMerchant: true,
-          role: 'comercio',
-          hasCommerce: true,
-          storeName: cleanStoreName,
-          storeCategory: regStoreCategory,
-          storePhone: regStorePhone.trim(),
-          storeAddress: regStoreAddress.trim(),
-          updatedAt: serverTimestamp()
-        });
-      }
+      // 3. Notificar al administrador en la colección 'notificaciones'
+      await addDoc(collection(db, 'notificaciones'), {
+        userId: 'admin',
+        type: 'partner_request',
+        requestId: reqRef.id,
+        title: '🏬 Nueva Solicitud de Comercio Partner',
+        text: `El usuario ${userData?.name || cleanEmail} ha solicitado registrar su negocio "${cleanStoreName}". Tel: ${regStorePhone.trim()}, Email: ${cleanEmail}. Requiere validación del administrador.`,
+        read: false,
+        createdAt: new Date().toISOString(),
+        date: new Date().toISOString()
+      });
 
-      setMerchantState(prev => ({
-        ...prev,
-        storeName: cleanStoreName,
-        address: regStoreAddress.trim(),
-        prepTime: regPrepTime
-      }));
-
-      handleSetViewMode('merchant');
       setIsRegisterCommerceModalOpen(false);
-      showToast(`🎉 ¡Comercio "${cleanStoreName}" activado y publicado en la App!`);
+      showToast(`📨 ¡Solicitud de "${cleanStoreName}" enviada al Administrador! Tu negocio estará disponible en la App una vez validado.`);
     } catch (err) {
-      console.error('Error registrando comercio:', err);
-      setMerchantState(prev => ({
-        ...prev,
-        storeName: regStoreName.trim(),
-        address: regStoreAddress.trim(),
-        prepTime: regPrepTime
-      }));
-      localStorage.setItem('force_listo_merchant_mode', 'true');
-      localStorage.setItem('pedidos_listo_view_mode', 'merchant');
-      handleSetViewMode('merchant');
+      console.error('Error enviando solicitud de comercio:', err);
       setIsRegisterCommerceModalOpen(false);
-      showToast(`🎉 ¡Comercio Activado! Bienvenido a ${regStoreName.trim()} en Pedidos Listo Partner`);
+      showToast(`❌ Error al enviar solicitud. Por favor intenta de nuevo.`);
     } finally {
       setIsRegisteringCommerce(false);
     }

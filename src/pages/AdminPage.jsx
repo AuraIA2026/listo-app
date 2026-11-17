@@ -1605,10 +1605,18 @@ export default function AdminPage({ navigate, userData, userRole, lang = 'es' })
       }
 
       if (type === 'approve_partner_request') {
-        if (obj.id && !obj.id.startsWith('demo-')) {
+        const storeId = obj.id;
+        const storeName = obj.businessName || obj.nombre || 'Comercio Partner';
+        const cleanEmail = (obj.email || '').toLowerCase().trim();
+        const storePhone = obj.phone || obj.telefono || '';
+
+        // 1. Actualizar partner_requests doc si existe
+        if (storeId && !storeId.startsWith('demo-')) {
           try {
-            await updateDoc(doc(db, 'partner_requests', obj.id), {
+            await updateDoc(doc(db, 'partner_requests', storeId), {
               status: 'approved',
+              activo: true,
+              verificado: true,
               processedAt: new Date().toISOString(),
               validatedBy: 'admin'
             });
@@ -1617,31 +1625,63 @@ export default function AdminPage({ navigate, userData, userRole, lang = 'es' })
           }
         }
 
-        // Registrar automáticamente en la colección 'locales' para activarlo en el directorio de la App
+        // 2. Registrar o actualizar en la colección 'locales' para activarlo en el directorio público de la App
+        const targetLocalId = obj.localDocId || storeId;
         try {
-          await addDoc(collection(db, 'locales'), {
-            nombre: obj.businessName || 'Comercio Partner',
-            propietario: `${obj.ownerName || ''} ${obj.ownerLastName || ''}`.trim(),
-            email: (obj.email || '').toLowerCase().trim(),
-            telefono: obj.phone || '',
-            ciudad: obj.city || 'Santo Domingo',
-            categoria: obj.businessType || 'Restaurante / Comida',
-            sucursales: parseInt(obj.branches || '1'),
-            localCalle: obj.isStreetStore === 'Si',
-            activo: true,
-            verificado: true,
-            plan: 'PedidosListo Partner',
-            comision: '10%',
-            createdAt: new Date().toISOString()
-          });
+          let existingLocalSnap = null;
+          if (targetLocalId && !targetLocalId.startsWith('demo-')) {
+            const dSnap = await getDoc(doc(db, 'locales', targetLocalId));
+            if (dSnap.exists()) existingLocalSnap = dSnap;
+          }
+          if (!existingLocalSnap && storeName) {
+            const qByName = query(collection(db, 'locales'), where('nombre', '==', storeName));
+            const sByName = await getDocs(qByName);
+            if (!sByName.empty) existingLocalSnap = sByName.docs[0];
+          }
+
+          if (existingLocalSnap) {
+            await updateDoc(doc(db, 'locales', existingLocalSnap.id), {
+              activo: true,
+              verificado: true,
+              status: 'approved',
+              plan: 'PedidosListo Partner',
+              validatedAt: new Date().toISOString()
+            });
+          } else {
+            // Guardar usando el mismo ID para sincronización exacta
+            await setDoc(doc(db, 'locales', targetLocalId), {
+              nombre: storeName,
+              propietario: `${obj.ownerName || ''} ${obj.ownerLastName || ''}`.trim() || 'Comercio Partner',
+              email: cleanEmail,
+              telefono: storePhone,
+              ciudad: obj.city || 'Santo Domingo',
+              categoria: obj.businessType || 'Restaurante / Comida',
+              sucursales: parseInt(obj.branches || '1'),
+              localCalle: obj.isStreetStore === 'Si',
+              activo: true,
+              verificado: true,
+              status: 'approved',
+              plan: 'PedidosListo Partner',
+              comision: '10%',
+              createdAt: new Date().toISOString()
+            });
+          }
         } catch (eLoc) {
-          console.error("Error creando registro en locales:", eLoc);
+          console.error("Error creando/actualizando registro en locales:", eLoc);
         }
 
-        // Si el usuario tiene una cuenta registrada en 'users', activarle rol de comercio y enviarle notificación
-        if (obj.email || obj.userId) {
+        // 3. Si existe en 'comercios' (Listo Software), marcarlo también como activo y verificado
+        try {
+          const qCom = query(collection(db, 'comercios'), where('nombreLocal', '==', storeName));
+          const sCom = await getDocs(qCom);
+          for (const cDoc of sCom.docs) {
+            await updateDoc(doc(db, 'comercios', cDoc.id), { activo: true, verificado: true, status: 'approved' });
+          }
+        } catch (eCom) {}
+
+        // 4. Si el usuario tiene una cuenta registrada en 'users', activarle rol de comercio y enviarle notificación
+        if (cleanEmail || obj.userId) {
           try {
-            const cleanEmail = (obj.email || '').toLowerCase().trim();
             let matchedUsers = users.filter(u =>
               (obj.userId && u.id === obj.userId) ||
               (u.email && u.email.toLowerCase().trim() === cleanEmail)
@@ -1663,8 +1703,8 @@ export default function AdminPage({ navigate, userData, userRole, lang = 'es' })
                   role: 'comercio',
                   isMerchant: true,
                   hasCommerce: true,
-                  storeName: obj.businessName || 'Mi Comercio',
-                  commerceName: obj.businessName || 'Mi Comercio',
+                  storeName: storeName,
+                  commerceName: storeName,
                   commerceStatus: 'active'
                 });
               } catch (eUpd) {
@@ -1679,7 +1719,7 @@ export default function AdminPage({ navigate, userData, userRole, lang = 'es' })
               userEmail: cleanEmail,
               type: 'system',
               title: '🎉 ¡Tu Comercio ha sido Validado y Activado!',
-              text: `¡Felicidades! Tu comercio "${obj.businessName}" ha sido aprobado y validado en Pedidos Listo Partner. Ya puedes ingresar al portal Comercio para gestionar tu catálogo y recibir órdenes.`,
+              text: `¡Felicidades! Tu comercio "${storeName}" ha sido aprobado y validado en Pedidos Listo Partner. Ya puedes ingresar al portal Comercio para gestionar tu catálogo y recibir órdenes.`,
               date: new Date().toISOString(),
               createdAt: new Date().toISOString(),
               read: false
@@ -1692,7 +1732,7 @@ export default function AdminPage({ navigate, userData, userRole, lang = 'es' })
                 userEmail: cleanEmail,
                 type: 'system',
                 title: '🎉 ¡Tu Comercio ha sido Validado y Activado!',
-                text: `¡Felicidades! Tu comercio "${obj.businessName}" ha sido aprobado y validado en Pedidos Listo Partner.`,
+                text: `¡Felicidades! Tu comercio "${storeName}" ha sido aprobado y validado en Pedidos Listo Partner.`,
                 date: new Date().toISOString(),
                 createdAt: new Date().toISOString(),
                 read: false
@@ -1704,13 +1744,15 @@ export default function AdminPage({ navigate, userData, userRole, lang = 'es' })
         }
 
         // Marcar alertas/notificaciones asociadas como leídas
-        const notifsToUpdate = alerts.filter(a => a.requestId === obj.id || (a.text && obj.phone && a.text.includes(obj.phone)));
+        const notifsToUpdate = alerts.filter(a => a.requestId === storeId || (a.text && storePhone && a.text.includes(storePhone)));
         for (const nDoc of notifsToUpdate) {
           try { await updateDoc(doc(db, 'notificaciones', nDoc.id), { read: true }); } catch (eNotif) { }
         }
 
-        setPartnerRequests(prev => prev.map(r => r.id === obj.id ? { ...r, status: 'approved' } : r));
-        showToast(`🎉 ¡Comercio "${obj.businessName}" validado y activado exitosamente!`);
+        setPartnerRequests(prev => prev.map(r => r.id === storeId || (r.businessName || '').toLowerCase() === storeName.toLowerCase() ? { ...r, status: 'approved', activo: true, verificado: true } : r));
+        setVipLocales(prev => prev.map(l => l.id === targetLocalId || (l.nombre || '').toLowerCase() === storeName.toLowerCase() ? { ...l, status: 'approved', activo: true, verificado: true } : l));
+        setSoftwareComercios(prev => prev.map(c => (c.nombreLocal || c.nombre || '').toLowerCase() === storeName.toLowerCase() ? { ...c, status: 'approved', activo: true, verificado: true } : c));
+        showToast(`🎉 ¡Comercio "${storeName}" validado y activado exitosamente!`);
       }
 
       if (type === 'reject_partner_request') {
@@ -1727,18 +1769,114 @@ export default function AdminPage({ navigate, userData, userRole, lang = 'es' })
       }
 
       if (type === 'delete_partner_request') {
-        if (obj.id && !obj.id.startsWith('demo-')) {
+        const storeId = obj.id;
+        const localDocId = obj.localDocId;
+        const storeName = (obj.businessName || obj.nombre || '').trim();
+        const cleanEmail = (obj.email || '').toLowerCase().trim();
+
+        if (storeId && !storeId.startsWith('demo-')) {
           try {
-            await deleteDoc(doc(db, 'partner_requests', obj.id));
+            // 1. Eliminar de partner_requests por ID y por nombre
+            try { await deleteDoc(doc(db, 'partner_requests', storeId)); } catch (e) {}
+            if (storeName) {
+              try {
+                const sP = await getDocs(query(collection(db, 'partner_requests'), where('businessName', '==', storeName)));
+                for (const d of sP.docs) { await deleteDoc(doc(db, 'partner_requests', d.id)); }
+              } catch (e) {}
+            }
+
+            // 2. Eliminar de locales de raíz (por ID, localDocId, nombre, email o proId)
+            try { await deleteDoc(doc(db, 'locales', storeId)); } catch (e) {}
+            if (localDocId) {
+              try { await deleteDoc(doc(db, 'locales', localDocId)); } catch (e) {}
+            }
+            if (storeName) {
+              try {
+                const sLoc = await getDocs(collection(db, 'locales'));
+                for (const d of sLoc.docs) {
+                  const dData = d.data();
+                  const dName = (dData.nombre || dData.businessName || dData.name || '').trim();
+                  const dEmail = (dData.email || '').toLowerCase().trim();
+                  const dProId = dData.proId || dData.uid;
+
+                  const matchesName = dName && dName.toLowerCase() === storeName.toLowerCase();
+                  const matchesEmail = cleanEmail && dEmail && dEmail === cleanEmail;
+                  const matchesProId = (obj.userId || obj.proId) && dProId && dProId === (obj.userId || obj.proId);
+
+                  if (matchesName || matchesEmail || matchesProId) {
+                    await deleteDoc(doc(db, 'locales', d.id));
+                  }
+                }
+              } catch (e) {}
+            }
+
+            // 3. Eliminar de comercios (Listo Software)
             try {
-              await deleteDoc(doc(db, 'locales', obj.id));
-            } catch (eLoc) { }
+              const sCom = await getDocs(collection(db, 'comercios'));
+              for (const d of sCom.docs) {
+                const dData = d.data();
+                const dName = (dData.nombreLocal || dData.nombre || dData.businessName || '').trim();
+                const dEmail = (dData.email || '').toLowerCase().trim();
+                if ((storeName && dName && dName.toLowerCase() === storeName.toLowerCase()) || (cleanEmail && dEmail === cleanEmail) || d.id === storeId) {
+                  await deleteDoc(doc(db, 'comercios', d.id));
+                }
+              }
+            } catch (e) {}
+
+            // 4. Eliminar TODOS los productos / platillos en 'productos'
+            try {
+              const sProd = await getDocs(collection(db, 'productos'));
+              for (const d of sProd.docs) {
+                const pData = d.data();
+                const pStoreId = pData.storeId || pData.tiendaId || '';
+                const pStoreName = (pData.storeName || pData.tienda || '').trim().toLowerCase();
+                if (pStoreId === storeId || pStoreId === localDocId || (storeName && pStoreName === storeName.toLowerCase())) {
+                  await deleteDoc(doc(db, 'productos', d.id));
+                }
+              }
+            } catch (e) {}
+
+            // 5. Restablecer cuentas de usuario en 'users' (quitar rol de comercio)
+            try {
+              let targetUids = [];
+              if (obj.userId || obj.proId) targetUids.push(obj.userId || obj.proId);
+              if (cleanEmail) {
+                const sU = await getDocs(query(collection(db, 'users'), where('email', '==', cleanEmail)));
+                sU.forEach(uDoc => targetUids.push(uDoc.id));
+              }
+              for (const uid of [...new Set(targetUids)]) {
+                try {
+                  await updateDoc(doc(db, 'users', uid), {
+                    role: 'client',
+                    isMerchant: false,
+                    hasCommerce: false,
+                    storeName: null,
+                    commerceName: null,
+                    commerceStatus: null
+                  });
+                } catch (eU) {}
+              }
+            } catch (e) {}
+
+            // 6. Eliminar notificaciones asociadas
+            try {
+              const sNotifs = await getDocs(query(collection(db, 'notificaciones'), where('requestId', '==', storeId)));
+              for (const nDoc of sNotifs.docs) {
+                await deleteDoc(doc(db, 'notificaciones', nDoc.id));
+              }
+            } catch (e) {}
+
           } catch (eDel) {
-            console.error("Error eliminando comercio:", eDel);
+            console.error("Error eliminando comercio de raíz:", eDel);
           }
         }
-        setPartnerRequests(prev => prev.filter(r => r.id !== obj.id));
-        showToast(`🗑️ Comercio "${obj.businessName}" eliminado definitivamente`);
+
+        // 7. Limpiar estados locales de React en Admin
+        setPartnerRequests(prev => prev.filter(r => r.id !== storeId && (r.businessName || '').toLowerCase() !== storeName.toLowerCase()));
+        setVipLocales(prev => prev.filter(l => l.id !== storeId && l.id !== localDocId && (l.nombre || '').toLowerCase() !== storeName.toLowerCase()));
+        setSoftwareComercios(prev => prev.filter(c => c.id !== storeId && (c.nombreLocal || c.nombre || '').toLowerCase() !== storeName.toLowerCase()));
+
+        showToast(`🗑️ Comercio "${storeName || 'Comercio'}" eliminado DE RAÍZ de la app`);
       }
     } catch (err) {
       console.error(err);
@@ -1929,16 +2067,26 @@ export default function AdminPage({ navigate, userData, userRole, lang = 'es' })
               const bName = req.businessName || req.nombre || '';
               const k = normKey(bName) || req.id;
               if (!k || k.includes('fiera')) return;
-              map.set(k, req);
+              map.set(k, {
+                ...req,
+                source: 'partner_requests',
+                status: req.status || 'pending'
+              });
             });
 
             vipLocales.forEach(loc => {
               const bName = loc.nombre || loc.businessName || loc.name || '';
               const k = normKey(bName) || loc.id;
-              if (!k || k.includes('fiera') || loc.eliminado || loc.activo === false) return;
+              if (!k || k.includes('fiera') || loc.eliminado) return;
+
+              // El comercio solo es "approved" si fue validado y tiene activo: true y verificado: true
+              const isApproved = (loc.status === 'approved' || (loc.activo === true && loc.verificado === true)) && loc.status !== 'pending';
+              const locStatus = isApproved ? 'approved' : (loc.status === 'rejected' ? 'rejected' : 'pending');
+
               if (!map.has(k)) {
                 map.set(k, {
                   id: loc.id,
+                  localDocId: loc.id,
                   businessName: bName,
                   ownerName: loc.propietario || loc.ownerName || 'Comercio Listo',
                   ownerLastName: '',
@@ -1946,8 +2094,19 @@ export default function AdminPage({ navigate, userData, userRole, lang = 'es' })
                   phone: loc.telefono || loc.phone || '',
                   city: loc.ciudad || loc.city || 'Santiago',
                   businessType: loc.categoria || loc.category || 'Restaurante & Comercio',
-                  status: 'approved',
+                  status: locStatus,
+                  activo: loc.activo === true,
+                  verificado: loc.verificado === true,
                   createdAt: loc.creadoEn || loc.createdAt || new Date().toISOString(),
+                  source: 'locales'
+                });
+              } else {
+                const existing = map.get(k);
+                map.set(k, {
+                  ...loc,
+                  ...existing,
+                  localDocId: loc.id,
+                  status: (existing.status === 'approved' || (isApproved && existing.status !== 'pending')) ? 'approved' : (existing.status === 'rejected' ? 'rejected' : 'pending')
                 });
               }
             });
@@ -1955,7 +2114,11 @@ export default function AdminPage({ navigate, userData, userRole, lang = 'es' })
             softwareComercios.forEach(com => {
               const bName = com.nombreLocal || com.nombre || com.businessName || '';
               const k = normKey(bName) || com.id;
-              if (!k || k.includes('fiera') || com.eliminado || com.activo === false) return;
+              if (!k || k.includes('fiera') || com.eliminado) return;
+
+              const isApproved = (com.status === 'approved' || (com.activo === true && com.verificado === true)) && com.status !== 'pending';
+              const comStatus = isApproved ? 'approved' : (com.status === 'rejected' ? 'rejected' : 'pending');
+
               if (!map.has(k)) {
                 map.set(k, {
                   id: com.id,
@@ -1966,8 +2129,11 @@ export default function AdminPage({ navigate, userData, userRole, lang = 'es' })
                   phone: com.telefono || com.phone || '',
                   city: com.ciudad || com.city || 'Santiago',
                   businessType: com.categoria || com.tipo || 'Comercio Partner',
-                  status: 'approved',
+                  status: comStatus,
+                  activo: com.activo === true,
+                  verificado: com.verificado === true,
                   createdAt: com.creadoEn || com.createdAt || new Date().toISOString(),
+                  source: 'comercios'
                 });
               }
             });
