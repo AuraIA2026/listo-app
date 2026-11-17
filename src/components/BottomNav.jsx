@@ -105,6 +105,24 @@ const IconSvg = ({ type, active }) => {
            )}
         </svg>
       )
+    case 'cart':
+      return (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+          {active ? (
+            <>
+              <circle cx="9" cy="21" r="1.5" fill={color} stroke={color} strokeWidth="1" />
+              <circle cx="20" cy="21" r="1.5" fill={color} stroke={color} strokeWidth="1" />
+              <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" fill="rgba(242,96,0,0.18)" stroke={color} strokeWidth="2.2" />
+            </>
+          ) : (
+            <>
+              <circle cx="9" cy="21" r="1" />
+              <circle cx="20" cy="21" r="1" />
+              <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+            </>
+          )}
+        </svg>
+      )
     default: return null
   }
 }
@@ -126,6 +144,32 @@ export default function BottomNav({ currentPage, navigate, lang = 'es', userRole
   const [pendingOrders, setPendingOrders] = useState(0)
   const [unreadOrderNotifs, setUnreadOrderNotifs] = useState(0)
   const [unreadMsgNotifs, setUnreadMsgNotifs] = useState(0)
+  const [cartCount, setCartCount] = useState(0)
+
+  useEffect(() => {
+    const updateCountFromStorage = () => {
+      try {
+        const plSaved = JSON.parse(localStorage.getItem('pl_cart_v1') || '{}')
+        const plCount = Array.isArray(plSaved?.items) ? plSaved.items.reduce((s, i) => s + (i.qty || 1), 0) : 0
+        const mandameSaved = JSON.parse(localStorage.getItem('mandame_cart') || '[]')
+        const mandameCount = Array.isArray(mandameSaved) ? mandameSaved.reduce((s, i) => s + (i.qty || 1), 0) : 0
+        setCartCount(Math.max(plCount, mandameCount))
+      } catch(e) {}
+    }
+    updateCountFromStorage()
+
+    const handleCartCount = (e) => {
+      if (typeof e.detail === 'number') {
+        setCartCount(e.detail)
+      }
+    }
+    window.addEventListener('cart-count-updated', handleCartCount)
+    window.addEventListener('storage', updateCountFromStorage)
+    return () => {
+      window.removeEventListener('cart-count-updated', handleCartCount)
+      window.removeEventListener('storage', updateCountFromStorage)
+    }
+  }, [])
 
   useEffect(() => {
     if (!auth.currentUser) return
@@ -180,7 +224,8 @@ export default function BottomNav({ currentPage, navigate, lang = 'es', userRole
     isMandame ? (
       mandameSubTab === 'mercado' ? 'workdone' :
       mandameSubTab === 'buscar'  ? 'search'   :
-      mandameSubTab === 'pedidos' ? 'orders'   : 'home'
+      mandameSubTab === 'pedidos' ? 'orders'   :
+      mandameSubTab === 'carrito' ? 'profile'  : 'home'
     ) : (
       currentPage === 'home'     ? 'home'     :
       currentPage === 'search'   ? 'search'   :
@@ -208,8 +253,17 @@ export default function BottomNav({ currentPage, navigate, lang = 'es', userRole
               iconType = 'mercado'
             }
 
+            if (isMandame && tab.id === 'profile') {
+              label = lang === 'es' ? 'Carrito' : 'Cart'
+              iconType = 'cart'
+            }
+
             const handleTabClick = () => {
               if (isMandame) {
+                if (tab.id === 'profile') {
+                  window.dispatchEvent(new CustomEvent('mandame-open-cart'))
+                  return
+                }
                 if (tab.id === 'workdone') {
                   setMandameSubTab('mercado')
                   window.dispatchEvent(new CustomEvent('mandame-switch-tab', { detail: 'mercado' }))
@@ -237,18 +291,23 @@ export default function BottomNav({ currentPage, navigate, lang = 'es', userRole
             return (
               <button
                 key={tab.id}
-                data-tour={`nav-${tab.id}`}
+                data-tour={isMandame && tab.id === 'profile' ? 'nav-cart' : `nav-${tab.id}`}
                 className={`nav-tab ${isActive ? 'active' : ''}`}
                 onClick={handleTabClick}
               >
-                {/* Alerta de Perfil Incompleto */}
-                {tab.id === 'profile' && userData && !profileComplete && (
+                {/* Alerta de Perfil Incompleto (solo en app general Listo Patrón) */}
+                {!isMandame && tab.id === 'profile' && userData && !profileComplete && (
                    <div style={{
                      position: 'absolute', bottom: '90%', right: '15%', background: '#FF3B30', color: '#FFF',
                      width: '12px', height: '12px', borderRadius: '50%', border: '2px solid #FFF',
                      boxShadow: '0 2px 8px rgba(255,59,48,0.5)',
                      animation: 'tipBounce 1.5s ease-in-out infinite', zIndex: 100
                    }} />
+                )}
+
+                {/* Badge de Carrito en Pedidos Listo */}
+                {isMandame && tab.id === 'profile' && cartCount > 0 && (
+                  <span className="nav-badge">{cartCount > 99 ? '99+' : cartCount}</span>
                 )}
 
                 {/* Badges de Notificaciones */}

@@ -732,11 +732,42 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
   // Escuchar cambios de pestaña desde la barra de navegación global (Ej: Mercado, Buscar, Pedidos)
   useEffect(() => {
     const handleSwitch = (e) => {
-      if (e.detail) setActiveTab(e.detail);
+      if (e.detail && e.detail !== 'carrito') setActiveTab(e.detail);
     };
     window.addEventListener('mandame-switch-tab', handleSwitch);
     return () => window.removeEventListener('mandame-switch-tab', handleSwitch);
   }, []);
+
+  // Escuchar apertura de Carrito desde el nuevo botón en la barra inferior (reemplazo de Perfil)
+  useEffect(() => {
+    const handleOpenCart = () => {
+      try {
+        const plSaved = JSON.parse(localStorage.getItem('pl_cart_v1') || '{}');
+        if (plSaved && plSaved.items && plSaved.items.length > 0 && cart.length === 0) {
+          window.dispatchEvent(new CustomEvent('mandame-open-pl-drawer'));
+          return;
+        }
+      } catch (e) {}
+      setIsCartModalOpen(true);
+    };
+    window.addEventListener('mandame-open-cart', handleOpenCart);
+    return () => window.removeEventListener('mandame-open-cart', handleOpenCart);
+  }, [cart.length]);
+
+  // Sincronizar el badge de cantidad de ítems del carrito con la barra inferior
+  useEffect(() => {
+    const totalCount = cart.reduce((sum, i) => sum + (i.qty || 1), 0);
+    window.dispatchEvent(new CustomEvent('cart-count-updated', { detail: totalCount }));
+  }, [cart]);
+
+  // Actualizar estado activo en la barra inferior cuando el modal de carrito se abre o cierra
+  useEffect(() => {
+    if (isCartModalOpen) {
+      window.dispatchEvent(new CustomEvent('mandame-switch-tab', { detail: 'carrito' }));
+    } else {
+      window.dispatchEvent(new CustomEvent('mandame-switch-tab', { detail: activeTab }));
+    }
+  }, [isCartModalOpen, activeTab]);
 
   // Abrir automáticamente el comercio si fue solicitado desde el panel de Admin en vista pública
   useEffect(() => {
@@ -2571,39 +2602,6 @@ export default function MandamePage({ navigate, userData, userRole, lang }) {
                 }}
               >
                 🔔
-              </button>
-
-              {/* 🛒 Carrito */}
-              <button
-                onClick={() => setIsCartModalOpen(true)}
-                title="Ver carrito"
-                style={{
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  background: 'rgba(255,255,255,0.18)',
-                  border: '1.5px solid rgba(255,255,255,0.35)',
-                  borderRadius: 14,
-                  width: 42, height: 42,
-                  fontSize: 18,
-                  cursor: 'pointer',
-                  flexShrink: 0,
-                  position: 'relative',
-                  backdropFilter: 'blur(8px)',
-                  WebkitBackdropFilter: 'blur(8px)'
-                }}
-              >
-                🛒
-                {totalCartItems > 0 && (
-                  <span style={{
-                    position: 'absolute', top: -5, right: -5,
-                    background: '#fff', color: '#FF6B00',
-                    borderRadius: '50%', width: 19, height: 19,
-                    fontSize: 10, fontWeight: 900,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    border: '2px solid #FF6B00'
-                  }}>
-                    {totalCartItems}
-                  </span>
-                )}
               </button>
 
             </div>

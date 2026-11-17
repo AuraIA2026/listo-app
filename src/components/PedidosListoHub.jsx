@@ -142,7 +142,20 @@ export default function PedidosListoHub({ navigate }) {
 
   useEffect(() => {
     try { localStorage.setItem(CART_KEY, JSON.stringify(cart)); } catch (e) { /* ignore */ }
+    const plCount = cart.items ? cart.items.reduce((a, b) => a + (b.qty || 1), 0) : 0;
+    if (plCount > 0) {
+      window.dispatchEvent(new CustomEvent('cart-count-updated', { detail: plCount }));
+    }
   }, [cart]);
+
+  // Escuchar evento para abrir drawer de pedidos listo desde la barra inferior
+  useEffect(() => {
+    const handleOpenPlDrawer = () => {
+      setShowCartDrawer(true);
+    };
+    window.addEventListener('mandame-open-pl-drawer', handleOpenPlDrawer);
+    return () => window.removeEventListener('mandame-open-pl-drawer', handleOpenPlDrawer);
+  }, []);
 
   // Auto-slide hero banner
   useEffect(() => {
